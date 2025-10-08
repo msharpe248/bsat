@@ -7,10 +7,11 @@ A Python package for learning and solving Boolean satisfiability (SAT) problems 
 ✅ **CNF Data Structures**: Clean, Pythonic representation (Literal, Clause, CNFExpression)
 ✅ **2SAT Solver**: O(n+m) polynomial-time algorithm using strongly connected components
 ✅ **DPLL Solver**: Backtracking with unit propagation and pure literal elimination
+✅ **Horn-SAT Solver**: O(n+m) polynomial-time solver for Horn formulas
 ✅ **Pretty Printing**: Unicode symbols (∧, ∨, ¬) for readable output
 ✅ **Multiple Input Formats**: Parse from text, JSON, or build programmatically
 ✅ **Truth Tables**: Generate and compare truth tables
-🚧 **Coming Soon**: CDCL, WalkSAT, Horn-SAT, XOR-SAT
+🚧 **Coming Soon**: CDCL, WalkSAT, XOR-SAT
 
 ## Installation
 

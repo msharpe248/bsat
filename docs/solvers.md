@@ -68,6 +68,35 @@ result = solver.solve()
 
 ---
 
+### Horn-SAT Solver ✅
+**Status**: Implemented
+**Algorithm**: Unit propagation with all-false initialization
+**Complexity**: O(n+m) - Polynomial time
+**Use Case**: Horn clauses (at most 1 positive literal per clause)
+
+[Read more →](advanced-solvers.md#horn-sat)
+
+```python
+from bsat import solve_horn_sat, is_horn_formula, CNFExpression
+
+# Check if formula is Horn
+cnf = CNFExpression.parse("(x | ~y) & (~x | ~z)")
+if is_horn_formula(cnf):
+    result = solve_horn_sat(cnf)
+```
+
+**Pros**:
+- ✅ Polynomial time O(n+m)
+- ✅ Always fast
+- ✅ Used in logic programming (Prolog, Datalog)
+- ✅ Common in expert systems and rule-based reasoning
+
+**Cons**:
+- ❌ Only works for Horn formulas
+- ❌ Limited expressiveness (at most 1 positive literal)
+
+---
+
 ## Coming Soon
 
 ### DPLL with Advanced Heuristics 🚧
@@ -168,7 +197,7 @@ Is your formula 2SAT (all clauses have exactly 2 literals)?
 | Solver | Complexity | Complete? | Best For | Status |
 |--------|-----------|-----------|----------|--------|
 | **2SAT** | O(n+m) | ✅ Yes | 2-literal clauses | ✅ Done |
-| **Horn-SAT** | O(n+m) | ✅ Yes | Horn clauses | 🚧 Planned |
+| **Horn-SAT** | O(n+m) | ✅ Yes | Horn clauses | ✅ Done |
 | **XOR-SAT** | O(n³) | ✅ Yes | XOR constraints | 🚧 Planned |
 | **DPLL + opts** | O(2ⁿ) | ✅ Yes | Small-medium instances | ✅ Done |
 | **DPLL + heuristics** | O(2ⁿ) | ✅ Yes | Medium instances | 🚧 Planned |
@@ -215,6 +244,12 @@ else:
 - **Variables**: Up to millions
 - **Clauses**: Up to millions
 - **Time**: Milliseconds to seconds
+
+### Horn-SAT
+- **Variables**: Up to millions
+- **Clauses**: Up to millions
+- **Time**: Milliseconds to seconds
+- **Note**: Linear time O(n+m), very efficient
 
 ### DPLL with Optimizations
 - **Variables**: Up to ~100-200

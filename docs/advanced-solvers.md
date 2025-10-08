@@ -1,10 +1,12 @@
 # Advanced Solvers
 
-Coming soon: CDCL, WalkSAT, Horn-SAT, and XOR-SAT solvers.
+Specialized SAT solvers: Horn-SAT (implemented), and coming soon: CDCL, WalkSAT, XOR-SAT.
 
-## Status: Planned Features 🚧
+## Implemented Solvers
 
-This page describes solvers that are **planned but not yet implemented** in BSAT.
+### Horn-SAT ✅
+
+**Status**: Implemented in v0.2
 
 ---
 
@@ -155,7 +157,7 @@ New formula: ... ∧ (x ∨ ¬z)
 
 ---
 
-## Horn-SAT
+## Horn-SAT ✅
 
 ### Overview
 
@@ -167,7 +169,7 @@ New formula: ... ∧ (x ∨ ¬z)
 (x ∨ y ∨ ¬z)   ✗ Not Horn (two positive)
 ```
 
-**Status**: 🚧 Planned for v0.5
+**Status**: ✅ Implemented in v0.2
 
 ### Algorithm
 
@@ -176,12 +178,30 @@ Horn-SAT can be solved in **linear time** O(n+m) using unit propagation:
 ```
 1. Set all variables to False initially
 2. Repeat:
-   - Find unit clause (single literal)
+   - Find unit clause (single unassigned literal that could satisfy)
    - If positive literal (x): set x = True
-   - If negative literal (¬x): already False, clause satisfied
-   - Simplify formula
+   - Propagate implications
 3. If empty clause: UNSAT
-   If no clauses left: SAT
+   If all clauses satisfied: SAT
+```
+
+### Usage
+
+```python
+from bsat import solve_horn_sat, is_horn_formula, CNFExpression
+
+# Create Horn formula
+cnf = CNFExpression.parse("x & (~x | y) & (~y | z)")
+
+# Check if it's Horn
+if is_horn_formula(cnf):
+    result = solve_horn_sat(cnf)
+    if result:
+        print(f"SAT: {result}")
+    else:
+        print("UNSAT")
+else:
+    print("Not a Horn formula")
 ```
 
 ### Why It's Fast
@@ -189,7 +209,7 @@ Horn-SAT can be solved in **linear time** O(n+m) using unit propagation:
 Unit propagation on Horn clauses always makes progress:
 - Each iteration either satisfies a clause or forces a variable
 - No backtracking needed!
-- Linear time complexity
+- Linear time complexity O(n+m)
 
 ### Applications
 
@@ -200,14 +220,23 @@ Unit propagation on Horn clauses always makes progress:
 
 ### Example
 
-```
-Formula: x ∧ (¬x ∨ y) ∧ (¬y ∨ z)
+```python
+# Logic program: likes_pizza(john) → likes_italian(john) → happy(john)
+cnf = CNFExpression([
+    Clause([Literal('likes_pizza_john')]),
+    Clause([Literal('likes_pizza_john', True), Literal('likes_italian_john')]),
+    Clause([Literal('likes_italian_john', True), Literal('happy_john')])
+])
 
-Step 1: x is unit clause → x = True
-Step 2: (¬True ∨ y) = (y) is unit → y = True
-Step 3: (¬True ∨ z) = (z) is unit → z = True
-Result: SAT with {x=T, y=T, z=T}
+result = solve_horn_sat(cnf)
+# {'likes_pizza_john': True, 'likes_italian_john': True, 'happy_john': True}
 ```
+
+### Performance
+
+- **Time**: O(n+m) - Linear in formula size
+- **Space**: O(n) - Variable assignments
+- **Practical**: Can handle millions of clauses efficiently
 
 ### Further Reading
 
@@ -290,9 +319,9 @@ Solution: x=0, y=0, z=1
 
 | Solver | Complexity | Complete | Use Case | Status |
 |--------|-----------|----------|----------|--------|
+| **Horn-SAT** | O(n+m) | ✅ Yes | Logic programming | ✅ Done |
 | **CDCL** | O(2ⁿ)* | ✅ Yes | Large structured SAT | 🚧 Planned |
 | **WalkSAT** | Varies | ❌ No | Quick solutions | 🚧 Planned |
-| **Horn-SAT** | O(n+m) | ✅ Yes | Logic programming | 🚧 Planned |
 | **XOR-SAT** | O(n³) | ✅ Yes | Cryptography | 🚧 Planned |
 
 *Much faster in practice
@@ -300,6 +329,12 @@ Solution: x=0, y=0, z=1
 ---
 
 ## Implementation Roadmap
+
+### Version 0.2: Horn-SAT ✅
+- [x] Horn formula detection
+- [x] Linear-time unit propagation
+- [x] All-false initialization
+- [x] Statistics tracking
 
 ### Version 0.3: CDCL
 - [ ] Unit propagation (BCP)
@@ -315,8 +350,7 @@ Solution: x=0, y=0, z=1
 - [ ] Configurable noise parameter
 - [ ] Multi-restart support
 
-### Version 0.5: Special Cases
-- [ ] Horn-SAT solver
+### Version 0.5: XOR-SAT
 - [ ] XOR-SAT solver (Gaussian elimination)
 - [ ] Automatic solver selection based on formula type
 
