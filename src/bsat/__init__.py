@@ -2,6 +2,7 @@
 
 from .cnf import Literal, Clause, CNFExpression
 from .twosatsolver import TwoSATSolver, solve_2sat, is_2sat_satisfiable
+from .dpll import DPLLSolver, solve_sat
 
 __all__ = [
     'Literal',
@@ -9,6 +10,8 @@ __all__ = [
     'CNFExpression',
     'TwoSATSolver',
     'solve_2sat',
-    'is_2sat_satisfiable'
+    'is_2sat_satisfiable',
+    'DPLLSolver',
+    'solve_sat'
 ]
 __version__ = '0.1.0'

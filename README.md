@@ -1,16 +1,16 @@
 # BSAT - Boolean Satisfiability Package
 
-A Python package for working with Boolean satisfiability (SAT) problems using Conjunctive Normal Form (CNF) expressions.
+A Python package for learning and solving Boolean satisfiability (SAT) problems using Conjunctive Normal Form (CNF).
 
 ## Features
 
-1. **CNF Data Structures**: Literal, Clause, and CNFExpression classes
-2. **Pretty Printing**: Display expressions using standard logical notation (∧, ∨, ¬)
-3. **Parsing**: Read expressions from strings using multiple notation styles
-4. **JSON Support**: Serialize and deserialize expressions to/from JSON
-5. **Truth Tables**: Generate and display complete truth tables
-6. **Logical Equivalence**: Compare expressions using truth table comparison
-7. **2SAT Solver**: Optimal O(n+m) algorithm using strongly connected components
+✅ **CNF Data Structures**: Clean, Pythonic representation (Literal, Clause, CNFExpression)
+✅ **2SAT Solver**: O(n+m) polynomial-time algorithm using strongly connected components
+✅ **DPLL Solver**: Classic backtracking algorithm for general SAT and 3SAT
+✅ **Pretty Printing**: Unicode symbols (∧, ∨, ¬) for readable output
+✅ **Multiple Input Formats**: Parse from text, JSON, or build programmatically
+✅ **Truth Tables**: Generate and compare truth tables
+🚧 **Coming Soon**: CDCL, WalkSAT, Horn-SAT, XOR-SAT
 
 ## Installation
 
@@ -36,21 +36,25 @@ pip install -e ".[dev]"
 ## Quick Start
 
 ```python
-from bsat import CNFExpression, solve_2sat
+from bsat import CNFExpression, solve_sat, solve_2sat
 
-# Parse a CNF expression
-expr = CNFExpression.parse("(x | y) & (~x | z)")
+# Parse a 3SAT formula
+formula = "(x | y | z) & (~x | y | ~z) & (x | ~y | z)"
+cnf = CNFExpression.parse(formula)
 
-# Print it
-print(expr)  # (x ∨ y) ∧ (¬x ∨ z)
+# Solve it
+result = solve_sat(cnf)  # Uses DPLL solver
 
-# Generate truth table
-expr.print_truth_table()
+if result:
+    print(f"SAT: {result}")
+    print(f"Verification: {cnf.evaluate(result)}")
+else:
+    print("UNSAT")
 
-# Solve 2SAT problems
-expr_2sat = CNFExpression.parse("(a | b) & (~a | c) & (~b | c)")
-solution = solve_2sat(expr_2sat)
-print(f"Solution: {solution}")
+# For 2SAT, use the faster polynomial-time solver
+formula_2sat = "(x | y) & (~x | z) & (y | ~z)"
+cnf_2sat = CNFExpression.parse(formula_2sat)
+result_2sat = solve_2sat(cnf_2sat)  # O(n+m) time!
 ```
 
 ## Examples
@@ -58,8 +62,9 @@ print(f"Solution: {solution}")
 Run the example scripts:
 
 ```bash
-python examples/example.py       # General CNF examples
-python examples/example_2sat.py  # 2SAT solver examples
+python examples/example.py        # General CNF examples
+python examples/example_2sat.py   # 2SAT solver examples
+python examples/example_dpll.py   # DPLL solver examples
 ```
 
 ## Testing
@@ -67,7 +72,8 @@ python examples/example_2sat.py  # 2SAT solver examples
 Run the test suite:
 
 ```bash
-python tests/test_2sat.py
+python tests/test_2sat.py   # 2SAT tests
+python tests/test_dpll.py   # DPLL tests
 ```
 
 Or with pytest (if installed):
@@ -78,7 +84,14 @@ pytest tests/
 
 ## Documentation
 
-See `src/bsat/README.md` for detailed API documentation and usage examples.
+📚 **[Complete Documentation](docs/README.md)**
+
+- [Introduction to SAT](docs/introduction.md) - Start here if you're new!
+- [CNF Data Structures](docs/cnf.md) - Understanding the API
+- [2SAT Solver](docs/2sat-solver.md) - Polynomial-time algorithm
+- [DPLL Solver](docs/dpll-solver.md) - General SAT solving
+- [Examples & Tutorials](docs/examples.md) - Practical usage
+- [Theory & References](docs/theory.md) - Papers and further reading
 
 ## License
 
