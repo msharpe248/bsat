@@ -74,7 +74,7 @@ result = solver.solve()
 **Complexity**: O(n+m) - Polynomial time
 **Use Case**: Horn clauses (at most 1 positive literal per clause)
 
-[Read more →](advanced-solvers.md#horn-sat)
+[Read more →](hornsat-solver.md)
 
 ```python
 from bsat import solve_horn_sat, is_horn_formula, CNFExpression
@@ -142,18 +142,6 @@ Modern industrial-strength SAT solver algorithm used in tools like MiniSat, Gluc
 - ❌ Incomplete (might not find solution)
 - ❌ Can't prove unsatisfiability
 - ❌ Randomized (non-deterministic)
-
----
-
-### Horn-SAT Solver 🚧
-**Status**: Planned
-**Algorithm**: Unit propagation
-**Complexity**: O(n+m) - Polynomial time
-**Use Case**: Horn clauses (at most one positive literal per clause)
-
-[Read more →](advanced-solvers.md)
-
-Horn-SAT is a special case that can be solved in linear time and is widely used in logic programming and expert systems.
 
 ---
 
@@ -284,5 +272,6 @@ Want to help implement these solvers? See the [development roadmap](https://gith
 
 - Learn about [2SAT algorithm](2sat-solver.md)
 - Understand [DPLL solver](dpll-solver.md)
+- Explore [Horn-SAT solver](hornsat-solver.md)
 - Read about [future solvers](advanced-solvers.md)
 - Try [examples and tutorials](examples.md)

@@ -9,7 +9,8 @@ Welcome to the BSAT (Boolean Satisfiability) package documentation! This guide w
 3. [Solvers](solvers.md) - Overview of available solvers
    - [2SAT Solver](2sat-solver.md) - Polynomial-time algorithm for 2SAT
    - [DPLL Solver](dpll-solver.md) - Classic backtracking algorithm for general SAT
-   - [Advanced Solvers](advanced-solvers.md) - Coming soon: CDCL, WalkSAT, Horn-SAT, XOR-SAT
+   - [Horn-SAT Solver](hornsat-solver.md) - Polynomial-time solver for Horn formulas
+   - [Advanced Solvers](advanced-solvers.md) - Coming soon: CDCL, WalkSAT, XOR-SAT
 4. [Examples & Tutorials](examples.md) - Practical usage examples
 5. [Theory & References](theory.md) - Academic papers and further reading
 
@@ -65,7 +66,8 @@ For example:
 - ✅ **CNF Data Structures**: Clean, Pythonic representation of Boolean formulas
 - ✅ **2SAT Solver**: O(n+m) polynomial-time solver using strongly connected components
 - ✅ **DPLL Solver**: Classic backtracking algorithm for general SAT/3SAT
-- 🚧 **Advanced Algorithms**: CDCL, WalkSAT, Horn-SAT, XOR-SAT (coming soon)
+- ✅ **Horn-SAT Solver**: O(n+m) polynomial-time solver for Horn formulas (logic programming)
+- 🚧 **Advanced Algorithms**: CDCL, WalkSAT, XOR-SAT (coming soon)
 - ✅ **Pretty Printing**: Unicode symbols (∧, ∨, ¬) for readable output
 - ✅ **Multiple Input Formats**: Parse from text, JSON, or programmatic construction
 - ✅ **Truth Tables**: Generate and compare truth tables
