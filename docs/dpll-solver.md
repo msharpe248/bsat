@@ -6,12 +6,12 @@ The classic Davis-Putnam-Logemann-Loveland algorithm for solving general SAT and
 
 **DPLL** is a complete backtracking-based search algorithm for SAT. It works for any CNF formula (including 3SAT and beyond).
 
-**Implemented**: Basic DPLL with backtracking ✅
-**Coming Soon**: Unit propagation, pure literal elimination, CDCL
+**Implemented**: DPLL with backtracking, unit propagation, pure literal elimination ✅
+**Coming Soon**: CDCL (conflict-driven clause learning)
 
 **Time Complexity**: O(2ⁿ) worst case (NP-complete problem)
 **Space Complexity**: O(n) for recursion stack
-**Practical Performance**: Often much better than worst case on real instances
+**Practical Performance**: Often much better than worst case, especially with optimizations
 
 ## What is DPLL?
 
@@ -26,20 +26,30 @@ The algorithm systematically explores the space of possible variable assignments
 
 ## The Algorithm
 
-### Basic DPLL (Implemented)
+### DPLL with Optimizations (Implemented)
 
 ```
 DPLL(formula, assignment):
     // Simplify formula based on current assignment
     simplified = simplify(formula, assignment)
 
+    // Base case: empty clause (conflict)
+    if simplified contains empty clause:
+        return UNSAT
+
     // Base case: all clauses satisfied
     if simplified is empty:
         return assignment (SAT)
 
-    // Base case: empty clause (conflict)
-    if simplified contains empty clause:
-        return UNSAT
+    // OPTIMIZATION 1: Unit Propagation
+    if exists unit clause (single literal):
+        assign that literal to True
+        return DPLL(simplified, assignment)
+
+    // OPTIMIZATION 2: Pure Literal Elimination
+    if exists pure literal (only one polarity):
+        assign it to satisfy all clauses
+        return DPLL(simplified, assignment)
 
     // Recursive case: choose a variable and branch
     variable = choose_variable(simplified)
@@ -58,7 +68,39 @@ DPLL(formula, assignment):
 
 ### Key Ideas
 
-**1. Clause Simplification**
+**1. Unit Propagation (Implemented)**
+
+When a clause has only one unassigned literal, that literal MUST be True:
+
+```
+Formula: (x ∨ y) ∧ (¬x ∨ z) ∧ (¬y)
+Assign: y = False (from unit clause (¬y))
+
+After simplification:
+- (x ∨ False) = (x) → unit clause! → x = True
+- (¬True ∨ z) = (z) → unit clause! → z = True
+
+Result: {x=True, y=False, z=True} without any branching!
+```
+
+Unit propagation chains through implications, dramatically reducing search space.
+
+**2. Pure Literal Elimination (Implemented)**
+
+A variable is "pure" if it appears with only one polarity (only positive or only negative):
+
+```
+Formula: (x ∨ y) ∧ (x ∨ z) ∧ (¬w ∨ y)
+- x appears only positively → pure positive
+- w appears only negatively → pure negative
+
+Assign: x = True, w = False
+These satisfy all clauses containing x and w with no conflicts!
+```
+
+Pure literal elimination removes variables without branching.
+
+**3. Clause Simplification**
 
 When we assign a variable:
 - **Remove satisfied clauses**: If any literal in a clause is True, the clause is satisfied
@@ -124,6 +166,7 @@ from bsat import DPLLSolver, CNFExpression
 
 cnf = CNFExpression.parse("(a | b | c) & (~a | b) & (~b | ~c)")
 
+# Solve with optimizations enabled (default)
 solver = DPLLSolver(cnf)
 solution = solver.solve()
 
@@ -132,11 +175,33 @@ if solution:
 
     # Get statistics
     stats = solver.get_statistics()
-    print(f"Decisions made: {stats['num_decisions']}")
-    print(f"Variables: {stats['num_variables']}")
-    print(f"Clauses: {stats['num_clauses']}")
+    print(f"Decisions: {stats['num_decisions']}")
+    print(f"Unit propagations: {stats['num_unit_propagations']}")
+    print(f"Pure literals: {stats['num_pure_literals']}")
 else:
     print("UNSAT")
+```
+
+### Controlling Optimizations
+
+```python
+# Disable optimizations for comparison
+solver_basic = DPLLSolver(cnf,
+                          use_unit_propagation=False,
+                          use_pure_literal=False)
+
+# Enable only unit propagation
+solver_unit = DPLLSolver(cnf,
+                         use_unit_propagation=True,
+                         use_pure_literal=False)
+
+# Enable only pure literal elimination
+solver_pure = DPLLSolver(cnf,
+                         use_unit_propagation=False,
+                         use_pure_literal=True)
+
+# Both enabled (default)
+solver_both = DPLLSolver(cnf)
 ```
 
 ### Statistics
@@ -350,7 +415,7 @@ DPLL has evolved over 60+ years:
 - Unit propagation
 - Pure literal elimination
 - Efficient data structures
-- **Coming soon to BSAT**
+- **Implemented in BSAT** ✅
 
 ### 1996+: CDCL (Conflict-Driven Clause Learning)
 - Learn from conflicts
@@ -360,21 +425,22 @@ DPLL has evolved over 60+ years:
 
 ## Current Implementation
 
-The basic DPLL in BSAT includes:
+DPLL in BSAT includes:
 
 ✅ **Backtracking search**
 ✅ **Clause simplification**
 ✅ **Early conflict detection**
-✅ **Statistics tracking**
+✅ **Unit propagation** - Forced assignments from unit clauses
+✅ **Pure literal elimination** - Variables with single polarity
+✅ **Statistics tracking** - Decisions, unit props, pure literals
 
-Missing optimizations (coming soon):
-- ⏳ Unit propagation
-- ⏳ Pure literal elimination
+Coming soon:
 - ⏳ Conflict-driven clause learning (CDCL)
 - ⏳ VSIDS variable ordering
 - ⏳ Watched literals
+- ⏳ Non-chronological backtracking
 
-Even without these, basic DPLL can solve many practical instances!
+The optimizations provide significant performance improvements on many instances!
 
 ## Comparison with Other Solvers
 

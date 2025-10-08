@@ -31,46 +31,51 @@ result = solve_2sat(cnf)
 ---
 
 ### DPLL Solver ✅
-**Status**: Basic implementation complete
+**Status**: Implemented with optimizations
 **Algorithm**: Davis-Putnam-Logemann-Loveland with backtracking
-**Complexity**: O(2ⁿ) - Exponential worst case
+**Optimizations**: Unit propagation, pure literal elimination
+**Complexity**: O(2ⁿ) - Exponential worst case, but much faster in practice
 **Use Case**: General SAT, 3SAT, any CNF formula
 
 [Read more →](dpll-solver.md)
 
 ```python
-from bsat import solve_sat, CNFExpression
+from bsat import solve_sat, DPLLSolver, CNFExpression
 
 cnf = CNFExpression.parse("(x | y | z) & (~x | y) & (x | ~z)")
 result = solve_sat(cnf)
+
+# Or with control over optimizations
+solver = DPLLSolver(cnf, use_unit_propagation=True, use_pure_literal=True)
+result = solver.solve()
 ```
 
 **Pros**:
 - ✅ Complete and sound
 - ✅ Works for any CNF formula
-- ✅ Simple and understandable
+- ✅ Unit propagation reduces search space
+- ✅ Pure literal elimination
+- ✅ Statistics tracking
 - ✅ Guaranteed to find solution if exists
 
 **Cons**:
 - ❌ Exponential worst case
-- ❌ Can be slow on hard instances
-- ❌ No optimizations yet (unit propagation, etc.)
+- ❌ Can be slow on very hard instances
 
 **Coming Soon**:
-- ⏳ Unit propagation
-- ⏳ Pure literal elimination
-- ⏳ Better variable ordering heuristics
+- ⏳ CDCL (conflict-driven clause learning)
+- ⏳ Better variable ordering heuristics (VSIDS)
 
 ---
 
 ## Coming Soon
 
-### DPLL with Optimizations 🚧
+### DPLL with Advanced Heuristics 🚧
 **Status**: Planned
-**Additions**: Unit propagation, pure literal elimination
-**Expected**: Significantly faster on many instances
+**Additions**: VSIDS variable ordering, watched literals
+**Expected**: Even better performance on structured instances
 
-Unit propagation and pure literal elimination are classical optimizations that can dramatically reduce the search space.
+Modern variable selection heuristics can further improve performance on many problem types.
 
 ---
 
@@ -165,8 +170,8 @@ Is your formula 2SAT (all clauses have exactly 2 literals)?
 | **2SAT** | O(n+m) | ✅ Yes | 2-literal clauses | ✅ Done |
 | **Horn-SAT** | O(n+m) | ✅ Yes | Horn clauses | 🚧 Planned |
 | **XOR-SAT** | O(n³) | ✅ Yes | XOR constraints | 🚧 Planned |
-| **DPLL (basic)** | O(2ⁿ) | ✅ Yes | Small general instances | ✅ Done |
-| **DPLL + opts** | O(2ⁿ) | ✅ Yes | Medium instances | 🚧 Planned |
+| **DPLL + opts** | O(2ⁿ) | ✅ Yes | Small-medium instances | ✅ Done |
+| **DPLL + heuristics** | O(2ⁿ) | ✅ Yes | Medium instances | 🚧 Planned |
 | **CDCL** | O(2ⁿ)* | ✅ Yes | Large, structured | 🚧 Planned |
 | **WalkSAT** | Varies | ❌ No | Quick SAT answers | 🚧 Planned |
 
@@ -211,13 +216,14 @@ else:
 - **Clauses**: Up to millions
 - **Time**: Milliseconds to seconds
 
-### DPLL (Basic)
-- **Variables**: Up to ~50 (practical limit)
-- **Clauses**: Up to ~200 (practical limit)
-- **Time**: Milliseconds to minutes
-
-### DPLL with Optimizations (Planned)
+### DPLL with Optimizations
 - **Variables**: Up to ~100-200
+- **Clauses**: Up to ~500
+- **Time**: Milliseconds to minutes
+- **Note**: Unit propagation and pure literal elimination provide significant speedup
+
+### DPLL with Advanced Heuristics (Planned)
+- **Variables**: Up to ~200-500
 - **Clauses**: Up to ~1000
 - **Time**: Seconds to minutes
 
