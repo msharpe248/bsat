@@ -6,27 +6,36 @@ from .cnf import CNFExpression, Clause, Literal
 
 class DPLLSolver:
     """
-    Basic DPLL SAT solver using backtracking search.
+    DPLL SAT solver with unit propagation and pure literal elimination.
 
     The DPLL algorithm is a complete, sound, and terminating algorithm for determining
     the satisfiability of propositional logic formulas in CNF. It uses:
     - Backtracking search through the variable assignment space
+    - Unit propagation: Forced assignments from unit clauses
+    - Pure literal elimination: Variables appearing with only one polarity
     - Early termination when conflicts are detected
 
     Time complexity: O(2^n) in worst case, where n is the number of variables
     Space complexity: O(n) for the recursion stack
     """
 
-    def __init__(self, cnf: CNFExpression):
+    def __init__(self, cnf: CNFExpression, use_unit_propagation: bool = True,
+                 use_pure_literal: bool = True):
         """
         Initialize the DPLL solver with a CNF expression.
 
         Args:
             cnf: The CNF expression to solve
+            use_unit_propagation: Enable unit propagation optimization
+            use_pure_literal: Enable pure literal elimination optimization
         """
         self.cnf = cnf
         self.variables = sorted(cnf.get_variables())
         self.num_decisions = 0  # Track number of decision points (for statistics)
+        self.num_unit_propagations = 0  # Track unit propagations
+        self.num_pure_literals = 0  # Track pure literal eliminations
+        self.use_unit_propagation = use_unit_propagation
+        self.use_pure_literal = use_pure_literal
 
     def solve(self) -> Optional[Dict[str, bool]]:
         """
@@ -36,12 +45,14 @@ class DPLLSolver:
             A satisfying assignment if one exists, None if unsatisfiable
         """
         self.num_decisions = 0
+        self.num_unit_propagations = 0
+        self.num_pure_literals = 0
         assignment = {}
         return self._dpll(assignment, list(self.cnf.clauses))
 
     def _dpll(self, assignment: Dict[str, bool], clauses: List[Clause]) -> Optional[Dict[str, bool]]:
         """
-        Recursive DPLL algorithm.
+        Recursive DPLL algorithm with optimizations.
 
         Args:
             assignment: Current partial variable assignment
@@ -64,6 +75,42 @@ class DPLLSolver:
                 if var not in assignment:
                     assignment[var] = True  # Arbitrary choice since all clauses are satisfied
             return assignment
+
+        # Unit Propagation: Find and propagate unit clauses
+        if self.use_unit_propagation:
+            unit_clause = self._find_unit_clause(simplified_clauses, assignment)
+            if unit_clause is not None:
+                # Found a unit clause - must assign the literal to True
+                literal = unit_clause.literals[0]
+                var = literal.variable
+                value = not literal.negated  # If literal is ¬x, assign x=False
+
+                self.num_unit_propagations += 1
+                assignment[var] = value
+                result = self._dpll(assignment, simplified_clauses)
+                if result is not None:
+                    return result
+
+                # Backtrack
+                del assignment[var]
+                return None
+
+        # Pure Literal Elimination: Find and eliminate pure literals
+        if self.use_pure_literal:
+            pure_literal = self._find_pure_literal(simplified_clauses, assignment)
+            if pure_literal is not None:
+                var = pure_literal.variable
+                value = not pure_literal.negated  # If literal is ¬x, assign x=False
+
+                self.num_pure_literals += 1
+                assignment[var] = value
+                result = self._dpll(assignment, simplified_clauses)
+                if result is not None:
+                    return result
+
+                # Backtrack (though pure literal assignment should never fail)
+                del assignment[var]
+                return None
 
         # Choose next unassigned variable (simple ordering for basic DPLL)
         unassigned = self._get_unassigned_variable(assignment)
@@ -151,6 +198,65 @@ class DPLLSolver:
                 return var
         return None
 
+    def _find_unit_clause(self, clauses: List[Clause], assignment: Dict[str, bool]) -> Optional[Clause]:
+        """
+        Find a unit clause (clause with only one unassigned literal).
+
+        Args:
+            clauses: List of clauses to search
+            assignment: Current variable assignment
+
+        Returns:
+            A unit clause if one exists, None otherwise
+        """
+        for clause in clauses:
+            unassigned_literals = [
+                lit for lit in clause.literals
+                if lit.variable not in assignment
+            ]
+            if len(unassigned_literals) == 1:
+                return Clause(unassigned_literals)
+        return None
+
+    def _find_pure_literal(self, clauses: List[Clause], assignment: Dict[str, bool]) -> Optional[Literal]:
+        """
+        Find a pure literal (variable that appears with only one polarity).
+
+        A variable is pure if it appears only positively or only negatively
+        in all clauses (considering only unassigned variables).
+
+        Args:
+            clauses: List of clauses to search
+            assignment: Current variable assignment
+
+        Returns:
+            A pure literal if one exists, None otherwise
+        """
+        # Track polarity of each variable: True for positive, False for negative
+        positive_vars: Set[str] = set()
+        negative_vars: Set[str] = set()
+
+        for clause in clauses:
+            for literal in clause.literals:
+                if literal.variable not in assignment:
+                    if literal.negated:
+                        negative_vars.add(literal.variable)
+                    else:
+                        positive_vars.add(literal.variable)
+
+        # Find variables that appear with only one polarity
+        pure_positive = positive_vars - negative_vars
+        pure_negative = negative_vars - positive_vars
+
+        if pure_positive:
+            var = pure_positive.pop()
+            return Literal(var, negated=False)
+        elif pure_negative:
+            var = pure_negative.pop()
+            return Literal(var, negated=True)
+
+        return None
+
     def get_statistics(self) -> Dict[str, int]:
         """
         Get solver statistics.
@@ -161,7 +267,9 @@ class DPLLSolver:
         return {
             'num_variables': len(self.variables),
             'num_clauses': len(self.cnf.clauses),
-            'num_decisions': self.num_decisions
+            'num_decisions': self.num_decisions,
+            'num_unit_propagations': self.num_unit_propagations,
+            'num_pure_literals': self.num_pure_literals
         }
 
 
