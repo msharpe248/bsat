@@ -208,6 +208,54 @@ This reduction shows:
 2. **3-SAT is sufficient**: No need to study 4-SAT, 5-SAT, etc. separately
 3. **Minimal NP-complete form**: Can't go lower (2-SAT is polynomial!)
 
+### Using k-SAT to 3-SAT Reduction in BSAT
+
+BSAT provides functions to perform k-SAT to 3-SAT reduction automatically:
+
+```python
+from bsat import reduce_to_3sat, solve_with_reduction, CNFExpression, Clause, Literal
+
+# Create a 5-SAT clause
+cnf = CNFExpression([
+    Clause([
+        Literal('a', False),
+        Literal('b', False),
+        Literal('c', False),
+        Literal('d', False),
+        Literal('e', False)
+    ])
+])
+
+# Method 1: Just reduce to 3-SAT
+reduced, aux_map, stats = reduce_to_3sat(cnf)
+print(f"Original: {cnf}")
+print(f"Reduced: {reduced}")
+print(f"Auxiliary variables: {list(aux_map.keys())}")
+print(f"Statistics: {stats}")
+
+# Method 2: Reduce and solve in one step
+solution, stats = solve_with_reduction(cnf)
+if solution:
+    print(f"Solution (original vars only): {solution}")
+    print(f"Verifies original: {cnf.evaluate(solution)}")
+```
+
+**Output**:
+```
+Original: (a ∨ b ∨ c ∨ d ∨ e)
+Reduced: (a ∨ b ∨ _aux0) ∧ (¬_aux0 ∨ c ∨ _aux1) ∧ (¬_aux1 ∨ d ∨ e)
+Auxiliary variables: ['_aux0', '_aux1']
+```
+
+**Key functions**:
+- `reduce_to_3sat(cnf)`: Convert any CNF to 3-SAT form
+- `solve_with_reduction(cnf)`: Reduce, solve, and extract original solution
+- `is_3sat(cnf)`: Check if formula is already in 3-SAT
+- `get_max_clause_size(cnf)`: Find largest clause
+- `extract_original_solution(solution, aux_map)`: Remove auxiliary variables
+
+See [examples/example_reductions.py](../examples/example_reductions.py) for more usage examples.
+
 ## Why 3-SAT Cannot Be Reduced to 2-SAT
 
 Unlike the reduction from k-SAT to 3-SAT, **there is no polynomial-time reduction from 3-SAT to 2-SAT** (unless P = NP).

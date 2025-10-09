@@ -10,6 +10,7 @@ A Python package for learning and solving Boolean satisfiability (SAT) problems 
 ✅ **Horn-SAT Solver**: O(n+m) polynomial-time solver for Horn formulas
 ✅ **XOR-SAT Solver**: O(n³) polynomial-time solver using Gaussian elimination over GF(2)
 ✅ **WalkSAT Solver**: Randomized local search (incomplete but often very fast)
+✅ **k-SAT to 3-SAT Reduction**: Convert any CNF to 3-SAT form using auxiliary variables
 ✅ **Pretty Printing**: Unicode symbols (∧, ∨, ¬) for readable output
 ✅ **Multiple Input Formats**: Parse from text, JSON, or build programmatically
 ✅ **Truth Tables**: Generate and compare truth tables
@@ -113,6 +114,25 @@ else:
     print("No solution found (but may still be SAT)")
 ```
 
+### k-SAT to 3-SAT Reduction
+
+```python
+from bsat import reduce_to_3sat, solve_with_reduction, CNFExpression, Clause, Literal
+
+# 5-SAT formula
+cnf = CNFExpression([
+    Clause([Literal('a'), Literal('b'), Literal('c'), Literal('d'), Literal('e')])
+])
+
+# Reduce to 3-SAT (introduces auxiliary variables)
+reduced, aux_map, stats = reduce_to_3sat(cnf)
+print(f"Reduced: {reduced}")  # All clauses now have ≤ 3 literals
+
+# Or solve directly with automatic reduction
+solution, stats = solve_with_reduction(cnf)
+print(f"Solution: {solution}")  # Only original variables
+```
+
 ## Solver Comparison
 
 Choose the right solver for your problem:
@@ -139,12 +159,13 @@ Choose the right solver for your problem:
 Run the example scripts:
 
 ```bash
-python examples/example.py         # General CNF examples
-python examples/example_2sat.py    # 2SAT solver examples
-python examples/example_dpll.py    # DPLL solver examples
-python examples/example_hornsat.py # Horn-SAT solver examples
-python examples/example_xorsat.py  # XOR-SAT solver examples
-python examples/example_walksat.py # WalkSAT solver examples
+python examples/example.py            # General CNF examples
+python examples/example_2sat.py       # 2SAT solver examples
+python examples/example_dpll.py       # DPLL solver examples
+python examples/example_hornsat.py    # Horn-SAT solver examples
+python examples/example_xorsat.py     # XOR-SAT solver examples
+python examples/example_walksat.py    # WalkSAT solver examples
+python examples/example_reductions.py # k-SAT to 3-SAT reduction examples
 ```
 
 ## Testing
@@ -152,11 +173,12 @@ python examples/example_walksat.py # WalkSAT solver examples
 Run the test suite:
 
 ```bash
-python tests/test_2sat.py     # 2SAT tests
-python tests/test_dpll.py     # DPLL tests
-python tests/test_hornsat.py  # Horn-SAT tests
-python tests/test_xorsat.py   # XOR-SAT tests
-python tests/test_walksat.py  # WalkSAT tests
+python tests/test_2sat.py        # 2SAT tests
+python tests/test_dpll.py        # DPLL tests
+python tests/test_hornsat.py     # Horn-SAT tests
+python tests/test_xorsat.py      # XOR-SAT tests
+python tests/test_walksat.py     # WalkSAT tests
+python tests/test_reductions.py  # k-SAT reduction tests
 ```
 
 Or with pytest (if installed):
@@ -176,6 +198,7 @@ pytest tests/
 - [Horn-SAT Solver](docs/advanced-solvers.md#horn-sat) - Polynomial-time Horn formula solver
 - [XOR-SAT Solver](docs/xorsat-solver.md) - Polynomial-time XOR solver via Gaussian elimination
 - [WalkSAT Solver](docs/walksat-solver.md) - Randomized local search (incomplete but fast)
+- [k-SAT to 3-SAT Reduction](docs/introduction.md#reducing-k-sat-to-3-sat) - Theory and implementation
 - [Examples & Tutorials](docs/examples.md) - Practical usage
 - [Theory & References](docs/theory.md) - Papers and further reading
 

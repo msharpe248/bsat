@@ -71,6 +71,7 @@ For example:
 - ✅ **Horn-SAT Solver**: O(n+m) polynomial-time solver for Horn formulas (logic programming)
 - ✅ **XOR-SAT Solver**: O(n³) polynomial-time solver using Gaussian elimination over GF(2)
 - ✅ **WalkSAT Solver**: Randomized local search (incomplete but often very fast)
+- ✅ **k-SAT to 3-SAT Reduction**: Convert any CNF to 3-SAT form using auxiliary variables
 - 🚧 **Advanced Algorithms**: CDCL (coming soon)
 - ✅ **Pretty Printing**: Unicode symbols (∧, ∨, ¬) for readable output
 - ✅ **Multiple Input Formats**: Parse from text, JSON, or programmatic construction
