@@ -134,6 +134,162 @@ Also NP-complete (since 3-SAT reduces to it).
 
 **Key insight**: The jump from 2-SAT to 3-SAT is where the problem becomes hard!
 
+## Reducing k-SAT to 3-SAT
+
+Any k-SAT problem (where k > 3) can be efficiently reduced to 3-SAT by introducing auxiliary variables. This is why **3-SAT is the canonical NP-complete problem**.
+
+### Why This Matters
+
+If we could solve 3-SAT in polynomial time, we could solve ALL k-SAT problems in polynomial time (and therefore P = NP). Conversely, 3-SAT captures the full difficulty of SAT.
+
+### The Reduction Algorithm
+
+To convert a clause with k literals (k > 3) to 3-SAT:
+
+**Original clause**: `(l₁ ∨ l₂ ∨ l₃ ∨ l₄ ∨ ... ∨ lₖ)`
+
+**Introduce k-3 new variables**: `x₁, x₂, ..., xₖ₋₃`
+
+**Replace with k-2 clauses**:
+```
+(l₁ ∨ l₂ ∨ x₁) ∧
+(¬x₁ ∨ l₃ ∨ x₂) ∧
+(¬x₂ ∨ l₄ ∨ x₃) ∧
+...
+(¬xₖ₋₃ ∨ lₖ₋₁ ∨ lₖ)
+```
+
+### Example: 4-SAT to 3-SAT
+
+**Original**: `(a ∨ b ∨ c ∨ d)`
+
+**Converted**: `(a ∨ b ∨ x) ∧ (¬x ∨ c ∨ d)`
+
+Where `x` is a new auxiliary variable.
+
+**Why this works**:
+- If original is satisfied by `a` or `b`: Set `x = True`, both clauses satisfied ✓
+- If original is satisfied by `c` or `d`: Set `x = False`, both clauses satisfied ✓
+- If original is unsatisfied: No assignment to `x` can satisfy both clauses ✗
+
+### Example: 5-SAT to 3-SAT
+
+**Original**: `(a ∨ b ∨ c ∨ d ∨ e)`
+
+**Converted**:
+```
+(a ∨ b ∨ x₁) ∧
+(¬x₁ ∨ c ∨ x₂) ∧
+(¬x₂ ∨ d ∨ e)
+```
+
+**Chain of reasoning**:
+- If `a` or `b` is true → set `x₁ = True` → first clause satisfied
+- Then `¬x₁` forces `c` or `x₂` to be true
+- This cascades down the chain
+- Original satisfied iff converted formula satisfied
+
+### Cost of the Reduction
+
+For a single k-literal clause:
+- **Variables added**: k - 3
+- **Clauses created**: k - 2
+- **Time**: O(k) (linear in clause size)
+
+For a formula with m clauses of average size k:
+- **Total variables**: Original n + approximately m(k-3)
+- **Total clauses**: Approximately m(k-2)
+- **Polynomial blowup**: The reduction is efficient!
+
+### Why 3-SAT is Universal
+
+This reduction shows:
+1. **3-SAT is as hard as any k-SAT**: Any k-SAT can be solved by reducing to 3-SAT
+2. **3-SAT is sufficient**: No need to study 4-SAT, 5-SAT, etc. separately
+3. **Minimal NP-complete form**: Can't go lower (2-SAT is polynomial!)
+
+## Why 3-SAT Cannot Be Reduced to 2-SAT
+
+Unlike the reduction from k-SAT to 3-SAT, **there is no polynomial-time reduction from 3-SAT to 2-SAT** (unless P = NP).
+
+### The Fundamental Difference
+
+**2-SAT is in P** (polynomial time), but **3-SAT is NP-complete**. If we could reduce 3-SAT to 2-SAT in polynomial time, we could solve 3-SAT in polynomial time, which would prove P = NP!
+
+### Why the Previous Trick Doesn't Work
+
+The auxiliary variable technique that works for k-SAT → 3-SAT fails for 3-SAT → 2-SAT.
+
+**Attempt**: Convert `(a ∨ b ∨ c)` to 2-SAT
+
+**Naive try**: `(a ∨ b) ∧ (¬? ∨ c)` — What goes in the `?`?
+
+We can't create a simple chain because:
+- 2-SAT clauses are **implications**: `(a ∨ b)` means `¬a → b` and `¬b → a`
+- These implications form a directed graph
+- 2-SAT is polynomial because we can find strongly connected components
+- 3-SAT breaks this structure!
+
+### What Goes Wrong?
+
+Consider `(x ∨ y ∨ z)` — all three variables must not be simultaneously false.
+
+**In 2-SAT**, we can only express pairwise implications:
+- `(x ∨ y)` means: "If ¬x then y" AND "If ¬y then x"
+- But this doesn't capture the three-way constraint!
+
+**The problem**: `(x ∨ y) ∧ (x ∨ z) ∧ (y ∨ z)` is **not equivalent** to `(x ∨ y ∨ z)`:
+
+| x | y | z | (x ∨ y ∨ z) | (x ∨ y) ∧ (x ∨ z) ∧ (y ∨ z) |
+|---|---|---|-------------|------------------------------|
+| F | F | F | **F** | **F** | ✓ Same
+| F | F | T | **T** | **T** | ✓ Same
+| F | T | F | **T** | **T** | ✓ Same
+| F | T | T | **T** | **T** | ✓ Same
+| T | F | F | **T** | **T** | ✓ Same
+| T | F | T | **T** | **T** | ✓ Same
+| T | T | F | **T** | **T** | ✓ Same
+| T | T | T | **T** | **T** | ✓ Same
+
+Wait, they ARE the same! But that's not a reduction to 2-SAT, that's just rewriting with **more** clauses.
+
+### The Real Problem: Exponential Blowup
+
+To correctly encode a 3-SAT formula in 2-SAT (if possible), you'd need to enumerate all possible ways variables could satisfy the clause, leading to **exponentially many** 2-SAT clauses.
+
+For example, `(a ∨ b ∨ c)` is satisfied by 7 out of 8 possible assignments. To express "at least one of these 7 assignments" using only 2-SAT constraints would require encoding the entire truth table — exponential in the number of variables.
+
+### Structural Difference
+
+**2-SAT graph structure**:
+- Each clause creates edges in an implication graph
+- Cycles in this graph represent equivalences
+- Solvable by finding SCCs (polynomial time)
+
+**3-SAT breaks this**:
+- Three-way constraints can't be decomposed into pairwise implications
+- The implication graph structure becomes insufficient
+- Requires search/backtracking (exponential time)
+
+### The Complexity Cliff
+
+```
+2-SAT: Polynomial (O(n+m))
+       ↓
+3-SAT: NP-complete (O(2ⁿ) worst case)
+       ↓
+k-SAT: NP-complete (reducible to 3-SAT)
+```
+
+The jump from 2 to 3 literals is where the **easy/hard boundary** lies. This is one of the most beautiful results in computational complexity theory!
+
+### Why This Matters
+
+This is why:
+1. **2-SAT has a special polynomial algorithm** (SCC-based)
+2. **3-SAT requires exponential-time solvers** (DPLL, CDCL, WalkSAT)
+3. **The boundary is sharp**: Adding one literal per clause changes tractable → intractable
+
 ## Why Not Just Use a Truth Table?
 
 The obvious approach to SAT is to try all possible assignments and check if any works. This is called the **brute force** or **truth table** approach.
