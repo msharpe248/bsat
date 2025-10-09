@@ -7,6 +7,7 @@ from .hornsat import HornSATSolver, solve_horn_sat, is_horn_formula
 from .xorsat import XORSATSolver, solve_xorsat, get_xorsat_stats
 from .walksat import WalkSATSolver, solve_walksat, get_walksat_stats
 from .cdcl import CDCLSolver, solve_cdcl, get_cdcl_stats
+from .schoening import SchoeningSolver, solve_schoening, get_schoening_stats
 from .reductions import (
     reduce_to_3sat,
     extract_original_solution,
@@ -47,6 +48,9 @@ __all__ = [
     'CDCLSolver',
     'solve_cdcl',
     'get_cdcl_stats',
+    'SchoeningSolver',
+    'solve_schoening',
+    'get_schoening_stats',
     'reduce_to_3sat',
     'extract_original_solution',
     'solve_with_reduction',

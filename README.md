@@ -11,6 +11,7 @@ A Python package for learning and solving Boolean satisfiability (SAT) problems 
 ✅ **Horn-SAT Solver**: O(n+m) polynomial-time solver for Horn formulas
 ✅ **XOR-SAT Solver**: O(n³) polynomial-time solver using Gaussian elimination over GF(2)
 ✅ **WalkSAT Solver**: Randomized local search (incomplete but often very fast)
+✅ **Schöning's Algorithm**: Randomized k-SAT solver with O(1.334^n) expected runtime for 3SAT
 ✅ **k-SAT to 3-SAT Reduction**: Convert any CNF to 3-SAT form using auxiliary variables
 ✅ **Pretty Printing**: Unicode symbols (∧, ∨, ¬) for readable output
 ✅ **Multiple Input Formats**: Parse from text, JSON, or build programmatically
@@ -137,6 +138,27 @@ print(f"Conflicts: {stats.conflicts}")
 print(f"Learned clauses: {stats.learned_clauses}")
 ```
 
+### Schöning's Algorithm (Provably Fast 3SAT)
+
+```python
+from bsat import solve_schoening, get_schoening_stats, CNFExpression
+
+# Schöning's randomized algorithm - O(1.334^n) for 3SAT!
+formula = "(a | b | c) & (~a | b | ~c) & (a | ~b | c)"
+cnf = CNFExpression.parse(formula)
+
+result = solve_schoening(cnf, seed=42)
+if result:
+    print(f"Solution: {result}")
+else:
+    print("No solution found (algorithm is incomplete)")
+
+# Get detailed statistics
+result, stats = get_schoening_stats(cnf, seed=42)
+print(f"Tries: {stats.tries}")
+print(f"Total flips: {stats.total_flips}")
+```
+
 ### k-SAT to 3-SAT Reduction
 
 ```python
@@ -167,14 +189,17 @@ Choose the right solver for your problem:
 | **XOR-SAT** | `solve_xorsat()` | O(n³) | ✅ Yes | XOR constraints (cryptography, coding theory) |
 | **General SAT** | `solve_sat()` | O(2ⁿ)* | ✅ Yes | Any CNF formula (uses DPLL) |
 | **Modern SAT** | `solve_cdcl()` | O(2ⁿ)* | ✅ Yes | Structured problems, industrial instances |
+| **Random 3SAT** | `solve_schoening()` | O(1.334ⁿ)† | ❌ No | Random 3SAT, theoretical analysis |
 | **Fast SAT** | `solve_walksat()` | Varies | ❌ No | Large SAT instances where speed > completeness |
 
 *Exponential worst-case, but CDCL much faster in practice due to learning
+†Expected time for 3SAT - provably better than O(2ⁿ)!
 
 **Quick decision guide:**
 - All clauses have 2 literals? → Use `solve_2sat()`
 - Clauses are implications (≤1 positive literal)? → Use `solve_horn_sat()`
 - XOR/parity constraints? → Use `solve_xorsat()`
+- Random 3SAT instance? → Try `solve_schoening()` (provably O(1.334^n))
 - Structured/industrial problem? → Use `solve_cdcl()` (modern, learns from conflicts)
 - Simple/small problem? → Use `solve_sat()` (DPLL, simpler)
 - Want fast solutions for large SAT instances? → Try `solve_walksat()`
@@ -192,6 +217,7 @@ python examples/example_cdcl.py       # CDCL solver examples
 python examples/example_hornsat.py    # Horn-SAT solver examples
 python examples/example_xorsat.py     # XOR-SAT solver examples
 python examples/example_walksat.py    # WalkSAT solver examples
+python examples/example_schoening.py  # Schöning's algorithm examples
 python examples/example_reductions.py # k-SAT to 3-SAT reduction examples
 python examples/example_dimacs.py     # DIMACS format examples
 
@@ -215,6 +241,7 @@ python tests/test_cdcl.py        # CDCL tests
 python tests/test_hornsat.py     # Horn-SAT tests
 python tests/test_xorsat.py      # XOR-SAT tests
 python tests/test_walksat.py     # WalkSAT tests
+python tests/test_schoening.py   # Schöning's algorithm tests
 python tests/test_reductions.py  # k-SAT reduction tests
 python tests/test_dimacs.py      # DIMACS format tests
 python tests/test_benchmarks.py  # Benchmark suite tests
@@ -238,6 +265,7 @@ pytest tests/
 - [Horn-SAT Solver](docs/advanced-solvers.md#horn-sat) - Polynomial-time Horn formula solver
 - [XOR-SAT Solver](docs/xorsat-solver.md) - Polynomial-time XOR solver via Gaussian elimination
 - [WalkSAT Solver](docs/walksat-solver.md) - Randomized local search (incomplete but fast)
+- [Schöning's Algorithm](docs/schoening-solver.md) - Provably O(1.334^n) randomized 3SAT solver
 - [k-SAT to 3-SAT Reduction](docs/introduction.md#reducing-k-sat-to-3-sat) - Theory and implementation
 - [DIMACS Format](docs/dimacs.md) - Industry-standard file format for SAT solvers
 - [Problem Encodings](docs/problem-encodings.md) - Graph coloring, Sudoku, N-Queens, and more

@@ -187,6 +187,42 @@ if is_horn_formula(cnf):
 
 ---
 
+### Schöning's Algorithm ✅
+**Status**: Implemented
+**Algorithm**: Randomized random walk for k-SAT
+**Complexity**: O(1.334^n) expected for 3SAT - Provably better than O(2^n)!
+**Use Case**: Quick SAT checks, educational purposes, theoretical analysis
+
+[Read more →](schoening-solver.md)
+
+```python
+from bsat import solve_schoening, get_schoening_stats, CNFExpression
+
+cnf = CNFExpression.parse("(x | y | z) & (~x | y) & (x | ~z)")
+result = solve_schoening(cnf, seed=42)
+
+# Get detailed statistics
+solution, stats = get_schoening_stats(cnf, seed=42)
+print(f"Tries: {stats.tries}")
+print(f"Total flips: {stats.total_flips}")
+```
+
+**Pros**:
+- ✅ Provably O(1.334^n) for 3SAT - best known!
+- ✅ Extremely simple algorithm
+- ✅ Low memory usage
+- ✅ Great for educational purposes
+- ✅ Reproducible with seed parameter
+- ✅ Statistics tracking
+
+**Cons**:
+- ❌ Incomplete (might not find solution)
+- ❌ Can't prove unsatisfiability
+- ❌ Randomized (non-deterministic)
+- ❌ Not as fast as CDCL on structured problems
+
+---
+
 ## Choosing a Solver
 
 ### Decision Tree
@@ -200,7 +236,8 @@ Is your formula 2SAT (all clauses have exactly 2 literals)?
    ├─ Is it XOR-SAT (all clauses are XOR)?
    │  └─ Yes → Use solve_xorsat() ✅ (polynomial time, O(n³))
    ├─ Do you just need any solution quickly (don't need UNSAT proof)?
-   │  └─ Yes → Try solve_walksat() ✅ (very fast but incomplete)
+   │  ├─ Random 3SAT → Try solve_schoening() ✅ (provably O(1.334^n))
+   │  └─ General → Try solve_walksat() ✅ (very fast but incomplete)
    └─ General case
       ├─ Small instance (< 50 variables)
       │  └─ Use solve_sat() ✅ (DPLL, will finish quickly)
@@ -219,9 +256,11 @@ Is your formula 2SAT (all clauses have exactly 2 literals)?
 | **XOR-SAT** | O(n³) | ✅ Yes | XOR constraints | ✅ Implemented |
 | **DPLL** | O(2ⁿ) | ✅ Yes | Small instances | ✅ Implemented |
 | **CDCL** | O(2ⁿ)* | ✅ Yes | Large, structured | ✅ Implemented |
+| **Schöning** | O(1.334ⁿ)† | ❌ No | Random 3SAT | ✅ Implemented |
 | **WalkSAT** | Varies | ❌ No | Quick SAT answers | ✅ Implemented |
 
 *Much faster in practice due to clause learning and intelligent backtracking
+†Expected time for 3SAT - provably better than O(2ⁿ)!
 
 ## Usage Examples
 
@@ -232,7 +271,7 @@ Choose the appropriate solver based on your formula structure:
 ```python
 from bsat import (
     CNFExpression, solve_2sat, solve_horn_sat, solve_xorsat,
-    solve_sat, solve_cdcl, solve_walksat,
+    solve_sat, solve_cdcl, solve_walksat, solve_schoening,
     is_2sat, is_horn_formula
 )
 
@@ -249,20 +288,22 @@ else:
     result = solve_cdcl(cnf)  # Modern solver - best for large instances
 ```
 
-### Quick Solutions with WalkSAT
+### Quick Solutions with Randomized Algorithms
 
 When you just need a solution fast and don't need UNSAT proofs:
 
 ```python
-from bsat import solve_walksat
+from bsat import solve_schoening, solve_walksat, solve_cdcl
 
-# Try to find solution quickly
-result = solve_walksat(cnf, max_flips=10000, noise=0.5)
+# For random 3SAT: Try Schöning's algorithm first (provably O(1.334^n))
+result = solve_schoening(cnf, max_tries=1000, seed=42)
 
-if result:
-    print(f"Found solution: {result}")
-else:
-    # WalkSAT didn't find one, try complete solver
+if not result:
+    # Try WalkSAT (often faster in practice)
+    result = solve_walksat(cnf, max_flips=10000, noise=0.5)
+
+if not result:
+    # Fall back to complete solver
     result = solve_cdcl(cnf)
 ```
 
@@ -297,6 +338,12 @@ else:
 - **Time**: Seconds to hours (instance-dependent)
 - **Note**: Clause learning makes it much faster than DPLL in practice
 
+### Schöning's Algorithm
+- **Variables**: Up to ~50-100 (3SAT)
+- **Clauses**: Up to ~200-400
+- **Time**: Milliseconds to seconds
+- **Note**: Incomplete, but provably O(1.334^n) for 3SAT
+
 ### WalkSAT
 - **Variables**: Up to millions
 - **Clauses**: Up to millions
@@ -322,6 +369,7 @@ python -m pytest tests/test_benchmarks.py -v
 - Explore [CDCL solver](cdcl-solver.md)
 - Read about [Horn-SAT solver](hornsat-solver.md)
 - Learn [XOR-SAT solver](xorsat-solver.md)
+- Discover [Schöning's algorithm](schoening-solver.md)
 - Understand [WalkSAT solver](walksat-solver.md)
 - Compare solvers with [benchmarking](benchmarking.md)
 - Try [examples and tutorials](examples.md)

@@ -13,6 +13,7 @@ Welcome to the BSAT (Boolean Satisfiability) package documentation! This guide w
    - [Horn-SAT Solver](hornsat-solver.md) - Polynomial-time solver for Horn formulas
    - [XOR-SAT Solver](xorsat-solver.md) - Polynomial-time solver for XOR constraints
    - [WalkSAT Solver](walksat-solver.md) - Randomized local search (incomplete but fast)
+   - [Schöning's Algorithm](schoening-solver.md) - Provably O(1.334^n) randomized algorithm for k-SAT
 4. [Problem Encodings](problem-encodings.md) - Encoding real-world problems as SAT
    - Graph Coloring
    - Sudoku
@@ -85,6 +86,7 @@ For example:
 - ✅ **Horn-SAT Solver**: O(n+m) polynomial-time solver for Horn formulas (logic programming)
 - ✅ **XOR-SAT Solver**: O(n³) polynomial-time solver using Gaussian elimination over GF(2)
 - ✅ **WalkSAT Solver**: Randomized local search (incomplete but often very fast)
+- ✅ **Schöning's Algorithm**: Randomized k-SAT solver with provably O(1.334^n) expected runtime for 3SAT
 - ✅ **k-SAT to 3-SAT Reduction**: Convert any CNF to 3-SAT form using auxiliary variables
 - ✅ **Pretty Printing**: Unicode symbols (∧, ∨, ¬) for readable output
 - ✅ **Multiple Input Formats**: Parse from text, JSON, or programmatic construction
