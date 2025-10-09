@@ -13,9 +13,13 @@ Welcome to the BSAT (Boolean Satisfiability) package documentation! This guide w
    - [Horn-SAT Solver](hornsat-solver.md) - Polynomial-time solver for Horn formulas
    - [XOR-SAT Solver](xorsat-solver.md) - Polynomial-time solver for XOR constraints
    - [WalkSAT Solver](walksat-solver.md) - Randomized local search (incomplete but fast)
-4. [Examples & Tutorials](examples.md) - Practical usage examples
-5. [Theory & References](theory.md) - Academic papers and further reading
-6. [Reading List](reading-list.md) - Comprehensive bibliography of books, papers, and resources
+4. [Problem Encodings](problem-encodings.md) - Encoding real-world problems as SAT
+   - Graph Coloring
+   - Sudoku
+   - N-Queens
+5. [Examples & Tutorials](examples.md) - Practical usage examples
+6. [Theory & References](theory.md) - Academic papers and further reading
+7. [Reading List](reading-list.md) - Comprehensive bibliography of books, papers, and resources
 
 ## Quick Start
 

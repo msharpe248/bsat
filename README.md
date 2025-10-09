@@ -181,6 +181,7 @@ Choose the right solver for your problem:
 Run the example scripts:
 
 ```bash
+# Solver examples
 python examples/example.py            # General CNF examples
 python examples/example_2sat.py       # 2SAT solver examples
 python examples/example_dpll.py       # DPLL solver examples
@@ -189,6 +190,11 @@ python examples/example_hornsat.py    # Horn-SAT solver examples
 python examples/example_xorsat.py     # XOR-SAT solver examples
 python examples/example_walksat.py    # WalkSAT solver examples
 python examples/example_reductions.py # k-SAT to 3-SAT reduction examples
+
+# Real-world problem encodings
+python examples/encodings/graph_coloring.py  # Graph coloring problems
+python examples/encodings/sudoku.py          # Sudoku solver
+python examples/encodings/n_queens.py        # N-Queens problem
 ```
 
 ## Testing
@@ -224,6 +230,7 @@ pytest tests/
 - [XOR-SAT Solver](docs/xorsat-solver.md) - Polynomial-time XOR solver via Gaussian elimination
 - [WalkSAT Solver](docs/walksat-solver.md) - Randomized local search (incomplete but fast)
 - [k-SAT to 3-SAT Reduction](docs/introduction.md#reducing-k-sat-to-3-sat) - Theory and implementation
+- [Problem Encodings](docs/problem-encodings.md) - Graph coloring, Sudoku, N-Queens, and more
 - [Examples & Tutorials](docs/examples.md) - Practical usage
 - [Theory & References](docs/theory.md) - Papers and further reading
 - [Reading List](docs/reading-list.md) - Comprehensive bibliography of books, papers, and resources
