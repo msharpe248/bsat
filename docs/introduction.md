@@ -290,16 +290,16 @@ Consider `(x ∨ y ∨ z)` — all three variables must not be simultaneously fa
 
 | x | y | z | (x ∨ y ∨ z) | (x ∨ y) ∧ (x ∨ z) ∧ (y ∨ z) |
 |---|---|---|-------------|------------------------------|
-| F | F | F | **F** | **F** | ✓ Same
-| F | F | T | **T** | **T** | ✓ Same
-| F | T | F | **T** | **T** | ✓ Same
-| F | T | T | **T** | **T** | ✓ Same
-| T | F | F | **T** | **T** | ✓ Same
-| T | F | T | **T** | **T** | ✓ Same
-| T | T | F | **T** | **T** | ✓ Same
-| T | T | T | **T** | **T** | ✓ Same
+| F | F | F | **F** | (F ∧ F ∧ F) = **F** | ✓ Same
+| F | F | T | **T** | (F ∧ T ∧ T) = **F** | ✗ Different!
+| F | T | F | **T** | (T ∧ F ∧ T) = **F** | ✗ Different!
+| F | T | T | **T** | (T ∧ T ∧ T) = **T** | ✓ Same
+| T | F | F | **T** | (T ∧ T ∧ F) = **F** | ✗ Different!
+| T | F | T | **T** | (T ∧ T ∧ T) = **T** | ✓ Same
+| T | T | F | **T** | (T ∧ T ∧ T) = **T** | ✓ Same
+| T | T | T | **T** | (T ∧ T ∧ T) = **T** | ✓ Same
 
-Wait, they ARE the same! But that's not a reduction to 2-SAT, that's just rewriting with **more** clauses.
+They are **NOT** the same! The 2-SAT conjunction is more restrictive — it requires at least **two** of the three variables to be true, while the original 3-SAT clause only requires at least **one**.
 
 ### The Real Problem: Exponential Blowup
 
