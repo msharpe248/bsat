@@ -408,6 +408,6 @@ except DIMACSParseError as e:
 - [Examples & Tutorials](examples.md) - More practical usage
 
 **External Resources:**
-- [DIMACS CNF Specification](http://www.satcompetition.org/2009/format-benchmarks2009.html)
-- [SATLIB Benchmark Problems](https://www.cs.ubc.ca/~hoos/SATLIB/benchm.html)
-- [SAT Competition](https://satcompetition.github.io/)
+- [DIMACS CNF Format Specification](https://jix.github.io/varisat/manual/0.2.0/formats/dimacs.html) - Comprehensive format guide
+- [SAT Competition](https://satcompetition.github.io/) - Annual SAT solver competition
+- [SATLIB Benchmark Library](https://www.cs.ubc.ca/~hoos/SATLIB/benchm.html) - Classic benchmark problems
