@@ -14,6 +14,7 @@ A Python package for learning and solving Boolean satisfiability (SAT) problems 
 ✅ **k-SAT to 3-SAT Reduction**: Convert any CNF to 3-SAT form using auxiliary variables
 ✅ **Pretty Printing**: Unicode symbols (∧, ∨, ¬) for readable output
 ✅ **Multiple Input Formats**: Parse from text, JSON, or build programmatically
+✅ **DIMACS Format**: Full support for reading/writing industry-standard DIMACS CNF files
 ✅ **Truth Tables**: Generate and compare truth tables
 ✅ **Comprehensive Benchmarks**: Test suite with random 3SAT, pigeon-hole, phase transition instances
 ✅ **Performance Comparison**: Tools for comparing solver performance and analyzing results
@@ -192,6 +193,7 @@ python examples/example_hornsat.py    # Horn-SAT solver examples
 python examples/example_xorsat.py     # XOR-SAT solver examples
 python examples/example_walksat.py    # WalkSAT solver examples
 python examples/example_reductions.py # k-SAT to 3-SAT reduction examples
+python examples/example_dimacs.py     # DIMACS format examples
 
 # Real-world problem encodings
 python examples/encodings/graph_coloring.py  # Graph coloring problems
@@ -214,6 +216,7 @@ python tests/test_hornsat.py     # Horn-SAT tests
 python tests/test_xorsat.py      # XOR-SAT tests
 python tests/test_walksat.py     # WalkSAT tests
 python tests/test_reductions.py  # k-SAT reduction tests
+python tests/test_dimacs.py      # DIMACS format tests
 python tests/test_benchmarks.py  # Benchmark suite tests
 ```
 
@@ -236,6 +239,7 @@ pytest tests/
 - [XOR-SAT Solver](docs/xorsat-solver.md) - Polynomial-time XOR solver via Gaussian elimination
 - [WalkSAT Solver](docs/walksat-solver.md) - Randomized local search (incomplete but fast)
 - [k-SAT to 3-SAT Reduction](docs/introduction.md#reducing-k-sat-to-3-sat) - Theory and implementation
+- [DIMACS Format](docs/dimacs.md) - Industry-standard file format for SAT solvers
 - [Problem Encodings](docs/problem-encodings.md) - Graph coloring, Sudoku, N-Queens, and more
 - [Benchmarking & Performance](docs/benchmarking.md) - Testing and comparing solvers
 - [Examples & Tutorials](docs/examples.md) - Practical usage

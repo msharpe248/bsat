@@ -15,6 +15,15 @@ from .reductions import (
     get_max_clause_size,
     ReductionStats
 )
+from .dimacs import (
+    parse_dimacs,
+    to_dimacs,
+    read_dimacs_file,
+    write_dimacs_file,
+    parse_dimacs_solution,
+    solution_to_dimacs,
+    DIMACSParseError
+)
 
 __all__ = [
     'Literal',
@@ -43,6 +52,13 @@ __all__ = [
     'solve_with_reduction',
     'is_3sat',
     'get_max_clause_size',
-    'ReductionStats'
+    'ReductionStats',
+    'parse_dimacs',
+    'to_dimacs',
+    'read_dimacs_file',
+    'write_dimacs_file',
+    'parse_dimacs_solution',
+    'solution_to_dimacs',
+    'DIMACSParseError'
 ]
 __version__ = '0.1.0'
