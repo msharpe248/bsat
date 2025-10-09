@@ -134,12 +134,84 @@ Also NP-complete (since 3-SAT reduces to it).
 
 **Key insight**: The jump from 2-SAT to 3-SAT is where the problem becomes hard!
 
+## Why Not Just Use a Truth Table?
+
+The obvious approach to SAT is to try all possible assignments and check if any works. This is called the **brute force** or **truth table** approach.
+
+### How Truth Tables Work
+
+For n variables, there are 2ⁿ possible assignments:
+
+**Example with 3 variables (x, y, z)**:
+
+| x | y | z | (x ∨ y) ∧ (¬x ∨ z) | Result |
+|---|---|---|-------------------|--------|
+| F | F | F | (F ∨ F) ∧ (T ∨ F) = F ∧ T = F | ❌ |
+| F | F | T | (F ∨ F) ∧ (T ∨ T) = F ∧ T = F | ❌ |
+| F | T | F | (F ∨ T) ∧ (T ∨ F) = T ∧ T = T | ✓ SAT! |
+| F | T | T | (F ∨ T) ∧ (T ∨ T) = T ∧ T = T | ✓ SAT! |
+| T | F | F | (T ∨ F) ∧ (F ∨ F) = T ∧ F = F | ❌ |
+| T | F | T | (T ∨ F) ∧ (F ∨ T) = T ∧ T = T | ✓ SAT! |
+| T | T | F | (T ∨ T) ∧ (F ∨ F) = T ∧ F = F | ❌ |
+| T | T | T | (T ∨ T) ∧ (F ∨ T) = T ∧ T = T | ✓ SAT! |
+
+With 3 variables: 8 rows to check. Easy!
+
+### The Exponential Explosion
+
+The problem is that truth tables grow **exponentially**:
+
+| Variables | Rows | Time at 1 billion/sec | Storage (1 bit/row) |
+|-----------|------|----------------------|---------------------|
+| 10 | 1,024 | < 1 microsecond | 128 bytes |
+| 20 | 1,048,576 | 1 millisecond | 128 KB |
+| 30 | 1,073,741,824 | 1 second | 128 MB |
+| 40 | 1,099,511,627,776 | 18 minutes | 128 GB |
+| 50 | 1,125,899,906,842,624 | 13 days | 128 TB |
+| 60 | 1,152,921,504,606,846,976 | 36 years | 128 PB |
+| 100 | 2¹⁰⁰ | **40 billion years** | 128 million TB |
+
+**Real-world SAT problems often have hundreds or thousands of variables!**
+
+### Why This Matters
+
+Hardware verification problems might have:
+- **1,000 variables** → 2¹⁰⁰⁰ rows (more atoms than in the universe!)
+- **10,000 variables** → Completely infeasible
+
+Even with the fastest computers imaginable, you couldn't enumerate all possibilities before the heat death of the universe.
+
+### The Key Insight
+
+This is why we need **smart algorithms** that:
+1. **Prune the search space**: Don't check every possibility
+2. **Learn from failures**: Avoid repeating mistakes
+3. **Exploit structure**: Use problem-specific properties
+4. **Make intelligent choices**: Pick good variable assignments
+
+Modern SAT solvers can solve problems with **millions of variables** that would take 2¹⁰⁰⁰'⁰⁰⁰ rows in a truth table!
+
+### Example: Where Solvers Shine
+
+**Problem**: 1,000 variables, 4,000 clauses
+
+**Brute force (truth table)**:
+- Rows to check: 2¹⁰⁰⁰ ≈ 10³⁰¹
+- Time: Longer than age of universe × 10²⁸⁰
+
+**Modern SAT solver (CDCL)**:
+- Time: Often < 1 second
+- How? By exploring only a tiny fraction of the search space
+
+This is why SAT solving research matters!
+
 ## NP-Completeness
 
 ### What does NP-complete mean?
 
 1. **NP**: Can verify a solution quickly (polynomial time)
    - Given an assignment, we can check if it works in O(n×m) time
+   - Checking is easy, but finding is hard!
 
 2. **NP-hard**: At least as hard as every problem in NP
    - If we could solve SAT quickly, we could solve ALL NP problems quickly
@@ -156,6 +228,8 @@ Also NP-complete (since 3-SAT reduces to it).
 - **Unknown**: Is P = NP? (Clay Mathematics Institute Millennium Prize)
 
 If you find a polynomial-time algorithm for 3-SAT, you've proven P = NP and won $1 million!
+
+**Why truth tables don't help**: They're exponential (O(2ⁿ)), not polynomial.
 
 ## Practical SAT Solving
 
