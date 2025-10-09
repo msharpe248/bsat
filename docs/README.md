@@ -11,7 +11,8 @@ Welcome to the BSAT (Boolean Satisfiability) package documentation! This guide w
    - [DPLL Solver](dpll-solver.md) - Classic backtracking algorithm for general SAT
    - [Horn-SAT Solver](hornsat-solver.md) - Polynomial-time solver for Horn formulas
    - [XOR-SAT Solver](xorsat-solver.md) - Polynomial-time solver for XOR constraints
-   - [Advanced Solvers](advanced-solvers.md) - Coming soon: CDCL, WalkSAT
+   - [WalkSAT Solver](walksat-solver.md) - Randomized local search (incomplete but fast)
+   - [Advanced Solvers](advanced-solvers.md) - Coming soon: CDCL
 4. [Examples & Tutorials](examples.md) - Practical usage examples
 5. [Theory & References](theory.md) - Academic papers and further reading
 
@@ -69,7 +70,8 @@ For example:
 - ✅ **DPLL Solver**: Classic backtracking algorithm for general SAT/3SAT
 - ✅ **Horn-SAT Solver**: O(n+m) polynomial-time solver for Horn formulas (logic programming)
 - ✅ **XOR-SAT Solver**: O(n³) polynomial-time solver using Gaussian elimination over GF(2)
-- 🚧 **Advanced Algorithms**: CDCL, WalkSAT (coming soon)
+- ✅ **WalkSAT Solver**: Randomized local search (incomplete but often very fast)
+- 🚧 **Advanced Algorithms**: CDCL (coming soon)
 - ✅ **Pretty Printing**: Unicode symbols (∧, ∨, ¬) for readable output
 - ✅ **Multiple Input Formats**: Parse from text, JSON, or programmatic construction
 - ✅ **Truth Tables**: Generate and compare truth tables

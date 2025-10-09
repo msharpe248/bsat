@@ -9,10 +9,11 @@ A Python package for learning and solving Boolean satisfiability (SAT) problems 
 ✅ **DPLL Solver**: Backtracking with unit propagation and pure literal elimination
 ✅ **Horn-SAT Solver**: O(n+m) polynomial-time solver for Horn formulas
 ✅ **XOR-SAT Solver**: O(n³) polynomial-time solver using Gaussian elimination over GF(2)
+✅ **WalkSAT Solver**: Randomized local search (incomplete but often very fast)
 ✅ **Pretty Printing**: Unicode symbols (∧, ∨, ¬) for readable output
 ✅ **Multiple Input Formats**: Parse from text, JSON, or build programmatically
 ✅ **Truth Tables**: Generate and compare truth tables
-🚧 **Coming Soon**: CDCL, WalkSAT
+🚧 **Coming Soon**: CDCL
 
 ## Installation
 
@@ -96,16 +97,33 @@ result = solve_xorsat(cnf)  # O(n³) using Gaussian elimination
 print(f"Solution: {result}")
 ```
 
+### WalkSAT (Fast Randomized Search)
+
+```python
+from bsat import solve_walksat, CNFExpression
+
+# Randomized local search - incomplete but often very fast
+formula = "(x | y | z) & (~x | y | ~z) & (x | ~y | z)"
+cnf = CNFExpression.parse(formula)
+
+result = solve_walksat(cnf, noise=0.5, max_flips=10000, seed=42)
+if result:
+    print(f"Solution found: {result}")
+else:
+    print("No solution found (but may still be SAT)")
+```
+
 ## Solver Comparison
 
 Choose the right solver for your problem:
 
-| Problem Type | Solver | Complexity | Use When |
-|-------------|---------|-----------|----------|
-| **2SAT** | `solve_2sat()` | O(n+m) | Every clause has exactly 2 literals |
-| **Horn-SAT** | `solve_horn_sat()` | O(n+m) | At most 1 positive literal per clause (logic programming) |
-| **XOR-SAT** | `solve_xorsat()` | O(n³) | XOR constraints (cryptography, coding theory) |
-| **General SAT** | `solve_sat()` | O(2ⁿ)* | Any other CNF formula (uses DPLL) |
+| Problem Type | Solver | Complexity | Complete | Use When |
+|-------------|---------|-----------|----------|----------|
+| **2SAT** | `solve_2sat()` | O(n+m) | ✅ Yes | Every clause has exactly 2 literals |
+| **Horn-SAT** | `solve_horn_sat()` | O(n+m) | ✅ Yes | At most 1 positive literal per clause (logic programming) |
+| **XOR-SAT** | `solve_xorsat()` | O(n³) | ✅ Yes | XOR constraints (cryptography, coding theory) |
+| **General SAT** | `solve_sat()` | O(2ⁿ)* | ✅ Yes | Any CNF formula (uses DPLL) |
+| **Fast SAT** | `solve_walksat()` | Varies | ❌ No | Large SAT instances where speed > completeness |
 
 *Exponential worst-case, but often practical with optimizations
 
@@ -113,7 +131,8 @@ Choose the right solver for your problem:
 - All clauses have 2 literals? → Use `solve_2sat()`
 - Clauses are implications (≤1 positive literal)? → Use `solve_horn_sat()`
 - XOR/parity constraints? → Use `solve_xorsat()`
-- Anything else? → Use `solve_sat()` (DPLL)
+- Need guaranteed solution? → Use `solve_sat()` (DPLL)
+- Want fast solutions for large SAT instances? → Try `solve_walksat()`
 
 ## Examples
 
@@ -125,6 +144,7 @@ python examples/example_2sat.py    # 2SAT solver examples
 python examples/example_dpll.py    # DPLL solver examples
 python examples/example_hornsat.py # Horn-SAT solver examples
 python examples/example_xorsat.py  # XOR-SAT solver examples
+python examples/example_walksat.py # WalkSAT solver examples
 ```
 
 ## Testing
@@ -136,6 +156,7 @@ python tests/test_2sat.py     # 2SAT tests
 python tests/test_dpll.py     # DPLL tests
 python tests/test_hornsat.py  # Horn-SAT tests
 python tests/test_xorsat.py   # XOR-SAT tests
+python tests/test_walksat.py  # WalkSAT tests
 ```
 
 Or with pytest (if installed):
@@ -154,6 +175,7 @@ pytest tests/
 - [DPLL Solver](docs/dpll-solver.md) - General SAT solving with backtracking
 - [Horn-SAT Solver](docs/advanced-solvers.md#horn-sat) - Polynomial-time Horn formula solver
 - [XOR-SAT Solver](docs/xorsat-solver.md) - Polynomial-time XOR solver via Gaussian elimination
+- [WalkSAT Solver](docs/walksat-solver.md) - Randomized local search (incomplete but fast)
 - [Examples & Tutorials](docs/examples.md) - Practical usage
 - [Theory & References](docs/theory.md) - Papers and further reading
 

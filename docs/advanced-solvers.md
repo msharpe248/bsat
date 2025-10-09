@@ -1,6 +1,6 @@
 # Advanced Solvers
 
-Specialized SAT solvers: Horn-SAT and XOR-SAT (implemented), and coming soon: CDCL, WalkSAT.
+Specialized SAT solvers: Horn-SAT, XOR-SAT, and WalkSAT (implemented), and coming soon: CDCL.
 
 ## Implemented Solvers
 
@@ -11,6 +11,10 @@ Specialized SAT solvers: Horn-SAT and XOR-SAT (implemented), and coming soon: CD
 ### XOR-SAT ✅
 
 **Status**: Implemented in v0.3
+
+### WalkSAT ✅
+
+**Status**: Implemented in v0.4
 
 ---
 
@@ -98,66 +102,65 @@ New formula: ... ∧ (x ∨ ¬z)
 
 ---
 
-## WalkSAT
+## WalkSAT ✅
 
 ### Overview
 
-**WalkSAT** is a randomized local search algorithm:
-1. Start with random assignment
-2. While unsatisfied clauses exist:
-   - Pick unsatisfied clause
-   - Flip one variable in that clause
-3. Repeat until solved or timeout
+**WalkSAT** is a randomized local search algorithm that's incomplete but often very fast for SAT instances.
 
-**Status**: 🚧 Planned for v0.4
+**Status**: ✅ Implemented in v0.4
 
-### How It Works
+**[📖 Full WalkSAT Documentation](walksat-solver.md)**
 
+### Quick Start
+
+```python
+from bsat import solve_walksat, CNFExpression
+
+formula = "(x | y | z) & (~x | y | ~z) & (x | ~y | z)"
+cnf = CNFExpression.parse(formula)
+
+result = solve_walksat(cnf, noise=0.5, max_flips=10000, seed=42)
+if result:
+    print(f"Solution found: {result}")
+else:
+    print("No solution found (but may still be SAT)")
 ```
-1. Random initial assignment: {x=T, y=F, z=T}
-2. Evaluate: Some clauses unsatisfied
-3. Pick random unsatisfied clause: (¬x ∨ y ∨ ¬z)
-4. Choose variable to flip:
-   - With probability p: random variable from clause
-   - With probability 1-p: variable that minimizes "breaks" (newly unsatisfied clauses)
-5. Flip variable and repeat
-```
+
+### Key Features
+
+- **Incomplete but fast**: Often finds solutions much quicker than DPLL/CDCL
+- **Randomized**: Different runs give different results
+- **Configurable**: Tune noise parameter and restart strategy
+- **Good for large SAT instances**: Scales to problems DPLL can't handle
 
 ### Characteristics
 
 **Incomplete**: May not find solution even if one exists
 **Probabilistic**: Different runs may give different results
-**Fast**: Often finds solutions much faster than DPLL/CDCL
+**Fast**: Often finds solutions in seconds for large formulas
 
 ### When to Use
 
 ✅ **Good for**:
-- Satisfiable instances (want any solution quickly)
-- Very large formulas
-- Optimization problems (MaxSAT)
-- Real-time applications
+- Large satisfiable instances (thousands of variables)
+- When you just need any solution quickly
+- Real-time applications with time constraints
+- Generating multiple different solutions
 
 ❌ **Not good for**:
-- Proving unsatisfiability
-- Needing guaranteed solution
-- Small instances (DPLL is fine)
+- Proving unsatisfiability (use DPLL instead)
+- When you need guaranteed solutions
+- Small instances (DPLL is fast enough)
 
-### Variants
+### Learn More
 
-- **SKC (Selman-Kautz-Cohen)**: Original WalkSAT
-- **Novelty**: Avoid flipping recently flipped variables
-- **ProbSAT**: Probability distribution over variables
-
-### Expected Performance
-
-- **Random 3SAT (SAT)**: Often finds solution in seconds
-- **Hard instances**: May not find solution
-- **UNSAT**: Will never terminate (incomplete)
-
-### Further Reading
-
-- [Selman et al. (1994): "Noise Strategies for Improving Local Search"](https://www.cs.cornell.edu/selman/papers/pdf/94.aaai.walksat.pdf)
-- [Hoos (2002): "An Adaptive Noise Mechanism for WalkSAT"](https://www.cs.ubc.ca/~hoos/Publ/HoosAAAI02.pdf)
+See the **[complete WalkSAT documentation](walksat-solver.md)** for:
+- Detailed algorithm explanation
+- Parameter tuning guide
+- Performance characteristics
+- Comparison with complete solvers
+- Practical examples
 
 ---
 
@@ -305,8 +308,8 @@ See the **[complete XOR-SAT documentation](xorsat-solver.md)** for:
 |--------|-----------|----------|----------|--------|
 | **Horn-SAT** | O(n+m) | ✅ Yes | Logic programming | ✅ Done |
 | **XOR-SAT** | O(n³) | ✅ Yes | Cryptography, coding theory | ✅ Done |
+| **WalkSAT** | Varies | ❌ No | Large SAT instances (fast) | ✅ Done |
 | **CDCL** | O(2ⁿ)* | ✅ Yes | Large structured SAT | 🚧 Planned |
-| **WalkSAT** | Varies | ❌ No | Quick solutions | 🚧 Planned |
 
 *Much faster in practice
 
@@ -327,7 +330,14 @@ See the **[complete XOR-SAT documentation](xorsat-solver.md)** for:
 - [x] Back substitution
 - [x] Statistics tracking
 
-### Version 0.4: CDCL
+### Version 0.4: WalkSAT ✅
+- [x] Basic WalkSAT algorithm
+- [x] Configurable noise parameter
+- [x] Multi-restart support
+- [x] Break count calculation
+- [x] Statistics tracking
+
+### Version 0.5: CDCL
 - [ ] Unit propagation (BCP)
 - [ ] Conflict analysis
 - [ ] Clause learning
@@ -335,28 +345,23 @@ See the **[complete XOR-SAT documentation](xorsat-solver.md)** for:
 - [ ] Watched literals
 - [ ] Non-chronological backtracking
 
-### Version 0.5: WalkSAT
-- [ ] Basic WalkSAT
-- [ ] Novelty variant
-- [ ] Configurable noise parameter
-- [ ] Multi-restart support
-
 ---
 
 ## Want to Help?
 
-These solvers are planned but not yet implemented. Contributions welcome!
+CDCL is planned but not yet implemented. Contributions welcome!
 
 1. **Fork the repository**: [github.com/msharpe248/bsat](https://github.com/msharpe248/bsat)
-2. **Choose a solver**: Pick one you want to implement
-3. **Read the papers**: Understand the algorithm
-4. **Implement**: Add to `src/bsat/`
-5. **Test**: Add comprehensive tests
+2. **Read the papers**: Understand the CDCL algorithm
+3. **Implement**: Add to `src/bsat/`
+4. **Test**: Add comprehensive tests
+5. **Document**: Write examples and docs
 6. **Submit PR**: We'll review and merge!
 
 See the existing solvers for code style and structure:
 - `src/bsat/twosatsolver.py` - 2SAT implementation
 - `src/bsat/dpll.py` - DPLL implementation
+- `src/bsat/walksat.py` - WalkSAT implementation
 
 ---
 
