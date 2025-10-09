@@ -201,6 +201,7 @@ pytest tests/
 - [k-SAT to 3-SAT Reduction](docs/introduction.md#reducing-k-sat-to-3-sat) - Theory and implementation
 - [Examples & Tutorials](docs/examples.md) - Practical usage
 - [Theory & References](docs/theory.md) - Papers and further reading
+- [Reading List](docs/reading-list.md) - Comprehensive bibliography of books, papers, and resources
 
 ## License
 

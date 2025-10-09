@@ -15,6 +15,7 @@ Welcome to the BSAT (Boolean Satisfiability) package documentation! This guide w
    - [Advanced Solvers](advanced-solvers.md) - Coming soon: CDCL
 4. [Examples & Tutorials](examples.md) - Practical usage examples
 5. [Theory & References](theory.md) - Academic papers and further reading
+6. [Reading List](reading-list.md) - Comprehensive bibliography of books, papers, and resources
 
 ## Quick Start
 
