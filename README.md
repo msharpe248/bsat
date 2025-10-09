@@ -63,9 +63,10 @@ result_2sat = solve_2sat(cnf_2sat)  # O(n+m) time!
 Run the example scripts:
 
 ```bash
-python examples/example.py        # General CNF examples
-python examples/example_2sat.py   # 2SAT solver examples
-python examples/example_dpll.py   # DPLL solver examples
+python examples/example.py         # General CNF examples
+python examples/example_2sat.py    # 2SAT solver examples
+python examples/example_dpll.py    # DPLL solver examples
+python examples/example_hornsat.py # Horn-SAT solver examples
 ```
 
 ## Testing
@@ -73,8 +74,9 @@ python examples/example_dpll.py   # DPLL solver examples
 Run the test suite:
 
 ```bash
-python tests/test_2sat.py   # 2SAT tests
-python tests/test_dpll.py   # DPLL tests
+python tests/test_2sat.py     # 2SAT tests
+python tests/test_dpll.py     # DPLL tests
+python tests/test_hornsat.py  # Horn-SAT tests
 ```
 
 Or with pytest (if installed):
@@ -90,7 +92,8 @@ pytest tests/
 - [Introduction to SAT](docs/introduction.md) - Start here if you're new!
 - [CNF Data Structures](docs/cnf.md) - Understanding the API
 - [2SAT Solver](docs/2sat-solver.md) - Polynomial-time algorithm
-- [DPLL Solver](docs/dpll-solver.md) - General SAT solving
+- [DPLL Solver](docs/dpll-solver.md) - General SAT solving with backtracking
+- [Horn-SAT Solver](docs/advanced-solvers.md#horn-sat) - Polynomial-time Horn formula solver
 - [Examples & Tutorials](docs/examples.md) - Practical usage
 - [Theory & References](docs/theory.md) - Papers and further reading
 
