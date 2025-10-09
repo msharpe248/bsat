@@ -1,6 +1,6 @@
 # Advanced Solvers
 
-Specialized SAT solvers: Horn-SAT, XOR-SAT, and WalkSAT (implemented), and coming soon: CDCL.
+Specialized SAT solvers: Horn-SAT, XOR-SAT, WalkSAT, and CDCL.
 
 ## Implemented Solvers
 
@@ -16,6 +16,10 @@ Specialized SAT solvers: Horn-SAT, XOR-SAT, and WalkSAT (implemented), and comin
 
 **Status**: Implemented in v0.4
 
+### CDCL ✅
+
+**Status**: Implemented in v0.5
+
 ---
 
 ## CDCL (Conflict-Driven Clause Learning)
@@ -27,8 +31,11 @@ Specialized SAT solvers: Horn-SAT, XOR-SAT, and WalkSAT (implemented), and comin
 2. **Clause learning**: Add clauses to prevent repeating mistakes
 3. **Non-chronological backtracking**: Jump back further when conflicts detected
 4. **Intelligent restarts**: Periodically restart search with learned clauses
+5. **VSIDS heuristic**: Conflict-driven variable selection
 
-**Status**: 🚧 Planned for v0.3
+**Status**: ✅ Implemented in v0.5
+
+**[📖 Full CDCL Documentation](cdcl-solver.md)**
 
 ### How It Works
 
@@ -309,9 +316,9 @@ See the **[complete XOR-SAT documentation](xorsat-solver.md)** for:
 | **Horn-SAT** | O(n+m) | ✅ Yes | Logic programming | ✅ Done |
 | **XOR-SAT** | O(n³) | ✅ Yes | Cryptography, coding theory | ✅ Done |
 | **WalkSAT** | Varies | ❌ No | Large SAT instances (fast) | ✅ Done |
-| **CDCL** | O(2ⁿ)* | ✅ Yes | Large structured SAT | 🚧 Planned |
+| **CDCL** | O(2ⁿ)* | ✅ Yes | Large structured SAT, industrial | ✅ Done |
 
-*Much faster in practice
+*Much faster in practice due to clause learning
 
 ---
 
@@ -337,31 +344,14 @@ See the **[complete XOR-SAT documentation](xorsat-solver.md)** for:
 - [x] Break count calculation
 - [x] Statistics tracking
 
-### Version 0.5: CDCL
-- [ ] Unit propagation (BCP)
-- [ ] Conflict analysis
-- [ ] Clause learning
-- [ ] VSIDS heuristic
-- [ ] Watched literals
-- [ ] Non-chronological backtracking
-
----
-
-## Want to Help?
-
-CDCL is planned but not yet implemented. Contributions welcome!
-
-1. **Fork the repository**: [github.com/msharpe248/bsat](https://github.com/msharpe248/bsat)
-2. **Read the papers**: Understand the CDCL algorithm
-3. **Implement**: Add to `src/bsat/`
-4. **Test**: Add comprehensive tests
-5. **Document**: Write examples and docs
-6. **Submit PR**: We'll review and merge!
-
-See the existing solvers for code style and structure:
-- `src/bsat/twosatsolver.py` - 2SAT implementation
-- `src/bsat/dpll.py` - DPLL implementation
-- `src/bsat/walksat.py` - WalkSAT implementation
+### Version 0.5: CDCL ✅
+- [x] Unit propagation (BCP)
+- [x] Conflict analysis with 1UIP
+- [x] Clause learning
+- [x] VSIDS heuristic
+- [x] Non-chronological backtracking
+- [x] Luby restart strategy
+- [x] Clause deletion
 
 ---
 

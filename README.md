@@ -7,6 +7,7 @@ A Python package for learning and solving Boolean satisfiability (SAT) problems 
 ✅ **CNF Data Structures**: Clean, Pythonic representation (Literal, Clause, CNFExpression)
 ✅ **2SAT Solver**: O(n+m) polynomial-time algorithm using strongly connected components
 ✅ **DPLL Solver**: Backtracking with unit propagation and pure literal elimination
+✅ **CDCL Solver**: Conflict-Driven Clause Learning with VSIDS heuristic and restarts
 ✅ **Horn-SAT Solver**: O(n+m) polynomial-time solver for Horn formulas
 ✅ **XOR-SAT Solver**: O(n³) polynomial-time solver using Gaussian elimination over GF(2)
 ✅ **WalkSAT Solver**: Randomized local search (incomplete but often very fast)
@@ -14,7 +15,6 @@ A Python package for learning and solving Boolean satisfiability (SAT) problems 
 ✅ **Pretty Printing**: Unicode symbols (∧, ∨, ¬) for readable output
 ✅ **Multiple Input Formats**: Parse from text, JSON, or build programmatically
 ✅ **Truth Tables**: Generate and compare truth tables
-🚧 **Coming Soon**: CDCL
 
 ## Installation
 
@@ -114,6 +114,26 @@ else:
     print("No solution found (but may still be SAT)")
 ```
 
+### CDCL (Modern SAT Solving)
+
+```python
+from bsat import solve_cdcl, get_cdcl_stats, CNFExpression
+
+# CDCL uses conflict-driven clause learning
+formula = "(x | y | z) & (~x | y | ~z) & (x | ~y | z)"
+cnf = CNFExpression.parse(formula)
+
+result = solve_cdcl(cnf)
+if result:
+    print(f"Solution: {result}")
+
+# Get detailed statistics
+result, stats = get_cdcl_stats(cnf)
+print(f"Decisions: {stats.decisions}")
+print(f"Conflicts: {stats.conflicts}")
+print(f"Learned clauses: {stats.learned_clauses}")
+```
+
 ### k-SAT to 3-SAT Reduction
 
 ```python
@@ -143,15 +163,17 @@ Choose the right solver for your problem:
 | **Horn-SAT** | `solve_horn_sat()` | O(n+m) | ✅ Yes | At most 1 positive literal per clause (logic programming) |
 | **XOR-SAT** | `solve_xorsat()` | O(n³) | ✅ Yes | XOR constraints (cryptography, coding theory) |
 | **General SAT** | `solve_sat()` | O(2ⁿ)* | ✅ Yes | Any CNF formula (uses DPLL) |
+| **Modern SAT** | `solve_cdcl()` | O(2ⁿ)* | ✅ Yes | Structured problems, industrial instances |
 | **Fast SAT** | `solve_walksat()` | Varies | ❌ No | Large SAT instances where speed > completeness |
 
-*Exponential worst-case, but often practical with optimizations
+*Exponential worst-case, but CDCL much faster in practice due to learning
 
 **Quick decision guide:**
 - All clauses have 2 literals? → Use `solve_2sat()`
 - Clauses are implications (≤1 positive literal)? → Use `solve_horn_sat()`
 - XOR/parity constraints? → Use `solve_xorsat()`
-- Need guaranteed solution? → Use `solve_sat()` (DPLL)
+- Structured/industrial problem? → Use `solve_cdcl()` (modern, learns from conflicts)
+- Simple/small problem? → Use `solve_sat()` (DPLL, simpler)
 - Want fast solutions for large SAT instances? → Try `solve_walksat()`
 
 ## Examples
@@ -162,6 +184,7 @@ Run the example scripts:
 python examples/example.py            # General CNF examples
 python examples/example_2sat.py       # 2SAT solver examples
 python examples/example_dpll.py       # DPLL solver examples
+python examples/example_cdcl.py       # CDCL solver examples
 python examples/example_hornsat.py    # Horn-SAT solver examples
 python examples/example_xorsat.py     # XOR-SAT solver examples
 python examples/example_walksat.py    # WalkSAT solver examples
@@ -175,6 +198,7 @@ Run the test suite:
 ```bash
 python tests/test_2sat.py        # 2SAT tests
 python tests/test_dpll.py        # DPLL tests
+python tests/test_cdcl.py        # CDCL tests
 python tests/test_hornsat.py     # Horn-SAT tests
 python tests/test_xorsat.py      # XOR-SAT tests
 python tests/test_walksat.py     # WalkSAT tests
@@ -195,6 +219,7 @@ pytest tests/
 - [CNF Data Structures](docs/cnf.md) - Understanding the API
 - [2SAT Solver](docs/2sat-solver.md) - Polynomial-time algorithm
 - [DPLL Solver](docs/dpll-solver.md) - General SAT solving with backtracking
+- [CDCL Solver](docs/cdcl-solver.md) - Modern SAT solving with conflict-driven learning
 - [Horn-SAT Solver](docs/advanced-solvers.md#horn-sat) - Polynomial-time Horn formula solver
 - [XOR-SAT Solver](docs/xorsat-solver.md) - Polynomial-time XOR solver via Gaussian elimination
 - [WalkSAT Solver](docs/walksat-solver.md) - Randomized local search (incomplete but fast)

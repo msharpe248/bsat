@@ -9,10 +9,10 @@ Welcome to the BSAT (Boolean Satisfiability) package documentation! This guide w
 3. [Solvers](solvers.md) - Overview of available solvers
    - [2SAT Solver](2sat-solver.md) - Polynomial-time algorithm for 2SAT
    - [DPLL Solver](dpll-solver.md) - Classic backtracking algorithm for general SAT
+   - [CDCL Solver](cdcl-solver.md) - Conflict-Driven Clause Learning (modern SAT solving)
    - [Horn-SAT Solver](hornsat-solver.md) - Polynomial-time solver for Horn formulas
    - [XOR-SAT Solver](xorsat-solver.md) - Polynomial-time solver for XOR constraints
    - [WalkSAT Solver](walksat-solver.md) - Randomized local search (incomplete but fast)
-   - [Advanced Solvers](advanced-solvers.md) - Coming soon: CDCL
 4. [Examples & Tutorials](examples.md) - Practical usage examples
 5. [Theory & References](theory.md) - Academic papers and further reading
 6. [Reading List](reading-list.md) - Comprehensive bibliography of books, papers, and resources
@@ -69,11 +69,11 @@ For example:
 - ✅ **CNF Data Structures**: Clean, Pythonic representation of Boolean formulas
 - ✅ **2SAT Solver**: O(n+m) polynomial-time solver using strongly connected components
 - ✅ **DPLL Solver**: Classic backtracking algorithm for general SAT/3SAT
+- ✅ **CDCL Solver**: Conflict-Driven Clause Learning with VSIDS and restarts (modern SAT solving)
 - ✅ **Horn-SAT Solver**: O(n+m) polynomial-time solver for Horn formulas (logic programming)
 - ✅ **XOR-SAT Solver**: O(n³) polynomial-time solver using Gaussian elimination over GF(2)
 - ✅ **WalkSAT Solver**: Randomized local search (incomplete but often very fast)
 - ✅ **k-SAT to 3-SAT Reduction**: Convert any CNF to 3-SAT form using auxiliary variables
-- 🚧 **Advanced Algorithms**: CDCL (coming soon)
 - ✅ **Pretty Printing**: Unicode symbols (∧, ∨, ¬) for readable output
 - ✅ **Multiple Input Formats**: Parse from text, JSON, or programmatic construction
 - ✅ **Truth Tables**: Generate and compare truth tables
