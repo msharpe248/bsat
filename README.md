@@ -15,6 +15,8 @@ A Python package for learning and solving Boolean satisfiability (SAT) problems 
 ✅ **Pretty Printing**: Unicode symbols (∧, ∨, ¬) for readable output
 ✅ **Multiple Input Formats**: Parse from text, JSON, or build programmatically
 ✅ **Truth Tables**: Generate and compare truth tables
+✅ **Comprehensive Benchmarks**: Test suite with random 3SAT, pigeon-hole, phase transition instances
+✅ **Performance Comparison**: Tools for comparing solver performance and analyzing results
 
 ## Installation
 
@@ -195,6 +197,9 @@ python examples/example_reductions.py # k-SAT to 3-SAT reduction examples
 python examples/encodings/graph_coloring.py  # Graph coloring problems
 python examples/encodings/sudoku.py          # Sudoku solver
 python examples/encodings/n_queens.py        # N-Queens problem
+
+# Performance benchmarking
+python examples/benchmark_comparison.py      # Compare solver performance
 ```
 
 ## Testing
@@ -209,6 +214,7 @@ python tests/test_hornsat.py     # Horn-SAT tests
 python tests/test_xorsat.py      # XOR-SAT tests
 python tests/test_walksat.py     # WalkSAT tests
 python tests/test_reductions.py  # k-SAT reduction tests
+python tests/test_benchmarks.py  # Benchmark suite tests
 ```
 
 Or with pytest (if installed):
@@ -231,6 +237,7 @@ pytest tests/
 - [WalkSAT Solver](docs/walksat-solver.md) - Randomized local search (incomplete but fast)
 - [k-SAT to 3-SAT Reduction](docs/introduction.md#reducing-k-sat-to-3-sat) - Theory and implementation
 - [Problem Encodings](docs/problem-encodings.md) - Graph coloring, Sudoku, N-Queens, and more
+- [Benchmarking & Performance](docs/benchmarking.md) - Testing and comparing solvers
 - [Examples & Tutorials](docs/examples.md) - Practical usage
 - [Theory & References](docs/theory.md) - Papers and further reading
 - [Reading List](docs/reading-list.md) - Comprehensive bibliography of books, papers, and resources

@@ -17,9 +17,13 @@ Welcome to the BSAT (Boolean Satisfiability) package documentation! This guide w
    - Graph Coloring
    - Sudoku
    - N-Queens
-5. [Examples & Tutorials](examples.md) - Practical usage examples
-6. [Theory & References](theory.md) - Academic papers and further reading
-7. [Reading List](reading-list.md) - Comprehensive bibliography of books, papers, and resources
+5. [Benchmarking & Performance](benchmarking.md) - Testing and comparing solvers
+   - Benchmark instances
+   - Performance comparison
+   - Scaling analysis
+6. [Examples & Tutorials](examples.md) - Practical usage examples
+7. [Theory & References](theory.md) - Academic papers and further reading
+8. [Reading List](reading-list.md) - Comprehensive bibliography of books, papers, and resources
 
 ## Quick Start
 

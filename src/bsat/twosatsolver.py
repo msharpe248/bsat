@@ -5,6 +5,19 @@ from collections import defaultdict, deque
 from .cnf import CNFExpression, Clause, Literal
 
 
+def is_2sat(cnf: CNFExpression) -> bool:
+    """
+    Check if a CNF formula is in 2SAT form (all clauses have exactly 2 literals).
+
+    Args:
+        cnf: CNF expression to check
+
+    Returns:
+        True if all clauses have exactly 2 literals, False otherwise
+    """
+    return all(len(clause.literals) == 2 for clause in cnf.clauses)
+
+
 class TwoSATSolver:
     """
     Solves 2SAT problems using the implication graph and strongly connected components (SCC).
