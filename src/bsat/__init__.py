@@ -4,6 +4,7 @@ from .cnf import Literal, Clause, CNFExpression
 from .twosatsolver import TwoSATSolver, solve_2sat, is_2sat_satisfiable
 from .dpll import DPLLSolver, solve_sat
 from .hornsat import HornSATSolver, solve_horn_sat, is_horn_formula
+from .xorsat import XORSATSolver, solve_xorsat, get_xorsat_stats
 
 __all__ = [
     'Literal',
@@ -16,6 +17,9 @@ __all__ = [
     'solve_sat',
     'HornSATSolver',
     'solve_horn_sat',
-    'is_horn_formula'
+    'is_horn_formula',
+    'XORSATSolver',
+    'solve_xorsat',
+    'get_xorsat_stats'
 ]
 __version__ = '0.1.0'

@@ -1,12 +1,16 @@
 # Advanced Solvers
 
-Specialized SAT solvers: Horn-SAT (implemented), and coming soon: CDCL, WalkSAT, XOR-SAT.
+Specialized SAT solvers: Horn-SAT and XOR-SAT (implemented), and coming soon: CDCL, WalkSAT.
 
 ## Implemented Solvers
 
 ### Horn-SAT ✅
 
 **Status**: Implemented in v0.2
+
+### XOR-SAT ✅
+
+**Status**: Implemented in v0.3
 
 ---
 
@@ -245,73 +249,53 @@ result = solve_horn_sat(cnf)
 
 ---
 
-## XOR-SAT
+## XOR-SAT ✅
 
 ### Overview
 
-**XOR-SAT** deals with XOR (exclusive-or) constraints:
-```
-x ⊕ y ⊕ z = 1    (odd number of variables must be True)
-x ⊕ y = 0        (variables must have same value)
-```
+**XOR-SAT** deals with XOR (exclusive-or) constraints where clauses are satisfied when an odd number of literals are true.
 
-Can encode as CNF but more efficient to solve directly.
+**Status**: ✅ Implemented in v0.3
 
-**Status**: 🚧 Planned for v0.5
+**[📖 Full XOR-SAT Documentation](xorsat-solver.md)**
 
-### Algorithm
+### Quick Start
 
-Use **Gaussian elimination** over GF(2) (binary field):
+```python
+from bsat import solve_xorsat, CNFExpression, Clause, Literal
 
-```
-System of XOR equations:
-  x ⊕ y ⊕ z = 1
-  x ⊕ y     = 0
-  y ⊕ z     = 1
+# Create XOR formula: x ⊕ y = 1 (they must differ)
+cnf = CNFExpression([
+    Clause([Literal('x', False), Literal('y', False)])
+])
 
-Convert to matrix (mod 2):
-  [1 1 1 | 1]
-  [1 1 0 | 0]
-  [0 1 1 | 1]
-
-Gaussian elimination:
-  [1 0 0 | 0]
-  [0 1 0 | 0]
-  [0 0 1 | 1]
-
-Solution: x=0, y=0, z=1
+result = solve_xorsat(cnf)
+if result:
+    print(f"SAT: {result}")
+else:
+    print("UNSAT")
 ```
 
-### Complexity
+### Key Features
 
-- **Solvable**: O(n³) using Gaussian elimination
-- **Polynomial time**: Tractable for large systems
-- **Better than CNF encoding**: More efficient
+- **Polynomial time**: O(n³) using Gaussian elimination over GF(2)
+- **Complete solver**: Always finds solution if one exists
+- **Efficient**: Much better than encoding XOR as CNF
 
 ### Applications
 
-✅ **Cryptography**: Breaking encryption schemes
-✅ **Coding theory**: Error correction codes
-✅ **Boolean circuits**: Circuit optimization
+✅ **Cryptography**: Linear cryptanalysis, breaking ciphers
+✅ **Coding theory**: Parity checks, error correction
+✅ **Secret sharing**: XOR-based schemes
 ✅ **Hardware verification**: Equivalence checking
 
-### XOR vs CNF
+### Learn More
 
-**XOR clause**: x ⊕ y ⊕ z = 1
-
-**CNF encoding** (expensive!):
-```
-(x ∨ y ∨ z) ∧ (¬x ∨ ¬y ∨ z) ∧ (¬x ∨ y ∨ ¬z) ∧ (x ∨ ¬y ∨ ¬z)
-```
-
-1 XOR clause → 4 CNF clauses with 3 literals each
-
-**Direct XOR solving is much more efficient!**
-
-### Further Reading
-
-- [Courtois & Bard (2007): "Algebraic Cryptanalysis of the Data Encryption Standard"](https://www.iacr.org/archive/crypto2007/46220377/46220377.pdf)
-- [Soos et al. (2009): "Extending SAT Solvers to Cryptographic Problems"](https://link.springer.com/chapter/10.1007/978-3-642-02777-2_24)
+See the **[complete XOR-SAT documentation](xorsat-solver.md)** for:
+- Detailed algorithm explanation
+- Comprehensive examples
+- Performance analysis
+- Cryptography and coding theory applications
 
 ---
 
@@ -320,9 +304,9 @@ Solution: x=0, y=0, z=1
 | Solver | Complexity | Complete | Use Case | Status |
 |--------|-----------|----------|----------|--------|
 | **Horn-SAT** | O(n+m) | ✅ Yes | Logic programming | ✅ Done |
+| **XOR-SAT** | O(n³) | ✅ Yes | Cryptography, coding theory | ✅ Done |
 | **CDCL** | O(2ⁿ)* | ✅ Yes | Large structured SAT | 🚧 Planned |
 | **WalkSAT** | Varies | ❌ No | Quick solutions | 🚧 Planned |
-| **XOR-SAT** | O(n³) | ✅ Yes | Cryptography | 🚧 Planned |
 
 *Much faster in practice
 
@@ -336,7 +320,14 @@ Solution: x=0, y=0, z=1
 - [x] All-false initialization
 - [x] Statistics tracking
 
-### Version 0.3: CDCL
+### Version 0.3: XOR-SAT ✅
+- [x] Gaussian elimination over GF(2)
+- [x] Augmented matrix construction
+- [x] Contradiction detection
+- [x] Back substitution
+- [x] Statistics tracking
+
+### Version 0.4: CDCL
 - [ ] Unit propagation (BCP)
 - [ ] Conflict analysis
 - [ ] Clause learning
@@ -344,15 +335,11 @@ Solution: x=0, y=0, z=1
 - [ ] Watched literals
 - [ ] Non-chronological backtracking
 
-### Version 0.4: WalkSAT
+### Version 0.5: WalkSAT
 - [ ] Basic WalkSAT
 - [ ] Novelty variant
 - [ ] Configurable noise parameter
 - [ ] Multi-restart support
-
-### Version 0.5: XOR-SAT
-- [ ] XOR-SAT solver (Gaussian elimination)
-- [ ] Automatic solver selection based on formula type
 
 ---
 
