@@ -2,7 +2,7 @@
 
 from .cnf import Literal, Clause, CNFExpression
 from .twosatsolver import TwoSATSolver, solve_2sat, is_2sat_satisfiable, is_2sat
-from .dpll import DPLLSolver, solve_sat
+from .dpll import DPLLSolver, solve_sat, find_all_sat_solutions, count_sat_solutions
 from .hornsat import HornSATSolver, solve_horn_sat, is_horn_formula
 from .xorsat import XORSATSolver, solve_xorsat, get_xorsat_stats
 from .walksat import WalkSATSolver, solve_walksat, get_walksat_stats
@@ -44,6 +44,8 @@ __all__ = [
     'is_2sat',
     'DPLLSolver',
     'solve_sat',
+    'find_all_sat_solutions',
+    'count_sat_solutions',
     'HornSATSolver',
     'solve_horn_sat',
     'is_horn_formula',

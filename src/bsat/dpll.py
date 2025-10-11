@@ -50,6 +50,67 @@ class DPLLSolver:
         assignment = {}
         return self._dpll(assignment, list(self.cnf.clauses))
 
+    def find_all_solutions(self, max_solutions: Optional[int] = None) -> List[Dict[str, bool]]:
+        """
+        Find all satisfying assignments (or up to max_solutions).
+
+        This enumerates all possible solutions by continuing the search
+        after finding each solution. Can be exponential in the number
+        of solutions!
+
+        Args:
+            max_solutions: Maximum number of solutions to find (None = all)
+
+        Returns:
+            List of all satisfying assignments found
+
+        Note:
+            If unit propagation or pure literal elimination is enabled,
+            some solutions may be grouped. To find ALL distinct solutions,
+            create solver with use_unit_propagation=False and use_pure_literal=False.
+
+        Example:
+            >>> cnf = CNFExpression.parse("(x | y)")
+            >>> # With optimizations: may find fewer solutions
+            >>> solver1 = DPLLSolver(cnf)
+            >>> len(solver1.find_all_solutions())  # May be < 3
+            2
+            >>> # Without optimizations: finds all distinct solutions
+            >>> solver2 = DPLLSolver(cnf, use_unit_propagation=False, use_pure_literal=False)
+            >>> len(solver2.find_all_solutions())  # All 3: {x:T,y:F}, {x:F,y:T}, {x:T,y:T}
+            3
+        """
+        self.num_decisions = 0
+        self.num_unit_propagations = 0
+        self.num_pure_literals = 0
+        self.solutions = []
+        self.max_solutions = max_solutions
+        assignment = {}
+        self._dpll_all(assignment, list(self.cnf.clauses))
+        return self.solutions
+
+    def count_solutions(self, max_count: Optional[int] = None) -> int:
+        """
+        Count the number of satisfying assignments (up to max_count).
+
+        More efficient than find_all_solutions() when you only need the count,
+        as it doesn't store the actual assignments.
+
+        Args:
+            max_count: Maximum count (None = count all, may be slow!)
+
+        Returns:
+            Number of satisfying assignments
+
+        Example:
+            >>> cnf = CNFExpression.parse("(x | y)")
+            >>> solver = DPLLSolver(cnf)
+            >>> solver.count_solutions()
+            3
+        """
+        solutions = self.find_all_solutions(max_solutions=max_count)
+        return len(solutions)
+
     def _dpll(self, assignment: Dict[str, bool], clauses: List[Clause]) -> Optional[Dict[str, bool]]:
         """
         Recursive DPLL algorithm with optimizations.
@@ -138,6 +199,130 @@ class DPLLSolver:
         # Both assignments failed, backtrack
         del assignment[unassigned]
         return None
+
+    def _dpll_all(self, assignment: Dict[str, bool], clauses: List[Clause]) -> None:
+        """
+        Recursive DPLL that finds ALL solutions (not just first one).
+
+        Instead of returning when a solution is found, collect it and continue
+        searching by forcing backtracking.
+
+        Args:
+            assignment: Current partial variable assignment
+            clauses: Current set of clauses (may be simplified)
+        """
+        # Check if we've found enough solutions
+        if self.max_solutions is not None and len(self.solutions) >= self.max_solutions:
+            return
+
+        # Simplify clauses based on current assignment
+        simplified_clauses = self._simplify_clauses(clauses, assignment)
+
+        # Base case 1: Empty clause found (conflict)
+        if any(not clause.literals for clause in simplified_clauses):
+            return
+
+        # Base case 2: All clauses satisfied
+        if not simplified_clauses:
+            # Find unassigned variables
+            unassigned_vars = [v for v in self.variables if v not in assignment]
+
+            if not unassigned_vars:
+                # All variables assigned - store this solution
+                self.solutions.append(assignment.copy())
+                return
+
+            # Enumerate all combinations of unassigned variables
+            # This handles the case where multiple variables don't affect any clause
+            self._enumerate_unassigned(assignment, unassigned_vars, 0)
+            return
+
+        # Unit Propagation
+        if self.use_unit_propagation:
+            unit_clause = self._find_unit_clause(simplified_clauses, assignment)
+            if unit_clause is not None:
+                literal = unit_clause.literals[0]
+                var = literal.variable
+                value = not literal.negated
+
+                self.num_unit_propagations += 1
+                assignment[var] = value
+                self._dpll_all(assignment, simplified_clauses)
+
+                # Backtrack
+                del assignment[var]
+                return
+
+        # Pure Literal Elimination
+        if self.use_pure_literal:
+            pure_literal = self._find_pure_literal(simplified_clauses, assignment)
+            if pure_literal is not None:
+                var = pure_literal.variable
+                value = not pure_literal.negated
+
+                self.num_pure_literals += 1
+                assignment[var] = value
+                self._dpll_all(assignment, simplified_clauses)
+
+                # Backtrack
+                del assignment[var]
+                return
+
+        # Choose next unassigned variable
+        unassigned = self._get_unassigned_variable(assignment)
+        if unassigned is None:
+            # All variables assigned
+            if self.cnf.evaluate(assignment):
+                self.solutions.append(assignment.copy())
+            return
+
+        self.num_decisions += 1
+
+        # Try assigning True
+        assignment[unassigned] = True
+        self._dpll_all(assignment, simplified_clauses)
+
+        # Try assigning False
+        assignment[unassigned] = False
+        self._dpll_all(assignment, simplified_clauses)
+
+        # Backtrack
+        del assignment[unassigned]
+
+    def _enumerate_unassigned(self, assignment: Dict[str, bool], unassigned_vars: List[str], index: int) -> None:
+        """
+        Enumerate all combinations of unassigned variables.
+
+        When all clauses are satisfied but variables remain unassigned,
+        we need to enumerate all 2^k combinations where k is the number
+        of unassigned variables.
+
+        Args:
+            assignment: Current assignment (will be modified)
+            unassigned_vars: List of unassigned variables
+            index: Current index in unassigned_vars
+        """
+        # Check if we've found enough solutions
+        if self.max_solutions is not None and len(self.solutions) >= self.max_solutions:
+            return
+
+        # Base case: assigned all unassigned variables
+        if index >= len(unassigned_vars):
+            self.solutions.append(assignment.copy())
+            return
+
+        var = unassigned_vars[index]
+
+        # Try True
+        assignment[var] = True
+        self._enumerate_unassigned(assignment, unassigned_vars, index + 1)
+
+        # Try False
+        assignment[var] = False
+        self._enumerate_unassigned(assignment, unassigned_vars, index + 1)
+
+        # Backtrack
+        del assignment[var]
 
     def _simplify_clauses(self, clauses: List[Clause], assignment: Dict[str, bool]) -> List[Clause]:
         """
@@ -285,3 +470,48 @@ def solve_sat(cnf: CNFExpression) -> Optional[Dict[str, bool]]:
     """
     solver = DPLLSolver(cnf)
     return solver.solve()
+
+
+def find_all_sat_solutions(cnf: CNFExpression, max_solutions: Optional[int] = None) -> List[Dict[str, bool]]:
+    """
+    Find all satisfying assignments for a SAT problem.
+
+    Args:
+        cnf: The CNF expression to solve
+        max_solutions: Maximum number of solutions to find (None = all)
+
+    Returns:
+        List of all satisfying assignments
+
+    Warning:
+        Can be exponential! For n variables, there can be up to 2^n solutions.
+        Use max_solutions to limit the search.
+
+    Example:
+        >>> cnf = CNFExpression.parse("(x | y)")
+        >>> solutions = find_all_sat_solutions(cnf)
+        >>> len(solutions)  # 3: {x:T,y:F}, {x:F,y:T}, {x:T,y:T}
+        3
+    """
+    solver = DPLLSolver(cnf)
+    return solver.find_all_solutions(max_solutions=max_solutions)
+
+
+def count_sat_solutions(cnf: CNFExpression, max_count: Optional[int] = None) -> int:
+    """
+    Count the number of satisfying assignments.
+
+    Args:
+        cnf: The CNF expression to solve
+        max_count: Maximum count to compute (None = count all)
+
+    Returns:
+        Number of satisfying assignments
+
+    Example:
+        >>> cnf = CNFExpression.parse("(x | y)")
+        >>> count_sat_solutions(cnf)
+        3
+    """
+    solver = DPLLSolver(cnf)
+    return solver.count_solutions(max_count=max_count)
