@@ -515,7 +515,7 @@ SAT solving is used in many real-world applications:
 
 ### Modern Surveys
 
-- [Malik & Zhang (2009): "Boolean Satisfiability: From Theoretical Hardness to Practical Success"](https://www.cs.princeton.edu/~sharad/p394-malik.pdf)
+- [Malik & Zhang (2009): "Boolean Satisfiability: From Theoretical Hardness to Practical Success"](https://dl.acm.org/doi/10.1145/1536616.1536637)
 
 ## Next Steps
 
