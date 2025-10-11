@@ -204,6 +204,80 @@ solver_pure = DPLLSolver(cnf,
 solver_both = DPLLSolver(cnf)
 ```
 
+### Solution Enumeration
+
+The DPLL solver can find **all satisfying assignments**, not just one:
+
+```python
+from bsat import find_all_sat_solutions, count_sat_solutions, CNFExpression
+
+# Find ALL solutions
+formula = "(x | y)"
+cnf = CNFExpression.parse(formula)
+
+# Method 1: Using convenience functions
+all_solutions = find_all_sat_solutions(cnf)
+print(f"Found {len(all_solutions)} solutions")
+for sol in all_solutions:
+    print(f"  {sol}")
+
+# Method 2: Using solver class
+from bsat import DPLLSolver
+solver = DPLLSolver(cnf)
+solutions = solver.find_all_solutions()
+
+# Method 3: Just count solutions (more efficient)
+count = count_sat_solutions(cnf)
+print(f"Total solutions: {count}")
+```
+
+**Limiting the Search**:
+
+For formulas with many solutions (potentially exponential!), you can limit the search:
+
+```python
+# Find at most 100 solutions
+solutions = find_all_sat_solutions(cnf, max_solutions=100)
+
+# Or using solver directly
+solver = DPLLSolver(cnf)
+solutions = solver.find_all_solutions(max_solutions=100)
+```
+
+**Important Note on Optimizations**:
+
+When optimizations are enabled (default), pure literal elimination may group some solutions together:
+
+```python
+# With optimizations (default)
+solver1 = DPLLSolver(cnf)
+solutions1 = solver1.find_all_solutions()
+# May find fewer distinct solutions (some grouped)
+
+# Without optimizations
+solver2 = DPLLSolver(cnf,
+                     use_unit_propagation=False,
+                     use_pure_literal=False)
+solutions2 = solver2.find_all_solutions()
+# Finds ALL distinct solutions
+```
+
+**Why enumerate solutions?**
+
+1. **Find alternatives**: Multiple valid configurations for planning/scheduling
+2. **Model counting**: Count satisfying assignments (probabilistic reasoning)
+3. **Verify completeness**: Ensure all cases are covered
+4. **Generate test cases**: All valid inputs for a constraint system
+
+**Performance Warning**:
+
+Solution enumeration can be **exponential** in the number of variables:
+- n variables → up to 2ⁿ solutions
+- 10 variables → up to 1,024 solutions
+- 20 variables → up to 1,048,576 solutions
+
+Always use `max_solutions` for large formulas!
+
 ### Statistics
 
 The solver tracks how many decision points were explored:
@@ -316,7 +390,58 @@ result = solve_sat(cnf)
 print(f"Result: {result}")  # None (UNSAT as expected)
 ```
 
-### Example 5: Graph 3-Coloring
+### Example 5: Enumerating All Solutions
+
+Find all satisfying assignments for a formula:
+
+```python
+from bsat import DPLLSolver, CNFExpression
+
+# Scheduling problem: tasks a, b, c
+# Constraint: if a is scheduled, b must be scheduled
+formula = "(~a | b)"
+cnf = CNFExpression.parse(formula)
+
+# Find all valid schedules
+solver = DPLLSolver(cnf,
+                    use_unit_propagation=False,
+                    use_pure_literal=False)
+solutions = solver.find_all_solutions()
+
+print(f"Found {len(solutions)} valid schedules:")
+for i, sol in enumerate(solutions, 1):
+    a_status = "schedule A" if sol['a'] else "skip A"
+    b_status = "schedule B" if sol['b'] else "skip B"
+    print(f"  Option {i}: {a_status}, {b_status}")
+
+# Output:
+# Found 3 valid schedules:
+#   Option 1: skip A, skip B
+#   Option 2: skip A, schedule B
+#   Option 3: schedule A, schedule B
+```
+
+**Model Counting Example**:
+
+```python
+from bsat import count_sat_solutions, CNFExpression
+
+formula = "(x | y) & (~x | z)"
+cnf = CNFExpression.parse(formula)
+
+# Count satisfying assignments
+count = count_sat_solutions(cnf)
+total_possible = 2 ** len(cnf.get_variables())
+
+print(f"Satisfying assignments: {count}/{total_possible}")
+print(f"Probability formula is satisfied: {count/total_possible:.2%}")
+
+# Output:
+# Satisfying assignments: 6/8
+# Probability formula is satisfied: 75.00%
+```
+
+### Example 6: Graph 3-Coloring
 
 Color a graph with 3 colors such that adjacent vertices have different colors:
 
@@ -432,6 +557,7 @@ DPLL in BSAT includes:
 ✅ **Early conflict detection**
 ✅ **Unit propagation** - Forced assignments from unit clauses
 ✅ **Pure literal elimination** - Variables with single polarity
+✅ **Solution enumeration** - Find all satisfying assignments, not just one
 ✅ **Statistics tracking** - Decisions, unit props, pure literals
 
 Coming soon:
@@ -573,16 +699,18 @@ for clause in cnf.clauses:
 
 **Current** (v0.1):
 - ✅ Basic DPLL with backtracking
+- ✅ Unit propagation
+- ✅ Pure literal elimination
+- ✅ Solution enumeration
+- ✅ Model counting
 
 **Next Release** (v0.2):
-- ⏳ Unit propagation
-- ⏳ Pure literal elimination
-- ⏳ Better variable ordering
+- ⏳ Better variable ordering (VSIDS)
+- ⏳ Watched literals
 
 **Future** (v0.3+):
 - ⏳ CDCL (conflict-driven clause learning)
-- ⏳ Watched literals
-- ⏳ VSIDS heuristic
 - ⏳ Non-chronological backtracking
+- ⏳ Incremental solving
 
 Stay tuned!
