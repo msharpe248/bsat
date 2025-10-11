@@ -19,21 +19,25 @@ Welcome to the BSAT (Boolean Satisfiability) package documentation! This guide w
    - Unit propagation
    - Pure literal elimination
    - Clause subsumption
-5. [Problem Encodings](problem-encodings.md) - Encoding real-world problems as SAT
+5. [Solution Enumeration](../examples/example_enumerate_solutions.py) - Find all satisfying assignments
+   - Enumerate all solutions
+   - Count solutions
+   - Model counting
+6. [Problem Encodings](problem-encodings.md) - Encoding real-world problems as SAT
    - Graph Coloring
    - Sudoku
    - N-Queens
-6. [DIMACS Format](dimacs.md) - Industry-standard file format
+7. [DIMACS Format](dimacs.md) - Industry-standard file format
    - Reading/writing DIMACS files
    - Solution format
    - SAT competition benchmarks
-7. [Benchmarking & Performance](benchmarking.md) - Testing and comparing solvers
+8. [Benchmarking & Performance](benchmarking.md) - Testing and comparing solvers
    - Benchmark instances
    - Performance comparison
    - Scaling analysis
-8. [Examples & Tutorials](examples.md) - Practical usage examples
-9. [Theory & References](theory.md) - Academic papers and further reading
-10. [Reading List](reading-list.md) - Comprehensive bibliography of books, papers, and resources
+9. [Examples & Tutorials](examples.md) - Practical usage examples
+10. [Theory & References](theory.md) - Academic papers and further reading
+11. [Reading List](reading-list.md) - Comprehensive bibliography of books, papers, and resources
 
 ## Quick Start
 
@@ -93,6 +97,7 @@ For example:
 - ✅ **WalkSAT Solver**: Randomized local search (incomplete but often very fast)
 - ✅ **Schöning's Algorithm**: Randomized k-SAT solver with provably O(1.334^n) expected runtime for 3SAT
 - ✅ **SAT Preprocessing**: Simplification techniques (decomposition, unit propagation, pure literals, subsumption)
+- ✅ **Solution Enumeration**: Find all satisfying assignments, not just one
 - ✅ **k-SAT to 3-SAT Reduction**: Convert any CNF to 3-SAT form using auxiliary variables
 - ✅ **Pretty Printing**: Unicode symbols (∧, ∨, ¬) for readable output
 - ✅ **Multiple Input Formats**: Parse from text, JSON, or programmatic construction

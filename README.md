@@ -13,6 +13,7 @@ A Python package for learning and solving Boolean satisfiability (SAT) problems 
 ✅ **WalkSAT Solver**: Randomized local search (incomplete but often very fast)
 ✅ **Schöning's Algorithm**: Randomized k-SAT solver with O(1.334^n) expected runtime for 3SAT
 ✅ **SAT Preprocessing**: Simplification techniques (decomposition, unit propagation, subsumption)
+✅ **Solution Enumeration**: Find all satisfying assignments, not just one
 ✅ **k-SAT to 3-SAT Reduction**: Convert any CNF to 3-SAT form using auxiliary variables
 ✅ **Pretty Printing**: Unicode symbols (∧, ∨, ¬) for readable output
 ✅ **Multiple Input Formats**: Parse from text, JSON, or build programmatically
@@ -184,6 +185,29 @@ for comp in components:
         solution.update(sol)
 ```
 
+### Solution Enumeration
+
+```python
+from bsat import find_all_sat_solutions, count_sat_solutions, CNFExpression
+
+# Find ALL satisfying assignments (not just one)
+formula = "(x | y)"
+cnf = CNFExpression.parse(formula)
+
+# Find all solutions
+all_solutions = find_all_sat_solutions(cnf)
+print(f"Found {len(all_solutions)} solutions:")
+for sol in all_solutions:
+    print(f"  {sol}")
+
+# Or just count them
+count = count_sat_solutions(cnf)
+print(f"Total solutions: {count}")
+
+# Limit search for formulas with many solutions
+solutions = find_all_sat_solutions(cnf, max_solutions=100)
+```
+
 ### k-SAT to 3-SAT Reduction
 
 ```python
@@ -242,9 +266,10 @@ python examples/example_cdcl.py       # CDCL solver examples
 python examples/example_hornsat.py    # Horn-SAT solver examples
 python examples/example_xorsat.py     # XOR-SAT solver examples
 python examples/example_walksat.py    # WalkSAT solver examples
-python examples/example_schoening.py    # Schöning's algorithm examples
-python examples/example_preprocessing.py # SAT preprocessing examples
-python examples/example_reductions.py   # k-SAT to 3-SAT reduction examples
+python examples/example_schoening.py       # Schöning's algorithm examples
+python examples/example_preprocessing.py   # SAT preprocessing examples
+python examples/example_enumerate_solutions.py # Solution enumeration examples
+python examples/example_reductions.py      # k-SAT to 3-SAT reduction examples
 python examples/example_dimacs.py       # DIMACS format examples
 
 # Real-world problem encodings
