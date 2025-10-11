@@ -25,6 +25,14 @@ from .dimacs import (
     solution_to_dimacs,
     DIMACSParseError
 )
+from .preprocessing import (
+    SATPreprocessor,
+    preprocess_cnf,
+    decompose_into_components,
+    decompose_and_preprocess,
+    PreprocessingResult,
+    PreprocessingStats
+)
 
 __all__ = [
     'Literal',
@@ -63,6 +71,12 @@ __all__ = [
     'write_dimacs_file',
     'parse_dimacs_solution',
     'solution_to_dimacs',
-    'DIMACSParseError'
+    'DIMACSParseError',
+    'SATPreprocessor',
+    'preprocess_cnf',
+    'decompose_into_components',
+    'decompose_and_preprocess',
+    'PreprocessingResult',
+    'PreprocessingStats'
 ]
 __version__ = '0.1.0'

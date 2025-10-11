@@ -12,6 +12,7 @@ A Python package for learning and solving Boolean satisfiability (SAT) problems 
 ✅ **XOR-SAT Solver**: O(n³) polynomial-time solver using Gaussian elimination over GF(2)
 ✅ **WalkSAT Solver**: Randomized local search (incomplete but often very fast)
 ✅ **Schöning's Algorithm**: Randomized k-SAT solver with O(1.334^n) expected runtime for 3SAT
+✅ **SAT Preprocessing**: Simplification techniques (decomposition, unit propagation, subsumption)
 ✅ **k-SAT to 3-SAT Reduction**: Convert any CNF to 3-SAT form using auxiliary variables
 ✅ **Pretty Printing**: Unicode symbols (∧, ∨, ¬) for readable output
 ✅ **Multiple Input Formats**: Parse from text, JSON, or build programmatically
@@ -159,6 +160,30 @@ print(f"Tries: {stats.tries}")
 print(f"Total flips: {stats.total_flips}")
 ```
 
+### SAT Preprocessing (Simplification)
+
+```python
+from bsat import decompose_and_preprocess, CNFExpression, solve_sat
+
+# Complex formula with structure
+formula = "a & (a | b) & (~a | c) & (d | e) & (f | g) & f"
+cnf = CNFExpression.parse(formula)
+
+# Decompose into components and preprocess
+components, forced, stats = decompose_and_preprocess(cnf)
+
+print(f"Reduced: {stats.original_clauses} → {stats.final_clauses} clauses")
+print(f"Forced assignments: {forced}")
+print(f"Independent components: {len(components)}")
+
+# Solve remaining components
+solution = forced.copy()
+for comp in components:
+    sol = solve_sat(comp)
+    if sol:
+        solution.update(sol)
+```
+
 ### k-SAT to 3-SAT Reduction
 
 ```python
@@ -217,9 +242,10 @@ python examples/example_cdcl.py       # CDCL solver examples
 python examples/example_hornsat.py    # Horn-SAT solver examples
 python examples/example_xorsat.py     # XOR-SAT solver examples
 python examples/example_walksat.py    # WalkSAT solver examples
-python examples/example_schoening.py  # Schöning's algorithm examples
-python examples/example_reductions.py # k-SAT to 3-SAT reduction examples
-python examples/example_dimacs.py     # DIMACS format examples
+python examples/example_schoening.py    # Schöning's algorithm examples
+python examples/example_preprocessing.py # SAT preprocessing examples
+python examples/example_reductions.py   # k-SAT to 3-SAT reduction examples
+python examples/example_dimacs.py       # DIMACS format examples
 
 # Real-world problem encodings
 python examples/encodings/graph_coloring.py  # Graph coloring problems
@@ -241,9 +267,10 @@ python tests/test_cdcl.py        # CDCL tests
 python tests/test_hornsat.py     # Horn-SAT tests
 python tests/test_xorsat.py      # XOR-SAT tests
 python tests/test_walksat.py     # WalkSAT tests
-python tests/test_schoening.py   # Schöning's algorithm tests
-python tests/test_reductions.py  # k-SAT reduction tests
-python tests/test_dimacs.py      # DIMACS format tests
+python tests/test_schoening.py     # Schöning's algorithm tests
+python tests/test_preprocessing.py # Preprocessing tests
+python tests/test_reductions.py    # k-SAT reduction tests
+python tests/test_dimacs.py        # DIMACS format tests
 python tests/test_benchmarks.py  # Benchmark suite tests
 ```
 
@@ -266,6 +293,7 @@ pytest tests/
 - [XOR-SAT Solver](docs/xorsat-solver.md) - Polynomial-time XOR solver via Gaussian elimination
 - [WalkSAT Solver](docs/walksat-solver.md) - Randomized local search (incomplete but fast)
 - [Schöning's Algorithm](docs/schoening-solver.md) - Provably O(1.334^n) randomized 3SAT solver
+- [SAT Preprocessing](docs/preprocessing.md) - Simplification and decomposition techniques
 - [k-SAT to 3-SAT Reduction](docs/introduction.md#reducing-k-sat-to-3-sat) - Theory and implementation
 - [DIMACS Format](docs/dimacs.md) - Industry-standard file format for SAT solvers
 - [Problem Encodings](docs/problem-encodings.md) - Graph coloring, Sudoku, N-Queens, and more

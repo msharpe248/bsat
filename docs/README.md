@@ -14,21 +14,26 @@ Welcome to the BSAT (Boolean Satisfiability) package documentation! This guide w
    - [XOR-SAT Solver](xorsat-solver.md) - Polynomial-time solver for XOR constraints
    - [WalkSAT Solver](walksat-solver.md) - Randomized local search (incomplete but fast)
    - [Schöning's Algorithm](schoening-solver.md) - Provably O(1.334^n) randomized algorithm for k-SAT
-4. [Problem Encodings](problem-encodings.md) - Encoding real-world problems as SAT
+4. [SAT Preprocessing](preprocessing.md) - Simplification and decomposition techniques
+   - Connected component decomposition
+   - Unit propagation
+   - Pure literal elimination
+   - Clause subsumption
+5. [Problem Encodings](problem-encodings.md) - Encoding real-world problems as SAT
    - Graph Coloring
    - Sudoku
    - N-Queens
-5. [DIMACS Format](dimacs.md) - Industry-standard file format
+6. [DIMACS Format](dimacs.md) - Industry-standard file format
    - Reading/writing DIMACS files
    - Solution format
    - SAT competition benchmarks
-6. [Benchmarking & Performance](benchmarking.md) - Testing and comparing solvers
+7. [Benchmarking & Performance](benchmarking.md) - Testing and comparing solvers
    - Benchmark instances
    - Performance comparison
    - Scaling analysis
-7. [Examples & Tutorials](examples.md) - Practical usage examples
-8. [Theory & References](theory.md) - Academic papers and further reading
-9. [Reading List](reading-list.md) - Comprehensive bibliography of books, papers, and resources
+8. [Examples & Tutorials](examples.md) - Practical usage examples
+9. [Theory & References](theory.md) - Academic papers and further reading
+10. [Reading List](reading-list.md) - Comprehensive bibliography of books, papers, and resources
 
 ## Quick Start
 
@@ -87,6 +92,7 @@ For example:
 - ✅ **XOR-SAT Solver**: O(n³) polynomial-time solver using Gaussian elimination over GF(2)
 - ✅ **WalkSAT Solver**: Randomized local search (incomplete but often very fast)
 - ✅ **Schöning's Algorithm**: Randomized k-SAT solver with provably O(1.334^n) expected runtime for 3SAT
+- ✅ **SAT Preprocessing**: Simplification techniques (decomposition, unit propagation, pure literals, subsumption)
 - ✅ **k-SAT to 3-SAT Reduction**: Convert any CNF to 3-SAT form using auxiliary variables
 - ✅ **Pretty Printing**: Unicode symbols (∧, ∨, ¬) for readable output
 - ✅ **Multiple Input Formats**: Parse from text, JSON, or programmatic construction
