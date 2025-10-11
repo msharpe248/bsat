@@ -7,6 +7,7 @@ Welcome to the BSAT (Boolean Satisfiability) package documentation! This guide w
 1. [Introduction to SAT](introduction.md) - Start here if you're new to SAT problems
 2. [CNF Expressions](cnf.md) - Understanding the data structures
 3. [Solvers](solvers.md) - Overview of available solvers
+   - [Davis-Putnam Solver](davis-putnam-solver.md) - The original 1960 resolution-based algorithm (educational)
    - [2SAT Solver](2sat-solver.md) - Polynomial-time algorithm for 2SAT
    - [DPLL Solver](dpll-solver.md) - Classic backtracking algorithm for general SAT
    - [CDCL Solver](cdcl-solver.md) - Conflict-Driven Clause Learning (modern SAT solving)

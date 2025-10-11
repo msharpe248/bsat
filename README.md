@@ -5,6 +5,7 @@ A Python package for learning and solving Boolean satisfiability (SAT) problems 
 ## Features
 
 ✅ **CNF Data Structures**: Clean, Pythonic representation (Literal, Clause, CNFExpression)
+✅ **Davis-Putnam Solver**: The original 1960 resolution-based algorithm (educational)
 ✅ **2SAT Solver**: O(n+m) polynomial-time algorithm using strongly connected components
 ✅ **DPLL Solver**: Backtracking with unit propagation and pure literal elimination
 ✅ **CDCL Solver**: Conflict-Driven Clause Learning with VSIDS heuristic and restarts
@@ -259,10 +260,11 @@ Run the example scripts:
 
 ```bash
 # Solver examples
-python examples/example.py            # General CNF examples
-python examples/example_2sat.py       # 2SAT solver examples
-python examples/example_dpll.py       # DPLL solver examples
-python examples/example_cdcl.py       # CDCL solver examples
+python examples/example.py                  # General CNF examples
+python examples/example_davis_putnam.py     # Davis-Putnam (1960) historical solver
+python examples/example_2sat.py             # 2SAT solver examples
+python examples/example_dpll.py             # DPLL solver examples
+python examples/example_cdcl.py             # CDCL solver examples
 python examples/example_hornsat.py    # Horn-SAT solver examples
 python examples/example_xorsat.py     # XOR-SAT solver examples
 python examples/example_walksat.py    # WalkSAT solver examples
@@ -286,10 +288,11 @@ python examples/benchmark_comparison.py      # Compare solver performance
 Run the test suite:
 
 ```bash
-python tests/test_2sat.py        # 2SAT tests
-python tests/test_dpll.py        # DPLL tests
-python tests/test_cdcl.py        # CDCL tests
-python tests/test_hornsat.py     # Horn-SAT tests
+python tests/test_davis_putnam.py  # Davis-Putnam tests
+python tests/test_2sat.py          # 2SAT tests
+python tests/test_dpll.py          # DPLL tests
+python tests/test_cdcl.py          # CDCL tests
+python tests/test_hornsat.py       # Horn-SAT tests
 python tests/test_xorsat.py      # XOR-SAT tests
 python tests/test_walksat.py     # WalkSAT tests
 python tests/test_schoening.py     # Schöning's algorithm tests

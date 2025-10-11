@@ -1,6 +1,7 @@
 """Boolean Satisfiability (SAT) package for CNF expressions."""
 
 from .cnf import Literal, Clause, CNFExpression
+from .davis_putnam import DavisPutnamSolver, solve_davis_putnam, get_davis_putnam_stats, DavisPutnamStats
 from .twosatsolver import TwoSATSolver, solve_2sat, is_2sat_satisfiable, is_2sat
 from .dpll import DPLLSolver, solve_sat, find_all_sat_solutions, count_sat_solutions
 from .hornsat import HornSATSolver, solve_horn_sat, is_horn_formula
@@ -38,6 +39,10 @@ __all__ = [
     'Literal',
     'Clause',
     'CNFExpression',
+    'DavisPutnamSolver',
+    'solve_davis_putnam',
+    'get_davis_putnam_stats',
+    'DavisPutnamStats',
     'TwoSATSolver',
     'solve_2sat',
     'is_2sat_satisfiable',

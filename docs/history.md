@@ -70,6 +70,8 @@ Paper: *"A Computing Procedure for Quantification Theory"*
 
 **Significance**: Proved SAT is solvable in practice, not just theory
 
+**In BSAT**: [Davis-Putnam Solver Documentation](davis-putnam-solver.md) - Educational implementation showing why exponential space is problematic
+
 ### 1962: DPLL Algorithm
 **Martin Davis**, **George Logemann**, and **Donald Loveland** improve the algorithm
 
