@@ -36,8 +36,9 @@ Welcome to the BSAT (Boolean Satisfiability) package documentation! This guide w
    - Performance comparison
    - Scaling analysis
 9. [Examples & Tutorials](examples.md) - Practical usage examples
-10. [Theory & References](theory.md) - Academic papers and further reading
-11. [Reading List](reading-list.md) - Comprehensive bibliography of books, papers, and resources
+10. [History of SAT Solving](history.md) - From 1960 to present: algorithms, people, and breakthroughs
+11. [Theory & References](theory.md) - Academic papers and further reading
+12. [Reading List](reading-list.md) - Comprehensive bibliography of books, papers, and resources
 
 ## Quick Start
 
