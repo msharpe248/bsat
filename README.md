@@ -313,6 +313,7 @@ pytest tests/
 📚 **[Complete Documentation](docs/README.md)**
 
 - [Introduction to SAT](docs/introduction.md) - Start here if you're new!
+- [Terminology Reference](docs/terminology.md) - Comprehensive glossary of SAT concepts
 - [CNF Data Structures](docs/cnf.md) - Understanding the API
 - [2SAT Solver](docs/2sat-solver.md) - Polynomial-time algorithm
 - [DPLL Solver](docs/dpll-solver.md) - General SAT solving with backtracking

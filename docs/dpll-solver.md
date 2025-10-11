@@ -1,6 +1,8 @@
 # DPLL Solver
 
-The classic Davis-Putnam-Logemann-Loveland algorithm for solving general SAT and 3SAT problems.
+The classic [Davis-Putnam-Logemann-Loveland algorithm](terminology.md#dpll-davis-putnam-logemann-loveland) for solving general SAT and 3SAT problems.
+
+> **Need terminology help?** See the [Terminology Reference](terminology.md) for definitions of SAT concepts.
 
 ## Overview
 
@@ -20,8 +22,8 @@ DPLL is a **complete** and **sound** SAT solver:
 - **Sound**: If DPLL says SAT, there is a solution; if UNSAT, there isn't
 
 The algorithm systematically explores the space of possible variable assignments using:
-1. **Branching**: Try assigning a variable True, then False
-2. **Backtracking**: Undo assignments when conflicts are detected
+1. **[Branching](terminology.md#branching-decision-heuristic)**: Try assigning a variable True, then False
+2. **[Backtracking](terminology.md#backtracking)**: Undo assignments when conflicts are detected
 3. **Early termination**: Stop exploring branches that can't succeed
 
 ## The Algorithm
@@ -41,12 +43,12 @@ DPLL(formula, assignment):
     if simplified is empty:
         return assignment (SAT)
 
-    // OPTIMIZATION 1: Unit Propagation
+    // OPTIMIZATION 1: Unit Propagation (see terminology.md#unit-propagation)
     if exists unit clause (single literal):
         assign that literal to True
         return DPLL(simplified, assignment)
 
-    // OPTIMIZATION 2: Pure Literal Elimination
+    // OPTIMIZATION 2: Pure Literal Elimination (see terminology.md#pure-literal-elimination)
     if exists pure literal (only one polarity):
         assign it to satisfy all clauses
         return DPLL(simplified, assignment)

@@ -5,8 +5,9 @@ Welcome to the BSAT (Boolean Satisfiability) package documentation! This guide w
 ## Table of Contents
 
 1. [Introduction to SAT](introduction.md) - Start here if you're new to SAT problems
-2. [CNF Expressions](cnf.md) - Understanding the data structures
-3. [Solvers](solvers.md) - Overview of available solvers
+2. [Terminology Reference](terminology.md) - **Comprehensive glossary of SAT concepts and techniques**
+3. [CNF Expressions](cnf.md) - Understanding the data structures
+4. [Solvers](solvers.md) - Overview of available solvers
    - [Davis-Putnam Solver](davis-putnam-solver.md) - The original 1960 resolution-based algorithm (educational)
    - [2SAT Solver](2sat-solver.md) - Polynomial-time algorithm for 2SAT
    - [DPLL Solver](dpll-solver.md) - Classic backtracking algorithm for general SAT
@@ -15,32 +16,32 @@ Welcome to the BSAT (Boolean Satisfiability) package documentation! This guide w
    - [XOR-SAT Solver](xorsat-solver.md) - Polynomial-time solver for XOR constraints
    - [WalkSAT Solver](walksat-solver.md) - Randomized local search (incomplete but fast)
    - [Schöning's Algorithm](schoening-solver.md) - Provably O(1.334^n) randomized algorithm for k-SAT
-4. [SAT Preprocessing](preprocessing.md) - Simplification and decomposition techniques
+5. [SAT Preprocessing](preprocessing.md) - Simplification and decomposition techniques
    - Connected component decomposition
    - Unit propagation
    - Pure literal elimination
    - Clause subsumption
-5. [Solution Enumeration](../examples/example_enumerate_solutions.py) - Find all satisfying assignments
+6. [Solution Enumeration](../examples/example_enumerate_solutions.py) - Find all satisfying assignments
    - Enumerate all solutions
    - Count solutions
    - Model counting
-6. [Problem Encodings](problem-encodings.md) - Encoding real-world problems as SAT
+7. [Problem Encodings](problem-encodings.md) - Encoding real-world problems as SAT
    - Graph Coloring
    - Sudoku
    - N-Queens
-7. [DIMACS Format](dimacs.md) - Industry-standard file format
+8. [DIMACS Format](dimacs.md) - Industry-standard file format
    - Reading/writing DIMACS files
    - Solution format
    - SAT competition benchmarks
-8. [Benchmarking & Performance](benchmarking.md) - Testing and comparing solvers
+9. [Benchmarking & Performance](benchmarking.md) - Testing and comparing solvers
    - Benchmark instances
    - Performance comparison
    - Scaling analysis
-9. [Examples & Tutorials](examples.md) - Practical usage examples
-10. [History of SAT Solving](history.md) - From 1960 to present: algorithms, people, and breakthroughs
-11. [Competition-Level Requirements](competition_requirements.md) - What it takes to build a winning SAT solver
-12. [Theory & References](theory.md) - Academic papers and further reading
-13. [Reading List](reading-list.md) - Comprehensive bibliography of books, papers, and resources
+10. [Examples & Tutorials](examples.md) - Practical usage examples
+11. [History of SAT Solving](history.md) - From 1960 to present: algorithms, people, and breakthroughs
+12. [Competition-Level Requirements](competition_requirements.md) - What it takes to build a winning SAT solver
+13. [Theory & References](theory.md) - Academic papers and further reading
+14. [Reading List](reading-list.md) - Comprehensive bibliography of books, papers, and resources
 
 ## Quick Start
 
@@ -109,6 +110,7 @@ For example:
 ## Next Steps
 
 - **New to SAT?** Start with [Introduction to SAT](introduction.md)
+- **Need to look up a term?** Check the [Terminology Reference](terminology.md)
 - **Ready to code?** Check out [Examples & Tutorials](examples.md)
 - **Want to understand the algorithms?** See the individual solver pages
 - **Looking for theory?** Visit [Theory & References](theory.md)

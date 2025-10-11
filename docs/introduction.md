@@ -2,6 +2,8 @@
 
 A beginner-friendly introduction to the Boolean Satisfiability Problem.
 
+> **Looking for a specific term?** See the [Terminology Reference](terminology.md) for comprehensive definitions.
+
 ## What is a Boolean Formula?
 
 A **Boolean formula** is a logical expression using:
@@ -49,13 +51,13 @@ This says "x is True AND x is False" - impossible!
 
 ## Conjunctive Normal Form (CNF)
 
-Most SAT solvers work with formulas in **Conjunctive Normal Form (CNF)**:
+Most SAT solvers work with formulas in **[Conjunctive Normal Form (CNF)](terminology.md#cnf-conjunctive-normal-form)**:
 
 ### Definition
 
 A CNF formula is:
-1. A **conjunction** (AND) of **clauses**
-2. Each **clause** is a **disjunction** (OR) of **literals**
+1. A **conjunction** (AND) of **[clauses](terminology.md#clause)**
+2. Each **clause** is a **disjunction** (OR) of **[literals](terminology.md#literal)**
 3. A **literal** is a variable or its negation
 
 ### Structure

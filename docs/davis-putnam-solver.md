@@ -1,6 +1,8 @@
 # Davis-Putnam Algorithm (1960)
 
-The original SAT solver - using resolution-based variable elimination.
+The original SAT solver - using [resolution](terminology.md#resolution)-based variable elimination.
+
+> **Need terminology help?** See the [Terminology Reference](terminology.md) for definitions of SAT concepts.
 
 ## Overview
 
@@ -42,8 +44,8 @@ Davis-Putnam solves SAT by **eliminating variables via resolution**.
 Input: CNF formula F with variables {x₁, x₂, ..., xₙ}
 
 Repeat until no clauses remain:
-    1. Apply one-literal rule (unit propagation)
-    2. Apply affirmative-negative rule (pure literal elimination)
+    1. Apply one-literal rule ([unit propagation](terminology.md#unit-propagation-boolean-constraint-propagation--bcp))
+    2. Apply affirmative-negative rule ([pure literal elimination](terminology.md#pure-literal-elimination))
     3. Pick a variable x
     4. Resolve all clauses on x:
        - For each (x ∨ A) and (¬x ∨ B), create (A ∨ B)

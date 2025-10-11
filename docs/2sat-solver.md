@@ -1,6 +1,8 @@
 # 2SAT Solver
 
-A polynomial-time algorithm for solving 2SAT problems using strongly connected components.
+A [polynomial-time](terminology.md#polynomial-time) algorithm for solving [2SAT](terminology.md#2-sat) problems using [strongly connected components](terminology.md#scc-strongly-connected-components).
+
+> **Need terminology help?** See the [Terminology Reference](terminology.md) for definitions of SAT concepts.
 
 ## Overview
 

@@ -1,6 +1,8 @@
 # CDCL Solver
 
-Conflict-Driven Clause Learning (CDCL) is the algorithm behind modern industrial SAT solvers. This document explains the CDCL implementation in BSAT.
+[Conflict-Driven Clause Learning (CDCL)](terminology.md#cdcl-conflict-driven-clause-learning) is the algorithm behind modern industrial SAT solvers. This document explains the CDCL implementation in BSAT.
+
+> **Need terminology help?** See the [Terminology Reference](terminology.md) for definitions of CDCL concepts.
 
 ## Table of Contents
 
@@ -21,10 +23,10 @@ Conflict-Driven Clause Learning (CDCL) is the algorithm behind modern industrial
 
 ### What Makes CDCL Special?
 
-- **Clause Learning**: When conflicts occur, CDCL analyzes why and learns new clauses to prevent repeating the same mistakes
-- **Non-chronological Backtracking**: Can jump back multiple decision levels at once
-- **VSIDS Heuristic**: Intelligent variable selection that focuses on variables involved in recent conflicts
-- **Restart Strategy**: Periodically restarts search while keeping learned clauses
+- **[Clause Learning](terminology.md#learned-clause-conflict-clause)**: When conflicts occur, CDCL analyzes why and learns new clauses to prevent repeating the same mistakes
+- **Non-chronological Backtracking**: Can jump back multiple [decision levels](terminology.md#decision-level) at once
+- **[VSIDS Heuristic](terminology.md#vsids-variable-state-independent-decaying-sum)**: Intelligent variable selection that focuses on variables involved in recent conflicts
+- **[Restart Strategy](terminology.md#restart)**: Periodically restarts search while keeping learned clauses
 
 ### Status
 
