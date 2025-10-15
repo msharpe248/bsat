@@ -54,15 +54,27 @@ class BaseSolverWrapper:
             except Exception as e:
                 print(f"Error sending state: {e}")
 
-    async def emit_complete(self, result: Optional[Dict[str, bool]], stats: Dict[str, Any] = None):
+    async def emit_complete(self, result: Optional[Dict[str, bool]] = None, stats: Dict[str, Any] = None, result_type: str = None):
         """Emit completion message."""
-        complete_msg = {
-            "type": "complete",
-            "result": "SAT" if result else "UNSAT",
-            "solution": result if result else {},
-            "stats": stats if stats else {},
-            "total_steps": self.step_count
-        }
+        # Handle different result types
+        if result_type:
+            # Custom result type (e.g., "REDUCTION_COMPLETE")
+            complete_msg = {
+                "type": "complete",
+                "result": result_type,
+                "solution": None,
+                "stats": stats if stats else {},
+                "total_steps": self.step_count
+            }
+        else:
+            # Standard SAT/UNSAT result
+            complete_msg = {
+                "type": "complete",
+                "result": "SAT" if result else "UNSAT",
+                "solution": result if result else {},
+                "stats": stats if stats else {},
+                "total_steps": self.step_count
+            }
 
         if self.websocket:
             try:
@@ -477,12 +489,16 @@ class ThreeSATReductionWrapper(BaseSolverWrapper):
         })
 
         # Emit final result
-        await self.emit_complete("3SAT", {
-            "original_clauses": len(self.cnf.clauses),
-            "reduced_clauses": len(reduced_clauses),
-            "auxiliary_variables_added": total_aux_vars,
-            "reduction_ratio": len(reduced_clauses) / len(self.cnf.clauses) if self.cnf.clauses else 0
-        })
+        await self.emit_complete(
+            result=None,
+            stats={
+                "original_clauses": len(self.cnf.clauses),
+                "reduced_clauses": len(reduced_clauses),
+                "auxiliary_variables_added": total_aux_vars,
+                "reduction_ratio": f"{len(reduced_clauses) / len(self.cnf.clauses):.2f}" if self.cnf.clauses else "0"
+            },
+            result_type="REDUCTION_COMPLETE"
+        )
 
         return "3SAT"
 

@@ -408,27 +408,35 @@ class SATVisualizerApp {
     }
 
     handleCompletion(message) {
-        this.logConsole(
-            `Solver completed: ${message.result}`,
-            message.result === 'SAT' ? 'success' : 'warning'
-        );
-
-        if (message.result === 'SAT' && message.solution) {
-            this.logConsole('Solution: ' + JSON.stringify(message.solution), 'success');
-            this.displaySolution(message.result, message.solution);
+        // Handle different result types
+        if (message.result === 'REDUCTION_COMPLETE') {
+            this.logConsole('Reduction completed successfully', 'success');
+            this.vizTitle.textContent = 'Visualization - Reduction Complete';
+            // Don't show solution button for reductions
+            this.toggleSolutionBtn.style.display = 'none';
         } else {
-            this.displaySolution(message.result, null);
+            // Standard SAT/UNSAT result
+            this.logConsole(
+                `Solver completed: ${message.result}`,
+                message.result === 'SAT' ? 'success' : 'warning'
+            );
+
+            if (message.result === 'SAT' && message.solution) {
+                this.logConsole('Solution: ' + JSON.stringify(message.solution), 'success');
+                this.displaySolution(message.result, message.solution);
+            } else {
+                this.displaySolution(message.result, null);
+            }
+
+            this.vizTitle.textContent = `Visualization - ${message.result}`;
+            // Show solution button for SAT/UNSAT results
+            this.toggleSolutionBtn.style.display = 'inline-block';
         }
 
         // Display statistics
         if (message.stats) {
             this.displayStatistics(message.stats);
         }
-
-        this.vizTitle.textContent = `Visualization - ${message.result}`;
-
-        // Show solution button
-        this.toggleSolutionBtn.style.display = 'inline-block';
     }
 
     displaySolution(result, solution) {
