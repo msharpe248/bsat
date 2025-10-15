@@ -96,8 +96,10 @@ class ThreeSATReductionVisualizer {
         const originalClause = this.createClauseCard(data.original_clause, data.clause_index, 'kept');
         this.originalDiv.appendChild(originalClause);
 
-        // Add to reduced list (same clause)
+        // Add to reduced list (same clause) - mark with data attribute
         const reducedClause = this.createClauseCard(data.original_clause, data.clause_index, 'kept');
+        reducedClause.setAttribute('data-original-index', data.clause_index);
+        reducedClause.setAttribute('data-is-first-reduced', 'true');
         this.reducedDiv.appendChild(reducedClause);
 
         // Track mapping for connector line
@@ -145,13 +147,18 @@ class ThreeSATReductionVisualizer {
 
     handleAddClause(data, position) {
         const reducedClause = this.createClauseCard(data.new_clause, null, 'new', position);
-        this.reducedDiv.appendChild(reducedClause);
 
-        // Add to current split mapping
+        // Mark the first reduced clause for this split
         if (this.currentSplitMapping) {
+            reducedClause.setAttribute('data-original-index', this.currentSplitMapping.clauseIndex);
+            if (this.currentSplitMapping.numNewClauses === 0) {
+                reducedClause.setAttribute('data-is-first-reduced', 'true');
+            }
             this.currentSplitMapping.reduced.push(reducedClause);
             this.currentSplitMapping.numNewClauses++;
         }
+
+        this.reducedDiv.appendChild(reducedClause);
 
         // Update explanation
         const explanationItem = document.createElement('div');
@@ -253,9 +260,20 @@ class ThreeSATReductionVisualizer {
 
         const originalRect = mapping.original.getBoundingClientRect();
 
+        // Find the FIRST reduced clause for this mapping using data attribute
+        // This ensures we connect to the correct clause even if layout has shifted
+        const firstReducedClause = this.reducedDiv.querySelector(
+            `[data-original-index="${mapping.clauseIndex}"][data-is-first-reduced="true"]`
+        );
+
+        if (!firstReducedClause) {
+            console.error('Could not find first reduced clause for', mapping.clauseIndex);
+            return;
+        }
+
         // Calculate the group bounding box for all reduced clauses
         if (mapping.reduced.length > 0) {
-            const firstReducedRect = mapping.reduced[0].getBoundingClientRect();
+            const firstReducedRect = firstReducedClause.getBoundingClientRect();
             const lastReducedRect = mapping.reduced[mapping.reduced.length - 1].getBoundingClientRect();
 
             // Start point: right edge, middle of original clause
