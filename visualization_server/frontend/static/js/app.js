@@ -412,8 +412,11 @@ class SATVisualizerApp {
         if (message.result === 'REDUCTION_COMPLETE') {
             this.logConsole('Reduction completed successfully', 'success');
             this.vizTitle.textContent = 'Visualization - Reduction Complete';
-            // Don't show solution button for reductions
-            this.toggleSolutionBtn.style.display = 'none';
+            // Show the reduced formula in solution panel
+            if (message.solution && message.solution.reduced_formula) {
+                this.displaySolution(message.result, message.solution);
+                this.toggleSolutionBtn.style.display = 'inline-block';
+            }
         } else {
             // Standard SAT/UNSAT result
             this.logConsole(
@@ -441,6 +444,48 @@ class SATVisualizerApp {
 
     displaySolution(result, solution) {
         this.solutionContent.innerHTML = '';
+
+        if (result === 'REDUCTION_COMPLETE' && solution && solution.reduced_formula) {
+            const headerDiv = document.createElement('div');
+            headerDiv.className = 'solution-item';
+            headerDiv.innerHTML = '<strong>Reduced 3-SAT Formula</strong><br>Copy the formula below:';
+            this.solutionContent.appendChild(headerDiv);
+
+            // Display reduced formula in a copyable text area
+            const formulaContainer = document.createElement('div');
+            formulaContainer.className = 'solution-item';
+            formulaContainer.style.position = 'relative';
+
+            const textarea = document.createElement('textarea');
+            textarea.className = 'formula-output';
+            textarea.value = solution.reduced_formula;
+            textarea.readOnly = true;
+            textarea.rows = 6;
+            textarea.style.width = '100%';
+            textarea.style.fontFamily = 'monospace';
+            textarea.style.padding = '0.5rem';
+            textarea.style.border = '1px solid var(--border-color)';
+            textarea.style.borderRadius = '4px';
+            textarea.style.background = 'var(--bg-color)';
+            textarea.style.color = 'var(--text-color)';
+            textarea.style.resize = 'vertical';
+
+            const copyBtn = document.createElement('button');
+            copyBtn.className = 'btn btn-sm';
+            copyBtn.textContent = '📋 Copy';
+            copyBtn.style.marginTop = '0.5rem';
+            copyBtn.onclick = () => {
+                textarea.select();
+                document.execCommand('copy');
+                copyBtn.textContent = '✓ Copied!';
+                setTimeout(() => { copyBtn.textContent = '📋 Copy'; }, 2000);
+            };
+
+            formulaContainer.appendChild(textarea);
+            formulaContainer.appendChild(copyBtn);
+            this.solutionContent.appendChild(formulaContainer);
+            return;
+        }
 
         if (result === 'UNSAT') {
             const unsatDiv = document.createElement('div');

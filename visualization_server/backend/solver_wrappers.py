@@ -54,7 +54,7 @@ class BaseSolverWrapper:
             except Exception as e:
                 print(f"Error sending state: {e}")
 
-    async def emit_complete(self, result: Optional[Dict[str, bool]] = None, stats: Dict[str, Any] = None, result_type: str = None):
+    async def emit_complete(self, result: Optional[Dict[str, bool]] = None, stats: Dict[str, Any] = None, result_type: str = None, solution_data: Any = None):
         """Emit completion message."""
         # Handle different result types
         if result_type:
@@ -62,7 +62,7 @@ class BaseSolverWrapper:
             complete_msg = {
                 "type": "complete",
                 "result": result_type,
-                "solution": None,
+                "solution": solution_data,
                 "stats": stats if stats else {},
                 "total_steps": self.step_count
             }
@@ -488,7 +488,7 @@ class ThreeSATReductionWrapper(BaseSolverWrapper):
             "total_variables": len(self.cnf.get_variables()) + total_aux_vars
         })
 
-        # Emit final result
+        # Emit final result with reduced formula as solution
         await self.emit_complete(
             result=None,
             stats={
@@ -497,7 +497,8 @@ class ThreeSATReductionWrapper(BaseSolverWrapper):
                 "auxiliary_variables_added": total_aux_vars,
                 "reduction_ratio": f"{len(reduced_clauses) / len(self.cnf.clauses):.2f}" if self.cnf.clauses else "0"
             },
-            result_type="REDUCTION_COMPLETE"
+            result_type="REDUCTION_COMPLETE",
+            solution_data={"reduced_formula": reduced_formula_str}
         )
 
         return "3SAT"
