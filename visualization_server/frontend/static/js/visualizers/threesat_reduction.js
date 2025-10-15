@@ -23,13 +23,15 @@ class ThreeSATReductionVisualizer {
                 <h3>k-SAT to 3-SAT Reduction</h3>
                 <div class="reduction-stats" id="reductionStats"></div>
             </div>
-            <div class="reduction-columns">
-                <div class="reduction-column">
+            <div class="reduction-columns" id="reductionColumns" style="position: relative;">
+                <svg id="connectionLines" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 1;">
+                </svg>
+                <div class="reduction-column" style="position: relative; z-index: 2;">
                     <h4>Original Formula</h4>
                     <div class="clause-list" id="originalClauses"></div>
                 </div>
-                <div class="reduction-arrow">→</div>
-                <div class="reduction-column">
+                <div class="reduction-arrow" style="position: relative; z-index: 2;">→</div>
+                <div class="reduction-column" style="position: relative; z-index: 2;">
                     <h4>Reduced 3-SAT Formula</h4>
                     <div class="clause-list" id="reducedClauses"></div>
                 </div>
@@ -43,6 +45,11 @@ class ThreeSATReductionVisualizer {
         this.originalDiv = document.getElementById('originalClauses');
         this.reducedDiv = document.getElementById('reducedClauses');
         this.explanationDiv = document.getElementById('reductionExplanation');
+        this.columnsDiv = document.getElementById('reductionColumns');
+        this.svg = document.getElementById('connectionLines');
+
+        // Track clause mappings for drawing lines
+        this.clauseMappings = [];
     }
 
     update(state) {
@@ -93,6 +100,16 @@ class ThreeSATReductionVisualizer {
         const reducedClause = this.createClauseCard(data.original_clause, data.clause_index, 'kept');
         this.reducedDiv.appendChild(reducedClause);
 
+        // Track mapping for connector line
+        this.clauseMappings.push({
+            original: originalClause,
+            reduced: [reducedClause],
+            clauseIndex: data.clause_index
+        });
+
+        // Draw connector line after a short delay to ensure layout
+        setTimeout(() => this.drawConnectorLines(), 100);
+
         this.explanationDiv.innerHTML = `
             <div class="explanation-item">
                 Clause ${data.clause_index + 1}: ${data.reason}
@@ -108,6 +125,13 @@ class ThreeSATReductionVisualizer {
         // Track auxiliary variables
         data.aux_variables.forEach(aux => this.auxVariables.add(aux));
 
+        // Start tracking this split - will accumulate reduced clauses
+        this.currentSplitMapping = {
+            original: originalClause,
+            reduced: [],
+            clauseIndex: data.clause_index
+        };
+
         this.explanationDiv.innerHTML = `
             <div class="explanation-item highlight">
                 Splitting clause ${data.clause_index + 1}: ${data.original_clause}
@@ -121,6 +145,11 @@ class ThreeSATReductionVisualizer {
         const reducedClause = this.createClauseCard(data.new_clause, null, 'new', position);
         this.reducedDiv.appendChild(reducedClause);
 
+        // Add to current split mapping
+        if (this.currentSplitMapping) {
+            this.currentSplitMapping.reduced.push(reducedClause);
+        }
+
         // Update explanation
         const explanationItem = document.createElement('div');
         explanationItem.className = 'explanation-item';
@@ -133,6 +162,15 @@ class ThreeSATReductionVisualizer {
     }
 
     handleSplitComplete(data) {
+        // Save the completed split mapping
+        if (this.currentSplitMapping) {
+            this.clauseMappings.push(this.currentSplitMapping);
+            this.currentSplitMapping = null;
+
+            // Draw connector lines after a short delay to ensure layout
+            setTimeout(() => this.drawConnectorLines(), 100);
+        }
+
         // Highlight the completed split
         this.explanationDiv.innerHTML = `
             <div class="explanation-item success">
@@ -193,5 +231,74 @@ class ThreeSATReductionVisualizer {
         // Remove outer parentheses and split by |
         const cleaned = clauseStr.replace(/^\(|\)$/g, '').trim();
         return cleaned.split('|').map(lit => lit.trim());
+    }
+
+    drawConnectorLines() {
+        // Clear existing lines
+        this.svg.innerHTML = '';
+
+        // Get the bounding rect of the columns container
+        const containerRect = this.columnsDiv.getBoundingClientRect();
+
+        // Draw lines for each mapping
+        this.clauseMappings.forEach(mapping => {
+            const originalRect = mapping.original.getBoundingClientRect();
+
+            // Calculate the group bounding box for all reduced clauses
+            if (mapping.reduced.length > 0) {
+                const firstReducedRect = mapping.reduced[0].getBoundingClientRect();
+                const lastReducedRect = mapping.reduced[mapping.reduced.length - 1].getBoundingClientRect();
+
+                // Start point: right edge, middle of original clause
+                const x1 = originalRect.right - containerRect.left;
+                const y1 = originalRect.top + originalRect.height / 2 - containerRect.top;
+
+                // End point: left edge, middle of the reduced clause group
+                const x2 = firstReducedRect.left - containerRect.left;
+                const y2Top = firstReducedRect.top - containerRect.top;
+                const y2Bottom = lastReducedRect.bottom - containerRect.top;
+                const y2 = (y2Top + y2Bottom) / 2;
+
+                // Create SVG path with curved line
+                const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+
+                // Control points for bezier curve
+                const midX = (x1 + x2) / 2;
+                const pathData = `M ${x1} ${y1} C ${midX} ${y1}, ${midX} ${y2}, ${x2} ${y2}`;
+
+                path.setAttribute('d', pathData);
+                path.setAttribute('stroke', '#10b981'); // green color
+                path.setAttribute('stroke-width', '2');
+                path.setAttribute('fill', 'none');
+                path.setAttribute('opacity', '0.6');
+
+                this.svg.appendChild(path);
+
+                // Add a small circle at the end
+                const circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+                circle.setAttribute('cx', x2);
+                circle.setAttribute('cy', y2);
+                circle.setAttribute('r', '4');
+                circle.setAttribute('fill', '#10b981');
+                circle.setAttribute('opacity', '0.8');
+
+                this.svg.appendChild(circle);
+
+                // Draw a bracket on the right side if there are multiple reduced clauses
+                if (mapping.reduced.length > 1) {
+                    const bracketPath = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+                    const bracketX = x2 - 10;
+                    const bracketData = `M ${bracketX} ${y2Top} L ${x2} ${y2Top} L ${x2} ${y2Bottom} L ${bracketX} ${y2Bottom}`;
+
+                    bracketPath.setAttribute('d', bracketData);
+                    bracketPath.setAttribute('stroke', '#10b981');
+                    bracketPath.setAttribute('stroke-width', '1.5');
+                    bracketPath.setAttribute('fill', 'none');
+                    bracketPath.setAttribute('opacity', '0.4');
+
+                    this.svg.appendChild(bracketPath);
+                }
+            }
+        });
     }
 }
