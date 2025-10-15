@@ -101,14 +101,15 @@ class ThreeSATReductionVisualizer {
         this.reducedDiv.appendChild(reducedClause);
 
         // Track mapping for connector line
-        this.clauseMappings.push({
+        const mapping = {
             original: originalClause,
             reduced: [reducedClause],
             clauseIndex: data.clause_index
-        });
+        };
+        this.clauseMappings.push(mapping);
 
-        // Draw connector line after a short delay to ensure layout
-        setTimeout(() => this.drawConnectorLines(), 100);
+        // Draw connector line for this specific mapping after a short delay to ensure layout
+        setTimeout(() => this.drawConnectorLine(mapping), 100);
 
         this.explanationDiv.innerHTML = `
             <div class="explanation-item">
@@ -164,11 +165,12 @@ class ThreeSATReductionVisualizer {
     handleSplitComplete(data) {
         // Save the completed split mapping
         if (this.currentSplitMapping) {
-            this.clauseMappings.push(this.currentSplitMapping);
+            const mapping = this.currentSplitMapping;
+            this.clauseMappings.push(mapping);
             this.currentSplitMapping = null;
 
-            // Draw connector lines after a short delay to ensure layout
-            setTimeout(() => this.drawConnectorLines(), 100);
+            // Draw connector line for this specific mapping after a short delay to ensure layout
+            setTimeout(() => this.drawConnectorLine(mapping), 100);
         }
 
         // Highlight the completed split
@@ -233,72 +235,66 @@ class ThreeSATReductionVisualizer {
         return cleaned.split('|').map(lit => lit.trim());
     }
 
-    drawConnectorLines() {
-        // Clear existing lines
-        this.svg.innerHTML = '';
-
+    drawConnectorLine(mapping) {
         // Get the bounding rect of the columns container
         const containerRect = this.columnsDiv.getBoundingClientRect();
 
-        // Draw lines for each mapping
-        this.clauseMappings.forEach(mapping => {
-            const originalRect = mapping.original.getBoundingClientRect();
+        const originalRect = mapping.original.getBoundingClientRect();
 
-            // Calculate the group bounding box for all reduced clauses
-            if (mapping.reduced.length > 0) {
-                const firstReducedRect = mapping.reduced[0].getBoundingClientRect();
-                const lastReducedRect = mapping.reduced[mapping.reduced.length - 1].getBoundingClientRect();
+        // Calculate the group bounding box for all reduced clauses
+        if (mapping.reduced.length > 0) {
+            const firstReducedRect = mapping.reduced[0].getBoundingClientRect();
+            const lastReducedRect = mapping.reduced[mapping.reduced.length - 1].getBoundingClientRect();
 
-                // Start point: right edge, middle of original clause
-                const x1 = originalRect.right - containerRect.left;
-                const y1 = originalRect.top + originalRect.height / 2 - containerRect.top;
+            // Start point: right edge, middle of original clause
+            const x1 = originalRect.right - containerRect.left;
+            const y1 = originalRect.top + originalRect.height / 2 - containerRect.top;
 
-                // End point: left edge, middle of the reduced clause group
-                const x2 = firstReducedRect.left - containerRect.left;
-                const y2Top = firstReducedRect.top - containerRect.top;
-                const y2Bottom = lastReducedRect.bottom - containerRect.top;
-                const y2 = (y2Top + y2Bottom) / 2;
+            // End point: left edge, middle of the reduced clause group
+            const x2 = firstReducedRect.left - containerRect.left;
+            const y2Top = firstReducedRect.top - containerRect.top;
+            const y2Bottom = lastReducedRect.bottom - containerRect.top;
+            const y2 = (y2Top + y2Bottom) / 2;
 
-                // Create SVG path with curved line
-                const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+            // Create SVG path with curved line
+            const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
 
-                // Control points for bezier curve
-                const midX = (x1 + x2) / 2;
-                const pathData = `M ${x1} ${y1} C ${midX} ${y1}, ${midX} ${y2}, ${x2} ${y2}`;
+            // Control points for bezier curve
+            const midX = (x1 + x2) / 2;
+            const pathData = `M ${x1} ${y1} C ${midX} ${y1}, ${midX} ${y2}, ${x2} ${y2}`;
 
-                path.setAttribute('d', pathData);
-                path.setAttribute('stroke', '#10b981'); // green color
-                path.setAttribute('stroke-width', '2');
-                path.setAttribute('fill', 'none');
-                path.setAttribute('opacity', '0.6');
+            path.setAttribute('d', pathData);
+            path.setAttribute('stroke', '#10b981'); // green color
+            path.setAttribute('stroke-width', '2');
+            path.setAttribute('fill', 'none');
+            path.setAttribute('opacity', '0.6');
 
-                this.svg.appendChild(path);
+            this.svg.appendChild(path);
 
-                // Add a small circle at the end
-                const circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
-                circle.setAttribute('cx', x2);
-                circle.setAttribute('cy', y2);
-                circle.setAttribute('r', '4');
-                circle.setAttribute('fill', '#10b981');
-                circle.setAttribute('opacity', '0.8');
+            // Add a small circle at the end
+            const circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+            circle.setAttribute('cx', x2);
+            circle.setAttribute('cy', y2);
+            circle.setAttribute('r', '4');
+            circle.setAttribute('fill', '#10b981');
+            circle.setAttribute('opacity', '0.8');
 
-                this.svg.appendChild(circle);
+            this.svg.appendChild(circle);
 
-                // Draw a bracket on the right side if there are multiple reduced clauses
-                if (mapping.reduced.length > 1) {
-                    const bracketPath = document.createElementNS('http://www.w3.org/2000/svg', 'path');
-                    const bracketX = x2 - 10;
-                    const bracketData = `M ${bracketX} ${y2Top} L ${x2} ${y2Top} L ${x2} ${y2Bottom} L ${bracketX} ${y2Bottom}`;
+            // Draw a bracket on the right side if there are multiple reduced clauses
+            if (mapping.reduced.length > 1) {
+                const bracketPath = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+                const bracketX = x2 - 10;
+                const bracketData = `M ${bracketX} ${y2Top} L ${x2} ${y2Top} L ${x2} ${y2Bottom} L ${bracketX} ${y2Bottom}`;
 
-                    bracketPath.setAttribute('d', bracketData);
-                    bracketPath.setAttribute('stroke', '#10b981');
-                    bracketPath.setAttribute('stroke-width', '1.5');
-                    bracketPath.setAttribute('fill', 'none');
-                    bracketPath.setAttribute('opacity', '0.4');
+                bracketPath.setAttribute('d', bracketData);
+                bracketPath.setAttribute('stroke', '#10b981');
+                bracketPath.setAttribute('stroke-width', '1.5');
+                bracketPath.setAttribute('fill', 'none');
+                bracketPath.setAttribute('opacity', '0.4');
 
-                    this.svg.appendChild(bracketPath);
-                }
+                this.svg.appendChild(bracketPath);
             }
-        });
+        }
     }
 }
