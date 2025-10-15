@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SAT Solver Visualizer - BSAT</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+
+    <!-- D3.js for visualizations -->
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <header class="header">
+            <h1>🔍 SAT Solver Visualizer</h1>
+            <p class="subtitle">Interactive visualization of Boolean satisfiability algorithms</p>
+        </header>
+
+        <!-- Main Content Area -->
+        <div class="main-content">
+            <!-- Left Panel: Input and Controls -->
+            <div class="left-panel">
+                <!-- Formula Input Section -->
+                <section class="section">
+                    <h2>Formula Input</h2>
+
+                    <!-- Example Selector -->
+                    <div class="form-group">
+                        <label for="exampleSelect">Load Example:</label>
+                        <select id="exampleSelect" class="form-control">
+                            <option value="">-- Select an example --</option>
+                        </select>
+                    </div>
+
+                    <!-- Random Formula Generator -->
+                    <div class="form-group generator-section">
+                        <label>Or Generate Random Formula:</label>
+                        <div class="generator-controls">
+                            <div class="inline-inputs">
+                                <div class="inline-input">
+                                    <label for="satTypeSelect">Type:</label>
+                                    <select id="satTypeSelect" class="form-control small-input">
+                                        <option value="2sat">2-SAT</option>
+                                        <option value="3sat" selected>3-SAT</option>
+                                        <option value="4sat">4-SAT</option>
+                                        <option value="5sat">5-SAT</option>
+                                        <option value="hornsat">Horn-SAT</option>
+                                        <option value="xorsat">XOR-SAT</option>
+                                    </select>
+                                </div>
+                                <div class="inline-input">
+                                    <label for="numClauses">Clauses:</label>
+                                    <input type="number" id="numClauses" class="form-control small-input" min="1" max="50" value="5">
+                                </div>
+                                <div class="inline-input">
+                                    <label for="numVariables">Variables:</label>
+                                    <input type="number" id="numVariables" class="form-control small-input" min="0" max="26" value="0" placeholder="Auto">
+                                </div>
+                            </div>
+                            <button id="generateBtn" class="btn btn-secondary btn-block">🎲 Generate</button>
+                        </div>
+                    </div>
+
+                    <!-- Formula Textarea -->
+                    <div class="form-group">
+                        <label for="formulaInput">CNF Formula:</label>
+                        <textarea
+                            id="formulaInput"
+                            class="form-control formula-input"
+                            rows="5"
+                            placeholder="Enter CNF formula (e.g., (x | y) & (~x | z) & (y | ~z))"
+                        ></textarea>
+                        <div id="formulaError" class="error-message"></div>
+                        <div id="formulaInfo" class="info-message"></div>
+                    </div>
+
+                    <!-- Algorithm Selector -->
+                    <div class="form-group">
+                        <label for="algorithmSelect">Algorithm:</label>
+                        <select id="algorithmSelect" class="form-control">
+                            <option value="dpll">DPLL (Backtracking)</option>
+                            <option value="2sat">2SAT (SCC-based)</option>
+                            <option value="davis_putnam">Davis-Putnam (1960)</option>
+                            <option value="cdcl">CDCL (Clause Learning)</option>
+                            <option value="hornsat">Horn-SAT</option>
+                            <option value="walksat">WalkSAT (Local Search)</option>
+                        </select>
+                        <div class="algorithm-info" id="algorithmInfo"></div>
+                    </div>
+
+                    <!-- Speed Control -->
+                    <div class="form-group">
+                        <label for="speedSlider">Visualization Speed:</label>
+                        <div class="slider-container">
+                            <input type="range" id="speedSlider" min="100" max="2000" value="500" class="form-control">
+                            <span id="speedValue">500ms</span>
+                        </div>
+                    </div>
+
+                    <!-- Action Buttons -->
+                    <div class="button-group">
+                        <button id="validateBtn" class="btn btn-secondary">Validate</button>
+                        <button id="solveBtn" class="btn btn-primary">Solve</button>
+                    </div>
+                </section>
+
+                <!-- Playback Controls (hidden by default) -->
+                <section class="section" id="controlsSection" style="display: none;">
+                    <h2>Playback Controls</h2>
+                    <div class="playback-controls">
+                        <button id="resetBtn" class="btn btn-sm" title="Reset">⏮</button>
+                        <button id="stepBackBtn" class="btn btn-sm" title="Step Back">◀</button>
+                        <button id="playPauseBtn" class="btn btn-sm" title="Play/Pause">▶</button>
+                        <button id="stepForwardBtn" class="btn btn-sm" title="Step Forward">▶▶</button>
+                        <button id="endBtn" class="btn btn-sm" title="Go to End">⏭</button>
+                    </div>
+                    <div class="progress-bar">
+                        <div id="progressFill" class="progress-fill"></div>
+                    </div>
+                    <div id="progressText" class="progress-text">Step 0 / 0</div>
+                </section>
+
+                <!-- Statistics -->
+                <section class="section" id="statsSection" style="display: none;">
+                    <h2>Statistics</h2>
+                    <div id="statistics" class="stats-content"></div>
+                </section>
+            </div>
+
+            <!-- Right Panel: Visualization -->
+            <div class="right-panel">
+                <section class="section visualization-section">
+                    <div class="viz-header">
+                        <h2 id="vizTitle">Visualization</h2>
+                        <div class="viz-header-controls">
+                            <button id="toggleConsoleBtn" class="header-btn" title="Toggle Console">📋 Console</button>
+                            <button id="toggleSolutionBtn" class="header-btn" title="Toggle Solution" style="display: none;">✓ Solution</button>
+                        </div>
+                    </div>
+                    <div class="visualization-controls">
+                        <button id="zoomInBtn" class="zoom-btn" title="Zoom In">🔍+</button>
+                        <button id="zoomOutBtn" class="zoom-btn" title="Zoom Out">🔍−</button>
+                        <button id="zoomResetBtn" class="zoom-btn" title="Reset Zoom">⟲</button>
+                        <span id="zoomLevel" class="zoom-level">100%</span>
+                    </div>
+                    <div id="visualization" class="visualization-container">
+                        <div class="welcome-message">
+                            <h3>Welcome to SAT Solver Visualizer!</h3>
+                            <p>Enter a CNF formula, select an algorithm, and click "Solve" to see it in action.</p>
+                            <ul>
+                                <li>Load examples from the dropdown above</li>
+                                <li>Watch algorithms work step-by-step</li>
+                                <li>Control playback speed and step through execution</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <!-- Solution Panel (overlay) -->
+                    <div id="solutionPanel" class="side-panel solution-panel">
+                        <div class="panel-header">
+                            <h3>Solution</h3>
+                            <button id="closeSolutionBtn" class="close-btn">✕</button>
+                        </div>
+                        <div id="solutionContent" class="panel-content">
+                            <p class="panel-placeholder">No solution yet. Run a solver to see results.</p>
+                        </div>
+                    </div>
+                </section>
+            </div>
+        </div>
+    </div>
+
+    <!-- Console Panel (overlay) -->
+    <div id="consolePanel" class="side-panel console-panel">
+        <div class="panel-header">
+            <h3>Console Log</h3>
+            <button id="closeConsoleBtn" class="close-btn">✕</button>
+        </div>
+        <div id="console" class="panel-content console-output"></div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="/static/js/visualizers/dpll.js"></script>
+    <script src="/static/js/visualizers/twosat.js"></script>
+    <script src="/static/js/visualizers/davis_putnam.js"></script>
+    <script src="/static/js/components/formula_input.js"></script>
+    <script src="/static/js/components/controls.js"></script>
+    <script src="/static/js/app.js"></script>
+</body>
+</html>
