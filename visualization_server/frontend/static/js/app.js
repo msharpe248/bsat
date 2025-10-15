@@ -148,7 +148,8 @@ class SATVisualizerApp {
             'davis_putnam': 'Original 1960 resolution-based algorithm. Shows exponential clause growth.',
             'cdcl': 'Modern conflict-driven clause learning. Used in industrial SAT solvers.',
             'hornsat': 'Polynomial-time solver for Horn formulas (≤1 positive literal per clause).',
-            'walksat': 'Randomized local search. Incomplete but often fast on satisfiable instances.'
+            'walksat': 'Randomized local search. Incomplete but often fast on satisfiable instances.',
+            '3sat_reduction': 'Reduces k-SAT formulas to 3-SAT by introducing auxiliary variables. Shows polynomial reduction.'
         };
 
         this.algorithmInfo.textContent = infoMap[algorithm] || '';
@@ -391,6 +392,8 @@ class SATVisualizerApp {
             return new TwoSATVisualizer(this.visualization);
         } else if (algorithm === 'davis_putnam' && typeof DavisPutnamVisualizer !== 'undefined') {
             return new DavisPutnamVisualizer(this.visualization);
+        } else if (algorithm === '3sat_reduction' && typeof ThreeSATReductionVisualizer !== 'undefined') {
+            return new ThreeSATReductionVisualizer(this.visualization);
         } else {
             // Default simple visualizer
             return {

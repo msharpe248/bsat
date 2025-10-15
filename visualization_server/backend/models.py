@@ -22,7 +22,7 @@ class FormulaResponse(BaseModel):
 class SolveRequest(BaseModel):
     """Request to start a solving session."""
     formula: str
-    algorithm: Literal["dpll", "cdcl", "2sat", "davis_putnam", "walksat", "hornsat"]
+    algorithm: Literal["dpll", "cdcl", "2sat", "davis_putnam", "walksat", "hornsat", "3sat_reduction"]
     format: Literal["text", "dimacs", "json"] = "text"
     speed: int = 500  # milliseconds per step
 

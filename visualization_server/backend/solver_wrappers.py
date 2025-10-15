@@ -21,6 +21,7 @@ from bsat import (
     solve_2sat,
     solve_horn_sat
 )
+from bsat.reductions import reduce_to_3sat
 
 
 class BaseSolverWrapper:
@@ -366,6 +367,126 @@ class DavisPutnamWrapper(BaseSolverWrapper):
         return result
 
 
+class ThreeSATReductionWrapper(BaseSolverWrapper):
+    """Wrapper for k-SAT to 3-SAT reduction visualization."""
+
+    async def solve(self) -> str:
+        """Perform and visualize the 3-SAT reduction."""
+        await self.emit_state("start", {
+            "original_formula": str(self.cnf),
+            "num_clauses": len(self.cnf.clauses),
+            "num_variables": len(self.cnf.get_variables()),
+            "max_clause_size": max((len(c.literals) for c in self.cnf.clauses), default=0)
+        })
+
+        # Track auxiliary variable counter
+        aux_counter = 0
+        reduced_clauses = []
+        total_aux_vars = 0
+
+        for clause_idx, clause in enumerate(self.cnf.clauses):
+            clause_size = len(clause.literals)
+
+            if clause_size <= 3:
+                # Small clause - keep as-is
+                await self.emit_state("keep_clause", {
+                    "clause_index": clause_idx,
+                    "original_clause": str(clause),
+                    "clause_size": clause_size,
+                    "reason": "Already 3-SAT (≤3 literals)"
+                })
+                reduced_clauses.append(clause)
+            else:
+                # Large clause - needs splitting
+                literals = clause.literals
+                num_aux = clause_size - 3
+                aux_vars = [f"_aux{aux_counter + i}" for i in range(num_aux)]
+                aux_counter += num_aux
+                total_aux_vars += num_aux
+
+                await self.emit_state("split_clause_start", {
+                    "clause_index": clause_idx,
+                    "original_clause": str(clause),
+                    "clause_size": clause_size,
+                    "num_aux_needed": num_aux,
+                    "aux_variables": aux_vars
+                })
+
+                # Build the chain of 3-SAT clauses
+                new_clauses = []
+
+                # First clause: (l₁ ∨ l₂ ∨ x₁)
+                first_clause = f"({literals[0]} | {literals[1]} | {aux_vars[0]})"
+                new_clauses.append(first_clause)
+                reduced_clauses.append(first_clause)
+
+                await self.emit_state("add_first_clause", {
+                    "clause_index": clause_idx,
+                    "new_clause": first_clause,
+                    "literals": [str(literals[0]), str(literals[1])],
+                    "aux_var": aux_vars[0],
+                    "explanation": f"First 2 literals + auxiliary variable {aux_vars[0]}"
+                })
+
+                # Middle clauses: (¬xᵢ ∨ lᵢ₊₂ ∨ xᵢ₊₁)
+                for i in range(num_aux - 1):
+                    middle_clause = f"(~{aux_vars[i]} | {literals[i + 2]} | {aux_vars[i + 1]})"
+                    new_clauses.append(middle_clause)
+                    reduced_clauses.append(middle_clause)
+
+                    await self.emit_state("add_middle_clause", {
+                        "clause_index": clause_idx,
+                        "new_clause": middle_clause,
+                        "prev_aux": aux_vars[i],
+                        "literal": str(literals[i + 2]),
+                        "next_aux": aux_vars[i + 1],
+                        "chain_position": i + 1,
+                        "explanation": f"Chain: ~{aux_vars[i]} (prev) + literal {i+3} + {aux_vars[i+1]} (next)"
+                    })
+
+                # Last clause: (¬xₖ₋₃ ∨ lₖ₋₁ ∨ lₖ)
+                last_clause = f"(~{aux_vars[-1]} | {literals[-2]} | {literals[-1]})"
+                new_clauses.append(last_clause)
+                reduced_clauses.append(last_clause)
+
+                await self.emit_state("add_last_clause", {
+                    "clause_index": clause_idx,
+                    "new_clause": last_clause,
+                    "prev_aux": aux_vars[-1],
+                    "literals": [str(literals[-2]), str(literals[-1])],
+                    "explanation": f"Final: ~{aux_vars[-1]} + last 2 literals"
+                })
+
+                await self.emit_state("split_clause_complete", {
+                    "clause_index": clause_idx,
+                    "original_clause": str(clause),
+                    "new_clauses": new_clauses,
+                    "num_new_clauses": len(new_clauses)
+                })
+
+        # Complete reduction
+        reduced_formula_str = " & ".join(str(c) for c in reduced_clauses)
+
+        await self.emit_state("reduction_complete", {
+            "reduced_formula": reduced_formula_str,
+            "original_clauses": len(self.cnf.clauses),
+            "reduced_clauses": len(reduced_clauses),
+            "original_variables": len(self.cnf.get_variables()),
+            "auxiliary_variables": total_aux_vars,
+            "total_variables": len(self.cnf.get_variables()) + total_aux_vars
+        })
+
+        # Emit final result
+        await self.emit_complete("3SAT", {
+            "original_clauses": len(self.cnf.clauses),
+            "reduced_clauses": len(reduced_clauses),
+            "auxiliary_variables_added": total_aux_vars,
+            "reduction_ratio": len(reduced_clauses) / len(self.cnf.clauses) if self.cnf.clauses else 0
+        })
+
+        return "3SAT"
+
+
 # Factory function to create appropriate wrapper
 def create_solver_wrapper(
     algorithm: str,
@@ -380,6 +501,8 @@ def create_solver_wrapper(
         return TwoSATWrapper(cnf, websocket, speed_ms)
     elif algorithm == "davis_putnam":
         return DavisPutnamWrapper(cnf, websocket, speed_ms)
+    elif algorithm == "3sat_reduction":
+        return ThreeSATReductionWrapper(cnf, websocket, speed_ms)
     else:
         # For other algorithms, use a simple wrapper
         return BaseSolverWrapper(cnf, websocket, speed_ms)
