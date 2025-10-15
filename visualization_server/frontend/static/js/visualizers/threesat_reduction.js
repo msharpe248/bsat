@@ -126,11 +126,12 @@ class ThreeSATReductionVisualizer {
         // Track auxiliary variables
         data.aux_variables.forEach(aux => this.auxVariables.add(aux));
 
-        // Start tracking this split - will accumulate reduced clauses
+        // Start tracking this split - will accumulate reduced clauses and need for spacing
         this.currentSplitMapping = {
             original: originalClause,
             reduced: [],
-            clauseIndex: data.clause_index
+            clauseIndex: data.clause_index,
+            numNewClauses: 0  // Will count as we add them
         };
 
         this.explanationDiv.innerHTML = `
@@ -149,6 +150,7 @@ class ThreeSATReductionVisualizer {
         // Add to current split mapping
         if (this.currentSplitMapping) {
             this.currentSplitMapping.reduced.push(reducedClause);
+            this.currentSplitMapping.numNewClauses++;
         }
 
         // Update explanation
@@ -166,7 +168,17 @@ class ThreeSATReductionVisualizer {
         // Save the completed split mapping
         if (this.currentSplitMapping) {
             const mapping = this.currentSplitMapping;
+            const numSpacers = mapping.numNewClauses - 1; // Add spacers for extra clauses
+
             this.clauseMappings.push(mapping);
+
+            // Add spacer divs in the original column to align with the multiple reduced clauses
+            for (let i = 0; i < numSpacers; i++) {
+                const spacer = document.createElement('div');
+                spacer.className = 'clause-spacer';
+                this.originalDiv.appendChild(spacer);
+            }
+
             this.currentSplitMapping = null;
 
             // Draw connector line for this specific mapping after a short delay to ensure layout

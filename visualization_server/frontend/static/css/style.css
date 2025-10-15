@@ -754,6 +754,11 @@ body {
     border-left: 4px solid #8b5cf6;
 }
 
+.clause-spacer {
+    height: 80px; /* Match approximate height of clause-card including margin */
+    visibility: hidden;
+}
+
 @keyframes pulse {
     0%, 100% { opacity: 1; }
     50% { opacity: 0.7; }
