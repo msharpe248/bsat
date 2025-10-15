@@ -201,11 +201,11 @@ class ThreeSATReductionVisualizer {
 
         const reducedDivider = document.createElement('div');
         reducedDivider.className = 'clause-divider';
+        reducedDivider.innerHTML = `<div class="divider-text">✓ Clause ${data.clause_index + 1} complete</div>`;
         this.reducedDiv.appendChild(reducedDivider);
 
         const explanationDivider = document.createElement('div');
         explanationDivider.className = 'clause-divider';
-        explanationDivider.innerHTML = `<div class="divider-text">✓ Clause ${data.clause_index + 1} complete</div>`;
         this.explanationDiv.appendChild(explanationDivider);
 
         // Save the completed split mapping
