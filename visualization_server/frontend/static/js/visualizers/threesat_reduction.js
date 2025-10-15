@@ -20,7 +20,7 @@ class ThreeSATReductionVisualizer {
         layout.className = 'reduction-layout';
         layout.innerHTML = `
             <div class="reduction-header">
-                <h3>k-SAT to 3-SAT Reduction</h3>
+                <h3>k-SAT to 3-SAT Reduction <button id="pauseBtn" class="pause-btn" title="Click to pause/resume">⏸</button></h3>
                 <div class="reduction-stats" id="reductionStats"></div>
             </div>
             <div class="reduction-columns" id="reductionColumns" style="position: relative;">
@@ -30,13 +30,15 @@ class ThreeSATReductionVisualizer {
                     <h4>Original Formula</h4>
                     <div class="clause-list" id="originalClauses"></div>
                 </div>
-                <div class="reduction-arrow" style="position: relative; z-index: 2;">→</div>
                 <div class="reduction-column" style="position: relative; z-index: 2;">
                     <h4>Reduced 3-SAT Formula</h4>
                     <div class="clause-list" id="reducedClauses"></div>
                 </div>
+                <div class="reduction-column explanation-column" style="position: relative; z-index: 2;">
+                    <h4>Steps</h4>
+                    <div class="clause-list" id="reductionExplanation"></div>
+                </div>
             </div>
-            <div class="reduction-explanation" id="reductionExplanation"></div>
         `;
 
         this.container.appendChild(layout);
@@ -47,9 +49,18 @@ class ThreeSATReductionVisualizer {
         this.explanationDiv = document.getElementById('reductionExplanation');
         this.columnsDiv = document.getElementById('reductionColumns');
         this.svg = document.getElementById('connectionLines');
+        this.pauseBtn = document.getElementById('pauseBtn');
 
         // Track clause mappings for drawing lines
         this.clauseMappings = [];
+        this.isPaused = false;
+
+        // Setup pause button
+        this.pauseBtn.addEventListener('click', () => {
+            this.isPaused = !this.isPaused;
+            this.pauseBtn.textContent = this.isPaused ? '▶' : '⏸';
+            this.pauseBtn.title = this.isPaused ? 'Click to resume' : 'Click to pause';
+        });
     }
 
     update(state) {
@@ -113,11 +124,23 @@ class ThreeSATReductionVisualizer {
         // Draw connector line for this specific mapping after a short delay to ensure layout
         setTimeout(() => this.drawConnectorLine(mapping), 100);
 
-        this.explanationDiv.innerHTML = `
-            <div class="explanation-item">
-                Clause ${data.clause_index + 1}: ${data.reason}
-            </div>
-        `;
+        const explanationItem = document.createElement('div');
+        explanationItem.className = 'explanation-item';
+        explanationItem.innerHTML = `Clause ${data.clause_index + 1}: ${data.reason}`;
+        this.explanationDiv.appendChild(explanationItem);
+
+        // Add dividers to all three columns for visual separation
+        const originalDivider = document.createElement('div');
+        originalDivider.className = 'clause-divider';
+        this.originalDiv.appendChild(originalDivider);
+
+        const reducedDivider = document.createElement('div');
+        reducedDivider.className = 'clause-divider';
+        this.reducedDiv.appendChild(reducedDivider);
+
+        const explanationDivider = document.createElement('div');
+        explanationDivider.className = 'clause-divider';
+        this.explanationDiv.appendChild(explanationDivider);
     }
 
     handleSplitStart(data) {
@@ -135,14 +158,6 @@ class ThreeSATReductionVisualizer {
             clauseIndex: data.clause_index,
             numNewClauses: 0  // Will count as we add them
         };
-
-        this.explanationDiv.innerHTML = `
-            <div class="explanation-item highlight">
-                Splitting clause ${data.clause_index + 1}: ${data.original_clause}
-                <br>Size: ${data.clause_size} literals → needs ${data.num_aux_needed} auxiliary variable(s)
-                <br>Auxiliary variables: ${data.aux_variables.map(v => `<code class="aux-var">${v}</code>`).join(', ')}
-            </div>
-        `;
     }
 
     handleAddClause(data, position) {
@@ -156,11 +171,18 @@ class ThreeSATReductionVisualizer {
             }
             this.currentSplitMapping.reduced.push(reducedClause);
             this.currentSplitMapping.numNewClauses++;
+
+            // Add spacer to original column for 2nd+ clauses (to align with reduced clauses)
+            if (this.currentSplitMapping.numNewClauses > 1) {
+                const originalSpacer = document.createElement('div');
+                originalSpacer.className = 'clause-spacer';
+                this.originalDiv.appendChild(originalSpacer);
+            }
         }
 
         this.reducedDiv.appendChild(reducedClause);
 
-        // Update explanation
+        // Add explanation for this specific clause
         const explanationItem = document.createElement('div');
         explanationItem.className = 'explanation-item';
         explanationItem.innerHTML = `
@@ -172,32 +194,30 @@ class ThreeSATReductionVisualizer {
     }
 
     handleSplitComplete(data) {
+        // Add dividers to all three columns for visual separation
+        const originalDivider = document.createElement('div');
+        originalDivider.className = 'clause-divider';
+        this.originalDiv.appendChild(originalDivider);
+
+        const reducedDivider = document.createElement('div');
+        reducedDivider.className = 'clause-divider';
+        this.reducedDiv.appendChild(reducedDivider);
+
+        const explanationDivider = document.createElement('div');
+        explanationDivider.className = 'clause-divider';
+        explanationDivider.innerHTML = `<div class="divider-text">✓ Clause ${data.clause_index + 1} complete</div>`;
+        this.explanationDiv.appendChild(explanationDivider);
+
         // Save the completed split mapping
         if (this.currentSplitMapping) {
             const mapping = this.currentSplitMapping;
-            const numSpacers = mapping.numNewClauses - 1; // Add spacers for extra clauses
 
             this.clauseMappings.push(mapping);
-
-            // Add spacer divs in the original column to align with the multiple reduced clauses
-            for (let i = 0; i < numSpacers; i++) {
-                const spacer = document.createElement('div');
-                spacer.className = 'clause-spacer';
-                this.originalDiv.appendChild(spacer);
-            }
-
             this.currentSplitMapping = null;
 
             // Draw connector line for this specific mapping after a short delay to ensure layout
             setTimeout(() => this.drawConnectorLine(mapping), 100);
         }
-
-        // Highlight the completed split
-        this.explanationDiv.innerHTML = `
-            <div class="explanation-item success">
-                ✓ Clause ${data.clause_index + 1} split into ${data.num_new_clauses} 3-SAT clauses
-            </div>
-        `;
     }
 
     handleComplete(data) {
@@ -218,13 +238,14 @@ class ThreeSATReductionVisualizer {
             </div>
         `;
 
-        this.explanationDiv.innerHTML = `
-            <div class="explanation-item success">
-                <strong>✓ Reduction Complete!</strong>
-                <br>The formula has been successfully converted to 3-SAT.
-                <br>All clauses now have at most 3 literals.
-            </div>
+        const explanationItem = document.createElement('div');
+        explanationItem.className = 'explanation-item success';
+        explanationItem.innerHTML = `
+            <strong>✓ Reduction Complete!</strong>
+            <br>The formula has been successfully converted to 3-SAT.
+            <br>All clauses now have at most 3 literals.
         `;
+        this.explanationDiv.appendChild(explanationItem);
     }
 
     createClauseCard(clauseStr, index, status, position = null) {
@@ -271,60 +292,39 @@ class ThreeSATReductionVisualizer {
             return;
         }
 
-        // Calculate the group bounding box for all reduced clauses
-        if (mapping.reduced.length > 0) {
-            const firstReducedRect = firstReducedClause.getBoundingClientRect();
-            const lastReducedRect = mapping.reduced[mapping.reduced.length - 1].getBoundingClientRect();
+        const firstReducedRect = firstReducedClause.getBoundingClientRect();
 
-            // Start point: right edge, middle of original clause
-            const x1 = originalRect.right - containerRect.left;
-            const y1 = originalRect.top + originalRect.height / 2 - containerRect.top;
+        // Start point: right edge, middle of original clause
+        const x1 = originalRect.right - containerRect.left;
+        const y1 = originalRect.top + originalRect.height / 2 - containerRect.top;
 
-            // End point: left edge, middle of the reduced clause group
-            const x2 = firstReducedRect.left - containerRect.left;
-            const y2Top = firstReducedRect.top - containerRect.top;
-            const y2Bottom = lastReducedRect.bottom - containerRect.top;
-            const y2 = (y2Top + y2Bottom) / 2;
+        // End point: left edge, middle of FIRST reduced clause (the green box)
+        const x2 = firstReducedRect.left - containerRect.left;
+        const y2 = firstReducedRect.top + firstReducedRect.height / 2 - containerRect.top;
 
-            // Create SVG path with curved line
-            const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+        // Create SVG path with curved line
+        const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
 
-            // Control points for bezier curve
-            const midX = (x1 + x2) / 2;
-            const pathData = `M ${x1} ${y1} C ${midX} ${y1}, ${midX} ${y2}, ${x2} ${y2}`;
+        // Control points for bezier curve
+        const midX = (x1 + x2) / 2;
+        const pathData = `M ${x1} ${y1} C ${midX} ${y1}, ${midX} ${y2}, ${x2} ${y2}`;
 
-            path.setAttribute('d', pathData);
-            path.setAttribute('stroke', '#10b981'); // green color
-            path.setAttribute('stroke-width', '2');
-            path.setAttribute('fill', 'none');
-            path.setAttribute('opacity', '0.6');
+        path.setAttribute('d', pathData);
+        path.setAttribute('stroke', '#10b981'); // green color
+        path.setAttribute('stroke-width', '2');
+        path.setAttribute('fill', 'none');
+        path.setAttribute('opacity', '0.6');
 
-            this.svg.appendChild(path);
+        this.svg.appendChild(path);
 
-            // Add a small circle at the end
-            const circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
-            circle.setAttribute('cx', x2);
-            circle.setAttribute('cy', y2);
-            circle.setAttribute('r', '4');
-            circle.setAttribute('fill', '#10b981');
-            circle.setAttribute('opacity', '0.8');
+        // Add a small circle at the end
+        const circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+        circle.setAttribute('cx', x2);
+        circle.setAttribute('cy', y2);
+        circle.setAttribute('r', '4');
+        circle.setAttribute('fill', '#10b981');
+        circle.setAttribute('opacity', '0.8');
 
-            this.svg.appendChild(circle);
-
-            // Draw a bracket on the right side if there are multiple reduced clauses
-            if (mapping.reduced.length > 1) {
-                const bracketPath = document.createElementNS('http://www.w3.org/2000/svg', 'path');
-                const bracketX = x2 - 10;
-                const bracketData = `M ${bracketX} ${y2Top} L ${x2} ${y2Top} L ${x2} ${y2Bottom} L ${bracketX} ${y2Bottom}`;
-
-                bracketPath.setAttribute('d', bracketData);
-                bracketPath.setAttribute('stroke', '#10b981');
-                bracketPath.setAttribute('stroke-width', '1.5');
-                bracketPath.setAttribute('fill', 'none');
-                bracketPath.setAttribute('opacity', '0.4');
-
-                this.svg.appendChild(bracketPath);
-            }
-        }
+        this.svg.appendChild(circle);
     }
 }
