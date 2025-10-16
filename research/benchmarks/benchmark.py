@@ -29,8 +29,8 @@ from dataclasses import dataclass
 from tabulate import tabulate
 
 # Add paths
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), '../src'))
-sys.path.insert(0, os.path.dirname(__file__))
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), '../../src'))
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
 
 from bsat import CNFExpression
 from bsat.dpll import DPLLSolver
@@ -498,16 +498,24 @@ class SolverBenchmark:
             for problem_name, results in self.results:
                 f.write(f"### {problem_name}\n\n")
 
+                # Find the winner (fastest solver)
+                valid_results = [r for r in results if not r.error and r.time_seconds > 0]
+                winner = min(valid_results, key=lambda r: r.time_seconds) if valid_results else None
+
+                # Sort results by time (fastest first)
+                sorted_results = sorted(results, key=lambda r: r.time_seconds if not r.error else float('inf'))
+
                 # Build markdown table
                 headers = ["Solver", "Result", "Time (s)", "Speedup", "Decisions", "Conflicts", "Notes"]
                 rows = []
 
                 baseline_time = next((r.time_seconds for r in results if r.solver_name == "CDCL"), None)
 
-                for result in results:
+                for result in sorted_results:
                     if result.error:
+                        solver_name = result.solver_name
                         rows.append([
-                            result.solver_name,
+                            solver_name,
                             "ERROR",
                             f"{result.time_seconds:.4f}",
                             "-",
@@ -516,6 +524,11 @@ class SolverBenchmark:
                             result.error[:30]
                         ])
                     else:
+                        # Mark winner clearly
+                        solver_name = result.solver_name
+                        if winner and result.solver_name == winner.solver_name:
+                            solver_name = f"👑 **{result.solver_name}**"
+
                         sat_str = "SAT" if result.satisfiable else "UNSAT"
                         speedup = "-"
                         if baseline_time and baseline_time > 0 and result.time_seconds > 0:
@@ -532,8 +545,12 @@ class SolverBenchmark:
                             if 'graph_influence' in result.extra_metrics:
                                 notes.append(f"GI={result.extra_metrics['graph_influence']:.0f}%")
 
+                        # Add WINNER note for fastest solver
+                        if winner and result.solver_name == winner.solver_name:
+                            notes.insert(0, "**WINNER**")
+
                         rows.append([
-                            result.solver_name,
+                            solver_name,
                             sat_str,
                             f"{result.time_seconds:.4f}",
                             speedup,
