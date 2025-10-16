@@ -103,14 +103,6 @@ class DPLLWrapper(BaseSolverWrapper):
         tree_nodes = []
 
         async def instrumented_dpll(assignment, clauses, depth=0):
-            # Emit current state
-            await self.emit_state("decision_point", {
-                "depth": depth,
-                "assignment": assignment.copy(),
-                "num_clauses": len(clauses),
-                "num_unassigned": len([v for v in solver.variables if v not in assignment])
-            })
-
             # Simplify clauses based on current assignment
             simplified_clauses = solver._simplify_clauses(clauses, assignment)
 

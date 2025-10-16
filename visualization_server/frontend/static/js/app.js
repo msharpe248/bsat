@@ -132,6 +132,12 @@ class SATVisualizerApp {
             this.formulaInput.value = example.formula;
             this.algorithmSelect.value = example.algorithm;
             this.updateAlgorithmInfo();
+
+            // Clear any existing visualization
+            if (this.currentVisualizer || this.stateHistory.length > 0) {
+                this.reset();
+            }
+
             this.logConsole(`Loaded example: ${example.name}`, 'info');
         } catch (error) {
             this.logConsole('Error loading example: ' + error.message, 'error');
@@ -151,6 +157,11 @@ class SATVisualizerApp {
         };
 
         this.algorithmInfo.textContent = infoMap[algorithm] || '';
+
+        // Clear any existing visualization when algorithm changes
+        if (this.currentVisualizer || this.stateHistory.length > 0) {
+            this.reset();
+        }
     }
 
     clearError() {

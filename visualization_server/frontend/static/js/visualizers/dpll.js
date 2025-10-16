@@ -112,10 +112,6 @@ class DPLLVisualizer {
             case 'start':
                 this.handleStart(data);
                 break;
-            case 'decision_point':
-                // Decision point - just track it, don't create a node
-                // This is informational and doesn't need visualization
-                break;
             case 'branch':
                 this.handleBranch(data);
                 break;
