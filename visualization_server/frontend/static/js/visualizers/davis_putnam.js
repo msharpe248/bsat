@@ -11,6 +11,7 @@ class DavisPutnamVisualizer {
 
     initializeSVG() {
         this.container.innerHTML = '';
+        this.stepHistory = [];  // Track all steps
 
         const width = this.container.clientWidth || 800;
         const height = 500;
@@ -40,6 +41,24 @@ class DavisPutnamVisualizer {
             .attr('font-size', '18px')
             .attr('font-weight', 'bold')
             .text('Davis-Putnam Clause Growth');
+
+        // Create scrollable history panel below the chart
+        this.detailsDiv = d3.select(this.container)
+            .append('div')
+            .attr('class', 'davis-putnam-details')
+            .style('margin-top', '20px')
+            .style('padding', '15px')
+            .style('background', '#f8f9fa')
+            .style('border-radius', '5px')
+            .style('border', '1px solid #dee2e6')
+            .style('min-height', 'calc(100vh - 650px)')
+            .style('max-height', 'calc(100vh - 550px)')
+            .style('overflow-y', 'auto');
+
+        this.detailsDiv.append('h3')
+            .style('margin', '0 0 15px 0')
+            .style('color', '#343a40')
+            .text('Solution Steps');
     }
 
     update(state) {
@@ -53,6 +72,9 @@ class DavisPutnamVisualizer {
             case 'eliminate_variable':
                 this.handleEliminate(data);
                 break;
+            case 'after_resolution':
+                this.handleAfterResolution(data);
+                break;
             case 'clause_growth':
                 this.handleGrowthComplete(data);
                 break;
@@ -62,7 +84,14 @@ class DavisPutnamVisualizer {
     handleStart(data) {
         this.clauseCounts = [data.initial_clauses];
         this.variablesEliminated = ['start'];
+        this.stepHistory = [];  // Reset history
         this.render();
+        this.addStep({
+            step: 'Initial Formula',
+            clauses: data.clauses || [],
+            message: `Starting with ${data.initial_clauses} clauses`,
+            type: 'start'
+        });
     }
 
     handleEliminate(data) {
@@ -72,6 +101,36 @@ class DavisPutnamVisualizer {
         // Update info text
         this.showEliminationInfo(data);
         this.render();
+
+        // Add to history
+        if (data.method === 'resolution') {
+            this.addStep({
+                step: `Eliminating variable: ${data.variable}`,
+                method: 'Resolution',
+                message: data.message,
+                positiveClauses: data.pos_clause_list || [],
+                negativeClauses: data.neg_clause_list || [],
+                expected: data.expected_new_clauses,
+                type: 'elimination'
+            });
+        } else {
+            this.addStep({
+                step: `Eliminating variable: ${data.variable}`,
+                method: data.method === 'unit_propagation' ? 'Unit Propagation' : 'Pure Literal',
+                message: data.message,
+                clauses: data.clauses || [],
+                type: 'elimination'
+            });
+        }
+    }
+
+    handleAfterResolution(data) {
+        this.addStep({
+            step: `After resolving ${data.variable}`,
+            clauses: data.clauses || [],
+            message: `Now have ${data.clause_count} clauses`,
+            type: 'after_resolution'
+        });
     }
 
     handleGrowthComplete(data) {
@@ -123,6 +182,153 @@ class DavisPutnamVisualizer {
             .attr('y', 50)
             .attr('font-size', '12px')
             .text(`Growth: ${(data.growth_factor * 100).toFixed(0)}%`);
+    }
+
+    addStep(data) {
+        this.stepHistory.push(data);
+
+        // Create a card for this step
+        const stepCard = this.detailsDiv.append('div')
+            .attr('class', 'step-card')
+            .style('margin-bottom', '15px')
+            .style('padding', '12px')
+            .style('background', 'white')
+            .style('border-radius', '5px')
+            .style('border-left', `4px solid ${this.getStepColor(data.type)}`)
+            .style('box-shadow', '0 1px 3px rgba(0,0,0,0.1)');
+
+        // Step number and title
+        const header = stepCard.append('div')
+            .style('display', 'flex')
+            .style('justify-content', 'space-between')
+            .style('align-items', 'center')
+            .style('margin-bottom', '8px');
+
+        header.append('h4')
+            .style('margin', '0')
+            .style('color', '#495057')
+            .style('font-size', '16px')
+            .html(`<span style="color: #6c757d; font-weight: normal;">Step ${this.stepHistory.length}:</span> ${data.step}`);
+
+        // Message
+        if (data.message) {
+            stepCard.append('p')
+                .style('margin', '5px 0')
+                .style('font-weight', 'bold')
+                .style('color', '#007bff')
+                .text(data.message);
+        }
+
+        // Method badge
+        if (data.method) {
+            stepCard.append('span')
+                .style('display', 'inline-block')
+                .style('padding', '3px 8px')
+                .style('margin', '5px 0')
+                .style('background', '#e7f3ff')
+                .style('color', '#0066cc')
+                .style('border-radius', '3px')
+                .style('font-size', '12px')
+                .style('font-weight', 'bold')
+                .text(data.method);
+        }
+
+        // Resolution details
+        if (data.positiveClauses && data.negativeClauses) {
+            const resDiv = stepCard.append('div')
+                .style('margin-top', '10px');
+
+            resDiv.append('p')
+                .style('margin', '5px 0')
+                .style('font-size', '14px')
+                .html(`<strong>Clauses with ${data.step.split(': ')[1] || 'variable'}:</strong>`);
+
+            const posList = resDiv.append('ul')
+                .style('margin', '5px 0 10px 15px')
+                .style('padding', '0')
+                .style('list-style', 'none');
+
+            data.positiveClauses.forEach(clause => {
+                posList.append('li')
+                    .style('padding', '4px 8px')
+                    .style('margin', '2px 0')
+                    .style('background', '#d4edda')
+                    .style('color', '#155724')
+                    .style('border-radius', '3px')
+                    .style('font-family', 'monospace')
+                    .style('font-size', '13px')
+                    .text('✓ ' + clause);
+            });
+
+            resDiv.append('p')
+                .style('margin', '10px 0 5px 0')
+                .style('font-size', '14px')
+                .html(`<strong>Clauses with ¬${data.step.split(': ')[1] || 'variable'}:</strong>`);
+
+            const negList = resDiv.append('ul')
+                .style('margin', '5px 0 10px 15px')
+                .style('padding', '0')
+                .style('list-style', 'none');
+
+            data.negativeClauses.forEach(clause => {
+                negList.append('li')
+                    .style('padding', '4px 8px')
+                    .style('margin', '2px 0')
+                    .style('background', '#f8d7da')
+                    .style('color', '#721c24')
+                    .style('border-radius', '3px')
+                    .style('font-family', 'monospace')
+                    .style('font-size', '13px')
+                    .text('✗ ' + clause);
+            });
+
+            resDiv.append('div')
+                .style('margin', '10px 0 5px 0')
+                .style('background', '#fff3cd')
+                .style('border', '1px solid #ffc107')
+                .style('padding', '8px')
+                .style('border-radius', '3px')
+                .html(`<strong>⚠️ Resolution creates ${data.expected} new clauses (${data.positiveClauses.length} × ${data.negativeClauses.length})</strong>`);
+        }
+
+        // Current clauses
+        if (data.clauses && data.clauses.length > 0) {
+            stepCard.append('p')
+                .style('margin', '10px 0 5px 0')
+                .style('font-size', '14px')
+                .html(`<strong>Resulting clauses (${data.clauses.length}):</strong>`);
+
+            const clauseList = stepCard.append('ul')
+                .style('margin', '5px 0 0 15px')
+                .style('padding', '0')
+                .style('list-style', 'none')
+                .style('max-height', '150px')
+                .style('overflow-y', 'auto')
+                .style('background', '#f8f9fa')
+                .style('border-radius', '3px')
+                .style('padding', '8px');
+
+            data.clauses.forEach(clause => {
+                clauseList.append('li')
+                    .style('padding', '2px 0')
+                    .style('font-family', 'monospace')
+                    .style('font-size', '13px')
+                    .style('color', '#495057')
+                    .text(clause);
+            });
+        }
+
+        // Auto-scroll to bottom
+        this.detailsDiv.node().scrollTop = this.detailsDiv.node().scrollHeight;
+    }
+
+    getStepColor(type) {
+        const colors = {
+            'start': '#17a2b8',
+            'elimination': '#ffc107',
+            'after_resolution': '#28a745'
+        };
+        return colors[type] || '#6c757d';
     }
 
     render() {

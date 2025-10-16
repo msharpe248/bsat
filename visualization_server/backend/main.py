@@ -317,6 +317,13 @@ async def get_examples():
             difficulty="medium"
         ),
         ExampleFormula(
+            name="Davis-Putnam Exponential Growth",
+            formula="(a | b) & (a | c) & (a | d) & (~a | e) & (~a | f) & (~a | g) & (b | e | h) & (c | f | i) & (d | g | j)",
+            description="Dramatic clause explosion: 3 positive × 3 negative = 9 new clauses when eliminating 'a'",
+            algorithm="davis_putnam",
+            difficulty="hard"
+        ),
+        ExampleFormula(
             name="Implication Chain",
             formula="(x) & (~x | y) & (~y | z) & (~z | w)",
             description="Shows unit propagation cascading through implications",

@@ -314,69 +314,233 @@ class DavisPutnamWrapper(BaseSolverWrapper):
 
     async def solve(self) -> Optional[Dict[str, bool]]:
         """Solve with clause growth tracking."""
+        from bsat.cnf import Clause, Literal
+
         await self.emit_state("start", {
             "variables": sorted(self.cnf.get_variables()),
             "initial_clauses": len(self.cnf.clauses),
+            "clauses": [str(c) for c in self.cnf.clauses],
             "algorithm": "Davis-Putnam (1960)"
         })
 
-        from bsat.davis_putnam import DavisPutnamSolver
-
-        solver = DavisPutnamSolver(self.cnf)
-        working_clauses = list(self.cnf.clauses)
+        # We'll implement our own simplified Davis-Putnam that emits states
+        working_clauses = [Clause(list(c.literals)) for c in self.cnf.clauses]
+        assignment = {}
 
         clause_counts = [len(working_clauses)]
         variables_eliminated = []
 
-        async def track_elimination(var):
-            """Track variable elimination."""
-            # Count clauses with variable
-            pos_count = sum(1 for c in working_clauses
-                          for lit in c.literals
-                          if lit.variable == var and not lit.negated)
-            neg_count = sum(1 for c in working_clauses
-                          for lit in c.literals
-                          if lit.variable == var and lit.negated)
+        # Track each step
+        while working_clauses:
+            # Find unit clause
+            unit_lit = None
+            for clause in working_clauses:
+                if len(clause.literals) == 1:
+                    unit_lit = clause.literals[0]
+                    break
+
+            if unit_lit:
+                # Apply unit propagation
+                var = unit_lit.variable
+                value = not unit_lit.negated
+                assignment[var] = value
+                working_clauses = self._apply_assignment(working_clauses, var, value)
+
+                clause_counts.append(len(working_clauses))
+                await self.emit_state("eliminate_variable", {
+                    "variable": var,
+                    "method": "unit_propagation",
+                    "current_clause_count": len(working_clauses),
+                    "clauses": [str(c) for c in working_clauses],
+                    "message": f"Unit propagation: {var} = {value}"
+                })
+
+                if any(len(c.literals) == 0 for c in working_clauses):
+                    await self.emit_complete(None, {"initial_clauses": clause_counts[0]})
+                    return None
+                continue
+
+            # Find pure literal
+            pure_lit = self._find_pure_literal(working_clauses)
+            if pure_lit:
+                var = pure_lit.variable
+                value = not pure_lit.negated
+                assignment[var] = value
+                working_clauses = self._eliminate_satisfied(working_clauses, pure_lit)
+
+                clause_counts.append(len(working_clauses))
+                await self.emit_state("eliminate_variable", {
+                    "variable": var,
+                    "method": "pure_literal",
+                    "current_clause_count": len(working_clauses),
+                    "clauses": [str(c) for c in working_clauses],
+                    "message": f"Pure literal: {var} = {value}"
+                })
+                continue
+
+            # Choose variable for resolution
+            var = self._choose_variable(working_clauses)
+            if not var:
+                break
+
+            # Count clauses before resolution
+            pos_clauses = [c for c in working_clauses
+                          if any(lit.variable == var and not lit.negated for lit in c.literals)]
+            neg_clauses = [c for c in working_clauses
+                          if any(lit.variable == var and lit.negated for lit in c.literals)]
 
             await self.emit_state("eliminate_variable", {
                 "variable": var,
-                "positive_clauses": pos_count,
-                "negative_clauses": neg_count,
-                "expected_new_clauses": pos_count * neg_count,
-                "current_clause_count": len(working_clauses)
+                "method": "resolution",
+                "positive_clauses": len(pos_clauses),
+                "negative_clauses": len(neg_clauses),
+                "expected_new_clauses": len(pos_clauses) * len(neg_clauses),
+                "current_clause_count": len(working_clauses),
+                "clauses_before": [str(c) for c in working_clauses],
+                "pos_clause_list": [str(c) for c in pos_clauses],
+                "neg_clause_list": [str(c) for c in neg_clauses],
+                "message": f"Resolution on {var}: {len(pos_clauses)} × {len(neg_clauses)} = {len(pos_clauses) * len(neg_clauses)} new clauses"
             })
 
-        # Monkey-patch to track progress
-        original_resolve = solver._resolve_variable
-
-        def tracked_resolve(clauses, var):
-            asyncio.create_task(track_elimination(var))
-            result = original_resolve(clauses, var)
+            # Perform resolution
+            working_clauses = self._resolve_variable(working_clauses, var)
             variables_eliminated.append(var)
-            clause_counts.append(len(result))
-            return result
+            clause_counts.append(len(working_clauses))
 
-        solver._resolve_variable = tracked_resolve
+            # Emit after resolution
+            await self.emit_state("after_resolution", {
+                "variable": var,
+                "clauses": [str(c) for c in working_clauses],
+                "clause_count": len(working_clauses)
+            })
 
-        # Run solver
-        result = solver.solve()
+            if any(len(c.literals) == 0 for c in working_clauses):
+                await self.emit_complete(None, {
+                    "initial_clauses": clause_counts[0],
+                    "max_clauses": max(clause_counts)
+                })
+                return None
 
-        # Emit clause growth chart
+        # Complete assignment
+        all_vars = sorted(self.cnf.get_variables())
+        for var in all_vars:
+            if var not in assignment:
+                assignment[var] = False
+
+        # Emit final clause growth
         await self.emit_state("clause_growth", {
             "variables_eliminated": variables_eliminated,
             "clause_counts": clause_counts,
-            "max_clauses": max(clause_counts),
-            "growth_factor": max(clause_counts) / clause_counts[0] if clause_counts[0] > 0 else 0
+            "max_clauses": max(clause_counts) if clause_counts else 0,
+            "growth_factor": (max(clause_counts) / clause_counts[0]) if clause_counts and clause_counts[0] > 0 else 0
         })
 
-        stats = solver.get_statistics()
-        await self.emit_complete(result, {
-            "initial_clauses": stats.initial_clauses,
-            "max_clauses": stats.max_clauses,
-            "resolutions": stats.resolutions_performed
+        await self.emit_complete(assignment, {
+            "initial_clauses": clause_counts[0] if clause_counts else 0,
+            "max_clauses": max(clause_counts) if clause_counts else 0,
+            "resolutions": len(variables_eliminated)
         })
 
-        return result
+        return assignment
+
+    def _apply_assignment(self, clauses, var, value):
+        """Apply assignment to clauses."""
+        from bsat.cnf import Clause
+        new_clauses = []
+        for clause in clauses:
+            satisfied = False
+            new_lits = []
+            for lit in clause.literals:
+                if lit.variable == var:
+                    lit_value = value if not lit.negated else not value
+                    if lit_value:
+                        satisfied = True
+                        break
+                else:
+                    new_lits.append(lit)
+            if not satisfied:
+                new_clauses.append(Clause(new_lits))
+        return new_clauses
+
+    def _find_pure_literal(self, clauses):
+        """Find pure literal."""
+        from bsat.cnf import Literal
+        pos_vars = set()
+        neg_vars = set()
+        for clause in clauses:
+            for lit in clause.literals:
+                if lit.negated:
+                    neg_vars.add(lit.variable)
+                else:
+                    pos_vars.add(lit.variable)
+        pure_pos = pos_vars - neg_vars
+        pure_neg = neg_vars - pos_vars
+        if pure_pos:
+            return Literal(pure_pos.pop(), False)
+        if pure_neg:
+            return Literal(pure_neg.pop(), True)
+        return None
+
+    def _eliminate_satisfied(self, clauses, literal):
+        """Remove clauses containing literal."""
+        new_clauses = []
+        for clause in clauses:
+            if not any(lit.variable == literal.variable and lit.negated == literal.negated
+                      for lit in clause.literals):
+                new_clauses.append(clause)
+        return new_clauses
+
+    def _choose_variable(self, clauses):
+        """Choose variable for elimination."""
+        from collections import defaultdict
+        counts = defaultdict(int)
+        for clause in clauses:
+            for lit in clause.literals:
+                counts[lit.variable] += 1
+        return min(counts.keys(), key=lambda v: counts[v]) if counts else None
+
+    def _resolve_variable(self, clauses, var):
+        """Resolve on variable."""
+        from bsat.cnf import Clause
+        pos_clauses = []
+        neg_clauses = []
+        other_clauses = []
+
+        for clause in clauses:
+            has_pos = any(lit.variable == var and not lit.negated for lit in clause.literals)
+            has_neg = any(lit.variable == var and lit.negated for lit in clause.literals)
+            if has_pos:
+                pos_clauses.append(clause)
+            elif has_neg:
+                neg_clauses.append(clause)
+            else:
+                other_clauses.append(clause)
+
+        resolved = []
+        for pos_clause in pos_clauses:
+            for neg_clause in neg_clauses:
+                # Resolve pair
+                new_lits = {}
+                for lit in pos_clause.literals + neg_clause.literals:
+                    if lit.variable != var:
+                        key = (lit.variable, lit.negated)
+                        new_lits[key] = lit
+
+                new_clause = Clause(list(new_lits.values()))
+
+                # Check for tautology
+                vars_seen = {}
+                is_taut = False
+                for lit in new_clause.literals:
+                    if lit.variable in vars_seen and vars_seen[lit.variable] != lit.negated:
+                        is_taut = True
+                        break
+                    vars_seen[lit.variable] = lit.negated
+
+                if not is_taut:
+                    resolved.append(new_clause)
+
+        return resolved + other_clauses
 
 
 class ThreeSATReductionWrapper(BaseSolverWrapper):
