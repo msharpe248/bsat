@@ -244,12 +244,12 @@ class SolverBenchmark:
             BenchmarkResult
         """
         try:
-            start_time = time.time()
+            start_time = time.perf_counter()  # High precision timer
 
             if solver_name == "DPLL":
                 solver = DPLLSolver(cnf)
                 result = solver.solve()
-                elapsed = time.time() - start_time
+                elapsed = time.perf_counter() - start_time
 
                 return BenchmarkResult(
                     solver_name=solver_name,
@@ -262,7 +262,7 @@ class SolverBenchmark:
             elif solver_name == "CDCL":
                 solver = CDCLSolver(cnf)
                 result = solver.solve()
-                elapsed = time.time() - start_time
+                elapsed = time.perf_counter() - start_time
 
                 return BenchmarkResult(
                     solver_name=solver_name,
@@ -275,7 +275,7 @@ class SolverBenchmark:
             elif solver_name == "Schöning":
                 solver = SchoeningSolver(cnf)
                 result = solver.solve()
-                elapsed = time.time() - start_time
+                elapsed = time.perf_counter() - start_time
 
                 return BenchmarkResult(
                     solver_name=solver_name,
@@ -288,7 +288,7 @@ class SolverBenchmark:
             elif solver_name == "CoBD-SAT":
                 solver = CoBDSATSolver(cnf)
                 result = solver.solve()
-                elapsed = time.time() - start_time
+                elapsed = time.perf_counter() - start_time
 
                 stats = solver.get_statistics()
                 return BenchmarkResult(
@@ -307,7 +307,7 @@ class SolverBenchmark:
             elif solver_name == "BB-CDCL":
                 solver = BBCDCLSolver(cnf, num_samples=50)
                 result = solver.solve()
-                elapsed = time.time() - start_time
+                elapsed = time.perf_counter() - start_time
 
                 stats = solver.get_statistics()
                 return BenchmarkResult(
@@ -325,7 +325,7 @@ class SolverBenchmark:
             elif solver_name == "LA-CDCL":
                 solver = LACDCLSolver(cnf, lookahead_depth=2, num_candidates=5)
                 result = solver.solve()
-                elapsed = time.time() - start_time
+                elapsed = time.perf_counter() - start_time
 
                 stats = solver.get_statistics()
                 return BenchmarkResult(
@@ -343,7 +343,7 @@ class SolverBenchmark:
             elif solver_name == "CGPM-SAT":
                 solver = CGPMSolver(cnf, graph_weight=0.5)
                 result = solver.solve()
-                elapsed = time.time() - start_time
+                elapsed = time.perf_counter() - start_time
 
                 stats = solver.get_statistics()
                 graph_stats = stats.get('graph_statistics', {})
@@ -370,7 +370,7 @@ class SolverBenchmark:
                 )
 
         except Exception as e:
-            elapsed = time.time() - start_time
+            elapsed = time.perf_counter() - start_time
             return BenchmarkResult(
                 solver_name=solver_name,
                 satisfiable=None,

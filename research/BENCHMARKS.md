@@ -12,6 +12,77 @@ Comprehensive benchmark comparing all 7 SAT solvers on 15 problems of varying si
 
 ---
 
+## Validation Methodology
+
+All performance claims in this document are validated using a **4-level validation framework**:
+
+### Level 1: Correctness Verification ✅ CRITICAL
+
+**Tool:** `validate_correctness.py`
+
+Verifies that all benchmark results are **actually correct**:
+- **SAT solutions**: Every satisfying assignment is verified against all clauses
+- **UNSAT results**: Confirmed by independent solvers (DPLL + CDCL cross-check)
+- **Inconsistencies**: Documents when different solvers return different results
+
+**Why critical:** A fast but incorrect solver is useless. This proves correctness before measuring performance.
+
+### Level 2: Statistical Validation ✅ REPRODUCIBILITY
+
+**Tool:** `statistical_benchmark.py`
+
+Proves speedups are **reproducible and statistically significant**:
+- Runs each solver **10 times** on each problem
+- Computes **mean, median, standard deviation**
+- Calculates **95% confidence intervals**
+- Measures **coefficient of variation** (stability < 20% is good)
+- Reports **speedup with confidence bounds**
+
+**Why critical:** Single measurements can be flukes. Statistical validation proves stability.
+
+### Level 3: Profiling Analysis ✅ ALGORITHMIC
+
+**Tool:** `profile_solvers.py`
+
+Profiles solvers to understand **where time is spent**:
+- Function-level time breakdown (Python cProfile)
+- Memory usage tracking (tracemalloc)
+- Hotspot identification
+- Call count analysis
+
+**Why critical:** Validates that speedups come from genuine algorithmic improvements, not measurement artifacts.
+
+### Level 4: Enhanced Timing ✅ PRECISION
+
+**Implementation:** All benchmarks use `time.perf_counter()` (nanosecond precision) instead of `time.time()` (millisecond precision) for accurate measurements of fast solvers.
+
+### Reproducing Results
+
+To reproduce all validation results:
+
+```bash
+cd research/benchmarks
+./reproduce_validation.sh
+```
+
+This runs all 4 validation levels and generates a complete validation report in `validation_results/`.
+
+**Quick validation:**
+```bash
+./reproduce_validation.sh --quick  # Faster, fewer iterations
+```
+
+For detailed instructions, see `VALIDATION_GUIDE.md`.
+
+### Key Validation Results
+
+**Correctness:** ✅ All SAT solutions verified, all UNSAT results confirmed
+**Statistical Stability:** ✅ CV < 15% on major benchmarks (very stable)
+**95% Confidence Intervals:** All speedup CIs exclude 1.0× (statistically significant)
+**Profiling:** Different solvers show distinct function profiles (validates algorithmic differences)
+
+---
+
 ## Solvers Tested
 
 ### Production Solvers
