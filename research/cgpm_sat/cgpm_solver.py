@@ -133,6 +133,7 @@ class CGPMSolver:
         assignment = {}
         decision_level = 0
         decision_stack = []
+        tried_both = set()  # Track which variables we've tried both values for
 
         # Main solving loop
         while True:
@@ -145,21 +146,45 @@ class CGPMSolver:
                     # Conflict at level 0 = UNSAT
                     return None
 
-                # Simple backtracking
-                if not decision_stack:
-                    return None
-
-                # Backtrack
-                var, val = decision_stack.pop()
-                decision_level -= 1
-
-                # Remove assignments from this level
-                assignment = {k: v for k, v in assignment.items()
-                            if k in [dv for dv, _ in decision_stack]}
-
                 # Update graph with conflict clause
                 if conflict_clause:
                     self._update_graph_with_conflict(conflict_clause)
+
+                # Chronological backtracking with value flipping
+                while decision_stack:
+                    last_var, last_val = decision_stack[-1]
+
+                    # If we haven't tried both values for this variable, flip it
+                    if last_var not in tried_both:
+                        # Remove this decision's assignment
+                        decision_stack.pop()
+                        decision_level -= 1
+
+                        # Rebuild assignment from stack
+                        assignment = {}
+                        for dv, dval in decision_stack:
+                            assignment[dv] = dval
+
+                        # Try opposite value
+                        assignment[last_var] = not last_val
+                        decision_stack.append((last_var, not last_val))
+                        decision_level += 1
+                        tried_both.add(last_var)
+                        break
+                    else:
+                        # Already tried both values, backtrack further
+                        decision_stack.pop()
+                        decision_level -= 1
+                        tried_both.discard(last_var)
+
+                        # Rebuild assignment
+                        assignment = {}
+                        for dv, dval in decision_stack:
+                            assignment[dv] = dval
+
+                        if not decision_stack:
+                            # Backtracked to level 0 without finding alternative
+                            return None
 
                 continue
 
