@@ -552,6 +552,123 @@ class DavisPutnamWrapper(BaseSolverWrapper):
         return resolved + other_clauses
 
 
+class HornSATWrapper(BaseSolverWrapper):
+    """Horn-SAT solver wrapper with unit propagation visualization."""
+
+    async def solve(self) -> Optional[Dict[str, bool]]:
+        """Solve with step-by-step unit propagation visualization."""
+        await self.emit_state("start", {
+            "variables": sorted(self.cnf.get_variables()),
+            "clauses": [str(c) for c in self.cnf.clauses],
+            "algorithm": "Horn-SAT (Unit Propagation)"
+        })
+
+        # Initialize all variables to False
+        variables = sorted(self.cnf.get_variables())
+        assignment = {var: False for var in variables}
+
+        await self.emit_state("initialize", {
+            "assignment": assignment.copy(),
+            "message": "All variables initialized to False (Horn-SAT monotonic property)"
+        })
+
+        # Keep propagating unit clauses until fixpoint
+        iteration = 0
+        changed = True
+        propagations = []
+
+        while changed:
+            changed = False
+            iteration += 1
+
+            for clause_idx, clause in enumerate(self.cnf.clauses):
+                # Skip if clause is already satisfied
+                if clause.evaluate(assignment):
+                    continue
+
+                # Find literals that could still make this clause true
+                candidate_literals = []
+
+                for literal in clause.literals:
+                    var_value = assignment[literal.variable]
+                    lit_value = (not var_value) if literal.negated else var_value
+
+                    if not lit_value:
+                        # This literal is currently false
+                        if not literal.negated and var_value == False:
+                            candidate_literals.append(literal)
+                    else:
+                        # Literal is already true, clause is satisfied
+                        candidate_literals = None
+                        break
+
+                # If no candidates and clause not satisfied, it's UNSAT
+                if candidate_literals is not None and len(candidate_literals) == 0:
+                    await self.emit_state("unsat", {
+                        "clause": str(clause),
+                        "clause_index": clause_idx,
+                        "assignment": assignment.copy(),
+                        "message": f"All literals in clause '{clause}' are false - UNSAT"
+                    })
+                    await self.emit_complete(None, {
+                        "iterations": iteration,
+                        "propagations": len(propagations)
+                    })
+                    return None
+
+                # Unit clause - exactly one literal can make it true
+                if candidate_literals is not None and len(candidate_literals) == 1:
+                    literal = candidate_literals[0]
+                    if not literal.negated:
+                        old_value = assignment[literal.variable]
+                        assignment[literal.variable] = True
+                        propagations.append({
+                            "variable": literal.variable,
+                            "clause": str(clause),
+                            "iteration": iteration
+                        })
+
+                        await self.emit_state("unit_propagation", {
+                            "variable": literal.variable,
+                            "value": True,
+                            "clause": str(clause),
+                            "clause_index": clause_idx,
+                            "iteration": iteration,
+                            "assignment": assignment.copy(),
+                            "clauses": [str(c) for c in self.cnf.clauses],
+                            "message": f"Clause '{clause}' forces {literal.variable} = True"
+                        })
+
+                        changed = True
+
+        # Check if all clauses are satisfied
+        if self.cnf.evaluate(assignment):
+            await self.emit_state("sat", {
+                "assignment": assignment.copy(),
+                "iterations": iteration,
+                "propagations": propagations,
+                "message": "All clauses satisfied - formula is SAT"
+            })
+            await self.emit_complete(assignment, {
+                "iterations": iteration,
+                "propagations": len(propagations)
+            })
+            return assignment
+
+        # If not satisfied, it's UNSAT
+        unsatisfied_clauses = [str(c) for c in self.cnf.clauses if not c.evaluate(assignment)]
+        await self.emit_state("unsat", {
+            "assignment": assignment.copy(),
+            "unsatisfied_clauses": unsatisfied_clauses,
+            "message": f"No more unit propagations possible, but {len(unsatisfied_clauses)} clauses remain unsatisfied"
+        })
+        await self.emit_complete(None, {
+            "iterations": iteration,
+            "propagations": len(propagations)
+        })
+        return None
+
+
 class ThreeSATReductionWrapper(BaseSolverWrapper):
     """Wrapper for k-SAT to 3-SAT reduction visualization."""
 
@@ -691,6 +808,8 @@ def create_solver_wrapper(
         return TwoSATWrapper(cnf, websocket, speed_ms)
     elif algorithm == "davis_putnam":
         return DavisPutnamWrapper(cnf, websocket, speed_ms)
+    elif algorithm == "hornsat":
+        return HornSATWrapper(cnf, websocket, speed_ms)
     elif algorithm == "3sat_reduction":
         return ThreeSATReductionWrapper(cnf, websocket, speed_ms)
     else:

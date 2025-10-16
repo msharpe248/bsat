@@ -112,6 +112,10 @@ class DPLLVisualizer {
             case 'start':
                 this.handleStart(data);
                 break;
+            case 'decision_point':
+                // Decision point - just track it, don't create a node
+                // This is informational and doesn't need visualization
+                break;
             case 'branch':
                 this.handleBranch(data);
                 break;
@@ -219,6 +223,14 @@ class DPLLVisualizer {
         this.addLink({ source: parentId, target: nodeId, type: 'propagation' });
         this.activeNodeIds.add(nodeId);
         this.currentPath[this.currentPath.length - 1] = nodeId;
+
+        this.addStep({
+            type: 'pure_literal',
+            message: `Pure literal: ${data.variable} = ${data.value}`,
+            details: `Variable ${data.variable} only appears in one polarity - can safely assign`,
+            assignment: data.assignment || {},
+            currentVariable: data.variable
+        });
     }
 
     handleConflict(data) {

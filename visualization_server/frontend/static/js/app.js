@@ -405,6 +405,8 @@ class SATVisualizerApp {
             return new TwoSATVisualizer(this.visualization);
         } else if (algorithm === 'davis_putnam' && typeof DavisPutnamVisualizer !== 'undefined') {
             return new DavisPutnamVisualizer(this.visualization);
+        } else if (algorithm === 'hornsat' && typeof HornSATVisualizer !== 'undefined') {
+            return new HornSATVisualizer(this.visualization);
         } else if (algorithm === '3sat_reduction' && typeof ThreeSATReductionVisualizer !== 'undefined') {
             return new ThreeSATReductionVisualizer(this.visualization);
         } else {

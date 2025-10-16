@@ -372,6 +372,27 @@ async def get_examples():
             algorithm="2sat",
             difficulty="medium"
         ),
+        ExampleFormula(
+            name="Horn-SAT Simple",
+            formula="(a) & (~a | b) & (~b | c) & (~c | d)",
+            description="Simple Horn-SAT with chain of implications: a → b → c → d",
+            algorithm="hornsat",
+            difficulty="easy"
+        ),
+        ExampleFormula(
+            name="Horn-SAT Unit Propagation",
+            formula="(~a | ~b | c) & (~c | d) & (~d | ~e | f) & (a) & (b) & (e)",
+            description="Horn-SAT demonstrating multiple unit propagations from initial assignments",
+            algorithm="hornsat",
+            difficulty="easy"
+        ),
+        ExampleFormula(
+            name="Horn-SAT UNSAT",
+            formula="(a) & (~a | b) & (~b | c) & (~c) & (~a | ~b | ~c)",
+            description="Unsatisfiable Horn formula - contradictory constraints",
+            algorithm="hornsat",
+            difficulty="medium"
+        ),
     ]
 
 
