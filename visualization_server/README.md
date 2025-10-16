@@ -5,16 +5,33 @@ An interactive web-based visualization server for Boolean Satisfiability (SAT) a
 ## Features
 
 - **Real-time Visualization**: Watch algorithms solve step-by-step via WebSocket
-- **Multiple Algorithms**:
-  - DPLL (Decision tree visualization)
-  - 2SAT (Implication graph with SCC visualization)
-  - Davis-Putnam (Clause growth chart)
-  - CDCL (Conflict-driven clause learning)
-  - Horn-SAT
-  - WalkSAT
-- **Interactive Controls**: Play, pause, step forward/back through execution
-- **Example Formulas**: Pre-loaded examples for each algorithm
+- **7 SAT Algorithms**:
+  - **DPLL** - Classic backtracking with decision tree visualization
+  - **2SAT** - Polynomial-time SCC algorithm with implication graph
+  - **Davis-Putnam** - Original 1960 resolution algorithm showing clause growth
+  - **HornSAT** - Polynomial-time unit propagation for Horn formulas
+  - **CDCL** - Modern conflict-driven clause learning with backjumping
+  - **WalkSAT** - Randomized local search with flip visualization
+  - **3SAT Reduction** - k-SAT to 3SAT polynomial reduction
+- **Interactive Controls**: Solve, Step, Pause, Reset with real-time feedback
+- **Rich Examples**: 20+ pre-loaded formulas showcasing different algorithms
 - **Clean Separation**: Original BSAT code remains untouched
+
+## Why This Visualizer?
+
+Understanding SAT algorithms is crucial for computer science education and research. This visualizer makes abstract algorithms tangible:
+
+- **Educational**: See exactly how each algorithm makes decisions, propagates constraints, and learns from conflicts
+- **Comparative**: Run the same formula on different algorithms to understand their tradeoffs
+- **Interactive**: Step through execution at your own pace, pause when interesting things happen
+- **Beautiful**: D3.js visualizations that are both informative and aesthetically pleasing
+- **Real-time**: Watch algorithms solve problems as they happen, not after-the-fact traces
+
+Perfect for:
+- 🎓 **Students** learning computational complexity and automated reasoning
+- 👨‍🏫 **Educators** teaching SAT, NP-completeness, and algorithm design
+- 🔬 **Researchers** prototyping new SAT techniques
+- 💻 **Developers** understanding industrial SAT solver internals
 
 ## Installation
 
@@ -73,72 +90,115 @@ Navigate to: **http://localhost:8000**
 2. **Validate** (optional): Click "Validate" to check syntax
 
 3. **Select Algorithm**:
-   - `DPLL`: For general SAT/3SAT problems
-   - `2SAT`: For formulas with exactly 2 literals per clause
-   - `Davis-Putnam`: Educational demo of the original 1960 algorithm
-   - `CDCL`: Modern industrial-strength algorithm
-   - `Horn-SAT`: For Horn formulas (≤1 positive literal per clause)
-   - `WalkSAT`: Randomized local search
+   - `DPLL`: Classic backtracking for general SAT (complete, exponential worst-case)
+   - `2SAT`: SCC-based solver for 2-CNF formulas (complete, polynomial O(n+m))
+   - `Davis-Putnam`: Original resolution algorithm from 1960 (complete, shows clause explosion)
+   - `HornSAT`: Unit propagation for Horn formulas (complete, polynomial O(n+m))
+   - `CDCL`: Modern clause learning with VSIDS and backjumping (complete, state-of-the-art)
+   - `WalkSAT`: Randomized local search (incomplete, fast for SAT instances)
+   - `3SAT Reduction`: Polynomial reduction from k-SAT to 3-SAT
 
 4. **Adjust Speed**: Use the slider to control visualization speed (100ms - 2s per step)
 
-5. **Click "Solve"**: The solver runs and visualizes each step
+5. **Click "Solve"** or **"Step"**: Start solving automatically or step-by-step
 
 ### Playback Controls
 
-Once solving starts:
-- **⏮ Reset**: Go back to the beginning
-- **◀ Step Back**: Go to previous step
-- **▶/⏸ Play/Pause**: Auto-play through steps
-- **▶▶ Step Forward**: Advance one step
-- **⏭ Go to End**: Jump to final result
+- **Solve**: Run the algorithm automatically with delays between steps
+- **Pause**: Pause auto-solving (states continue buffering in background)
+- **Step**: Execute one step at a time (starts solving if not already started)
+- **Reset**: Clear visualization and return to initial state
+
+**Tip**: Use Step mode to carefully examine each decision, propagation, or conflict!
 
 ## Visualizations
 
-### DPLL Search Tree
-Shows the decision tree with:
-- **Blue nodes**: Decision points
-- **Green nodes**: Unit propagations
-- **Red nodes**: Conflicts
-- **Dashed lines**: Backtracking
+### DPLL - Search Tree
+Interactive decision tree showing:
+- **Decision nodes** (blue): Variable assignments chosen by heuristic
+- **Unit propagation nodes** (green): Forced assignments from unit clauses
+- **Conflict nodes** (red): Dead ends requiring backtracking
+- **Backtrack edges** (dashed with scissors ✂): Failed paths
+- **Step history**: Detailed log with clause highlighting and current assignments
 
-### 2SAT Implication Graph
-Shows:
-- **Directed graph**: Literals and implications
-- **Color-coded SCCs**: Each strongly connected component in different color
-- **Red nodes**: Conflicts (variable and negation in same SCC)
-- **Interactive**: Drag nodes to rearrange
+### 2SAT - Implication Graph
+Graph-based visualization with:
+- **Directed graph**: Nodes are literals, edges are implications
+- **Color-coded SCCs**: Each strongly connected component in unique color
+- **Conflict detection** (red): When x and ¬x in same SCC
+- **Interactive layout**: Drag nodes, force-directed positioning
+- **Step-by-step SCC construction**: Shows Tarjan's algorithm in action
 
-### Davis-Putnam Clause Growth
-Shows:
-- **Line chart**: Clause count over time
-- **Growth statistics**: Initial, max, and growth factor
-- **Variable elimination**: X-axis shows which variables were eliminated
+### Davis-Putnam - Resolution Visualization
+Resolution-based algorithm showing:
+- **Clause growth chart**: Live graph of clause count over time
+- **Variable elimination**: Shows resolution on each variable
+- **Clause explosion**: Visualizes exponential blowup (e.g., 3×3=9 clauses)
+- **Before/after states**: Displays clauses before and after resolution
+- **Statistics**: Initial, max, and growth factor metrics
+
+### HornSAT - Unit Propagation
+Polynomial-time solver visualization:
+- **Assignment trail**: Variables colored by truth value (green=True, gray=False)
+- **Monotonic assignment**: All variables start False, only increase to True
+- **Unit propagation steps**: Shows which clause forces which assignment
+- **Clause display**: Live-updating with highlighted satisfied literals
+- **Linear time**: Demonstrates O(n+m) efficiency
+
+### CDCL - Conflict Learning
+Modern industrial-strength algorithm:
+- **Assignment trail by decision level**: Variables grouped by decision level (L0, L1, L2...)
+- **VSIDS heuristic**: Shows variable scores guiding decision making
+- **Learned clauses panel**: Recent learned clauses with backtrack levels
+- **Conflict analysis**: Shows 1UIP clause learning in action
+- **Backjumping**: Non-chronological backtracking (e.g., L5→L2)
+- **Restarts**: Luby sequence restarts while keeping learned clauses
+
+### WalkSAT - Local Search
+Randomized incomplete algorithm:
+- **Progress chart**: Real-time graph of unsatisfied clauses over time
+- **Current assignment**: Live variable assignments with color coding
+- **Flip visualization**: Shows random (🎲) vs greedy (🎯) flips
+- **Break counts**: Displays how many clauses would break for each variable
+- **Convergence tracking**: Watch formula converge toward solution
+- **Incomplete nature**: May not find solution even if one exists
+
+### 3SAT Reduction - Polynomial Transform
+Visualization of Cook-Levin transformation:
+- **Original clauses**: Shows input k-SAT formula
+- **Auxiliary variables**: Introduces _aux variables for large clauses
+- **Splitting process**: Animates transformation of k-clauses into 3-clauses
+- **Chain construction**: Shows (l₁ ∨ l₂ ∨ x₁), (¬x₁ ∨ l₃ ∨ x₂), ..., (¬xₙ ∨ lₖ₋₁ ∨ lₖ)
+- **Reduction statistics**: Original vs reduced clause/variable counts
 
 ## Architecture
 
 ```
 visualization_server/
 ├── backend/
-│   ├── main.py              # FastAPI application
-│   ├── solver_wrappers.py   # Instrumented solvers
-│   ├── models.py            # Pydantic models
-│   └── session_manager.py   # Session state management
+│   ├── main.py              # FastAPI application & API endpoints
+│   ├── solver_wrappers.py   # Instrumented solver wrappers (DPLL, 2SAT, etc.)
+│   ├── models.py            # Pydantic request/response models
+│   └── session_manager.py   # WebSocket session state management
 ├── frontend/
-│   ├── index.html           # Main UI
+│   ├── index.html           # Main UI with controls
 │   └── static/
 │       ├── css/
-│       │   └── style.css    # Styling
+│       │   └── style.css    # Styling and themes
 │       └── js/
-│           ├── app.js              # Main application
-│           ├── visualizers/        # D3.js visualizers
-│           │   ├── dpll.js
-│           │   ├── twosat.js
-│           │   └── davis_putnam.js
-│           └── components/         # Reusable components
-│               ├── formula_input.js
-│               └── controls.js
-└── requirements.txt         # Python dependencies
+│           ├── app.js                    # Main application logic
+│           ├── visualizers/              # Algorithm-specific visualizers
+│           │   ├── dpll.js              # DPLL search tree (D3.js)
+│           │   ├── twosat.js            # 2SAT implication graph (D3.js)
+│           │   ├── davis_putnam.js      # Davis-Putnam clause growth
+│           │   ├── hornsat.js           # HornSAT unit propagation
+│           │   ├── cdcl.js              # CDCL conflict learning
+│           │   ├── walksat.js           # WalkSAT local search
+│           │   └── threesat_reduction.js # 3SAT reduction visualization
+│           └── components/              # Reusable UI components
+│               ├── formula_input.js     # Formula editor
+│               └── controls.js          # Playback controls
+└── requirements.txt         # Python dependencies (FastAPI, uvicorn, etc.)
 ```
 
 ## How It Works
@@ -172,13 +232,39 @@ visualization_server/
 
 ## Example Formulas
 
-| Name | Formula | Algorithm | Description |
-|------|---------|-----------|-------------|
-| Simple 2SAT | `(x \| y) & (~x \| z) & (~y \| ~z)` | 2SAT | Basic satisfiable 2SAT |
-| Simple 3SAT | `(a \| b \| c) & (~a \| b \| ~c) & (a \| ~b \| c)` | DPLL | Simple 3SAT formula |
-| UNSAT Example | `(x \| y) & (~x \| y) & (x \| ~y) & (~x \| ~y)` | DPLL | Forces contradiction |
-| Davis-Putnam Demo | `(a \| b) & (a \| c) & (~a \| d) & (~a \| e)` | Davis-Putnam | Shows clause growth |
-| Implication Chain | `(x) & (~x \| y) & (~y \| z) & (~z \| w)` | DPLL | Unit propagation cascade |
+The visualizer includes 20+ pre-loaded examples organized by algorithm:
+
+### DPLL Examples
+- **Simple 3SAT**: Basic satisfiable formula
+- **3SAT with Unit Propagation**: Shows forced assignments
+- **3SAT with Backtracking**: Requires exploring multiple paths
+- **3SAT UNSAT**: All assignments blocked
+- **Implication Chain**: Cascading unit propagations
+
+### 2SAT Examples
+- **Simple 2SAT**: Basic implication graph
+- **2-Coloring Triangle**: UNSAT graph coloring problem
+
+### Davis-Putnam Examples
+- **Davis-Putnam Demo**: Moderate clause growth
+- **Exponential Growth**: 3×3=9 clause explosion
+
+### HornSAT Examples
+- **Horn-SAT Simple**: Implication chain a→b→c→d
+- **Horn-SAT Unit Propagation**: Multiple forced assignments
+- **Horn-SAT UNSAT**: Contradictory constraints
+
+### CDCL Examples
+- **CDCL Simple**: Basic clause learning
+- **CDCL Conflict Learning**: Multiple conflicts and learned clauses
+- **CDCL UNSAT**: Requires learning to prove unsatisfiability
+
+### WalkSAT Examples
+- **WalkSAT Simple**: Basic local search
+- **WalkSAT Random Walk**: Shows random vs greedy flips
+- **WalkSAT Local Minimum**: Demonstrates noise parameter helping escape
+
+All examples can be loaded from the dropdown menu and modified in the formula editor.
 
 ## Development
 
@@ -221,13 +307,14 @@ visualization_server/
 
 ## Future Enhancements
 
-- [ ] CDCL implication graph visualization
-- [ ] WalkSAT flip animation
 - [ ] Export visualization as PNG/SVG
 - [ ] Shareable links (formula + algorithm encoded in URL)
-- [ ] Comparison mode (side-by-side algorithms)
-- [ ] Step-by-step explanations
+- [ ] Comparison mode (run multiple algorithms side-by-side)
+- [ ] Interactive explanations (hover tooltips explaining each step)
 - [ ] Jupyter notebook integration
+- [ ] Formula generator with difficulty levels
+- [ ] Benchmark suite with performance comparison
+- [ ] DIMACS CNF format import/export
 
 ## Credits
 
