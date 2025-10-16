@@ -12,9 +12,10 @@ class TwoSATVisualizer {
 
     initializeSVG() {
         this.container.innerHTML = '';
+        this.stepHistory = [];  // Track all steps
 
         const width = this.container.clientWidth || 800;
-        const height = 600;
+        const height = 400;  // Reduced to make room for history
 
         this.svg = d3.select(this.container)
             .append('svg')
@@ -41,6 +42,24 @@ class TwoSATVisualizer {
 
         this.width = width;
         this.height = height;
+
+        // Create scrollable history panel below the graph
+        this.detailsDiv = d3.select(this.container)
+            .append('div')
+            .attr('class', 'twosat-details')
+            .style('margin-top', '20px')
+            .style('padding', '15px')
+            .style('background', '#f8f9fa')
+            .style('border-radius', '5px')
+            .style('border', '1px solid #dee2e6')
+            .style('min-height', 'calc(100vh - 550px)')
+            .style('max-height', 'calc(100vh - 450px)')
+            .style('overflow-y', 'auto');
+
+        this.detailsDiv.append('h3')
+            .style('margin', '0 0 15px 0')
+            .style('color', '#343a40')
+            .text('2SAT Solution Steps');
     }
 
     update(state) {
@@ -48,11 +67,39 @@ class TwoSATVisualizer {
         const data = state.data;
 
         switch (action) {
+            case 'start':
+                this.addStep({
+                    type: 'start',
+                    message: 'Starting 2SAT solver',
+                    details: `${data.clauses.length} clauses to solve`
+                });
+                break;
             case 'implication_graph':
                 this.handleGraph(data);
                 break;
+            case 'finding_sccs':
+                this.addStep({
+                    type: 'finding_sccs',
+                    message: 'Finding strongly connected components...',
+                    details: data.message || "Using Tarjan's algorithm"
+                });
+                break;
             case 'sccs_found':
                 this.handleSCCs(data);
+                break;
+            case 'no_conflicts':
+                this.addStep({
+                    type: 'no_conflicts',
+                    message: '✓ No conflicts found',
+                    details: data.message || 'Formula is satisfiable'
+                });
+                break;
+            case 'solution_constructed':
+                this.addStep({
+                    type: 'solution',
+                    message: '✓ Solution constructed',
+                    details: data.method || 'Assigned values based on SCC topological order'
+                });
                 break;
             case 'conflict':
                 this.handleConflict(data);
@@ -85,11 +132,24 @@ class TwoSATVisualizer {
             target: edge.to
         }));
 
+        this.addStep({
+            type: 'implication_graph',
+            message: 'Built implication graph',
+            details: `${graph.nodes.length} nodes (literals), ${graph.edges.length} edges (implications)`
+        });
+
         this.renderGraph();
     }
 
     handleSCCs(data) {
         this.sccs = data.sccs;
+
+        this.addStep({
+            type: 'sccs_found',
+            message: `Found ${data.num_sccs} strongly connected components`,
+            details: `Each SCC shown in a different color. Variables in the same SCC must have the same truth value.`
+        });
+
         this.renderGraph();
     }
 
@@ -102,6 +162,13 @@ class TwoSATVisualizer {
                 node.conflict = true;
             }
         });
+
+        this.addStep({
+            type: 'conflict',
+            message: `✗ UNSAT: Conflict detected!`,
+            details: data.message || `Variables ${conflicts.join(', ')} have both polarities in the same SCC - formula is unsatisfiable`
+        });
+
         this.renderGraph();
     }
 
@@ -206,5 +273,51 @@ class TwoSATVisualizer {
             d.fx = null;
             d.fy = null;
         }
+    }
+
+    addStep(data) {
+        this.stepHistory.push(data);
+
+        // Create a compact card for this step
+        const stepCard = this.detailsDiv.append('div')
+            .attr('class', 'step-card')
+            .style('margin-bottom', '10px')
+            .style('padding', '10px')
+            .style('background', 'white')
+            .style('border-radius', '4px')
+            .style('border-left', `4px solid ${this.getStepColor(data.type)}`)
+            .style('box-shadow', '0 1px 2px rgba(0,0,0,0.1)');
+
+        // Header with step number and message
+        stepCard.append('div')
+            .style('font-weight', 'bold')
+            .style('color', '#495057')
+            .style('font-size', '14px')
+            .html(`<span style="color: #6c757d; font-weight: normal;">#${this.stepHistory.length}:</span> ${data.message}`);
+
+        // Details
+        if (data.details) {
+            stepCard.append('div')
+                .style('margin-top', '4px')
+                .style('font-size', '13px')
+                .style('color', '#6c757d')
+                .text(data.details);
+        }
+
+        // Auto-scroll to bottom
+        this.detailsDiv.node().scrollTop = this.detailsDiv.node().scrollHeight;
+    }
+
+    getStepColor(type) {
+        const colors = {
+            'start': '#17a2b8',
+            'implication_graph': '#0066cc',
+            'finding_sccs': '#6c757d',
+            'sccs_found': '#20c997',
+            'no_conflicts': '#28a745',
+            'solution': '#28a745',
+            'conflict': '#dc3545'
+        };
+        return colors[type] || '#6c757d';
     }
 }

@@ -18,6 +18,7 @@ class DPLLVisualizer {
     initializeSVG() {
         // Clear container
         this.container.innerHTML = '';
+        this.stepHistory = [];  // Track all steps
 
         // Use container's actual size
         const containerWidth = this.container.clientWidth || 800;
@@ -25,17 +26,16 @@ class DPLLVisualizer {
 
         // Start with container size, will expand dynamically
         this.baseWidth = containerWidth;
-        this.baseHeight = containerHeight;
+        this.baseHeight = Math.min(containerHeight, 400);  // Reduce to make room for history
         this.width = containerWidth;
-        this.height = containerHeight;
+        this.height = this.baseHeight;
 
         this.svg = d3.select(this.container)
             .append('svg')
             .attr('width', this.width)
             .attr('height', this.height)
             .style('display', 'block')
-            .style('min-width', '100%')
-            .style('min-height', '100%');
+            .style('min-width', '100%');
 
         // Create main group for zoom/pan
         this.mainGroup = this.svg.append('g').attr('class', 'main-group');
@@ -44,6 +44,24 @@ class DPLLVisualizer {
         this.linkGroup = this.mainGroup.append('g').attr('class', 'links');
         this.markerGroup = this.mainGroup.append('g').attr('class', 'backtrack-markers');
         this.nodeGroup = this.mainGroup.append('g').attr('class', 'nodes');
+
+        // Create scrollable history panel below the tree
+        this.detailsDiv = d3.select(this.container)
+            .append('div')
+            .attr('class', 'dpll-details')
+            .style('margin-top', '20px')
+            .style('padding', '15px')
+            .style('background', '#f8f9fa')
+            .style('border-radius', '5px')
+            .style('border', '1px solid #dee2e6')
+            .style('min-height', 'calc(100vh - 550px)')
+            .style('max-height', 'calc(100vh - 450px)')
+            .style('overflow-y', 'auto');
+
+        this.detailsDiv.append('h3')
+            .style('margin', '0 0 15px 0')
+            .style('color', '#343a40')
+            .text('Search Steps');
     }
 
     setupZoomControls() {
@@ -128,6 +146,12 @@ class DPLLVisualizer {
         });
         this.activeNodeIds.add(nodeId);
         this.currentPath.push(nodeId);
+
+        this.addStep({
+            type: 'start',
+            message: `Starting DPLL search`,
+            details: `${data.num_variables} variables, ${data.num_clauses} clauses`
+        });
     }
 
     handleBranch(data) {
@@ -143,6 +167,12 @@ class DPLLVisualizer {
         this.addLink({ source: parentId, target: nodeId, type: 'decision' });
         this.activeNodeIds.add(nodeId);
         this.currentPath.push(nodeId);
+
+        this.addStep({
+            type: 'decision',
+            message: `Decision: ${data.variable} = ${data.value}`,
+            details: `Depth ${data.depth}, trying ${data.branch} branch`
+        });
     }
 
     handleUnitProp(data) {
@@ -160,6 +190,12 @@ class DPLLVisualizer {
         this.addLink({ source: parentId, target: nodeId, type: 'propagation' });
         this.activeNodeIds.add(nodeId);
         this.currentPath[this.currentPath.length - 1] = nodeId;
+
+        this.addStep({
+            type: 'unit_propagation',
+            message: `Unit propagation: ${data.variable} = ${data.value}`,
+            details: `Forced by unit clause: ${data.clause}`
+        });
     }
 
     handlePureLiteral(data) {
@@ -192,6 +228,12 @@ class DPLLVisualizer {
         });
 
         this.addLink({ source: parentId, target: nodeId, type: 'conflict' });
+
+        this.addStep({
+            type: 'conflict',
+            message: `✗ Conflict detected!`,
+            details: data.message || 'Empty clause found - this path is unsatisfiable'
+        });
     }
 
     handleBacktrack(data) {
@@ -211,6 +253,12 @@ class DPLLVisualizer {
 
             this.currentPath.pop();
         }
+
+        this.addStep({
+            type: 'backtrack',
+            message: `⬅ Backtracking to depth ${data.depth}`,
+            details: data.message || `Trying alternative assignment`
+        });
     }
 
     handleSolution(data) {
@@ -227,6 +275,12 @@ class DPLLVisualizer {
 
         this.addLink({ source: parentId, target: nodeId, type: 'solution' });
         this.activeNodeIds.add(nodeId);
+
+        this.addStep({
+            type: 'solution',
+            message: `✓ Solution found!`,
+            details: `Assignment: ${JSON.stringify(data.assignment)}`
+        });
     }
 
     addNode(node) {
@@ -350,5 +404,51 @@ class DPLLVisualizer {
             .attr('transform', d => `translate(${d.x}, ${d.y})`);
 
         nodeSelection.exit().remove();
+    }
+
+    addStep(data) {
+        this.stepHistory.push(data);
+
+        // Create a compact card for this step
+        const stepCard = this.detailsDiv.append('div')
+            .attr('class', 'step-card')
+            .style('margin-bottom', '10px')
+            .style('padding', '10px')
+            .style('background', 'white')
+            .style('border-radius', '4px')
+            .style('border-left', `4px solid ${this.getStepColor(data.type)}`)
+            .style('box-shadow', '0 1px 2px rgba(0,0,0,0.1)');
+
+        // Header with step number and message
+        stepCard.append('div')
+            .style('font-weight', 'bold')
+            .style('color', '#495057')
+            .style('font-size', '14px')
+            .html(`<span style="color: #6c757d; font-weight: normal;">#${this.stepHistory.length}:</span> ${data.message}`);
+
+        // Details
+        if (data.details) {
+            stepCard.append('div')
+                .style('margin-top', '4px')
+                .style('font-size', '13px')
+                .style('color', '#6c757d')
+                .text(data.details);
+        }
+
+        // Auto-scroll to bottom
+        this.detailsDiv.node().scrollTop = this.detailsDiv.node().scrollHeight;
+    }
+
+    getStepColor(type) {
+        const colors = {
+            'start': '#17a2b8',
+            'decision': '#0066cc',
+            'unit_propagation': '#28a745',
+            'pure_literal': '#20c997',
+            'conflict': '#dc3545',
+            'backtrack': '#ffc107',
+            'solution': '#28a745'
+        };
+        return colors[type] || '#6c757d';
     }
 }
