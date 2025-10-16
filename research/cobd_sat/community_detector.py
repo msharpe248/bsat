@@ -57,12 +57,54 @@ class BipartiteGraph:
         return self.var_nodes | self.clause_nodes
 
 
+class VariableGraph:
+    """
+    Variable-variable graph (projection of bipartite graph).
+
+    Two variables are connected if they appear in the same clause.
+    Edge weight = number of clauses they share.
+    """
+
+    def __init__(self):
+        self.nodes: Set[str] = set()
+        self.edges: Dict[Tuple[str, str], int] = {}  # (var1, var2) -> weight
+        self.neighbors: Dict[str, Set[str]] = defaultdict(set)
+        self.degrees: Dict[str, int] = defaultdict(int)
+        self.total_edges = 0
+
+    def add_node(self, var: str):
+        """Add a variable node."""
+        self.nodes.add(var)
+
+    def add_edge(self, var1: str, var2: str):
+        """Add edge between two variables (increment weight if exists)."""
+        if var1 == var2:
+            return
+
+        edge_key = tuple(sorted([var1, var2]))
+
+        if edge_key in self.edges:
+            self.edges[edge_key] += 1
+        else:
+            self.edges[edge_key] = 1
+            self.neighbors[var1].add(var2)
+            self.neighbors[var2].add(var1)
+            self.total_edges += 1
+
+        # Update degrees (weighted)
+        self.degrees[var1] += 1
+        self.degrees[var2] += 1
+
+
 class CommunityDetector:
     """
     Detect communities in the variable-clause bipartite graph.
 
     Uses a greedy modularity optimization algorithm to partition the graph
     into communities that maximize modularity Q.
+
+    FIXED: Projects bipartite graph to variable-variable graph first,
+    then applies standard modularity optimization (works correctly!).
 
     Modularity Q = 1/(2m) * Σ[A_ij - k_i*k_j/(2m)] * δ(c_i, c_j)
 
@@ -82,41 +124,54 @@ class CommunityDetector:
             cnf: CNFExpression to analyze
         """
         self.cnf = cnf
-        self.graph = BipartiteGraph()
+        self.graph = BipartiteGraph()  # Keep for interface detection
+        self.var_graph = VariableGraph()  # NEW: projected variable graph
         self.communities: Dict[str, int] = {}  # node -> community_id
         self.community_members: Dict[int, Set[str]] = defaultdict(set)  # community_id -> nodes
         self._build_graph()
 
     def _build_graph(self):
-        """Build bipartite graph from CNF formula."""
+        """Build bipartite graph AND projected variable graph from CNF formula."""
         # Add all variables
         variables = sorted(self.cnf.get_variables())
         for var in variables:
             self.graph.add_variable(var)
+            self.var_graph.add_node(var)
 
         # Add clauses and edges
         for idx, clause in enumerate(self.cnf.clauses):
             clause_id = f"C{idx}"
             self.graph.add_clause(clause_id)
 
-            # Connect clause to its variables
-            for literal in clause.literals:
-                var = literal.variable
+            # Get variables in this clause
+            clause_vars = [lit.variable for lit in clause.literals]
+
+            # Connect clause to its variables (bipartite graph)
+            for var in clause_vars:
                 self.graph.add_edge(var, clause_id)
+
+            # Connect variables to each other (projected graph)
+            # Two variables are connected if they appear in the same clause
+            for i in range(len(clause_vars)):
+                for j in range(i + 1, len(clause_vars)):
+                    self.var_graph.add_edge(clause_vars[i], clause_vars[j])
 
     def detect_communities(self, min_communities: int = 2, max_communities: int = 10) -> Dict[str, int]:
         """
-        Detect communities using greedy modularity optimization.
+        Detect communities using greedy modularity optimization on PROJECTED variable graph.
+
+        FIXED: Works on variable-variable graph instead of bipartite graph.
+        This ensures modularity calculation works correctly!
 
         Args:
             min_communities: Minimum number of communities to form
             max_communities: Maximum number of communities to form
 
         Returns:
-            Dictionary mapping node IDs to community IDs
+            Dictionary mapping variable names to community IDs
         """
-        # Initialize: each node in its own community
-        nodes = list(self.graph.get_all_nodes())
+        # Initialize: each VARIABLE in its own community
+        nodes = list(self.var_graph.nodes)
         self.communities = {node: i for i, node in enumerate(nodes)}
         self.community_members = {i: {node} for i, node in enumerate(nodes)}
 
@@ -137,9 +192,9 @@ class CommunityDetector:
                 best_community = current_community
                 best_modularity = current_modularity
 
-                # Find neighboring communities
+                # Find neighboring communities (from variable graph)
                 neighbor_communities = set()
-                for neighbor in self.graph.neighbors(node):
+                for neighbor in self.var_graph.neighbors.get(node, set()):
                     neighbor_communities.add(self.communities[neighbor])
 
                 # Try moving to each neighbor community
@@ -177,25 +232,26 @@ class CommunityDetector:
 
     def _compute_modularity(self) -> float:
         """
-        Compute modularity Q of current community assignment.
+        Compute modularity Q of current community assignment on VARIABLE graph.
+
+        FIXED: Uses projected variable graph for correct modularity!
 
         Q = 1/(2m) * Σ[A_ij - k_i*k_j/(2m)] * δ(c_i, c_j)
         """
-        if self.graph.total_edges == 0:
+        if self.var_graph.total_edges == 0:
             return 0.0
 
-        m = self.graph.total_edges
+        m = self.var_graph.total_edges
         Q = 0.0
 
-        # Sum over all edges
-        for node_i in self.graph.get_all_nodes():
-            for node_j in self.graph.neighbors(node_i):
-                # A_ij = 1 (edge exists)
-                # Check if same community
-                if self.communities[node_i] == self.communities[node_j]:
-                    k_i = self.graph.degrees[node_i]
-                    k_j = self.graph.degrees[node_j]
-                    Q += 1.0 - (k_i * k_j) / (2.0 * m)
+        # Sum over all edges in variable graph
+        for (node_i, node_j), weight in self.var_graph.edges.items():
+            # Check if same community
+            if self.communities[node_i] == self.communities[node_j]:
+                k_i = self.var_graph.degrees[node_i]
+                k_j = self.var_graph.degrees[node_j]
+                # Weighted contribution
+                Q += weight - (k_i * k_j) / (2.0 * m)
 
         return Q / (2.0 * m)
 
@@ -203,28 +259,36 @@ class CommunityDetector:
         """
         Compute change in modularity if node moves from old to new community.
 
+        FIXED: Uses variable graph for incremental calculation.
+
         This is an incremental calculation that's much faster than recomputing
         the entire modularity.
         """
-        m = self.graph.total_edges
+        m = self.var_graph.total_edges
         if m == 0:
             return 0.0
 
-        k_i = self.graph.degrees[node]
+        k_i = self.var_graph.degrees.get(node, 0)
 
         # Sum of degrees in old and new communities
-        sum_old = sum(self.graph.degrees[n] for n in self.community_members[old_community])
-        sum_new = sum(self.graph.degrees[n] for n in self.community_members[new_community])
+        sum_old = sum(self.var_graph.degrees.get(n, 0) for n in self.community_members[old_community])
+        sum_new = sum(self.var_graph.degrees.get(n, 0) for n in self.community_members[new_community])
 
-        # Edges from node to old community
-        edges_to_old = sum(1 for neighbor in self.graph.neighbors(node)
-                          if self.communities[neighbor] == old_community and neighbor != node)
+        # Weighted edges from node to old community
+        edges_to_old = 0
+        for neighbor in self.var_graph.neighbors.get(node, set()):
+            if self.communities[neighbor] == old_community and neighbor != node:
+                edge_key = tuple(sorted([node, neighbor]))
+                edges_to_old += self.var_graph.edges.get(edge_key, 0)
 
-        # Edges from node to new community
-        edges_to_new = sum(1 for neighbor in self.graph.neighbors(node)
-                          if self.communities[neighbor] == new_community)
+        # Weighted edges from node to new community
+        edges_to_new = 0
+        for neighbor in self.var_graph.neighbors.get(node, set()):
+            if self.communities[neighbor] == new_community:
+                edge_key = tuple(sorted([node, neighbor]))
+                edges_to_new += self.var_graph.edges.get(edge_key, 0)
 
-        # Modularity change (simplified formula)
+        # Modularity change (simplified formula with weights)
         delta_Q = (edges_to_new - edges_to_old) / m
         delta_Q += k_i * (sum_old - sum_new - k_i) / (2.0 * m * m)
 
@@ -305,23 +369,41 @@ class CommunityDetector:
 
     def get_variable_communities(self) -> Dict[str, int]:
         """
-        Get community assignments for variables only.
+        Get community assignments for variables.
 
         Returns:
             Dictionary mapping variable names to community IDs
         """
-        return {node: comm_id for node, comm_id in self.communities.items()
-                if node in self.graph.var_nodes}
+        # Since we only work with variables now, return all communities
+        return dict(self.communities)
 
     def get_clause_communities(self) -> Dict[str, int]:
         """
-        Get community assignments for clauses only.
+        Get community assignments for clauses based on their variables.
+
+        A clause is assigned to the community that contains the majority of its variables.
 
         Returns:
             Dictionary mapping clause IDs to community IDs
         """
-        return {node: comm_id for node, comm_id in self.communities.items()
-                if node in self.graph.clause_nodes}
+        clause_communities = {}
+
+        for idx, clause in enumerate(self.cnf.clauses):
+            clause_id = f"C{idx}"
+            clause_vars = [lit.variable for lit in clause.literals]
+
+            # Count which communities the clause's variables belong to
+            community_counts = defaultdict(int)
+            for var in clause_vars:
+                if var in self.communities:
+                    community_counts[self.communities[var]] += 1
+
+            # Assign clause to community with most variables
+            if community_counts:
+                best_community = max(community_counts.items(), key=lambda x: x[1])[0]
+                clause_communities[clause_id] = best_community
+
+        return clause_communities
 
     def identify_interface_variables(self) -> Set[str]:
         """

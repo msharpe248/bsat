@@ -56,7 +56,8 @@ class LACDCLSolver:
                  lookahead_depth: int = 2,
                  num_candidates: int = 5,
                  use_lookahead: bool = True,
-                 lookahead_frequency: int = 1):
+                 lookahead_frequency: Optional[int] = None,
+                 adaptive_lookahead: bool = True):
         """
         Initialize LA-CDCL solver.
 
@@ -65,13 +66,23 @@ class LACDCLSolver:
             lookahead_depth: How deep to look ahead (2-3 typical)
             num_candidates: How many VSIDS candidates to evaluate
             use_lookahead: Whether to use lookahead (can disable for comparison)
-            lookahead_frequency: Use lookahead every N decisions (1 = always)
+            lookahead_frequency: Use lookahead every N decisions (None = adaptive)
+            adaptive_lookahead: Automatically adjust frequency based on conflict rate
         """
         self.cnf = cnf
         self.lookahead_depth = lookahead_depth
         self.num_candidates = num_candidates
         self.use_lookahead = use_lookahead
-        self.lookahead_frequency = lookahead_frequency
+        self.adaptive_lookahead = adaptive_lookahead
+
+        # Lookahead frequency (adaptive or fixed)
+        if lookahead_frequency is not None:
+            self.lookahead_frequency = lookahead_frequency
+            self.adaptive_lookahead = False  # Disable adaptive if explicit frequency
+        elif adaptive_lookahead:
+            self.lookahead_frequency = 1  # Start with always
+        else:
+            self.lookahead_frequency = 1  # Default
 
         # Lookahead engine
         self.lookahead = LookaheadEngine(
@@ -82,6 +93,11 @@ class LACDCLSolver:
         # Base CDCL solver (we'll use its infrastructure)
         self.base_solver = CDCLSolver(cnf)
 
+        # Adaptive lookahead tracking
+        self.recent_decisions = []  # Track recent decision outcomes
+        self.recent_window_size = 20  # Window for conflict rate tracking
+        self.frequency_adjustments = 0  # Count of frequency changes
+
         # Statistics
         self.stats = {
             'lookahead_used': 0,
@@ -91,7 +107,10 @@ class LACDCLSolver:
             'lookahead_time': 0.0,
             'cdcl_time': 0.0,
             'total_time': 0.0,
-            'lookahead_benefits': 0  # Times lookahead changed decision
+            'lookahead_benefits': 0,  # Times lookahead changed decision
+            'adaptive_frequency': self.adaptive_lookahead,
+            'frequency_adjustments': 0,
+            'avg_lookahead_frequency': 1.0
         }
 
     def solve(self) -> Optional[Dict[str, bool]]:
@@ -118,6 +137,48 @@ class LACDCLSolver:
         self.stats['total_time'] = time.time() - start_time
 
         return result
+
+    def _update_adaptive_frequency(self):
+        """
+        Adaptively adjust lookahead frequency based on recent conflict rate.
+
+        Strategy:
+        - High conflict rate (> 30%): Use lookahead frequently (freq=1)
+        - Medium conflict rate (10-30%): Use lookahead sometimes (freq=3)
+        - Low conflict rate (< 10%): Use lookahead rarely (freq=8)
+
+        This reduces overhead when solver is making good progress.
+        """
+        if not self.adaptive_lookahead:
+            return
+
+        # Need enough data to compute rate
+        if len(self.recent_decisions) < 10:
+            return
+
+        # Compute recent conflict rate
+        recent_conflicts = sum(1 for outcome in self.recent_decisions[-self.recent_window_size:] if outcome == 'conflict')
+        recent_count = min(len(self.recent_decisions), self.recent_window_size)
+        conflict_rate = recent_conflicts / recent_count if recent_count > 0 else 0.0
+
+        # Determine new frequency
+        old_frequency = self.lookahead_frequency
+
+        if conflict_rate > 0.30:
+            # High conflict rate - use lookahead often
+            new_frequency = 1
+        elif conflict_rate > 0.10:
+            # Medium conflict rate - use lookahead sometimes
+            new_frequency = 3
+        else:
+            # Low conflict rate - save overhead, use rarely
+            new_frequency = 8
+
+        # Update if changed
+        if new_frequency != old_frequency:
+            self.lookahead_frequency = new_frequency
+            self.frequency_adjustments += 1
+            self.stats['frequency_adjustments'] = self.frequency_adjustments
 
     def _solve_with_lookahead(self) -> Optional[Dict[str, bool]]:
         """
@@ -151,6 +212,11 @@ class LACDCLSolver:
             if conflict_clause is not None:
                 # Conflict detected
                 self.stats['conflicts_total'] += 1
+                self.recent_decisions.append('conflict')
+
+                # Update adaptive frequency periodically
+                if self.stats['decisions_made'] % 10 == 0:
+                    self._update_adaptive_frequency()
 
                 if decision_level == 0:
                     # Conflict at level 0 = UNSAT
@@ -232,6 +298,11 @@ class LACDCLSolver:
             decision_stack.append((var, val))
             decision_level += 1
             self.stats['decisions_made'] += 1
+            self.recent_decisions.append('decision')
+
+            # Update adaptive frequency periodically
+            if self.stats['decisions_made'] % 10 == 0:
+                self._update_adaptive_frequency()
 
     def _lookahead_decision(self,
                            unassigned: List[str],
@@ -387,10 +458,25 @@ class LACDCLSolver:
         if self.stats['total_time'] > 0:
             overhead_percentage = 100.0 * self.stats['lookahead_time'] / self.stats['total_time']
 
+        # Compute average frequency
+        if self.stats['decisions_made'] > 0:
+            avg_frequency = self.stats['decisions_made'] / max(1, self.stats['lookahead_used'])
+        else:
+            avg_frequency = self.lookahead_frequency
+
+        # Compute conflict rate
+        conflict_rate = 0.0
+        if len(self.recent_decisions) > 0:
+            conflicts = sum(1 for outcome in self.recent_decisions if outcome == 'conflict')
+            conflict_rate = 100.0 * conflicts / len(self.recent_decisions)
+
         return {
             **self.stats,
             'lookahead_percentage': lookahead_percentage,
             'lookahead_overhead_percentage': overhead_percentage,
+            'avg_lookahead_frequency': avg_frequency,
+            'current_frequency': self.lookahead_frequency,
+            'conflict_rate': conflict_rate,
             'lookahead_engine_stats': lookahead_stats
         }
 
@@ -411,7 +497,8 @@ class LACDCLSolver:
 
 def solve_la_cdcl(cnf: CNFExpression,
                   lookahead_depth: int = 2,
-                  num_candidates: int = 5) -> Optional[Dict[str, bool]]:
+                  num_candidates: int = 5,
+                  adaptive_lookahead: bool = True) -> Optional[Dict[str, bool]]:
     """
     Solve using LA-CDCL.
 
@@ -421,6 +508,7 @@ def solve_la_cdcl(cnf: CNFExpression,
         cnf: CNF formula to solve
         lookahead_depth: Lookahead depth (2-3 typical)
         num_candidates: Number of candidates to evaluate
+        adaptive_lookahead: Automatically adjust lookahead frequency based on conflict rate
 
     Returns:
         Satisfying assignment if SAT, None if UNSAT
@@ -429,7 +517,7 @@ def solve_la_cdcl(cnf: CNFExpression,
         >>> from bsat import CNFExpression
         >>> from research.la_cdcl import solve_la_cdcl
         >>> cnf = CNFExpression.parse("(a | b) & (~a | c) & (~b | ~c)")
-        >>> result = solve_la_cdcl(cnf)
+        >>> result = solve_la_cdcl(cnf)  # Uses adaptive lookahead
         >>> if result:
         ...     print(f"SAT: {result}")
         ... else:
@@ -438,6 +526,7 @@ def solve_la_cdcl(cnf: CNFExpression,
     solver = LACDCLSolver(
         cnf,
         lookahead_depth=lookahead_depth,
-        num_candidates=num_candidates
+        num_candidates=num_candidates,
+        adaptive_lookahead=adaptive_lookahead
     )
     return solver.solve()

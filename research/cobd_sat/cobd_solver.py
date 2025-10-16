@@ -161,11 +161,15 @@ class CoBDSATSolver:
 
     def _fallback_solve(self) -> Optional[Dict[str, bool]]:
         """
-        Fallback to standard DPLL solver.
+        Fallback to standard solver when decomposition is not beneficial.
 
-        Used when decomposition is not beneficial.
+        Uses CDCL if enabled (faster with learning), else DPLL.
         """
-        solver = DPLLSolver(self.cnf)
+        if self.use_cdcl:
+            from bsat.cdcl import CDCLSolver
+            solver = CDCLSolver(self.cnf)
+        else:
+            solver = DPLLSolver(self.cnf)
         return solver.solve()
 
     def _build_community_formulas(self):

@@ -80,11 +80,17 @@ class CGPMSolver:
         # Learned clauses counter (for update frequency)
         self.learned_clauses_count = 0
 
+        # Cached combined scores (invalidated on graph update)
+        self._cached_scores: Optional[Dict[str, float]] = None
+        self._max_degree_cache: Optional[int] = None
+
         # Statistics
         self.stats = {
             'graph_construction_time': 0.0,
             'graph_queries': 0,
             'graph_updates': 0,
+            'graph_cache_hits': 0,
+            'graph_cache_misses': 0,
             'decisions_made': 0,
             'graph_influenced_decisions': 0,
             'total_time': 0.0
@@ -217,6 +223,7 @@ class CGPMSolver:
         Make decision using graph metrics.
 
         Combines graph-based score with VSIDS-like heuristic.
+        Uses cached scores to avoid recomputing metrics.
 
         Args:
             unassigned: List of unassigned variables
@@ -226,25 +233,17 @@ class CGPMSolver:
         """
         self.stats['graph_queries'] += 1
 
-        # Get graph metrics for unassigned variables
+        # Compute scores if not cached
+        if self._cached_scores is None:
+            self._compute_and_cache_scores()
+            self.stats['graph_cache_misses'] += 1
+        else:
+            self.stats['graph_cache_hits'] += 1
+
+        # Get scores for unassigned variables
         graph_scores = {}
-
         for var in unassigned:
-            if var not in self.graph.variables:
-                graph_scores[var] = 0.0
-                continue
-
-            # Combine multiple metrics
-            metrics = self.graph.get_metrics(var)
-
-            # Weighted combination
-            score = (
-                0.5 * metrics.pagerank +
-                0.3 * (metrics.degree / max(self.graph.get_degree(v) for v in self.graph.variables) if self.graph.variables else 1.0) +
-                0.2 * metrics.betweenness_centrality
-            )
-
-            graph_scores[var] = score
+            graph_scores[var] = self._cached_scores.get(var, 0.0)
 
         # Choose highest scoring variable
         if graph_scores:
@@ -256,6 +255,42 @@ class CGPMSolver:
 
         # For value, use simple heuristic: True
         return best_var, True
+
+    def _compute_and_cache_scores(self):
+        """
+        Compute and cache combined graph scores for all variables.
+
+        This precomputes the weighted combination of metrics once,
+        avoiding repeated computation during decision making.
+        """
+        if not self.graph.variables:
+            self._cached_scores = {}
+            self._max_degree_cache = 0
+            return
+
+        # Compute max degree once
+        self._max_degree_cache = max(
+            (self.graph.get_degree(v) for v in self.graph.variables),
+            default=1
+        )
+
+        # Get all metrics at once (leverages graph's internal caching)
+        all_metrics = self.graph.get_all_metrics()
+
+        # Compute combined scores
+        self._cached_scores = {}
+        for metrics in all_metrics:
+            # Normalized degree (0-1)
+            norm_degree = metrics.degree / self._max_degree_cache if self._max_degree_cache > 0 else 0.0
+
+            # Weighted combination
+            score = (
+                0.5 * metrics.pagerank +
+                0.3 * norm_degree +
+                0.2 * metrics.betweenness_centrality
+            )
+
+            self._cached_scores[metrics.variable] = score
 
     def _update_graph_with_conflict(self, conflict_clause: Clause):
         """
@@ -274,6 +309,10 @@ class CGPMSolver:
         if self.learned_clauses_count % self.update_frequency == 0:
             self.graph.add_conflict_clause(conflict_clause)
             self.stats['graph_updates'] += 1
+
+            # Invalidate score cache since graph changed
+            self._cached_scores = None
+            self._max_degree_cache = None
 
         self.stats['graph_construction_time'] += time.time() - start
 
@@ -381,10 +420,17 @@ class CGPMSolver:
         if self.stats['total_time'] > 0:
             graph_overhead = 100.0 * self.stats['graph_construction_time'] / self.stats['total_time']
 
+        # Compute cache hit rate
+        total_queries = self.stats['graph_cache_hits'] + self.stats['graph_cache_misses']
+        cache_hit_rate = 0.0
+        if total_queries > 0:
+            cache_hit_rate = 100.0 * self.stats['graph_cache_hits'] / total_queries
+
         return {
             **self.stats,
             'graph_influence_rate': graph_influence_rate,
             'graph_overhead_percentage': graph_overhead,
+            'cache_hit_rate': cache_hit_rate,
             'graph_statistics': self.graph.get_statistics()
         }
 

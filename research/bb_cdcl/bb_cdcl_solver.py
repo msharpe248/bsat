@@ -41,38 +41,37 @@ class BBCDCLSolver:
     """
 
     def __init__(self, cnf: CNFExpression,
-                 num_samples: int = 100,
+                 num_samples: Optional[int] = None,
                  confidence_threshold: float = 0.95,
                  use_cdcl: bool = True,
-                 max_backbone_conflicts: int = 10):
+                 max_backbone_conflicts: int = 10,
+                 adaptive_sampling: bool = True):
         """
         Initialize BB-CDCL solver.
 
         Args:
             cnf: CNF formula to solve
-            num_samples: Number of WalkSAT samples for backbone detection
+            num_samples: Number of WalkSAT samples (None = adaptive based on problem)
             confidence_threshold: Minimum confidence to fix variable (0.95 = 95%)
             use_cdcl: Use CDCL for systematic search (else DPLL)
             max_backbone_conflicts: Max conflicts before unfixing backbone vars
+            adaptive_sampling: Automatically adjust sample count based on problem difficulty
         """
         self.cnf = cnf
-        self.num_samples = num_samples
+        self.num_samples_requested = num_samples
         self.confidence_threshold = confidence_threshold
         self.use_cdcl = use_cdcl
         self.max_backbone_conflicts = max_backbone_conflicts
+        self.adaptive_sampling = adaptive_sampling
 
-        # Backbone detection
-        self.detector: Optional[BackboneDetector] = None
-        self.backbone: Dict[str, bool] = {}
-        self.fixed_backbone: Dict[str, bool] = {}
-        self.unfixed_backbone: Set[str] = set()
-
-        # Statistics
+        # Statistics (must be initialized before adaptive sampling)
         self.stats = {
             'backbone_detection_time': 0.0,
             'systematic_search_time': 0.0,
             'total_time': 0.0,
             'num_samples': 0,
+            'num_samples_adaptive': False,
+            'problem_difficulty': 'unknown',
             'num_backbone_detected': 0,
             'num_backbone_fixed': 0,
             'backbone_percentage': 0.0,
@@ -82,6 +81,64 @@ class BBCDCLSolver:
             'used_backbone': False
         }
 
+        # Determine actual sample count (adaptive or fixed)
+        if num_samples is not None:
+            self.num_samples = num_samples
+        elif adaptive_sampling:
+            self.num_samples = self._compute_adaptive_sample_count()
+        else:
+            self.num_samples = 100  # Default fallback
+
+        # Backbone detection
+        self.detector: Optional[BackboneDetector] = None
+        self.backbone: Dict[str, bool] = {}
+        self.fixed_backbone: Dict[str, bool] = {}
+        self.unfixed_backbone: Set[str] = set()
+
+    def _compute_adaptive_sample_count(self) -> int:
+        """
+        Compute adaptive sample count based on problem difficulty.
+
+        Heuristics:
+        - Easy problems (small size, low clause/var ratio): 10-20 samples
+        - Medium problems: 30-50 samples
+        - Hard problems (large size, high clause/var ratio): 80-120 samples
+
+        Returns:
+            Optimal number of samples for this problem
+        """
+        num_vars = len(self.cnf.get_variables())
+        num_clauses = len(self.cnf.clauses)
+
+        if num_vars == 0:
+            return 10  # Trivial problem
+
+        clause_var_ratio = num_clauses / num_vars
+
+        # Difficulty scoring
+        # Easy: < 20 vars AND ratio < 3.5
+        # Medium: 20-50 vars OR ratio 3.5-4.5
+        # Hard: > 50 vars OR ratio > 4.5
+
+        if num_vars < 20 and clause_var_ratio < 3.5:
+            # Easy problem
+            difficulty = 'easy'
+            samples = max(10, min(20, int(num_vars)))  # 10-20 samples
+        elif num_vars > 50 or clause_var_ratio > 4.5:
+            # Hard problem
+            difficulty = 'hard'
+            samples = max(80, min(120, int(20 + num_vars * 1.5)))  # 80-120 samples
+        else:
+            # Medium problem
+            difficulty = 'medium'
+            samples = max(30, min(50, int(10 + num_vars)))  # 30-50 samples
+
+        # Store difficulty info in stats
+        self.stats['problem_difficulty'] = difficulty
+        self.stats['num_samples_adaptive'] = True
+
+        return samples
+
     def solve(self) -> Optional[Dict[str, bool]]:
         """
         Solve using backbone detection + CDCL.
@@ -90,8 +147,29 @@ class BBCDCLSolver:
             Satisfying assignment if SAT, None if UNSAT
         """
         import time
+        import signal
 
         start_time = time.time()
+
+        # Phase 0: Quick UNSAT check (CRITICAL FIX!)
+        # Before expensive sampling, try quick DPLL with timeout
+        # If UNSAT is proven quickly, skip sampling entirely
+        quick_unsat_start = time.time()
+        is_quickly_unsat = self._quick_unsat_check(timeout_ms=10)
+        quick_check_time = time.time() - quick_unsat_start
+
+        if is_quickly_unsat:
+            # UNSAT detected quickly! Skip expensive sampling
+            self.stats['quick_unsat_detected'] = True
+            self.stats['quick_check_time'] = quick_check_time
+            self.stats['backbone_detection_time'] = 0.0
+            self.stats['systematic_search_time'] = 0.0
+            self.stats['total_time'] = time.time() - start_time
+            self.stats['num_samples'] = 0
+            return None
+
+        self.stats['quick_unsat_detected'] = False
+        self.stats['quick_check_time'] = quick_check_time
 
         # Phase 1: Detect backbone
         backbone_start = time.time()
@@ -131,6 +209,55 @@ class BBCDCLSolver:
         self.stats['total_time'] = time.time() - start_time
 
         return result
+
+    def _quick_unsat_check(self, timeout_ms: int = 10) -> bool:
+        """
+        Quick UNSAT check with timeout.
+
+        Tries to prove UNSAT quickly using DPLL with a short timeout.
+        If proven UNSAT quickly, returns True.
+        Otherwise (timeout or SAT), returns False.
+
+        Args:
+            timeout_ms: Timeout in milliseconds
+
+        Returns:
+            True if UNSAT proven quickly, False otherwise
+        """
+        import signal
+
+        class TimeoutException(Exception):
+            pass
+
+        def timeout_handler(signum, frame):
+            raise TimeoutException()
+
+        # Set up timeout (convert ms to seconds)
+        old_handler = signal.signal(signal.SIGALRM, timeout_handler)
+        signal.setitimer(signal.ITIMER_REAL, timeout_ms / 1000.0)
+
+        try:
+            solver = DPLLSolver(self.cnf)
+            result = solver.solve()
+
+            # Cancel timeout
+            signal.setitimer(signal.ITIMER_REAL, 0)
+            signal.signal(signal.SIGALRM, old_handler)
+
+            # If UNSAT proven, return True
+            return result is None
+
+        except TimeoutException:
+            # Timeout - couldn't prove quickly
+            signal.setitimer(signal.ITIMER_REAL, 0)
+            signal.signal(signal.SIGALRM, old_handler)
+            return False
+
+        except Exception:
+            # Any other error - assume not quickly provable
+            signal.setitimer(signal.ITIMER_REAL, 0)
+            signal.signal(signal.SIGALRM, old_handler)
+            return False
 
     def _solve_without_backbone(self) -> Optional[Dict[str, bool]]:
         """
@@ -338,9 +465,10 @@ class BBCDCLSolver:
 
 
 def solve_bb_cdcl(cnf: CNFExpression,
-                  num_samples: int = 100,
+                  num_samples: Optional[int] = None,
                   confidence_threshold: float = 0.95,
-                  use_cdcl: bool = True) -> Optional[Dict[str, bool]]:
+                  use_cdcl: bool = True,
+                  adaptive_sampling: bool = True) -> Optional[Dict[str, bool]]:
     """
     Solve using Backbone-Based CDCL.
 
@@ -348,9 +476,10 @@ def solve_bb_cdcl(cnf: CNFExpression,
 
     Args:
         cnf: CNF formula to solve
-        num_samples: Number of samples for backbone detection
+        num_samples: Number of samples for backbone detection (None = adaptive)
         confidence_threshold: Confidence threshold for backbone (0.95 = 95%)
         use_cdcl: Use CDCL instead of DPLL
+        adaptive_sampling: Automatically adjust samples based on problem difficulty
 
     Returns:
         Satisfying assignment if SAT, None if UNSAT
@@ -359,7 +488,7 @@ def solve_bb_cdcl(cnf: CNFExpression,
         >>> from bsat import CNFExpression
         >>> from research.bb_cdcl import solve_bb_cdcl
         >>> cnf = CNFExpression.parse("(a | b) & (a) & (~b | c)")
-        >>> result = solve_bb_cdcl(cnf)
+        >>> result = solve_bb_cdcl(cnf)  # Uses adaptive sampling
         >>> if result:
         ...     print(f"SAT: {result}")
         ... else:
@@ -369,6 +498,7 @@ def solve_bb_cdcl(cnf: CNFExpression,
         cnf,
         num_samples=num_samples,
         confidence_threshold=confidence_threshold,
-        use_cdcl=use_cdcl
+        use_cdcl=use_cdcl,
+        adaptive_sampling=adaptive_sampling
     )
     return solver.solve()
