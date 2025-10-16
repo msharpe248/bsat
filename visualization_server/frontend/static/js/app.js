@@ -420,6 +420,8 @@ class SATVisualizerApp {
             return new HornSATVisualizer(this.visualization);
         } else if (algorithm === 'cdcl' && typeof CDCLVisualizer !== 'undefined') {
             return new CDCLVisualizer(this.visualization);
+        } else if (algorithm === 'walksat' && typeof WalkSATVisualizer !== 'undefined') {
+            return new WalkSATVisualizer(this.visualization);
         } else if (algorithm === '3sat_reduction' && typeof ThreeSATReductionVisualizer !== 'undefined') {
             return new ThreeSATReductionVisualizer(this.visualization);
         } else {

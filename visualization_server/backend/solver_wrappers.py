@@ -835,6 +835,130 @@ class CDCLWrapper(BaseSolverWrapper):
         return result
 
 
+class WalkSATWrapper(BaseSolverWrapper):
+    """WalkSAT randomized local search wrapper with visualization."""
+
+    async def solve(self) -> Optional[Dict[str, bool]]:
+        """Solve with WalkSAT visualization."""
+        import random
+
+        await self.emit_state("start", {
+            "variables": sorted(self.cnf.get_variables()),
+            "clauses": [str(c) for c in self.cnf.clauses],
+            "algorithm": "WalkSAT (Randomized Local Search)"
+        })
+
+        variables = sorted(self.cnf.get_variables())
+        if not variables:
+            await self.emit_complete({}, {"total_flips": 0, "total_tries": 1})
+            return {}
+
+        noise = 0.5
+        max_flips_per_try = 100
+        max_tries = 5
+
+        # For visualization
+        total_flips = 0
+
+        # Try multiple random restarts
+        for try_num in range(max_tries):
+            # Random initial assignment
+            assignment = {var: random.choice([True, False]) for var in variables}
+
+            await self.emit_state("restart", {
+                "try_number": try_num + 1,
+                "assignment": assignment.copy(),
+                "message": f"Random restart #{try_num + 1} - new random assignment"
+            })
+
+            # Local search
+            for flip_num in range(max_flips_per_try):
+                total_flips += 1
+
+                # Find unsatisfied clauses
+                unsatisfied = [c for c in self.cnf.clauses if not c.evaluate(assignment)]
+
+                # Check if solved
+                if not unsatisfied:
+                    await self.emit_state("sat", {
+                        "assignment": assignment.copy(),
+                        "total_flips": total_flips,
+                        "try_number": try_num + 1,
+                        "message": f"Solution found after {total_flips} flips!"
+                    })
+                    await self.emit_complete(assignment, {
+                        "total_flips": total_flips,
+                        "total_tries": try_num + 1,
+                        "flips_this_try": flip_num
+                    })
+                    return assignment
+
+                # Pick random unsatisfied clause
+                clause = random.choice(unsatisfied)
+
+                # Compute break counts for all variables in clause
+                clause_vars = list(set(lit.variable for lit in clause.literals))
+                break_counts = {}
+
+                for var in clause_vars:
+                    # Count breaks
+                    temp_assignment = assignment.copy()
+                    temp_assignment[var] = not temp_assignment[var]
+                    breaks = sum(1 for c in self.cnf.clauses
+                                if c.evaluate(assignment) and not c.evaluate(temp_assignment))
+                    break_counts[var] = breaks
+
+                # Decide whether to make random or greedy move
+                is_random_flip = random.random() < noise
+
+                if is_random_flip:
+                    # Random walk
+                    var = random.choice(clause_vars)
+                    flip_type = "random"
+                else:
+                    # Greedy: minimize breaks
+                    var = min(clause_vars, key=lambda v: break_counts[v])
+                    flip_type = "greedy"
+
+                # Flip the variable
+                old_value = assignment[var]
+                assignment[var] = not assignment[var]
+
+                await self.emit_state("flip", {
+                    "variable": var,
+                    "old_value": old_value,
+                    "new_value": assignment[var],
+                    "flip_type": flip_type,
+                    "flip_number": flip_num + 1,
+                    "total_flips": total_flips,
+                    "unsatisfied_clause": str(clause),
+                    "break_count": break_counts[var],
+                    "break_counts": break_counts,
+                    "num_unsatisfied": len(unsatisfied),
+                    "assignment": assignment.copy(),
+                    "clauses": [str(c) for c in self.cnf.clauses],
+                    "unsatisfied_clauses": [str(c) for c in unsatisfied]
+                })
+
+                # Don't visualize every single flip for large formulas
+                if flip_num % 5 == 0 or len(unsatisfied) < 3:
+                    # Emit progress update
+                    pass  # The flip state above already shows progress
+
+        # No solution found
+        await self.emit_state("no_solution", {
+            "total_flips": total_flips,
+            "total_tries": max_tries,
+            "message": f"No solution found after {max_tries} tries and {total_flips} flips (incomplete algorithm)"
+        })
+
+        await self.emit_complete(None, {
+            "total_flips": total_flips,
+            "total_tries": max_tries
+        })
+        return None
+
+
 class ThreeSATReductionWrapper(BaseSolverWrapper):
     """Wrapper for k-SAT to 3-SAT reduction visualization."""
 
@@ -978,6 +1102,8 @@ def create_solver_wrapper(
         return HornSATWrapper(cnf, websocket, speed_ms)
     elif algorithm == "cdcl":
         return CDCLWrapper(cnf, websocket, speed_ms)
+    elif algorithm == "walksat":
+        return WalkSATWrapper(cnf, websocket, speed_ms)
     elif algorithm == "3sat_reduction":
         return ThreeSATReductionWrapper(cnf, websocket, speed_ms)
     else:

@@ -414,6 +414,27 @@ async def get_examples():
             algorithm="cdcl",
             difficulty="medium"
         ),
+        ExampleFormula(
+            name="WalkSAT Simple",
+            formula="(a | b | c) & (~a | d) & (~b | e) & (~c | f) & (d | e | f)",
+            description="Simple 3SAT showing WalkSAT local search with flips",
+            algorithm="walksat",
+            difficulty="easy"
+        ),
+        ExampleFormula(
+            name="WalkSAT Random Walk",
+            formula="(a | b | c) & (a | ~b | d) & (~a | c | ~d) & (b | ~c | d) & (~b | c | ~d) & (a | ~c | e)",
+            description="Demonstrates random vs greedy flips in WalkSAT",
+            algorithm="walksat",
+            difficulty="medium"
+        ),
+        ExampleFormula(
+            name="WalkSAT Local Minimum",
+            formula="(a | b) & (~a | c) & (~b | c) & (a | d) & (~a | e) & (b | ~d) & (~b | ~e) & (c | d | e)",
+            description="Formula where WalkSAT may get stuck in local minimum (shows noise helping)",
+            algorithm="walksat",
+            difficulty="medium"
+        ),
     ]
 
 
