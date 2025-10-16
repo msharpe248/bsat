@@ -393,6 +393,27 @@ async def get_examples():
             algorithm="hornsat",
             difficulty="medium"
         ),
+        ExampleFormula(
+            name="CDCL Simple",
+            formula="(a | b | c) & (~a | b | ~c) & (a | ~b | c) & (~a | ~b | ~c)",
+            description="Simple 3SAT showing CDCL clause learning and backjumping",
+            algorithm="cdcl",
+            difficulty="easy"
+        ),
+        ExampleFormula(
+            name="CDCL Conflict Learning",
+            formula="(a | b | c) & (~a | d) & (~b | d) & (~c | d) & (~d | e) & (~d | f) & (~e | ~f)",
+            description="Demonstrates conflict-driven clause learning with multiple conflicts",
+            algorithm="cdcl",
+            difficulty="medium"
+        ),
+        ExampleFormula(
+            name="CDCL UNSAT",
+            formula="(a | b) & (~a | b) & (a | ~b) & (~a | ~b) & (b | c) & (~b | c) & (b | ~c) & (~b | ~c)",
+            description="Unsatisfiable formula requiring clause learning to prove UNSAT",
+            algorithm="cdcl",
+            difficulty="medium"
+        ),
     ]
 
 

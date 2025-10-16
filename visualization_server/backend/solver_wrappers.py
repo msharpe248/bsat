@@ -661,6 +661,180 @@ class HornSATWrapper(BaseSolverWrapper):
         return None
 
 
+class CDCLWrapper(BaseSolverWrapper):
+    """CDCL solver wrapper with conflict learning visualization."""
+
+    async def solve(self) -> Optional[Dict[str, bool]]:
+        """Solve with CDCL visualization."""
+        from bsat.cdcl import CDCLSolver
+
+        await self.emit_state("start", {
+            "variables": sorted(self.cnf.get_variables()),
+            "clauses": [str(c) for c in self.cnf.clauses],
+            "num_original_clauses": len(self.cnf.clauses),
+            "algorithm": "CDCL (Conflict-Driven Clause Learning)"
+        })
+
+        # Create CDCL solver
+        solver = CDCLSolver(self.cnf)
+
+        # Initial propagation
+        conflict = solver._propagate()
+        if conflict is not None:
+            await self.emit_state("unsat", {
+                "message": "Conflict at decision level 0 - UNSAT",
+                "conflict_clause": str(conflict)
+            })
+            await self.emit_complete(None, solver.get_stats().__dict__)
+            return None
+
+        await self.emit_state("initial_propagation", {
+            "assignment": dict(solver.assignment),
+            "trail": [str(a) for a in solver.trail],
+            "message": "Initial unit propagation complete"
+        })
+
+        # Main CDCL loop
+        iteration = 0
+        max_iterations = 100  # Limit for visualization
+
+        while iteration < max_iterations:
+            iteration += 1
+
+            # Pick branching variable
+            var = solver._pick_branching_variable()
+
+            if var is None:
+                # All variables assigned - SAT!
+                await self.emit_state("sat", {
+                    "assignment": dict(solver.assignment),
+                    "message": "All variables assigned - SAT"
+                })
+                await self.emit_complete(dict(solver.assignment), solver.get_stats().__dict__)
+                return dict(solver.assignment)
+
+            # Make decision
+            solver.decision_level += 1
+            solver.stats.max_decision_level = max(solver.stats.max_decision_level, solver.decision_level)
+
+            # Show VSIDS scores for context
+            top_vars = sorted(solver.vsids_scores.items(), key=lambda x: x[1], reverse=True)[:5]
+
+            await self.emit_state("decision", {
+                "variable": var,
+                "value": True,
+                "decision_level": solver.decision_level,
+                "vsids_score": solver.vsids_scores[var],
+                "top_vsids": dict(top_vars),
+                "assignment": dict(solver.assignment),
+                "trail": [str(a) for a in solver.trail]
+            })
+
+            solver._assign(var, True)
+
+            # Propagation loop
+            while True:
+                conflict = solver._propagate()
+
+                if conflict is None:
+                    # No conflict - show current state
+                    await self.emit_state("propagation_complete", {
+                        "decision_level": solver.decision_level,
+                        "assignment": dict(solver.assignment),
+                        "trail": [str(a) for a in solver.trail],
+                        "num_assigned": len(solver.assignment),
+                        "num_variables": len(solver.variables)
+                    })
+                    break
+
+                # Conflict!
+                solver.stats.conflicts += 1
+
+                if solver.decision_level == 0:
+                    await self.emit_state("unsat", {
+                        "message": "Conflict at decision level 0 - UNSAT",
+                        "conflict_clause": str(conflict)
+                    })
+                    await self.emit_complete(None, solver.get_stats().__dict__)
+                    return None
+
+                await self.emit_state("conflict", {
+                    "conflict_clause": str(conflict),
+                    "decision_level": solver.decision_level,
+                    "assignment": dict(solver.assignment),
+                    "trail": [str(a) for a in solver.trail],
+                    "message": f"Conflict found: {conflict}"
+                })
+
+                # Analyze conflict and learn clause
+                learned_clause, backtrack_level = solver._analyze_conflict(conflict)
+
+                if backtrack_level < 0:
+                    await self.emit_state("unsat", {
+                        "message": "Conflict analysis shows UNSAT"
+                    })
+                    await self.emit_complete(None, solver.get_stats().__dict__)
+                    return None
+
+                await self.emit_state("learn_clause", {
+                    "learned_clause": str(learned_clause),
+                    "backtrack_level": backtrack_level,
+                    "current_level": solver.decision_level,
+                    "num_learned_total": solver.stats.learned_clauses + 1,
+                    "message": f"Learned: {learned_clause}, backtrack to level {backtrack_level}"
+                })
+
+                # Add learned clause
+                solver._add_learned_clause(learned_clause)
+
+                # Backtrack
+                old_level = solver.decision_level
+                solver._unassign_to_level(backtrack_level)
+                solver.decision_level = backtrack_level
+                solver.stats.backjumps += 1
+
+                await self.emit_state("backjump", {
+                    "from_level": old_level,
+                    "to_level": backtrack_level,
+                    "assignment": dict(solver.assignment),
+                    "trail": [str(a) for a in solver.trail],
+                    "message": f"Backjumped from level {old_level} to {backtrack_level}"
+                })
+
+                # Decay VSIDS scores
+                solver._decay_vsids_scores()
+
+                # Check for restart
+                if solver._should_restart():
+                    solver._restart()
+                    await self.emit_state("restart", {
+                        "restart_count": solver.stats.restarts,
+                        "total_conflicts": solver.stats.conflicts,
+                        "learned_clauses": solver.stats.learned_clauses,
+                        "message": f"Restart #{solver.stats.restarts} (keeping {solver.stats.learned_clauses} learned clauses)"
+                    })
+
+                    conflict = solver._propagate()
+                    if conflict is not None:
+                        await self.emit_state("unsat", {
+                            "message": "Conflict after restart - UNSAT"
+                        })
+                        await self.emit_complete(None, solver.get_stats().__dict__)
+                        return None
+                    break
+
+        # Hit iteration limit
+        await self.emit_state("iteration_limit", {
+            "message": f"Reached visualization limit of {max_iterations} iterations",
+            "stats": solver.get_stats().__dict__
+        })
+
+        # Continue solving without visualization
+        result = solver.solve(max_conflicts=1000000)
+        await self.emit_complete(result, solver.get_stats().__dict__)
+        return result
+
+
 class ThreeSATReductionWrapper(BaseSolverWrapper):
     """Wrapper for k-SAT to 3-SAT reduction visualization."""
 
@@ -802,6 +976,8 @@ def create_solver_wrapper(
         return DavisPutnamWrapper(cnf, websocket, speed_ms)
     elif algorithm == "hornsat":
         return HornSATWrapper(cnf, websocket, speed_ms)
+    elif algorithm == "cdcl":
+        return CDCLWrapper(cnf, websocket, speed_ms)
     elif algorithm == "3sat_reduction":
         return ThreeSATReductionWrapper(cnf, websocket, speed_ms)
     else:

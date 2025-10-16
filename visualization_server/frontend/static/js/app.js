@@ -418,6 +418,8 @@ class SATVisualizerApp {
             return new DavisPutnamVisualizer(this.visualization);
         } else if (algorithm === 'hornsat' && typeof HornSATVisualizer !== 'undefined') {
             return new HornSATVisualizer(this.visualization);
+        } else if (algorithm === 'cdcl' && typeof CDCLVisualizer !== 'undefined') {
+            return new CDCLVisualizer(this.visualization);
         } else if (algorithm === '3sat_reduction' && typeof ThreeSATReductionVisualizer !== 'undefined') {
             return new ThreeSATReductionVisualizer(this.visualization);
         } else {
