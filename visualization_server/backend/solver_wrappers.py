@@ -120,7 +120,8 @@ class DPLLWrapper(BaseSolverWrapper):
                     await self.emit_state("conflict", {
                         "depth": depth,
                         "assignment": assignment.copy(),
-                        "message": "Empty clause found - backtracking"
+                        "message": "Empty clause found - backtracking",
+                        "clauses": [str(c) for c in simplified_clauses]
                     })
                     return None
 
@@ -128,7 +129,8 @@ class DPLLWrapper(BaseSolverWrapper):
             if not simplified_clauses:
                 await self.emit_state("solution_found", {
                     "depth": depth,
-                    "assignment": assignment.copy()
+                    "assignment": assignment.copy(),
+                    "clauses": []  # All clauses satisfied
                 })
                 return assignment
 
@@ -143,7 +145,9 @@ class DPLLWrapper(BaseSolverWrapper):
                     "variable": var,
                     "value": value,
                     "clause": str(unit_clause),
-                    "depth": depth
+                    "depth": depth,
+                    "assignment": assignment.copy(),
+                    "clauses": [str(c) for c in simplified_clauses]
                 })
 
                 assignment = assignment.copy()
@@ -181,7 +185,9 @@ class DPLLWrapper(BaseSolverWrapper):
                 "variable": var,
                 "value": True,
                 "depth": depth + 1,
-                "branch": "left"
+                "branch": "left",
+                "assignment": assignment.copy(),
+                "clauses": [str(c) for c in simplified_clauses]
             })
 
             new_assignment = assignment.copy()
@@ -195,14 +201,17 @@ class DPLLWrapper(BaseSolverWrapper):
             await self.emit_state("backtrack", {
                 "variable": var,
                 "depth": depth,
-                "message": f"Trying {var}=False"
+                "message": f"Trying {var}=False",
+                "assignment": assignment.copy()
             })
 
             await self.emit_state("branch", {
                 "variable": var,
                 "value": False,
                 "depth": depth + 1,
-                "branch": "right"
+                "branch": "right",
+                "assignment": assignment.copy(),
+                "clauses": [str(c) for c in simplified_clauses]
             })
 
             new_assignment = assignment.copy()
@@ -301,7 +310,7 @@ class TwoSATWrapper(BaseSolverWrapper):
         result = solver.solve()
 
         await self.emit_state("solution_constructed", {
-            "solution": result,
+            "assignment": result,
             "method": "Reverse topological order of SCCs"
         })
 

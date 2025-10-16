@@ -55,7 +55,7 @@
                                 </div>
                                 <div class="inline-input">
                                     <label for="numVariables">Variables:</label>
-                                    <input type="number" id="numVariables" class="form-control small-input" min="0" max="26" value="0" placeholder="Auto">
+                                    <input type="number" id="numVariables" class="form-control small-input" min="0" max="26" value="5" placeholder="Auto">
                                 </div>
                             </div>
                             <button id="generateBtn" class="btn btn-secondary btn-block">🎲 Generate</button>
@@ -73,6 +73,7 @@
                         ></textarea>
                         <div id="formulaError" class="error-message"></div>
                         <div id="formulaInfo" class="info-message"></div>
+                        <button id="validateBtn" class="btn btn-secondary btn-block" style="margin-top: 8px;">Validate</button>
                     </div>
 
                     <!-- Algorithm Selector -->
@@ -101,21 +102,16 @@
 
                     <!-- Action Buttons -->
                     <div class="button-group">
-                        <button id="validateBtn" class="btn btn-secondary">Validate</button>
                         <button id="solveBtn" class="btn btn-primary">Solve</button>
+                        <button id="pauseBtn" class="btn btn-secondary" style="display: none;" title="Pause solving">Pause</button>
+                        <button id="stepBtn" class="btn btn-primary" title="Execute one step">Step</button>
+                        <button id="resetBtn" class="btn btn-secondary" style="display: none;" title="Reset visualization">Reset</button>
                     </div>
                 </section>
 
-                <!-- Playback Controls (hidden by default) -->
+                <!-- Progress Display (hidden by default) -->
                 <section class="section" id="controlsSection" style="display: none;">
-                    <h2>Playback Controls</h2>
-                    <div class="playback-controls">
-                        <button id="resetBtn" class="btn btn-sm" title="Reset">⏮</button>
-                        <button id="stepBackBtn" class="btn btn-sm" title="Step Back">◀</button>
-                        <button id="playPauseBtn" class="btn btn-sm" title="Play/Pause">▶</button>
-                        <button id="stepForwardBtn" class="btn btn-sm" title="Step Forward">▶▶</button>
-                        <button id="endBtn" class="btn btn-sm" title="Go to End">⏭</button>
-                    </div>
+                    <h2>Progress</h2>
                     <div class="progress-bar">
                         <div id="progressFill" class="progress-fill"></div>
                     </div>

@@ -298,9 +298,44 @@ async def get_examples():
         ExampleFormula(
             name="Simple 3SAT",
             formula="(a | b | c) & (~a | b | ~c) & (a | ~b | c)",
-            description="A simple 3SAT formula",
+            description="A simple 3SAT formula with 3 variables and 3 clauses",
             algorithm="dpll",
             difficulty="easy"
+        ),
+        ExampleFormula(
+            name="3SAT with Unit Propagation",
+            formula="(a | b | c) & (a) & (~a | d | e) & (~d | ~e | f)",
+            description="Demonstrates unit propagation: 'a' is forced true, which forces (d|e), etc.",
+            algorithm="dpll",
+            difficulty="easy"
+        ),
+        ExampleFormula(
+            name="3SAT Medium",
+            formula="(a | b | c) & (~a | b | d) & (~b | c | e) & (~c | d | ~e) & (a | ~d | e) & (~a | c | ~d)",
+            description="Medium complexity 3SAT with 5 variables and 6 clauses",
+            algorithm="dpll",
+            difficulty="medium"
+        ),
+        ExampleFormula(
+            name="3SAT with Backtracking",
+            formula="(a | b | c) & (~a | b | c) & (a | ~b | c) & (~a | ~b | c) & (a | b | ~c) & (~a | b | ~c) & (a | ~b | ~c)",
+            description="Requires backtracking - 7 clauses force specific assignments",
+            algorithm="dpll",
+            difficulty="medium"
+        ),
+        ExampleFormula(
+            name="3SAT Hard",
+            formula="(a | b | c) & (a | b | ~c) & (a | ~b | c) & (~a | b | c) & (~a | ~b | d) & (~a | ~c | d) & (~b | ~c | d) & (a | e | f) & (b | e | ~f) & (c | ~e | f) & (d | ~e | ~f)",
+            description="Complex 3SAT with 6 variables and 11 clauses - extensive search required",
+            algorithm="dpll",
+            difficulty="hard"
+        ),
+        ExampleFormula(
+            name="3SAT UNSAT",
+            formula="(a | b | c) & (~a | b | c) & (a | ~b | c) & (~a | ~b | c) & (a | b | ~c) & (~a | b | ~c) & (a | ~b | ~c) & (~a | ~b | ~c)",
+            description="Unsatisfiable 3SAT - all 8 possible assignments to 3 variables are blocked",
+            algorithm="dpll",
+            difficulty="medium"
         ),
         ExampleFormula(
             name="UNSAT Example",

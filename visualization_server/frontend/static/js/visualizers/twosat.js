@@ -71,7 +71,8 @@ class TwoSATVisualizer {
                 this.addStep({
                     type: 'start',
                     message: 'Starting 2SAT solver',
-                    details: `${data.clauses.length} clauses to solve`
+                    details: `${data.clauses.length} clauses to solve`,
+                    clauses: data.clauses || []
                 });
                 break;
             case 'implication_graph':
@@ -98,7 +99,8 @@ class TwoSATVisualizer {
                 this.addStep({
                     type: 'solution',
                     message: '✓ Solution constructed',
-                    details: data.method || 'Assigned values based on SCC topological order'
+                    details: data.method || 'Assigned values based on SCC topological order',
+                    assignment: data.assignment || {}
                 });
                 break;
             case 'conflict':
@@ -304,8 +306,120 @@ class TwoSATVisualizer {
                 .text(data.details);
         }
 
+        // Display assignment if available
+        if (data.assignment && Object.keys(data.assignment).length > 0) {
+            const assignmentDiv = stepCard.append('div')
+                .style('margin-top', '8px')
+                .style('padding', '6px')
+                .style('background', '#f8f9fa')
+                .style('border-radius', '3px')
+                .style('font-size', '12px');
+
+            assignmentDiv.append('strong').text('Solution assignment: ');
+
+            const assignments = Object.entries(data.assignment)
+                .map(([key, value]) => {
+                    const color = value ? '#28a745' : '#dc3545';
+                    return `<span style="color: ${color}; font-weight: bold;">${key}=${value}</span>`;
+                })
+                .join(', ');
+
+            assignmentDiv.append('span').html(assignments);
+        }
+
+        // Display clauses with highlighting
+        if (data.clauses && data.clauses.length > 0) {
+            stepCard.append('div')
+                .style('margin-top', '8px')
+                .style('font-size', '13px')
+                .style('font-weight', 'bold')
+                .style('color', '#495057')
+                .text(`Clauses (${data.clauses.length}):`);
+
+            const clauseList = stepCard.append('div')
+                .style('margin-top', '4px')
+                .style('max-height', '200px')
+                .style('overflow-y', 'auto')
+                .style('background', '#f8f9fa')
+                .style('border-radius', '3px')
+                .style('padding', '8px');
+
+            data.clauses.forEach((clause, idx) => {
+                const clauseDiv = clauseList.append('div')
+                    .style('padding', '4px 0')
+                    .style('font-family', 'monospace')
+                    .style('font-size', '12px')
+                    .style('line-height', '1.6');
+
+                // Render clause with highlighted variables
+                const highlightedClause = this.highlightClause(
+                    clause,
+                    data.assignment || {}
+                );
+                clauseDiv.html(highlightedClause);
+            });
+        }
+
         // Auto-scroll to bottom
         this.detailsDiv.node().scrollTop = this.detailsDiv.node().scrollHeight;
+    }
+
+    highlightClause(clauseStr, assignment) {
+        // Parse and highlight variables in a clause
+        // Replace variables with colored spans based on their assignment
+
+        let result = clauseStr;
+
+        // Find all variables (including negated ones)
+        // Match patterns like: ~x, x, ~var, var
+        const variablePattern = /(~?)(\w+)/g;
+
+        // Collect all matches first to avoid replacement conflicts
+        const matches = [];
+        let match;
+        while ((match = variablePattern.exec(clauseStr)) !== null) {
+            matches.push({
+                full: match[0],
+                negation: match[1],
+                variable: match[2],
+                index: match.index
+            });
+        }
+
+        // Sort by index in reverse to replace from end to start
+        matches.sort((a, b) => b.index - a.index);
+
+        // Replace each match with highlighted version
+        matches.forEach(m => {
+            const varName = m.variable;
+            const isNegated = m.negation === '~';
+
+            // Determine color based on assignment
+            let color = '#495057'; // Default gray
+            let fontWeight = 'normal';
+
+            if (assignment.hasOwnProperty(varName)) {
+                // Variable is assigned
+                const value = assignment[varName];
+                const literalValue = isNegated ? !value : value;
+
+                if (literalValue) {
+                    // This literal is true - green
+                    color = '#28a745';
+                    fontWeight = 'bold';
+                } else {
+                    // This literal is false - red
+                    color = '#dc3545';
+                    fontWeight = 'bold';
+                }
+            }
+
+            const highlighted = `<span style="color: ${color}; padding: 1px 3px; border-radius: 2px; font-weight: ${fontWeight};">${m.full}</span>`;
+
+            result = result.substring(0, m.index) + highlighted + result.substring(m.index + m.full.length);
+        });
+
+        return result;
     }
 
     getStepColor(type) {

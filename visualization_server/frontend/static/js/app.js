@@ -8,6 +8,8 @@ class SATVisualizerApp {
         this.currentStep = 0;
         this.isPlaying = false;
         this.currentVisualizer = null;
+        this.stepMode = false;  // Track if we're in step-by-step mode
+        this.paused = false;    // Track if we're paused (states buffering but not rendering)
 
         this.initializeElements();
         this.attachEventListeners();
@@ -30,11 +32,9 @@ class SATVisualizerApp {
         this.validateBtn = document.getElementById('validateBtn');
         this.solveBtn = document.getElementById('solveBtn');
         this.generateBtn = document.getElementById('generateBtn');
-        this.playPauseBtn = document.getElementById('playPauseBtn');
-        this.stepForwardBtn = document.getElementById('stepForwardBtn');
-        this.stepBackBtn = document.getElementById('stepBackBtn');
+        this.pauseBtn = document.getElementById('pauseBtn');
+        this.stepBtn = document.getElementById('stepBtn');
         this.resetBtn = document.getElementById('resetBtn');
-        this.endBtn = document.getElementById('endBtn');
 
         // Panel elements
         this.toggleConsoleBtn = document.getElementById('toggleConsoleBtn');
@@ -72,11 +72,9 @@ class SATVisualizerApp {
         this.validateBtn.addEventListener('click', () => this.validateFormula());
         this.solveBtn.addEventListener('click', () => this.startSolving());
         this.generateBtn.addEventListener('click', () => this.generateFormula());
-        this.playPauseBtn.addEventListener('click', () => this.togglePlayPause());
-        this.stepForwardBtn.addEventListener('click', () => this.stepForward());
-        this.stepBackBtn.addEventListener('click', () => this.stepBack());
+        this.pauseBtn.addEventListener('click', () => this.pauseSolving());
+        this.stepBtn.addEventListener('click', () => this.stepForward());
         this.resetBtn.addEventListener('click', () => this.reset());
-        this.endBtn.addEventListener('click', () => this.goToEnd());
 
         // Panel toggle handlers
         this.toggleConsoleBtn.addEventListener('click', () => this.toggleConsole());
@@ -209,17 +207,8 @@ class SATVisualizerApp {
             // Set the generated formula
             this.formulaInput.value = result.formula;
 
-            // Automatically set the appropriate algorithm based on SAT type
-            const algorithmMap = {
-                '2sat': '2sat',
-                '3sat': 'dpll',
-                '4sat': 'dpll',
-                '5sat': 'dpll',
-                'hornsat': 'hornsat',
-                'xorsat': 'dpll'  // XOR-SAT encoded as CNF, use DPLL for now
-            };
-            this.algorithmSelect.value = algorithmMap[result.sat_type] || 'dpll';
-            this.updateAlgorithmInfo();
+            // Keep the current algorithm selection - don't override it
+            // This allows users to test different algorithms on the same formula type
 
             // Show success message
             this.showInfo(
@@ -282,6 +271,16 @@ class SATVisualizerApp {
             return;
         }
 
+        // If we're paused with an active session, just unpause
+        if (this.paused && this.websocket && this.websocket.readyState === WebSocket.OPEN) {
+            this.paused = false;
+            this.stepMode = false;
+            this.logConsole('Resuming...', 'info');
+            this.solveBtn.style.display = 'none';
+            this.pauseBtn.style.display = 'inline-block';
+            return;
+        }
+
         // Disable solve button
         this.solveBtn.disabled = true;
         this.solveBtn.textContent = 'Solving...';
@@ -308,9 +307,12 @@ class SATVisualizerApp {
             this.stateHistory = [];
             this.currentStep = 0;
 
-            // Show controls
+            // Show controls and buttons
             this.controlsSection.style.display = 'block';
             this.statsSection.style.display = 'block';
+            this.pauseBtn.style.display = 'inline-block';
+            this.resetBtn.style.display = 'inline-block';
+            this.solveBtn.style.display = 'none';  // Hide solve button while solving
 
             // Connect WebSocket
             this.connectWebSocket();
@@ -347,12 +349,23 @@ class SATVisualizerApp {
             this.logConsole('Connection closed', 'info');
             this.solveBtn.disabled = false;
             this.solveBtn.textContent = 'Solve';
+            this.solveBtn.style.display = 'inline-block';
+            this.pauseBtn.style.display = 'none';
         };
     }
 
     handleWebSocketMessage(message) {
         if (message.type === 'state_update') {
             this.stateHistory.push(message);
+
+            // If in step mode or paused, don't auto-render
+            if (this.stepMode || this.paused) {
+                this.logConsole(`Step ${this.stateHistory.length} buffered (click Step to view)`, 'info');
+                return;  // Don't render yet
+            }
+
+            // Auto-render if not paused
+            this.currentStep = this.stateHistory.length;
             this.renderState(message);
             this.updateProgress();
         } else if (message.type === 'complete') {
@@ -569,36 +582,65 @@ class SATVisualizerApp {
         this.consoleOutput.scrollTop = this.consoleOutput.scrollHeight;
     }
 
-    // Playback control methods
-    togglePlayPause() {
-        this.isPlaying = !this.isPlaying;
-        this.playPauseBtn.textContent = this.isPlaying ? '⏸' : '▶';
-        // Implement playback logic if needed
+    // Control methods
+    pauseSolving() {
+        // Set paused flag - websocket stays open but states are buffered
+        this.paused = true;
+        this.stepMode = false;  // No longer in initial step mode
+        this.logConsole('Paused - use Step to continue reviewing', 'info');
+        this.pauseBtn.style.display = 'none';
+        this.solveBtn.style.display = 'inline-block';
+        this.solveBtn.disabled = false;
     }
 
-    stepForward() {
+    async stepForward() {
+        // If no session exists, start one in step mode
+        if (this.stateHistory.length === 0 && !this.websocket) {
+            this.stepMode = true;  // Set before starting
+            this.paused = true;    // Start paused
+            await this.startSolving();
+            // States will buffer, we'll show the first one below
+            return;
+        }
+
+        // If we have buffered states ahead of current position, show the next one
         if (this.currentStep < this.stateHistory.length) {
             this.currentStep++;
             this.updateProgress();
-        }
-    }
-
-    stepBack() {
-        if (this.currentStep > 0) {
-            this.currentStep--;
-            this.updateProgress();
+            this.renderState(this.stateHistory[this.currentStep - 1]);
+            this.logConsole(`Showing step ${this.currentStep}`, 'info');
+        } else {
+            // We're caught up - wait for next state if websocket is still open
+            if (this.websocket && this.websocket.readyState === WebSocket.OPEN) {
+                this.logConsole('Waiting for next step...', 'info');
+                // The next state will be buffered and we can step to it
+            } else {
+                this.logConsole('No more steps available', 'info');
+            }
         }
     }
 
     reset() {
+        // Close websocket if still open
+        if (this.websocket) {
+            this.websocket.close();
+            this.websocket = null;  // Clear the reference
+        }
+
         this.currentStep = 0;
+        this.stepMode = false;
+        this.paused = false;
+        this.currentSessionId = null;
         this.updateProgress();
         this.clearVisualization();
-    }
-
-    goToEnd() {
-        this.currentStep = this.stateHistory.length;
-        this.updateProgress();
+        this.resetBtn.style.display = 'none';
+        this.pauseBtn.style.display = 'none';
+        this.solveBtn.style.display = 'inline-block';
+        this.solveBtn.disabled = false;
+        this.solveBtn.textContent = 'Solve';
+        this.stateHistory = [];
+        this.controlsSection.style.display = 'none';
+        this.statsSection.style.display = 'none';
     }
 }
 
