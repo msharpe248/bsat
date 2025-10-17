@@ -146,7 +146,7 @@ cython_debug/
 .DS_Store
 Thumbs.db
 
-# Dataset directory (competition benchmarks, not checked in)
+# Dataset directory (competition benchmarks and results, not checked in)
 dataset/
 
 # Competition benchmark run logs

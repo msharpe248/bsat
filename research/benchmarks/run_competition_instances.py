@@ -33,35 +33,20 @@ def run_competition_instances():
     print()
 
     # Dataset directory
-    dataset_dir = os.path.join(os.path.dirname(__file__), '../../dataset/sat_competition')
+    dataset_dir = os.path.join(os.path.dirname(__file__), '../../dataset/sat_competition2025')
 
-    # Instances to test (start with smallest ones)
+    # Instances to test (start with smallest ones from different families)
     instances = [
         {
-            'file': 'scheduling.cnf',
-            'name': 'Scheduling (Break Triple)',
+            'file': 'scheduling/081f111af59344b61346367a930e24f6.cnf',
+            'name': 'Scheduling Problem',
             'category': 'Scheduling',
             'vars': 252,
             'clauses': 1163,
             'source': 'SAT Competition Main Track 2025'
         },
-        {
-            'file': 'circuit_mult24.cnf',
-            'name': 'Circuit Multiplier 24-bit',
-            'category': 'Hardware Verification',
-            'vars': 1126,
-            'clauses': 22166,
-            'source': 'SAT Competition Main Track 2025'
-        },
-        # Commented out - too large for quick testing
-        # {
-        #     'file': 'hcp_446_105.cnf',
-        #     'name': 'Hamiltonian Cycle Problem',
-        #     'category': 'Graph Theory',
-        #     'vars': 29934,
-        #     'clauses': 247657,
-        #     'source': 'SAT Competition Main Track 2025'
-        # },
+        # Add more test instances here...
+        # You can use any .cnf file from the family directories
     ]
 
     # Solvers to test
