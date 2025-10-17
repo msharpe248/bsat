@@ -4,124 +4,129 @@ A SAT solver that builds a meta-level conflict graph from learned clauses and us
 
 ## Novelty Assessment
 
-### ⚠️ **POTENTIALLY Novel** - Requires Literature Search
+### ❌ **NOT Novel** - Literature Review Complete (Oct 2025)
 
-This solver has the **best chance of containing novel contributions** among the four research solvers, but requires thorough literature review to confirm. The specific application of **PageRank** to conflict graph analysis may be new.
+**Verdict**: The core idea of using PageRank and centrality metrics for SAT variable selection **has been published multiple times**. CGPM-SAT is an **engineering refinement** with strong empirical results, not a novel algorithmic contribution.
 
-### Prior Art to Investigate
+### Direct Prior Art - PageRank and Centrality in SAT
 
-**Graph-Based SAT Solving** - Established field:
-- **BerkMin** (Goldberg & Novikov, 2002): "BerkMin: a Fast and Robust Sat-Solver"
-  - Uses variable dependency graphs
-  - Simpler metrics (primarily degree-based)
-  - CGPM-SAT is more sophisticated (PageRank + centrality)
+**1. Tomohiro Sonobe (2019)** - **MOST DIRECT PRIOR ART**
+- **Paper**: "Variable Selection with PageRank for SAT Solvers"
+- **Published**: Journal of Computer Science, 2019
+- **What they did**:
+  - Applied **PageRank to Variable Incidence Graph (VIG)**
+  - Variables = nodes, edges if variables appear in same clause
+  - Used PageRank to improve VSIDS decision heuristic
+  - Tested on MiniSAT 2.2 and Glucose 3
+  - Showed improved solver performance
+- **This is essentially what CGPM-SAT does** ✅
 
-- **Survey Propagation** (Mézard, Parisi, Zecchina, 2002): "Analytic and Algorithmic Solution of Random Satisfiability Problems"
-  - Statistical physics approach to SAT
-  - Message passing on factor graphs
-  - Different graph structure than CGPM-SAT's conflict graph
+**2. George Katsirelos & Laurent Simon (2012)** - EIGENVECTOR CENTRALITY
+- **Paper**: "Eigenvector Centrality in Industrial SAT Instances"
+- **Published**: CP 2012, Lecture Notes in Computer Science, vol 7514
+- **What they did**:
+  - Used **eigenvector centrality** (mathematically very similar to PageRank!)
+  - Analyzed CDCL solver behavior on industrial instances
+  - Showed centrality correlates strongly with variable importance
+  - Identified structural properties affecting CDCL performance
+- **Note**: PageRank is a variant of eigenvector centrality - this is fundamentally the same idea
 
-- **Community Structure in SAT** (Ansótegui et al., 2012):
-  - Uses modularity for decomposition
-  - Variable-clause graph (not conflict graph)
-  - Different application than CGPM-SAT
+**3. Sima Jamali & David Mitchell (2018)** - CENTRALITY-BASED IMPROVEMENTS
+- **Paper**: "Centrality-Based Improvements to CDCL Heuristics"
+- **Published**: SAT 2018, Lecture Notes in Computer Science, vol 10929
+- **What they did**:
+  - Used **betweenness centrality** on variable incidence graphs
+  - Modified decision and clause-deletion heuristics
+  - Improved Maple LCM Dist (2017 SAT Competition winner)
+  - Solved 9 more instances than baseline
+- **Combined centrality with VSIDS** (like CGPM-SAT does)
 
-**Variable Selection Heuristics**:
-- **VSIDS** (Moskewicz et al., 2001): "Chaff: Engineering an Efficient SAT Solver"
-  - Implicit conflict-based importance
-  - Reactive, not structural
-  - CGPM-SAT adds explicit structural analysis
+### What CGPM-SAT Does Differently (Minor Engineering Variations)
 
-- **Literal Block Distance** (Marques-Silva, 2008):
-  - Clause dependency distance metrics
-  - Different graph structure
-  - CGPM-SAT uses conflict co-occurrence
+**Potential Distinguishing Features** (all incremental):
+1. **Conflict Graph Focus**:
+   - CGPM-SAT builds graph from learned conflict clauses
+   - Prior work primarily uses Variable Incidence Graph from original formula
+   - **But**: This is an engineering detail, not algorithmic novelty
 
-**PageRank Applications** - Used widely but SAT application unclear:
-- **Original PageRank** (Page et al., 1998): "The PageRank Citation Ranking: Bringing Order to the Web"
-  - Web search ranking
-  - CGPM-SAT adapts to conflict graphs
+2. **Dynamic Updates During Learning**:
+   - CGPM-SAT updates graph as CDCL learns new clauses
+   - Prior work may be more static
+   - **But**: Dynamic updates are implementation detail, not fundamental contribution
 
-- **PageRank in other domains**:
-  - Protein interaction networks (Wuchty & Stadler, 2003)
-  - Social network analysis (widespread)
-  - **BUT: Has PageRank been used for SAT variable selection?**
+3. **Multi-Metric Combination**:
+   - CGPM-SAT combines PageRank + degree + betweenness
+   - **But**: Jamali & Mitchell (2018) also combined centrality with VSIDS
 
-### What Needs Literature Search
+4. **Strong Empirical Results**:
+   - **47% win rate, 0 timeouts** on 53-instance benchmark
+   - **This is valuable regardless of algorithmic novelty**
+   - Validates that centrality-based approaches work well
 
-**Critical Question**: Has PageRank (or similar recursive importance metrics) been applied to SAT conflict graphs for variable selection?
+### What IS Original
 
-**Search Terms Needed**:
-- "PageRank" + "SAT solving"
-- "graph centrality" + "SAT" + "variable selection"
-- "conflict graph" + "SAT" + "PageRank"
-- "network analysis" + "SAT heuristics"
-- Check SAT Competition papers (2010-2025)
-- Check CP, IJCAI, AAAI proceedings
-- Check constraint satisfaction literature
-
-**If not found**: CGPM-SAT may be genuinely novel!
-
-### What IS Original (Assuming Literature Search Confirms)
-
-**Potential Novel Contributions**:
-1. **Dynamic PageRank on conflict graphs for variable selection**:
-   - Build conflict graph during CDCL execution
-   - Apply PageRank to identify central variables
-   - Use PageRank scores to guide decisions
-   - **This specific combination may be new**
-
-2. **Multi-metric combination** (PageRank + degree + betweenness):
-   - Weighted combination of graph metrics
-   - Empirically tuned weights
-   - Integration with VSIDS
-
-3. **Incremental graph updates during learning**:
-   - Update conflict graph as clauses learned
-   - Dynamic metric recomputation
-   - Caching strategy for efficiency
-
-4. **Impressive empirical results**:
-   - **47% win rate on medium benchmark suite**
-   - **0 timeouts** (perfect completion)
-   - Consistently outperforms DPLL, CDCL, and other research solvers
+**Implementation Contributions**:
+- Clean Python implementation of PageRank/centrality for SAT
+- Conflict graph construction with incremental updates
+- Empirical validation with comprehensive benchmarking
+- Strong practical performance (47% win rate)
+- Visualization and educational value
 
 ### What is NOT Original
 
-**Standard Techniques Used**:
-1. **Conflict graph representation**: Known in SAT literature
-2. **Graph metrics** (PageRank, centrality): Well-established algorithms
-3. **CDCL framework**: Standard SAT solving
-4. **Variable-clause graphs**: Used by Ansótegui et al. (2012) and others
+**Core Algorithmic Ideas** (all have clear prior art):
+1. PageRank for SAT variable selection - **Sonobe (2019)**
+2. Eigenvector centrality for SAT - **Katsirelos & Simon (2012)**
+3. Centrality-based CDCL improvements - **Jamali & Mitchell (2018)**
+4. Graph-based variable importance - **BerkMin (2002), many others**
+5. Combining structural + reactive heuristics - **Well-established**
 
 ### Publication Positioning
 
-**IF PageRank on conflict graphs is novel** (pending literature search):
-- Title: "CGPM-SAT: Using PageRank on Conflict Graphs for SAT Variable Selection"
-- Positioning: **Novel heuristic with strong empirical results**
-- Appropriate venues: SAT conference, CP conference, IJCAI
-- Must include:
-  - Thorough related work section
-  - Comprehensive literature search results
-  - Empirical comparison with state-of-the-art
-  - Ablation study (PageRank vs. degree vs. betweenness)
-  - Analysis of why it works
+**Cannot be published as novel research** - would be rejected for lack of novelty or retracted if prior art discovered later.
 
-**IF similar approaches exist** (if literature search finds prior art):
-- Title: "An Empirical Study of Graph Centrality Metrics in SAT Solving"
-- Positioning: **Empirical evaluation and engineering refinement**
-- Appropriate venues: Tool demonstrations, empirical tracks
-- Must cite all related work clearly
+**Can be published as**:
+- **"Empirical Study of Dynamic Conflict Graph Analysis for SAT"**
+  - Position as empirical validation and engineering study
+  - Compare explicitly with Sonobe (2019) VIG approach
+  - Focus on conflict graph vs. VIG distinction
+  - Emphasize strong empirical results (47% win rate)
+  - Appropriate venues: Tool demonstrations, empirical tracks, workshops
 
-**Recommendation**: Do thorough literature search BEFORE claiming novelty!
+- **"Engineering Refinements to PageRank-Based SAT Variable Selection"**
+  - Build explicitly on Sonobe (2019)
+  - Position as extension with dynamic updates
+  - Focus on practical improvements
+  - Must cite all prior work prominently
+
+**Must cite prominently**:
+- Sonobe (2019) as primary prior work
+- Katsirelos & Simon (2012) for eigenvector centrality
+- Jamali & Mitchell (2018) for centrality-based improvements
+- Page et al. (1998) for PageRank algorithm
+
+**DO NOT claim**:
+- "Novel application of PageRank to SAT" ❌
+- "First use of centrality in SAT solving" ❌
+- "New graph-based variable selection method" ❌
+
+**CAN claim**:
+- "Engineering refinement with strong empirical results" ✅
+- "Dynamic conflict graph variant of Sonobe (2019)" ✅
+- "Validation of centrality-based approaches" ✅
 
 ## Overview
 
 CGPM-SAT builds a meta-level conflict graph where nodes are variables and edges connect variables that appear together in conflict clauses (especially learned clauses). By analyzing this graph using network analysis techniques like PageRank, it identifies which variables are structurally central to the conflict patterns.
 
-### Key Insight
+### Key Insight (from Sonobe 2019, Katsirelos & Simon 2012)
 
-> Build a graph where nodes are variables and edges connect variables that appear together in conflict clauses. Variables with high PageRank or centrality are structurally important!
+> Build a graph where nodes are variables and edges connect variables that appear together in clauses. Variables with high PageRank or centrality are structurally important for solving!
+
+**This idea was first applied to SAT by**:
+- Katsirelos & Simon (2012) using eigenvector centrality
+- Sonobe (2019) using PageRank on Variable Incidence Graphs
+- **CGPM-SAT adapts this to conflict graphs**
 
 **Example**: Conflict graph analysis
 - Variable `x` appears in 10 conflict clauses with 8 different variables
@@ -129,7 +134,9 @@ CGPM-SAT builds a meta-level conflict graph where nodes are variables and edges 
 - **PageRank**: x has much higher PageRank (more connections)
 - **Decision**: Branch on x first (more likely to resolve conflicts)
 
-**Empirical Result**: **47% win rate, 0 timeouts on 53-instance benchmark suite**
+**CGPM-SAT Empirical Result**: **47% win rate, 0 timeouts on 53-instance benchmark suite**
+
+This validates that centrality-based approaches (Sonobe 2019, Katsirelos & Simon 2012) work well in practice.
 
 ## Algorithm
 
@@ -161,7 +168,7 @@ CGPM-SAT builds a meta-level conflict graph where nodes are variables and edges 
    Betweenness(v) = (# shortest paths through v) / (total paths)
 ```
 
-### Phase 3: Graph-Guided Variable Selection (Potential Novel Contribution)
+### Phase 3: Graph-Guided Variable Selection (from Sonobe 2019, Jamali & Mitchell 2018)
 
 ```
 6. For each unassigned variable v:
@@ -346,62 +353,88 @@ print(f"Top 5 by PageRank: {top_vars}")
 
 ## References
 
-### Graph-Based SAT (Existing Work)
+### Direct Prior Art - PageRank and Centrality in SAT
 
-- **Goldberg & Novikov (2002)**: "BerkMin: a Fast and Robust Sat-Solver"
-  - Variable dependency graphs
-  - Simpler degree-based metrics
-  - CGPM-SAT builds on this with PageRank
+- **Tomohiro Sonobe (2019)**: "Variable Selection with PageRank for SAT Solvers"
+  - **THE direct prior work for PageRank in SAT**
+  - Journal of Computer Science, 2019
+  - Applied PageRank to Variable Incidence Graphs
+  - Improved VSIDS using global importance from PageRank
+  - Tested on MiniSAT 2.2 and Glucose 3
+  - **CGPM-SAT is a variant of this approach**
+
+- **George Katsirelos & Laurent Simon (2012)**: "Eigenvector Centrality in Industrial SAT Instances"
+  - CP 2012, Lecture Notes in Computer Science, vol 7514
+  - Springer, Berlin, Heidelberg
+  - **Used eigenvector centrality (very similar to PageRank)**
+  - Showed centrality correlates with CDCL behavior
+  - Identified structural properties of industrial instances
+  - Foundational work on centrality in SAT
+
+- **Sima Jamali & David Mitchell (2018)**: "Centrality-Based Improvements to CDCL Heuristics"
+  - SAT 2018, Lecture Notes in Computer Science, vol 10929
+  - Springer, Cham
+  - Used betweenness centrality on variable incidence graphs
+  - Modified decision and clause-deletion heuristics
+  - Improved 2017 SAT Competition winner (Maple LCM Dist)
+  - **Combined centrality with VSIDS** (like CGPM-SAT)
+
+### Graph-Based SAT Solving (Related Work)
+
+- **Evgeny Goldberg & Yakov Novikov (2002)**: "BerkMin: a Fast and Robust Sat-Solver"
+  - Early use of variable dependency graphs
+  - Degree-based metrics for variable selection
+  - CGPM-SAT uses more sophisticated PageRank
 
 - **Mézard, Parisi, Zecchina (2002)**: "Analytic and Algorithmic Solution of Random Satisfiability Problems" (Survey Propagation)
-  - Statistical physics approach
-  - Different graph structure (factor graphs)
+  - Statistical physics approach to SAT
+  - Message passing on factor graphs
+  - Different graph structure than VIG or conflict graphs
 
-- **Ansótegui et al. (2012)**: "Community Structure in Industrial SAT Instances"
-  - Variable-clause graphs for decomposition
-  - CGPM-SAT uses conflict graphs instead
+- **Carlos Ansótegui, Maria Luisa Bonet, Jordi Levy (2012)**: "Community Structure in Industrial SAT Instances"
+  - CP 2012
+  - Variable-clause bipartite graphs
+  - Community detection using modularity
+  - Different application (decomposition not variable selection)
 
 ### VSIDS and Variable Selection
 
-- **Moskewicz et al. (2001)**: "Chaff: Engineering an Efficient SAT Solver"
+- **Matthew W. Moskewicz et al. (2001)**: "Chaff: Engineering an Efficient SAT Solver"
+  - DAC 2001
   - **VSIDS: The standard conflict-based heuristic**
-  - Reactive variable scoring
-  - CGPM-SAT adds structural component to VSIDS
+  - Reactive variable scoring based on conflict activity
+  - CGPM-SAT adds structural component via PageRank
 
-- **Marques-Silva (2008)**: "Practical applications of Boolean Satisfiability"
+- **João Marques-Silva (2008)**: "Practical applications of Boolean Satisfiability"
   - Literal Block Distance and clause dependencies
-  - Different graph metrics
+  - Different graph-based metrics
 
-### PageRank
+### PageRank Algorithm
 
-- **Page et al. (1998)**: "The PageRank Citation Ranking: Bringing Order to the Web"
+- **Lawrence Page, Sergey Brin, Rajeev Motwani, Terry Winograd (1998)**: "The PageRank Citation Ranking: Bringing Order to the Web"
+  - Stanford InfoLab Technical Report
   - **Original PageRank algorithm**
-  - CGPM-SAT adapts to conflict graphs
+  - Web search ranking via recursive importance
+  - CGPM-SAT adapts this for SAT variable selection
 
-- **Wuchty & Stadler (2003)**: "Centers of complex networks"
+- **Stefan Wuchty & Peter F. Stadler (2003)**: "Centers of complex networks"
+  - Journal of Theoretical Biology
   - PageRank in biological networks
-  - Similar meta-level analysis
-
-### **TODO: Literature Search Required**
-
-**Must search for**:
-1. PageRank applied to SAT
-2. Network centrality in SAT variable selection
-3. Conflict graph analysis with recursive importance metrics
-4. SAT Competition papers (2010-2025) for similar approaches
+  - Demonstrates PageRank's utility beyond web search
 
 ## Comparison with Other Approaches
 
-| Approach | Variable Selection | Graph Analysis | Learning | Status |
-|----------|-------------------|----------------|----------|--------|
-| **DPLL** | Static order | None | None | Classic |
-| **CDCL/Chaff** | VSIDS (reactive) | None | ✅ Clause learning | Standard |
-| **BerkMin** | VSIDS + Dependencies | ✅ Simple (degree) | ✅ Clause learning | Known (2002) |
-| **Survey Propagation** | Message passing | ✅ Factor graphs | Belief propagation | Known (2002) |
-| **Community-SAT** | VSIDS | ✅ Modularity | ✅ Clause learning | Known (2012) |
-| **CGPM-SAT** | Graph + VSIDS | ✅ **PageRank, centrality** | ✅ Clause learning | **Novel?** |
+| Approach | Variable Selection | Graph Analysis | Learning | Year | Status |
+|----------|-------------------|----------------|----------|------|--------|
+| **DPLL** | Static order | None | None | 1962 | Classic |
+| **CDCL/Chaff** | VSIDS (reactive) | None | ✅ Clause learning | 2001 | Standard |
+| **BerkMin** | VSIDS + Dependencies | ✅ Simple (degree) | ✅ Clause learning | 2002 | Published |
+| **Katsirelos & Simon** | VSIDS | ✅ **Eigenvector centrality** | ✅ CDCL analysis | 2012 | **Published** |
+| **Jamali & Mitchell** | VSIDS + Centrality | ✅ **Betweenness centrality** | ✅ Clause learning | 2018 | **Published** |
+| **Sonobe** | VSIDS + PageRank | ✅ **PageRank on VIG** | ✅ Improves VSIDS | 2019 | **Published** |
+| **CGPM-SAT** | Graph + VSIDS | ✅ PageRank on conflict graph | ✅ Clause learning | 2025 | **Incremental** |
 
-CGPM-SAT is unique in using PageRank + centrality on conflict graphs - **but requires literature search to confirm this is new**.
+**CGPM-SAT is a variant of Sonobe (2019)** - uses conflict graphs instead of Variable Incidence Graphs, with dynamic updates. The core PageRank approach for SAT was published in 2019 (and eigenvector centrality in 2012).
 
 ## Strengths and Limitations
 
@@ -415,51 +448,87 @@ CGPM-SAT is unique in using PageRank + centrality on conflict graphs - **but req
 
 ### Limitations
 
-1. **Overhead on sparse graphs**: When few conflicts, PageRank less meaningful
-2. **Not tested on very large instances**: >10k variables untested
-3. **Random SAT**: No benefit on completely random instances (expected)
-4. **Novelty unclear**: Requires literature search to confirm if PageRank approach is new
+1. **Not algorithmically novel**: Core PageRank approach published by Sonobe (2019)
+2. **Overhead on sparse graphs**: When few conflicts, PageRank less meaningful
+3. **Not tested on very large instances**: >10k variables untested
+4. **Random SAT**: No benefit on completely random instances (expected)
+5. **Conflict graph vs. VIG**: Unclear if conflict graph provides significant advantage over Sonobe's VIG approach
 
 ## Conclusion
 
-CGPM-SAT demonstrates **strong empirical performance** (47% win rate, 0 timeouts) and represents the **most promising candidate for novel contributions** among the four research solvers.
+**Literature Review Complete (October 2025)**: CGPM-SAT is **NOT a novel algorithm**. The core idea of using PageRank for SAT variable selection was published by **Tomohiro Sonobe in 2019**, and eigenvector centrality (very similar) was used by **Katsirelos & Simon in 2012**.
 
-### If Literature Search Confirms Novelty
+### Honest Verdict
 
-**Publication-ready contributions**:
-- ✅ Novel application of PageRank to SAT conflict graphs
-- ✅ Strong empirical results across diverse benchmarks
-- ✅ Low-overhead integration with CDCL
-- ✅ Ablation studies possible (PageRank vs. degree vs. betweenness)
+**Algorithmic Contribution**: ❌ **Incremental, not novel**
+- PageRank for SAT: Published 2019 (Sonobe)
+- Eigenvector centrality for SAT: Published 2012 (Katsirelos & Simon)
+- Centrality + VSIDS: Published 2018 (Jamali & Mitchell)
+- CGPM-SAT is a **variant with conflict graphs** - engineering refinement
 
-**Next steps**:
-1. Comprehensive literature review (PageRank + SAT)
-2. Expanded benchmarking (larger instances, SAT Competition instances)
-3. Comparison with state-of-the-art (MiniSat, Glucose, etc.)
-4. Theoretical analysis of why PageRank works for conflict patterns
-5. Ablation study: PageRank alone vs. combined metrics
+**Empirical Contribution**: ✅ **Valuable validation**
+- 47% win rate, 0 timeouts on 53-instance benchmark
+- Demonstrates PageRank/centrality approaches work well
+- Strong practical performance validates prior research
+- Clean Python reference implementation
 
-### If Prior Art Exists
+**Educational Value**: ✅ **Excellent**
+- Clear implementation of PageRank for SAT
+- Good visualization support
+- Well-documented codebase
+- Useful for understanding centrality-based SAT solving
 
-**Still valuable**:
-- Excellent empirical validation
-- Clean reference implementation
-- Educational value
-- Baseline for future research
+### Publication Strategy (If Desired)
 
-**Best suited for**:
-- Circuit verification
-- Planning problems
+**CANNOT publish as**:
+- ❌ "Novel application of PageRank to SAT" (already done by Sonobe 2019)
+- ❌ "First use of centrality in SAT" (done by Katsirelos & Simon 2012)
+- ❌ New algorithmic contribution
+
+**CAN publish as**:
+- ✅ "Dynamic Conflict Graph Variant of Sonobe's PageRank Approach"
+- ✅ "Empirical Comparison: Conflict Graphs vs. Variable Incidence Graphs"
+- ✅ Tool demonstration / engineering study
+- ✅ "Validating Centrality-Based SAT Solving"
+
+**Required citations**:
+- Sonobe (2019) - PRIMARY prior work
+- Katsirelos & Simon (2012) - Eigenvector centrality
+- Jamali & Mitchell (2018) - Centrality-based improvements
+
+**Appropriate venues**:
+- Tool demonstrations at SAT/CP conferences
+- Empirical evaluation tracks
+- Workshops on SAT solving
+- NOT main research tracks (would be rejected for lack of novelty)
+
+### Recommendations
+
+**For further work**:
+1. **Direct comparison with Sonobe (2019)**: Implement their VIG approach and compare with conflict graph approach
+2. **Ablation study**: PageRank vs. degree vs. betweenness vs. combined
+3. **Larger benchmarks**: Test on SAT Competition 2025 instances
+4. **Hybrid approach**: Combine VIG and conflict graph metrics
+5. **Performance analysis**: Why does CGPM-SAT achieve 47% win rate? What problem characteristics favor it?
+
+**Bottom line**:
+- CGPM-SAT is a **solid reimplementation** with **strong empirical results**
+- Builds on established techniques from Sonobe (2019), Katsirelos & Simon (2012), Jamali & Mitchell (2018)
+- Valuable for **education, validation, and engineering insights**
+- **NOT suitable for publication as novel research** without significant new contributions
+- The 47% win rate shows the approach works well - this is valuable regardless of novelty
+
+### Best Suited For
+
+**✅ Excellent for**:
+- Circuit verification and hardware design
+- AI planning problems
 - Configuration SAT
-- Industrial benchmarks
-- Any structured SAT instance
+- Industrial benchmarks with structure
+- Educational purposes (learning about PageRank in SAT)
+- Reference implementation for comparisons
 
-**Not suited for**:
-- Random SAT (no structure to exploit)
+**❌ Not recommended for**:
+- Random SAT instances (no structure)
 - Trivial instances (overhead > benefit)
-
-### Honest Assessment
-
-CGPM-SAT is the **only solver of the four with potential for genuine novelty**, but this MUST be confirmed with thorough literature search before making claims. The empirical results are impressive and suggest the approach has merit, whether novel or not.
-
-**Action Required**: Perform comprehensive literature search for "PageRank + SAT" before claiming novelty or attempting publication.
+- Claiming as novel research
