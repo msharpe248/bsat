@@ -1,0 +1,641 @@
+Family: medium_suite
+Timeout: 30s
+Files: 53
+====================================================================================================
+
+File: easy_3sat_v010_c0042.cnf
+  Variables: 10
+  Clauses: 42
+  Ratio: 4.20
+
+  DPLL            SAT     0.0002s      RANK=2
+  CDCL            SAT     0.0001s      RANK=1
+  CoBD-SAT        SAT     0.0004s      RANK=4
+  BB-CDCL         SAT     0.0099s      RANK=6
+  LA-CDCL         SAT     0.0015s      RANK=5
+  CGPM-SAT        SAT     0.0004s      RANK=3
+
+File: easy_3sat_v012_c0050.cnf
+  Variables: 12
+  Clauses: 50
+  Ratio: 4.17
+
+  DPLL            UNSAT   0.0003s      RANK=1
+  CDCL            TIMEOUT N/A          TIMEOUT
+  CoBD-SAT        UNSAT   0.0008s      RANK=3
+  BB-CDCL         UNSAT   0.0003s      RANK=2
+  LA-CDCL         UNSAT   0.0019s      RANK=5
+  CGPM-SAT        UNSAT   0.0008s      RANK=4
+
+File: easy_3sat_v014_c0058.cnf
+  Variables: 14
+  Clauses: 58
+  Ratio: 4.14
+
+  DPLL            UNSAT   0.0009s      RANK=1
+  CDCL            UNSAT   0.1505s      RANK=6
+  CoBD-SAT        UNSAT   0.0015s      RANK=3
+  BB-CDCL         UNSAT   0.0009s      RANK=2
+  LA-CDCL         UNSAT   0.0069s      RANK=5
+  CGPM-SAT        UNSAT   0.0017s      RANK=4
+
+File: easy_3sat_v016_c0067.cnf
+  Variables: 16
+  Clauses: 67
+  Ratio: 4.19
+
+  DPLL            UNSAT   0.0010s      RANK=1
+  CDCL            UNSAT   0.0196s      RANK=6
+  CoBD-SAT        UNSAT   0.0016s      RANK=3
+  BB-CDCL         UNSAT   0.0010s      RANK=2
+  LA-CDCL         UNSAT   0.0032s      RANK=5
+  CGPM-SAT        UNSAT   0.0022s      RANK=4
+
+File: easy_3sat_v018_c0075.cnf
+  Variables: 18
+  Clauses: 75
+  Ratio: 4.17
+
+  DPLL            SAT     0.0015s      RANK=2
+  CDCL            TIMEOUT N/A          TIMEOUT
+  CoBD-SAT        SAT     0.0024s      RANK=3
+  BB-CDCL         SAT     0.1695s      RANK=5
+  LA-CDCL         SAT     0.0030s      RANK=4
+  CGPM-SAT        SAT     0.0012s      RANK=1
+
+File: easy_3sat_v020_c0084.cnf
+  Variables: 20
+  Clauses: 84
+  Ratio: 4.20
+
+  DPLL            SAT     0.0024s      RANK=2
+  CDCL            UNSAT   0.3207s      RANK=6
+  CoBD-SAT        SAT     0.0032s      RANK=3
+  BB-CDCL         SAT     0.1605s      RANK=5
+  LA-CDCL         SAT     0.0041s      RANK=4
+  CGPM-SAT        SAT     0.0016s      RANK=1
+
+File: easy_3sat_v022_c0092.cnf
+  Variables: 22
+  Clauses: 92
+  Ratio: 4.18
+
+  DPLL            UNSAT   0.0042s      RANK=1
+  CDCL            UNSAT   2.0561s      RANK=6
+  CoBD-SAT        UNSAT   0.0055s      RANK=4
+  BB-CDCL         UNSAT   0.0043s      RANK=2
+  LA-CDCL         UNSAT   0.0110s      RANK=5
+  CGPM-SAT        UNSAT   0.0044s      RANK=3
+
+File: easy_3sat_v024_c0100.cnf
+  Variables: 24
+  Clauses: 100
+  Ratio: 4.17
+
+  DPLL            SAT     0.0007s      RANK=1
+  CDCL            SAT     0.1667s      RANK=5
+  CoBD-SAT        SAT     0.0026s      RANK=3
+  BB-CDCL         SAT     0.2049s      RANK=6
+  LA-CDCL         SAT     0.0123s      RANK=4
+  CGPM-SAT        SAT     0.0020s      RANK=2
+
+File: easy_3sat_v026_c0109.cnf
+  Variables: 26
+  Clauses: 109
+  Ratio: 4.19
+
+  DPLL            UNSAT   0.0052s      RANK=1
+  CDCL            UNSAT   0.8564s      RANK=6
+  CoBD-SAT        UNSAT   0.0075s      RANK=4
+  BB-CDCL         UNSAT   0.0052s      RANK=2
+  LA-CDCL         UNSAT   0.0189s      RANK=5
+  CGPM-SAT        UNSAT   0.0056s      RANK=3
+
+File: easy_3sat_v028_c0117.cnf
+  Variables: 28
+  Clauses: 117
+  Ratio: 4.18
+
+  DPLL            SAT     0.0174s      RANK=3
+  CDCL            TIMEOUT N/A          TIMEOUT
+  CoBD-SAT        SAT     0.0194s      RANK=4
+  BB-CDCL         SAT     0.2368s      RANK=5
+  LA-CDCL         SAT     0.0142s      RANK=2
+  CGPM-SAT        SAT     0.0137s      RANK=1
+
+File: easy_3sat_v030_c0126.cnf
+  Variables: 30
+  Clauses: 126
+  Ratio: 4.20
+
+  DPLL            SAT     0.0011s      RANK=1
+  CDCL            SAT     0.0779s      RANK=5
+  CoBD-SAT        SAT     0.0039s      RANK=3
+  BB-CDCL         SAT     0.3498s      RANK=6
+  LA-CDCL         SAT     0.0080s      RANK=4
+  CGPM-SAT        SAT     0.0034s      RANK=2
+
+File: hard_3sat_v090_c0384.cnf
+  Variables: 90
+  Clauses: 384
+  Ratio: 4.27
+
+  DPLL            SAT     0.9962s      RANK=2
+  CDCL            TIMEOUT N/A          TIMEOUT
+  CoBD-SAT        SAT     1.0607s      RANK=3
+  BB-CDCL         TIMEOUT N/A          TIMEOUT
+  LA-CDCL         SAT     2.6737s      RANK=4
+  CGPM-SAT        SAT     0.8225s      RANK=1
+
+File: hard_3sat_v093_c0397.cnf
+  Variables: 93
+  Clauses: 397
+  Ratio: 4.27
+
+  DPLL            SAT     10.7867s     RANK=2
+  CDCL            TIMEOUT N/A          TIMEOUT
+  CoBD-SAT        SAT     10.8735s     RANK=3
+  BB-CDCL         TIMEOUT N/A          TIMEOUT
+  LA-CDCL         TIMEOUT N/A          TIMEOUT
+  CGPM-SAT        SAT     0.7480s      RANK=1
+
+File: hard_3sat_v096_c0409.cnf
+  Variables: 96
+  Clauses: 409
+  Ratio: 4.26
+
+  DPLL            TIMEOUT N/A          TIMEOUT
+  CDCL            TIMEOUT N/A          TIMEOUT
+  CoBD-SAT        TIMEOUT N/A          TIMEOUT
+  BB-CDCL         TIMEOUT N/A          TIMEOUT
+  LA-CDCL         TIMEOUT N/A          TIMEOUT
+  CGPM-SAT        UNSAT   3.9783s      RANK=1
+
+File: hard_3sat_v099_c0422.cnf
+  Variables: 99
+  Clauses: 422
+  Ratio: 4.26
+
+  DPLL            SAT     28.4766s     RANK=3
+  CDCL            TIMEOUT N/A          TIMEOUT
+  CoBD-SAT        SAT     28.4132s     RANK=2
+  BB-CDCL         TIMEOUT N/A          TIMEOUT
+  LA-CDCL         TIMEOUT N/A          TIMEOUT
+  CGPM-SAT        SAT     1.4183s      RANK=1
+
+File: hard_3sat_v102_c0435.cnf
+  Variables: 102
+  Clauses: 435
+  Ratio: 4.26
+
+  DPLL            TIMEOUT N/A          TIMEOUT
+  CDCL            TIMEOUT N/A          TIMEOUT
+  CoBD-SAT        TIMEOUT N/A          TIMEOUT
+  BB-CDCL         TIMEOUT N/A          TIMEOUT
+  LA-CDCL         TIMEOUT N/A          TIMEOUT
+  CGPM-SAT        UNSAT   4.3292s      RANK=1
+
+File: hard_3sat_v105_c0448.cnf
+  Variables: 105
+  Clauses: 448
+  Ratio: 4.27
+
+  DPLL            SAT     3.4567s      RANK=3
+  CDCL            TIMEOUT N/A          TIMEOUT
+  CoBD-SAT        SAT     3.4810s      RANK=4
+  BB-CDCL         SAT     24.5844s     RANK=5
+  LA-CDCL         SAT     0.3047s      RANK=2
+  CGPM-SAT        SAT     0.1440s      RANK=1
+
+File: hard_3sat_v108_c0461.cnf
+  Variables: 108
+  Clauses: 461
+  Ratio: 4.27
+
+  DPLL            TIMEOUT N/A          TIMEOUT
+  CDCL            TIMEOUT N/A          TIMEOUT
+  CoBD-SAT        TIMEOUT N/A          TIMEOUT
+  BB-CDCL         TIMEOUT N/A          TIMEOUT
+  LA-CDCL         SAT     0.2148s      RANK=1
+  CGPM-SAT        SAT     10.5277s     RANK=2
+
+File: hard_3sat_v111_c0473.cnf
+  Variables: 111
+  Clauses: 473
+  Ratio: 4.26
+
+  DPLL            SAT     1.9006s      RANK=3
+  CDCL            TIMEOUT N/A          TIMEOUT
+  CoBD-SAT        SAT     1.9383s      RANK=4
+  BB-CDCL         SAT     11.9630s     RANK=5
+  LA-CDCL         SAT     0.4779s      RANK=2
+  CGPM-SAT        SAT     0.0522s      RANK=1
+
+File: hard_3sat_v114_c0486.cnf
+  Variables: 114
+  Clauses: 486
+  Ratio: 4.26
+
+  DPLL            TIMEOUT N/A          TIMEOUT
+  CDCL            TIMEOUT N/A          TIMEOUT
+  CoBD-SAT        TIMEOUT N/A          TIMEOUT
+  BB-CDCL         SAT     18.1236s     RANK=3
+  LA-CDCL         SAT     1.2913s      RANK=1
+  CGPM-SAT        SAT     1.7931s      RANK=2
+
+File: hard_3sat_v117_c0499.cnf
+  Variables: 117
+  Clauses: 499
+  Ratio: 4.26
+
+  DPLL            TIMEOUT N/A          TIMEOUT
+  CDCL            TIMEOUT N/A          TIMEOUT
+  CoBD-SAT        TIMEOUT N/A          TIMEOUT
+  BB-CDCL         TIMEOUT N/A          TIMEOUT
+  LA-CDCL         TIMEOUT N/A          TIMEOUT
+  CGPM-SAT        UNSAT   11.3707s     RANK=1
+
+File: hard_3sat_v120_c0512.cnf
+  Variables: 120
+  Clauses: 512
+  Ratio: 4.27
+
+  DPLL            TIMEOUT N/A          TIMEOUT
+  CDCL            TIMEOUT N/A          TIMEOUT
+  CoBD-SAT        TIMEOUT N/A          TIMEOUT
+  BB-CDCL         SAT     29.3074s     RANK=2
+  LA-CDCL         TIMEOUT N/A          TIMEOUT
+  CGPM-SAT        SAT     7.8127s      RANK=1
+
+File: medium_3sat_v040_c0170.cnf
+  Variables: 40
+  Clauses: 170
+  Ratio: 4.25
+
+  DPLL            SAT     0.0184s      RANK=3
+  CDCL            SAT     0.1509s      RANK=5
+  CoBD-SAT        SAT     0.0234s      RANK=4
+  BB-CDCL         SAT     2.0270s      RANK=6
+  LA-CDCL         SAT     0.0143s      RANK=1
+  CGPM-SAT        SAT     0.0156s      RANK=2
+
+File: medium_3sat_v042_c0178.cnf
+  Variables: 42
+  Clauses: 178
+  Ratio: 4.24
+
+  DPLL            SAT     0.0419s      RANK=2
+  CDCL            TIMEOUT N/A          TIMEOUT
+  CoBD-SAT        SAT     0.0466s      RANK=3
+  BB-CDCL         SAT     3.9425s      RANK=5
+  LA-CDCL         SAT     0.0706s      RANK=4
+  CGPM-SAT        SAT     0.0123s      RANK=1
+
+File: medium_3sat_v044_c0187.cnf
+  Variables: 44
+  Clauses: 187
+  Ratio: 4.25
+
+  DPLL            SAT     0.0059s      RANK=1
+  CDCL            SAT     0.0155s      RANK=4
+  CoBD-SAT        SAT     0.0103s      RANK=3
+  BB-CDCL         SAT     0.4137s      RANK=6
+  LA-CDCL         SAT     0.0184s      RANK=5
+  CGPM-SAT        SAT     0.0081s      RANK=2
+
+File: medium_3sat_v046_c0195.cnf
+  Variables: 46
+  Clauses: 195
+  Ratio: 4.24
+
+  DPLL            SAT     0.0833s      RANK=3
+  CDCL            TIMEOUT N/A          TIMEOUT
+  CoBD-SAT        SAT     0.0881s      RANK=4
+  BB-CDCL         SAT     1.3100s      RANK=5
+  LA-CDCL         SAT     0.0542s      RANK=2
+  CGPM-SAT        SAT     0.0264s      RANK=1
+
+File: medium_3sat_v048_c0204.cnf
+  Variables: 48
+  Clauses: 204
+  Ratio: 4.25
+
+  DPLL            SAT     0.0762s      RANK=1
+  CDCL            SAT     1.8855s      RANK=5
+  CoBD-SAT        SAT     0.0873s      RANK=2
+  BB-CDCL         SAT     5.2885s      RANK=6
+  LA-CDCL         SAT     0.1415s      RANK=4
+  CGPM-SAT        SAT     0.1294s      RANK=3
+
+File: medium_3sat_v050_c0213.cnf
+  Variables: 50
+  Clauses: 213
+  Ratio: 4.26
+
+  DPLL            SAT     0.0048s      RANK=1
+  CDCL            TIMEOUT N/A          TIMEOUT
+  CoBD-SAT        SAT     0.0134s      RANK=3
+  BB-CDCL         SAT     4.4208s      RANK=5
+  LA-CDCL         SAT     0.2276s      RANK=4
+  CGPM-SAT        SAT     0.0108s      RANK=2
+
+File: medium_3sat_v052_c0221.cnf
+  Variables: 52
+  Clauses: 221
+  Ratio: 4.25
+
+  DPLL            SAT     0.0413s      RANK=2
+  CDCL            TIMEOUT N/A          TIMEOUT
+  CoBD-SAT        SAT     0.0475s      RANK=3
+  BB-CDCL         SAT     7.0983s      RANK=5
+  LA-CDCL         SAT     0.0140s      RANK=1
+  CGPM-SAT        SAT     0.0690s      RANK=4
+
+File: medium_3sat_v054_c0230.cnf
+  Variables: 54
+  Clauses: 230
+  Ratio: 4.26
+
+  DPLL            SAT     0.0280s      RANK=2
+  CDCL            SAT     1.5164s      RANK=6
+  CoBD-SAT        SAT     0.0356s      RANK=3
+  BB-CDCL         SAT     0.9939s      RANK=5
+  LA-CDCL         SAT     0.0278s      RANK=1
+  CGPM-SAT        SAT     0.0915s      RANK=4
+
+File: medium_3sat_v056_c0238.cnf
+  Variables: 56
+  Clauses: 238
+  Ratio: 4.25
+
+  DPLL            SAT     0.0152s      RANK=2
+  CDCL            SAT     2.9173s      RANK=6
+  CoBD-SAT        SAT     0.0236s      RANK=4
+  BB-CDCL         SAT     0.6641s      RANK=5
+  LA-CDCL         SAT     0.0232s      RANK=3
+  CGPM-SAT        SAT     0.0149s      RANK=1
+
+File: medium_3sat_v058_c0247.cnf
+  Variables: 58
+  Clauses: 247
+  Ratio: 4.26
+
+  DPLL            SAT     0.3482s      RANK=3
+  CDCL            TIMEOUT N/A          TIMEOUT
+  CoBD-SAT        SAT     0.3633s      RANK=4
+  BB-CDCL         SAT     5.4439s      RANK=5
+  LA-CDCL         SAT     0.2624s      RANK=2
+  CGPM-SAT        SAT     0.0733s      RANK=1
+
+File: medium_3sat_v060_c0255.cnf
+  Variables: 60
+  Clauses: 255
+  Ratio: 4.25
+
+  DPLL            SAT     0.0431s      RANK=2
+  CDCL            SAT     24.1862s     RANK=6
+  CoBD-SAT        SAT     0.0509s      RANK=3
+  BB-CDCL         SAT     2.9992s      RANK=5
+  LA-CDCL         SAT     0.3043s      RANK=4
+  CGPM-SAT        SAT     0.0106s      RANK=1
+
+File: medium_3sat_v062_c0264.cnf
+  Variables: 62
+  Clauses: 264
+  Ratio: 4.26
+
+  DPLL            UNSAT   1.3820s      RANK=4
+  CDCL            TIMEOUT N/A          TIMEOUT
+  CoBD-SAT        UNSAT   1.3797s      RANK=3
+  BB-CDCL         TIMEOUT N/A          TIMEOUT
+  LA-CDCL         UNSAT   0.9490s      RANK=2
+  CGPM-SAT        UNSAT   0.2853s      RANK=1
+
+File: medium_3sat_v064_c0272.cnf
+  Variables: 64
+  Clauses: 272
+  Ratio: 4.25
+
+  DPLL            SAT     0.0669s      RANK=1
+  CDCL            SAT     1.2451s      RANK=5
+  CoBD-SAT        SAT     0.0806s      RANK=2
+  BB-CDCL         SAT     5.8920s      RANK=6
+  LA-CDCL         SAT     0.1417s      RANK=3
+  CGPM-SAT        SAT     0.3728s      RANK=4
+
+File: medium_3sat_v066_c0281.cnf
+  Variables: 66
+  Clauses: 281
+  Ratio: 4.26
+
+  DPLL            UNSAT   0.7450s      RANK=2
+  CDCL            TIMEOUT N/A          TIMEOUT
+  CoBD-SAT        UNSAT   0.7663s      RANK=3
+  BB-CDCL         TIMEOUT N/A          TIMEOUT
+  LA-CDCL         UNSAT   2.0333s      RANK=4
+  CGPM-SAT        UNSAT   0.3534s      RANK=1
+
+File: medium_3sat_v068_c0289.cnf
+  Variables: 68
+  Clauses: 289
+  Ratio: 4.25
+
+  DPLL            UNSAT   1.4689s      RANK=2
+  CDCL            TIMEOUT N/A          TIMEOUT
+  CoBD-SAT        UNSAT   1.4950s      RANK=3
+  BB-CDCL         TIMEOUT N/A          TIMEOUT
+  LA-CDCL         UNSAT   6.7813s      RANK=4
+  CGPM-SAT        UNSAT   0.3666s      RANK=1
+
+File: medium_3sat_v070_c0298.cnf
+  Variables: 70
+  Clauses: 298
+  Ratio: 4.26
+
+  DPLL            UNSAT   8.7902s      RANK=3
+  CDCL            TIMEOUT N/A          TIMEOUT
+  CoBD-SAT        UNSAT   8.7727s      RANK=2
+  BB-CDCL         TIMEOUT N/A          TIMEOUT
+  LA-CDCL         UNSAT   9.6877s      RANK=4
+  CGPM-SAT        UNSAT   0.7726s      RANK=1
+
+File: medium_3sat_v072_c0306.cnf
+  Variables: 72
+  Clauses: 306
+  Ratio: 4.25
+
+  DPLL            UNSAT   3.3607s      RANK=3
+  CDCL            TIMEOUT N/A          TIMEOUT
+  CoBD-SAT        UNSAT   3.3658s      RANK=4
+  BB-CDCL         TIMEOUT N/A          TIMEOUT
+  LA-CDCL         UNSAT   2.8104s      RANK=2
+  CGPM-SAT        UNSAT   0.8687s      RANK=1
+
+File: medium_3sat_v074_c0315.cnf
+  Variables: 74
+  Clauses: 315
+  Ratio: 4.26
+
+  DPLL            SAT     1.4064s      RANK=2
+  CDCL            SAT     4.7187s      RANK=5
+  CoBD-SAT        SAT     1.4407s      RANK=3
+  BB-CDCL         SAT     21.1826s     RANK=6
+  LA-CDCL         SAT     2.4769s      RANK=4
+  CGPM-SAT        SAT     0.2328s      RANK=1
+
+File: medium_3sat_v076_c0323.cnf
+  Variables: 76
+  Clauses: 323
+  Ratio: 4.25
+
+  DPLL            SAT     3.1221s      RANK=4
+  CDCL            TIMEOUT N/A          TIMEOUT
+  CoBD-SAT        SAT     3.1743s      RANK=5
+  BB-CDCL         SAT     2.6649s      RANK=3
+  LA-CDCL         SAT     0.0381s      RANK=1
+  CGPM-SAT        SAT     0.2982s      RANK=2
+
+File: medium_3sat_v078_c0332.cnf
+  Variables: 78
+  Clauses: 332
+  Ratio: 4.26
+
+  DPLL            SAT     0.8817s      RANK=2
+  CDCL            TIMEOUT N/A          TIMEOUT
+  CoBD-SAT        SAT     0.8889s      RANK=3
+  BB-CDCL         TIMEOUT N/A          TIMEOUT
+  LA-CDCL         SAT     4.1140s      RANK=4
+  CGPM-SAT        SAT     0.4929s      RANK=1
+
+File: medium_3sat_v080_c0340.cnf
+  Variables: 80
+  Clauses: 340
+  Ratio: 4.25
+
+  DPLL            SAT     5.7538s      RANK=3
+  CDCL            TIMEOUT N/A          TIMEOUT
+  CoBD-SAT        SAT     5.8154s      RANK=4
+  BB-CDCL         TIMEOUT N/A          TIMEOUT
+  LA-CDCL         SAT     4.3207s      RANK=2
+  CGPM-SAT        SAT     1.1738s      RANK=1
+
+File: mixed_4sat_v030_c0135.cnf
+  Variables: 30
+  Clauses: 135
+  Ratio: 4.50
+
+  DPLL            SAT     0.0009s      RANK=1
+  CDCL            SAT     0.0103s      RANK=4
+  CoBD-SAT        SAT     0.0049s      RANK=3
+  BB-CDCL         SAT     0.0628s      RANK=6
+  LA-CDCL         SAT     0.0145s      RANK=5
+  CGPM-SAT        SAT     0.0039s      RANK=2
+
+File: mixed_4sat_v040_c0192.cnf
+  Variables: 40
+  Clauses: 192
+  Ratio: 4.80
+
+  DPLL            SAT     0.0014s      RANK=1
+  CDCL            SAT     0.0015s      RANK=2
+  CoBD-SAT        SAT     0.0079s      RANK=4
+  BB-CDCL         SAT     0.1219s      RANK=6
+  LA-CDCL         SAT     0.0230s      RANK=5
+  CGPM-SAT        SAT     0.0073s      RANK=3
+
+File: mixed_4sat_v060_c0270.cnf
+  Variables: 60
+  Clauses: 270
+  Ratio: 4.50
+
+  DPLL            SAT     0.0068s      RANK=1
+  CDCL            SAT     0.0263s      RANK=3
+  CoBD-SAT        SAT     0.0268s      RANK=4
+  BB-CDCL         SAT     0.2328s      RANK=6
+  LA-CDCL         SAT     0.0366s      RANK=5
+  CGPM-SAT        SAT     0.0157s      RANK=2
+
+File: mixed_5sat_v050_c0260.cnf
+  Variables: 50
+  Clauses: 260
+  Ratio: 5.20
+
+  DPLL            SAT     0.0026s      RANK=1
+  CDCL            SAT     0.0030s      RANK=2
+  CoBD-SAT        SAT     0.0171s      RANK=4
+  BB-CDCL         SAT     0.0890s      RANK=6
+  LA-CDCL         SAT     0.0385s      RANK=5
+  CGPM-SAT        SAT     0.0136s      RANK=3
+
+File: mixed_5sat_v070_c0350.cnf
+  Variables: 70
+  Clauses: 350
+  Ratio: 5.00
+
+  DPLL            SAT     0.0048s      RANK=1
+  CDCL            SAT     0.0055s      RANK=2
+  CoBD-SAT        SAT     0.0308s      RANK=4
+  BB-CDCL         SAT     0.1570s      RANK=6
+  LA-CDCL         SAT     0.0615s      RANK=5
+  CGPM-SAT        SAT     0.0286s      RANK=3
+
+File: sat_known_v040.cnf
+  Variables: 40
+  Clauses: 120
+  Ratio: 3.00
+
+  DPLL            SAT     0.0008s      RANK=1
+  CDCL            SAT     0.0008s      RANK=2
+  CoBD-SAT        SAT     0.0044s      RANK=3
+  BB-CDCL         SAT     0.0736s      RANK=6
+  LA-CDCL         SAT     0.0113s      RANK=5
+  CGPM-SAT        SAT     0.0050s      RANK=4
+
+File: sat_known_v060.cnf
+  Variables: 60
+  Clauses: 180
+  Ratio: 3.00
+
+  DPLL            SAT     0.0022s      RANK=1
+  CDCL            SAT     0.1182s      RANK=5
+  CoBD-SAT        SAT     0.0082s      RANK=2
+  BB-CDCL         SAT     0.2596s      RANK=6
+  LA-CDCL         SAT     0.0184s      RANK=4
+  CGPM-SAT        SAT     0.0087s      RANK=3
+
+File: sat_known_v080.cnf
+  Variables: 80
+  Clauses: 240
+  Ratio: 3.00
+
+  DPLL            SAT     0.0033s      RANK=2
+  CDCL            SAT     0.0032s      RANK=1
+  CoBD-SAT        SAT     0.0174s      RANK=4
+  BB-CDCL         SAT     0.2295s      RANK=6
+  LA-CDCL         SAT     0.0288s      RANK=5
+  CGPM-SAT        SAT     0.0141s      RANK=3
+
+File: sat_known_v100.cnf
+  Variables: 100
+  Clauses: 300
+  Ratio: 3.00
+
+  DPLL            SAT     0.0056s      RANK=2
+  CDCL            SAT     0.0047s      RANK=1
+  CoBD-SAT        SAT     0.0222s      RANK=4
+  BB-CDCL         SAT     0.4156s      RANK=6
+  LA-CDCL         SAT     0.0384s      RANK=5
+  CGPM-SAT        SAT     0.0209s      RANK=3
+
+File: sat_known_v120.cnf
+  Variables: 120
+  Clauses: 360
+  Ratio: 3.00
+
+  DPLL            SAT     0.0078s      RANK=2
+  CDCL            SAT     0.0059s      RANK=1
+  CoBD-SAT        SAT     0.0252s      RANK=3
+  BB-CDCL         SAT     0.4790s      RANK=6
+  LA-CDCL         SAT     0.0532s      RANK=5
+  CGPM-SAT        SAT     0.0324s      RANK=4
+

@@ -146,8 +146,14 @@ cython_debug/
 .DS_Store
 Thumbs.db
 
-# Dataset directory (competition benchmarks and results, not checked in)
-dataset/
+# Dataset - ignore large CNF files but keep directory structure and docs
+dataset/**/*.cnf
+dataset/**/*.cnf.xz
+dataset/**/*.tar.gz
+dataset/**/*.zip
+
+# Ignore temporary/auto-generated result directories (except named ones we want to keep)
+dataset/results/results-*/
 
 # Competition benchmark run logs
 research/benchmarks/competition_results.txt
