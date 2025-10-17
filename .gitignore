@@ -148,3 +148,7 @@ Thumbs.db
 
 # Dataset directory (competition benchmarks, not checked in)
 dataset/
+
+# Competition benchmark run logs
+research/benchmarks/competition_results.txt
+research/benchmarks/*_results.txt
