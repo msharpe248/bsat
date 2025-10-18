@@ -84,8 +84,11 @@ class RefinementSolver:
             self.levels_solved += 1
 
             if result.status == 'UNSAT':
-                # UNSAT at abstract level → original is UNSAT
-                return None
+                # UNSAT at abstract level is INCONCLUSIVE
+                # The abstraction might be too restrictive (over-approximation)
+                # We must fall back to solving the concrete problem
+                # Continue to next level or solve concrete
+                continue
 
             elif result.status == 'SAT':
                 # Found concrete solution
