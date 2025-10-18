@@ -196,19 +196,19 @@ def _run_solver_worker(solver_name, cnf_file_path, result_queue):
         elif solver_name == "CGPM-SAT" and CGPMSolver:
             solver = CGPMSolver(cnf, graph_weight=0.5)
         elif solver_name == "TPM-SAT" and TPMSATSolver:
-            solver = TPMSATSolver(cnf, use_patterns=True, max_pattern_length=3)
+            solver = TPMSATSolver(cnf, window_size=5)
         elif solver_name == "SSTA-SAT" and SSTASATSolver:
-            solver = SSTASATSolver(cnf, use_topology=True, hop_limit=3)
+            solver = SSTASATSolver(cnf, num_samples=50)
         elif solver_name == "VPL-SAT" and VPLSATSolver:
-            solver = VPLSATSolver(cnf, use_phase_learning=True, decay_factor=0.95)
+            solver = VPLSATSolver(cnf, use_phase_learning=True)
         elif solver_name == "CQP-SAT" and CQPSATSolver:
-            solver = CQPSATSolver(cnf, use_lbd=True, glue_limit=30)
+            solver = CQPSATSolver(cnf, use_quality_prediction=True)
         elif solver_name == "MAB-SAT" and MABSATSolver:
-            solver = MABSATSolver(cnf, use_ucb=True, exploration_constant=0.5)
+            solver = MABSATSolver(cnf, use_mab=True, exploration_constant=1.4)
         elif solver_name == "CCG-SAT" and CCGSATSolver:
-            solver = CCGSATSolver(cnf, use_causality=True, graph_depth=5)
+            solver = CCGSATSolver(cnf, use_causality=True)
         elif solver_name == "HAS-SAT" and HASSATSolver:
-            solver = HASSATSolver(cnf, use_abstraction=True, abstraction_threshold=100)
+            solver = HASSATSolver(cnf, use_abstraction=True)
         elif solver_name == "CEGP-SAT" and CEGPSATSolver:
             solver = CEGPSATSolver(cnf, use_evolution=True, evolution_frequency=100)
         else:
@@ -257,19 +257,19 @@ def get_all_solvers():
 
     # New research suite
     if HAS_TPM:
-        solvers.append(("TPM-SAT", lambda cnf: TPMSATSolver(cnf, use_patterns=True, max_pattern_length=3)))
+        solvers.append(("TPM-SAT", lambda cnf: TPMSATSolver(cnf, window_size=5)))
     if HAS_SSTA:
-        solvers.append(("SSTA-SAT", lambda cnf: SSTASATSolver(cnf, use_topology=True, hop_limit=3)))
+        solvers.append(("SSTA-SAT", lambda cnf: SSTASATSolver(cnf, num_samples=50)))
     if HAS_VPL:
-        solvers.append(("VPL-SAT", lambda cnf: VPLSATSolver(cnf, use_phase_learning=True, decay_factor=0.95)))
+        solvers.append(("VPL-SAT", lambda cnf: VPLSATSolver(cnf, use_phase_learning=True)))
     if HAS_CQP:
-        solvers.append(("CQP-SAT", lambda cnf: CQPSATSolver(cnf, use_lbd=True, glue_limit=30)))
+        solvers.append(("CQP-SAT", lambda cnf: CQPSATSolver(cnf, use_quality_prediction=True)))
     if HAS_MAB:
-        solvers.append(("MAB-SAT", lambda cnf: MABSATSolver(cnf, use_ucb=True, exploration_constant=0.5)))
+        solvers.append(("MAB-SAT", lambda cnf: MABSATSolver(cnf, use_mab=True, exploration_constant=1.4)))
     if HAS_CCG:
-        solvers.append(("CCG-SAT", lambda cnf: CCGSATSolver(cnf, use_causality=True, graph_depth=5)))
+        solvers.append(("CCG-SAT", lambda cnf: CCGSATSolver(cnf, use_causality=True)))
     if HAS_HAS:
-        solvers.append(("HAS-SAT", lambda cnf: HASSATSolver(cnf, use_abstraction=True, abstraction_threshold=100)))
+        solvers.append(("HAS-SAT", lambda cnf: HASSATSolver(cnf, use_abstraction=True)))
     if HAS_CEGP:
         solvers.append(("CEGP-SAT", lambda cnf: CEGPSATSolver(cnf, use_evolution=True, evolution_frequency=100)))
 

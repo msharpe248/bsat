@@ -189,43 +189,43 @@ class CorrectnessValidator:
             # Add new research suite
             try:
                 from tpm_sat import TPMSATSolver
-                solvers.append(("TPM-SAT", lambda cnf: TPMSATSolver(cnf, use_patterns=True, max_pattern_length=3)))
+                solvers.append(("TPM-SAT", lambda cnf: TPMSATSolver(cnf, window_size=5)))
             except:
                 pass
 
             try:
                 from ssta_sat import SSTASATSolver
-                solvers.append(("SSTA-SAT", lambda cnf: SSTASATSolver(cnf, use_topology=True, hop_limit=3)))
+                solvers.append(("SSTA-SAT", lambda cnf: SSTASATSolver(cnf, num_samples=50)))
             except:
                 pass
 
             try:
                 from vpl_sat import VPLSATSolver
-                solvers.append(("VPL-SAT", lambda cnf: VPLSATSolver(cnf, use_phase_learning=True, decay_factor=0.95)))
+                solvers.append(("VPL-SAT", lambda cnf: VPLSATSolver(cnf, use_phase_learning=True)))
             except:
                 pass
 
             try:
                 from cqp_sat import CQPSATSolver
-                solvers.append(("CQP-SAT", lambda cnf: CQPSATSolver(cnf, use_lbd=True, glue_limit=30)))
+                solvers.append(("CQP-SAT", lambda cnf: CQPSATSolver(cnf, use_quality_prediction=True)))
             except:
                 pass
 
             try:
                 from mab_sat import MABSATSolver
-                solvers.append(("MAB-SAT", lambda cnf: MABSATSolver(cnf, use_ucb=True, exploration_constant=0.5)))
+                solvers.append(("MAB-SAT", lambda cnf: MABSATSolver(cnf, use_mab=True, exploration_constant=1.4)))
             except:
                 pass
 
             try:
                 from ccg_sat import CCGSATSolver
-                solvers.append(("CCG-SAT", lambda cnf: CCGSATSolver(cnf, use_causality=True, graph_depth=5)))
+                solvers.append(("CCG-SAT", lambda cnf: CCGSATSolver(cnf, use_causality=True)))
             except:
                 pass
 
             try:
                 from has_sat import HASSATSolver
-                solvers.append(("HAS-SAT", lambda cnf: HASSATSolver(cnf, use_abstraction=True, abstraction_threshold=100)))
+                solvers.append(("HAS-SAT", lambda cnf: HASSATSolver(cnf, use_abstraction=True)))
             except:
                 pass
 

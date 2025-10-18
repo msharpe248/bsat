@@ -160,43 +160,43 @@ class SolverProfiler:
         # Add new research suite
         try:
             from tpm_sat import TPMSATSolver
-            solvers.append(("TPM-SAT", lambda c: TPMSATSolver(c, use_patterns=True, max_pattern_length=3)))
+            solvers.append(("TPM-SAT", lambda c: TPMSATSolver(c, window_size=5)))
         except:
             pass
 
         try:
             from ssta_sat import SSTASATSolver
-            solvers.append(("SSTA-SAT", lambda c: SSTASATSolver(c, use_topology=True, hop_limit=3)))
+            solvers.append(("SSTA-SAT", lambda c: SSTASATSolver(c, num_samples=50)))
         except:
             pass
 
         try:
             from vpl_sat import VPLSATSolver
-            solvers.append(("VPL-SAT", lambda c: VPLSATSolver(c, use_phase_learning=True, decay_factor=0.95)))
+            solvers.append(("VPL-SAT", lambda c: VPLSATSolver(c, use_phase_learning=True)))
         except:
             pass
 
         try:
             from cqp_sat import CQPSATSolver
-            solvers.append(("CQP-SAT", lambda c: CQPSATSolver(c, use_lbd=True, glue_limit=30)))
+            solvers.append(("CQP-SAT", lambda c: CQPSATSolver(c, use_quality_prediction=True)))
         except:
             pass
 
         try:
             from mab_sat import MABSATSolver
-            solvers.append(("MAB-SAT", lambda c: MABSATSolver(c, use_ucb=True, exploration_constant=0.5)))
+            solvers.append(("MAB-SAT", lambda c: MABSATSolver(c, use_mab=True, exploration_constant=1.4)))
         except:
             pass
 
         try:
             from ccg_sat import CCGSATSolver
-            solvers.append(("CCG-SAT", lambda c: CCGSATSolver(c, use_causality=True, graph_depth=5)))
+            solvers.append(("CCG-SAT", lambda c: CCGSATSolver(c, use_causality=True)))
         except:
             pass
 
         try:
             from has_sat import HASSATSolver
-            solvers.append(("HAS-SAT", lambda c: HASSATSolver(c, use_abstraction=True, abstraction_threshold=100)))
+            solvers.append(("HAS-SAT", lambda c: HASSATSolver(c, use_abstraction=True)))
         except:
             pass
 

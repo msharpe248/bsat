@@ -376,7 +376,7 @@ class SolverBenchmark:
                 )
 
             elif solver_name == "TPM-SAT":
-                solver = TPMSATSolver(cnf, use_patterns=True, max_pattern_length=3)
+                solver = TPMSATSolver(cnf, window_size=5)
                 result = solver.solve()
                 elapsed = time.perf_counter() - start_time
 
@@ -394,7 +394,7 @@ class SolverBenchmark:
                 )
 
             elif solver_name == "SSTA-SAT":
-                solver = SSTASATSolver(cnf, use_topology=True, num_samples=10)
+                solver = SSTASATSolver(cnf, num_samples=50)
                 result = solver.solve()
                 elapsed = time.perf_counter() - start_time
 
@@ -412,7 +412,7 @@ class SolverBenchmark:
                 )
 
             elif solver_name == "VPL-SAT":
-                solver = VPLSATSolver(cnf, use_phase_learning=True, learning_strategy='hybrid')
+                solver = VPLSATSolver(cnf, use_phase_learning=True, strategy='hybrid')
                 result = solver.solve()
                 elapsed = time.perf_counter() - start_time
 
@@ -429,7 +429,7 @@ class SolverBenchmark:
                 )
 
             elif solver_name == "CQP-SAT":
-                solver = CQPSATSolver(cnf, use_quality=True, glue_threshold=2)
+                solver = CQPSATSolver(cnf, use_quality_prediction=True)
                 result = solver.solve()
                 elapsed = time.perf_counter() - start_time
 
