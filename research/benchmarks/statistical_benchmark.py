@@ -184,6 +184,55 @@ class StatisticalBenchmark:
         except:
             pass
 
+        # Add new research suite
+        try:
+            from tpm_sat import TPMSATSolver
+            solvers.append(("TPM-SAT", lambda cnf: TPMSATSolver(cnf, use_patterns=True, max_pattern_length=3)))
+        except:
+            pass
+
+        try:
+            from ssta_sat import SSTASATSolver
+            solvers.append(("SSTA-SAT", lambda cnf: SSTASATSolver(cnf, use_topology=True, hop_limit=3)))
+        except:
+            pass
+
+        try:
+            from vpl_sat import VPLSATSolver
+            solvers.append(("VPL-SAT", lambda cnf: VPLSATSolver(cnf, use_phase_learning=True, decay_factor=0.95)))
+        except:
+            pass
+
+        try:
+            from cqp_sat import CQPSATSolver
+            solvers.append(("CQP-SAT", lambda cnf: CQPSATSolver(cnf, use_lbd=True, glue_limit=30)))
+        except:
+            pass
+
+        try:
+            from mab_sat import MABSATSolver
+            solvers.append(("MAB-SAT", lambda cnf: MABSATSolver(cnf, use_ucb=True, exploration_constant=0.5)))
+        except:
+            pass
+
+        try:
+            from ccg_sat import CCGSATSolver
+            solvers.append(("CCG-SAT", lambda cnf: CCGSATSolver(cnf, use_causality=True, graph_depth=5)))
+        except:
+            pass
+
+        try:
+            from has_sat import HASSATSolver
+            solvers.append(("HAS-SAT", lambda cnf: HASSATSolver(cnf, use_abstraction=True, abstraction_threshold=100)))
+        except:
+            pass
+
+        try:
+            from cegp_sat import CEGPSATSolver
+            solvers.append(("CEGP-SAT", lambda cnf: CEGPSATSolver(cnf, use_evolution=True, evolution_frequency=100)))
+        except:
+            pass
+
         return solvers
 
     def compute_speedup_with_confidence(self, baseline_result: StatisticalResult,
