@@ -227,7 +227,9 @@ class CQPSATSolver(CDCLSolver):
             clause = features.clause
             if clause in self.clauses:
                 self.clauses.remove(clause)
-                del self.clause_features[clause]
+                # Only delete from clause_features if it exists
+                if clause in self.clause_features:
+                    del self.clause_features[clause]
                 deleted_count += 1
 
         self.stats.clauses_deleted += deleted_count
