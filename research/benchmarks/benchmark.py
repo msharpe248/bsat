@@ -2,8 +2,13 @@
 """
 SAT Solver Benchmark Tool
 
-Compares research solvers (CoBD-SAT, BB-CDCL, LA-CDCL, CGPM-SAT) with
-production solvers (CDCL, DPLL, Schöning) on various problem types.
+Compares research solvers with production solvers on various problem types.
+
+Research Solvers:
+- Original Suite: CoBD-SAT, BB-CDCL, LA-CDCL, CGPM-SAT
+- New Suite: TPM-SAT, SSTA-SAT, VPL-SAT, CQP-SAT, MAB-SAT, CCG-SAT, HAS-SAT, CEGP-SAT
+
+Production Solvers: CDCL, DPLL, Schöning
 
 Usage:
     # Single problem from command line
@@ -37,10 +42,21 @@ from bsat.dpll import DPLLSolver
 from bsat.cdcl import CDCLSolver
 from bsat.schoening import SchoeningSolver
 
+# Original research suite
 from cobd_sat import CoBDSATSolver
 from bb_cdcl import BBCDCLSolver
 from la_cdcl import LACDCLSolver
 from cgpm_sat import CGPMSolver
+
+# New research suite
+from tpm_sat import TPMSATSolver
+from ssta_sat import SSTASATSolver
+from vpl_sat import VPLSATSolver
+from cqp_sat import CQPSATSolver
+from mab_sat import MABSATSolver
+from ccg_sat import CCGSATSolver
+from has_sat import HASSATSolver
+from cegp_sat import CEGPSATSolver
 
 
 @dataclass
@@ -359,6 +375,147 @@ class SolverBenchmark:
                     }
                 )
 
+            elif solver_name == "TPM-SAT":
+                solver = TPMSATSolver(cnf, use_patterns=True, max_pattern_length=3)
+                result = solver.solve()
+                elapsed = time.perf_counter() - start_time
+
+                stats = solver.get_pattern_statistics()
+                return BenchmarkResult(
+                    solver_name=solver_name,
+                    satisfiable=result is not None,
+                    time_seconds=elapsed,
+                    decisions=0,
+                    conflicts=0,
+                    extra_metrics={
+                        'patterns': stats.get('patterns_found', 0),
+                        'anti_patterns': stats.get('anti_patterns_found', 0)
+                    }
+                )
+
+            elif solver_name == "SSTA-SAT":
+                solver = SSTASATSolver(cnf, use_topology=True, num_samples=10)
+                result = solver.solve()
+                elapsed = time.perf_counter() - start_time
+
+                stats = solver.get_topology_statistics()
+                return BenchmarkResult(
+                    solver_name=solver_name,
+                    satisfiable=result is not None,
+                    time_seconds=elapsed,
+                    decisions=0,
+                    conflicts=0,
+                    extra_metrics={
+                        'solutions_sampled': stats.get('solutions_sampled', 0),
+                        'clusters': stats.get('clusters_found', 0)
+                    }
+                )
+
+            elif solver_name == "VPL-SAT":
+                solver = VPLSATSolver(cnf, use_phase_learning=True, learning_strategy='hybrid')
+                result = solver.solve()
+                elapsed = time.perf_counter() - start_time
+
+                stats = solver.get_phase_statistics()
+                return BenchmarkResult(
+                    solver_name=solver_name,
+                    satisfiable=result is not None,
+                    time_seconds=elapsed,
+                    decisions=0,
+                    conflicts=0,
+                    extra_metrics={
+                        'learned_phases': stats.get('learned_phases_used', 0)
+                    }
+                )
+
+            elif solver_name == "CQP-SAT":
+                solver = CQPSATSolver(cnf, use_quality=True, glue_threshold=2)
+                result = solver.solve()
+                elapsed = time.perf_counter() - start_time
+
+                stats = solver.get_quality_statistics()
+                return BenchmarkResult(
+                    solver_name=solver_name,
+                    satisfiable=result is not None,
+                    time_seconds=elapsed,
+                    decisions=0,
+                    conflicts=0,
+                    extra_metrics={
+                        'glue_clauses': stats.get('glue_clauses_kept', 0)
+                    }
+                )
+
+            elif solver_name == "MAB-SAT":
+                solver = MABSATSolver(cnf, use_mab=True, exploration_constant=1.4)
+                result = solver.solve()
+                elapsed = time.perf_counter() - start_time
+
+                stats = solver.get_mab_statistics()
+                return BenchmarkResult(
+                    solver_name=solver_name,
+                    satisfiable=result is not None,
+                    time_seconds=elapsed,
+                    decisions=0,
+                    conflicts=0,
+                    extra_metrics={
+                        'ucb1_decisions': stats.get('ucb1_decisions', 0)
+                    }
+                )
+
+            elif solver_name == "CCG-SAT":
+                solver = CCGSATSolver(cnf, use_causality=True, old_age_threshold=5000)
+                result = solver.solve()
+                elapsed = time.perf_counter() - start_time
+
+                stats = solver.get_causality_statistics()
+                return BenchmarkResult(
+                    solver_name=solver_name,
+                    satisfiable=result is not None,
+                    time_seconds=elapsed,
+                    decisions=0,
+                    conflicts=0,
+                    extra_metrics={
+                        'causality_restarts': stats.get('causality_restarts', 0),
+                        'root_causes': stats.get('root_causes_detected', 0)
+                    }
+                )
+
+            elif solver_name == "HAS-SAT":
+                solver = HASSATSolver(cnf, use_abstraction=True, num_levels=2)
+                result = solver.solve()
+                elapsed = time.perf_counter() - start_time
+
+                stats = solver.get_abstraction_statistics()
+                return BenchmarkResult(
+                    solver_name=solver_name,
+                    satisfiable=result is not None,
+                    time_seconds=elapsed,
+                    decisions=0,
+                    conflicts=0,
+                    extra_metrics={
+                        'levels_solved': stats.get('levels_solved', 0),
+                        'refinements': stats.get('refinements', 0)
+                    }
+                )
+
+            elif solver_name == "CEGP-SAT":
+                solver = CEGPSATSolver(cnf, use_evolution=True, evolution_frequency=500)
+                result = solver.solve()
+                elapsed = time.perf_counter() - start_time
+
+                stats = solver.get_evolution_statistics()
+                return BenchmarkResult(
+                    solver_name=solver_name,
+                    satisfiable=result is not None,
+                    time_seconds=elapsed,
+                    decisions=0,
+                    conflicts=0,
+                    extra_metrics={
+                        'evolutions': stats.get('evolutions', 0),
+                        'evolved_clauses': stats.get('evolved_clauses', 0)
+                    }
+                )
+
             else:
                 return BenchmarkResult(
                     solver_name=solver_name,
@@ -487,8 +644,10 @@ class SolverBenchmark:
             # Summary statistics
             f.write("## Summary\n\n")
             f.write("**Solvers Tested:**\n")
-            f.write("- **Production**: DPLL, CDCL, Schöning\n")
-            f.write("- **Research**: CoBD-SAT, BB-CDCL, LA-CDCL, CGPM-SAT\n\n")
+            f.write("- **Production**: DPLL, CDCL, Schöning (3 solvers)\n")
+            f.write("- **Original Research**: CoBD-SAT, BB-CDCL, LA-CDCL, CGPM-SAT (4 solvers)\n")
+            f.write("- **New Research**: TPM-SAT, SSTA-SAT, VPL-SAT, CQP-SAT, MAB-SAT, CCG-SAT, HAS-SAT, CEGP-SAT (8 solvers)\n")
+            f.write("- **Total Solvers**: 15\n\n")
 
             f.write(f"**Total Problems**: {len(self.results)}\n\n")
 
@@ -600,6 +759,11 @@ def main():
     parser.add_argument('--num-clauses', type=int, default=80, help='Number of clauses for random problems')
     parser.add_argument('--count', type=int, default=5, help='Number of random problems to generate')
 
+    # Solver selection options
+    parser.add_argument('--all-solvers', action='store_true', help='Test all 15 solvers (production + all research)')
+    parser.add_argument('--new-suite', action='store_true', help='Test only new research suite (8 solvers)')
+    parser.add_argument('--original-suite', action='store_true', help='Test only original research suite (4 solvers)')
+
     # Output options
     parser.add_argument('--output', type=str, default='benchmark_results.md', help='Output markdown file')
     parser.add_argument('--timeout', type=float, default=10.0, help='Timeout per solver (seconds)')
@@ -607,7 +771,34 @@ def main():
     args = parser.parse_args()
 
     # Solvers to test
-    solvers = ["DPLL", "CDCL", "Schöning", "CoBD-SAT", "BB-CDCL", "LA-CDCL", "CGPM-SAT"]
+    # Production solvers
+    production_solvers = ["DPLL", "CDCL", "Schöning"]
+
+    # Original research suite
+    original_research = ["CoBD-SAT", "BB-CDCL", "LA-CDCL", "CGPM-SAT"]
+
+    # New research suite
+    new_research = ["TPM-SAT", "SSTA-SAT", "VPL-SAT", "CQP-SAT", "MAB-SAT", "CCG-SAT", "HAS-SAT", "CEGP-SAT"]
+
+    # All solvers (for comprehensive benchmarks)
+    all_solvers_list = production_solvers + original_research + new_research
+
+    # Select solvers based on command-line arguments
+    if args.all_solvers:
+        solvers = all_solvers_list
+        print(f"Running ALL 15 solvers (3 production + 4 original + 8 new)")
+    elif args.new_suite:
+        solvers = production_solvers + new_research
+        print(f"Running NEW research suite (3 production + 8 new)")
+    elif args.original_suite:
+        solvers = production_solvers + original_research
+        print(f"Running ORIGINAL research suite (3 production + 4 original)")
+    else:
+        # Default: production + original research (for backward compatibility)
+        solvers = production_solvers + original_research
+        print(f"Running default solvers (3 production + 4 original). Use --all-solvers for all 15.")
+
+    print(f"Solvers: {', '.join(solvers)}\n")
 
     # Create benchmark runner
     benchmark = SolverBenchmark(timeout=args.timeout)
