@@ -5,10 +5,16 @@ Run All SAT Competition Benchmarks
 Systematically tests all solvers on all competition benchmarks,
 with configurable timeouts and comprehensive result tracking.
 
+Supported Solvers:
+- Production: DPLL, CDCL
+- Original Research: CoBD-SAT, BB-CDCL, LA-CDCL, CGPM-SAT
+- New Research: TPM-SAT, SSTA-SAT, VPL-SAT, CQP-SAT, MAB-SAT, CCG-SAT, HAS-SAT, CEGP-SAT
+
 Usage:
     ./run_all_benchmarks.py                    # Run all benchmarks with 120s timeout
     ./run_all_benchmarks.py -t 60              # Use 60s timeout
     ./run_all_benchmarks.py -s DPLL CDCL       # Only run specific solvers
+    ./run_all_benchmarks.py -s TPM-SAT MAB-SAT # Run new research solvers
 """
 
 import sys
@@ -53,6 +59,55 @@ try:
 except:
     HAS_CGPM = False
 
+# Import new research suite
+try:
+    from tpm_sat import TPMSATSolver
+    HAS_TPM = True
+except:
+    HAS_TPM = False
+
+try:
+    from ssta_sat import SSTASATSolver
+    HAS_SSTA = True
+except:
+    HAS_SSTA = False
+
+try:
+    from vpl_sat import VPLSATSolver
+    HAS_VPL = True
+except:
+    HAS_VPL = False
+
+try:
+    from cqp_sat import CQPSATSolver
+    HAS_CQP = True
+except:
+    HAS_CQP = False
+
+try:
+    from mab_sat import MABSATSolver
+    HAS_MAB = True
+except:
+    HAS_MAB = False
+
+try:
+    from ccg_sat import CCGSATSolver
+    HAS_CCG = True
+except:
+    HAS_CCG = False
+
+try:
+    from has_sat import HASSATSolver
+    HAS_HAS = True
+except:
+    HAS_HAS = False
+
+try:
+    from cegp_sat import CEGPSATSolver
+    HAS_CEGP = True
+except:
+    HAS_CEGP = False
+
 
 def _run_solver_worker(solver_name, cnf_file_path, result_queue):
     """Worker function to run solver in separate process."""
@@ -86,6 +141,47 @@ def _run_solver_worker(solver_name, cnf_file_path, result_queue):
         except:
             CGPMSolver = None
 
+        # Import new research suite if available
+        try:
+            from tpm_sat import TPMSATSolver
+        except:
+            TPMSATSolver = None
+
+        try:
+            from ssta_sat import SSTASATSolver
+        except:
+            SSTASATSolver = None
+
+        try:
+            from vpl_sat import VPLSATSolver
+        except:
+            VPLSATSolver = None
+
+        try:
+            from cqp_sat import CQPSATSolver
+        except:
+            CQPSATSolver = None
+
+        try:
+            from mab_sat import MABSATSolver
+        except:
+            MABSATSolver = None
+
+        try:
+            from ccg_sat import CCGSATSolver
+        except:
+            CCGSATSolver = None
+
+        try:
+            from has_sat import HASSATSolver
+        except:
+            HASSATSolver = None
+
+        try:
+            from cegp_sat import CEGPSATSolver
+        except:
+            CEGPSATSolver = None
+
         # Create solver based on name
         if solver_name == "DPLL":
             solver = DPLLSolver(cnf)
@@ -99,6 +195,22 @@ def _run_solver_worker(solver_name, cnf_file_path, result_queue):
             solver = LACDCLSolver(cnf, lookahead_depth=2, num_candidates=5)
         elif solver_name == "CGPM-SAT" and CGPMSolver:
             solver = CGPMSolver(cnf, graph_weight=0.5)
+        elif solver_name == "TPM-SAT" and TPMSATSolver:
+            solver = TPMSATSolver(cnf, use_patterns=True, max_pattern_length=3)
+        elif solver_name == "SSTA-SAT" and SSTASATSolver:
+            solver = SSTASATSolver(cnf, use_topology=True, hop_limit=3)
+        elif solver_name == "VPL-SAT" and VPLSATSolver:
+            solver = VPLSATSolver(cnf, use_phase_learning=True, decay_factor=0.95)
+        elif solver_name == "CQP-SAT" and CQPSATSolver:
+            solver = CQPSATSolver(cnf, use_lbd=True, glue_limit=30)
+        elif solver_name == "MAB-SAT" and MABSATSolver:
+            solver = MABSATSolver(cnf, use_ucb=True, exploration_constant=0.5)
+        elif solver_name == "CCG-SAT" and CCGSATSolver:
+            solver = CCGSATSolver(cnf, use_causality=True, graph_depth=5)
+        elif solver_name == "HAS-SAT" and HASSATSolver:
+            solver = HASSATSolver(cnf, use_abstraction=True, abstraction_threshold=100)
+        elif solver_name == "CEGP-SAT" and CEGPSATSolver:
+            solver = CEGPSATSolver(cnf, use_evolution=True, evolution_frequency=100)
         else:
             result_queue.put(("ERROR", f"Unknown solver: {solver_name}", 0.0))
             return
@@ -142,6 +254,24 @@ def get_all_solvers():
         solvers.append(("LA-CDCL", lambda cnf: LACDCLSolver(cnf, lookahead_depth=2, num_candidates=5)))
     if HAS_CGPM:
         solvers.append(("CGPM-SAT", lambda cnf: CGPMSolver(cnf, graph_weight=0.5)))
+
+    # New research suite
+    if HAS_TPM:
+        solvers.append(("TPM-SAT", lambda cnf: TPMSATSolver(cnf, use_patterns=True, max_pattern_length=3)))
+    if HAS_SSTA:
+        solvers.append(("SSTA-SAT", lambda cnf: SSTASATSolver(cnf, use_topology=True, hop_limit=3)))
+    if HAS_VPL:
+        solvers.append(("VPL-SAT", lambda cnf: VPLSATSolver(cnf, use_phase_learning=True, decay_factor=0.95)))
+    if HAS_CQP:
+        solvers.append(("CQP-SAT", lambda cnf: CQPSATSolver(cnf, use_lbd=True, glue_limit=30)))
+    if HAS_MAB:
+        solvers.append(("MAB-SAT", lambda cnf: MABSATSolver(cnf, use_ucb=True, exploration_constant=0.5)))
+    if HAS_CCG:
+        solvers.append(("CCG-SAT", lambda cnf: CCGSATSolver(cnf, use_causality=True, graph_depth=5)))
+    if HAS_HAS:
+        solvers.append(("HAS-SAT", lambda cnf: HASSATSolver(cnf, use_abstraction=True, abstraction_threshold=100)))
+    if HAS_CEGP:
+        solvers.append(("CEGP-SAT", lambda cnf: CEGPSATSolver(cnf, use_evolution=True, evolution_frequency=100)))
 
     return solvers
 
