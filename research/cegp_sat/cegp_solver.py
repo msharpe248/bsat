@@ -160,12 +160,8 @@ class CEGPSATSolver(CDCLSolver):
                     # Register for fitness
                     self.fitness_eval.register_clause(clause, self.stats.conflicts)
 
-                    # Update watch lists
-                    if len(clause.literals) >= 2:
-                        lit1 = clause.literals[0]
-                        lit2 = clause.literals[1]
-                        self.watch_lists[(lit1.variable, lit1.negated)].append(clause)
-                        self.watch_lists[(lit2.variable, lit2.negated)].append(clause)
+                    # Note: Evolved clauses will be automatically handled by
+                    # CDCL's propagation mechanism (no need to manually update watch lists)
 
         self.stats.evolutions += 1
 

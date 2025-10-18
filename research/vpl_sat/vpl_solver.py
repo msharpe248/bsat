@@ -159,7 +159,7 @@ class VPLSATSolver(CDCLSolver):
             # Extract (variable, phase) pairs from conflict
             conflict_vars = []
             for lit in conflict_clause.literals:
-                var = lit.name
+                var = lit.variable
                 phase = not lit.negated  # True if positive literal was conflicting
                 conflict_vars.append((var, phase))
 

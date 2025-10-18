@@ -93,7 +93,7 @@ class ClauseFeatureExtractor:
         levels: Set[int] = set()
 
         for lit in clause.literals:
-            var = lit.name
+            var = lit.variable
             if var in decision_levels:
                 level = decision_levels[var]
                 levels.add(level)
@@ -121,7 +121,7 @@ class ClauseFeatureExtractor:
         total_activity = 0.0
 
         for lit in clause.literals:
-            var = lit.name
+            var = lit.variable
             total_activity += variable_activities.get(var, 0.0)
 
         return total_activity
