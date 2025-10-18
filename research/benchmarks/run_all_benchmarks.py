@@ -9,6 +9,7 @@ Supported Solvers:
 - Production: DPLL, CDCL
 - Original Research: CoBD-SAT, BB-CDCL, LA-CDCL, CGPM-SAT
 - New Research: TPM-SAT, SSTA-SAT, VPL-SAT, CQP-SAT, MAB-SAT, CCG-SAT, HAS-SAT, CEGP-SAT
+- Bio-Inspired: MARKET-SAT, PHYSARUM-SAT, FOLD-SAT
 
 Usage:
     ./run_all_benchmarks.py                    # Run all benchmarks with 120s timeout
@@ -108,6 +109,25 @@ try:
 except:
     HAS_CEGP = False
 
+# Import bio-inspired / novel solvers
+try:
+    from market_sat import MARKETSATSolver
+    HAS_MARKET = True
+except:
+    HAS_MARKET = False
+
+try:
+    from physarum_sat import PHYSARUMSATSolver
+    HAS_PHYSARUM = True
+except:
+    HAS_PHYSARUM = False
+
+try:
+    from fold_sat import FOLDSATSolver
+    HAS_FOLD = True
+except:
+    HAS_FOLD = False
+
 
 def _run_solver_worker(solver_name, cnf_file_path, result_queue):
     """Worker function to run solver in separate process."""
@@ -182,6 +202,22 @@ def _run_solver_worker(solver_name, cnf_file_path, result_queue):
         except:
             CEGPSATSolver = None
 
+        # Import bio-inspired / novel solvers
+        try:
+            from market_sat import MARKETSATSolver
+        except:
+            MARKETSATSolver = None
+
+        try:
+            from physarum_sat import PHYSARUMSATSolver
+        except:
+            PHYSARUMSATSolver = None
+
+        try:
+            from fold_sat import FOLDSATSolver
+        except:
+            FOLDSATSolver = None
+
         # Create solver based on name
         if solver_name == "DPLL":
             solver = DPLLSolver(cnf)
@@ -211,6 +247,12 @@ def _run_solver_worker(solver_name, cnf_file_path, result_queue):
             solver = HASSATSolver(cnf, use_abstraction=True)
         elif solver_name == "CEGP-SAT" and CEGPSATSolver:
             solver = CEGPSATSolver(cnf, use_evolution=True, evolution_frequency=100)
+        elif solver_name == "MARKET-SAT" and MARKETSATSolver:
+            solver = MARKETSATSolver(cnf, use_market=True)
+        elif solver_name == "PHYSARUM-SAT" and PHYSARUMSATSolver:
+            solver = PHYSARUMSATSolver(cnf, max_iterations=1000)
+        elif solver_name == "FOLD-SAT" and FOLDSATSolver:
+            solver = FOLDSATSolver(cnf, max_iterations=10000, T_initial=10.0)
         else:
             result_queue.put(("ERROR", f"Unknown solver: {solver_name}", 0.0))
             return
@@ -272,6 +314,14 @@ def get_all_solvers():
         solvers.append(("HAS-SAT", lambda cnf: HASSATSolver(cnf, use_abstraction=True)))
     if HAS_CEGP:
         solvers.append(("CEGP-SAT", lambda cnf: CEGPSATSolver(cnf, use_evolution=True, evolution_frequency=100)))
+
+    # Bio-inspired / novel solvers
+    if HAS_MARKET:
+        solvers.append(("MARKET-SAT", lambda cnf: MARKETSATSolver(cnf, use_market=True)))
+    if HAS_PHYSARUM:
+        solvers.append(("PHYSARUM-SAT", lambda cnf: PHYSARUMSATSolver(cnf, max_iterations=1000)))
+    if HAS_FOLD:
+        solvers.append(("FOLD-SAT", lambda cnf: FOLDSATSolver(cnf, max_iterations=10000, T_initial=10.0)))
 
     return solvers
 
