@@ -13,9 +13,11 @@ The research directory serves as a sandbox for:
 
 ---
 
-## Current Research Projects
+## Research Projects
 
-### 1. Community-Based Decomposition SAT (CoBD-SAT)
+### Original Research Suite (Established Solvers)
+
+#### 1. Community-Based Decomposition SAT (CoBD-SAT)
 
 **Status**: ✅ Working (with recent critical bug fix!)
 
@@ -40,7 +42,7 @@ The research directory serves as a sandbox for:
 
 ---
 
-### 2. Backbone-Based CDCL (BB-CDCL)
+#### 2. Backbone-Based CDCL (BB-CDCL)
 
 **Status**: ✅ Working (with massive UNSAT speedup!)
 
@@ -65,7 +67,7 @@ The research directory serves as a sandbox for:
 
 ---
 
-### 3. Lookahead-Enhanced CDCL (LA-CDCL)
+#### 3. Lookahead-Enhanced CDCL (LA-CDCL)
 
 **Status**: ✅ Working
 
@@ -90,7 +92,7 @@ The research directory serves as a sandbox for:
 
 ---
 
-### 4. Conflict Graph Pattern Mining SAT (CGPM-SAT)
+#### 4. Conflict Graph Pattern Mining SAT (CGPM-SAT)
 
 **Status**: ✅ Working (with efficient caching!)
 
@@ -114,7 +116,191 @@ The research directory serves as a sandbox for:
 
 ---
 
+### New Research Suite (Advanced CDCL Variants)
+
+This suite explores 8 different approaches to SAT solving, from novel research ideas to educational reimplementations of state-of-the-art techniques.
+
+#### 5. TPM-SAT (Temporal Pattern Mining) ⭐⭐ NOVEL
+
+**Status**: ✅ Working
+
+**Location**: `tpm_sat/`
+
+**Novelty**: **Highly Novel** - Pattern mining from conflict history for SAT
+
+**Description**: Mines temporal decision patterns from conflict history to identify and avoid sequences that repeatedly lead to conflicts. Uses anti-pattern matching to guide variable selection.
+
+**Key Features**:
+- Conflict sequence extraction and pattern mining
+- Anti-pattern database for avoiding bad decisions
+- Pattern-aware variable selection with VSIDS integration
+- Supports sequences of length 2-5
+- Adaptive pattern matching with similarity thresholds
+
+**See**: `tpm_sat/README.md` for detailed algorithm description
+
+---
+
+#### 6. SSTA-SAT (Solution Space Topology Analysis) ⭐⭐ NOVEL
+
+**Status**: ✅ Working
+
+**Location**: `ssta_sat/`
+
+**Novelty**: **Highly Novel** - Topology-guided search using solution sampling
+
+**Description**: Samples multiple solutions using WalkSAT, builds a topology graph using Hamming distance, identifies solution clusters, and guides CDCL search toward solution-dense regions.
+
+**Key Features**:
+- WalkSAT-based solution sampling
+- Hamming distance topology graph construction
+- Cluster detection and centroid computation
+- Topology-aware variable selection
+- Focuses search on solution-dense regions
+
+**See**: `ssta_sat/README.md` for detailed algorithm description
+
+---
+
+#### 7. VPL-SAT (Variable Phase Learning) ⭐ PARTIALLY NOVEL
+
+**Status**: ✅ Working
+
+**Location**: `vpl_sat/`
+
+**Novelty**: **Partially Novel** - Dynamic phase learning from conflict patterns
+
+**Description**: Learns optimal phase (polarity) for each variable by tracking conflict/success history. Implements multiple learning strategies (conflict-based, success-based, hybrid).
+
+**Key Features**:
+- Per-variable phase statistics tracking
+- Three learning strategies (conflict, success, hybrid)
+- Dynamic phase selection based on history
+- Integration with CDCL decision making
+- Adaptive to problem structure
+
+**See**: `vpl_sat/README.md` for detailed algorithm description
+
+---
+
+#### 8. CQP-SAT (Clause Quality Prediction) 📚 EDUCATIONAL
+
+**Status**: ✅ Working
+
+**Location**: `cqp_sat/`
+
+**Novelty**: **Educational Reimplementation** of Glucose LBD approach
+
+**Description**: Educational reimplementation of Glucose's Literal Block Distance (LBD) clause quality metric. Identifies "glue" clauses (LBD ≤ 2) for preferential retention.
+
+**Key Features**:
+- LBD computation for learned clauses
+- Glue clause detection and preservation
+- Quality-based clause database management
+- Activity tracking and aging
+- Glucose-inspired learned clause management
+
+**Citation**: Based on Audemard & Simon (2009) - Glucose SAT Solver
+
+**See**: `cqp_sat/README.md` for detailed algorithm description
+
+---
+
+#### 9. MAB-SAT (Multi-Armed Bandit) 📚 EDUCATIONAL
+
+**Status**: ✅ Working
+
+**Location**: `mab_sat/`
+
+**Novelty**: **Educational Reimplementation** of MapleSAT/Kissat UCB1 approach
+
+**Description**: Educational reimplementation of multi-armed bandit (UCB1) variable selection from MapleSAT and Kissat. Balances exploration (trying new variables) with exploitation (choosing historically good variables).
+
+**Key Features**:
+- UCB1 algorithm for variable selection
+- Reward-based learning from decision outcomes
+- Exploration/exploitation balance
+- Multiple reward strategies (propagation, progress, hybrid)
+- Adaptive variable selection
+
+**Citation**: Based on MapleSAT Learning Rate Branching (LRB) and Kissat adaptive heuristics
+
+**See**: `mab_sat/README.md` for detailed algorithm description
+
+---
+
+#### 10. CCG-SAT (Conflict Causality Graph) ⭐ PARTIALLY NOVEL
+
+**Status**: ✅ Working
+
+**Location**: `ccg_sat/`
+
+**Novelty**: **Partially Novel** - Online causality analysis (vs. CausalSAT's post-hoc)
+
+**Description**: Tracks multi-conflict causal chains during solving. Uses root cause analysis to identify when search is stuck in bad regions and triggers intelligent restarts.
+
+**Key Features**:
+- Directed causality graph (clause → conflict → clause)
+- Root cause detection (high out-degree nodes)
+- Age-based restart heuristic (old root causes = stuck)
+- Online analysis during solving (not post-hoc)
+- Adaptive restart decisions
+
+**Distinction**: CausalSAT (Yang 2023) uses causality for post-hoc explanation; CCG-SAT uses it online for restart guidance
+
+**See**: `ccg_sat/README.md` for detailed algorithm description
+
+---
+
+#### 11. HAS-SAT (Hierarchical Abstraction) 📚 EDUCATIONAL
+
+**Status**: ✅ Working
+
+**Location**: `has_sat/`
+
+**Novelty**: **Educational** - Abstraction-refinement for SAT
+
+**Description**: Educational demonstration of hierarchical abstraction-refinement. Builds variable clusters based on co-occurrence, solves at abstract level first, then refines to concrete.
+
+**Key Features**:
+- Variable clustering by co-occurrence
+- Multi-level abstraction hierarchy
+- Abstraction-refinement loop
+- Solve abstract → refine to concrete
+- Solution verification
+
+**Related**: Abstraction-refinement from planning (HTN) and model checking (CEGAR)
+
+**See**: `has_sat/README.md` for detailed algorithm description
+
+---
+
+#### 12. CEGP-SAT (Clause Evolution with Genetic Programming) 🧪 EXPERIMENTAL
+
+**Status**: ✅ Working
+
+**Location**: `cegp_sat/`
+
+**Novelty**: **Experimental** - Genetic programming for SAT
+
+**Description**: Experimental approach using genetic programming to evolve learned clauses. Applies crossover and mutation operators to create clause variants, selects based on fitness (propagation effectiveness).
+
+**Key Features**:
+- Genetic operators: crossover, mutation, selection
+- Fitness evaluation (propagation + conflicts + size)
+- Clause evolution during solving
+- Tournament selection of high-fitness clauses
+- Experimental/educational demonstration
+
+**Note**: Experimental approach - traditional CDCL is more reliable for production
+
+**See**: `cegp_sat/README.md` for detailed algorithm description
+
+---
+
 ## Algorithm Comparison
+
+### Original Research Suite
 
 | Algorithm | Best For | Speedup Demonstrated | Status |
 |-----------|----------|---------------------|--------|
@@ -123,9 +309,24 @@ The research directory serves as a sandbox for:
 | **LA-CDCL** | Hard random SAT near phase transition | 122× | ✅ Working |
 | **CGPM-SAT** | Structured conflicts (industrial) | 186× | ✅ Working |
 
+### New Research Suite
+
+| Algorithm | Type | Novelty | Status |
+|-----------|------|---------|--------|
+| **TPM-SAT** | Pattern Mining | ⭐⭐ Novel | ✅ Working |
+| **SSTA-SAT** | Topology Analysis | ⭐⭐ Novel | ✅ Working |
+| **VPL-SAT** | Phase Learning | ⭐ Partially Novel | ✅ Working |
+| **CQP-SAT** | Clause Quality (Glucose) | 📚 Educational | ✅ Working |
+| **MAB-SAT** | UCB1 Selection (MapleSAT) | 📚 Educational | ✅ Working |
+| **CCG-SAT** | Causality Analysis | ⭐ Partially Novel | ✅ Working |
+| **HAS-SAT** | Abstraction-Refinement | 📚 Educational | ✅ Working |
+| **CEGP-SAT** | Genetic Programming | 🧪 Experimental | ✅ Working |
+
+**Total**: 12 research solvers implemented and tested
+
 **See** `ALGORITHM_SHOWCASE.md` for comprehensive performance analysis and real-world applications.
 
-**See** `BENCHMARKS.md` for detailed benchmark results with rankings across all 7 solvers.
+**See** `BENCHMARKS.md` for detailed benchmark results with rankings across all solvers.
 
 ---
 
@@ -157,9 +358,65 @@ research/
 │   ├── cgpm_solver.py
 │   └── conflict_graph.py
 │
+├── tpm_sat/                     # Temporal Pattern Mining SAT ⭐⭐
+│   ├── README.md
+│   ├── pattern_miner.py
+│   ├── pattern_matcher.py
+│   ├── tpm_solver.py
+│   └── example.py
+│
+├── ssta_sat/                    # Solution Space Topology Analysis ⭐⭐
+│   ├── README.md
+│   ├── solution_sampler.py
+│   ├── topology_analyzer.py
+│   ├── ssta_solver.py
+│   └── example.py
+│
+├── vpl_sat/                     # Variable Phase Learning ⭐
+│   ├── README.md
+│   ├── phase_tracker.py
+│   ├── phase_selector.py
+│   ├── vpl_solver.py
+│   └── example.py
+│
+├── cqp_sat/                     # Clause Quality Prediction 📚
+│   ├── README.md
+│   ├── clause_features.py
+│   ├── quality_predictor.py
+│   ├── cqp_solver.py
+│   └── example.py
+│
+├── mab_sat/                     # Multi-Armed Bandit 📚
+│   ├── README.md
+│   ├── bandit_tracker.py
+│   ├── reward_functions.py
+│   ├── mab_solver.py
+│   └── example.py
+│
+├── ccg_sat/                     # Conflict Causality Graph ⭐
+│   ├── README.md
+│   ├── causality_graph.py
+│   ├── root_cause_analyzer.py
+│   ├── ccg_solver.py
+│   └── example.py
+│
+├── has_sat/                     # Hierarchical Abstraction 📚
+│   ├── README.md
+│   ├── abstraction_builder.py
+│   ├── refinement_solver.py
+│   ├── has_solver.py
+│   └── example.py
+│
+├── cegp_sat/                    # Clause Evolution with GP 🧪
+│   ├── README.md
+│   ├── genetic_operators.py
+│   ├── fitness_evaluator.py
+│   ├── cegp_solver.py
+│   └── example.py
+│
 ├── benchmarks/                  # Benchmark scripts and results
 │   ├── benchmark.py            # Core benchmark utilities
-│   ├── run_full_benchmark.py   # Run all 7 solvers
+│   ├── run_full_benchmark.py   # Run all solvers
 │   ├── run_simple_benchmark.py
 │   ├── run_focused_benchmark.py
 │   └── benchmark_results_full.md
@@ -182,7 +439,9 @@ research/
 
 ## Usage Examples
 
-### CoBD-SAT (Community-Based Decomposition)
+### Original Research Suite
+
+#### CoBD-SAT (Community-Based Decomposition)
 
 ```python
 from research.cobd_sat import CoBDSATSolver
@@ -200,14 +459,9 @@ stats = solver.get_statistics()
 print(f"Modularity Q: {stats['modularity']:.3f}")
 print(f"Communities: {stats['num_communities']}")
 print(f"Used decomposition: {stats['used_decomposition']}")
-
-if result:
-    print(f"SAT: {result}")
-else:
-    print("UNSAT")
 ```
 
-### BB-CDCL (Backbone-Based CDCL)
+#### BB-CDCL (Backbone-Based CDCL)
 
 ```python
 from research.bb_cdcl import BBCDCLSolver
@@ -228,84 +482,112 @@ result = solver.solve()
 stats = solver.get_statistics()
 print(f"Samples used: {stats['num_samples']}")
 print(f"Backbone detected: {stats['num_backbone_detected']} ({stats['backbone_percentage']:.1f}%)")
-print(f"Quick UNSAT: {stats.get('quick_unsat_detected', False)}")
-
-if result:
-    print(f"SAT: {result}")
-else:
-    print("UNSAT")
 ```
 
-### LA-CDCL (Lookahead-Enhanced CDCL)
+### New Research Suite
+
+#### TPM-SAT (Temporal Pattern Mining)
 
 ```python
-from research.la_cdcl import LACDCLSolver
+from research.tpm_sat import TPMSATSolver
 from bsat import CNFExpression
 
-# Create a hard random 3-SAT instance
-cnf = CNFExpression.parse("(a | b | c) & (~a | b | ~c) & (a | ~b | c)")
-
-# Solve using LA-CDCL with adaptive lookahead
-solver = LACDCLSolver(
-    cnf,
-    lookahead_depth=2,
-    adaptive_lookahead=True  # Adjusts frequency based on conflicts
-)
-result = solver.solve()
-
-# Get statistics
-stats = solver.get_statistics()
-print(f"Lookahead used: {stats['lookahead_used']}")
-print(f"Lookahead frequency: {stats['current_frequency']}")
-print(f"Conflicts: {stats['conflicts_total']}")
-
-if result:
-    print(f"SAT: {result}")
-else:
-    print("UNSAT")
-```
-
-### CGPM-SAT (Conflict Graph Pattern Mining)
-
-```python
-from research.cgpm_sat import CGPMSolver
-from bsat import CNFExpression
-
-# Create a structured CNF (e.g., industrial benchmark)
 cnf = CNFExpression.parse("(a | b) & (~a | c) & (~b | ~c)")
 
-# Solve using CGPM-SAT with graph metrics
-solver = CGPMSolver(
+# Solve with pattern mining
+solver = TPMSATSolver(
     cnf,
-    graph_weight=0.5,  # Balance between graph and VSIDS
-    update_frequency=10
+    use_patterns=True,
+    max_pattern_length=3,
+    min_pattern_support=2
 )
 result = solver.solve()
 
-# Get statistics
-stats = solver.get_statistics()
-print(f"Graph influence: {stats['graph_influence_rate']:.1f}%")
-print(f"Cache hit rate: {stats['cache_hit_rate']:.1f}%")
-print(f"Graph overhead: {stats['graph_overhead_percentage']:.1f}%")
+# Get pattern statistics
+stats = solver.get_pattern_statistics()
+print(f"Patterns found: {stats['patterns_found']}")
+print(f"Anti-patterns found: {stats['anti_patterns_found']}")
+```
 
-if result:
-    print(f"SAT: {result}")
-else:
-    print("UNSAT")
+#### SSTA-SAT (Solution Space Topology)
+
+```python
+from research.ssta_sat import SSTASATSolver
+from bsat import CNFExpression
+
+cnf = CNFExpression.parse("(a | b) & (~a | c) & (~b | ~c)")
+
+# Solve with topology analysis
+solver = SSTASATSolver(
+    cnf,
+    use_topology=True,
+    num_samples=10,
+    cluster_threshold=0.3
+)
+result = solver.solve()
+
+# Get topology statistics
+stats = solver.get_topology_statistics()
+print(f"Solutions sampled: {stats['solutions_sampled']}")
+print(f"Clusters found: {stats['clusters_found']}")
+```
+
+#### VPL-SAT (Variable Phase Learning)
+
+```python
+from research.vpl_sat import VPLSATSolver
+from bsat import CNFExpression
+
+cnf = CNFExpression.parse("(a | b) & (~a | c) & (~b | ~c)")
+
+# Solve with phase learning
+solver = VPLSATSolver(
+    cnf,
+    use_phase_learning=True,
+    learning_strategy='hybrid'  # 'conflict', 'success', or 'hybrid'
+)
+result = solver.solve()
+
+# Get phase statistics
+stats = solver.get_phase_statistics()
+print(f"Phase learning enabled: {stats['enabled']}")
+print(f"Learned phases used: {stats['learned_phases_used']}")
+```
+
+#### CCG-SAT (Conflict Causality Graph)
+
+```python
+from research.ccg_sat import CCGSATSolver
+from bsat import CNFExpression
+
+cnf = CNFExpression.parse("(a | b) & (~a | c) & (~b | ~c)")
+
+# Solve with causality analysis
+solver = CCGSATSolver(
+    cnf,
+    use_causality=True,
+    old_age_threshold=5000  # Restart if root causes > 5000 conflicts old
+)
+result = solver.solve()
+
+# Get causality statistics
+stats = solver.get_causality_statistics()
+print(f"Causality restarts: {stats['causality_restarts']}")
+print(f"Root causes detected: {stats['root_causes_detected']}")
 ```
 
 ---
 
 ## Running Benchmarks
 
-### Full Benchmark (All 7 Solvers)
+### Full Benchmark (All Solvers)
 
 ```bash
 cd research/benchmarks
 python run_full_benchmark.py
 ```
 
-Benchmarks all 7 solvers (DPLL, CDCL, Schöning, CoBD-SAT, BB-CDCL, LA-CDCL, CGPM-SAT) on 8 problem types.
+Benchmarks all solvers on multiple problem types.
 
 ### Simple Benchmark
 
@@ -315,29 +597,6 @@ python run_simple_benchmark.py
 ```
 
 Quick benchmark on a subset of problems for rapid testing.
-
----
-
-## Testing Bug Fixes
-
-The `bugs/` directory contains test files that verify specific bug fixes and improvements:
-
-```bash
-# Test CoBD-SAT modularity fix (Q=0.00 → Q=0.586)
-python bugs/test_cobd_modularity_fix.py
-
-# Test BB-CDCL UNSAT speedup (6.3s → 0.0005s)
-python bugs/test_bb_cdcl_unsat_fix.py
-
-# Test BB-CDCL adaptive sampling (100 → 10-110)
-python bugs/test_bb_cdcl_adaptive_sampling.py
-
-# Test LA-CDCL adaptive lookahead (freq 1-8)
-python bugs/test_la_cdcl_adaptive_lookahead.py
-
-# Test CGPM-SAT caching (89% hit rate)
-python bugs/test_cgpm_caching.py
-```
 
 ---
 
@@ -352,36 +611,17 @@ python bugs/test_cgpm_caching.py
 - ✅ **LA-CDCL adaptive lookahead**: Adjusts freq 1-8 based on conflicts
 - ✅ **CGPM-SAT caching**: 89% cache hit rate, overhead < 1%
 
-All improvements are thoroughly tested and documented in `ALGORITHM_SHOWCASE.md`.
+### Phase 3: New Research Suite (8 Solvers)
+- ✅ **TPM-SAT**: Temporal pattern mining from conflicts (Novel)
+- ✅ **SSTA-SAT**: Solution topology analysis and clustering (Novel)
+- ✅ **VPL-SAT**: Dynamic phase learning (Partially Novel)
+- ✅ **CQP-SAT**: Glucose LBD reimplementation (Educational)
+- ✅ **MAB-SAT**: MapleSAT UCB1 reimplementation (Educational)
+- ✅ **CCG-SAT**: Online causality analysis for restarts (Partially Novel)
+- ✅ **HAS-SAT**: Abstraction-refinement demonstration (Educational)
+- ✅ **CEGP-SAT**: Genetic programming for clauses (Experimental)
 
----
-
-## Integration with Visualization Server
-
-Research solvers can be integrated into the visualization server to provide interactive demonstrations of their algorithms. This helps with:
-- Understanding algorithm behavior
-- Debugging and refinement
-- Educational presentations
-- Performance analysis
-
----
-
-## Comparison with Production Solvers
-
-These research implementations prioritize clarity and educational value over low-level optimizations. For production SAT solving, consider:
-
-- **MiniSat**: Classic CDCL implementation
-- **CryptoMiniSat**: Advanced CDCL with XOR reasoning
-- **Glucose**: Aggressive clause learning
-- **Lingeling**: Highly optimized with inprocessing
-- **CaDiCaL**: Modern CDCL with chronological backtracking
-
-However, research solvers **can and do outperform** production solvers on specific structured instances where they exploit problem characteristics:
-
-- **CoBD-SAT**: Best on modular problems (circuits, planning)
-- **BB-CDCL**: Best on backbone-rich problems (>30% forced variables)
-- **LA-CDCL**: Best on hard random SAT near phase transition
-- **CGPM-SAT**: Best on structured conflicts (industrial benchmarks)
+All improvements are thoroughly tested and documented.
 
 ---
 
@@ -393,22 +633,33 @@ When adding new research algorithms:
 2. Include a `README.md` with:
    - Algorithm description and pseudocode
    - Theoretical analysis (complexity, completeness)
+   - Novelty assessment and citations
    - Advantages/disadvantages
    - References to literature
 3. Implement the solver following patterns from existing BSAT solvers
-4. Add examples demonstrating the algorithm
+4. Add `example.py` demonstrating the algorithm
 5. Add test files to `bugs/` for any bug fixes
-6. Add benchmark scripts to `benchmarks/` if needed
-7. Update this README with the new project
+6. Update this README with the new project
 
 ---
 
 ## References
 
+### Original Research Suite
 - **CoBD-SAT**: Based on community detection in SAT (Louvain algorithm)
 - **BB-CDCL**: Inspired by survey propagation and WalkSAT
 - **LA-CDCL**: Based on lookahead techniques from DPLL solvers
 - **CGPM-SAT**: Inspired by PageRank and graph centrality measures
+
+### New Research Suite
+- **TPM-SAT**: Novel pattern mining approach for SAT
+- **SSTA-SAT**: Novel topology-guided search
+- **VPL-SAT**: Related to conflict-driven phase selection
+- **CQP-SAT**: Audemard & Simon (2009) - Glucose LBD
+- **MAB-SAT**: MapleSAT LRB, Kissat adaptive heuristics, Auer et al. (2002) UCB1
+- **CCG-SAT**: Related to CausalSAT (Yang 2023) but online vs. post-hoc
+- **HAS-SAT**: Abstraction-refinement from HTN planning and CEGAR
+- **CEGP-SAT**: Experimental genetic programming for SAT
 
 ---
 
