@@ -11,12 +11,13 @@ CRITICAL: Before benchmarking speedup, we must verify correctness!
 import sys
 import os
 
-# Add parent directory to path
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), '../../src'))
+# Add paths for imports
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), '../../../src'))
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
 
-from cnf import CNFExpression
-import cdcl_optimized
+from bsat.cnf import CNFExpression
 from bsat import solve_cdcl as solve_cdcl_original
+import cdcl_optimized
 
 
 def test_formula(formula_str: str, name: str):

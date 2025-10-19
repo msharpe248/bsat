@@ -5,9 +5,12 @@ Simple debug test for two-watched literals
 
 import sys
 import os
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), '../../src'))
 
-from cnf import CNFExpression
+# Add paths for imports
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), '../../../src'))
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
+
+from bsat.cnf import CNFExpression
 import cdcl_optimized
 
 # Test 1: Single variable

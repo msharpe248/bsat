@@ -3,9 +3,9 @@ CDCL (Conflict-Driven Clause Learning) SAT Solver - OPTIMIZED FOR COMPETITION
 
 This is a heavily optimized version of CDCL implementing:
 - ✅ Two-watched literal scheme for O(1) amortized unit propagation
-- ⏳ LBD (Literal Block Distance) clause quality management
+- ✅ LBD (Literal Block Distance) clause quality management
 - ⏳ Inprocessing (subsumption, variable elimination)
-- ⏳ Advanced restart strategies
+- ⏳ Advanced restart strategies (Glucose-style)
 - ✅ VSIDS (Variable State Independent Decaying Sum) heuristic
 - ✅ Non-chronological backtracking
 - ✅ First UIP clause learning
@@ -16,14 +16,19 @@ PERFORMANCE TARGET:
 - Foundation for eventual C implementation
 
 COPIED FROM: ../src/bsat/cdcl.py
-STATUS: Two-watched literals - IN PROGRESS
+STATUS: Two-watched literals ✅ | LBD ✅ | Inprocessing ⏳
 """
 
+import sys
+import os
 from typing import Dict, List, Optional, Set, Tuple
 from dataclasses import dataclass
 from collections import defaultdict
 import heapq
-from cnf import CNFExpression, Clause, Literal
+
+# Add parent directory to path for importing from src/bsat
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), '../../src'))
+from bsat.cnf import CNFExpression, Clause, Literal
 
 
 @dataclass
@@ -52,6 +57,9 @@ class CDCLStats:
         # NEW: Two-watched literal stats
         self.watch_updates = 0
         self.clauses_checked = 0  # For comparing with original
+        # NEW: LBD stats
+        self.glue_clauses = 0  # Clauses with LBD ≤ 2
+        self.deleted_clauses = 0
 
     def __str__(self):
         return (
@@ -60,6 +68,8 @@ class CDCLStats:
             f"  Propagations: {self.propagations}\n"
             f"  Conflicts: {self.conflicts}\n"
             f"  Learned clauses: {self.learned_clauses}\n"
+            f"  Glue clauses (LBD≤2): {self.glue_clauses}\n"
+            f"  Deleted clauses: {self.deleted_clauses}\n"
             f"  Restarts: {self.restarts}\n"
             f"  Backjumps: {self.backjumps}\n"
             f"  Max decision level: {self.max_decision_level}\n"
@@ -67,6 +77,23 @@ class CDCLStats:
             f"  Clauses checked: {self.clauses_checked}\n"
             f")"
         )
+
+
+@dataclass
+class ClauseInfo:
+    """
+    Metadata for learned clauses.
+
+    LBD (Literal Block Distance): Number of distinct decision levels in the clause.
+    - LBD ≤ 2: "Glue" clause (connects different search space regions, keep forever)
+    - LBD 3-5: Useful clause (keep for a while)
+    - LBD > 5: Less useful (candidate for deletion)
+
+    Activity: How recently/frequently the clause was used in conflicts.
+    """
+    lbd: int  # Literal Block Distance
+    activity: float = 0.0  # Activity score (bumped when used)
+    protected: bool = False  # If True, never delete (glue clauses)
 
 
 class WatchedLiteralManager:
@@ -273,6 +300,10 @@ class CDCLSolver:
         # Learned clause management
         self.learned_clause_limit = learned_clause_limit
         self.num_original_clauses = len(self.clauses)
+
+        # NEW: LBD-based clause info tracking
+        # Map: clause_index → ClauseInfo (only for learned clauses)
+        self.clause_info: Dict[int, ClauseInfo] = {}
 
         # Statistics
         self.stats = CDCLStats()
@@ -564,10 +595,48 @@ class CDCLSolver:
         else:
             return self._luby(i - (1 << k) + 1)
 
+    def _compute_lbd(self, clause: Clause) -> int:
+        """
+        Compute Literal Block Distance (LBD) for a clause.
+
+        LBD = number of distinct decision levels in the clause.
+
+        A low LBD indicates a "glue" clause that connects different parts
+        of the search space. These clauses are typically very useful.
+
+        Returns:
+            LBD value (1 = all literals from same level, higher = more levels)
+        """
+        decision_levels = set()
+
+        for lit in clause.literals:
+            # Find the decision level where this variable was assigned
+            for assign in self.trail:
+                if assign.variable == lit.variable:
+                    decision_levels.add(assign.decision_level)
+                    break
+
+        return len(decision_levels)
+
     def _add_learned_clause(self, clause: Clause):
-        """Add learned clause to clause database."""
+        """
+        Add learned clause to clause database with LBD-based quality assessment.
+
+        Computes LBD and marks glue clauses (LBD ≤ 2) as protected.
+        """
+        clause_idx = len(self.clauses)
         self.clauses.append(clause)
         self.stats.learned_clauses += 1
+
+        # Compute LBD for the learned clause
+        lbd = self._compute_lbd(clause)
+
+        # Create clause info
+        protected = (lbd <= 2)  # Glue clauses are protected
+        self.clause_info[clause_idx] = ClauseInfo(lbd=lbd, protected=protected)
+
+        if protected:
+            self.stats.glue_clauses += 1
 
         # If using watched literals, initialize watches for new clause
         if self.use_watched_literals:
@@ -578,18 +647,60 @@ class CDCLSolver:
             self._reduce_learned_clauses()
 
     def _reduce_learned_clauses(self):
-        """Remove some learned clauses to save memory."""
-        # Simple strategy: keep half of learned clauses (the most recently learned)
-        # TODO: Use LBD-based deletion instead
+        """
+        Remove learned clauses using LBD-based deletion policy.
+
+        Strategy:
+        1. Never delete protected clauses (LBD ≤ 2, "glue" clauses)
+        2. Among non-protected clauses, delete those with highest LBD
+        3. Keep roughly half of the learned clauses
+        """
+        num_learned = len(self.clauses) - self.num_original_clauses
         num_to_keep = self.learned_clause_limit // 2
-        learned_clauses = self.clauses[self.num_original_clauses:]
 
-        # Keep the most recent ones
-        to_keep = learned_clauses[-num_to_keep:]
-        self.clauses = self.clauses[:self.num_original_clauses] + to_keep
+        # Build list of (index, clause, clause_info) for learned clauses
+        learned = []
+        for idx in range(self.num_original_clauses, len(self.clauses)):
+            if idx in self.clause_info:
+                learned.append((idx, self.clauses[idx], self.clause_info[idx]))
 
-        # If using watched literals, need to rebuild watch structures
-        # This is inefficient - TODO: implement incremental watch updates
+        # Separate protected (glue) clauses from deletable clauses
+        protected_clauses = [(idx, clause) for idx, clause, info in learned if info.protected]
+        deletable_clauses = [(idx, clause, info) for idx, clause, info in learned if not info.protected]
+
+        # Sort deletable clauses by LBD (ascending) and activity (descending)
+        # Keep clauses with low LBD and high activity
+        deletable_clauses.sort(key=lambda x: (x[2].lbd, -x[2].activity))
+
+        # Keep the best deletable clauses
+        num_protected = len(protected_clauses)
+        num_deletable_to_keep = max(0, num_to_keep - num_protected)
+        kept_deletable = deletable_clauses[:num_deletable_to_keep]
+
+        # Build new clause list: original + protected + best deletable
+        new_clauses = self.clauses[:self.num_original_clauses]
+        new_clause_info = {}
+
+        # Add protected clauses
+        for old_idx, clause in protected_clauses:
+            new_idx = len(new_clauses)
+            new_clauses.append(clause)
+            new_clause_info[new_idx] = self.clause_info[old_idx]
+
+        # Add kept deletable clauses
+        for old_idx, clause, info in kept_deletable:
+            new_idx = len(new_clauses)
+            new_clauses.append(clause)
+            new_clause_info[new_idx] = info
+
+        # Update solver state
+        num_deleted = num_learned - (len(protected_clauses) + len(kept_deletable))
+        self.stats.deleted_clauses += num_deleted
+
+        self.clauses = new_clauses
+        self.clause_info = new_clause_info
+
+        # Rebuild watch structures (TODO: incremental update)
         if self.use_watched_literals:
             self.watch_manager = WatchedLiteralManager()
             self.watch_manager.init_watches(self.clauses)
