@@ -158,3 +158,6 @@ dataset/results/results-*/
 # Competition benchmark run logs
 research/benchmarks/competition_results.txt
 research/benchmarks/*_results.txt
+
+# Publication ideas and drafts
+publication_ideas/
