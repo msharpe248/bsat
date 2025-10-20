@@ -150,11 +150,30 @@ class WatchedLiteralManager:
                 self.watch_lists[lit1].append((idx, 1))  # If lit1 becomes false, check clause
                 self.watch_lists[lit2].append((idx, 0))  # If lit2 becomes false, check clause
 
+    def add_clause_watches(self, clause_idx: int, clause: Clause):
+        """Add watches for a newly added clause (e.g., learned clause)."""
+        if len(clause.literals) == 0:
+            # Empty clause - no watches needed
+            return
+        elif len(clause.literals) == 1:
+            # Unit clause - watch the single literal
+            lit_key = self._literal_key(clause.literals[0])
+            self.watched[clause_idx] = (lit_key, lit_key)
+            self.watch_lists[lit_key].append((clause_idx, 0))
+        else:
+            # Watch first two literals
+            # NOTE: For learned clauses from 1UIP, clause.literals[0] should be the asserting literal
+            lit1 = self._literal_key(clause.literals[0])
+            lit2 = self._literal_key(clause.literals[1])
+            self.watched[clause_idx] = (lit1, lit2)
+            self.watch_lists[lit1].append((clause_idx, 1))
+            self.watch_lists[lit2].append((clause_idx, 0))
+
     def propagate(self,
                   assigned_lit_key: Tuple[str, bool],
                   clauses: List[Clause],
                   assignment: Dict[str, bool],
-                  get_literal_value) -> Tuple[Optional[Clause], Optional[Tuple[str, bool]], int]:
+                  get_literal_value) -> Tuple[Optional[Clause], Optional[Tuple[str, bool]], Optional[Clause], int]:
         """
         Propagate assignment of a literal using two-watched literals.
 
@@ -165,9 +184,10 @@ class WatchedLiteralManager:
             get_literal_value: Function to get value of a literal
 
         Returns:
-            (conflict_clause, unit_literal_key, num_checks)
+            (conflict_clause, unit_literal_key, antecedent_clause, num_checks)
             - conflict_clause: Clause that is conflicting, or None
             - unit_literal_key: Literal that must be assigned (unit propagation), or None
+            - antecedent_clause: Clause that caused unit propagation, or None
             - num_checks: Number of clauses checked (for statistics)
         """
         # When a literal becomes TRUE, its negation becomes FALSE
@@ -233,12 +253,12 @@ class WatchedLiteralManager:
 
             if other_val is None:
                 # Unit propagation needed
-                return (None, other_watch, checks)
+                return (None, other_watch, clause, checks)
             else:  # other_val is False
                 # Conflict!
-                return (clause, None, checks)
+                return (clause, None, None, checks)
 
-        return (None, None, checks)
+        return (None, None, None, checks)
 
     def _key_to_literal(self, key: Tuple[str, bool], clause: Clause) -> Literal:
         """Find the Literal object in clause matching the key."""
@@ -387,7 +407,7 @@ class CDCLSolver:
             assigned_lit_key = (assignment.variable, not assignment.value)  # negated because we store negation flag
 
             # Propagate this assignment
-            conflict, unit_lit_key, checks = self.watch_manager.propagate(
+            conflict, unit_lit_key, antecedent_clause, checks = self.watch_manager.propagate(
                 assigned_lit_key,
                 self.clauses,
                 self.assignment,
@@ -404,25 +424,7 @@ class CDCLSolver:
                 var, negated = unit_lit_key
                 value = not negated
 
-                # Find the clause that caused this (for antecedent tracking)
-                # TODO: Return this from watch_manager.propagate for efficiency
-                antecedent_clause = None
-                for clause in self.clauses:
-                    # Find clause that has unit_lit_key and all others false except possibly assigned_lit_key
-                    has_unit = False
-                    all_others_false = True
-                    for lit in clause.literals:
-                        lit_key = self.watch_manager._literal_key(lit)
-                        if lit_key == unit_lit_key:
-                            has_unit = True
-                        elif self._get_literal_value(lit) not in [False, None]:
-                            all_others_false = False
-                            break
-
-                    if has_unit and all_others_false:
-                        antecedent_clause = clause
-                        break
-
+                # Use the antecedent clause returned by propagate()
                 self._assign(var, value, antecedent=antecedent_clause)
 
         return None
@@ -635,12 +637,12 @@ class CDCLSolver:
         protected = (lbd <= 2)  # Glue clauses are protected
         self.clause_info[clause_idx] = ClauseInfo(lbd=lbd, protected=protected)
 
+        # Add watches for the learned clause if using watched literals
+        if self.use_watched_literals:
+            self.watch_manager.add_clause_watches(clause_idx, clause)
+
         if protected:
             self.stats.glue_clauses += 1
-
-        # If using watched literals, initialize watches for new clause
-        if self.use_watched_literals:
-            self.watch_manager.init_watches([clause])
 
         # Clause deletion if too many learned clauses
         if len(self.clauses) - self.num_original_clauses > self.learned_clause_limit:
