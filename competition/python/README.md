@@ -98,8 +98,21 @@ See `../docs/benchmark_results.md` for detailed analysis.
 - Identified interaction between phase saving and restart strategy
 - Comprehensive benchmarking and documentation
 
-**Week 5+** (Planned): ⏳
-- Restart postponing (Glucose 2.1+ to fix phase saving regressions)
+**Week 5** (Complete): ✅
+- Restart postponing (Glucose 2.1+) implementation
+- Blocks restarts when trail is growing (sign of progress)
+- Works correctly but couldn't fix catastrophic phase saving regression
+- Trail never grew on problematic instance (different solution needed)
+
+**Week 6** (Complete): ✅
+- Random phase selection (5% diversification) implementation
+- FIXED catastrophic phase saving regression (3,823× speedup!)
+- Excellent on medium instances (278× overall speedup)
+- Disabled by default (can hurt small instances), user can enable
+- Comprehensive benchmarking and documentation
+
+**Week 7+** (Planned): ⏳
+- Adaptive random frequency (auto-enable after N conflicts)
 - Scale testing on larger instances (1000-5000 variables)
 - Python profiling
 
@@ -117,6 +130,8 @@ See `../docs/` for comprehensive documentation:
 - `restart_comparison_results.md`: Restart strategy benchmark results
 - `phase_saving.md`: Phase saving algorithm and implementation
 - `phase_saving_results.md`: Phase saving benchmark results
+- `random_phase_selection.md`: Random phase selection algorithm and implementation
+- `random_phase_results.md`: Random phase selection benchmark results
 - `week1_summary.md`: Week 1 progress summary
 - `progress.md`: Week-by-week tracking
 

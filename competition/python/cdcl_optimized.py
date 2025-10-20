@@ -8,6 +8,7 @@ This is a heavily optimized version of CDCL implementing:
 - ✅ Advanced restart strategies (Glucose-style adaptive restarts)
 - ✅ Restart postponing (Glucose 2.1+ - blocks restarts when trail growing)
 - ✅ Phase saving (remember variable polarities across restarts)
+- ✅ Random phase selection (diversification to escape local minima, disabled by default)
 - ✅ VSIDS (Variable State Independent Decaying Sum) heuristic
 - ✅ Non-chronological backtracking
 - ✅ First UIP clause learning
@@ -18,11 +19,12 @@ PERFORMANCE TARGET:
 - Foundation for eventual C implementation
 
 COPIED FROM: ../src/bsat/cdcl.py
-STATUS: Two-watched literals ✅ | LBD ✅ | Adaptive restarts ✅ | Restart postponing ✅ | Phase saving ✅ | Inprocessing ⚠️ (experimental, disabled by default)
+STATUS: Two-watched literals ✅ | LBD ✅ | Adaptive restarts ✅ | Restart postponing ✅ | Phase saving ✅ | Random phase ✅ | Inprocessing ⚠️ (experimental, disabled by default)
 """
 
 import sys
 import os
+import random
 from typing import Dict, List, Optional, Set, Tuple
 from dataclasses import dataclass
 from collections import defaultdict
@@ -308,7 +310,9 @@ class CDCLSolver:
                  phase_saving: bool = True,
                  initial_phase: bool = True,
                  restart_postponing: bool = True,
-                 postponing_threshold: float = 1.4):
+                 postponing_threshold: float = 1.4,
+                 random_phase_freq: float = 0.0,
+                 random_seed: Optional[int] = None):
         """
         Initialize optimized CDCL solver.
 
@@ -327,6 +331,8 @@ class CDCLSolver:
             initial_phase: Initial polarity for unassigned variables (True = prefer True)
             restart_postponing: Enable restart postponing (Glucose 2.1+, prevents restarts when trail growing)
             postponing_threshold: Trail growth threshold for postponing (1.4 = 40% larger than average)
+            random_phase_freq: Probability of random phase selection (0.0-1.0, 0.0=disabled, 0.05-0.1 typical)
+            random_seed: Random seed for reproducibility (None for non-deterministic)
         """
         self.original_cnf = cnf
         self.clauses = list(cnf.clauses)  # Original + learned clauses
@@ -346,6 +352,11 @@ class CDCLSolver:
         self.phase_saving = phase_saving
         self.initial_phase = initial_phase
         self.saved_phase: Dict[str, bool] = {}  # Variable → last assigned polarity
+
+        # Random phase selection
+        self.random_phase_freq = random_phase_freq
+        if random_seed is not None:
+            random.seed(random_seed)
 
         # Restart strategy
         self.restart_strategy = restart_strategy
@@ -633,7 +644,10 @@ class CDCLSolver:
 
         Returns:
             Tuple of (variable, polarity) or None if all variables assigned.
-            Polarity is determined by phase saving if enabled, else initial_phase.
+            Polarity is determined by:
+            1. Random selection (with probability random_phase_freq) for diversification
+            2. Phase saving if enabled (remember last polarity)
+            3. Initial phase (default polarity)
         """
         unassigned = [var for var in self.variables if var not in self.assignment]
         if not unassigned:
@@ -642,8 +656,11 @@ class CDCLSolver:
         # Pick variable with highest VSIDS score
         var = max(unassigned, key=lambda v: self.vsids_scores[v])
 
-        # Determine polarity using phase saving
-        if self.phase_saving and var in self.saved_phase:
+        # Determine polarity using random selection OR phase saving
+        if self.random_phase_freq > 0 and random.random() < self.random_phase_freq:
+            # Random phase selection for diversification (escape local minima)
+            polarity = random.choice([True, False])
+        elif self.phase_saving and var in self.saved_phase:
             polarity = self.saved_phase[var]
         else:
             polarity = self.initial_phase
