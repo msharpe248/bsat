@@ -16,7 +16,7 @@ PERFORMANCE TARGET:
 - Foundation for eventual C implementation
 
 COPIED FROM: ../src/bsat/cdcl.py
-STATUS: Two-watched literals ✅ | LBD ✅ | Inprocessing ⏳
+STATUS: Two-watched literals ✅ | LBD ✅ | Inprocessing ⚠️ (experimental, disabled by default)
 """
 
 import sys
@@ -29,6 +29,9 @@ import heapq
 # Add parent directory to path for importing from src/bsat
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '../../src'))
 from bsat.cnf import CNFExpression, Clause, Literal
+
+# Import inprocessing module
+from inprocessing import Inprocessor
 
 
 @dataclass
@@ -60,6 +63,10 @@ class CDCLStats:
         # NEW: LBD stats
         self.glue_clauses = 0  # Clauses with LBD ≤ 2
         self.deleted_clauses = 0
+        # NEW: Inprocessing stats
+        self.inprocessing_calls = 0
+        self.inprocessing_subsumed = 0
+        self.inprocessing_eliminated_vars = 0
 
     def __str__(self):
         return (
@@ -70,6 +77,9 @@ class CDCLStats:
             f"  Learned clauses: {self.learned_clauses}\n"
             f"  Glue clauses (LBD≤2): {self.glue_clauses}\n"
             f"  Deleted clauses: {self.deleted_clauses}\n"
+            f"  Inprocessing calls: {self.inprocessing_calls}\n"
+            f"  Inprocessing subsumed: {self.inprocessing_subsumed}\n"
+            f"  Inprocessing eliminated vars: {self.inprocessing_eliminated_vars}\n"
             f"  Restarts: {self.restarts}\n"
             f"  Backjumps: {self.backjumps}\n"
             f"  Max decision level: {self.max_decision_level}\n"
@@ -287,7 +297,9 @@ class CDCLSolver:
                  vsids_decay: float = 0.95,
                  restart_base: int = 100,
                  learned_clause_limit: int = 10000,
-                 use_watched_literals: bool = True):
+                 use_watched_literals: bool = True,
+                 enable_inprocessing: bool = False,
+                 inprocessing_interval: int = 5000):
         """
         Initialize optimized CDCL solver.
 
@@ -297,6 +309,8 @@ class CDCLSolver:
             restart_base: Base interval for restarts
             learned_clause_limit: Maximum number of learned clauses to keep
             use_watched_literals: Enable two-watched literal optimization (recommended)
+            enable_inprocessing: Enable inprocessing (subsumption, variable elimination)
+            inprocessing_interval: Call inprocessing every N conflicts
         """
         self.original_cnf = cnf
         self.clauses = list(cnf.clauses)  # Original + learned clauses
@@ -335,6 +349,20 @@ class CDCLSolver:
             self.watch_manager.init_watches(self.clauses)
         else:
             self.watch_manager = None
+
+        # NEW: Inprocessing
+        self.enable_inprocessing = enable_inprocessing
+        self.inprocessing_interval = inprocessing_interval
+        self.next_inprocessing = inprocessing_interval
+        if enable_inprocessing:
+            self.inprocessor = Inprocessor()
+            # Create variable mappings for inprocessing
+            self.var_to_int: Dict[str, int] = {var: i + 1 for i, var in enumerate(self.variables)}
+            self.int_to_var: Dict[int, str] = {i + 1: var for i, var in enumerate(self.variables)}
+        else:
+            self.inprocessor = None
+            self.var_to_int = {}
+            self.int_to_var = {}
 
     def _get_literal_value(self, lit: Literal) -> Optional[bool]:
         """Get the value of a literal under current assignment."""
@@ -707,6 +735,90 @@ class CDCLSolver:
             self.watch_manager = WatchedLiteralManager()
             self.watch_manager.init_watches(self.clauses)
 
+    def _clauses_to_int_format(self) -> List[List[int]]:
+        """Convert current clause database to integer format for inprocessing."""
+        int_clauses = []
+        for clause in self.clauses:
+            int_clause = []
+            for lit in clause.literals:
+                var_id = self.var_to_int[lit.variable]
+                int_lit = -var_id if lit.negated else var_id
+                int_clause.append(int_lit)
+            int_clauses.append(int_clause)
+        return int_clauses
+
+    def _int_clauses_to_clauses(self, int_clauses: List[List[int]]) -> List[Clause]:
+        """Convert integer clauses back to Clause objects."""
+        clauses = []
+        for int_clause in int_clauses:
+            literals = []
+            for int_lit in int_clause:
+                var_id = abs(int_lit)
+                var_name = self.int_to_var[var_id]
+                negated = int_lit < 0
+                literals.append(Literal(var_name, negated))
+            clauses.append(Clause(literals))
+        return clauses
+
+    def _inprocess(self):
+        """
+        Apply inprocessing to simplify the clause database.
+
+        Inprocessing techniques:
+        - Subsumption: Remove clauses subsumed by others
+        - Self-subsuming resolution: Strengthen clauses
+        - Bounded variable elimination: Eliminate variables with few occurrences
+
+        This is called periodically during search to reduce clause database size.
+        """
+        if not self.enable_inprocessing or self.decision_level != 0:
+            # Only inprocess at decision level 0 (after restarts or before search)
+            return
+
+        # Convert clauses to integer format
+        int_clauses = self._clauses_to_int_format()
+
+        # Apply inprocessing
+        simplified_int_clauses = self.inprocessor.simplify(
+            int_clauses,
+            subsumption=True,
+            self_subsumption=True,
+            var_elimination=True,
+            max_var_occur=10,  # Only eliminate variables with ≤ 10 occurrences
+            max_resolvent_size=20  # Limit resolvent size to prevent explosion
+        )
+
+        # Convert back to Clause objects
+        new_clauses = self._int_clauses_to_clauses(simplified_int_clauses)
+
+        # Update stats
+        self.stats.inprocessing_calls += 1
+        self.stats.inprocessing_subsumed += self.inprocessor.stats.subsumed_clauses
+        self.stats.inprocessing_eliminated_vars += self.inprocessor.stats.eliminated_vars
+
+        # Update clause database
+        # We need to preserve clause_info for learned clauses that survived
+        # This is complex, so for now we'll just drop clause_info and rebuild
+        # (A more efficient implementation would map old indices to new indices)
+
+        old_num_clauses = len(self.clauses)
+        self.clauses = new_clauses
+        new_num_clauses = len(self.clauses)
+
+        # Reset num_original_clauses if some original clauses were removed
+        # For simplicity, treat all remaining clauses as "original" after inprocessing
+        # (This is a simplification - ideally we'd track which clauses are learned)
+        self.num_original_clauses = len(self.clauses)
+        self.clause_info = {}  # Clear learned clause metadata
+
+        # Rebuild watch structures
+        if self.use_watched_literals:
+            self.watch_manager = WatchedLiteralManager()
+            self.watch_manager.init_watches(self.clauses)
+
+        # Update next inprocessing trigger
+        self.next_inprocessing = self.stats.conflicts + self.inprocessing_interval
+
     def solve(self, max_conflicts: int = 1000000) -> Optional[Dict[str, bool]]:
         """
         Solve the SAT formula using optimized CDCL.
@@ -788,6 +900,11 @@ class CDCLSolver:
                     conflict = self._propagate()
                     if conflict is not None:
                         return None  # UNSAT
+
+                    # Check for inprocessing
+                    if self.enable_inprocessing and self.stats.conflicts >= self.next_inprocessing:
+                        self._inprocess()
+
                     break
 
     def get_stats(self) -> CDCLStats:
