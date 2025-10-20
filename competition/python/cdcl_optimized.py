@@ -6,6 +6,7 @@ This is a heavily optimized version of CDCL implementing:
 - ✅ LBD (Literal Block Distance) clause quality management
 - ⏳ Inprocessing (subsumption, variable elimination) - disabled by default (too slow in Python)
 - ✅ Advanced restart strategies (Glucose-style adaptive restarts)
+- ✅ Restart postponing (Glucose 2.1+ - blocks restarts when trail growing)
 - ✅ Phase saving (remember variable polarities across restarts)
 - ✅ VSIDS (Variable State Independent Decaying Sum) heuristic
 - ✅ Non-chronological backtracking
@@ -17,7 +18,7 @@ PERFORMANCE TARGET:
 - Foundation for eventual C implementation
 
 COPIED FROM: ../src/bsat/cdcl.py
-STATUS: Two-watched literals ✅ | LBD ✅ | Adaptive restarts ✅ | Phase saving ✅ | Inprocessing ⚠️ (experimental, disabled by default)
+STATUS: Two-watched literals ✅ | LBD ✅ | Adaptive restarts ✅ | Restart postponing ✅ | Phase saving ✅ | Inprocessing ⚠️ (experimental, disabled by default)
 """
 
 import sys
@@ -305,7 +306,9 @@ class CDCLSolver:
                  glucose_lbd_window: int = 50,
                  glucose_k: float = 0.8,
                  phase_saving: bool = True,
-                 initial_phase: bool = True):
+                 initial_phase: bool = True,
+                 restart_postponing: bool = True,
+                 postponing_threshold: float = 1.4):
         """
         Initialize optimized CDCL solver.
 
@@ -322,6 +325,8 @@ class CDCLSolver:
             glucose_k: Multiplier for restart threshold (Glucose only, 0.8 typical)
             phase_saving: Enable phase saving (remember variable polarities across restarts)
             initial_phase: Initial polarity for unassigned variables (True = prefer True)
+            restart_postponing: Enable restart postponing (Glucose 2.1+, prevents restarts when trail growing)
+            postponing_threshold: Trail growth threshold for postponing (1.4 = 40% larger than average)
         """
         self.original_cnf = cnf
         self.clauses = list(cnf.clauses)  # Original + learned clauses
@@ -356,6 +361,15 @@ class CDCLSolver:
             self.recent_lbds: List[int] = []  # Last N LBDs for short-term average
             self.lbd_sum = 0  # Sum of all LBDs (for long-term average)
             self.lbd_count = 0  # Count of all LBDs
+
+        # Restart postponing (Glucose 2.1+)
+        self.restart_postponing = restart_postponing
+        self.postponing_threshold = postponing_threshold
+        self.trail_size_at_conflict: List[int] = []  # Trail sizes at each conflict
+        self.trail_size_sum = 0  # Sum of trail sizes (for global average)
+        self.trail_size_count = 0  # Count of trail sizes
+        self.recent_trail_sizes: List[int] = []  # Recent trail sizes (for short-term average)
+        self.postponing_window = 50  # Window for recent trail sizes
 
         # Learned clause management
         self.learned_clause_limit = learned_clause_limit
@@ -645,10 +659,14 @@ class CDCLSolver:
         Check if we should restart.
 
         Uses either Luby sequence or Glucose-style adaptive restarts.
+        With restart postponing (Glucose 2.1+), blocks restarts when trail is growing.
         """
+        # First check if basic restart condition is met
+        should_restart_basic = False
+
         if self.restart_strategy == 'luby':
             # Luby sequence: restart every K * luby(i) conflicts
-            return self.stats.conflicts >= self.conflicts_until_restart
+            should_restart_basic = self.stats.conflicts >= self.conflicts_until_restart
         elif self.restart_strategy == 'glucose':
             # Glucose: restart when short-term LBD average exceeds long-term
             if self.lbd_count < self.glucose_lbd_window:
@@ -662,10 +680,27 @@ class CDCLSolver:
             long_term_avg = self.lbd_sum / self.lbd_count
 
             # Restart if short-term exceeds long-term by factor K
-            return short_term_avg > long_term_avg * self.glucose_k
+            should_restart_basic = short_term_avg > long_term_avg * self.glucose_k
         else:
             # Default: Luby
-            return self.stats.conflicts >= self.conflicts_until_restart
+            should_restart_basic = self.stats.conflicts >= self.conflicts_until_restart
+
+        # If basic restart condition not met, don't restart
+        if not should_restart_basic:
+            return False
+
+        # Restart postponing (Glucose 2.1+): block restart if trail is growing
+        if self.restart_postponing and len(self.recent_trail_sizes) >= self.postponing_window:
+            # Compare current trail size to recent average (not global average)
+            recent_avg = sum(self.recent_trail_sizes) / len(self.recent_trail_sizes)
+            current_trail_size = len(self.trail)
+
+            # If current trail is significantly larger than recent average, postpone restart
+            # (sign of progress - solver is making progress toward full assignment)
+            if current_trail_size > recent_avg * self.postponing_threshold:
+                return False  # Postpone restart (making progress!)
+
+        return True  # Allow restart
 
     def _restart(self):
         """Restart search from decision level 0."""
@@ -967,6 +1002,18 @@ class CDCLSolver:
 
                 # Conflict!
                 self.stats.conflicts += 1
+
+                # Track trail size for restart postponing
+                if self.restart_postponing:
+                    trail_size = len(self.trail)
+                    self.trail_size_at_conflict.append(trail_size)
+                    self.trail_size_sum += trail_size
+                    self.trail_size_count += 1
+
+                    # Maintain sliding window of recent trail sizes
+                    self.recent_trail_sizes.append(trail_size)
+                    if len(self.recent_trail_sizes) > self.postponing_window:
+                        self.recent_trail_sizes.pop(0)
 
                 if self.decision_level == 0:
                     # Conflict at level 0 - UNSAT
