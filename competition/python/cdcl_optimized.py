@@ -4,8 +4,8 @@ CDCL (Conflict-Driven Clause Learning) SAT Solver - OPTIMIZED FOR COMPETITION
 This is a heavily optimized version of CDCL implementing:
 - ✅ Two-watched literal scheme for O(1) amortized unit propagation
 - ✅ LBD (Literal Block Distance) clause quality management
-- ⏳ Inprocessing (subsumption, variable elimination)
-- ⏳ Advanced restart strategies (Glucose-style)
+- ⏳ Inprocessing (subsumption, variable elimination) - disabled by default (too slow in Python)
+- ✅ Advanced restart strategies (Glucose-style adaptive restarts)
 - ✅ VSIDS (Variable State Independent Decaying Sum) heuristic
 - ✅ Non-chronological backtracking
 - ✅ First UIP clause learning
@@ -299,18 +299,24 @@ class CDCLSolver:
                  learned_clause_limit: int = 10000,
                  use_watched_literals: bool = True,
                  enable_inprocessing: bool = False,
-                 inprocessing_interval: int = 5000):
+                 inprocessing_interval: int = 5000,
+                 restart_strategy: str = 'glucose',
+                 glucose_lbd_window: int = 50,
+                 glucose_k: float = 0.8):
         """
         Initialize optimized CDCL solver.
 
         Args:
             cnf: CNF formula to solve
             vsids_decay: Decay factor for VSIDS scores (0.9-0.99 typical)
-            restart_base: Base interval for restarts
+            restart_base: Base interval for restarts (for Luby strategy)
             learned_clause_limit: Maximum number of learned clauses to keep
             use_watched_literals: Enable two-watched literal optimization (recommended)
             enable_inprocessing: Enable inprocessing (subsumption, variable elimination)
             inprocessing_interval: Call inprocessing every N conflicts
+            restart_strategy: Restart strategy ('luby' or 'glucose')
+            glucose_lbd_window: Window size for short-term LBD average (Glucose only)
+            glucose_k: Multiplier for restart threshold (Glucose only, 0.8 typical)
         """
         self.original_cnf = cnf
         self.clauses = list(cnf.clauses)  # Original + learned clauses
@@ -327,9 +333,19 @@ class CDCLSolver:
         self.vsids_increment = 1.0
 
         # Restart strategy
+        self.restart_strategy = restart_strategy
         self.restart_base = restart_base
         self.conflicts_until_restart = restart_base
         self.restart_count = 0
+
+        # Glucose-style adaptive restarts
+        if restart_strategy == 'glucose':
+            self.glucose_lbd_window = glucose_lbd_window
+            self.glucose_k = glucose_k
+            self.lbd_history: List[int] = []  # All LBDs
+            self.recent_lbds: List[int] = []  # Last N LBDs for short-term average
+            self.lbd_sum = 0  # Sum of all LBDs (for long-term average)
+            self.lbd_count = 0  # Count of all LBDs
 
         # Learned clause management
         self.learned_clause_limit = learned_clause_limit
@@ -597,8 +613,31 @@ class CDCLSolver:
         self.vsids_increment /= self.vsids_decay
 
     def _should_restart(self) -> bool:
-        """Check if we should restart (Luby sequence)."""
-        return self.stats.conflicts >= self.conflicts_until_restart
+        """
+        Check if we should restart.
+
+        Uses either Luby sequence or Glucose-style adaptive restarts.
+        """
+        if self.restart_strategy == 'luby':
+            # Luby sequence: restart every K * luby(i) conflicts
+            return self.stats.conflicts >= self.conflicts_until_restart
+        elif self.restart_strategy == 'glucose':
+            # Glucose: restart when short-term LBD average exceeds long-term
+            if self.lbd_count < self.glucose_lbd_window:
+                # Not enough data yet
+                return False
+
+            # Short-term average: average of last N LBDs
+            short_term_avg = sum(self.recent_lbds) / len(self.recent_lbds)
+
+            # Long-term average: average of all LBDs
+            long_term_avg = self.lbd_sum / self.lbd_count
+
+            # Restart if short-term exceeds long-term by factor K
+            return short_term_avg > long_term_avg * self.glucose_k
+        else:
+            # Default: Luby
+            return self.stats.conflicts >= self.conflicts_until_restart
 
     def _restart(self):
         """Restart search from decision level 0."""
@@ -660,6 +699,17 @@ class CDCLSolver:
 
         # Compute LBD for the learned clause
         lbd = self._compute_lbd(clause)
+
+        # Track LBD for Glucose-style adaptive restarts
+        if self.restart_strategy == 'glucose':
+            self.lbd_sum += lbd
+            self.lbd_count += 1
+            self.lbd_history.append(lbd)
+
+            # Maintain sliding window for short-term average
+            self.recent_lbds.append(lbd)
+            if len(self.recent_lbds) > self.glucose_lbd_window:
+                self.recent_lbds.pop(0)  # Remove oldest
 
         # Create clause info
         protected = (lbd <= 2)  # Glue clauses are protected
