@@ -837,7 +837,25 @@ class CDCLSolver:
             if len(clause.literals) == 0:
                 return None
 
-        # Initial unit propagation
+        # Find and propagate initial unit clauses
+        # (Watched literal propagation only works on assignments in trail,
+        #  so we need to manually detect initial unit clauses)
+        for clause in self.clauses:
+            if len(clause.literals) == 1:
+                lit = clause.literals[0]
+                var = lit.variable
+                value = not lit.negated
+
+                # Check if already assigned
+                if var in self.assignment:
+                    if self.assignment[var] != value:
+                        # Conflict at level 0
+                        return None
+                else:
+                    # Assign this unit clause
+                    self._assign(var, value, antecedent=clause)
+
+        # Now propagate all those initial unit assignments
         conflict = self._propagate()
         if conflict is not None:
             return None  # UNSAT at level 0
