@@ -6,6 +6,7 @@ This is a heavily optimized version of CDCL implementing:
 - ✅ LBD (Literal Block Distance) clause quality management
 - ⏳ Inprocessing (subsumption, variable elimination) - disabled by default (too slow in Python)
 - ✅ Advanced restart strategies (Glucose-style adaptive restarts)
+- ✅ Phase saving (remember variable polarities across restarts)
 - ✅ VSIDS (Variable State Independent Decaying Sum) heuristic
 - ✅ Non-chronological backtracking
 - ✅ First UIP clause learning
@@ -16,7 +17,7 @@ PERFORMANCE TARGET:
 - Foundation for eventual C implementation
 
 COPIED FROM: ../src/bsat/cdcl.py
-STATUS: Two-watched literals ✅ | LBD ✅ | Inprocessing ⚠️ (experimental, disabled by default)
+STATUS: Two-watched literals ✅ | LBD ✅ | Adaptive restarts ✅ | Phase saving ✅ | Inprocessing ⚠️ (experimental, disabled by default)
 """
 
 import sys
@@ -302,7 +303,9 @@ class CDCLSolver:
                  inprocessing_interval: int = 5000,
                  restart_strategy: str = 'glucose',
                  glucose_lbd_window: int = 50,
-                 glucose_k: float = 0.8):
+                 glucose_k: float = 0.8,
+                 phase_saving: bool = True,
+                 initial_phase: bool = True):
         """
         Initialize optimized CDCL solver.
 
@@ -317,6 +320,8 @@ class CDCLSolver:
             restart_strategy: Restart strategy ('luby' or 'glucose')
             glucose_lbd_window: Window size for short-term LBD average (Glucose only)
             glucose_k: Multiplier for restart threshold (Glucose only, 0.8 typical)
+            phase_saving: Enable phase saving (remember variable polarities across restarts)
+            initial_phase: Initial polarity for unassigned variables (True = prefer True)
         """
         self.original_cnf = cnf
         self.clauses = list(cnf.clauses)  # Original + learned clauses
@@ -331,6 +336,11 @@ class CDCLSolver:
         self.vsids_scores: Dict[str, float] = {var: 0.0 for var in self.variables}
         self.vsids_decay = vsids_decay
         self.vsids_increment = 1.0
+
+        # Phase saving
+        self.phase_saving = phase_saving
+        self.initial_phase = initial_phase
+        self.saved_phase: Dict[str, bool] = {}  # Variable → last assigned polarity
 
         # Restart strategy
         self.restart_strategy = restart_strategy
@@ -405,6 +415,10 @@ class CDCLSolver:
         )
         self.trail.append(assignment)
         self.assignment[variable] = value
+
+        # Phase saving: remember this polarity
+        if self.phase_saving:
+            self.saved_phase[variable] = value
 
         if antecedent is None:
             self.stats.decisions += 1
@@ -599,14 +613,28 @@ class CDCLSolver:
         learned_clause = Clause(learned_literals)
         return learned_clause, backtrack_level
 
-    def _pick_branching_variable(self) -> Optional[str]:
-        """Pick next variable to branch on using VSIDS heuristic."""
+    def _pick_branching_variable(self) -> Optional[Tuple[str, bool]]:
+        """
+        Pick next variable to branch on using VSIDS heuristic.
+
+        Returns:
+            Tuple of (variable, polarity) or None if all variables assigned.
+            Polarity is determined by phase saving if enabled, else initial_phase.
+        """
         unassigned = [var for var in self.variables if var not in self.assignment]
         if not unassigned:
             return None
 
         # Pick variable with highest VSIDS score
-        return max(unassigned, key=lambda v: self.vsids_scores[v])
+        var = max(unassigned, key=lambda v: self.vsids_scores[v])
+
+        # Determine polarity using phase saving
+        if self.phase_saving and var in self.saved_phase:
+            polarity = self.saved_phase[var]
+        else:
+            polarity = self.initial_phase
+
+        return (var, polarity)
 
     def _decay_vsids_scores(self):
         """Decay all VSIDS scores."""
@@ -916,16 +944,18 @@ class CDCLSolver:
                 return None  # Give up
 
             # Pick branching variable
-            var = self._pick_branching_variable()
+            branch_result = self._pick_branching_variable()
 
-            if var is None:
+            if branch_result is None:
                 # All variables assigned - SAT!
                 return dict(self.assignment)
+
+            var, polarity = branch_result
 
             # Make decision
             self.decision_level += 1
             self.stats.max_decision_level = max(self.stats.max_decision_level, self.decision_level)
-            self._assign(var, True)  # Try True first (could use phase saving here)
+            self._assign(var, polarity)  # Use phase saving polarity
 
             # Propagate
             while True:

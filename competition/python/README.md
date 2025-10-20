@@ -26,6 +26,8 @@ competition/python/
 Main competition solver implementation with:
 - **Two-watched literals**: O(1) amortized unit propagation (100-600× speedup)
 - **LBD clause management**: Glucose-style learned clause quality heuristic
+- **Glucose adaptive restarts**: Dynamic restarts based on LBD trends
+- **Phase saving**: Remember variable polarities across restarts (50-134× speedup on structured problems)
 - **VSIDS heuristic**: Dynamic variable ordering
 - **1UIP clause learning**: First Unique Implication Point learning scheme
 - **Initial unit clause propagation**: Fixed soundness bug (October 20, 2025)
@@ -87,8 +89,17 @@ See `../docs/benchmark_results.md` for detailed analysis.
 - Soundness bug fix (initial unit clause propagation)
 - Benchmark validation (114-188× speedup)
 
-**Week 2-3** (Current): ⏳
-- Glucose-style adaptive restarts
+**Week 2-3** (Complete): ✅
+- Glucose-style adaptive restarts (1.83× speedup over Luby)
+- Comprehensive restart strategy benchmarking
+
+**Week 4** (Complete): ✅
+- Phase saving implementation (50-134× speedup on structured problems)
+- Identified interaction between phase saving and restart strategy
+- Comprehensive benchmarking and documentation
+
+**Week 5+** (Planned): ⏳
+- Restart postponing (Glucose 2.1+ to fix phase saving regressions)
 - Scale testing on larger instances (1000-5000 variables)
 - Python profiling
 
@@ -102,6 +113,10 @@ See `../docs/benchmark_results.md` for detailed analysis.
 See `../docs/` for comprehensive documentation:
 - `two_watched_literals.md`: Algorithm design and implementation
 - `benchmark_results.md`: Performance analysis and validation
+- `adaptive_restarts.md`: Glucose vs Luby restart strategies
+- `restart_comparison_results.md`: Restart strategy benchmark results
+- `phase_saving.md`: Phase saving algorithm and implementation
+- `phase_saving_results.md`: Phase saving benchmark results
 - `week1_summary.md`: Week 1 progress summary
 - `progress.md`: Week-by-week tracking
 
