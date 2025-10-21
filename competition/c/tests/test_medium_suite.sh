@@ -10,9 +10,9 @@ FAILED=0
 TIMEOUT=0
 
 # Test various sizes from medium suite
-for file in ../../dataset/medium_tests/medium_suite/easy_3sat_v0*.cnf \
-            ../../dataset/medium_tests/medium_suite/medium_3sat_v040_c0170.cnf \
-            ../../dataset/medium_tests/medium_suite/medium_3sat_v044_c0187.cnf; do
+for file in ../../../dataset/medium_tests/medium_suite/easy_3sat_v0*.cnf \
+            ../../../dataset/medium_tests/medium_suite/medium_3sat_v040_c0170.cnf \
+            ../../../dataset/medium_tests/medium_suite/medium_3sat_v044_c0187.cnf; do
 
     if [ ! -f "$file" ]; then
         continue
@@ -21,7 +21,7 @@ for file in ../../dataset/medium_tests/medium_suite/easy_3sat_v0*.cnf \
     echo -n "Testing $(basename $file)... "
 
     # Run with 10 second timeout
-    result=$(timeout 10 ./bin/bsat "$file" 2>&1 | grep "^s ")
+    result=$(timeout 10 ../bin/bsat "$file" 2>&1 | grep "^s ")
 
     if [ $? -eq 124 ]; then
         echo "⏱️  TIMEOUT (>10s)"

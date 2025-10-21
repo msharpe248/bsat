@@ -8,11 +8,11 @@ echo ""
 
 # Test instances
 INSTANCES=(
-    "../../dataset/simple_tests/simple_suite/random3sat_v5_c21.cnf"
-    "../../dataset/simple_tests/simple_suite/random3sat_v7_c30.cnf"
-    "../../dataset/simple_tests/simple_suite/random3sat_v10_c43.cnf"
-    "../../dataset/medium_tests/medium_suite/easy_3sat_v026_c0109.cnf"
-    "../../dataset/medium_tests/medium_suite/medium_3sat_v040_c0170.cnf"
+    "../../../dataset/simple_tests/simple_suite/random3sat_v5_c21.cnf"
+    "../../../dataset/simple_tests/simple_suite/random3sat_v7_c30.cnf"
+    "../../../dataset/simple_tests/simple_suite/random3sat_v10_c43.cnf"
+    "../../../dataset/medium_tests/medium_suite/easy_3sat_v026_c0109.cnf"
+    "../../../dataset/medium_tests/medium_suite/medium_3sat_v040_c0170.cnf"
 )
 
 for instance in "${INSTANCES[@]}"; do
@@ -27,7 +27,7 @@ for instance in "${INSTANCES[@]}"; do
     # C solver
     echo -n "C solver:      "
     c_start=$(date +%s%N)
-    ./bin/bsat "$instance" > /tmp/c_output.txt 2>&1
+    ../bin/bsat "$instance" > /tmp/c_output.txt 2>&1
     c_end=$(date +%s%N)
     c_time=$(echo "scale=6; ($c_end - $c_start) / 1000000000" | bc)
     c_result=$(grep "^s " /tmp/c_output.txt)
@@ -40,7 +40,7 @@ for instance in "${INSTANCES[@]}"; do
     python3 << EOF > /tmp/py_output.txt 2>&1
 import sys
 import time
-sys.path.insert(0, '../../src')
+sys.path.insert(0, '../../../src')
 from bsat.dimacs import read_dimacs_file
 from bsat import get_cdcl_stats
 
