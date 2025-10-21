@@ -145,6 +145,7 @@ typedef struct Solver {
         uint64_t learned_literals;
         uint64_t deleted_clauses;
         uint64_t subsumed_clauses;   // Clauses removed by on-the-fly subsumption
+        uint64_t minimized_literals; // Literals removed by clause minimization
         uint64_t max_lbd;
         uint64_t glue_clauses;
         double   start_time;

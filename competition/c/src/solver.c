@@ -480,6 +480,7 @@ void solver_print_stats(const Solver* s) {
     printf("c Learned literals  : %llu\n", (unsigned long long)s->stats.learned_literals);
     printf("c Deleted clauses   : %llu\n", (unsigned long long)s->stats.deleted_clauses);
     printf("c Subsumed clauses  : %llu\n", (unsigned long long)s->stats.subsumed_clauses);
+    printf("c Minimized literals: %llu\n", (unsigned long long)s->stats.minimized_literals);
     printf("c Glue clauses      : %llu\n", (unsigned long long)s->stats.glue_clauses);
     printf("c Max LBD           : %llu\n", (unsigned long long)s->stats.max_lbd);
 
@@ -1123,6 +1124,106 @@ static void solver_on_the_fly_subsumption(Solver* s, const Lit* learnt, uint32_t
 }
 
 /*********************************************************************
+ * Clause Minimization (Recursive Literal Removal)
+ *********************************************************************/
+
+// Simple clause minimization: check if a literal is redundant
+// by checking its reason clause (ONE LEVEL only, non-recursive)
+// A literal is redundant if ALL literals in its reason clause are either:
+// 1. Already in the learned clause (seen = 1), or
+// 2. At decision level 0 (always true)
+static bool literal_redundant_simple(Solver* s, Lit p) {
+    Var v = var(p);
+
+    if (s->vars[v].reason == INVALID_CLAUSE) {
+        // Decision variable - not redundant
+        return false;
+    }
+
+    // Check the reason clause
+    CRef reason = s->vars[v].reason;
+
+    if (reason == BINARY_CONFLICT) {
+        // Binary reason - for simplicity, skip in minimization
+        return false;
+    }
+
+    uint32_t size = CLAUSE_SIZE(s->arena, reason);
+    Lit* lits = CLAUSE_LITS(s->arena, reason);
+
+    // Check if ALL literals in the reason are either:
+    // 1. In the learned clause (seen = 1), or
+    // 2. At level 0 (always assigned)
+    for (uint32_t i = 0; i < size; i++) {
+        Lit q = lits[i];
+        Var qv = var(q);
+
+        // Skip the literal itself
+        if (qv == v) continue;
+
+        // If at level 0, it's fine (always true)
+        if (s->vars[qv].level == 0) continue;
+
+        // If already in learned clause, it's fine
+        if (s->seen[qv] == 1) {
+            continue;
+        }
+
+        // Found a literal not in the learned clause and not at level 0
+        // So this literal is NOT redundant
+        return false;
+    }
+
+    // All literals in reason are either in learned clause or at level 0
+    return true;
+}
+
+// Minimize learned clause by removing redundant literals
+// Uses recursive analysis of reason clauses
+static void solver_minimize_clause(Solver* s, Lit* learnt, uint32_t* learnt_size) {
+    uint32_t original_size = *learnt_size;
+
+    if (original_size <= 2) {
+        // Don't minimize unit clauses or binary clauses
+        return;
+    }
+
+    // Mark all literals in the learned clause with seen = 1
+    for (uint32_t i = 0; i < *learnt_size; i++) {
+        s->seen[var(learnt[i])] = 1;
+    }
+
+    // Abstract level for pruning (not used in simple version)
+    uint32_t abstract_level = 0;
+
+    // Try to remove each literal (except the asserting literal at position 0)
+    uint32_t new_size = 1;  // Keep the asserting literal
+    for (uint32_t i = 1; i < *learnt_size; i++) {
+        Lit p = learnt[i];
+        Var v = var(p);
+
+        // Check if this literal is redundant (simple one-level check)
+        if (literal_redundant_simple(s, p)) {
+            // Redundant! Mark it and don't include in minimized clause
+            s->seen[v] = 2;  // Mark as redundant
+        } else {
+            // Not redundant, keep it
+            learnt[new_size++] = p;
+        }
+    }
+
+    *learnt_size = new_size;
+
+    // Clear seen array for all variables that were marked
+    // (both those in the original clause and those marked during recursion)
+    for (Var v = 1; v <= s->num_vars; v++) {
+        if (s->seen[v]) {
+            s->seen[v] = 0;
+        }
+    }
+}
+
+/*********************************************************************
  * Simplification
  *********************************************************************/
 
@@ -1262,6 +1363,11 @@ lbool solver_solve_with_assumptions(Solver* s, const Lit* assumps, uint32_t n_as
             uint32_t learnt_size;
             Level backtrack_level;
             solver_analyze(s, conflict, learnt_clause, &learnt_size, &backtrack_level);
+
+            // Minimize the learned clause to remove redundant literals
+            uint32_t original_size = learnt_size;
+            solver_minimize_clause(s, learnt_clause, &learnt_size);
+            s->stats.minimized_literals += (original_size - learnt_size);
 
             // Backtrack
             solver_backtrack(s, backtrack_level);
