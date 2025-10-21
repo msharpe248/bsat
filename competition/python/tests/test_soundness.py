@@ -4,7 +4,8 @@
 import sys
 import os
 from pathlib import Path
-sys.path.insert(0, '../../src')
+sys.path.insert(0, '../../../src')
+sys.path.insert(0, '..')  # For cdcl_optimized in parent directory
 
 from bsat.dimacs import read_dimacs_file
 from bsat import get_cdcl_stats
@@ -67,7 +68,7 @@ def main():
     print("Simple Test Suite:")
     print("-" * 100)
 
-    simple_dir = Path("../../dataset/simple_tests/simple_suite")
+    simple_dir = Path("../../../dataset/simple_tests/simple_suite")
     simple_instances = sorted(simple_dir.glob("*.cnf"))[:5]  # First 5
 
     simple_pass = 0
@@ -88,7 +89,7 @@ def main():
     print("Medium Test Suite:")
     print("-" * 100)
 
-    medium_dir = Path("../../dataset/medium_tests/medium_suite")
+    medium_dir = Path("../../../dataset/medium_tests/medium_suite")
     medium_instances = sorted(medium_dir.glob("*.cnf"))[:5]  # First 5
 
     medium_pass = 0
