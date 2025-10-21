@@ -479,6 +479,7 @@ void solver_print_stats(const Solver* s) {
     printf("c Learned clauses   : %llu\n", (unsigned long long)s->stats.learned_clauses);
     printf("c Learned literals  : %llu\n", (unsigned long long)s->stats.learned_literals);
     printf("c Deleted clauses   : %llu\n", (unsigned long long)s->stats.deleted_clauses);
+    printf("c Subsumed clauses  : %llu\n", (unsigned long long)s->stats.subsumed_clauses);
     printf("c Glue clauses      : %llu\n", (unsigned long long)s->stats.glue_clauses);
     printf("c Max LBD           : %llu\n", (unsigned long long)s->stats.max_lbd);
 
@@ -1052,6 +1053,76 @@ void solver_reduce_db(Solver* s) {
 }
 
 /*********************************************************************
+ * On-the-Fly Subsumption
+ *********************************************************************/
+
+// Check if clause A subsumes clause B
+// A subsumes B if all literals in A are in B
+// Returns true if A subsumes B
+static bool clause_subsumes(const Lit* a, uint32_t a_size, const Lit* b, uint32_t b_size) {
+    // Quick check: A cannot subsume B if A is larger
+    if (a_size > b_size) {
+        return false;
+    }
+
+    // Check if every literal in A appears in B
+    for (uint32_t i = 0; i < a_size; i++) {
+        bool found = false;
+        for (uint32_t j = 0; j < b_size; j++) {
+            if (a[i] == b[j]) {
+                found = true;
+                break;
+            }
+        }
+        if (!found) {
+            return false;  // Literal a[i] not in B
+        }
+    }
+
+    return true;  // All literals in A are in B
+}
+
+// Perform on-the-fly backward subsumption
+// Check if the newly learned clause subsumes any existing learned clauses
+// If so, delete the subsumed clauses
+static void solver_on_the_fly_subsumption(Solver* s, const Lit* learnt, uint32_t learnt_size) {
+    // Only do subsumption for small learned clauses (size <= 5)
+    // Large clauses are unlikely to subsume others and checking is expensive
+    if (learnt_size > 5) {
+        return;
+    }
+
+    uint32_t subsumed = 0;
+
+    // Check all learned clauses in the database (except the one we just added)
+    // The newly added clause is at s->learnts[s->num_learnts - 1]
+    uint32_t num_to_check = s->num_learnts > 0 ? s->num_learnts - 1 : 0;
+
+    for (uint32_t i = 0; i < num_to_check; i++) {
+        CRef cref = s->learnts[i];
+        if (cref == INVALID_CLAUSE) continue;
+
+        // Skip if already deleted
+        if (clause_deleted(s->arena, cref)) continue;
+
+        // Get the clause size and literals using macros
+        uint32_t other_size = CLAUSE_SIZE(s->arena, cref);
+        const Lit* other_lits = CLAUSE_LITS(s->arena, cref);
+
+        // Check if learned clause subsumes this clause
+        if (clause_subsumes(learnt, learnt_size, other_lits, other_size)) {
+            // Subsumes! Delete the subsumed clause
+            arena_delete(s->arena, cref);
+            subsumed++;
+        }
+    }
+
+    if (subsumed > 0) {
+        s->stats.subsumed_clauses += subsumed;
+    }
+}
+
+/*********************************************************************
  * Simplification
  *********************************************************************/
 
@@ -1264,6 +1335,10 @@ lbool solver_solve_with_assumptions(Solver* s, const Lit* assumps, uint32_t n_as
                     if (s->num_learnts < s->learnts_size) {
                         s->learnts[s->num_learnts++] = learnt_ref;
                     }
+
+                    // On-the-fly backward subsumption
+                    // Check if this learned clause subsumes any existing clauses
+                    solver_on_the_fly_subsumption(s, learnt_clause, learnt_size);
 
                     // Add watches
                     watch_add(s->watches, learnt_clause[0], learnt_ref, learnt_clause[1]);
