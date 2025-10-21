@@ -88,6 +88,106 @@ This CNF has:
 3. **Any formula can be converted**: Though it may get larger
 4. **Efficient algorithms**: Many optimizations work on CNF
 
+### Alternative Normal Forms
+
+While CNF is the standard for SAT solving, other normal forms exist for Boolean formulas. Understanding why they're not used helps clarify CNF's advantages.
+
+#### Disjunctive Normal Form (DNF)
+
+DNF is the "opposite" of CNF:
+- A **disjunction** (OR) of **terms**
+- Each term is a **conjunction** (AND) of literals
+
+**Structure**:
+```
+DNF = Term₁ ∨ Term₂ ∨ ... ∨ Termₙ
+
+where each Term = (Literal₁ ∧ Literal₂ ∧ ... ∧ Literalₘ)
+```
+
+**Example**:
+```
+(x ∧ y ∧ z) ∨ (¬x ∧ y) ∨ (¬y ∧ ¬z)
+   Term 1       Term 2      Term 3
+```
+
+**Why not use DNF for SAT?**
+
+DNF makes satisfiability **trivial** but has a critical flaw:
+
+1. **Satisfiability is easy**: A DNF formula is SAT if **any term** can be satisfied
+   - Just check each term: can all its literals be True simultaneously?
+   - Time: O(n×m) - polynomial!
+
+2. **BUT: Exponential blowup**: Converting arbitrary formulas to DNF can cause exponential growth
+   - Example: `(a₁ ∨ b₁) ∧ (a₂ ∨ b₂) ∧ ... ∧ (aₙ ∨ bₙ)` (CNF with n clauses)
+   - DNF equivalent has 2ⁿ terms!
+   - Each term is one way to satisfy all clauses
+
+3. **Real consequence**: Hardware verification formulas might expand from 1,000 clauses to 2¹⁰⁰⁰ terms - impossible to even store!
+
+**Example of exponential blowup**:
+
+CNF (6 literals, 3 clauses):
+```
+(a ∨ b) ∧ (c ∨ d) ∧ (e ∨ f)
+```
+
+Equivalent DNF (24 literals, 8 terms):
+```
+(a ∧ c ∧ e) ∨ (a ∧ c ∧ f) ∨ (a ∧ d ∧ e) ∨ (a ∧ d ∧ f) ∨
+(b ∧ c ∧ e) ∨ (b ∧ c ∧ f) ∨ (b ∧ d ∧ e) ∨ (b ∧ d ∧ f)
+```
+
+The DNF must enumerate all possible ways to pick one literal from each CNF clause!
+
+#### Negation Normal Form (NNF)
+
+NNF is a more general form:
+- Uses only AND (∧), OR (∨), and NOT (¬)
+- NOT (¬) appears only on variables (not on subformulas)
+- No restriction on structure (unlike CNF/DNF)
+
+**Example**:
+```
+(x ∧ y) ∨ (¬z ∧ (w ∨ ¬v))
+```
+
+**Why not use NNF for SAT?**
+
+1. **Too general**: No standard structure to exploit
+2. **Harder to process**: Can't use clause-based algorithms
+3. **No uniformity**: Different formulas have completely different shapes
+4. **No worst-case guarantees**: Some NNF formulas are as hard as arbitrary Boolean formulas
+
+**Relationship**: Both CNF and DNF are special cases of NNF with restricted structure.
+
+#### Why CNF Wins
+
+Despite the theoretical possibility of exponential growth when converting to CNF, in practice:
+
+1. **Tseitin transformation**: Adds auxiliary variables to avoid exponential blowup
+   - Converts any formula to CNF in **linear** time
+   - Formula size at most **tripled**
+   - Trades formula size for extra variables
+
+2. **Solver optimizations**: Decades of research on CNF-specific algorithms
+   - Clause learning (CDCL)
+   - Watched literals
+   - Phase saving
+   - All designed for CNF structure
+
+3. **Standard format**: Universal adoption by research community
+   - DIMACS format for CNF
+   - [SATLIB benchmark library](https://www.cs.ubc.ca/~hoos/SATLIB/index-ubc.html)
+   - SAT competitions all use CNF
+
+4. **Checking is still easy**: Like DNF checking, but in the "opposite direction"
+   - CNF: "All clauses satisfied" - easy to verify (polynomial)
+   - Tautology checking (always true) is hard - but we don't need it!
+
+**The key insight**: While DNF makes satisfiability trivial, it makes the conversion intractable. CNF makes both conversion practical (with Tseitin) and satisfiability solvable (with clever search).
+
 ## k-SAT Problems
 
 A **k-SAT** problem is a SAT problem where every clause has exactly k literals.
@@ -502,6 +602,15 @@ SAT solving is used in many real-world applications:
 - [Wikipedia: Boolean satisfiability problem](https://en.wikipedia.org/wiki/Boolean_satisfiability_problem)
 - [SAT/SMT by Example](https://sat-smt.codes/) - Practical examples
 - [Introduction to SAT Solving](http://www.cs.cornell.edu/gomes/pdf/2008_gomes_knowledge_satisfiability.pdf)
+
+### Benchmark Instances
+
+- [**SATLIB**](https://www.cs.ubc.ca/~hoos/SATLIB/index-ubc.html) - Comprehensive benchmark library
+  - Uniform random 3-SAT instances
+  - Graph coloring problems
+  - Planning problems
+  - Real-world industrial instances
+  - Ideal for testing and comparing SAT solvers
 
 ### Textbooks
 

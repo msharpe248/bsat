@@ -277,6 +277,25 @@ Youssef Hamadi, Saïd Jabbour, Lakhdar Saïs
 
 ## Competitions & Benchmarks
 
+### Benchmark Libraries
+
+**[SATLIB - Benchmark Problems](https://www.cs.ubc.ca/~hoos/SATLIB/index-ubc.html)**
+*The most comprehensive collection of SAT benchmark instances.*
+
+- **Uniform Random 3-SAT**: Instances at various clause/variable ratios
+- **Graph Coloring**: Flat and morphed graph coloring problems
+- **Planning**: Blocksworld planning benchmarks
+- **Quasigroup**: Quasigroup completion problems
+- **Real-World**: Industrial and application-derived instances
+- **Format**: DIMACS CNF with known SAT/UNSAT status
+- **Usage**: Ideal for testing, validation, and performance comparison
+
+All SATLIB instances can be loaded directly with BSAT:
+```python
+from bsat import read_dimacs_file
+cnf = read_dimacs_file("uf50-218.cnf")  # From SATLIB
+```
+
 ### Annual Competitions
 
 **[SAT Competition](http://www.satcompetition.org/)**

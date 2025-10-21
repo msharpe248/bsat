@@ -26,6 +26,27 @@ BSAT includes comprehensive benchmarking tools for:
 
 ## Benchmark Instances
 
+### Standard Benchmark Libraries
+
+For rigorous benchmarking and comparison with other solvers, consider using established benchmark libraries:
+
+- [**SATLIB**](https://www.cs.ubc.ca/~hoos/SATLIB/index-ubc.html) - Comprehensive benchmark library
+  - Uniform random 3-SAT instances at various clause/variable ratios
+  - Graph coloring problems (flat, morphed)
+  - Blocksworld planning problems
+  - Quasigroup completion problems
+  - Real-world industrial instances
+  - Includes known SAT/UNSAT status for validation
+
+SATLIB instances are in DIMACS format and can be loaded directly:
+```python
+from bsat import read_dimacs_file
+
+# Download from SATLIB and load
+cnf = read_dimacs_file("uf50-218.cnf")  # Uniform random 3-SAT, 50 vars, 218 clauses
+result = solve_sat(cnf)
+```
+
 ### Pre-defined Benchmarks
 
 The `tests/benchmarks.py` module provides a collection of benchmark instances:
