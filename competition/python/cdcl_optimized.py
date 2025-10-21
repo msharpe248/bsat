@@ -621,8 +621,8 @@ class CDCLSolver:
                         # Bump VSIDS score
                         self.vsids_scores[lit.variable] += self.vsids_increment
                     elif var_assignment and var_assignment.decision_level > 0:
-                        # Add to learned clause (negated)
-                        learned_literals.append(Literal(lit.variable, not lit.negated))
+                        # Add to learned clause
+                        learned_literals.append(Literal(lit.variable, lit.negated))
 
             # Find next literal to resolve
             while antecedent_idx >= 0:
@@ -635,7 +635,7 @@ class CDCLSolver:
             if counter <= 0:
                 # Found 1UIP
                 assignment = self.trail[antecedent_idx]
-                learned_literals.append(Literal(assignment.variable, not assignment.value))
+                learned_literals.append(Literal(assignment.variable, assignment.value))
                 break
 
             # Continue with antecedent
