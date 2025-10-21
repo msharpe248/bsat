@@ -193,7 +193,7 @@ class WatchedLiteralManager:
         Propagate assignment of a literal using two-watched literals.
 
         Args:
-            assigned_lit_key: The literal that was just assigned TRUE
+            assigned_lit_key: The literal that was just assigned TRUE (e.g., if x=TRUE, this is x)
             clauses: All clauses
             assignment: Current variable assignment
             get_literal_value: Function to get value of a literal
@@ -498,10 +498,15 @@ class CDCLSolver:
 
         while self._propagated_index < len(self.trail):
             assignment = self.trail[self._propagated_index]
-            self._propagated_index += 1
 
-            # The literal that was assigned TRUE
-            assigned_lit_key = (assignment.variable, not assignment.value)  # negated because we store negation flag
+            # When variable=value is assigned, we need to find which literal became TRUE
+            # Key representation: (variable, negated) where negated is a boolean
+            #   - (x, False) represents literal x (positive)
+            #   - (x, True) represents literal ~x (negative)
+            # If we assign x=True, then literal x (positive) becomes TRUE -> key is (x, False)
+            # If we assign x=False, then literal ~x (negative) becomes TRUE -> key is (x, True)
+            # Therefore: assigned_lit_key = (variable, not value)
+            assigned_lit_key = (assignment.variable, not assignment.value)
 
             # Propagate this assignment
             conflict, unit_lit_key, antecedent_clause, checks = self.watch_manager.propagate(
@@ -523,6 +528,11 @@ class CDCLSolver:
 
                 # Use the antecedent clause returned by propagate()
                 self._assign(var, value, antecedent=antecedent_clause)
+                # DON'T increment _propagated_index - we need to re-propagate this assignment
+                # to find any additional unit clauses watching the same literal
+            else:
+                # No unit found - move to next assignment in trail
+                self._propagated_index += 1
 
         return None
 
