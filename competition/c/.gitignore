@@ -1,0 +1,11 @@
+# Build artifacts
+bin/
+build/
+*.o
+
+# Executables
+cdcl_solver
+test_dimacs_read
+
+# Debug files
+*.dSYM/
