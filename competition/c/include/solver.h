@@ -32,6 +32,9 @@ typedef struct SolverOpts {
     double   restart_inc;        // Restart interval increment (1.5)
     bool     glucose_restart;    // Use Glucose-style adaptive restarts
     uint32_t restart_postpone;   // Min trail growth to postpone restart (10%)
+    double   glucose_fast_alpha; // Glucose fast MA decay factor (0.8)
+    double   glucose_slow_alpha; // Glucose slow MA decay factor (0.9999)
+    uint32_t glucose_min_conflicts; // Min conflicts before Glucose restarts (100)
 
     // Phase saving parameters
     bool     phase_saving;       // Enable phase saving (true)

@@ -24,8 +24,11 @@ SolverOpts default_opts(void) {
 
         .restart_first = 100,
         .restart_inc = 1.5,
-        .glucose_restart = false,  // Use geometric for now (Glucose needs more tuning)
+        .glucose_restart = true,   // Hybrid Glucose/geometric restarts (best of both worlds)
         .restart_postpone = 10,
+        .glucose_fast_alpha = 0.8,     // Fast MA decay factor (tracks recent ~5 conflicts)
+        .glucose_slow_alpha = 0.9999,  // Slow MA decay factor (long-term average)
+        .glucose_min_conflicts = 100,  // Minimum conflicts before enabling Glucose
 
         .phase_saving = true,
         .phase_reset_period = 10000,
@@ -892,8 +895,14 @@ bool solver_should_restart(Solver* s) {
         // This means: recent conflicts are producing worse clauses (higher LBD)
         // than the long-term average, indicating we're in a bad search region.
         //
-        // Only check after enough conflicts to have meaningful averages
-        if (s->stats.conflicts > 100 && s->restart.fast_ma > s->restart.slow_ma) {
+        // HYBRID STRATEGY: Fall back to geometric if Glucose hasn't triggered
+        // This handles cases where LBD is too stable (always same value)
+
+        bool should_restart_glucose = false;
+
+        // Check Glucose condition after enough conflicts
+        if (s->stats.conflicts > s->opts.glucose_min_conflicts &&
+            s->restart.fast_ma > s->restart.slow_ma) {
             // Restart postponing (Glucose 2.1+): Don't restart if trail is growing
             // This prevents restarting during productive search
             if (s->opts.restart_postpone > 0) {
@@ -911,15 +920,20 @@ bool solver_should_restart(Solver* s) {
                 }
             }
 
-            #ifdef DEBUG
-            if (getenv("DEBUG_CDCL")) {
-                printf("[RESTART] Glucose adaptive: fast_ma=%.2f > slow_ma=%.2f\n",
-                       s->restart.fast_ma, s->restart.slow_ma);
-            }
-            #endif
-            return true;
+            should_restart_glucose = true;
         }
-        return false;
+
+        // Hybrid fallback: If Glucose hasn't triggered in too long, use geometric
+        // This prevents getting stuck when LBD is too stable
+        bool should_restart_geometric = false;
+        if (s->restart.conflicts_since >= s->restart.threshold) {
+            should_restart_geometric = true;
+            s->restart.conflicts_since = 0;
+            s->restart.threshold = (uint32_t)(s->restart.threshold * s->opts.restart_inc);
+        }
+
+        // Restart if either strategy says so
+        return should_restart_glucose || should_restart_geometric;
     } else {
         // Simple geometric restarts (original strategy)
         if (s->restart.conflicts_since >= s->restart.threshold) {
@@ -1196,6 +1210,19 @@ lbool solver_solve_with_assumptions(Solver* s, const Lit* assumps, uint32_t n_as
                 s->trail[s->trail_size].lit = unit;
                 s->trail[s->trail_size].level = 0;
                 s->trail_size++;
+
+                // BUG FIX: Update Glucose moving averages for unit clauses too!
+                // Unit clauses have LBD = 1 (best possible quality)
+                if (s->stats.conflicts > 0) {
+                    double alpha_fast = s->opts.glucose_fast_alpha;
+                    double alpha_slow = s->opts.glucose_slow_alpha;
+                    uint32_t lbd = 1;  // Unit clauses have LBD = 1
+                    s->restart.fast_ma = alpha_fast * s->restart.fast_ma + (1.0 - alpha_fast) * lbd;
+                    s->restart.slow_ma = alpha_slow * s->restart.slow_ma + (1.0 - alpha_slow) * lbd;
+                } else {
+                    s->restart.fast_ma = 1;
+                    s->restart.slow_ma = 1;
+                }
             } else {
                 // Add learned clause
                 CRef learnt_ref = arena_alloc(s->arena, learnt_clause, learnt_size, true);
@@ -1213,11 +1240,12 @@ lbool solver_solve_with_assumptions(Solver* s, const Lit* assumps, uint32_t n_as
                     }
 
                     // Update LBD moving averages for Glucose adaptive restarts
-                    // Fast MA: tracks recent conflicts (α = 0.8)
-                    // Slow MA: tracks long-term average (α = 0.9999)
+                    // Uses configurable decay factors from opts
                     if (s->stats.conflicts > 0) {
-                        s->restart.fast_ma = 0.8 * s->restart.fast_ma + 0.2 * lbd;
-                        s->restart.slow_ma = 0.9999 * s->restart.slow_ma + 0.0001 * lbd;
+                        double alpha_fast = s->opts.glucose_fast_alpha;
+                        double alpha_slow = s->opts.glucose_slow_alpha;
+                        s->restart.fast_ma = alpha_fast * s->restart.fast_ma + (1.0 - alpha_fast) * lbd;
+                        s->restart.slow_ma = alpha_slow * s->restart.slow_ma + (1.0 - alpha_slow) * lbd;
                     } else {
                         // Initialize moving averages with first LBD
                         s->restart.fast_ma = lbd;
