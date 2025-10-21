@@ -9,6 +9,7 @@ This is a heavily optimized version of CDCL implementing:
 - ✅ Restart postponing (Glucose 2.1+ - blocks restarts when trail growing)
 - ✅ Phase saving (remember variable polarities across restarts)
 - ✅ Random phase selection (diversification to escape local minima, disabled by default)
+- ✅ Adaptive random phase (auto-enable when stuck, enabled by default)
 - ✅ VSIDS (Variable State Independent Decaying Sum) heuristic
 - ✅ Non-chronological backtracking
 - ✅ First UIP clause learning
@@ -19,7 +20,7 @@ PERFORMANCE TARGET:
 - Foundation for eventual C implementation
 
 COPIED FROM: ../src/bsat/cdcl.py
-STATUS: Two-watched literals ✅ | LBD ✅ | Adaptive restarts ✅ | Restart postponing ✅ | Phase saving ✅ | Random phase ✅ | Inprocessing ⚠️ (experimental, disabled by default)
+STATUS: Two-watched literals ✅ | LBD ✅ | Adaptive restarts ✅ | Restart postponing ✅ | Phase saving ✅ | Random phase ✅ | Adaptive random ✅ | Inprocessing ⚠️ (experimental, disabled by default)
 """
 
 import sys
@@ -312,7 +313,10 @@ class CDCLSolver:
                  restart_postponing: bool = True,
                  postponing_threshold: float = 1.4,
                  random_phase_freq: float = 0.0,
-                 random_seed: Optional[int] = None):
+                 random_seed: Optional[int] = None,
+                 adaptive_random_phase: bool = True,
+                 adaptive_threshold: int = 1000,
+                 adaptive_restart_ratio: float = 0.2):
         """
         Initialize optimized CDCL solver.
 
@@ -333,6 +337,9 @@ class CDCLSolver:
             postponing_threshold: Trail growth threshold for postponing (1.4 = 40% larger than average)
             random_phase_freq: Probability of random phase selection (0.0-1.0, 0.0=disabled, 0.05-0.1 typical)
             random_seed: Random seed for reproducibility (None for non-deterministic)
+            adaptive_random_phase: Enable adaptive random phase (auto-enable when stuck, recommended)
+            adaptive_threshold: Minimum conflicts before enabling adaptive behavior (1000 typical)
+            adaptive_restart_ratio: Restart/conflict ratio threshold for enabling (0.2 = 20% restart rate)
         """
         self.original_cnf = cnf
         self.clauses = list(cnf.clauses)  # Original + learned clauses
@@ -355,8 +362,15 @@ class CDCLSolver:
 
         # Random phase selection
         self.random_phase_freq = random_phase_freq
+        self.initial_random_phase_freq = random_phase_freq  # Save initial value
         if random_seed is not None:
             random.seed(random_seed)
+
+        # Adaptive random phase selection
+        self.adaptive_random_phase = adaptive_random_phase
+        self.adaptive_threshold = adaptive_threshold
+        self.adaptive_restart_ratio = adaptive_restart_ratio
+        self.adaptive_enabled = False  # Track if adaptive kicked in
 
         # Restart strategy
         self.restart_strategy = restart_strategy
@@ -1031,6 +1045,19 @@ class CDCLSolver:
                     self.recent_trail_sizes.append(trail_size)
                     if len(self.recent_trail_sizes) > self.postponing_window:
                         self.recent_trail_sizes.pop(0)
+
+                # Adaptive random phase selection
+                # Auto-enable random phase if solver appears stuck (high restart rate)
+                if (self.adaptive_random_phase and
+                    not self.adaptive_enabled and
+                    self.initial_random_phase_freq == 0.0 and
+                    self.stats.conflicts >= self.adaptive_threshold):
+                    # Check restart rate (restarts / conflicts)
+                    restart_ratio = self.stats.restarts / self.stats.conflicts
+                    if restart_ratio >= self.adaptive_restart_ratio:
+                        # Solver appears stuck - enable random phase selection
+                        self.random_phase_freq = 0.05
+                        self.adaptive_enabled = True
 
                 if self.decision_level == 0:
                     # Conflict at level 0 - UNSAT

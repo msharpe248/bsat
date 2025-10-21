@@ -111,10 +111,16 @@ See `../docs/benchmark_results.md` for detailed analysis.
 - Disabled by default (can hurt small instances), user can enable
 - Comprehensive benchmarking and documentation
 
-**Week 7+** (Planned): ⏳
-- Adaptive random frequency (auto-enable after N conflicts)
+**Week 7** (Complete): ✅
+- Adaptive random frequency implementation (auto-enable when stuck)
+- Detects stuck state (high restart rate > 20%)
+- BEST OF BOTH WORLDS: No overhead on easy, automatic help on hard
+- 22.70× faster than static on simple suite, 50.20× faster than baseline on medium
+
+**Week 8+** (Planned): ⏳
 - Scale testing on larger instances (1000-5000 variables)
 - Python profiling
+- Competition instance benchmarking
 
 **Month 4-9** (Planned):
 - C implementation (10-100× faster than Python)
@@ -132,6 +138,7 @@ See `../docs/` for comprehensive documentation:
 - `phase_saving_results.md`: Phase saving benchmark results
 - `random_phase_selection.md`: Random phase selection algorithm and implementation
 - `random_phase_results.md`: Random phase selection benchmark results
+- `adaptive_random_phase.md`: Adaptive random phase (auto-enable when stuck)
 - `week1_summary.md`: Week 1 progress summary
 - `progress.md`: Week-by-week tracking
 
