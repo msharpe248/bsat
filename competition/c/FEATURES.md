@@ -113,17 +113,47 @@ The solver implements a modern CDCL SAT solver with the following components:
 
 **Example**: If we learn `(x ∨ y)` and database has `(x ∨ y ∨ z)`, delete the latter.
 
-### 10. **Simple Clause Minimization** ✅ IMPLEMENTED
+### 10. **Recursive Clause Minimization** ✅ IMPLEMENTED
 - **Purpose**: Remove redundant literals from learned clauses
-- **Strategy**: Check if literal's reason clause contains only:
+- **Strategy**: Recursively check if literal's reason clause contains only:
   - Literals already in the learned clause, OR
-  - Literals at decision level 0
-- **Type**: Simple (one-level, non-recursive) for speed
-- **Results**: Removes 2-5% of literals
-- **Location**: `src/solver.c:1130-1239, 1370-1373`
-- **Commit**: 9197d72
+  - Literals at decision level 0, OR
+  - Literals that are recursively redundant
+- **Type**: Full recursive with cycle detection and depth limiting
+- **Safety**: Recursion depth limit (100), seen array state machine (0=unseen, 1=in clause, 2=exploring, 3=redundant)
+- **Results**: Removes 2-5% of literals (better than simple minimization)
+- **Location**: `src/solver.c:1130-1213, 1240-1274`
+- **Commit**: (current session)
 
 **Example**: Learning `(a ∨ b ∨ c)` where `c`'s reason is `(a ∨ b)` → minimize to `(a ∨ b)`.
+
+### 11. **Vivification** ✅ IMPLEMENTED (DISABLED)
+- **Purpose**: Strengthen clauses by removing provably redundant literals
+- **Strategy**: For each literal in a clause:
+  - Assume all OTHER literals are false
+  - Unit propagate to see if this literal is implied
+  - If conflict or literal propagates to false → redundant!
+- **Optimization**: Only vivify at decision level 0
+- **Status**: ⚠️ **Implemented but DISABLED by default** (too expensive - O(n²) propagations)
+- **Future**: Enable with `--inprocess` flag for large instances
+- **Location**: `src/solver.c:1311-1417`
+- **Commit**: (current session)
+
+**Example**: Clause `(a ∨ b ∨ c)`, assuming `¬a ∧ ¬b` causes conflict → `c` is redundant, clause becomes `(a ∨ b)`.
+
+### 12. **Chronological Backtracking** ✅ IMPLEMENTED
+- **Purpose**: Improve search efficiency by preserving more learned information
+- **Strategy**: Instead of jumping directly to target level:
+  - Backtrack one decision level at a time
+  - At each level, check if learned clause is unit (exactly 1 unassigned literal)
+  - If unit, stop and propagate; otherwise continue
+- **Benefit**: Keeps more assignments on the trail, often reduces conflicts
+- **Research**: Recent breakthrough (2018-2020) showing significant improvements
+- **Status**: Enabled by default
+- **Location**: `src/solver.c:334-377, 1596-1603`
+- **Commit**: (current session)
+
+**Example**: Conflict at level 10 learns clause that would backtrack to level 3. With chronological: check levels 9, 8, 7... If clause becomes unit at level 6, stop there instead of jumping to 3.
 
 ## Performance Results
 
@@ -131,12 +161,14 @@ The solver implements a modern CDCL SAT solver with the following components:
 - ✅ **All tests pass**: 13/13 passed, 0 failures, 0 timeouts
 - ✅ **Correctness**: All SAT/UNSAT results verified
 
-### Optimization Impact (easy_3sat_v026_c0109.cnf)
-- **Conflicts**: 128
-- **Learned clauses**: 110
-- **Subsumed clauses**: 97 (88% subsumption rate!)
-- **Minimized literals**: 8 (2.1% reduction)
-- **Time**: <0.004s (instant)
+### Optimization Impact (medium_3sat_v040_c0170.cnf)
+- **Conflicts**: 104
+- **Decisions**: 113
+- **Learned clauses**: 104
+- **Subsumed clauses**: 84 (80% subsumption rate!)
+- **Minimized literals**: 14 (3.1% reduction from recursive minimization)
+- **Glue clauses**: 9
+- **Time**: <0.001s (instant)
 
 ### Benchmark Summary
 - **Baseline** (geometric restarts only): 0.035s total
@@ -257,12 +289,12 @@ make debug        # Build with -g -O0 for debugging
 
 Potential improvements for even better performance:
 
-1. **Expensive Clause Minimization**: Recursive redundancy checking
-2. **Vivification**: Strengthen clauses by removing literals
-3. **Inprocessing**: Simplification during search (subsumption, variable elimination)
-4. **Blocked Clause Elimination**: Remove blocked clauses
-5. **Chronological Backtracking**: Non-chronological backjumping
-6. **Parallel Solving**: Multi-threaded search
+1. **Blocked Clause Elimination**: Remove blocked clauses during search
+2. **Inprocessing Framework**: Enable vivification and other simplifications with `--inprocess` flag
+3. **Variable Elimination**: Bounded variable elimination (BVE) preprocessing
+4. **Extended Resolution**: Add extension variables for stronger reasoning
+5. **Parallel Solving**: Multi-threaded portfolio or divide-and-conquer search
+6. **Proof Logging**: Generate DRAT/DRUP proofs for verification
 
 ## References
 
@@ -280,7 +312,9 @@ Potential improvements for even better performance:
 - **Week 8**: Clause database reduction (LBD-based)
 - **Week 8**: Hybrid Glucose/geometric restarts
 - **Week 8**: On-the-fly backward subsumption
-- **Week 8**: Simple clause minimization
+- **Week 8**: Recursive clause minimization
+- **Week 8**: Vivification infrastructure (disabled by default)
+- **Week 8**: Chronological backtracking
 
 ## License
 

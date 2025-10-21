@@ -331,6 +331,51 @@ void solver_backtrack(Solver* s, Level level) {
     s->decision_level = level;
 }
 
+// Chronological backtracking: backtrack one level at a time
+// instead of jumping directly to target level
+// Returns the level we actually backtracked to
+static Level solver_backtrack_chronological(Solver* s, const Lit* learnt, uint32_t learnt_size, Level target_level) {
+    // Always use chronological backtracking if enabled
+    // For each level from current down to target, check if clause is unit
+
+    Level current = s->decision_level;
+
+    // Backtrack one level at a time
+    while (current > target_level) {
+        Level next_level = current - 1;
+
+        // Backtrack to next level
+        solver_backtrack(s, next_level);
+
+        // Count unassigned literals in learned clause at this level
+        uint32_t unassigned = 0;
+        Lit propagate_lit = 0;
+
+        for (uint32_t i = 0; i < learnt_size; i++) {
+            Var v = var(learnt[i]);
+            if (s->vars[v].value == UNDEF) {
+                unassigned++;
+                propagate_lit = learnt[i];
+            } else if (s->vars[v].value == (sign(learnt[i]) ? FALSE : TRUE)) {
+                // Literal is true - clause is satisfied, no need to propagate
+                unassigned = 0;
+                break;
+            }
+        }
+
+        // If clause is unit (exactly one unassigned literal), stop here
+        if (unassigned == 1) {
+            return next_level;
+        }
+
+        // If clause is satisfied or all false, continue
+        current = next_level;
+    }
+
+    // Reached target level
+    return target_level;
+}
+
 /*********************************************************************
  * Clause Addition
  *********************************************************************/
@@ -1127,33 +1172,57 @@ static void solver_on_the_fly_subsumption(Solver* s, const Lit* learnt, uint32_t
  * Clause Minimization (Recursive Literal Removal)
  *********************************************************************/
 
-// Simple clause minimization: check if a literal is redundant
-// by checking its reason clause (ONE LEVEL only, non-recursive)
+// Recursive clause minimization: check if a literal is redundant
+// by recursively checking its reason clause and the reasons of those literals
+//
 // A literal is redundant if ALL literals in its reason clause are either:
 // 1. Already in the learned clause (seen = 1), or
-// 2. At decision level 0 (always true)
-static bool literal_redundant_simple(Solver* s, Lit p) {
+// 2. At decision level 0 (always true), or
+// 3. Recursively redundant (can be proven by checking their reasons)
+//
+// Uses seen array as state:
+//   seen[v] = 0: not seen
+//   seen[v] = 1: in learned clause (not redundant)
+//   seen[v] = 2: being explored (prevents infinite recursion)
+//   seen[v] = 3: proven redundant
+static bool literal_redundant_recursive(Solver* s, Lit p, int depth) {
+    // Recursion depth limit to prevent stack overflow
+    if (depth > 100) {
+        return false;
+    }
+
     Var v = var(p);
 
+    // If this variable is a decision, it's not redundant
     if (s->vars[v].reason == INVALID_CLAUSE) {
-        // Decision variable - not redundant
         return false;
     }
 
     // Check the reason clause
     CRef reason = s->vars[v].reason;
 
+    // Binary clauses: handle specially
     if (reason == BINARY_CONFLICT) {
-        // Binary reason - for simplicity, skip in minimization
+        // For binary reasons, we'd need to track the other literal
+        // For simplicity and speed, skip binary reasons
         return false;
     }
+
+    // Mark this variable as being explored to detect cycles
+    uint8_t old_seen = s->seen[v];
+    if (old_seen == 2) {
+        // Cycle detected - not redundant
+        return false;
+    }
+    s->seen[v] = 2;  // Mark as being explored
 
     uint32_t size = CLAUSE_SIZE(s->arena, reason);
     Lit* lits = CLAUSE_LITS(s->arena, reason);
 
     // Check if ALL literals in the reason are either:
     // 1. In the learned clause (seen = 1), or
-    // 2. At level 0 (always assigned)
+    // 2. At decision level 0, or
+    // 3. Recursively redundant
     for (uint32_t i = 0; i < size; i++) {
         Lit q = lits[i];
         Var qv = var(q);
@@ -1169,12 +1238,22 @@ static bool literal_redundant_simple(Solver* s, Lit p) {
             continue;
         }
 
-        // Found a literal not in the learned clause and not at level 0
-        // So this literal is NOT redundant
-        return false;
+        // If already proven redundant, it's fine
+        if (s->seen[qv] == 3) {
+            continue;
+        }
+
+        // Try to recursively prove this literal is redundant
+        if (!literal_redundant_recursive(s, q, depth + 1)) {
+            // Failed to prove redundancy - restore and return false
+            s->seen[v] = old_seen;
+            return false;
+        }
     }
 
-    // All literals in reason are either in learned clause or at level 0
+    // All literals in reason are redundant or in learned clause
+    // Mark as proven redundant
+    s->seen[v] = 3;
     return true;
 }
 
@@ -1202,10 +1281,10 @@ static void solver_minimize_clause(Solver* s, Lit* learnt, uint32_t* learnt_size
         Lit p = learnt[i];
         Var v = var(p);
 
-        // Check if this literal is redundant (simple one-level check)
-        if (literal_redundant_simple(s, p)) {
-            // Redundant! Mark it and don't include in minimized clause
-            s->seen[v] = 2;  // Mark as redundant
+        // Check if this literal is redundant (recursive deep check)
+        if (literal_redundant_recursive(s, p, 0)) {
+            // Redundant! It's already marked as seen = 3
+            // Don't include in minimized clause
         } else {
             // Not redundant, keep it
             learnt[new_size++] = p;
@@ -1224,6 +1303,130 @@ static void solver_minimize_clause(Solver* s, Lit* learnt, uint32_t* learnt_size
 }
 
 /*********************************************************************
+ * Vivification (Clause Strengthening)
+ *********************************************************************/
+
+// Try to strengthen a clause by removing redundant literals
+// Returns true if clause was strengthened (or removed), false if unchanged
+static bool vivify_clause(Solver* s, CRef cref) {
+    // Can only vivify at decision level 0
+    if (s->decision_level > 0) return false;
+
+    // Skip unit and binary clauses
+    uint32_t size = CLAUSE_SIZE(s->arena, cref);
+    if (size <= 2) return false;
+
+    Lit* lits = CLAUSE_LITS(s->arena, cref);
+
+    // Save current trail size for backtracking
+    uint32_t trail_before = s->trail_size;
+
+    // Try to remove each literal
+    bool strengthened = false;
+    uint32_t new_size = 0;
+    Lit new_lits[size];
+
+    for (uint32_t i = 0; i < size; i++) {
+        // Assume all OTHER literals are false
+        uint32_t assumptions = 0;
+        for (uint32_t j = 0; j < size; j++) {
+            if (i == j) continue;
+
+            Lit lit = lits[j];
+            Var v = var(lit);
+
+            // If already assigned, skip
+            if (s->vars[v].value != UNDEF) {
+                if (s->vars[v].value == (sign(lit) ? FALSE : TRUE)) {
+                    // Literal is true - clause is satisfied, done
+                    // Backtrack assumptions
+                    while (s->trail_size > trail_before) {
+                        s->trail_size--;
+                        Lit trail_lit = s->trail[s->trail_size].lit;
+                        s->vars[var(trail_lit)].value = UNDEF;
+                    }
+                    return false;
+                }
+                continue;
+            }
+
+            // Assign the negation (assume this literal is false)
+            s->vars[v].value = sign(lit) ? TRUE : FALSE;
+            s->vars[v].level = 0;
+            s->vars[v].reason = INVALID_CLAUSE;
+            s->vars[v].trail_pos = s->trail_size;
+
+            s->trail[s->trail_size].lit = neg(lit);
+            s->trail[s->trail_size].level = 0;
+            s->trail_size++;
+            assumptions++;
+        }
+
+        // Now propagate with all other literals false
+        CRef conflict = solver_propagate(s);
+
+        if (conflict != INVALID_CLAUSE) {
+            // Conflict! This means lits[i] is implied by the other literals
+            // So lits[i] is redundant - don't include it
+            strengthened = true;
+        } else {
+            // Check if lits[i] was propagated to false
+            Var v = var(lits[i]);
+            if (s->vars[v].value == (sign(lits[i]) ? TRUE : FALSE)) {
+                // Literal propagated to false - it's redundant!
+                strengthened = true;
+            } else {
+                // Literal is not redundant, keep it
+                new_lits[new_size++] = lits[i];
+            }
+        }
+
+        // Backtrack all assumptions
+        while (s->trail_size > trail_before) {
+            s->trail_size--;
+            Lit trail_lit = s->trail[s->trail_size].lit;
+            s->vars[var(trail_lit)].value = UNDEF;
+        }
+        s->qhead = trail_before;
+    }
+
+    // If we strengthened the clause, update it
+    if (strengthened && new_size > 0) {
+        // Update clause in place
+        for (uint32_t i = 0; i < new_size; i++) {
+            lits[i] = new_lits[i];
+        }
+
+        // Update size
+        CLAUSE_HEADER(s->arena, cref)->size = new_size;
+
+        // If became unit, propagate it
+        if (new_size == 1) {
+            Lit unit = lits[0];
+            Var v = var(unit);
+            if (s->vars[v].value == UNDEF) {
+                s->vars[v].value = sign(unit) ? FALSE : TRUE;
+                s->vars[v].level = 0;
+                s->vars[v].reason = INVALID_CLAUSE;
+                s->vars[v].trail_pos = s->trail_size;
+
+                s->trail[s->trail_size].lit = unit;
+                s->trail[s->trail_size].level = 0;
+                s->trail_size++;
+            }
+        }
+
+        return true;
+    } else if (strengthened && new_size == 0) {
+        // Clause became empty - UNSAT!
+        s->result = FALSE;
+        return true;
+    }
+
+    return false;
+}
+
+/*********************************************************************
  * Simplification
  *********************************************************************/
 
@@ -1231,8 +1434,29 @@ bool solver_simplify(Solver* s) {
     // Can only simplify at level 0
     if (s->decision_level > 0) return true;
 
-    // TODO: Remove satisfied clauses
-    // TODO: Strengthen clauses with unit literals
+    // Vivification is DISABLED by default (too expensive)
+    // Enable with: s->opts.inprocess = true (future command-line option)
+    //
+    // Vivify learned clauses periodically
+    // static uint32_t last_vivify = 0;
+    // if (s->opts.inprocess && s->stats.conflicts > last_vivify + 5000) {
+    //     last_vivify = s->stats.conflicts;
+    //
+    //     uint32_t vivified = 0;
+    //     for (uint32_t i = 0; i < s->num_learnts && i < 100; i++) {
+    //         CRef cref = s->learnts[i];
+    //         if (cref == INVALID_CLAUSE) continue;
+    //         if (clause_deleted(s->arena, cref)) continue;
+    //
+    //         if (vivify_clause(s, cref)) {
+    //             vivified++;
+    //         }
+    //     }
+    //
+    //     if (vivified > 0 && s->opts.verbose) {
+    //         printf("c Vivified %u clauses\n", vivified);
+    //     }
+    // }
 
     return true;
 }
@@ -1369,8 +1593,14 @@ lbool solver_solve_with_assumptions(Solver* s, const Lit* assumps, uint32_t n_as
             solver_minimize_clause(s, learnt_clause, &learnt_size);
             s->stats.minimized_literals += (original_size - learnt_size);
 
-            // Backtrack
-            solver_backtrack(s, backtrack_level);
+            // Backtrack (chronological or non-chronological)
+            // Chronological backtracking: step down one level at a time
+            // Non-chronological: jump directly to target level
+            // Research shows chronological is often better - enabled by default
+            Level actual_backtrack_level = solver_backtrack_chronological(s, learnt_clause, learnt_size, backtrack_level);
+
+            // Update backtrack_level to reflect where we actually ended up
+            backtrack_level = actual_backtrack_level;
 
             // Add learned clause
             if (learnt_size == 1) {
@@ -1482,6 +1712,9 @@ lbool solver_solve_with_assumptions(Solver* s, const Lit* assumps, uint32_t n_as
             if (s->stats.conflicts % s->opts.reduce_interval == 0) {
                 solver_reduce_db(s);
             }
+
+            // Simplify/vivify clauses periodically
+            solver_simplify(s);
 
         } else {
             // No conflict
