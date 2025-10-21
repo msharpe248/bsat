@@ -86,6 +86,11 @@ DimacsError dimacs_parse_stream(Solver* s, FILE* file) {
 
     // Read line by line
     while (fgets(line, MAX_LINE, file)) {
+        #ifdef DEBUG
+        if (getenv("DEBUG_CDCL")) {
+            printf("[DIMACS] Read line: %s", line);
+        }
+        #endif
         const char* p = skip_whitespace(line);
 
         // Skip empty lines
@@ -193,6 +198,11 @@ DimacsError dimacs_parse_stream(Solver* s, FILE* file) {
 
         // Add clause to solver
         if (clause_size > 0) {
+            #ifdef DEBUG
+            if (getenv("DEBUG_CDCL")) {
+                printf("[DIMACS] Adding clause %u with %u literals\n", parsed_clauses + 1, clause_size);
+            }
+            #endif
             if (!solver_add_clause(s, clause, clause_size)) {
                 // Solver detected UNSAT during clause addition (empty clause)
                 // This is OK, continue parsing to validate format

@@ -17,6 +17,7 @@
 #include <stdbool.h>
 #include <stddef.h>
 #include <limits.h>
+#include <stdlib.h>
 
 /*********************************************************************
  * Configuration Constants
@@ -32,7 +33,9 @@
 #define INVALID_VAR 0
 #define INVALID_LIT 0
 #define INVALID_CLAUSE UINT32_MAX
+#define BINARY_CONFLICT (UINT32_MAX - 1)  // Special marker for binary conflicts
 #define INVALID_LEVEL UINT32_MAX
+#define LIT_UNDEF 0
 
 /*********************************************************************
  * Basic Types
