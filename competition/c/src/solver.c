@@ -885,17 +885,12 @@ bool solver_decide(Solver* s) {
  *********************************************************************/
 
 bool solver_should_restart(Solver* s) {
-    if (s->opts.glucose_restart) {
-        // Glucose-style adaptive restarts
-        // TODO: Implement moving averages of LBD
-        return false;  // For now
-    } else {
-        // Geometric restarts
-        if (s->restart.conflicts_since >= s->restart.threshold) {
-            s->restart.conflicts_since = 0;
-            s->restart.threshold = (uint32_t)(s->restart.threshold * s->opts.restart_inc);
-            return true;
-        }
+    // Use simple geometric restarts for now
+    // TODO: Implement Glucose-style adaptive restarts based on LBD moving averages
+    if (s->restart.conflicts_since >= s->restart.threshold) {
+        s->restart.conflicts_since = 0;
+        s->restart.threshold = (uint32_t)(s->restart.threshold * s->opts.restart_inc);
+        return true;
     }
     return false;
 }
