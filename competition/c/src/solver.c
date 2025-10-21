@@ -502,13 +502,28 @@ void solver_print_stats(const Solver* s) {
  *********************************************************************/
 
 CRef solver_propagate(Solver* s) {
+    #ifdef DEBUG
+    static uint64_t prop_count = 0;
+    #endif
+
     while (s->qhead < s->trail_size) {
+        #ifdef DEBUG
+        if (getenv("DEBUG_CDCL")) {
+            prop_count++;
+            if (prop_count > 1000) {
+                printf("[ERROR] Infinite propagation loop detected! qhead=%u trail_size=%u\n",
+                       s->qhead, s->trail_size);
+                exit(1);
+            }
+        }
+        #endif
+
         Lit p = s->trail[s->qhead++].lit;
 
 #ifdef DEBUG
         if (getenv("DEBUG_CDCL")) {
-            printf("[PROPAGATE] Processing literal %d (var=%u, sign=%d)\n",
-                   toDimacs(p), var(p), sign(p));
+            printf("[PROPAGATE] qhead=%u trail_size=%u Processing literal %d (var=%u, value=%d)\n",
+                   s->qhead - 1, s->trail_size, toDimacs(p), var(p), s->vars[var(p)].value);
         }
 #endif
 
@@ -670,7 +685,7 @@ CRef solver_propagate(Solver* s) {
                     watches[j++] = watches[i++];
                 }
                 ws->size = j;
-                s->qhead = s->trail_size;  // Clear queue
+                // NOTE: Don't modify qhead here - leave it for backtracking to handle
                 return cref;
             }
         }
@@ -948,12 +963,27 @@ lbool solver_solve_with_assumptions(Solver* s, const Lit* assumps, uint32_t n_as
     }
 
     // Initial unit propagation at level 0
+    #ifdef DEBUG
+    if (getenv("DEBUG_CDCL")) {
+        printf("[SOLVE] Starting initial propagation...\n");
+    }
+    #endif
     CRef initial_conflict = solver_propagate(s);
     if (initial_conflict != INVALID_CLAUSE) {
         // Conflict at level 0 = UNSAT
+        #ifdef DEBUG
+        if (getenv("DEBUG_CDCL")) {
+            printf("[SOLVE] Initial conflict at level 0 - UNSAT\n");
+        }
+        #endif
         s->result = FALSE;
         return FALSE;
     }
+    #ifdef DEBUG
+    if (getenv("DEBUG_CDCL")) {
+        printf("[SOLVE] Initial propagation complete, entering main loop\n");
+    }
+    #endif
 
     // Main solve loop
     // Allocate learnt clause buffer - size based on actual number of variables
@@ -963,13 +993,31 @@ lbool solver_solve_with_assumptions(Solver* s, const Lit* assumps, uint32_t n_as
         return UNDEF;
     }
 
+    #ifdef DEBUG
+    uint64_t loop_count = 0;
+    #endif
+
     for (;;) {
+        #ifdef DEBUG
+        loop_count++;
+        if (loop_count % 10000 == 0 && getenv("DEBUG_CDCL")) {
+            printf("[LOOP] Iteration: %llu, Trail: %u, Level: %u\n",
+                   loop_count, s->trail_size, s->decision_level);
+        }
+        #endif
+
         CRef conflict = solver_propagate(s);
 
         if (conflict != INVALID_CLAUSE) {
             // Conflict!
             s->stats.conflicts++;
             s->restart.conflicts_since++;
+
+            // Progress output every 1000 conflicts
+            if (s->stats.conflicts % 1000 == 0 && getenv("DEBUG_CDCL")) {
+                printf("[PROGRESS] Conflicts: %u, Decisions: %u, Level: %u\n",
+                       s->stats.conflicts, s->stats.decisions, s->decision_level);
+            }
 
             if (s->decision_level == 0) {
                 // Conflict at level 0 = UNSAT
