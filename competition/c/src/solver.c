@@ -207,6 +207,9 @@ bool solver_solve(Solver *solver) {
         fprintf(stderr, "solver_solve() started\n");
     }
 
+    // Initialize level_starts[0] at the beginning
+    solver->level_starts[0] = 0;
+
     // Propagate initial unit clauses
     for (uint32_t i = 0; i < solver->num_clauses; i++) {
         Clause *clause = solver->clauses[i];
