@@ -13,8 +13,7 @@ Build a SAT solver capable of competing with Kissat/CaDiCaL, with competitive ad
 
 ```
 competition/
-├── python/          # Phase 1: Optimized Python prototypes (Months 1-3)
-├── c/               # Phase 2-4: C implementation (Months 4-16)
+├── python/          # Optimized Python prototypes
 ├── benchmarks/      # SAT Competition instances and results
 └── docs/            # Design documents and optimization notes
 ```
@@ -32,27 +31,17 @@ Optimize Python CDCL and validate that CGPM/CoBD algorithms work at competition 
 
 **Deliverable**: Python solver handling 1000-5000 variable instances
 
-### Phase 2: C Core Development (Months 4-9)
-**Status**: ⏸️ Not Started
+### Phase 2: Novel Algorithm Integration
+**Status**: ⏳ In Development
 
-Build competition-grade CDCL engine in C:
-- Study Kissat source code
-- Implement modern CDCL with two-watched literals, VSIDS, LBD
-- Add state-of-the-art optimizations (inprocessing, advanced branching)
-
-**Target**: Within 2× of Kissat on general instances
-
-### Phase 3: Novel Algorithm Integration (Months 10-13)
-**Status**: ⏸️ Not Started
-
-Integrate CGPM and CoBD in C:
+Integrate CGPM and CoBD algorithms:
 - Incremental PageRank on conflict graph
 - Community detection and parallel solving
 - Adaptive strategy selection
 
-**Target**: Beat Kissat on 30% of modular/structured instances
+**Target**: Improve performance on modular/structured instances
 
-### Phase 4: Competition Readiness (Months 14-16)
+### Phase 3: Competition Readiness
 **Status**: ⏸️ Not Started
 
 Polish for competition submission:
@@ -66,23 +55,15 @@ Polish for competition submission:
 
 **Week 1-2**: Implementing two-watched literals in Python CDCL
 
-This is the single most important optimization (50-100× speedup on unit propagation, which is 70-80% of solver time). Once validated in Python, this becomes the foundation for the C implementation.
+This is the single most important optimization (50-100× speedup on unit propagation, which is 70-80% of solver time).
 
 ## Quick Start
 
-### Python Solver (Current)
+### Python Solver
 
 ```bash
 cd competition/python
 python cdcl_optimized.py instance.cnf
-```
-
-### C Solver (Future)
-
-```bash
-cd competition/c
-make
-./solver instance.cnf
 ```
 
 ## Benchmarking
@@ -95,7 +76,7 @@ python run_benchmark.py   # Run full benchmark suite
 
 ## References
 
-- **Kissat**: https://github.com/arminbiere/kissat (Study this for C implementation)
+- **Kissat**: https://github.com/arminbiere/kissat
 - **SAT Competition**: https://satcompetition.github.io/
 - **CGPM-SAT**: `../research/cgpm_sat/README.md`
 - **CoBD-SAT**: `../research/cobd_sat/README.md`

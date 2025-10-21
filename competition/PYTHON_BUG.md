@@ -11,20 +11,14 @@ The Python CDCL solver (`src/bsat/cdcl.py`) had a **critical soundness bug** tha
 **Instance:** `dataset/simple_tests/simple_suite/random3sat_v15_c64.cnf`
 
 **Test Results:**
-- Python CDCL: **UNSATISFIABLE** ❌ WRONG
+- Python CDCL: **UNSATISFIABLE** ❌ WRONG (before fix)
 - Python DPLL: **SATISFIABLE** ✅ CORRECT
-- C CDCL (before recent changes): **SATISFIABLE** ✅ CORRECT
 
 **Verified Solutions:**
 Multiple valid satisfying assignments exist and have been verified:
 
 ```python
-# Solution 1 (from C solver):
-{'x1': False, 'x2': True, 'x3': True, 'x4': False, 'x5': True,
- 'x6': False, 'x7': True, 'x8': False, 'x9': True, 'x10': False,
- 'x11': True, 'x12': True, 'x13': True, 'x14': True, 'x15': True}
-
-# Solution 2 (from DPLL):
+# Solution 1 (from DPLL):
 {'x1': True, 'x2': True, 'x3': True, 'x4': True, 'x5': True,
  'x6': False, 'x7': False, 'x8': False, 'x9': True, 'x10': False,
  'x11': True, 'x12': True, 'x13': True, 'x14': True, 'x15': True}
@@ -177,4 +171,4 @@ Results: 9/9 passed
 1. **Literal polarity in learned clauses is critical** - Negating when you shouldn't completely breaks CDCL
 2. **Propagation after backtracking is mandatory** - Without it, learned clauses are useless
 3. **Detailed debugging traces are essential** - The bugs were subtle and required step-by-step analysis
-4. **Reference implementations matter** - Comparing with C solver revealed the exact differences
+4. **Testing against reference implementations** - Comparing with other solvers can reveal subtle differences

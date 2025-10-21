@@ -1,7 +1,7 @@
 # Competition Solver Development Progress
 
 **Goal**: Build a SAT solver capable of competing with Kissat/CaDiCaL
-**Strategy**: Python optimization → C implementation → Novel algorithms (CGPM + CoBD)
+**Strategy**: Python optimization → Novel algorithms (CGPM + CoBD)
 **Timeline**: 16-18 months to competition entry
 
 ---
@@ -16,7 +16,6 @@
 
 1. **Created Competition Directory Structure**
    - `competition/python/` - Optimized Python prototypes
-   - `competition/c/` - Future C implementation
    - `competition/benchmarks/` - Test instances
    - `competition/docs/` - Documentation
 
