@@ -53,6 +53,12 @@ Clause* solver_propagate(Solver *solver) {
             Clause *clause = wl->clauses[i];
             solver->propagations++;
 
+            // Special handling for unit clauses
+            if (clause->size == 1) {
+                // Unit clause being watched means its literal became false - CONFLICT!
+                return clause;
+            }
+
             // Find the watched literals in this clause
             // By convention, we keep watched literals at positions 0 and 1
             Literal *lits = clause->literals;

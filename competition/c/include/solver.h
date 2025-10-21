@@ -166,7 +166,7 @@ void vsids_decay(VSIDSHeap *heap, double decay);
 // clause.c
 Clause* clause_create(Literal *lits, uint32_t size, bool learned);
 void clause_destroy(Clause *clause);
-uint32_t clause_lbd(Clause *clause, Assignment *trail);
+uint32_t clause_lbd(Clause *clause, Assignment *trail, uint32_t trail_size);
 
 // memory.c
 void* xmalloc(size_t size);

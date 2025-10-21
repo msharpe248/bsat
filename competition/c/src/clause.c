@@ -31,7 +31,7 @@ void clause_destroy(Clause *clause) {
  * Literal Block Distance: count number of distinct decision levels in clause
  * Lower LBD = better quality learned clause
  */
-uint32_t clause_lbd(Clause *clause, Assignment *trail) {
+uint32_t clause_lbd(Clause *clause, Assignment *trail, uint32_t trail_size) {
     // Use a simple array to track which levels we've seen
     // Maximum decision level is bounded by trail size
     static bool seen[10000];  // Assume max 10000 decision levels
@@ -47,7 +47,7 @@ uint32_t clause_lbd(Clause *clause, Assignment *trail) {
 
         // Find this variable's assignment on the trail
         // (This is inefficient but correct for now - can optimize later)
-        for (uint32_t j = 0; j < 10000; j++) {
+        for (uint32_t j = 0; j < trail_size; j++) {  // FIX: Use actual trail_size
             if (trail[j].variable == var) {
                 uint32_t level = trail[j].level;
                 if (!seen[level]) {

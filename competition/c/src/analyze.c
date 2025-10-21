@@ -217,7 +217,7 @@ void solver_analyze_conflict(Solver *solver, Clause *conflict,
     // Create learned clause
     if (learned_size > 0) {
         *learned_out = clause_create(learned_lits, learned_size, true);
-        (*learned_out)->lbd = clause_lbd(*learned_out, solver->trail);
+        (*learned_out)->lbd = clause_lbd(*learned_out, solver->trail, solver->trail_size);
     } else {
         *learned_out = NULL;
     }

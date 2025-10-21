@@ -13,8 +13,9 @@ int is_debug() {
     return debug_mode;
 }
 
-// Forward declaration
+// Forward declarations
 static bool solver_verify_solution(Solver *solver);
+static void solver_add_clause_internal(Solver *solver, Literal *lits, uint32_t size, bool learned);
 
 /* ============================================================================
  * SOLVER INITIALIZATION AND CLEANUP
@@ -54,6 +55,8 @@ Solver* solver_create(uint32_t num_vars) {
     solver->assignments = (int8_t*)xmalloc((num_vars + 1) * sizeof(int8_t));
     solver->phase_cache = (bool*)xmalloc((num_vars + 1) * sizeof(bool));
     memset(solver->assignments, 0, (num_vars + 1) * sizeof(int8_t));
+    // Initialize phase_cache to false
+    // Note: memset to 0 works for false
     memset(solver->phase_cache, 0, (num_vars + 1) * sizeof(bool));
 
     // Create VSIDS heap
@@ -126,8 +129,12 @@ static void watch_list_add(WatchList *wl, Clause *clause) {
  * ============================================================================ */
 
 void solver_add_clause(Solver *solver, Literal *lits, uint32_t size) {
+    solver_add_clause_internal(solver, lits, size, false);
+}
+
+static void solver_add_clause_internal(Solver *solver, Literal *lits, uint32_t size, bool learned) {
     // Create clause
-    Clause *clause = clause_create(lits, size, false);
+    Clause *clause = clause_create(lits, size, learned);
 
     // Add to clause array
     if (solver->num_clauses >= solver->clauses_capacity) {
@@ -200,6 +207,31 @@ bool solver_solve(Solver *solver) {
         fprintf(stderr, "solver_solve() started\n");
     }
 
+    // Propagate initial unit clauses
+    for (uint32_t i = 0; i < solver->num_clauses; i++) {
+        Clause *clause = solver->clauses[i];
+        if (clause->size == 1) {
+            Literal lit = clause->literals[0];
+            uint32_t var = LIT_VAR(lit);
+            bool value = !LIT_IS_NEG(lit);
+
+            if (solver->assignments[var] != 0) {
+                // Already assigned - check for conflict
+                bool assigned_value = (solver->assignments[var] == 1);
+                if (assigned_value != value) {
+                    // Conflict at level 0
+                    return false;
+                }
+            } else {
+                // Assign the unit literal at level 0
+                solver_assign(solver, var, value, clause);
+                if (is_debug()) {
+                    fprintf(stderr, "Initial unit clause: x%u = %s\n", var, value ? "T" : "F");
+                }
+            }
+        }
+    }
+
     uint32_t iteration = 0;
 
     while (true) {
@@ -239,7 +271,7 @@ bool solver_solve(Solver *solver) {
             // Add learned clause
             if (learned) {
                 uint32_t clause_idx = solver->num_clauses;
-                solver_add_clause(solver, learned->literals, learned->size);
+                solver_add_clause_internal(solver, learned->literals, learned->size, true);
                 solver->learned_clauses++;
 
                 // Assign the asserting literal (first literal in learned clause)
