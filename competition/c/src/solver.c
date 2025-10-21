@@ -24,7 +24,7 @@ SolverOpts default_opts(void) {
 
         .restart_first = 100,
         .restart_inc = 1.5,
-        .glucose_restart = true,
+        .glucose_restart = false,  // Use geometric for now (Glucose needs more tuning)
         .restart_postpone = 10,
 
         .phase_saving = true,
@@ -885,24 +885,156 @@ bool solver_decide(Solver* s) {
  *********************************************************************/
 
 bool solver_should_restart(Solver* s) {
-    // Use simple geometric restarts for now
-    // TODO: Implement Glucose-style adaptive restarts based on LBD moving averages
-    if (s->restart.conflicts_since >= s->restart.threshold) {
-        s->restart.conflicts_since = 0;
-        s->restart.threshold = (uint32_t)(s->restart.threshold * s->opts.restart_inc);
-        return true;
+    if (s->opts.glucose_restart) {
+        // Glucose-style adaptive restarts based on LBD moving averages
+        // Restart when fast_ma > slow_ma (recent LBD worse than long-term average)
+        //
+        // This means: recent conflicts are producing worse clauses (higher LBD)
+        // than the long-term average, indicating we're in a bad search region.
+        //
+        // Only check after enough conflicts to have meaningful averages
+        if (s->stats.conflicts > 100 && s->restart.fast_ma > s->restart.slow_ma) {
+            // Restart postponing (Glucose 2.1+): Don't restart if trail is growing
+            // This prevents restarting during productive search
+            if (s->opts.restart_postpone > 0) {
+                // Check if trail has grown significantly since last restart
+                uint32_t trail_growth_threshold = s->opts.restart_postpone;  // e.g., 10% growth
+                // For simplicity, just check if we have enough trail entries
+                if (s->trail_size < trail_growth_threshold) {
+                    #ifdef DEBUG
+                    if (getenv("DEBUG_CDCL")) {
+                        printf("[RESTART] Postponed: trail too small (%u < %u)\n",
+                               s->trail_size, trail_growth_threshold);
+                    }
+                    #endif
+                    return false;  // Postpone restart
+                }
+            }
+
+            #ifdef DEBUG
+            if (getenv("DEBUG_CDCL")) {
+                printf("[RESTART] Glucose adaptive: fast_ma=%.2f > slow_ma=%.2f\n",
+                       s->restart.fast_ma, s->restart.slow_ma);
+            }
+            #endif
+            return true;
+        }
+        return false;
+    } else {
+        // Simple geometric restarts (original strategy)
+        if (s->restart.conflicts_since >= s->restart.threshold) {
+            s->restart.conflicts_since = 0;
+            s->restart.threshold = (uint32_t)(s->restart.threshold * s->opts.restart_inc);
+            return true;
+        }
+        return false;
     }
-    return false;
 }
 
 /*********************************************************************
  * Clause Database Reduction
  *********************************************************************/
 
+// Helper structure for sorting clauses
+typedef struct {
+    CRef cref;
+    uint32_t lbd;
+    float activity;
+} ClauseScore;
+
+// Comparison function for qsort - keep clauses with:
+// 1. Lower LBD (better quality)
+// 2. Higher activity (more recently used)
+static int compare_clauses(const void* a, const void* b) {
+    const ClauseScore* ca = (const ClauseScore*)a;
+    const ClauseScore* cb = (const ClauseScore*)b;
+
+    // First, compare by LBD (lower is better)
+    if (ca->lbd != cb->lbd) {
+        return ca->lbd - cb->lbd;  // Ascending order (keep low LBD)
+    }
+
+    // If LBD is equal, compare by activity (higher is better)
+    if (ca->activity > cb->activity) return -1;  // Descending order
+    if (ca->activity < cb->activity) return 1;
+    return 0;
+}
+
 void solver_reduce_db(Solver* s) {
-    // TODO: Implement clause reduction based on LBD
-    // For now, just track that we called it
     s->stats.reduces++;
+
+    // Count learned clauses
+    uint32_t num_learned = 0;
+    for (uint32_t i = 0; i < s->num_clauses; i++) {
+        CRef cref = s->clauses[i];
+        if (cref == INVALID_CLAUSE) continue;
+        if (clause_deleted(s->arena, cref)) continue;
+        if (clause_learned(s->arena, cref)) {
+            num_learned++;
+        }
+    }
+
+    // If not too many learned clauses, skip reduction
+    uint32_t max_learned = s->num_clauses / 2 + 1000;  // Allow some learned clauses
+    if (num_learned < max_learned) {
+        return;
+    }
+
+    #ifdef DEBUG
+    if (getenv("DEBUG_CDCL")) {
+        printf("[REDUCE] Reducing clause database: %u learned clauses, max %u\n",
+               num_learned, max_learned);
+    }
+    #endif
+
+    // Collect all learned clauses with their scores
+    ClauseScore* scores = (ClauseScore*)malloc(num_learned * sizeof(ClauseScore));
+    if (!scores) return;  // Out of memory, skip reduction
+
+    uint32_t j = 0;
+    for (uint32_t i = 0; i < s->num_clauses; i++) {
+        CRef cref = s->clauses[i];
+        if (cref == INVALID_CLAUSE) continue;
+        if (clause_deleted(s->arena, cref)) continue;
+        if (!clause_learned(s->arena, cref)) continue;
+
+        scores[j].cref = cref;
+        scores[j].lbd = clause_lbd(s->arena, cref);
+        scores[j].activity = clause_activity(s->arena, cref);
+        j++;
+    }
+
+    // Sort by quality (low LBD, high activity)
+    qsort(scores, num_learned, sizeof(ClauseScore), compare_clauses);
+
+    // Keep the best half, delete the rest
+    // But ALWAYS keep glue clauses (LBD <= glue_lbd threshold, typically 2)
+    uint32_t to_keep = num_learned / 2;
+    uint32_t deleted = 0;
+
+    for (uint32_t i = to_keep; i < num_learned; i++) {
+        // Check if this is a glue clause - never delete these
+        if (scores[i].lbd <= s->opts.glue_lbd) {
+            continue;  // Keep glue clauses even if beyond the limit
+        }
+
+        // Delete this clause
+        arena_delete(s->arena, scores[i].cref);
+        deleted++;
+    }
+
+    free(scores);
+
+    s->stats.deleted_clauses += deleted;
+
+    #ifdef DEBUG
+    if (getenv("DEBUG_CDCL")) {
+        printf("[REDUCE] Deleted %u clauses, kept %u\n", deleted, num_learned - deleted);
+    }
+    #endif
+
+    // Optionally trigger garbage collection if many deletions
+    // For now, let arena GC happen naturally when space is needed
 }
 
 /*********************************************************************
@@ -1008,10 +1140,30 @@ lbool solver_solve_with_assumptions(Solver* s, const Lit* assumps, uint32_t n_as
             s->stats.conflicts++;
             s->restart.conflicts_since++;
 
+            // Adaptive random phase: detect stuck states
+            // If many conflicts at low decision levels, we're likely stuck in a local minimum
+            // Increase random phase probability to escape
+            if (s->opts.random_phase && s->decision_level < 10) {
+                s->restart.stuck_conflicts++;
+                // After 100 consecutive low-level conflicts, boost randomness
+                if (s->restart.stuck_conflicts > 100) {
+                    // Temporarily increase random phase probability
+                    // This helps escape local minima
+                    if (s->opts.random_phase_prob < 0.5) {
+                        // Gradually increase random phase when stuck
+                        // (will be reset on restart)
+                        s->opts.random_phase_prob = 0.2;  // Boost to 20%
+                    }
+                }
+            } else {
+                s->restart.stuck_conflicts = 0;  // Reset if we reach higher levels
+            }
+
             // Progress output every 1000 conflicts
             if (s->stats.conflicts % 1000 == 0 && getenv("DEBUG_CDCL")) {
-                printf("[PROGRESS] Conflicts: %u, Decisions: %u, Level: %u\n",
-                       s->stats.conflicts, s->stats.decisions, s->decision_level);
+                printf("[PROGRESS] Conflicts: %u, Decisions: %u, Level: %u, Random: %.2f\n",
+                       s->stats.conflicts, s->stats.decisions, s->decision_level,
+                       s->opts.random_phase_prob);
             }
 
             if (s->decision_level == 0) {
@@ -1058,6 +1210,18 @@ lbool solver_solve_with_assumptions(Solver* s, const Lit* assumps, uint32_t n_as
                     }
                     if (lbd <= s->opts.glue_lbd) {
                         s->stats.glue_clauses++;
+                    }
+
+                    // Update LBD moving averages for Glucose adaptive restarts
+                    // Fast MA: tracks recent conflicts (α = 0.8)
+                    // Slow MA: tracks long-term average (α = 0.9999)
+                    if (s->stats.conflicts > 0) {
+                        s->restart.fast_ma = 0.8 * s->restart.fast_ma + 0.2 * lbd;
+                        s->restart.slow_ma = 0.9999 * s->restart.slow_ma + 0.0001 * lbd;
+                    } else {
+                        // Initialize moving averages with first LBD
+                        s->restart.fast_ma = lbd;
+                        s->restart.slow_ma = lbd;
                     }
 
                     // Add to learned clauses
