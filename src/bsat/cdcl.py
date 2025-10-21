@@ -242,8 +242,8 @@ class CDCLSolver:
                         # Bump VSIDS score
                         self.vsids_scores[lit.variable] += self.vsids_increment
                     elif var_assignment and var_assignment.decision_level > 0:
-                        # Add to learned clause (negated)
-                        learned_literals.append(Literal(lit.variable, not lit.negated))
+                        # Add literal to learned clause as-is (these literals are false)
+                        learned_literals.append(lit)
 
             # Find next literal to resolve
             while antecedent_idx >= 0:
@@ -252,11 +252,17 @@ class CDCLSolver:
                     break
                 antecedent_idx -= 1
 
+            # Check if we found a variable
+            if antecedent_idx < 0:
+                # Didn't find a variable to resolve - this shouldn't happen
+                break
+
             counter -= 1
-            if counter <= 0:
-                # Found 1UIP
+            if counter == 0:  # Changed from <= to ==
+                # Found 1UIP - add negation of assignment
+                # If x=True in assignment, we want ¬x in learned clause: Literal(x, True)
                 assignment = self.trail[antecedent_idx]
-                learned_literals.append(Literal(assignment.variable, not assignment.value))
+                learned_literals.append(Literal(assignment.variable, assignment.value))
                 break
 
             # Continue with antecedent
@@ -398,13 +404,24 @@ class CDCLSolver:
                 if backtrack_level < 0:
                     return None  # UNSAT
 
-                # Add learned clause
-                self._add_learned_clause(learned_clause)
-
-                # Backtrack
+                # Backtrack BEFORE adding learned clause
                 self._unassign_to_level(backtrack_level)
                 self.decision_level = backtrack_level
                 self.stats.backjumps += 1
+
+                # Add learned clause
+                self._add_learned_clause(learned_clause)
+
+                # CRITICAL: Propagate the learned clause immediately
+                # The learned clause should be asserting at backtrack level
+                # (all literals except first are false, so first must be true)
+                conflict = self._propagate()
+                if conflict is not None:
+                    # Conflict after learning - this means UNSAT
+                    if self.decision_level == 0:
+                        return None
+                    # Continue analyzing this new conflict
+                    continue
 
                 # Decay VSIDS scores
                 self._decay_vsids_scores()
@@ -412,9 +429,10 @@ class CDCLSolver:
                 # Check for restart
                 if self._should_restart():
                     self._restart()
-                    conflict = self._propagate()
-                    if conflict is not None:
-                        return None  # UNSAT
+                    # No need to propagate again - already did it above
+                    break
+                else:
+                    # Exit conflict loop and continue with next decision
                     break
 
     def get_stats(self) -> CDCLStats:
