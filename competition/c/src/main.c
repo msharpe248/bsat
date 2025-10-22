@@ -59,6 +59,10 @@ static void print_usage(const char* program) {
     printf("  --bce                     Enable blocked clause elimination (default)\n");
     printf("  --no-bce                  Disable blocked clause elimination\n");
     printf("\n");
+    printf("Inprocessing:\n");
+    printf("  --inprocess               Enable inprocessing (vivification, etc.)\n");
+    printf("  --inprocess-interval <n>  Conflicts between inprocessing (default: 10000)\n");
+    printf("\n");
     printf("Output format:\n");
     printf("  Standard DIMACS output format\n");
     printf("  s SATISFIABLE / UNSATISFIABLE / UNKNOWN\n");
@@ -96,6 +100,8 @@ static struct option long_options[] = {
     {"reduce-interval", required_argument, 0, 0},
     {"bce",             no_argument,       0, 0},
     {"no-bce",          no_argument,       0, 0},
+    {"inprocess",       no_argument,       0, 0},
+    {"inprocess-interval", required_argument, 0, 0},
     {0, 0, 0, 0}
 };
 
@@ -182,6 +188,10 @@ int main(int argc, char** argv) {
                     opts.bce = true;
                 } else if (strcmp(long_options[option_index].name, "no-bce") == 0) {
                     opts.bce = false;
+                } else if (strcmp(long_options[option_index].name, "inprocess") == 0) {
+                    opts.inprocess = true;
+                } else if (strcmp(long_options[option_index].name, "inprocess-interval") == 0) {
+                    opts.inprocess_interval = (uint32_t)atol(optarg);
                 }
                 break;
 

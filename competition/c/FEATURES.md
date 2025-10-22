@@ -76,6 +76,17 @@ The solver implements a modern CDCL SAT solver with the following components:
 ./bin/bsat --no-phase-saving input.cnf
 ```
 
+### 8. **Preprocessing Options** ✅ IMPLEMENTED
+- **Purpose**: Control preprocessing techniques before search begins
+- **Available Techniques**:
+  - Blocked Clause Elimination (BCE): Enabled by default
+- **Configuration**:
+```bash
+# Enable/disable BCE
+./bin/bsat --bce input.cnf      # Enable (default)
+./bin/bsat --no-bce input.cnf   # Disable
+```
+
 ### 7. **Adaptive Random Phase Selection** ✅ IMPLEMENTED
 - **Purpose**: Escape local minima when stuck
 - **Detection**: Counts consecutive low-level conflicts (decision level < 10)
@@ -127,17 +138,27 @@ The solver implements a modern CDCL SAT solver with the following components:
 
 **Example**: Learning `(a ∨ b ∨ c)` where `c`'s reason is `(a ∨ b)` → minimize to `(a ∨ b)`.
 
-### 11. **Vivification** ✅ IMPLEMENTED (DISABLED)
+### 11. **Vivification (Inprocessing)** ✅ IMPLEMENTED (OPTIONAL)
 - **Purpose**: Strengthen clauses by removing provably redundant literals
 - **Strategy**: For each literal in a clause:
   - Assume all OTHER literals are false
   - Unit propagate to see if this literal is implied
   - If conflict or literal propagates to false → redundant!
 - **Optimization**: Only vivify at decision level 0
-- **Status**: ⚠️ **Implemented but DISABLED by default** (too expensive - O(n²) propagations)
-- **Future**: Enable with `--inprocess` flag for large instances
+- **Status**: ✅ **Implemented - Enable with `--inprocess` flag**
+- **Recommended**: Use on large instances (>1000 variables)
+- **Interval**: Runs every 10000 conflicts (configurable with `--inprocess-interval`)
 - **Location**: `src/solver.c:1311-1417`
 - **Commit**: (current session)
+
+**Configuration:**
+```bash
+# Enable inprocessing (vivification, etc.)
+./bin/bsat --inprocess input.cnf
+
+# Adjust inprocessing interval
+./bin/bsat --inprocess --inprocess-interval 5000 input.cnf
+```
 
 **Example**: Clause `(a ∨ b ∨ c)`, assuming `¬a ∧ ¬b` causes conflict → `c` is redundant, clause becomes `(a ∨ b)`.
 
@@ -155,7 +176,46 @@ The solver implements a modern CDCL SAT solver with the following components:
 
 **Example**: Conflict at level 10 learns clause that would backtrack to level 3. With chronological: check levels 9, 8, 7... If clause becomes unit at level 6, stop there instead of jumping to 3.
 
-### 13. **Blocked Clause Elimination (BCE)** ✅ IMPLEMENTED
+### 13. **Signal-Based Progress Monitoring** ✅ IMPLEMENTED
+- **Purpose**: Monitor solver progress on long-running instances without interrupting search
+- **Method**: Send SIGUSR1 signal to get current statistics
+- **Benefits**:
+  - Non-intrusive (zero overhead when not used)
+  - Works during both search and preprocessing (BCE can be slow)
+  - Helps distinguish hung processes from slow progress
+- **Status**: ✅ Enabled by default
+- **Location**: `src/solver.c:10-54` (signal handler)
+- **Checks**: Main solve loop + BCE loop
+
+**Usage:**
+```bash
+# Start solver in background
+./bin/bsat large_instance.cnf &
+
+# Get progress update (solver prints PID at startup)
+kill -USR1 <pid>
+
+# Continuous monitoring every 2 seconds
+watch -n 2 "pgrep bsat | xargs -I {} kill -USR1 {}"
+```
+
+**Output Example:**
+```
+c ========== Progress Update ==========
+c Elapsed time     : 45.3 s
+c Decisions        : 124532
+c Propagations     : 5234234
+c Conflicts        : 23452
+c Restarts         : 45
+c Learned clauses  : 12453
+c Decision level   : 15
+c Trail size       : 234
+c Conflicts/sec    : 518
+c Decisions/sec    : 2749
+c ======================================
+```
+
+### 14. **Blocked Clause Elimination (BCE)** ✅ IMPLEMENTED
 - **Purpose**: Preprocessing to eliminate blocked clauses before search
 - **Theory**: A clause C is blocked on literal L if for every clause D containing ¬L,
   resolving C and D on L produces a tautology
@@ -167,9 +227,15 @@ The solver implements a modern CDCL SAT solver with the following components:
 - **Soundness**: Preserves satisfiability (blocked clauses cannot participate in resolution refutations)
 - **Results**: Eliminates 10-20% of clauses on typical instances
 - **Example**: On medium_3sat_v040_c0170.cnf: 34/170 clauses eliminated (20%)
-- **Status**: Enabled by default
+- **Status**: ✅ Enabled by default (can disable with `--no-bce`)
 - **Location**: `src/solver.c:1429-1586`
 - **Commit**: (current session)
+
+**Configuration:**
+```bash
+./bin/bsat --bce input.cnf      # Enable (default)
+./bin/bsat --no-bce input.cnf   # Disable
+```
 
 **Example**: Clause C = `(x ∨ y)` and all clauses with `¬x` resolve to tautologies with C → C is blocked on x.
 
@@ -236,6 +302,19 @@ The solver implements a modern CDCL SAT solver with the following components:
 ```bash
 --bce                     Enable blocked clause elimination (default: true)
 --no-bce                  Disable blocked clause elimination
+```
+
+### Inprocessing
+```bash
+--inprocess               Enable inprocessing (vivification, etc.)
+--inprocess-interval <n>  Conflicts between inprocessing (default: 10000)
+```
+
+### Progress Monitoring
+```bash
+# Signal-based monitoring (no command-line flag needed)
+# Solver prints PID at startup, send SIGUSR1 for progress:
+kill -USR1 <pid>          # Get current statistics
 ```
 
 ### Clause Management
