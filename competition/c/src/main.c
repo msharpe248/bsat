@@ -44,13 +44,19 @@ static void print_usage(const char* program) {
     printf("Restart parameters:\n");
     printf("  --restart-first <n>       First restart interval (default: 100)\n");
     printf("  --restart-inc <f>         Restart multiplier (default: 1.5)\n");
-    printf("  --glucose-restart         Use Glucose adaptive restarts\n");
+    printf("  --glucose-restart         Use Glucose adaptive restarts (EMA mode)\n");
+    printf("  --glucose-restart-ema     Use Glucose with EMA (conservative, original paper)\n");
+    printf("  --glucose-restart-avg     Use Glucose with sliding window (Python-style, aggressive)\n");
     printf("  --no-restarts             Disable restarts\n");
     printf("\n");
-    printf("Glucose tuning (only with --glucose-restart):\n");
+    printf("Glucose EMA tuning (only with --glucose-restart or --glucose-restart-ema):\n");
     printf("  --glucose-fast-alpha <f>  Fast MA decay factor (default: 0.8)\n");
     printf("  --glucose-slow-alpha <f>  Slow MA decay factor (default: 0.9999)\n");
     printf("  --glucose-min-conflicts <n>  Min conflicts before Glucose (default: 100)\n");
+    printf("\n");
+    printf("Glucose AVG tuning (only with --glucose-restart-avg):\n");
+    printf("  --glucose-window-size <n> Window size for short-term average (default: 50)\n");
+    printf("  --glucose-k <f>           Threshold multiplier (default: 0.8)\n");
     printf("\n");
     printf("Phase saving:\n");
     printf("  --no-phase-saving         Disable phase saving\n");
@@ -95,6 +101,8 @@ static struct option long_options[] = {
     {"restart-first",   required_argument, 0, 0},
     {"restart-inc",     required_argument, 0, 0},
     {"glucose-restart", no_argument,       0, 0},
+    {"glucose-restart-ema", no_argument,   0, 0},
+    {"glucose-restart-avg", no_argument,   0, 0},
     {"luby-restart",    no_argument,       0, 0},
     {"no-luby-restart", no_argument,       0, 0},
     {"luby-unit",       required_argument, 0, 0},
@@ -102,6 +110,8 @@ static struct option long_options[] = {
     {"glucose-fast-alpha", required_argument, 0, 0},
     {"glucose-slow-alpha", required_argument, 0, 0},
     {"glucose-min-conflicts", required_argument, 0, 0},
+    {"glucose-window-size", required_argument, 0, 0},
+    {"glucose-k",       required_argument, 0, 0},
     {"no-phase-saving", no_argument,       0, 0},
     {"random-phase",    no_argument,       0, 0},
     {"no-random-phase", no_argument,       0, 0},
@@ -191,6 +201,18 @@ int main(int argc, char** argv) {
                     opts.glucose_slow_alpha = atof(optarg);
                 } else if (strcmp(long_options[option_index].name, "glucose-min-conflicts") == 0) {
                     opts.glucose_min_conflicts = (uint32_t)atol(optarg);
+                } else if (strcmp(long_options[option_index].name, "glucose-restart-ema") == 0) {
+                    opts.glucose_restart = true;
+                    opts.glucose_use_ema = true;
+                    opts.luby_restart = false;
+                } else if (strcmp(long_options[option_index].name, "glucose-restart-avg") == 0) {
+                    opts.glucose_restart = true;
+                    opts.glucose_use_ema = false;
+                    opts.luby_restart = false;
+                } else if (strcmp(long_options[option_index].name, "glucose-window-size") == 0) {
+                    opts.glucose_window_size = (uint32_t)atol(optarg);
+                } else if (strcmp(long_options[option_index].name, "glucose-k") == 0) {
+                    opts.glucose_k = atof(optarg);
                 } else if (strcmp(long_options[option_index].name, "no-phase-saving") == 0) {
                     opts.phase_saving = false;
                 } else if (strcmp(long_options[option_index].name, "random-phase") == 0) {

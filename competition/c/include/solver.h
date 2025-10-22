@@ -34,9 +34,16 @@ typedef struct SolverOpts {
     bool     luby_restart;       // Use Luby restart sequence (vs geometric/glucose)
     uint32_t luby_unit;          // Luby unit size (conflicts per Luby unit, default 512)
     uint32_t restart_postpone;   // Min trail growth to postpone restart (10%)
+
+    // Glucose EMA parameters (for --glucose-restart-ema)
+    bool     glucose_use_ema;    // Use EMA (true) vs sliding window (false)
     double   glucose_fast_alpha; // Glucose fast MA decay factor (0.8)
     double   glucose_slow_alpha; // Glucose slow MA decay factor (0.9999)
     uint32_t glucose_min_conflicts; // Min conflicts before Glucose restarts (100)
+
+    // Glucose sliding window parameters (for --glucose-restart-avg)
+    uint32_t glucose_window_size; // Window size for short-term average (50)
+    double   glucose_k;          // Threshold multiplier (0.8)
 
     // Phase saving parameters
     bool     phase_saving;       // Enable phase saving (true)
@@ -168,8 +175,18 @@ typedef struct Solver {
         uint32_t conflicts_since;     // Conflicts since last restart
         uint32_t threshold;           // Current restart threshold
         uint32_t luby_index;         // Current position in Luby sequence
-        double   slow_ma;            // Slow moving average (Glucose)
-        double   fast_ma;            // Fast moving average (Glucose)
+
+        // Glucose EMA state
+        double   slow_ma;            // Slow moving average (Glucose EMA)
+        double   fast_ma;            // Fast moving average (Glucose EMA)
+
+        // Glucose sliding window state
+        uint32_t *recent_lbds;       // Circular buffer of recent LBDs
+        uint32_t recent_lbds_count;  // Number of LBDs in buffer
+        uint32_t recent_lbds_head;   // Head index for circular buffer
+        uint64_t lbd_sum;            // Sum of all LBDs (for long-term average)
+        uint64_t lbd_count;          // Count of all LBDs
+
         uint32_t stuck_conflicts;    // Conflicts without progress
     } restart;
 

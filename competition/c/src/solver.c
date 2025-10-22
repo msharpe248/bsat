@@ -73,9 +73,16 @@ SolverOpts default_opts(void) {
         .luby_restart = true,      // NOW DEFAULT - achieves 100% completeness
         .luby_unit = 100,          // Python uses 100, MiniSat uses 512 (using Python's value)
         .restart_postpone = 10,
+
+        // Glucose EMA parameters (for --glucose-restart-ema)
+        .glucose_use_ema = true,       // Default to EMA (more conservative)
         .glucose_fast_alpha = 0.8,     // Fast MA decay factor (tracks recent ~5 conflicts)
         .glucose_slow_alpha = 0.9999,  // Slow MA decay factor (long-term average)
         .glucose_min_conflicts = 100,  // Minimum conflicts before enabling Glucose
+
+        // Glucose sliding window parameters (for --glucose-restart-avg)
+        .glucose_window_size = 50,     // Window size for short-term average (matches Python)
+        .glucose_k = 0.8,              // Threshold multiplier (matches Python)
 
         .phase_saving = true,
         .phase_reset_period = 10000,
@@ -251,6 +258,18 @@ Solver* solver_new_with_opts(const SolverOpts* opts) {
     s->restart.threshold = opts->restart_first;
     s->restart.luby_index = 0;
 
+    // Initialize Glucose sliding window (if using avg mode)
+    if (!opts->glucose_use_ema && opts->glucose_restart) {
+        s->restart.recent_lbds = (uint32_t*)calloc(opts->glucose_window_size, sizeof(uint32_t));
+        if (!s->restart.recent_lbds) goto error;
+        s->restart.recent_lbds_count = 0;
+        s->restart.recent_lbds_head = 0;
+        s->restart.lbd_sum = 0;
+        s->restart.lbd_count = 0;
+    } else {
+        s->restart.recent_lbds = NULL;
+    }
+
     // Set start time
     s->stats.start_time = (double)clock() / CLOCKS_PER_SEC;
 
@@ -277,6 +296,7 @@ void solver_free(Solver* s) {
     free(s->order.heap);
     free(s->seen);
     free(s->analyze_stack);
+    free(s->restart.recent_lbds);  // Free Glucose sliding window buffer
 
     free(s);
 }
@@ -1053,38 +1073,54 @@ bool solver_should_restart(Solver* s) {
 
     // Original restart strategies (Glucose or geometric)
     if (s->opts.glucose_restart) {
-        // Glucose-style adaptive restarts based on LBD moving averages
-        // Restart when fast_ma > slow_ma (recent LBD worse than long-term average)
-        //
-        // This means: recent conflicts are producing worse clauses (higher LBD)
-        // than the long-term average, indicating we're in a bad search region.
-        //
-        // HYBRID STRATEGY: Fall back to geometric if Glucose hasn't triggered
-        // This handles cases where LBD is too stable (always same value)
-
         bool should_restart_glucose = false;
 
-        // Check Glucose condition after enough conflicts
-        if (s->stats.conflicts > s->opts.glucose_min_conflicts &&
-            s->restart.fast_ma > s->restart.slow_ma) {
-            // Restart postponing (Glucose 2.1+): Don't restart if trail is growing
-            // This prevents restarting during productive search
-            if (s->opts.restart_postpone > 0) {
-                // Check if trail has grown significantly since last restart
-                uint32_t trail_growth_threshold = s->opts.restart_postpone;  // e.g., 10% growth
-                // For simplicity, just check if we have enough trail entries
-                if (s->trail_size < trail_growth_threshold) {
-                    #ifdef DEBUG
-                    if (IS_DEBUG(s)) {
-                        printf("[RESTART] Postponed: trail too small (%u < %u)\n",
-                               s->trail_size, trail_growth_threshold);
+        // Two modes: EMA (exponential moving average) or AVG (sliding window)
+        if (s->opts.glucose_use_ema) {
+            // Glucose EMA mode: Restart when fast_ma > slow_ma
+            // (recent LBD worse than long-term average)
+            if (s->stats.conflicts > s->opts.glucose_min_conflicts &&
+                s->restart.fast_ma > s->restart.slow_ma) {
+                should_restart_glucose = true;
+            }
+        } else {
+            // Glucose sliding window mode (Python-style): Restart when short-term > long-term * K
+            if (s->restart.lbd_count >= s->opts.glucose_window_size) {
+                // Compute short-term average (last N LBDs)
+                double short_term_sum = 0.0;
+                for (uint32_t i = 0; i < s->restart.recent_lbds_count; i++) {
+                    short_term_sum += s->restart.recent_lbds[i];
+                }
+                double short_term_avg = short_term_sum / s->restart.recent_lbds_count;
+
+                // Compute long-term average (all LBDs)
+                double long_term_avg = (double)s->restart.lbd_sum / s->restart.lbd_count;
+
+                // Restart condition: short_term > long_term * K
+                if (short_term_avg > long_term_avg * s->opts.glucose_k) {
+                    should_restart_glucose = true;
+
+                    if (IS_VERBOSE(s)) {
+                        fprintf(stderr, "[Glucose-AVG] short=%.2f, long=%.2f, threshold=%.2f -> RESTART\n",
+                                short_term_avg, long_term_avg, long_term_avg * s->opts.glucose_k);
                     }
-                    #endif
-                    return false;  // Postpone restart
                 }
             }
+        }
 
-            should_restart_glucose = true;
+        // Restart postponing (Glucose 2.1+): Don't restart if trail is growing
+        if (should_restart_glucose && s->opts.restart_postpone > 0) {
+            // Check if trail has grown significantly since last restart
+            uint32_t trail_growth_threshold = s->opts.restart_postpone;  // e.g., 10% growth
+            if (s->trail_size < trail_growth_threshold) {
+                #ifdef DEBUG
+                if (IS_DEBUG(s)) {
+                    printf("[RESTART] Postponed: trail too small (%u < %u)\n",
+                           s->trail_size, trail_growth_threshold);
+                }
+                #endif
+                should_restart_glucose = false;  // Postpone restart
+            }
         }
 
         // Hybrid fallback: If Glucose hasn't triggered in too long, use geometric
@@ -1980,17 +2016,31 @@ lbool solver_solve_with_assumptions(Solver* s, const Lit* assumps, uint32_t n_as
                 s->trail[s->trail_size].level = 0;
                 s->trail_size++;
 
-                // BUG FIX: Update Glucose moving averages for unit clauses too!
-                // Unit clauses have LBD = 1 (best possible quality)
-                if (s->stats.conflicts > 0) {
-                    double alpha_fast = s->opts.glucose_fast_alpha;
-                    double alpha_slow = s->opts.glucose_slow_alpha;
-                    uint32_t lbd = 1;  // Unit clauses have LBD = 1
-                    s->restart.fast_ma = alpha_fast * s->restart.fast_ma + (1.0 - alpha_fast) * lbd;
-                    s->restart.slow_ma = alpha_slow * s->restart.slow_ma + (1.0 - alpha_slow) * lbd;
-                } else {
-                    s->restart.fast_ma = 1;
-                    s->restart.slow_ma = 1;
+                // Update Glucose LBD tracking for unit clauses (LBD = 1)
+                if (s->opts.glucose_restart) {
+                    uint32_t lbd = 1;  // Unit clauses have LBD = 1 (best possible)
+                    if (s->opts.glucose_use_ema) {
+                        // EMA mode
+                        if (s->stats.conflicts > 0) {
+                            double alpha_fast = s->opts.glucose_fast_alpha;
+                            double alpha_slow = s->opts.glucose_slow_alpha;
+                            s->restart.fast_ma = alpha_fast * s->restart.fast_ma + (1.0 - alpha_fast) * lbd;
+                            s->restart.slow_ma = alpha_slow * s->restart.slow_ma + (1.0 - alpha_slow) * lbd;
+                        } else {
+                            s->restart.fast_ma = 1;
+                            s->restart.slow_ma = 1;
+                        }
+                    } else {
+                        // Sliding window mode
+                        s->restart.lbd_sum += lbd;
+                        s->restart.lbd_count++;
+                        if (s->restart.recent_lbds_count < s->opts.glucose_window_size) {
+                            s->restart.recent_lbds[s->restart.recent_lbds_count++] = lbd;
+                        } else {
+                            s->restart.recent_lbds[s->restart.recent_lbds_head] = lbd;
+                            s->restart.recent_lbds_head = (s->restart.recent_lbds_head + 1) % s->opts.glucose_window_size;
+                        }
+                    }
                 }
             } else {
                 // Add learned clause
@@ -2008,17 +2058,34 @@ lbool solver_solve_with_assumptions(Solver* s, const Lit* assumps, uint32_t n_as
                         s->stats.glue_clauses++;
                     }
 
-                    // Update LBD moving averages for Glucose adaptive restarts
-                    // Uses configurable decay factors from opts
-                    if (s->stats.conflicts > 0) {
-                        double alpha_fast = s->opts.glucose_fast_alpha;
-                        double alpha_slow = s->opts.glucose_slow_alpha;
-                        s->restart.fast_ma = alpha_fast * s->restart.fast_ma + (1.0 - alpha_fast) * lbd;
-                        s->restart.slow_ma = alpha_slow * s->restart.slow_ma + (1.0 - alpha_slow) * lbd;
-                    } else {
-                        // Initialize moving averages with first LBD
-                        s->restart.fast_ma = lbd;
-                        s->restart.slow_ma = lbd;
+                    // Update LBD tracking for Glucose adaptive restarts
+                    if (s->opts.glucose_restart) {
+                        if (s->opts.glucose_use_ema) {
+                            // EMA mode: Update exponential moving averages
+                            if (s->stats.conflicts > 0) {
+                                double alpha_fast = s->opts.glucose_fast_alpha;
+                                double alpha_slow = s->opts.glucose_slow_alpha;
+                                s->restart.fast_ma = alpha_fast * s->restart.fast_ma + (1.0 - alpha_fast) * lbd;
+                                s->restart.slow_ma = alpha_slow * s->restart.slow_ma + (1.0 - alpha_slow) * lbd;
+                            } else {
+                                s->restart.fast_ma = lbd;
+                                s->restart.slow_ma = lbd;
+                            }
+                        } else {
+                            // Sliding window mode: Add to circular buffer
+                            s->restart.lbd_sum += lbd;
+                            s->restart.lbd_count++;
+
+                            // Add to circular buffer
+                            if (s->restart.recent_lbds_count < s->opts.glucose_window_size) {
+                                // Buffer not full yet
+                                s->restart.recent_lbds[s->restart.recent_lbds_count++] = lbd;
+                            } else {
+                                // Buffer full, replace oldest
+                                s->restart.recent_lbds[s->restart.recent_lbds_head] = lbd;
+                                s->restart.recent_lbds_head = (s->restart.recent_lbds_head + 1) % s->opts.glucose_window_size;
+                            }
+                        }
                     }
 
                     // Add to learned clauses
