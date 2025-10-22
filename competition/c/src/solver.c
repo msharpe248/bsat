@@ -1092,12 +1092,12 @@ void solver_reduce_db(Solver* s) {
         return;
     }
 
-    #ifdef DEBUG
-    if (getenv("DEBUG_CDCL")) {
-        printf("[REDUCE] Reducing clause database: %u learned clauses, max %u\n",
-               num_learned, max_learned);
+    if (getenv("BSAT_VERBOSE")) {
+        fprintf(stderr, "c [DB Reduce #%llu] Conflicts: %llu, Learned: %u (max: %u)\n",
+                (unsigned long long)s->stats.reduces,
+                (unsigned long long)s->stats.conflicts,
+                num_learned, max_learned);
     }
-    #endif
 
     // Collect all learned clauses with their scores
     ClauseScore* scores = (ClauseScore*)malloc(num_learned * sizeof(ClauseScore));
@@ -1139,11 +1139,12 @@ void solver_reduce_db(Solver* s) {
 
     s->stats.deleted_clauses += deleted;
 
-    #ifdef DEBUG
-    if (getenv("DEBUG_CDCL")) {
-        printf("[REDUCE] Deleted %u clauses, kept %u\n", deleted, num_learned - deleted);
+    if (getenv("BSAT_VERBOSE")) {
+        fprintf(stderr, "c [DB Reduce #%llu] Deleted: %u, Kept: %u, Total deletions: %llu\n",
+                (unsigned long long)s->stats.reduces,
+                deleted, num_learned - deleted,
+                (unsigned long long)s->stats.deleted_clauses);
     }
-    #endif
 
     // Optionally trigger garbage collection if many deletions
     // For now, let arena GC happen naturally when space is needed
@@ -1859,10 +1860,16 @@ lbool solver_solve_with_assumptions(Solver* s, const Lit* assumps, uint32_t n_as
             }
 
             // Progress output every 1000 conflicts
-            if (s->stats.conflicts % 1000 == 0 && getenv("DEBUG_CDCL")) {
-                printf("[PROGRESS] Conflicts: %u, Decisions: %u, Level: %u, Random: %.2f\n",
-                       s->stats.conflicts, s->stats.decisions, s->decision_level,
-                       s->opts.random_phase_prob);
+            if (s->stats.conflicts % 1000 == 0 && getenv("BSAT_VERBOSE")) {
+                fprintf(stderr, "c [Progress] Conflicts: %llu, Decisions: %llu, Propagations: %llu, Level: %u\n",
+                        (unsigned long long)s->stats.conflicts,
+                        (unsigned long long)s->stats.decisions,
+                        (unsigned long long)s->stats.propagations,
+                        s->decision_level);
+                fprintf(stderr, "c [Progress] Learned: %llu, Restarts: %llu, Reductions: %llu\n",
+                        (unsigned long long)s->stats.learned_clauses,
+                        (unsigned long long)s->stats.restarts,
+                        (unsigned long long)s->stats.reduces);
             }
 
             if (s->decision_level == 0) {
@@ -1993,6 +2000,17 @@ lbool solver_solve_with_assumptions(Solver* s, const Lit* assumps, uint32_t n_as
 
             // Check for restart
             if (solver_should_restart(s)) {
+                if (getenv("BSAT_VERBOSE")) {
+                    fprintf(stderr, "c [Restart #%llu] Conflicts: %llu, Level: %u",
+                            (unsigned long long)s->stats.restarts + 1,
+                            (unsigned long long)s->stats.conflicts,
+                            s->decision_level);
+                    if (s->opts.glucose_restart) {
+                        fprintf(stderr, ", LBD fast_MA: %.2f, slow_MA: %.2f",
+                                s->restart.fast_ma, s->restart.slow_ma);
+                    }
+                    fprintf(stderr, "\n");
+                }
                 solver_backtrack(s, n_assumps);  // Keep assumptions
                 s->stats.restarts++;
             }
