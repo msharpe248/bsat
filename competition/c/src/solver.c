@@ -591,6 +591,9 @@ void solver_print_stats(const Solver* s) {
     ArenaStats astats = arena_stats(s->arena);
     printf("c Memory used       : %.2f MB\n", astats.used_bytes / (1024.0 * 1024.0));
     printf("c Memory allocated  : %.2f MB\n", astats.total_bytes / (1024.0 * 1024.0));
+    printf("c Memory peak       : %.2f MB\n", s->arena->peak_size * sizeof(uint32_t) / (1024.0 * 1024.0));
+    printf("c Memory wasted     : %.2f MB\n", astats.wasted_bytes / (1024.0 * 1024.0));
+    printf("c Arena growths     : %u\n", s->arena->num_growths);
 
     printf("c\n");
 }

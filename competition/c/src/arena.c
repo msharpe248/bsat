@@ -16,6 +16,36 @@
  * Arena Management
  *********************************************************************/
 
+size_t estimate_arena_size(uint32_t num_clauses, uint32_t num_vars) {
+    // Estimate space needed:
+    // - ClauseHeader: 3 words (12 bytes for size/flags/lbd + 4 bytes for activity)
+    // - Average literals per clause: assume 3 for 3-SAT
+    // So each clause needs ~6 words on average
+
+    size_t clause_space = (size_t)num_clauses * 6;
+
+    // Learned clauses: assume we'll learn 50% as many as original
+    size_t learned_space = clause_space / 2;
+
+    // Variable overhead: minimal, ~1 word per variable
+    size_t var_space = num_vars;
+
+    // Total with 25% safety margin
+    size_t total = (clause_space + learned_space + var_space) * 5 / 4;
+
+    // Enforce minimum of 1024 words (4KB)
+    if (total < 1024) {
+        total = 1024;
+    }
+
+    // Cap at 10M words (40MB) to avoid huge initial allocations
+    if (total > 10000000) {
+        total = 10000000;
+    }
+
+    return total;
+}
+
 Arena* arena_init(size_t initial_capacity) {
     Arena* arena = (Arena*)malloc(sizeof(Arena));
     if (!arena) return NULL;
@@ -34,6 +64,8 @@ Arena* arena_init(size_t initial_capacity) {
     arena->size = 1;  // Reserve index 0 as invalid
     arena->capacity = initial_capacity;
     arena->wasted = 0;
+    arena->num_growths = 0;
+    arena->peak_size = 1;
 
     // Initialize first word to prevent CRef 0 from being valid
     arena->memory[0] = 0;
@@ -53,6 +85,7 @@ void arena_free(Arena* arena) {
  *********************************************************************/
 
 static bool arena_grow(Arena* arena, size_t needed) {
+    size_t old_capacity = arena->capacity;
     size_t new_capacity = arena->capacity;
 
     // Calculate required capacity
@@ -72,6 +105,59 @@ static bool arena_grow(Arena* arena, size_t needed) {
 
     arena->memory = new_memory;
     arena->capacity = new_capacity;
+    arena->num_growths++;
+
+    // Log growth if verbose (check environment variable)
+    if (getenv("BSAT_VERBOSE")) {
+        fprintf(stderr, "c [Arena] Grew from %zu to %zu words (%.1f KB -> %.1f KB) [growth #%u]\n",
+                old_capacity, new_capacity,
+                old_capacity * sizeof(uint32_t) / 1024.0,
+                new_capacity * sizeof(uint32_t) / 1024.0,
+                arena->num_growths);
+    }
+
+    return true;
+}
+
+bool arena_reserve(Arena* arena, size_t min_capacity) {
+    // Already have enough capacity
+    if (arena->capacity >= min_capacity) {
+        return true;
+    }
+
+    // Calculate new capacity
+    size_t new_capacity = arena->capacity;
+    while (new_capacity < min_capacity) {
+        new_capacity = (size_t)(new_capacity * GROWTH_FACTOR);
+        if (new_capacity > MAX_CLAUSES) {
+            new_capacity = MAX_CLAUSES;
+            if (new_capacity < min_capacity) {
+                return false;  // Cannot satisfy request
+            }
+            break;
+        }
+    }
+
+    // Reallocate memory
+    uint32_t* new_memory = (uint32_t*)realloc(arena->memory,
+                                               new_capacity * sizeof(uint32_t));
+    if (!new_memory) {
+        return false;  // Out of memory
+    }
+
+    size_t old_capacity = arena->capacity;
+    arena->memory = new_memory;
+    arena->capacity = new_capacity;
+
+    // Log reservation if verbose
+    if (getenv("BSAT_VERBOSE")) {
+        fprintf(stderr, "c [Arena] Reserved %zu words (%.1f MB) based on problem size\n",
+                new_capacity, new_capacity * sizeof(uint32_t) / (1024.0 * 1024.0));
+        fprintf(stderr, "c [Arena] Growth from %zu to %zu words (%.1f KB -> %.1f KB)\n",
+                old_capacity, new_capacity,
+                old_capacity * sizeof(uint32_t) / 1024.0,
+                new_capacity * sizeof(uint32_t) / 1024.0);
+    }
 
     return true;
 }
@@ -104,6 +190,11 @@ CRef arena_alloc(Arena* arena, const Lit* lits, uint32_t size, bool learned) {
 
     // Update arena size
     arena->size += total_words;
+
+    // Track peak size
+    if (arena->size > arena->peak_size) {
+        arena->peak_size = arena->size;
+    }
 
     return cref;
 }

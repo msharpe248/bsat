@@ -3,6 +3,7 @@
  *********************************************************************/
 
 #include "../include/dimacs.h"
+#include "../include/arena.h"
 #include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
@@ -143,6 +144,13 @@ DimacsError dimacs_parse_stream(Solver* s, FILE* file) {
             // Ensure we have enough variables
             while (s->num_vars < expected_vars) {
                 solver_new_var(s);
+            }
+
+            // Reserve arena capacity based on problem size
+            size_t estimated_capacity = estimate_arena_size(expected_clauses, expected_vars);
+            if (!arena_reserve(s->arena, estimated_capacity)) {
+                result = DIMACS_ERROR_MEMORY;
+                goto cleanup;
             }
 
             continue;

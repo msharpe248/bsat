@@ -21,6 +21,8 @@ typedef struct Arena {
     size_t    size;        // Current size in uint32_t units
     size_t    capacity;    // Total capacity in uint32_t units
     size_t    wasted;      // Wasted space from deletions
+    uint32_t  num_growths; // Number of times arena was expanded
+    size_t    peak_size;   // Peak size reached (for stats)
 } Arena;
 
 /*********************************************************************
@@ -55,8 +57,14 @@ static inline size_t clause_bytes(uint32_t size) {
  * Arena Operations
  *********************************************************************/
 
+// Estimate good initial arena size based on problem size
+size_t estimate_arena_size(uint32_t num_clauses, uint32_t num_vars);
+
 // Initialize arena with initial capacity
 Arena* arena_init(size_t initial_capacity);
+
+// Reserve capacity to avoid repeated growth (like std::vector::reserve)
+bool arena_reserve(Arena* arena, size_t min_capacity);
 
 // Free arena and all its memory
 void arena_free(Arena* arena);
