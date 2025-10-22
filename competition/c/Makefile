@@ -22,8 +22,8 @@ SOURCES = $(wildcard $(SRCDIR)/*.c)
 OBJECTS = $(patsubst $(SRCDIR)/%.c,$(OBJDIR)/%.o,$(SOURCES))
 
 # Test files
-TEST_SOURCES = $(wildcard $(TESTDIR)/*.c)
-TEST_BINARIES = $(patsubst $(TESTDIR)/%.c,$(BINDIR)/test_%,$(TEST_SOURCES))
+TEST_SOURCES = $(wildcard $(TESTDIR)/test_*.c)
+TEST_BINARIES = $(patsubst $(TESTDIR)/test_%.c,$(BINDIR)/test_%,$(TEST_SOURCES))
 
 # Build modes
 MODE ?= release
@@ -59,8 +59,8 @@ $(TARGET): $(OBJECTS)
 $(OBJDIR)/%.o: $(SRCDIR)/%.c
 	$(CC) $(CFLAGS) -c -o $@ $<
 
-# Test binaries
-$(BINDIR)/test_%: $(TESTDIR)/%.c $(filter-out $(OBJDIR)/main.o,$(OBJECTS))
+# Test binaries (match only test_* files to avoid conflict with main solver)
+$(BINDIR)/test_%: $(TESTDIR)/test_%.c $(filter-out $(OBJDIR)/main.o,$(OBJECTS))
 	$(CC) $(CFLAGS) -o $@ $^ -lm
 
 # Build all tests
