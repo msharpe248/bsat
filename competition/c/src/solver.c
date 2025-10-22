@@ -7,6 +7,51 @@
 #include <string.h>
 #include <stdio.h>
 #include <math.h>
+#include <signal.h>
+
+/*********************************************************************
+ * Signal Handling for Progress Monitoring
+ *********************************************************************/
+
+// Global flag to request statistics dump (set by signal handler)
+static volatile sig_atomic_t print_stats_requested = 0;
+
+// Signal handler for SIGUSR1 - request statistics dump
+static void sigusr1_handler(int signum) {
+    (void)signum;  // Unused parameter
+    print_stats_requested = 1;
+}
+
+// Install signal handler
+static void install_signal_handlers(void) {
+    struct sigaction sa;
+    sa.sa_handler = sigusr1_handler;
+    sigemptyset(&sa.sa_mask);
+    sa.sa_flags = 0;
+    sigaction(SIGUSR1, &sa, NULL);
+}
+
+// Print progress statistics (safe to call from main loop)
+static void print_progress_stats(const Solver* s) {
+    double elapsed = (double)(clock() - (clock_t)s->stats.start_time) / CLOCKS_PER_SEC;
+    fprintf(stderr, "\n");
+    fprintf(stderr, "c ========== Progress Update ==========\n");
+    fprintf(stderr, "c Elapsed time     : %.3f s\n", elapsed);
+    fprintf(stderr, "c Decisions        : %llu\n", (unsigned long long)s->stats.decisions);
+    fprintf(stderr, "c Propagations     : %llu\n", (unsigned long long)s->stats.propagations);
+    fprintf(stderr, "c Conflicts        : %llu\n", (unsigned long long)s->stats.conflicts);
+    fprintf(stderr, "c Restarts         : %llu\n", (unsigned long long)s->stats.restarts);
+    fprintf(stderr, "c Learned clauses  : %llu\n", (unsigned long long)s->stats.learned_clauses);
+    fprintf(stderr, "c Decision level   : %u\n", s->decision_level);
+    fprintf(stderr, "c Trail size       : %u\n", s->trail_size);
+    if (elapsed > 0) {
+        fprintf(stderr, "c Conflicts/sec    : %.0f\n", s->stats.conflicts / elapsed);
+        fprintf(stderr, "c Decisions/sec    : %.0f\n", s->stats.decisions / elapsed);
+    }
+    fprintf(stderr, "c ======================================\n");
+    fprintf(stderr, "\n");
+    fflush(stderr);
+}
 
 /*********************************************************************
  * Default Options
@@ -1596,6 +1641,14 @@ static uint32_t solver_eliminate_blocked_clauses(Solver* s) {
 
     // Only eliminate from original clauses (not learned clauses)
     for (uint32_t i = 0; i < s->num_original; i++) {
+        // Check if progress stats requested via signal (BCE can be slow)
+        if (print_stats_requested) {
+            print_stats_requested = 0;
+            fprintf(stderr, "c [BCE] Processing clause %u / %u (%.1f%% complete)\n",
+                    i, s->num_original, (100.0 * i) / s->num_original);
+            fflush(stderr);
+        }
+
         CRef cref = s->clauses[i];
 
         // Skip deleted clauses - validate bounds before accessing
@@ -1688,6 +1741,9 @@ lbool solver_solve(Solver* s) {
 }
 
 lbool solver_solve_with_assumptions(Solver* s, const Lit* assumps, uint32_t n_assumps) {
+    // Install signal handlers for progress monitoring
+    install_signal_handlers();
+
     // Check if already solved
     if (s->result != UNDEF) {
         return s->result;
@@ -1759,6 +1815,12 @@ lbool solver_solve_with_assumptions(Solver* s, const Lit* assumps, uint32_t n_as
     #endif
 
     for (;;) {
+        // Check if progress stats requested via signal
+        if (print_stats_requested) {
+            print_stats_requested = 0;  // Clear flag
+            print_progress_stats(s);
+        }
+
         #ifdef DEBUG
         loop_count++;
         if (loop_count % 10000 == 0 && getenv("DEBUG_CDCL")) {
