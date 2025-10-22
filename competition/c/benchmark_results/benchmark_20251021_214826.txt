@@ -1,0 +1,62 @@
+========================================
+BSAT Solver Benchmark
+Date: Tue Oct 21 21:48:26 CDT 2025
+Timeout: 30s per instance
+========================================
+
+[0;34m=== Testing: Simple ===[0m
+
+Instance                                      C Solver        Python Solver   Speedup   
+--------                                      --------        -------------   -------   
+[1;33mrandom3sat_v10_c43.cnf                        ERROR           0.041s (SATISFIABLE) Py only   [0m
+[1;33mrandom3sat_v15_c64.cnf                        ERROR           0.062s (SATISFIABLE) Py only   [0m
+[1;33mrandom3sat_v20_c86.cnf                        ERROR           0.041s (SATISFIABLE) Py only   [0m
+[1;33mrandom3sat_v30_c129.cnf                       ERROR           0.059s (SATISFIABLE) Py only   [0m
+[1;33mrandom3sat_v5_c21.cnf                         ERROR           0.043s (SATISFIABLE) Py only   [0m
+[1;33mrandom3sat_v7_c30.cnf                         ERROR           0.041s (SATISFIABLE) Py only   [0m
+[1;33msat_v10.cnf                                   ERROR           0.039s (SATISFIABLE) Py only   [0m
+[1;33msat_v20.cnf                                   ERROR           0.043s (SATISFIABLE) Py only   [0m
+[1;33msat_v30.cnf                                   ERROR           0.039s (SATISFIABLE) Py only   [0m
+
+[0;34m=== Testing: Medium ===[0m
+
+Instance                                      C Solver        Python Solver   Speedup   
+--------                                      --------        -------------   -------   
+[1;33measy_3sat_v010_c0042.cnf                      ERROR           0.039s (SATISFIABLE) Py only   [0m
+[0measy_3sat_v012_c0050.cnf                      ERROR           TIMEOUT         -         [0m
+[0measy_3sat_v014_c0058.cnf                      ERROR           TIMEOUT         -         [0m
+[0measy_3sat_v016_c0067.cnf                      ERROR           TIMEOUT         -         [0m
+[1;33measy_3sat_v018_c0075.cnf                      ERROR           0.038s (SATISFIABLE) Py only   [0m
+[1;33measy_3sat_v020_c0084.cnf                      ERROR           0.050s (SATISFIABLE) Py only   [0m
+[0measy_3sat_v022_c0092.cnf                      ERROR           TIMEOUT         -         [0m
+[1;33measy_3sat_v024_c0100.cnf                      ERROR           0.038s (SATISFIABLE) Py only   [0m
+[0measy_3sat_v026_c0109.cnf                      ERROR           TIMEOUT         -         [0m
+[1;33measy_3sat_v028_c0117.cnf                      ERROR           0.038s (SATISFIABLE) Py only   [0m
+[1;33measy_3sat_v030_c0126.cnf                      ERROR           0.038s (SATISFIABLE) Py only   [0m
+[1;33mhard_3sat_v090_c0384.cnf                      TIMEOUT         0.188s (SATISFIABLE) Py only   [0m
+[1;33mhard_3sat_v093_c0397.cnf                      ERROR           0.142s (SATISFIABLE) Py only   [0m
+[0mhard_3sat_v096_c0409.cnf                      TIMEOUT         TIMEOUT         -         [0m
+[1;33mhard_3sat_v099_c0422.cnf                      TIMEOUT         1.281s (SATISFIABLE) Py only   [0m
+[0mhard_3sat_v102_c0435.cnf                      TIMEOUT         TIMEOUT         -         [0m
+[1;33mhard_3sat_v105_c0448.cnf                      TIMEOUT         0.061s (SATISFIABLE) Py only   [0m
+[1;33mhard_3sat_v108_c0461.cnf                      TIMEOUT         0.108s (SATISFIABLE) Py only   [0m
+[1;33mhard_3sat_v111_c0473.cnf                      TIMEOUT         0.058s (SATISFIABLE) Py only   [0m
+[1;33mhard_3sat_v114_c0486.cnf                      ERROR           0.059s (SATISFIABLE) Py only   [0m
+[0mhard_3sat_v117_c0499.cnf                      TIMEOUT         TIMEOUT         -         [0m
+[1;33mhard_3sat_v120_c0512.cnf                      ERROR           0.044s (SATISFIABLE) Py only   [0m
+[1;33mmedium_3sat_v040_c0170.cnf                    ERROR           0.041s (SATISFIABLE) Py only   [0m
+[1;33mmedium_3sat_v042_c0178.cnf                    ERROR           0.057s (SATISFIABLE) Py only   [0m
+[1;33mmedium_3sat_v044_c0187.cnf                    ERROR           0.038s (SATISFIABLE) Py only   [0m
+[1;33mmedium_3sat_v046_c0195.cnf                    ERROR           0.044s (SATISFIABLE) Py only   [0m
+[1;33mmedium_3sat_v048_c0204.cnf                    TIMEOUT         0.043s (SATISFIABLE) Py only   [0m
+[1;33mmedium_3sat_v050_c0213.cnf                    ERROR           0.042s (SATISFIABLE) Py only   [0m
+[1;33mmedium_3sat_v052_c0221.cnf                    ERROR           0.043s (SATISFIABLE) Py only   [0m
+[1;33mmedium_3sat_v054_c0230.cnf                    ERROR           0.041s (SATISFIABLE) Py only   [0m
+[1;33mmedium_3sat_v056_c0238.cnf                    ERROR           0.044s (SATISFIABLE) Py only   [0m
+[1;33mmedium_3sat_v058_c0247.cnf                    TIMEOUT         0.038s (SATISFIABLE) Py only   [0m
+[1;33mmedium_3sat_v060_c0255.cnf                    ERROR           0.054s (SATISFIABLE) Py only   [0m
+[0mmedium_3sat_v062_c0264.cnf                    TIMEOUT         TIMEOUT         -         [0m
+[1;33mmedium_3sat_v064_c0272.cnf                    ERROR           0.043s (SATISFIABLE) Py only   [0m
+[0mmedium_3sat_v066_c0281.cnf                    TIMEOUT         TIMEOUT         -         [0m
+[0mmedium_3sat_v068_c0289.cnf                    ERROR           TIMEOUT         -         [0m
+[0mmedium_3sat_v070_c0298.cnf                    TIMEOUT         TIMEOUT         -         [0m

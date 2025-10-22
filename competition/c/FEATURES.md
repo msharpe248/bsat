@@ -82,9 +82,8 @@ The solver implements a modern CDCL SAT solver with the following components:
   - Blocked Clause Elimination (BCE): Enabled by default
 - **Configuration**:
 ```bash
-# Enable/disable BCE
-./bin/bsat --bce input.cnf      # Enable (default)
-./bin/bsat --no-bce input.cnf   # Disable
+# Disable BCE if needed (enabled by default)
+./bin/bsat --no-bce input.cnf
 ```
 
 ### 7. **Adaptive Random Phase Selection** ✅ IMPLEMENTED
@@ -233,8 +232,8 @@ c ======================================
 
 **Configuration:**
 ```bash
-./bin/bsat --bce input.cnf      # Enable (default)
-./bin/bsat --no-bce input.cnf   # Disable
+# Disable BCE if needed (enabled by default)
+./bin/bsat --no-bce input.cnf
 ```
 
 **Example**: Clause C = `(x ∨ y)` and all clauses with `¬x` resolve to tautologies with C → C is blocked on x.
@@ -300,7 +299,6 @@ c ======================================
 
 ### Preprocessing
 ```bash
---bce                     Enable blocked clause elimination (default: true)
 --no-bce                  Disable blocked clause elimination
 ```
 

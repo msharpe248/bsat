@@ -1,0 +1,6 @@
+========================================
+BSAT Solver Benchmark
+Date: Tue Oct 21 21:41:24 CDT 2025
+Timeout: 30s per instance
+========================================
+

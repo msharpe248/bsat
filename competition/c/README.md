@@ -201,7 +201,6 @@ Solver Options:
   --no-restarts              Disable restarts entirely
   --random-phase             Enable random phase selection
   --random-prob <0.0-1.0>    Random phase probability (default: 0.01)
-  --bce                      Enable blocked clause elimination (default)
   --no-bce                   Disable blocked clause elimination
   --inprocess                Enable inprocessing (vivification, etc.)
   --inprocess-interval <N>   Conflicts between inprocessing (default: 10000)
