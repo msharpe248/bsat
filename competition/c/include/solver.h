@@ -59,13 +59,18 @@ typedef struct SolverOpts {
     bool     var_elim;          // Enable variable elimination (true)
 
     // Output options
-    bool     verbose;           // Verbose output (false)
+    bool     verbose;           // Verbose output (false) - same as BSAT_VERBOSE
+    bool     debug;             // Debug output (false) - same as DEBUG_CDCL
     bool     quiet;             // Suppress all output (false)
     bool     stats;             // Print statistics (true)
 } SolverOpts;
 
 // Get default options
 SolverOpts default_opts(void);
+
+// Convenience macros for verbose/debug output (use after solver is created)
+#define IS_VERBOSE(s) ((s)->opts.verbose)
+#define IS_DEBUG(s) ((s)->opts.debug)
 
 /*********************************************************************
  * Variable Information

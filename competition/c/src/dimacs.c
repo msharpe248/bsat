@@ -88,7 +88,7 @@ DimacsError dimacs_parse_stream(Solver* s, FILE* file) {
     // Read line by line
     while (fgets(line, MAX_LINE, file)) {
         #ifdef DEBUG
-        if (getenv("DEBUG_CDCL")) {
+        if (IS_DEBUG(s)) {
             printf("[DIMACS] Read line: %s", line);
         }
         #endif
@@ -207,7 +207,7 @@ DimacsError dimacs_parse_stream(Solver* s, FILE* file) {
         // Add clause to solver
         if (clause_size > 0) {
             #ifdef DEBUG
-            if (getenv("DEBUG_CDCL")) {
+            if (IS_DEBUG(s)) {
                 printf("[DIMACS] Adding clause %u with %u literals\n", parsed_clauses + 1, clause_size);
             }
             #endif

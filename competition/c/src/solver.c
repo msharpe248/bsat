@@ -94,9 +94,19 @@ SolverOpts default_opts(void) {
         .var_elim = true,
 
         .verbose = false,
+        .debug = false,
         .quiet = false,
         .stats = true
     };
+
+    // Override from environment variables
+    if (getenv("BSAT_VERBOSE")) {
+        opts.verbose = true;
+    }
+    if (getenv("DEBUG_CDCL")) {
+        opts.debug = true;
+    }
+
     return opts;
 }
 
@@ -609,7 +619,7 @@ CRef solver_propagate(Solver* s) {
 
     while (s->qhead < s->trail_size) {
         #ifdef DEBUG
-        if (getenv("DEBUG_CDCL")) {
+        if (IS_DEBUG(s)) {
             prop_count++;
             if (prop_count > 1000) {
                 printf("[ERROR] Infinite propagation loop detected! qhead=%u trail_size=%u\n",
@@ -622,7 +632,7 @@ CRef solver_propagate(Solver* s) {
         Lit p = s->trail[s->qhead++].lit;
 
 #ifdef DEBUG
-        if (getenv("DEBUG_CDCL")) {
+        if (IS_DEBUG(s)) {
             printf("[PROPAGATE] qhead=%u trail_size=%u Processing literal %d (var=%u, value=%d)\n",
                    s->qhead - 1, s->trail_size, toDimacs(p), var(p), s->vars[var(p)].value);
         }
@@ -637,7 +647,7 @@ CRef solver_propagate(Solver* s) {
         s->watches->visits++;
 
 #ifdef DEBUG
-        if (getenv("DEBUG_CDCL")) {
+        if (IS_DEBUG(s)) {
             printf("[PROPAGATE] Checking %u watches for literal %d\n",
                    ws->size, toDimacs(neg(p)));
         }
@@ -652,7 +662,7 @@ CRef solver_propagate(Solver* s) {
                 Var v = var(q);
 
 #ifdef DEBUG
-                if (getenv("DEBUG_CDCL")) {
+                if (IS_DEBUG(s)) {
                     printf("[PROPAGATE] Binary clause: literal %d, other lit %d, var %u value=%d\n",
                            toDimacs(neg(p)), toDimacs(q), v, s->vars[v].value);
                 }
@@ -670,7 +680,7 @@ CRef solver_propagate(Solver* s) {
                     s->trail_size++;
 
 #ifdef DEBUG
-                    if (getenv("DEBUG_CDCL")) {
+                    if (IS_DEBUG(s)) {
                         printf("[PROPAGATE] Binary unit: propagated %d (var %u = %s)\n",
                                toDimacs(q), v, sign(q) ? "false" : "true");
                     }
@@ -682,7 +692,7 @@ CRef solver_propagate(Solver* s) {
                 } else if (s->vars[v].value == (sign(q) ? TRUE : FALSE)) {
                     // Conflict in binary clause
 #ifdef DEBUG
-                    if (getenv("DEBUG_CDCL")) {
+                    if (IS_DEBUG(s)) {
                         printf("[PROPAGATE] Binary conflict! %d and %d are both false\n",
                                toDimacs(neg(p)), toDimacs(neg(q)));
                     }
@@ -1009,7 +1019,7 @@ bool solver_should_restart(Solver* s) {
                 // For simplicity, just check if we have enough trail entries
                 if (s->trail_size < trail_growth_threshold) {
                     #ifdef DEBUG
-                    if (getenv("DEBUG_CDCL")) {
+                    if (IS_DEBUG(s)) {
                         printf("[RESTART] Postponed: trail too small (%u < %u)\n",
                                s->trail_size, trail_growth_threshold);
                     }
@@ -1092,7 +1102,7 @@ void solver_reduce_db(Solver* s) {
         return;
     }
 
-    if (getenv("BSAT_VERBOSE")) {
+    if (IS_VERBOSE(s)) {
         fprintf(stderr, "c [DB Reduce #%llu] Conflicts: %llu, Learned: %u (max: %u)\n",
                 (unsigned long long)s->stats.reduces,
                 (unsigned long long)s->stats.conflicts,
@@ -1139,7 +1149,7 @@ void solver_reduce_db(Solver* s) {
 
     s->stats.deleted_clauses += deleted;
 
-    if (getenv("BSAT_VERBOSE")) {
+    if (IS_VERBOSE(s)) {
         fprintf(stderr, "c [DB Reduce #%llu] Deleted: %u, Kept: %u, Total deletions: %llu\n",
                 (unsigned long long)s->stats.reduces,
                 deleted, num_learned - deleted,
@@ -1785,7 +1795,7 @@ lbool solver_solve_with_assumptions(Solver* s, const Lit* assumps, uint32_t n_as
 
     // Initial unit propagation at level 0
     #ifdef DEBUG
-    if (getenv("DEBUG_CDCL")) {
+    if (IS_DEBUG(s)) {
         printf("[SOLVE] Starting initial propagation...\n");
     }
     #endif
@@ -1793,7 +1803,7 @@ lbool solver_solve_with_assumptions(Solver* s, const Lit* assumps, uint32_t n_as
     if (initial_conflict != INVALID_CLAUSE) {
         // Conflict at level 0 = UNSAT
         #ifdef DEBUG
-        if (getenv("DEBUG_CDCL")) {
+        if (IS_DEBUG(s)) {
             printf("[SOLVE] Initial conflict at level 0 - UNSAT\n");
         }
         #endif
@@ -1801,7 +1811,7 @@ lbool solver_solve_with_assumptions(Solver* s, const Lit* assumps, uint32_t n_as
         return FALSE;
     }
     #ifdef DEBUG
-    if (getenv("DEBUG_CDCL")) {
+    if (IS_DEBUG(s)) {
         printf("[SOLVE] Initial propagation complete, entering main loop\n");
     }
     #endif
@@ -1827,7 +1837,7 @@ lbool solver_solve_with_assumptions(Solver* s, const Lit* assumps, uint32_t n_as
 
         #ifdef DEBUG
         loop_count++;
-        if (loop_count % 10000 == 0 && getenv("DEBUG_CDCL")) {
+        if (loop_count % 10000 == 0 && IS_DEBUG(s)) {
             printf("[LOOP] Iteration: %llu, Trail: %u, Level: %u\n",
                    loop_count, s->trail_size, s->decision_level);
         }
@@ -1860,7 +1870,7 @@ lbool solver_solve_with_assumptions(Solver* s, const Lit* assumps, uint32_t n_as
             }
 
             // Progress output every 1000 conflicts
-            if (s->stats.conflicts % 1000 == 0 && getenv("BSAT_VERBOSE")) {
+            if (s->stats.conflicts % 1000 == 0 && IS_VERBOSE(s)) {
                 fprintf(stderr, "c [Progress] Conflicts: %llu, Decisions: %llu, Propagations: %llu, Level: %u\n",
                         (unsigned long long)s->stats.conflicts,
                         (unsigned long long)s->stats.decisions,
@@ -2000,7 +2010,7 @@ lbool solver_solve_with_assumptions(Solver* s, const Lit* assumps, uint32_t n_as
 
             // Check for restart
             if (solver_should_restart(s)) {
-                if (getenv("BSAT_VERBOSE")) {
+                if (IS_VERBOSE(s)) {
                     fprintf(stderr, "c [Restart #%llu] Conflicts: %llu, Level: %u",
                             (unsigned long long)s->stats.restarts + 1,
                             (unsigned long long)s->stats.conflicts,

@@ -20,7 +20,8 @@ static void print_usage(const char* program) {
     printf("\n");
     printf("Options:\n");
     printf("  -h, --help                Show this help message\n");
-    printf("  -v, --verbose             Verbose output\n");
+    printf("  -v, --verbose             Verbose runtime diagnostics (same as BSAT_VERBOSE=1)\n");
+    printf("      --debug               Debug output (same as DEBUG_CDCL=1)\n");
     printf("  -q, --quiet               Suppress all output except result\n");
     printf("  -s, --stats               Print statistics (default)\n");
     printf("\n");
@@ -76,6 +77,7 @@ static void print_usage(const char* program) {
 static struct option long_options[] = {
     {"help",            no_argument,       0, 'h'},
     {"verbose",         no_argument,       0, 'v'},
+    {"debug",           no_argument,       0, 0},
     {"quiet",           no_argument,       0, 'q'},
     {"stats",           no_argument,       0, 's'},
     {"conflicts",       required_argument, 0, 'c'},
@@ -150,7 +152,9 @@ int main(int argc, char** argv) {
 
             case 0:
                 // Long option
-                if (strcmp(long_options[option_index].name, "var-decay") == 0) {
+                if (strcmp(long_options[option_index].name, "debug") == 0) {
+                    opts.debug = true;
+                } else if (strcmp(long_options[option_index].name, "var-decay") == 0) {
                     opts.var_decay = atof(optarg);
                 } else if (strcmp(long_options[option_index].name, "var-inc") == 0) {
                     opts.var_inc = atof(optarg);
