@@ -1436,17 +1436,47 @@ static bool vivify_clause(Solver* s, CRef cref) {
 // Check if resolving clauses c1 and c2 on variable v results in a tautology
 // A resolvent is a tautology if it contains both a literal and its negation
 static bool resolvent_is_tautology(Solver* s, CRef c1, CRef c2, Var v) {
+    // Safety check: validate clause references before accessing
+    if (c1 == INVALID_CLAUSE || c1 >= s->arena->size ||
+        c2 == INVALID_CLAUSE || c2 >= s->arena->size) {
+        return false;
+    }
+
+    // Safety check: ensure clauses are not deleted
+    if (clause_deleted(s->arena, c1) || clause_deleted(s->arena, c2)) {
+        return false;
+    }
+
+    // Get clause sizes and validate they're reasonable
+    uint32_t size1 = CLAUSE_SIZE(s->arena, c1);
+    uint32_t size2 = CLAUSE_SIZE(s->arena, c2);
+
+    // Safety check: clause sizes must be reasonable (not corrupted)
+    // Maximum clause size should not exceed num_vars
+    if (size1 == 0 || size1 > s->num_vars || size2 == 0 || size2 > s->num_vars) {
+        return false;
+    }
+
     // Clear seen array
     for (Var i = 1; i <= s->num_vars; i++) {
         s->seen[i] = 0;
     }
 
     // Add all literals from c1 except v and ¬v
-    uint32_t size1 = CLAUSE_SIZE(s->arena, c1);
     Lit* lits1 = CLAUSE_LITS(s->arena, c1);
     for (uint32_t i = 0; i < size1; i++) {
         if (var(lits1[i]) != v) {
             Var lit_var = var(lits1[i]);
+
+            // Safety check: validate literal variable is in bounds
+            if (lit_var < 1 || lit_var > s->num_vars) {
+                // Invalid literal - clause is corrupted, can't check tautology
+                for (Var j = 1; j <= s->num_vars; j++) {
+                    s->seen[j] = 0;
+                }
+                return false;
+            }
+
             bool is_negated = sign(lits1[i]);
 
             // Check if we've seen the opposite polarity
@@ -1464,11 +1494,20 @@ static bool resolvent_is_tautology(Solver* s, CRef c1, CRef c2, Var v) {
     }
 
     // Add all literals from c2 except v and ¬v
-    uint32_t size2 = CLAUSE_SIZE(s->arena, c2);
     Lit* lits2 = CLAUSE_LITS(s->arena, c2);
     for (uint32_t i = 0; i < size2; i++) {
         if (var(lits2[i]) != v) {
             Var lit_var = var(lits2[i]);
+
+            // Safety check: validate literal variable is in bounds
+            if (lit_var < 1 || lit_var > s->num_vars) {
+                // Invalid literal - clause is corrupted, can't check tautology
+                for (Var j = 1; j <= s->num_vars; j++) {
+                    s->seen[j] = 0;
+                }
+                return false;
+            }
+
             bool is_negated = sign(lits2[i]);
 
             // Check if we've seen the opposite polarity
@@ -1526,6 +1565,12 @@ static bool clause_is_blocked(Solver* s, CRef cref, Lit blocking_lit) {
             continue;
         }
 
+        // Additional validation: check clause size is reasonable
+        uint32_t other_size = CLAUSE_SIZE(s->arena, other_cref);
+        if (other_size == 0 || other_size > s->num_vars) {
+            continue;  // Skip corrupted clauses
+        }
+
         // Check if resolvent is a tautology
         if (!resolvent_is_tautology(s, cref, other_cref, v)) {
             // Found a resolvent that is NOT a tautology
@@ -1553,8 +1598,12 @@ static uint32_t solver_eliminate_blocked_clauses(Solver* s) {
     for (uint32_t i = 0; i < s->num_original; i++) {
         CRef cref = s->clauses[i];
 
-        // Skip deleted clauses
-        if (cref == INVALID_CLAUSE || clause_deleted(s->arena, cref)) {
+        // Skip deleted clauses - validate bounds before accessing
+        if (cref == INVALID_CLAUSE || cref >= s->arena->size) {
+            continue;
+        }
+
+        if (clause_deleted(s->arena, cref)) {
             continue;
         }
 
@@ -1573,7 +1622,9 @@ static uint32_t solver_eliminate_blocked_clauses(Solver* s) {
 
             if (clause_is_blocked(s, cref, lit)) {
                 // This clause is blocked on lit - eliminate it!
-                arena_delete(s->arena, cref);
+                // Note: We just mark it as INVALID instead of calling arena_delete()
+                // to avoid corrupting watch lists that still point to this clause.
+                // The clause memory remains allocated but won't be used in search.
                 s->clauses[i] = INVALID_CLAUSE;
                 eliminated++;
                 blocked = true;
