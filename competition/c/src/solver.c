@@ -77,7 +77,7 @@ SolverOpts default_opts(void) {
 
         .phase_saving = true,
         .phase_reset_period = 10000,
-        .random_phase = false,
+        .random_phase = true,          // Enable by default - prevents catastrophic stuck states
         .random_phase_prob = 0.01,
         .adaptive_random = true,
 
