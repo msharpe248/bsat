@@ -55,6 +55,10 @@ static void print_usage(const char* program) {
     printf("  --reduce-fraction <f>     Fraction of clauses to keep (default: 0.5)\n");
     printf("  --reduce-interval <n>     Conflicts between reductions (default: 2000)\n");
     printf("\n");
+    printf("Preprocessing:\n");
+    printf("  --bce                     Enable blocked clause elimination (default)\n");
+    printf("  --no-bce                  Disable blocked clause elimination\n");
+    printf("\n");
     printf("Output format:\n");
     printf("  Standard DIMACS output format\n");
     printf("  s SATISFIABLE / UNSATISFIABLE / UNKNOWN\n");
@@ -90,6 +94,8 @@ static struct option long_options[] = {
     {"glue-lbd",        required_argument, 0, 0},
     {"reduce-fraction", required_argument, 0, 0},
     {"reduce-interval", required_argument, 0, 0},
+    {"bce",             no_argument,       0, 0},
+    {"no-bce",          no_argument,       0, 0},
     {0, 0, 0, 0}
 };
 
@@ -172,6 +178,10 @@ int main(int argc, char** argv) {
                     opts.reduce_fraction = atof(optarg);
                 } else if (strcmp(long_options[option_index].name, "reduce-interval") == 0) {
                     opts.reduce_interval = (uint32_t)atol(optarg);
+                } else if (strcmp(long_options[option_index].name, "bce") == 0) {
+                    opts.bce = true;
+                } else if (strcmp(long_options[option_index].name, "no-bce") == 0) {
+                    opts.bce = false;
                 }
                 break;
 
