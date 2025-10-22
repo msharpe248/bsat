@@ -49,6 +49,9 @@ typedef struct SolverOpts {
     double   reduce_fraction;   // Fraction of learned clauses to keep (0.5)
     uint32_t reduce_interval;   // Conflicts between reductions (2000)
 
+    // Preprocessing
+    bool     bce;               // Enable blocked clause elimination (true)
+
     // Inprocessing
     bool     inprocess;         // Enable inprocessing (false)
     uint32_t inprocess_interval; // Conflicts between inprocessing (10000)
@@ -146,6 +149,7 @@ typedef struct Solver {
         uint64_t deleted_clauses;
         uint64_t subsumed_clauses;   // Clauses removed by on-the-fly subsumption
         uint64_t minimized_literals; // Literals removed by clause minimization
+        uint64_t blocked_clauses;    // Clauses removed by blocked clause elimination
         uint64_t max_lbd;
         uint64_t glue_clauses;
         double   start_time;

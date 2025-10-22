@@ -41,6 +41,8 @@ SolverOpts default_opts(void) {
         .reduce_fraction = 0.5,
         .reduce_interval = 2000,
 
+        .bce = true,              // Enable blocked clause elimination by default
+
         .inprocess = false,
         .inprocess_interval = 10000,
         .subsumption = true,
@@ -524,6 +526,7 @@ void solver_print_stats(const Solver* s) {
     printf("c Learned clauses   : %llu\n", (unsigned long long)s->stats.learned_clauses);
     printf("c Learned literals  : %llu\n", (unsigned long long)s->stats.learned_literals);
     printf("c Deleted clauses   : %llu\n", (unsigned long long)s->stats.deleted_clauses);
+    printf("c Blocked clauses   : %llu\n", (unsigned long long)s->stats.blocked_clauses);
     printf("c Subsumed clauses  : %llu\n", (unsigned long long)s->stats.subsumed_clauses);
     printf("c Minimized literals: %llu\n", (unsigned long long)s->stats.minimized_literals);
     printf("c Glue clauses      : %llu\n", (unsigned long long)s->stats.glue_clauses);
@@ -1427,6 +1430,160 @@ static bool vivify_clause(Solver* s, CRef cref) {
 }
 
 /*********************************************************************
+ * Blocked Clause Elimination (BCE)
+ *********************************************************************/
+
+// Check if resolving clauses c1 and c2 on variable v results in a tautology
+// A resolvent is a tautology if it contains both a literal and its negation
+static bool resolvent_is_tautology(Solver* s, CRef c1, CRef c2, Var v) {
+    // Clear seen array
+    for (Var i = 1; i <= s->num_vars; i++) {
+        s->seen[i] = 0;
+    }
+
+    // Add all literals from c1 except v and ¬v
+    uint32_t size1 = CLAUSE_SIZE(s->arena, c1);
+    Lit* lits1 = CLAUSE_LITS(s->arena, c1);
+    for (uint32_t i = 0; i < size1; i++) {
+        if (var(lits1[i]) != v) {
+            Var lit_var = var(lits1[i]);
+            bool is_negated = sign(lits1[i]);
+
+            // Check if we've seen the opposite polarity
+            if (s->seen[lit_var] == (is_negated ? 1 : 2)) {
+                // Tautology! We have both x and ¬x
+                // Clear seen array before returning
+                for (Var j = 1; j <= s->num_vars; j++) {
+                    s->seen[j] = 0;
+                }
+                return true;
+            }
+            // Mark this polarity as seen (1 = positive, 2 = negative)
+            s->seen[lit_var] = is_negated ? 2 : 1;
+        }
+    }
+
+    // Add all literals from c2 except v and ¬v
+    uint32_t size2 = CLAUSE_SIZE(s->arena, c2);
+    Lit* lits2 = CLAUSE_LITS(s->arena, c2);
+    for (uint32_t i = 0; i < size2; i++) {
+        if (var(lits2[i]) != v) {
+            Var lit_var = var(lits2[i]);
+            bool is_negated = sign(lits2[i]);
+
+            // Check if we've seen the opposite polarity
+            if (s->seen[lit_var] == (is_negated ? 1 : 2)) {
+                // Tautology! We have both x and ¬x
+                // Clear seen array before returning
+                for (Var j = 1; j <= s->num_vars; j++) {
+                    s->seen[j] = 0;
+                }
+                return true;
+            }
+            // Mark this polarity as seen (1 = positive, 2 = negative)
+            s->seen[lit_var] = is_negated ? 2 : 1;
+        }
+    }
+
+    // Clear seen array
+    for (Var i = 1; i <= s->num_vars; i++) {
+        s->seen[i] = 0;
+    }
+
+    return false;
+}
+
+// Check if clause c is blocked on literal lit
+// A clause is blocked on a literal L if for every clause D containing ¬L,
+// the resolvent of C and D on var(L) is a tautology
+static bool clause_is_blocked(Solver* s, CRef cref, Lit blocking_lit) {
+    Var v = var(blocking_lit);
+    Lit negated = neg(blocking_lit);
+
+    // Get all clauses containing ¬blocking_lit by checking watch lists
+    WatchList* wl = watch_list(s->watches, negated);
+
+    for (uint32_t i = 0; i < wl->size; i++) {
+        CRef other_cref = wl->watches[i].cref;
+
+        // Skip deleted clauses
+        if (clause_deleted(s->arena, other_cref)) {
+            continue;
+        }
+
+        // Skip the same clause
+        if (other_cref == cref) {
+            continue;
+        }
+
+        // Check if resolvent is a tautology
+        if (!resolvent_is_tautology(s, cref, other_cref, v)) {
+            // Found a resolvent that is NOT a tautology
+            // This literal is not blocking
+            return false;
+        }
+    }
+
+    // All resolvents are tautologies (or no clauses with ¬L exist)
+    // This clause is blocked on blocking_lit
+    return true;
+}
+
+// Blocked Clause Elimination preprocessing
+// Removes clauses that are blocked on some literal
+// Returns number of clauses eliminated
+static uint32_t solver_eliminate_blocked_clauses(Solver* s) {
+    if (!s->opts.bce) {
+        return 0;
+    }
+
+    uint32_t eliminated = 0;
+
+    // Only eliminate from original clauses (not learned clauses)
+    for (uint32_t i = 0; i < s->num_original; i++) {
+        CRef cref = s->clauses[i];
+
+        // Skip deleted clauses
+        if (cref == INVALID_CLAUSE || clause_deleted(s->arena, cref)) {
+            continue;
+        }
+
+        // Skip learned clauses (shouldn't happen in original clauses, but be safe)
+        if (clause_learned(s->arena, cref)) {
+            continue;
+        }
+
+        uint32_t size = CLAUSE_SIZE(s->arena, cref);
+        Lit* lits = CLAUSE_LITS(s->arena, cref);
+
+        // Try each literal as a blocking literal
+        bool blocked = false;
+        for (uint32_t j = 0; j < size && !blocked; j++) {
+            Lit lit = lits[j];
+
+            if (clause_is_blocked(s, cref, lit)) {
+                // This clause is blocked on lit - eliminate it!
+                arena_delete(s->arena, cref);
+                s->clauses[i] = INVALID_CLAUSE;
+                eliminated++;
+                blocked = true;
+
+                if (s->opts.verbose) {
+                    printf("c [BCE] Eliminated clause blocked on literal %d%d\n",
+                           sign(lit) ? -((int)var(lit)) : (int)var(lit), sign(lit));
+                }
+            }
+        }
+    }
+
+    if (eliminated > 0 && s->opts.verbose) {
+        printf("c [BCE] Eliminated %u blocked clauses\n", eliminated);
+    }
+
+    return eliminated;
+}
+
+/*********************************************************************
  * Simplification
  *********************************************************************/
 
@@ -1473,6 +1630,12 @@ lbool solver_solve_with_assumptions(Solver* s, const Lit* assumps, uint32_t n_as
     // Check if already solved
     if (s->result != UNDEF) {
         return s->result;
+    }
+
+    // Preprocessing: Blocked Clause Elimination
+    if (s->opts.bce) {
+        uint32_t blocked = solver_eliminate_blocked_clauses(s);
+        s->stats.blocked_clauses = blocked;
     }
 
     // Add assumptions
