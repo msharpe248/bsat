@@ -1,0 +1,9 @@
+c Horn UNSAT formula
+c Expected: UNSATISFIABLE
+c Each clause has at most 1 positive literal
+c Clauses: (x1), (~x1 ∨ x2), (~x1 ∨ ~x2)
+c x1=T forces x2=T and x2=F simultaneously
+p cnf 2 3
+1 0
+-1 2 0
+-1 -2 0

@@ -1,0 +1,11 @@
+c Regression: Backtracking to decision level 0
+c Expected: UNSAT
+c Forces conflict that requires backtracking to level 0
+c After unit propagation from (x1) and (~x1 ∨ x2),
+c we get conflict at decision level 0
+p cnf 3 5
+1 0
+-1 2 0
+-2 3 0
+-3 0
+3 0

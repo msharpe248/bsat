@@ -1,0 +1,9 @@
+c Horn SAT formula
+c Expected: SATISFIABLE
+c Each clause has at most 1 positive literal (Horn property)
+c Clauses: (x1), (~x1 ∨ x2), (~x2 ∨ x3)
+c Propagates: x1=T → x2=T → x3=T
+p cnf 3 3
+1 0
+-1 2 0
+-2 3 0

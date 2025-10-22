@@ -38,6 +38,37 @@ kill -USR1 $(pgrep bsat)  # Get progress update
 
 ---
 
+## Testing
+
+Comprehensive test suite with 42 distinct test cases:
+
+```bash
+# Run all unit tests (22 tests, completes in ~100ms)
+make test
+
+# Individual test binaries
+bin/test_test_dimacs   # DIMACS I/O tests (11 tests)
+bin/test_test_solver   # Core solver tests (11 tests)
+
+# Cross-validation (C vs Python agreement, 10 fixtures)
+cd tests
+python test_cross_validation.py
+```
+
+**Test Coverage**:
+- ✅ DIMACS parsing and I/O
+- ✅ Solver creation and management
+- ✅ Unit propagation
+- ✅ Conflict detection
+- ✅ SAT/UNSAT correctness
+- ✅ Solution validity
+- ✅ C-Python solver agreement
+- ✅ Edge cases and regression tests
+
+**See**: `../TESTING.md` for complete testing documentation
+
+---
+
 ## Features Implemented ✅
 
 ### Core CDCL Engine
@@ -103,8 +134,12 @@ competition/c/
 │   └── types.h          # Core type definitions
 │
 ├── tests/
-│   ├── test_medium_suite.sh    # Test 13 medium instances
-│   └── benchmark_vs_python.sh  # Performance comparison
+│   ├── test_dimacs.c            # DIMACS I/O unit tests (11 tests)
+│   ├── test_solver.c            # Core solver unit tests (11 tests)
+│   ├── test_cross_validation.py # C vs Python validation (10 tests)
+│   ├── run_all.sh               # Unit test runner
+│   ├── test_medium_suite.sh     # Test 13 medium instances
+│   └── benchmark_vs_python.sh   # Performance comparison
 │
 ├── Makefile             # Build system
 └── README.md            # This file

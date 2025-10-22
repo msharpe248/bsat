@@ -1,0 +1,5 @@
+c Trivial SAT instance - single positive literal
+c Expected: SATISFIABLE
+c Solution: x1=true
+p cnf 1 1
+1 0

@@ -1,0 +1,8 @@
+c Simple 3-variable UNSAT instance
+c Expected: UNSATISFIABLE
+c Pigeonhole: 2 pigeons in 1 hole
+c Clauses: (x1 ∨ x2), (~x1), (~x2)
+p cnf 2 3
+1 2 0
+-1 0
+-2 0

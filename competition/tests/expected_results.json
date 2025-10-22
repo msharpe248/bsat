@@ -1,0 +1,42 @@
+{
+  "fixtures/unit/trivial_sat.cnf": {
+    "result": "SAT",
+    "description": "Single positive literal"
+  },
+  "fixtures/unit/trivial_unsat.cnf": {
+    "result": "UNSAT",
+    "description": "Contradiction: (x) AND (~x)"
+  },
+  "fixtures/unit/empty.cnf": {
+    "result": "SAT",
+    "description": "Empty CNF (vacuously true)"
+  },
+  "fixtures/unit/unit_propagation.cnf": {
+    "result": "UNSAT",
+    "description": "Unit propagation chain leading to conflict"
+  },
+  "fixtures/unit/simple_sat_3.cnf": {
+    "result": "SAT",
+    "description": "Simple 3-variable SAT"
+  },
+  "fixtures/unit/simple_unsat_3.cnf": {
+    "result": "UNSAT",
+    "description": "Simple UNSAT (pigeon hole)"
+  },
+  "fixtures/unit/pure_literal.cnf": {
+    "result": "SAT",
+    "description": "Contains pure literal"
+  },
+  "fixtures/unit/horn_sat.cnf": {
+    "result": "SAT",
+    "description": "Horn formula, satisfiable"
+  },
+  "fixtures/unit/horn_unsat.cnf": {
+    "result": "UNSAT",
+    "description": "Horn formula, unsatisfiable"
+  },
+  "fixtures/regression/backtrack_level_zero.cnf": {
+    "result": "UNSAT",
+    "description": "Regression: backtrack to decision level 0"
+  }
+}

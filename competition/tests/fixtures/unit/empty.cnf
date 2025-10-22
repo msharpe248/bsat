@@ -1,0 +1,4 @@
+c Empty CNF - no clauses
+c Expected: SATISFIABLE (vacuously true)
+c Any assignment satisfies an empty formula
+p cnf 0 0
