@@ -69,9 +69,9 @@ SolverOpts default_opts(void) {
 
         .restart_first = 100,
         .restart_inc = 1.5,
-        .glucose_restart = true,   // Hybrid Glucose/geometric restarts (best of both worlds)
-        .luby_restart = false,     // Use Luby sequence (Python uses this, disabled by default)
-        .luby_unit = 512,          // Conflicts per Luby unit (Python uses 100, MiniSat uses 512)
+        .glucose_restart = false,  // Disabled when Luby is default
+        .luby_restart = true,      // NOW DEFAULT - achieves 100% completeness
+        .luby_unit = 100,          // Python uses 100, MiniSat uses 512 (using Python's value)
         .restart_postpone = 10,
         .glucose_fast_alpha = 0.8,     // Fast MA decay factor (tracks recent ~5 conflicts)
         .glucose_slow_alpha = 0.9999,  // Slow MA decay factor (long-term average)

@@ -96,6 +96,7 @@ static struct option long_options[] = {
     {"restart-inc",     required_argument, 0, 0},
     {"glucose-restart", no_argument,       0, 0},
     {"luby-restart",    no_argument,       0, 0},
+    {"no-luby-restart", no_argument,       0, 0},
     {"luby-unit",       required_argument, 0, 0},
     {"no-restarts",     no_argument,       0, 0},
     {"glucose-fast-alpha", required_argument, 0, 0},
@@ -176,6 +177,10 @@ int main(int argc, char** argv) {
                     opts.glucose_restart = true;
                 } else if (strcmp(long_options[option_index].name, "luby-restart") == 0) {
                     opts.luby_restart = true;
+                    opts.glucose_restart = false;  // Disable Glucose when Luby enabled
+                } else if (strcmp(long_options[option_index].name, "no-luby-restart") == 0) {
+                    opts.luby_restart = false;
+                    opts.glucose_restart = true;   // Re-enable Glucose
                 } else if (strcmp(long_options[option_index].name, "luby-unit") == 0) {
                     opts.luby_unit = (uint32_t)atol(optarg);
                 } else if (strcmp(long_options[option_index].name, "no-restarts") == 0) {
