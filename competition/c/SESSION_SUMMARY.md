@@ -112,13 +112,38 @@ The C CDCL solver was experiencing mysterious timeouts on instances that Python 
 3. **Simple Fixes**: A single-line change (`.random_phase = true`) eliminated the entire class of timeout issues
 4. **Test-Driven Debugging**: Creating automated comparison scripts made the problem immediately visible
 
+## Random Phase Tuning (Follow-up Investigation)
+
+After discovering the 1 remaining timeout, we investigated if increasing random phase probability would help:
+
+| Random % | Pass Rate | Notes |
+|----------|-----------|-------|
+| **1%** (default) | **52/53 (98.1%)** | ✅ Best overall |
+| 2% | 51/53 (96.2%) | Fixes 1, breaks 2 (net -1) |
+| 5% | 48/53 (90.6%) | Fixes 1, breaks 5 (net -4) |
+
+**Key Finding**: Random phase has inherent **variance** - it helps some instances but hurts others. Higher randomness trades one timeout for multiple new ones.
+
+**The Remaining Timeout**:
+- Instance: `hard_3sat_v108_c0461.cnf`
+- Python: Solves SAT in 0.816s (597 conflicts)
+- C (1% random): Timeout
+- C (5% random): Solves SAT in 0.340s (33,287 conflicts)
+- **Workaround**: Users can use `--random-prob 0.05` flag
+
+**Why 1% is Optimal**:
+- Maximizes overall success rate (98.1%)
+- Increasing randomness causes more regressions than fixes
+- The one timeout is solvable with command-line flag
+
 ## Next Steps (Future Work)
 
 1. ✅ **DONE**: Fix catastrophic stuck states (this session)
-2. **TODO**: Investigate remaining timeout (hard_3sat_v108_c0461.cnf)
-3. **TODO**: Benchmark against competition solvers
-4. **TODO**: Profile for low-level optimizations (now that algorithm is sound)
-5. **TODO**: Test on larger SAT competition instances
+2. ✅ **DONE**: Tune random phase probability (1% is optimal)
+3. **TODO**: Implement adaptive randomness that increases automatically when stuck
+4. **TODO**: Benchmark against competition solvers
+5. **TODO**: Profile for low-level optimizations (now that algorithm is sound)
+6. **TODO**: Test on larger SAT competition instances
 
 ## Commits This Session
 
