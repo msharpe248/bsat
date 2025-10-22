@@ -1503,8 +1503,18 @@ static bool clause_is_blocked(Solver* s, CRef cref, Lit blocking_lit) {
     // Get all clauses containing ¬blocking_lit by checking watch lists
     WatchList* wl = watch_list(s->watches, negated);
 
+    // Safety check: watch list might not be initialized
+    if (!wl || !wl->watches) {
+        return false;
+    }
+
     for (uint32_t i = 0; i < wl->size; i++) {
         CRef other_cref = wl->watches[i].cref;
+
+        // Safety check: validate clause reference
+        if (other_cref == INVALID_CLAUSE || other_cref >= s->arena->size) {
+            continue;
+        }
 
         // Skip deleted clauses
         if (clause_deleted(s->arena, other_cref)) {
