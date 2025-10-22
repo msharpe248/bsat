@@ -20,6 +20,14 @@
 #include <stdlib.h>
 
 /*********************************************************************
+ * Global Output Control
+ *********************************************************************/
+
+// Global flags for verbose and debug output (set once at startup)
+extern bool g_verbose;  // Verbose runtime diagnostics (BSAT_VERBOSE or --verbose)
+extern bool g_debug;    // Debug output (DEBUG_CDCL or --debug)
+
+/*********************************************************************
  * Configuration Constants
  *********************************************************************/
 

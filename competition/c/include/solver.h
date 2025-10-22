@@ -68,9 +68,10 @@ typedef struct SolverOpts {
 // Get default options
 SolverOpts default_opts(void);
 
-// Convenience macros for verbose/debug output (use after solver is created)
-#define IS_VERBOSE(s) ((s)->opts.verbose)
-#define IS_DEBUG(s) ((s)->opts.debug)
+// Convenience macros for verbose/debug output (now use global flags)
+// Note: 's' parameter maintained for backward compatibility but not used
+#define IS_VERBOSE(s) (g_verbose)
+#define IS_DEBUG(s) (g_debug)
 
 /*********************************************************************
  * Variable Information

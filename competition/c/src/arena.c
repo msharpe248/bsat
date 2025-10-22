@@ -107,8 +107,8 @@ static bool arena_grow(Arena* arena, size_t needed) {
     arena->capacity = new_capacity;
     arena->num_growths++;
 
-    // Log growth if verbose (check environment variable)
-    if (getenv("BSAT_VERBOSE")) {
+    // Log growth if verbose (use global flag)
+    if (g_verbose) {
         fprintf(stderr, "c [Arena] Grew from %zu to %zu words (%.1f KB -> %.1f KB) [growth #%u]\n",
                 old_capacity, new_capacity,
                 old_capacity * sizeof(uint32_t) / 1024.0,
@@ -150,7 +150,7 @@ bool arena_reserve(Arena* arena, size_t min_capacity) {
     arena->capacity = new_capacity;
 
     // Log reservation if verbose
-    if (getenv("BSAT_VERBOSE")) {
+    if (g_verbose) {
         fprintf(stderr, "c [Arena] Reserved %zu words (%.1f MB) based on problem size\n",
                 new_capacity, new_capacity * sizeof(uint32_t) / (1024.0 * 1024.0));
         fprintf(stderr, "c [Arena] Growth from %zu to %zu words (%.1f KB -> %.1f KB)\n",

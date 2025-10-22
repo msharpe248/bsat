@@ -12,6 +12,13 @@
 #include <unistd.h>
 
 /*********************************************************************
+ * Global Output Control Flags (defined here, declared in types.h)
+ *********************************************************************/
+
+bool g_verbose = false;
+bool g_debug = false;
+
+/*********************************************************************
  * Usage Information
  *********************************************************************/
 
@@ -209,6 +216,10 @@ int main(int argc, char** argv) {
     }
 
     const char* input_file = argv[optind];
+
+    // Initialize global output control flags from options
+    g_verbose = opts.verbose;
+    g_debug = opts.debug;
 
     // Print header
     if (!opts.quiet) {
