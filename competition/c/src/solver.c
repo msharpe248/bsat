@@ -70,6 +70,8 @@ SolverOpts default_opts(void) {
         .restart_first = 100,
         .restart_inc = 1.5,
         .glucose_restart = true,   // Hybrid Glucose/geometric restarts (best of both worlds)
+        .luby_restart = false,     // Use Luby sequence (Python uses this, disabled by default)
+        .luby_unit = 512,          // Conflicts per Luby unit (Python uses 100, MiniSat uses 512)
         .restart_postpone = 10,
         .glucose_fast_alpha = 0.8,     // Fast MA decay factor (tracks recent ~5 conflicts)
         .glucose_slow_alpha = 0.9999,  // Slow MA decay factor (long-term average)
@@ -247,6 +249,7 @@ Solver* solver_new_with_opts(const SolverOpts* opts) {
 
     // Initialize restart state
     s->restart.threshold = opts->restart_first;
+    s->restart.luby_index = 0;
 
     // Set start time
     s->stats.start_time = (double)clock() / CLOCKS_PER_SEC;
@@ -959,17 +962,22 @@ bool solver_decide(Solver* s) {
     // Choose polarity
     bool sign = false;
 
-    if (s->opts.phase_saving && s->vars[next].polarity) {
+    if (s->opts.phase_saving) {
+        // BUG FIX: Don't check polarity in condition - use saved polarity for ALL variables
+        // polarity stores the last value: true=positive, false=negative
+        // sign is inverted: false=positive, true=negative
         sign = !s->vars[next].polarity;
     } else if (s->opts.random_phase) {
         // Random phase with probability
         if ((rand() / (double)RAND_MAX) < s->opts.random_phase_prob) {
             sign = rand() & 1;
         } else {
-            sign = s->vars[next].polarity;
+            // BUG FIX: Default to positive (sign=false) like Python does
+            sign = false;
         }
     } else {
-        sign = s->vars[next].polarity;
+        // BUG FIX: Default to positive (sign=false) like Python does
+        sign = false;
     }
 
     // Make decision
@@ -992,10 +1000,58 @@ bool solver_decide(Solver* s) {
 }
 
 /*********************************************************************
+ * Luby Restart Sequence
+ *********************************************************************/
+
+// Compute the i-th value in the Luby sequence
+// Luby sequence: 1, 1, 2, 1, 1, 2, 4, 1, 1, 2, 1, 1, 2, 4, 8, ...
+// This provides a good balance of short and long restarts
+static uint32_t luby_sequence(uint32_t i) {
+    // Find the finite subsequence that contains index i
+    uint32_t k = 1;
+    while ((1U << (k + 1)) - 1 <= i) {
+        k++;
+    }
+
+    // Check if i is at the end of a subsequence
+    if ((1U << k) - 1 == i) {
+        return 1U << (k - 1);
+    } else {
+        return luby_sequence(i - (1U << k) + 1);
+    }
+}
+
+/*********************************************************************
  * Restart Decision
  *********************************************************************/
 
 bool solver_should_restart(Solver* s) {
+    // Luby restart strategy (if enabled)
+    // Uses TOTAL conflicts vs cumulative threshold, like Python
+    if (s->opts.luby_restart) {
+        // Compute the current Luby threshold (uses luby_index which starts at 0)
+        uint32_t luby_value = luby_sequence(s->restart.luby_index + 1);
+        uint32_t threshold = luby_value * s->opts.luby_unit;
+
+        if (s->stats.conflicts >= (uint64_t)threshold) {
+            s->restart.luby_index++;
+
+            if (IS_VERBOSE(s)) {
+                fprintf(stderr, "[Luby] Restart #%llu at %llu total conflicts (threshold was %u, next is Luby(%u) × %u = %u)\n",
+                        (unsigned long long)s->stats.restarts + 1,
+                        (unsigned long long)s->stats.conflicts,
+                        threshold,
+                        s->restart.luby_index + 1,
+                        s->opts.luby_unit,
+                        luby_sequence(s->restart.luby_index + 1) * s->opts.luby_unit);
+            }
+
+            return true;
+        }
+        return false;
+    }
+
+    // Original restart strategies (Glucose or geometric)
     if (s->opts.glucose_restart) {
         // Glucose-style adaptive restarts based on LBD moving averages
         // Restart when fast_ma > slow_ma (recent LBD worse than long-term average)

@@ -31,6 +31,8 @@ typedef struct SolverOpts {
     uint32_t restart_first;      // First restart interval (100)
     double   restart_inc;        // Restart interval increment (1.5)
     bool     glucose_restart;    // Use Glucose-style adaptive restarts
+    bool     luby_restart;       // Use Luby restart sequence (vs geometric/glucose)
+    uint32_t luby_unit;          // Luby unit size (conflicts per Luby unit, default 512)
     uint32_t restart_postpone;   // Min trail growth to postpone restart (10%)
     double   glucose_fast_alpha; // Glucose fast MA decay factor (0.8)
     double   glucose_slow_alpha; // Glucose slow MA decay factor (0.9999)
@@ -165,6 +167,7 @@ typedef struct Solver {
     struct {
         uint32_t conflicts_since;     // Conflicts since last restart
         uint32_t threshold;           // Current restart threshold
+        uint32_t luby_index;         // Current position in Luby sequence
         double   slow_ma;            // Slow moving average (Glucose)
         double   fast_ma;            // Fast moving average (Glucose)
         uint32_t stuck_conflicts;    // Conflicts without progress

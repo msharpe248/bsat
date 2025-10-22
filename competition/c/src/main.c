@@ -95,12 +95,15 @@ static struct option long_options[] = {
     {"restart-first",   required_argument, 0, 0},
     {"restart-inc",     required_argument, 0, 0},
     {"glucose-restart", no_argument,       0, 0},
+    {"luby-restart",    no_argument,       0, 0},
+    {"luby-unit",       required_argument, 0, 0},
     {"no-restarts",     no_argument,       0, 0},
     {"glucose-fast-alpha", required_argument, 0, 0},
     {"glucose-slow-alpha", required_argument, 0, 0},
     {"glucose-min-conflicts", required_argument, 0, 0},
     {"no-phase-saving", no_argument,       0, 0},
     {"random-phase",    no_argument,       0, 0},
+    {"no-random-phase", no_argument,       0, 0},
     {"random-prob",     required_argument, 0, 0},
     {"max-lbd",         required_argument, 0, 0},
     {"glue-lbd",        required_argument, 0, 0},
@@ -171,6 +174,10 @@ int main(int argc, char** argv) {
                     opts.restart_inc = atof(optarg);
                 } else if (strcmp(long_options[option_index].name, "glucose-restart") == 0) {
                     opts.glucose_restart = true;
+                } else if (strcmp(long_options[option_index].name, "luby-restart") == 0) {
+                    opts.luby_restart = true;
+                } else if (strcmp(long_options[option_index].name, "luby-unit") == 0) {
+                    opts.luby_unit = (uint32_t)atol(optarg);
                 } else if (strcmp(long_options[option_index].name, "no-restarts") == 0) {
                     opts.restart_first = UINT32_MAX;
                 } else if (strcmp(long_options[option_index].name, "glucose-fast-alpha") == 0) {
@@ -183,6 +190,8 @@ int main(int argc, char** argv) {
                     opts.phase_saving = false;
                 } else if (strcmp(long_options[option_index].name, "random-phase") == 0) {
                     opts.random_phase = true;
+                } else if (strcmp(long_options[option_index].name, "no-random-phase") == 0) {
+                    opts.random_phase = false;
                 } else if (strcmp(long_options[option_index].name, "random-prob") == 0) {
                     opts.random_phase_prob = atof(optarg);
                 } else if (strcmp(long_options[option_index].name, "max-lbd") == 0) {
