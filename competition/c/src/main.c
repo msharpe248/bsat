@@ -9,6 +9,7 @@
 #include <string.h>
 #include <getopt.h>
 #include <time.h>
+#include <unistd.h>
 
 /*********************************************************************
  * Usage Information
@@ -192,6 +193,7 @@ int main(int argc, char** argv) {
     // Print header
     if (!opts.quiet) {
         printf("c BSAT Competition Solver v1.0\n");
+        printf("c PID: %d (send SIGUSR1 for progress: kill -USR1 %d)\n", getpid(), getpid());
         printf("c Reading from %s\n", input_file);
     }
 
