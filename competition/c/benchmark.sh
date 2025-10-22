@@ -1,7 +1,8 @@
 #!/bin/bash
 
 # BSAT Solver Benchmark Script
-# Compares C solver performance against Python solver and tracks key metrics
+# Compares C solver performance against optimized Python competition solver
+# (competition/python/competition_solver.py) and tracks key metrics
 
 set -e
 

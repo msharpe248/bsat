@@ -6,8 +6,8 @@ A high-performance SAT solver implementing modern CDCL (Conflict-Driven Clause L
 
 **Full CDCL implementation with all modern features complete**
 
-Performance: **6-8× faster than optimized Python** (average: 6.88× on 62 test instances)
-- ✅ **Solves UNSAT instances Python cannot** (10+ instances where C succeeds, Python times out)
+Performance: **6-8× faster than optimized Python competition solver** (average: 6.88× on 62 test instances)
+- ✅ **Solves UNSAT instances Python competition solver cannot** (10+ instances where C succeeds, Python times out)
 - ✅ **Up to 21× speedup** on some SAT instances
 - ✅ **Signal-based progress monitoring** (SIGUSR1)
 
@@ -241,9 +241,11 @@ c <comment>                # Comments: statistics, warnings, etc.
 
 ## Performance
 
-### Benchmarks vs Python
+### Benchmarks vs Optimized Python (Competition Solver)
 
-Comprehensive benchmark on **62 test instances** (Simple + Medium suites, 30s timeout):
+Comprehensive benchmark comparing C solver against **optimized Python competition solver** (`competition/python/competition_solver.py`) on **62 test instances** (Simple + Medium suites, 30s timeout).
+
+> **Note**: The Python competition solver is a highly optimized CDCL implementation with all the same features as the C solver (VSIDS, clause learning, restarts, phase saving, etc.). This is an apples-to-apples comparison of the same algorithm in different languages.
 
 **Summary Results:**
 - **Total instances**: 62 (9 simple + 53 medium)
@@ -305,12 +307,13 @@ Testing easy_3sat_v012_c0050.cnf... ✅ PASS (s UNSATISFIABLE)
 Results: 13 passed, 0 failed, 0 timeouts ✅
 ```
 
-### Verify Against Python Solver
+### Verify Against Python Competition Solver
 
-The benchmark script cross-checks results:
+The benchmark script compares C solver against the optimized Python competition solver:
 ```bash
-./benchmark_vs_python.sh
-# Compares both status (SAT/UNSAT) and performance
+./benchmark.sh
+# Compares both status (SAT/UNSAT) and performance on 62 instances
+# Results saved to benchmark_results/ with timestamps
 ```
 
 ### Test Coverage
