@@ -29,7 +29,7 @@ make
 ./bin/bsat --verbose instance.cnf
 
 # Test on medium test suite (53 instances)
-./test_medium_suite.sh
+./scripts/test_medium_suite.sh
 ```
 
 ---
@@ -207,7 +207,7 @@ c Max LBD           : 8
 ### Full Test Suite
 ```bash
 # Run all 53 medium test instances
-./test_medium_suite.sh
+./scripts/test_medium_suite.sh
 
 # Expected output:
 # Passed:  53
@@ -218,13 +218,13 @@ c Max LBD           : 8
 ### Performance Comparison
 ```bash
 # Compare C vs Python on test instances
-./compare_c_vs_python.sh
+./scripts/compare_c_vs_python.sh
 
 # Compare Glucose EMA vs AVG modes
-./test_glucose_comparison.sh
+./scripts/test_glucose_comparison.sh
 
 # Benchmark on custom instances
-./benchmark.sh instance1.cnf instance2.cnf ...
+./scripts/benchmark.sh instance1.cnf instance2.cnf ...
 ```
 
 ### Unit Tests
@@ -259,12 +259,17 @@ competition/c/
 │   ├── arena.h       # Arena allocator interface
 │   └── watch.h       # Watch manager interface
 ├── tests/            # Unit tests
+├── scripts/          # Utility scripts
+│   ├── test_medium_suite.sh       # Main test suite (53 instances)
+│   ├── benchmark.sh               # Performance benchmarking
+│   ├── compare_c_vs_python.sh     # C vs Python comparison
+│   └── test_glucose_comparison.sh # Glucose EMA vs AVG comparison
 ├── bin/              # Compiled binaries
 ├── build/            # Build artifacts (.o files)
-└── docs/             # Additional documentation
-    ├── FEATURES.md                  # Detailed feature list
-    ├── GLUCOSE_ANALYSIS.md          # Glucose algorithm analysis
-    └── GLUCOSE_DUAL_MODE_SUMMARY.md # Dual-mode implementation docs
+├── FEATURES.md                    # Detailed feature list
+├── GLUCOSE_ANALYSIS.md            # Glucose algorithm analysis
+├── GLUCOSE_DUAL_MODE_SUMMARY.md   # Dual-mode implementation docs
+└── README.md                      # This file
 ```
 
 ### Core Data Structures
