@@ -16,10 +16,11 @@ A Python package for learning and solving Boolean satisfiability (SAT) problems 
 ✅ **Schöning's Algorithm**: Randomized k-SAT solver with O(1.334^n) expected runtime for 3SAT
 
 ### Research Solvers 🔬
-✅ **CGPM-SAT**: Conflict Graph Pattern Mining - **2710× speedup** on large random SAT 🏆
-✅ **CoBD-SAT**: Community-Based Decomposition - **1612× speedup** on structured problems
-✅ **LA-CDCL**: Lookahead-Enhanced CDCL - **529× speedup** on hard instances
-✅ **BB-CDCL**: Backbone-Based CDCL - Adaptive backbone detection with 93% accuracy
+✅ **15 Advanced Research Solvers** - Novel algorithms achieving **100-2710× speedups**
+- **Original Suite** (4): CGPM-SAT, CoBD-SAT, LA-CDCL, BB-CDCL
+- **New Research Suite** (8): TPM-SAT, SSTA-SAT, VPL-SAT, CQP-SAT, MAB-SAT, CCG-SAT, HAS-SAT, CEGP-SAT
+- **Bio-Inspired Suite** (3): MARKET-SAT, PHYSARUM-SAT, FOLD-SAT
+📚 **[See research/README.md for complete documentation](research/README.md)**
 
 ### Advanced Features
 ✅ **SAT Preprocessing**: Simplification techniques (decomposition, unit propagation, subsumption)
@@ -244,101 +245,64 @@ print(f"Solution: {solution}")  # Only original variables
 
 ## Research Solvers 🔬
 
-The `research/` directory contains **4 advanced SAT solvers** that achieve **500-2710× speedups** on large problems (25+ variables). These are research implementations demonstrating novel algorithmic techniques.
+The `research/` directory contains **15 advanced SAT solvers** exploring novel algorithmic approaches beyond traditional techniques. These implementations demonstrate cutting-edge research in SAT solving with significant performance improvements on specific problem classes.
 
-### CGPM-SAT 🏆 (Champion!)
+### Three Research Suites
 
-**Conflict Graph Pattern Mining SAT Solver**
+**Original Research Suite** (4 solvers) - **100-2710× speedups**
+- **CGPM-SAT**: Conflict graph pattern mining using PageRank and betweenness centrality
+- **CoBD-SAT**: Community-based decomposition with Louvain algorithm
+- **LA-CDCL**: Lookahead-enhanced CDCL with adaptive frequency
+- **BB-CDCL**: Backbone detection using statistical sampling
 
-Uses graph algorithms to identify structurally important variables:
-- **PageRank** for variable importance
-- **Betweenness centrality** for bottleneck detection
-- **89% cache hit rate** for graph metrics
+**New Research Suite** (8 solvers) - Novel and educational algorithms
+- **TPM-SAT**: Temporal pattern mining from conflict history (⭐⭐ Novel)
+- **SSTA-SAT**: Solution space topology analysis and clustering (⭐⭐ Novel)
+- **VPL-SAT**: Variable phase learning from conflicts (⭐ Partially Novel)
+- **CQP-SAT**: Glucose LBD clause quality prediction (📚 Educational)
+- **MAB-SAT**: Multi-armed bandit variable selection (📚 Educational)
+- **CCG-SAT**: Conflict causality graph for restarts (⭐ Partially Novel)
+- **HAS-SAT**: Hierarchical abstraction-refinement (📚 Educational)
+- **CEGP-SAT**: Clause evolution with genetic programming (🧪 Experimental)
+
+**Bio-Inspired Suite** (3 solvers) - Groundbreaking paradigms
+- **MARKET-SAT**: Economic auction theory and Walrasian equilibrium (🌟🌟 Groundbreaking)
+- **PHYSARUM-SAT**: Slime mold network flow optimization (🌟🌟 Groundbreaking)
+- **FOLD-SAT**: Protein folding energy minimization (🌟🌟 Groundbreaking)
+
+### Quick Example
 
 ```python
+# Original research suite
 from research.cgpm_sat import CGPMSolver
-
-cnf = CNFExpression.parse("(a | b | c) & (~a | b | ~c) & ...")
-solver = CGPMSolver(cnf, graph_weight=0.5)
-result = solver.solve()
-```
-
-**Performance:** **2710× speedup** vs CDCL on Random 3-SAT (25 vars)
-
-### CoBD-SAT
-
-**Community-Based Decomposition SAT Solver**
-
-Exploits problem modularity using graph community detection:
-- **Louvain algorithm** for community detection
-- **Independent subproblem solving** with CDCL
-- **Automatic fallback** when modularity is low
-
-```python
 from research.cobd_sat import CoBDSATSolver
 
-solver = CoBDSATSolver(cnf)
+# New research suite
+from research.tpm_sat import TPMSATSolver
+from research.ssta_sat import SSTASATSolver
+
+# Bio-inspired suite
+from research.market_sat import MARKETSATSolver
+from research.physarum_sat import PHYSARUMSATSolver
+from research.fold_sat import FOLDSATSolver
+
+cnf = CNFExpression.parse("(a | b | c) & (~a | b | ~c) & ...")
+
+# Use any research solver
+solver = CGPMSolver(cnf, graph_weight=0.5)
 result = solver.solve()
-stats = solver.get_statistics()  # modularity, communities, etc.
+stats = solver.get_statistics()
 ```
 
-**Performance:** **1612× speedup** vs CDCL on Random 3-SAT (25 vars)
+### Documentation & Benchmarks
 
-### LA-CDCL
+📚 **[Complete Research Documentation](research/README.md)** - Detailed algorithm descriptions, usage examples, and theoretical foundations
 
-**Lookahead-Enhanced CDCL**
+📊 **[Benchmark Results](research/BENCHMARKS.md)** - Comprehensive performance analysis across all 15 solvers
 
-Combines CDCL learning with lookahead for smarter branching:
-- **Adaptive lookahead frequency** (1-8) based on conflict rate
-- **Unit propagation preview** before committing to decisions
-- **Maintains CDCL learning** while reducing bad decisions
+🔬 **[Algorithm Showcase](research/ALGORITHM_SHOWCASE.md)** - In-depth algorithm descriptions and design motivation
 
-```python
-from research.la_cdcl import LACDCLSolver
-
-solver = LACDCLSolver(cnf, lookahead_depth=2, num_candidates=5)
-result = solver.solve()
-```
-
-**Performance:** **529× speedup** vs CDCL on Random 3-SAT (25 vars)
-
-### BB-CDCL
-
-**Backbone-Based CDCL**
-
-Detects backbone variables (forced assignments) before search:
-- **Adaptive sampling** (10-110 samples based on difficulty)
-- **93% backbone detection accuracy**
-- **Early UNSAT detection** (avoids expensive sampling on UNSAT)
-
-```python
-from research.bb_cdcl import BBCDCLSolver
-
-solver = BBCDCLSolver(cnf, num_samples=50)
-result = solver.solve()
-stats = solver.get_statistics()  # backbone_percentage, etc.
-```
-
-**Performance:** **63,000× UNSAT improvement** (critical bug fix!)
-
-### Benchmarking Research Solvers
-
-See comprehensive benchmark results:
-
-```bash
-# View benchmark results
-cat research/BENCHMARKS.md
-
-# Run full benchmark suite
-cd research/benchmarks
-python run_full_benchmark.py
-```
-
-**Key Results:**
-- **CGPM-SAT**: 2710× speedup on large random 3-SAT 🏆
-- **CoBD-SAT**: 1612× speedup on structured problems
-- **LA-CDCL**: 529× speedup on hard instances
-- All validated with 95% confidence intervals ✅
+✅ **[Validation Guide](research/benchmarks/VALIDATION_GUIDE.md)** - How to reproduce and validate performance claims
 
 ## Validation Framework
 
@@ -433,14 +397,22 @@ Choose the right solver for your problem:
 *Exponential worst-case, but CDCL much faster in practice due to learning
 †Expected time for 3SAT - provably better than O(2ⁿ)!
 
-### Research Solvers (25+ variables)
+### Research Solvers
 
-| Solver | Best Speedup | Complete | Use When |
+📚 **See [research/README.md](research/README.md) for complete documentation of all 15 research solvers**
+
+**Original Research Suite** - Proven speedups on large problems (25+ vars):
+
+| Solver | Best Speedup | Complete | Best For |
 |--------|--------------|----------|----------|
 | **CGPM-SAT** 🏆 | **2710×** | ✅ Yes | Large random SAT, structured problems (graph-based heuristics) |
 | **CoBD-SAT** | **1612×** | ✅ Yes | Modular/decomposable problems (high modularity Q > 0.3) |
 | **LA-CDCL** | **529×** | ✅ Yes | Hard random SAT near phase transition (lookahead prevents bad decisions) |
 | **BB-CDCL** | 93% backbone | ✅ Yes | Problems with backbone variables (>30% forced assignments) |
+
+**New Research Suite** - 8 novel/educational algorithms exploring pattern mining, topology analysis, phase learning, and more
+
+**Bio-Inspired Suite** - 3 groundbreaking solvers using economic auction theory, slime mold networks, and protein folding
 
 **Quick decision guide:**
 
@@ -455,11 +427,13 @@ Choose the right solver for your problem:
 - Modular/decomposable structure? → Use `CoBDSATSolver` (1612× speedup)
 - Hard instances near phase transition? → Use `LACDCLSolver` (529× speedup)
 - Known backbone variables? → Use `BBCDCLSolver` (93% detection)
+- Exploring novel algorithms? → See [research/README.md](research/README.md) for 11 more solvers
 - Not sure? → Try `CGPMSolver` first (best overall performance)
 
 **For educational/theoretical:**
 - Random 3SAT analysis? → Try `solve_schoening()` (provably O(1.334^n))
 - Want fast incomplete solver? → Try `solve_walksat()`
+- Explore novel paradigms? → Try bio-inspired solvers (MARKET-SAT, PHYSARUM-SAT, FOLD-SAT)
 
 ## Examples
 
@@ -492,33 +466,57 @@ python examples/benchmark_comparison.py      # Compare solver performance
 
 ## Research & Advanced Usage
 
-The `research/` directory contains advanced solvers and comprehensive benchmarking:
+The `research/` directory contains **15 advanced SAT solvers** organized into three suites, plus comprehensive benchmarking and validation tools:
+
+### Explore Research Solvers
 
 ```bash
-# Research solver showcase
-python research/ALGORITHM_SHOWCASE.py       # Interactive demo of all 4 research solvers
+# View all 15 research solvers
+cat research/README.md
 
-# Comprehensive benchmarks (15 problems, 7 solvers)
-cd research/benchmarks
-python run_full_benchmark.py               # Full benchmark suite
-cat benchmark_results_full.md              # View results
+# Interactive demo and algorithm showcase
+python research/ALGORITHM_SHOWCASE.py
 
-# Validation framework (prove performance claims)
-./reproduce_validation.sh                   # One-command validation
-python validate_correctness.py              # Verify solution correctness
-python statistical_benchmark.py --runs 10   # Statistical validation
-python profile_solvers.py                   # Profiling analysis
-
-# View results
-cat ../BENCHMARKS.md                        # Comprehensive benchmark results
-cat VALIDATION_GUIDE.md                     # Validation documentation
+# Run examples for each solver
+python research/cgpm_sat/example.py        # Original research suite
+python research/tpm_sat/example.py         # New research suite
+python research/market_sat/example.py      # Bio-inspired suite
 ```
 
-**Key Research Files:**
-- `research/BENCHMARKS.md` - Complete benchmark results and analysis
-- `research/README.md` - Research solver documentation
-- `research/ALGORITHM_SHOWCASE.md` - Algorithm descriptions and motivation
-- `research/benchmarks/VALIDATION_GUIDE.md` - How to validate performance claims
+### Run Benchmarks
+
+```bash
+cd research/benchmarks
+
+# Full benchmark suite (all 15 research solvers)
+python run_full_benchmark.py
+cat benchmark_results_full.md
+
+# Focused benchmarks
+python run_simple_benchmark.py
+python run_focused_benchmark.py
+```
+
+### Validate Performance Claims
+
+```bash
+cd research/benchmarks
+
+# One-command validation (all 4 validation levels)
+./reproduce_validation.sh                   # Full validation
+./reproduce_validation.sh --quick           # Quick mode (5 runs)
+
+# Individual validation levels
+python validate_correctness.py              # Level 1: Correctness
+python statistical_benchmark.py --runs 10   # Level 2: Statistical
+python profile_solvers.py                   # Level 3: Profiling
+```
+
+**Key Research Documentation:**
+- 📚 **[research/README.md](research/README.md)** - Complete documentation of all 15 research solvers
+- 🔬 **[research/ALGORITHM_SHOWCASE.md](research/ALGORITHM_SHOWCASE.md)** - Algorithm descriptions and design motivation
+- 📊 **[research/BENCHMARKS.md](research/BENCHMARKS.md)** - Comprehensive benchmark results and rankings
+- ✅ **[research/benchmarks/VALIDATION_GUIDE.md](research/benchmarks/VALIDATION_GUIDE.md)** - How to reproduce and validate performance claims
 
 ## Testing
 
@@ -569,11 +567,11 @@ pytest tests/
 - [Theory & References](docs/theory.md) - Papers and further reading
 - [Reading List](docs/reading-list.md) - Comprehensive bibliography of books, papers, and resources
 
-### Research Documentation
-- [Research Overview](research/README.md) - Advanced SAT solvers and algorithms
-- [Algorithm Showcase](research/ALGORITHM_SHOWCASE.md) - Detailed algorithm descriptions
-- [Benchmark Results](research/BENCHMARKS.md) - **2710× speedup results** 🏆
-- [Validation Guide](research/benchmarks/VALIDATION_GUIDE.md) - How to validate performance claims
+### Research Documentation (15 Advanced Solvers)
+- [Research Overview](research/README.md) - **Complete documentation of all 15 research solvers** 🔬
+- [Algorithm Showcase](research/ALGORITHM_SHOWCASE.md) - Detailed algorithm descriptions and design motivation
+- [Benchmark Results](research/BENCHMARKS.md) - **100-2710× speedup results** across all solvers 🏆
+- [Validation Guide](research/benchmarks/VALIDATION_GUIDE.md) - How to reproduce and validate performance claims
 
 ## License
 
