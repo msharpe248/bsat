@@ -10,6 +10,21 @@
 #include <signal.h>
 
 /*********************************************************************
+ * Variable Array Growth Configuration
+ *
+ * These can be overridden at compile time for testing:
+ *   cc -DVAR_INITIAL_CAPACITY=1 -DVAR_GROWTH_FACTOR=1 ...
+ *********************************************************************/
+
+#ifndef VAR_INITIAL_CAPACITY
+#define VAR_INITIAL_CAPACITY 128
+#endif
+
+#ifndef VAR_GROWTH_FACTOR
+#define VAR_GROWTH_FACTOR 2
+#endif
+
+/*********************************************************************
  * Signal Handling for Progress Monitoring
  *********************************************************************/
 
@@ -254,6 +269,9 @@ Solver* solver_new_with_opts(const SolverOpts* opts) {
     s->order.var_inc = opts->var_inc;
     s->order.var_decay = opts->var_decay;
 
+    // Initialize variable capacity (will allocate on first variable add)
+    s->var_capacity = 0;
+
     // Initialize restart state
     s->restart.threshold = opts->restart_first;
     s->restart.luby_index = 0;
@@ -305,6 +323,53 @@ void solver_free(Solver* s) {
  * Variable Management
  *********************************************************************/
 
+/**
+ * Grow variable-related arrays to new capacity
+ * Returns true on success, false on allocation failure
+ */
+static bool grow_var_arrays(Solver* s, uint32_t new_capacity) {
+    // Allocate +1 for 1-indexed variables
+    uint32_t alloc_size = new_capacity + 1;
+
+    // Grow variable info array
+    VarInfo* new_vars = (VarInfo*)realloc(s->vars, alloc_size * sizeof(VarInfo));
+    if (!new_vars) return false;
+    s->vars = new_vars;
+
+    // Grow trail
+    Trail* new_trail = (Trail*)realloc(s->trail, alloc_size * sizeof(Trail));
+    if (!new_trail) return false;
+    s->trail = new_trail;
+
+    // Grow trail limits
+    Level* new_lims = (Level*)realloc(s->trail_lims, alloc_size * sizeof(Level));
+    if (!new_lims) return false;
+    s->trail_lims = new_lims;
+
+    // Grow heap
+    Var* new_heap = (Var*)realloc(s->order.heap, alloc_size * sizeof(Var));
+    if (!new_heap) return false;
+    s->order.heap = new_heap;
+
+    // Grow seen array
+    uint8_t* new_seen = (uint8_t*)realloc(s->seen, alloc_size * sizeof(uint8_t));
+    if (!new_seen) return false;
+    s->seen = new_seen;
+
+    // Grow analyze stack
+    Lit* new_stack = (Lit*)realloc(s->analyze_stack, alloc_size * sizeof(Lit));
+    if (!new_stack) return false;
+    s->analyze_stack = new_stack;
+
+    // Recreate watch manager with new capacity
+    // Note: This is expensive but necessary - watch manager doesn't support resize
+    watch_free(s->watches);
+    s->watches = watch_init(new_capacity);
+    if (!s->watches) return false;
+
+    return true;
+}
+
 Var solver_new_var(Solver* s) {
     if (s->num_vars >= MAX_VARS) {
         return INVALID_VAR;
@@ -312,52 +377,41 @@ Var solver_new_var(Solver* s) {
 
     Var v = ++s->num_vars;
 
-    // Grow arrays if needed
-    if (s->num_vars > s->order.size) {
-        // Reallocate variable info
-        VarInfo* new_vars = (VarInfo*)realloc(s->vars, (s->num_vars + 1) * sizeof(VarInfo));
-        if (!new_vars) return INVALID_VAR;
-        s->vars = new_vars;
+    // Grow arrays if needed (geometric growth strategy)
+    if (s->num_vars > s->var_capacity) {
+        // Calculate new capacity
+        uint32_t new_capacity;
+        if (s->var_capacity == 0) {
+            // First allocation
+            new_capacity = VAR_INITIAL_CAPACITY;
+        } else {
+            // Geometric growth
+            new_capacity = s->var_capacity * VAR_GROWTH_FACTOR;
+        }
 
-        // Initialize new variable
-        memset(&s->vars[v], 0, sizeof(VarInfo));
-        s->vars[v].value = UNDEF;
-        s->vars[v].level = INVALID_LEVEL;
-        s->vars[v].reason = INVALID_CLAUSE;
-        s->vars[v].heap_pos = UINT32_MAX;
-        s->vars[v].polarity = false;  // Default phase
+        // Ensure new capacity is sufficient
+        if (new_capacity < s->num_vars) {
+            new_capacity = s->num_vars;
+        }
 
-        // Grow trail
-        Trail* new_trail = (Trail*)realloc(s->trail, (s->num_vars + 1) * sizeof(Trail));
-        if (!new_trail) return INVALID_VAR;
-        s->trail = new_trail;
+        // Grow all variable-related arrays
+        if (!grow_var_arrays(s, new_capacity)) {
+            return INVALID_VAR;
+        }
 
-        // Grow trail limits
-        Level* new_lims = (Level*)realloc(s->trail_lims, (s->num_vars + 1) * sizeof(Level));
-        if (!new_lims) return INVALID_VAR;
-        s->trail_lims = new_lims;
-
-        // Grow heap
-        Var* new_heap = (Var*)realloc(s->order.heap, (s->num_vars + 1) * sizeof(Var));
-        if (!new_heap) return INVALID_VAR;
-        s->order.heap = new_heap;
-
-        // Grow seen array
-        uint8_t* new_seen = (uint8_t*)realloc(s->seen, (s->num_vars + 1) * sizeof(uint8_t));
-        if (!new_seen) return INVALID_VAR;
-        s->seen = new_seen;
-        s->seen[v] = 0;
-
-        // Grow analyze stack
-        Lit* new_stack = (Lit*)realloc(s->analyze_stack, (s->num_vars + 1) * sizeof(Lit));
-        if (!new_stack) return INVALID_VAR;
-        s->analyze_stack = new_stack;
-
-        // Grow watch manager
-        watch_free(s->watches);
-        s->watches = watch_init(s->num_vars);
-        if (!s->watches) return INVALID_VAR;
+        s->var_capacity = new_capacity;
     }
+
+    // Initialize new variable
+    memset(&s->vars[v], 0, sizeof(VarInfo));
+    s->vars[v].value = UNDEF;
+    s->vars[v].level = INVALID_LEVEL;
+    s->vars[v].reason = INVALID_CLAUSE;
+    s->vars[v].heap_pos = UINT32_MAX;
+    s->vars[v].polarity = false;  // Default phase
+
+    // Initialize seen flag
+    s->seen[v] = 0;
 
     // Add to decision heap
     heap_insert(s, v);

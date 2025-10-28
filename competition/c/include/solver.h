@@ -117,6 +117,7 @@ typedef struct Trail {
 typedef struct Solver {
     // Problem size
     uint32_t num_vars;
+    uint32_t var_capacity;    // Allocated capacity for variable arrays
     uint32_t num_clauses;
     uint32_t num_original;    // Number of original clauses
 
