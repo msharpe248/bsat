@@ -1216,11 +1216,12 @@ def encode_graph_3coloring_as_nae(edges):
 
 ### Related BSAT Documentation
 
-- **`schaefer-dichotomy.md`** - Complete theory of Schaefer's 6 cases
-- **`3sat-variants.md`** - Deep dive into NAE-3SAT, 1-in-3-SAT, etc.
-- **`2sat-solver.md`** - 2SAT implementation details
-- **`hornsat-solver.md`** - Horn-SAT algorithm
-- **`xorsat-solver.md`** - XOR-SAT Gaussian elimination
+- **[Schaefer's Dichotomy](schaefer-dichotomy.md)** - Complete theory of Schaefer's 6 tractable cases
+- **[3SAT Variants](3sat-variants.md)** - Deep dive into NAE-3SAT, 1-in-3-SAT, etc.
+- **[2SAT Solver](2sat-solver.md)** - 2SAT implementation details
+- **[Horn-SAT Solver](advanced-solvers.md#horn-sat)** - Horn-SAT algorithm
+- **[XOR-SAT Solver](xorsat-solver.md)** - XOR-SAT Gaussian elimination
+- **[CDCL Solver](cdcl-solver.md)** - Modern solver for general SAT
 
 ### Papers
 

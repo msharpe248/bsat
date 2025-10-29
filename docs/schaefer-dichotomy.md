@@ -1022,11 +1022,11 @@ result3 = classify_and_solve(cnf3)
    [Annual competition with benchmarks and solvers]
 
 10. **BSAT Documentation:** See `docs/` directory
-    - `2sat-solver.md` - 2SAT (bijunctive case)
-    - `hornsat-solver.md` - Horn-SAT implementation
-    - `xorsat-solver.md` - XOR-SAT (affine case)
-    - `constraint-types.md` - Comprehensive constraint taxonomy
-    - `3sat-variants.md` - NP-complete variants
+    - [2SAT Solver](2sat-solver.md) - 2SAT (bijunctive case)
+    - [Horn-SAT Solver](advanced-solvers.md#horn-sat) - Horn-SAT implementation
+    - [XOR-SAT Solver](xorsat-solver.md) - XOR-SAT (affine case)
+    - [Constraint Types](constraint-types.md) - Comprehensive constraint taxonomy
+    - [3SAT Variants](3sat-variants.md) - NP-complete variants
 
 ---
 
@@ -1057,9 +1057,9 @@ result3 = classify_and_solve(cnf3)
 ### What's Next?
 
 Continue to:
-- **`constraint-types.md`** - Detailed taxonomy of all constraint types
-- **`3sat-variants.md`** - Deep dive into 3SAT variants (NAE, 1-in-3, etc.)
-- **`cdcl-solver.md`** - Modern solving techniques for NP-complete cases
+- **[Constraint Types](constraint-types.md)** - Detailed taxonomy of all constraint types
+- **[3SAT Variants](3sat-variants.md)** - Deep dive into 3SAT variants (NAE, 1-in-3, etc.)
+- **[CDCL Solver](cdcl-solver.md)** - Modern solving techniques for NP-complete cases
 
 ---
 

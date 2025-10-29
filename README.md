@@ -551,6 +551,9 @@ pytest tests/
 - [Introduction to SAT](docs/introduction.md) - Start here if you're new!
 - [Terminology Reference](docs/terminology.md) - Comprehensive glossary of SAT concepts
 - [CNF Data Structures](docs/cnf.md) - Understanding the API
+- **[Schaefer's Dichotomy Theorem](docs/schaefer-dichotomy.md)** - Complete classification of P vs NP-complete SAT variants
+- **[Constraint Types](docs/constraint-types.md)** - Comprehensive taxonomy of Boolean constraints
+- **[3SAT Variants](docs/3sat-variants.md)** - NAE-3SAT, 1-in-3-SAT, random & structured instances
 - [2SAT Solver](docs/2sat-solver.md) - Polynomial-time algorithm
 - [DPLL Solver](docs/dpll-solver.md) - General SAT solving with backtracking
 - [CDCL Solver](docs/cdcl-solver.md) - Modern SAT solving with conflict-driven learning

@@ -1017,10 +1017,11 @@ result = solver.solve()
 
 ### Related BSAT Documentation
 
-- **`schaefer-dichotomy.md`** - Why 3SAT is NP-complete
-- **`constraint-types.md`** - Classification of SAT variants
-- **`cdcl-solver.md`** - Modern CDCL techniques
-- **`dpll-solver.md`** - Basic backtracking solver
+- **[Schaefer's Dichotomy](schaefer-dichotomy.md)** - Why 3SAT is NP-complete (and 2SAT is not)
+- **[Constraint Types](constraint-types.md)** - Classification of SAT variants
+- **[CDCL Solver](cdcl-solver.md)** - Modern CDCL techniques
+- **[DPLL Solver](dpll-solver.md)** - Basic backtracking solver
+- **[Introduction to SAT](introduction.md)** - Start here if you're new!
 
 ---
 
