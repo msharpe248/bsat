@@ -6,15 +6,18 @@ This is a heavily optimized version of CDCL implementing:
 - ✅ Blocking literal optimization (skip clause if blocker is satisfied)
 - ✅ LBD (Literal Block Distance) clause quality management
 - ✅ MiniSat-style clause minimization (remove redundant literals from learned clauses)
+- ✅ On-the-fly subsumption (remove subsumed learned clauses)
+- ✅ Blocked clause elimination (remove blocked clauses, opt-in)
 - ✅ Failed literal probing (discover implied units, disabled by default for performance)
 - ⏳ Inprocessing (subsumption, variable elimination) - disabled by default (too slow in Python)
-- ✅ Advanced restart strategies (Glucose-style adaptive restarts)
+- ✅ Advanced restart strategies: Luby, Glucose AVG (default), Glucose EMA
 - ✅ Restart postponing (Glucose 2.1+ - blocks restarts when trail growing)
 - ✅ Phase saving (remember variable polarities across restarts)
 - ✅ Random phase selection (diversification to escape local minima, disabled by default)
 - ✅ Adaptive random phase (auto-enable when stuck, enabled by default)
 - ✅ VSIDS (Variable State Independent Decaying Sum) heuristic
-- ✅ Non-chronological backtracking
+- ✅ Non-chronological backtracking (default)
+- ✅ Chronological backtracking (opt-in)
 - ✅ First UIP clause learning
 
 PERFORMANCE TARGET:
@@ -81,6 +84,10 @@ class CDCLStats:
         self.probing_implied_units = 0
         # NEW: Blocking literal stats
         self.blocker_skips = 0
+        # NEW: On-the-fly subsumption stats
+        self.otf_subsumed = 0
+        # NEW: Blocked clause elimination stats
+        self.bce_eliminated = 0
 
     def __str__(self):
         return (
@@ -94,6 +101,8 @@ class CDCLStats:
             f"  Minimized literals: {self.minimized_literals}\n"
             f"  Probing implied units: {self.probing_implied_units}\n"
             f"  Blocker skips: {self.blocker_skips}\n"
+            f"  OTF subsumed: {self.otf_subsumed}\n"
+            f"  BCE eliminated: {self.bce_eliminated}\n"
             f"  Inprocessing calls: {self.inprocessing_calls}\n"
             f"  Inprocessing subsumed: {self.inprocessing_subsumed}\n"
             f"  Inprocessing eliminated vars: {self.inprocessing_eliminated_vars}\n"
@@ -202,6 +211,31 @@ class WatchedLiteralManager:
             self.watched[clause_idx] = (lit1, lit2)
             self.watch_lists[lit1].append((clause_idx, 1, lit2))
             self.watch_lists[lit2].append((clause_idx, 0, lit1))
+
+    def remove_clause_watches(self, clause_idx: int, clause: Clause):
+        """Remove watches for a clause (e.g., when deleting due to subsumption)."""
+        if clause_idx not in self.watched:
+            return
+
+        # Get the watched literals
+        watch_pair = self.watched[clause_idx]
+        if watch_pair:
+            lit1, lit2 = watch_pair
+
+            # Remove from watch lists
+            # Filter out all watch entries for this clause
+            self.watch_lists[lit1] = [
+                entry for entry in self.watch_lists[lit1]
+                if entry[0] != clause_idx
+            ]
+            if lit1 != lit2:
+                self.watch_lists[lit2] = [
+                    entry for entry in self.watch_lists[lit2]
+                    if entry[0] != clause_idx
+                ]
+
+        # Remove from watched dict
+        del self.watched[clause_idx]
 
     def propagate(self,
                   assigned_lit_key: Tuple[str, bool],
@@ -353,6 +387,9 @@ class CDCLSolver:
                  restart_strategy: str = 'glucose',
                  glucose_lbd_window: int = 50,
                  glucose_k: float = 0.8,
+                 glucose_ema_fast_alpha: float = 0.8,
+                 glucose_ema_slow_alpha: float = 0.9999,
+                 glucose_ema_min_conflicts: int = 100,
                  phase_saving: bool = True,
                  initial_phase: bool = True,
                  restart_postponing: bool = True,
@@ -362,7 +399,9 @@ class CDCLSolver:
                  adaptive_random_phase: bool = True,
                  adaptive_threshold: int = 1000,
                  adaptive_restart_ratio: float = 0.2,
-                 enable_probing: bool = False):
+                 enable_probing: bool = False,
+                 enable_bce: bool = False,
+                 enable_chrono_bt: bool = False):
         """
         Initialize optimized CDCL solver.
 
@@ -374,9 +413,15 @@ class CDCLSolver:
             use_watched_literals: Enable two-watched literal optimization (recommended)
             enable_inprocessing: Enable inprocessing (subsumption, variable elimination)
             inprocessing_interval: Call inprocessing every N conflicts
-            restart_strategy: Restart strategy ('luby' or 'glucose')
-            glucose_lbd_window: Window size for short-term LBD average (Glucose only)
-            glucose_k: Multiplier for restart threshold (Glucose only, 0.8 typical)
+            restart_strategy: Restart strategy ('luby', 'glucose', or 'glucose_ema')
+                - 'luby': Luby sequence restarts (predictable, provably optimal)
+                - 'glucose': Sliding window LBD average (AVG mode, aggressive)
+                - 'glucose_ema': Exponential moving average (EMA mode, conservative)
+            glucose_lbd_window: Window size for short-term LBD average (glucose AVG only)
+            glucose_k: Multiplier for restart threshold (glucose AVG only, 0.8 typical)
+            glucose_ema_fast_alpha: Fast EMA decay factor (glucose_ema only, 0.8 typical)
+            glucose_ema_slow_alpha: Slow EMA decay factor (glucose_ema only, 0.9999 typical)
+            glucose_ema_min_conflicts: Min conflicts before EMA restarts (glucose_ema only)
             phase_saving: Enable phase saving (remember variable polarities across restarts)
             initial_phase: Initial polarity for unassigned variables (True = prefer True)
             restart_postponing: Enable restart postponing (Glucose 2.1+, prevents restarts when trail growing)
@@ -387,6 +432,8 @@ class CDCLSolver:
             adaptive_threshold: Minimum conflicts before enabling adaptive behavior (1000 typical)
             adaptive_restart_ratio: Restart/conflict ratio threshold for enabling (0.2 = 20% restart rate)
             enable_probing: Enable failed literal probing (disabled by default, slow in Python)
+            enable_bce: Enable blocked clause elimination preprocessing (disabled by default)
+            enable_chrono_bt: Enable chronological backtracking (disabled by default)
         """
         self.original_cnf = cnf
         self.clauses = list(cnf.clauses)  # Original + learned clauses
@@ -422,6 +469,12 @@ class CDCLSolver:
         # Failed literal probing
         self.enable_probing = enable_probing
 
+        # Blocked clause elimination
+        self.enable_bce = enable_bce
+
+        # Chronological backtracking
+        self.enable_chrono_bt = enable_chrono_bt
+
         # Restart strategy
         self.restart_strategy = restart_strategy
         self.restart_base = restart_base
@@ -436,6 +489,13 @@ class CDCLSolver:
             self.recent_lbds: List[int] = []  # Last N LBDs for short-term average
             self.lbd_sum = 0  # Sum of all LBDs (for long-term average)
             self.lbd_count = 0  # Count of all LBDs
+        elif restart_strategy == 'glucose_ema':
+            # EMA mode: track fast and slow exponential moving averages
+            self.glucose_ema_fast_alpha = glucose_ema_fast_alpha
+            self.glucose_ema_slow_alpha = glucose_ema_slow_alpha
+            self.glucose_ema_min_conflicts = glucose_ema_min_conflicts
+            self.ema_fast = 0.0  # Fast EMA (recent LBD trend)
+            self.ema_slow = 0.0  # Slow EMA (long-term average)
 
         # Restart postponing (Glucose 2.1+)
         self.restart_postponing = restart_postponing
@@ -925,7 +985,7 @@ class CDCLSolver:
             # Luby sequence: restart every K * luby(i) conflicts
             should_restart_basic = self.stats.conflicts >= self.conflicts_until_restart
         elif self.restart_strategy == 'glucose':
-            # Glucose: restart when short-term LBD average exceeds long-term
+            # Glucose AVG: restart when short-term LBD average exceeds long-term
             if self.lbd_count < self.glucose_lbd_window:
                 # Not enough data yet
                 return False
@@ -938,6 +998,15 @@ class CDCLSolver:
 
             # Restart if short-term exceeds long-term by factor K
             should_restart_basic = short_term_avg > long_term_avg * self.glucose_k
+        elif self.restart_strategy == 'glucose_ema':
+            # Glucose EMA: restart when fast EMA exceeds slow EMA
+            # (recent LBD quality worse than long-term average)
+            if self.stats.conflicts < self.glucose_ema_min_conflicts:
+                # Not enough data yet
+                return False
+
+            # Restart if fast (recent) EMA exceeds slow (long-term) EMA
+            should_restart_basic = self.ema_fast > self.ema_slow
         else:
             # Default: Luby
             should_restart_basic = self.stats.conflicts >= self.conflicts_until_restart
@@ -1007,6 +1076,83 @@ class CDCLSolver:
 
         return len(decision_levels)
 
+    def _clause_subsumes(self, a: Clause, b: Clause) -> bool:
+        """
+        Check if clause A subsumes clause B.
+
+        A subsumes B if all literals in A are in B (A is a subset of B).
+        This means A is stronger than B (fewer literals, same implications).
+
+        Args:
+            a: The potentially subsuming clause (smaller/stronger)
+            b: The potentially subsumed clause (larger/weaker)
+
+        Returns:
+            True if A subsumes B (all literals in A are in B)
+        """
+        if len(a.literals) > len(b.literals):
+            return False  # A can't subsume B if A is larger
+
+        # Build set of (variable, negated) tuples for B
+        b_lits = {(lit.variable, lit.negated) for lit in b.literals}
+
+        # Check if all literals in A are in B
+        for lit in a.literals:
+            if (lit.variable, lit.negated) not in b_lits:
+                return False
+
+        return True
+
+    def _on_the_fly_subsumption(self, new_clause: Clause, new_clause_idx: int):
+        """
+        Perform on-the-fly backward subsumption.
+
+        Check if the newly learned clause subsumes any existing learned clauses.
+        If so, mark the subsumed clauses for deletion.
+
+        Only checks small learned clauses (size <= 5) as larger clauses
+        are unlikely to subsume others and checking is expensive.
+
+        Args:
+            new_clause: The newly learned clause
+            new_clause_idx: Index of the new clause in self.clauses
+        """
+        # Only check small learned clauses (optimization from C solver)
+        if len(new_clause.literals) > 5:
+            return
+
+        subsumed_count = 0
+
+        # Check all learned clauses (indices >= num_original_clauses)
+        # Skip the new clause itself (new_clause_idx)
+        for i in range(self.num_original_clauses, len(self.clauses)):
+            if i == new_clause_idx:
+                continue
+
+            other_clause = self.clauses[i]
+
+            # Skip empty clauses (already deleted)
+            if not other_clause.literals:
+                continue
+
+            # Check if new clause subsumes this clause
+            if self._clause_subsumes(new_clause, other_clause):
+                # Subsumes! Mark for deletion by replacing with empty clause
+                self.clauses[i] = Clause([])
+
+                # Remove watches if using watched literals
+                if self.use_watched_literals and i in self.clause_info:
+                    self.watch_manager.remove_clause_watches(i, other_clause)
+
+                # Remove from clause_info
+                if i in self.clause_info:
+                    del self.clause_info[i]
+
+                subsumed_count += 1
+
+        if subsumed_count > 0:
+            self.stats.otf_subsumed += subsumed_count
+
     def _add_learned_clause(self, clause: Clause):
         """
         Add learned clause to clause database with LBD-based quality assessment.
@@ -1030,6 +1176,13 @@ class CDCLSolver:
             self.recent_lbds.append(lbd)
             if len(self.recent_lbds) > self.glucose_lbd_window:
                 self.recent_lbds.pop(0)  # Remove oldest
+        elif self.restart_strategy == 'glucose_ema':
+            # Update exponential moving averages
+            # EMA formula: new_ema = alpha * old_ema + (1 - alpha) * new_value
+            alpha_fast = self.glucose_ema_fast_alpha
+            alpha_slow = self.glucose_ema_slow_alpha
+            self.ema_fast = alpha_fast * self.ema_fast + (1.0 - alpha_fast) * lbd
+            self.ema_slow = alpha_slow * self.ema_slow + (1.0 - alpha_slow) * lbd
 
         # Create clause info
         protected = (lbd <= 2)  # Glue clauses are protected
@@ -1038,6 +1191,9 @@ class CDCLSolver:
         # Add watches for the learned clause if using watched literals
         if self.use_watched_literals:
             self.watch_manager.add_clause_watches(clause_idx, clause)
+
+        # On-the-fly backward subsumption: check if new clause subsumes existing learned clauses
+        self._on_the_fly_subsumption(clause, clause_idx)
 
         if protected:
             self.stats.glue_clauses += 1
@@ -1189,6 +1345,172 @@ class CDCLSolver:
         # Update next inprocessing trigger
         self.next_inprocessing = self.stats.conflicts + self.inprocessing_interval
 
+    def _backtrack_chronological(self, learned_clause: Clause, target_level: int) -> int:
+        """
+        Chronological backtracking: backtrack one level at a time.
+
+        Instead of jumping directly to the target level, we backtrack one level
+        at a time. At each level, we check if the learned clause becomes unit
+        (exactly one unassigned literal). If so, we stop there.
+
+        This can preserve more assignments and reduce redundant work.
+
+        Args:
+            learned_clause: The learned clause to check for unit status
+            target_level: The target backtrack level from conflict analysis
+
+        Returns:
+            The actual level we backtracked to (may be higher than target_level)
+        """
+        current_level = self.decision_level
+
+        while current_level > target_level:
+            next_level = current_level - 1
+
+            # Backtrack to next level
+            self._unassign_to_level(next_level)
+            self.decision_level = next_level
+
+            # Count unassigned literals in learned clause at this level
+            unassigned_count = 0
+            satisfied = False
+
+            for lit in learned_clause.literals:
+                if lit.variable not in self.assignment:
+                    # Unassigned
+                    unassigned_count += 1
+                else:
+                    # Check if literal is satisfied
+                    var_value = self.assignment[lit.variable]
+                    lit_value = not lit.negated  # Value that makes literal true
+                    if var_value == lit_value:
+                        # Clause is satisfied at this level
+                        satisfied = True
+                        break
+
+            if satisfied:
+                # Clause is already satisfied, continue backtracking
+                current_level = next_level
+                continue
+
+            if unassigned_count == 1:
+                # Clause is unit at this level - stop here
+                return next_level
+
+            current_level = next_level
+
+        # Reached target level
+        return target_level
+
+    def _resolvent_is_tautology(self, clause1: Clause, clause2: Clause, var: str) -> bool:
+        """
+        Check if resolving clause1 and clause2 on variable var produces a tautology.
+
+        A resolvent is a tautology if it contains both a literal and its negation.
+
+        Args:
+            clause1: First clause (contains var or ¬var)
+            clause2: Second clause (contains ¬var or var)
+            var: Variable to resolve on
+
+        Returns:
+            True if the resolvent is a tautology (contains x and ¬x for some x)
+        """
+        # Collect all literals except those on var
+        seen: Dict[str, bool] = {}  # var -> is_positive
+
+        for lit in clause1.literals:
+            if lit.variable == var:
+                continue  # Skip the resolution variable
+            is_positive = not lit.negated
+            if lit.variable in seen:
+                if seen[lit.variable] != is_positive:
+                    return True  # Tautology found in clause1 alone
+            else:
+                seen[lit.variable] = is_positive
+
+        for lit in clause2.literals:
+            if lit.variable == var:
+                continue  # Skip the resolution variable
+            is_positive = not lit.negated
+            if lit.variable in seen:
+                if seen[lit.variable] != is_positive:
+                    return True  # Tautology: opposite polarity found
+            else:
+                seen[lit.variable] = is_positive
+
+        return False
+
+    def _clause_is_blocked(self, clause: Clause, blocking_lit: Literal) -> bool:
+        """
+        Check if clause is blocked on blocking_lit.
+
+        A clause C is blocked on literal L if for every clause D containing ¬L,
+        the resolvent of C and D on var(L) is a tautology.
+
+        Args:
+            clause: The clause to check
+            blocking_lit: The literal to test as blocking literal
+
+        Returns:
+            True if clause is blocked on blocking_lit
+        """
+        var = blocking_lit.variable
+        neg_key = (var, not blocking_lit.negated)  # The negated literal
+
+        # Find all clauses containing the negated literal
+        for i, other_clause in enumerate(self.clauses):
+            if not other_clause.literals:
+                continue
+
+            # Check if other_clause contains ¬blocking_lit
+            has_negated = False
+            for lit in other_clause.literals:
+                if (lit.variable, lit.negated) == neg_key:
+                    has_negated = True
+                    break
+
+            if has_negated:
+                # Check if resolvent is a tautology
+                if not self._resolvent_is_tautology(clause, other_clause, var):
+                    return False  # Found a non-tautologous resolvent
+
+        return True  # All resolvents are tautologies
+
+    def _blocked_clause_elimination(self) -> int:
+        """
+        Blocked Clause Elimination preprocessing.
+
+        Removes clauses that are blocked on some literal. A clause C is blocked
+        on literal L if resolving C with any clause containing ¬L produces a
+        tautology.
+
+        Returns:
+            Number of clauses eliminated
+        """
+        eliminated = 0
+
+        # Only eliminate from original clauses (indices < num_original_clauses)
+        for i in range(self.num_original_clauses):
+            clause = self.clauses[i]
+            if not clause.literals:
+                continue  # Skip empty clauses
+
+            # Try each literal as a blocking literal
+            for lit in clause.literals:
+                if self._clause_is_blocked(clause, lit):
+                    # Clause is blocked on this literal - eliminate it
+                    self.clauses[i] = Clause([])
+
+                    # Remove watches if using watched literals
+                    if self.use_watched_literals:
+                        self.watch_manager.remove_clause_watches(i, clause)
+
+                    eliminated += 1
+                    break  # Don't need to check other literals
+
+        return eliminated
+
     def _failed_literal_probing(self) -> bool:
         """
         Failed literal probing preprocessing.
@@ -1292,6 +1614,11 @@ class CDCLSolver:
         if conflict is not None:
             return None  # UNSAT at level 0
 
+        # Blocked clause elimination preprocessing
+        if self.enable_bce:
+            eliminated = self._blocked_clause_elimination()
+            self.stats.bce_eliminated = eliminated
+
         # Failed literal probing - discover implied units at level 0
         if self.enable_probing and not self._failed_literal_probing():
             return None  # UNSAT detected during probing
@@ -1364,9 +1691,15 @@ class CDCLSolver:
                 # Add learned clause
                 self._add_learned_clause(learned_clause)
 
-                # Backtrack
-                self._unassign_to_level(backtrack_level)
-                self.decision_level = backtrack_level
+                # Backtrack (chronological or non-chronological)
+                if self.enable_chrono_bt:
+                    # Chronological: backtrack one level at a time
+                    actual_level = self._backtrack_chronological(learned_clause, backtrack_level)
+                    backtrack_level = actual_level
+                else:
+                    # Non-chronological: jump directly to target level
+                    self._unassign_to_level(backtrack_level)
+                    self.decision_level = backtrack_level
                 self.stats.backjumps += 1
 
                 # Reset propagation index after backtracking

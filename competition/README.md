@@ -117,24 +117,24 @@ competition/
 | MiniSat Clause Minimization | ✅ | ✅ | 67% literal reduction |
 | LBD Calculation | ✅ | ✅ | O(n) with bitset |
 | Clause Database Reduction | ✅ | ✅ | LBD-based with glue protection |
-| On-the-Fly Subsumption | ✅ | ❌ | Remove subsumed clauses |
+| On-the-Fly Subsumption | ✅ | ✅ | Remove subsumed clauses |
 | **Heuristics** |
 | VSIDS Variable Selection | ✅ | ✅ | Heap-based with activity decay |
 | Phase Saving | ✅ | ✅ | Remember variable polarities |
 | Random Phase Selection | ✅ | ✅ | Configurable randomness |
 | Adaptive Random Phase | ✅ | ✅ | Auto-boost when stuck |
 | **Restarts** |
-| Luby Sequence | ✅ (default) | ✅ | Provably good for all instances |
-| Glucose Adaptive (EMA) | ✅ | ✅ | Conservative, paper-accurate |
-| Glucose Adaptive (AVG) | ✅ | ❌ | Aggressive sliding window |
+| Luby Sequence | ✅ | ✅ | Provably good for all instances |
+| Glucose Adaptive (EMA) | ✅ (default) | ✅ | Conservative, paper-accurate |
+| Glucose Adaptive (AVG) | ✅ | ✅ (default) | Aggressive sliding window |
 | Restart Postponing | ✅ | ✅ | Block when trail growing |
 | **Preprocessing** |
 | Failed Literal Probing | ✅ | ✅ (opt-in) | Discover implied units |
-| Blocked Clause Elimination | ✅ | ❌ | Remove redundant clauses |
+| Blocked Clause Elimination | ✅ | ✅ (opt-in) | Remove redundant clauses |
 | **Inprocessing** |
 | Vivification | ✅ | ❌ | Strengthen learned clauses |
 | **Backtracking** |
-| Chronological Backtracking | ✅ | ❌ | Preserve more assignments |
+| Chronological Backtracking | ✅ | ✅ (opt-in) | Preserve more assignments |
 
 ### Performance Optimizations (C Only)
 
