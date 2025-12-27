@@ -11,6 +11,9 @@
 #include <string.h>
 #include <assert.h>
 
+// Required for linking (normally defined in main.c)
+bool g_verbose = false;
+
 // Test counter
 static int tests_run = 0;
 static int tests_passed = 0;

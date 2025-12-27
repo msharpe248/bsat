@@ -8,6 +8,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+// Required for linking (normally defined in main.c)
+bool g_verbose = false;
+
 int main(void) {
     printf("Testing geometric growth optimization\n");
     printf("=====================================\n\n");

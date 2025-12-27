@@ -11,6 +11,9 @@
 #include <stdlib.h>
 #include <assert.h>
 
+// Required for linking (normally defined in main.c)
+bool g_verbose = false;
+
 // Test counter
 static int tests_run = 0;
 static int tests_passed = 0;
@@ -341,7 +344,7 @@ void test_watch_list_growth() {
     PASS();
 }
 
-void test_binary_clause_watches() {
+void test_binary_clause_watches(void) {
     TEST("Binary clause (2 literals) watches");
 
     Arena* arena = arena_init(1024);
@@ -380,6 +383,81 @@ void test_binary_clause_watches() {
     PASS();
 }
 
+void test_watch_resize(void) {
+    TEST("Watch manager in-place resize");
+
+    Arena* arena = arena_init(1024);
+    WatchManager* wm = watch_init(5);  // Start with 5 variables
+
+    // Add watches for variables 1-5
+    Lit lits[2] = {mkLit(1, false), mkLit(2, false)};
+    CRef cref1 = arena_alloc(arena, lits, 2, false);
+    watch_add(wm, mkLit(1, false), cref1, mkLit(2, false));
+    watch_add(wm, mkLit(5, true), cref1, mkLit(1, false));
+
+    // Verify initial watches exist
+    if (watch_list(wm, mkLit(1, false))->size != 1) {
+        FAIL("Variable 1 should have 1 watch before resize");
+    }
+    if (watch_list(wm, mkLit(5, true))->size != 1) {
+        FAIL("Variable 5 (neg) should have 1 watch before resize");
+    }
+
+    // Resize to handle more variables (in-place growth)
+    bool resized = watch_resize(wm, 20);
+    if (!resized) {
+        FAIL("watch_resize should succeed");
+    }
+
+    if (wm->num_vars != 20) {
+        FAIL("num_vars should be 20 after resize");
+    }
+
+    // Verify original watches are preserved
+    if (watch_list(wm, mkLit(1, false))->size != 1) {
+        FAIL("Variable 1 watch should be preserved after resize");
+    }
+    if (watch_list(wm, mkLit(5, true))->size != 1) {
+        FAIL("Variable 5 (neg) watch should be preserved after resize");
+    }
+
+    // Verify new variables have empty watch lists
+    if (watch_list(wm, mkLit(10, false))->size != 0) {
+        FAIL("New variable 10 should have empty watch list");
+    }
+    if (watch_list(wm, mkLit(20, true))->size != 0) {
+        FAIL("New variable 20 (neg) should have empty watch list");
+    }
+
+    // Can add watches for new variables
+    Lit lits2[2] = {mkLit(15, false), mkLit(20, false)};
+    CRef cref2 = arena_alloc(arena, lits2, 2, false);
+    watch_add(wm, mkLit(15, false), cref2, mkLit(20, false));
+
+    if (watch_list(wm, mkLit(15, false))->size != 1) {
+        FAIL("Should be able to add watch for new variable 15");
+    }
+
+    // Resize to same size should be no-op
+    bool resized_same = watch_resize(wm, 20);
+    if (!resized_same) {
+        FAIL("Resize to same size should succeed");
+    }
+
+    // Resize to smaller should be no-op (keeps larger)
+    bool resized_smaller = watch_resize(wm, 10);
+    if (!resized_smaller) {
+        FAIL("Resize to smaller should succeed (no-op)");
+    }
+    if (wm->num_vars != 20) {
+        FAIL("Resize to smaller should not shrink");
+    }
+
+    watch_free(wm);
+    arena_free(arena);
+    PASS();
+}
+
 /*********************************************************************
  * Main Test Runner
  *********************************************************************/
@@ -406,6 +484,9 @@ int main(void) {
 
     // Edge cases
     test_watch_list_growth();
+
+    // New optimization tests
+    test_watch_resize();
 
     printf("\n========================================\n");
     printf("Results: %d/%d tests passed\n", tests_passed, tests_run);
