@@ -445,25 +445,56 @@ static inline void push_trail(Solver* s, Lit lit) {
 void solver_backtrack(Solver* s, Level level) {
     if (level >= s->decision_level) return;
 
-    // Find trail position for target level
-    uint32_t trail_pos = (level == 0) ? 0 : s->trail_lims[level];
+    if (level == 0) {
+        // When backtracking to level 0 (restart), preserve ALL level-0 assignments
+        // Level-0 assignments can appear anywhere in the trail (e.g., from learned unit clauses)
+        // We need to compact the trail to keep only level-0 entries
+        uint32_t write_pos = 0;
+        for (uint32_t i = 0; i < s->trail_size; i++) {
+            Var v = var(s->trail[i].lit);
+            if (s->vars[v].level == 0) {
+                // Keep this level-0 assignment
+                if (write_pos != i) {
+                    s->trail[write_pos] = s->trail[i];
+                    s->vars[v].trail_pos = write_pos;
+                }
+                write_pos++;
+            } else {
+                // Undo this assignment (level > 0)
+                s->vars[v].value = UNDEF;
+                s->vars[v].level = INVALID_LEVEL;
+                s->vars[v].reason = INVALID_CLAUSE;
 
-    // Undo assignments
-    for (uint32_t i = trail_pos; i < s->trail_size; i++) {
-        Var v = var(s->trail[i].lit);
-        s->vars[v].value = UNDEF;
-        s->vars[v].level = INVALID_LEVEL;
-        s->vars[v].reason = INVALID_CLAUSE;
-
-        // Re-insert into decision heap
-        if (s->vars[v].heap_pos == UINT32_MAX) {
-            heap_insert(s, v);
+                // Re-insert into decision heap
+                if (s->vars[v].heap_pos == UINT32_MAX) {
+                    heap_insert(s, v);
+                }
+            }
         }
-    }
+        s->trail_size = write_pos;
+        s->qhead = write_pos;
+        s->decision_level = 0;
+    } else {
+        // Normal backtrack to level > 0
+        uint32_t trail_pos = s->trail_lims[level];
 
-    s->trail_size = trail_pos;
-    s->qhead = trail_pos;
-    s->decision_level = level;
+        // Undo assignments from levels > target
+        for (uint32_t i = trail_pos; i < s->trail_size; i++) {
+            Var v = var(s->trail[i].lit);
+            s->vars[v].value = UNDEF;
+            s->vars[v].level = INVALID_LEVEL;
+            s->vars[v].reason = INVALID_CLAUSE;
+
+            // Re-insert into decision heap
+            if (s->vars[v].heap_pos == UINT32_MAX) {
+                heap_insert(s, v);
+            }
+        }
+
+        s->trail_size = trail_pos;
+        s->qhead = trail_pos;
+        s->decision_level = level;
+    }
 }
 
 // Chronological backtracking: backtrack one level at a time
@@ -2042,9 +2073,16 @@ lbool solver_solve_with_assumptions(Solver* s, const Lit* assumps, uint32_t n_as
             solver_analyze(s, conflict, learnt_clause, &learnt_size, &backtrack_level);
 
             // Minimize the learned clause to remove redundant literals
-            uint32_t original_size = learnt_size;
-            solver_minimize_clause(s, learnt_clause, &learnt_size);
-            s->stats.minimized_literals += (original_size - learnt_size);
+            // NOTE: Recursive minimization disabled due to correctness bug
+            // exposed by aggressive restart strategies. The recursive check
+            // can incorrectly remove literals when reason clauses contain
+            // variables that will be backtracked before the learned clause
+            // is used. For now, use simple self-subsuming resolution only.
+            // TODO: Fix the recursive minimization or implement MiniSat-style
+            //       abstract level pruning for correct on-the-fly minimization.
+            // uint32_t original_size = learnt_size;
+            // solver_minimize_clause(s, learnt_clause, &learnt_size);
+            // s->stats.minimized_literals += (original_size - learnt_size);
 
             // Backtrack (chronological - step down one level at a time)
             // The chronological backtracking function may return a different level
@@ -2056,7 +2094,13 @@ lbool solver_solve_with_assumptions(Solver* s, const Lit* assumps, uint32_t n_as
 
             // Add learned clause
             if (learnt_size == 1) {
-                // Unit clause
+                // Unit clause - must backtrack ALL THE WAY to level 0
+                // The chronological backtracking may have stopped at a higher level
+                // but unit clauses are permanent at level 0
+                if (s->decision_level > 0) {
+                    solver_backtrack(s, 0);
+                }
+
                 Lit unit = learnt_clause[0];
                 Var v = var(unit);
                 ASSERT(s->vars[v].value == UNDEF);
