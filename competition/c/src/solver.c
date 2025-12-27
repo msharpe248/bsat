@@ -1546,6 +1546,17 @@ static void solver_minimize_clause(Solver* s, Lit* learnt, uint32_t* learnt_size
  * Vivification (Clause Strengthening)
  *********************************************************************/
 
+// Helper: Remove watch for clause cref from literal lit's watch list
+static void remove_watch_for_clause(WatchManager* wm, Lit lit, CRef cref) {
+    WatchList* wl = watch_list(wm, lit);
+    for (uint32_t i = 0; i < wl->size; i++) {
+        if (wl->watches[i].cref == cref) {
+            watchlist_remove(wl, i);
+            return;
+        }
+    }
+}
+
 // Try to strengthen a clause by removing redundant literals
 // Returns true if clause was strengthened (or removed), false if unchanged
 static bool vivify_clause(Solver* s, CRef cref) {
@@ -1558,6 +1569,10 @@ static bool vivify_clause(Solver* s, CRef cref) {
 
     Lit* lits = CLAUSE_LITS(s->arena, cref);
 
+    // Save original watched literals for later watch list update
+    Lit old_watch0 = lits[0];
+    Lit old_watch1 = lits[1];
+
     // Save current trail size for backtracking
     uint32_t trail_before = s->trail_size;
 
@@ -1568,7 +1583,6 @@ static bool vivify_clause(Solver* s, CRef cref) {
 
     for (uint32_t i = 0; i < size; i++) {
         // Assume all OTHER literals are false
-        uint32_t assumptions = 0;
         for (uint32_t j = 0; j < size; j++) {
             if (i == j) continue;
 
@@ -1599,7 +1613,6 @@ static bool vivify_clause(Solver* s, CRef cref) {
             s->trail[s->trail_size].lit = neg(lit);
             s->trail[s->trail_size].level = 0;
             s->trail_size++;
-            assumptions++;
         }
 
         // Now propagate with all other literals false
@@ -1632,6 +1645,10 @@ static bool vivify_clause(Solver* s, CRef cref) {
 
     // If we strengthened the clause, update it
     if (strengthened && new_size > 0) {
+        // CRITICAL: Remove old watches BEFORE modifying clause
+        remove_watch_for_clause(s->watches, old_watch0, cref);
+        remove_watch_for_clause(s->watches, old_watch1, cref);
+
         // Update clause in place
         for (uint32_t i = 0; i < new_size; i++) {
             lits[i] = new_lits[i];
@@ -1640,25 +1657,34 @@ static bool vivify_clause(Solver* s, CRef cref) {
         // Update size
         CLAUSE_HEADER(s->arena, cref)->size = new_size;
 
-        // If became unit, propagate it
+        // Handle based on new clause size
         if (new_size == 1) {
+            // Became unit - propagate it (no watches needed for units)
             Lit unit = lits[0];
             Var v = var(unit);
             if (s->vars[v].value == UNDEF) {
                 s->vars[v].value = sign(unit) ? FALSE : TRUE;
                 s->vars[v].level = 0;
-                s->vars[v].reason = INVALID_CLAUSE;
+                s->vars[v].reason = cref;
                 s->vars[v].trail_pos = s->trail_size;
 
                 s->trail[s->trail_size].lit = unit;
                 s->trail[s->trail_size].level = 0;
                 s->trail_size++;
             }
+        } else {
+            // Add new watches for lits[0] and lits[1]
+            // Blocker is the other watched literal
+            watch_add(s->watches, lits[0], cref, lits[1]);
+            watch_add(s->watches, lits[1], cref, lits[0]);
         }
 
         return true;
     } else if (strengthened && new_size == 0) {
         // Clause became empty - UNSAT!
+        // Remove old watches
+        remove_watch_for_clause(s->watches, old_watch0, cref);
+        remove_watch_for_clause(s->watches, old_watch1, cref);
         s->result = FALSE;
         return true;
     }
@@ -2001,30 +2027,33 @@ bool solver_simplify(Solver* s) {
     if (s->decision_level > 0) return true;
 
     // Vivification: strengthen learned clauses by removing redundant literals
-    // DISABLED: Has correctness bug - modifying clause literals breaks watch invariant
-    // TODO: Fix vivify_clause to remove/re-add watches when clause is shortened
-    // The --inprocess flag is still parsed but currently has no effect
-    //
-    // static uint64_t last_vivify = 0;
-    // if (s->opts.inprocess && s->stats.conflicts >= last_vivify + s->opts.inprocess_interval) {
-    //     last_vivify = s->stats.conflicts;
-    //
-    //     uint32_t vivified = 0;
-    //     uint32_t max_vivify = s->num_learnts < 100 ? s->num_learnts : 100;
-    //     for (uint32_t i = 0; i < max_vivify; i++) {
-    //         CRef cref = s->learnts[i];
-    //         if (cref == INVALID_CLAUSE) continue;
-    //         if (clause_deleted(s->arena, cref)) continue;
-    //
-    //         if (vivify_clause(s, cref)) {
-    //             vivified++;
-    //         }
-    //     }
-    //
-    //     if (vivified > 0 && IS_VERBOSE(s)) {
-    //         printf("c Vivified %u clauses at conflict %llu\n", vivified, s->stats.conflicts);
-    //     }
-    // }
+    // Enable with: --inprocess flag
+    static uint64_t last_vivify = 0;
+    if (s->opts.inprocess && s->stats.conflicts >= last_vivify + s->opts.inprocess_interval) {
+        last_vivify = s->stats.conflicts;
+
+        uint32_t vivified = 0;
+        // Only vivify a limited number of clauses per round
+        uint32_t max_vivify = s->num_learnts < 100 ? s->num_learnts : 100;
+        for (uint32_t i = 0; i < max_vivify; i++) {
+            CRef cref = s->learnts[i];
+            if (cref == INVALID_CLAUSE) continue;
+            if (clause_deleted(s->arena, cref)) continue;
+
+            if (vivify_clause(s, cref)) {
+                vivified++;
+            }
+
+            // Check if UNSAT was detected during vivification
+            if (s->result == FALSE) {
+                return false;
+            }
+        }
+
+        if (vivified > 0 && IS_VERBOSE(s)) {
+            printf("c Vivified %u clauses at conflict %llu\n", vivified, s->stats.conflicts);
+        }
+    }
 
     return true;
 }
