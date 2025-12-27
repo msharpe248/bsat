@@ -57,6 +57,9 @@ typedef struct WatchManager {
 // Initialize watch manager for given number of variables
 WatchManager* watch_init(uint32_t num_vars);
 
+// Resize watch manager to handle more variables (in-place, preserves existing watches)
+bool watch_resize(WatchManager* wm, uint32_t new_num_vars);
+
 // Free watch manager and all watch lists
 void watch_free(WatchManager* wm);
 

@@ -363,11 +363,8 @@ static bool grow_var_arrays(Solver* s, uint32_t new_capacity) {
     if (!new_stack) return false;
     s->analyze_stack = new_stack;
 
-    // Recreate watch manager with new capacity
-    // Note: This is expensive but necessary - watch manager doesn't support resize
-    watch_free(s->watches);
-    s->watches = watch_init(new_capacity);
-    if (!s->watches) return false;
+    // Resize watch manager in-place (preserves existing watches)
+    if (!watch_resize(s->watches, new_capacity)) return false;
 
     return true;
 }
@@ -2003,16 +2000,18 @@ bool solver_simplify(Solver* s) {
     // Can only simplify at level 0
     if (s->decision_level > 0) return true;
 
-    // Vivification is DISABLED by default (too expensive)
-    // Enable with: s->opts.inprocess = true (future command-line option)
+    // Vivification: strengthen learned clauses by removing redundant literals
+    // DISABLED: Has correctness bug - modifying clause literals breaks watch invariant
+    // TODO: Fix vivify_clause to remove/re-add watches when clause is shortened
+    // The --inprocess flag is still parsed but currently has no effect
     //
-    // Vivify learned clauses periodically
-    // static uint32_t last_vivify = 0;
-    // if (s->opts.inprocess && s->stats.conflicts > last_vivify + 5000) {
+    // static uint64_t last_vivify = 0;
+    // if (s->opts.inprocess && s->stats.conflicts >= last_vivify + s->opts.inprocess_interval) {
     //     last_vivify = s->stats.conflicts;
     //
     //     uint32_t vivified = 0;
-    //     for (uint32_t i = 0; i < s->num_learnts && i < 100; i++) {
+    //     uint32_t max_vivify = s->num_learnts < 100 ? s->num_learnts : 100;
+    //     for (uint32_t i = 0; i < max_vivify; i++) {
     //         CRef cref = s->learnts[i];
     //         if (cref == INVALID_CLAUSE) continue;
     //         if (clause_deleted(s->arena, cref)) continue;
@@ -2022,8 +2021,8 @@ bool solver_simplify(Solver* s) {
     //         }
     //     }
     //
-    //     if (vivified > 0 && s->opts.verbose) {
-    //         printf("c Vivified %u clauses\n", vivified);
+    //     if (vivified > 0 && IS_VERBOSE(s)) {
+    //         printf("c Vivified %u clauses at conflict %llu\n", vivified, s->stats.conflicts);
     //     }
     // }
 

@@ -28,6 +28,29 @@ WatchManager* watch_init(uint32_t num_vars) {
     return wm;
 }
 
+bool watch_resize(WatchManager* wm, uint32_t new_num_vars) {
+    if (!wm) return false;
+    if (new_num_vars <= wm->num_vars) return true;  // Already big enough
+
+    uint32_t old_num_lits = 2 * (wm->num_vars + 1);
+    uint32_t new_num_lits = 2 * (new_num_vars + 1);
+
+    // Grow the lists array
+    WatchList* new_lists = (WatchList*)realloc(wm->lists, new_num_lits * sizeof(WatchList));
+    if (!new_lists) return false;
+    wm->lists = new_lists;
+
+    // Initialize new watch lists to empty
+    for (uint32_t i = old_num_lits; i < new_num_lits; i++) {
+        wm->lists[i].watches = NULL;
+        wm->lists[i].size = 0;
+        wm->lists[i].capacity = 0;
+    }
+
+    wm->num_vars = new_num_vars;
+    return true;
+}
+
 void watch_free(WatchManager* wm) {
     if (!wm) return;
 
