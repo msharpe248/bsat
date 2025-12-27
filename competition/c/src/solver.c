@@ -84,13 +84,13 @@ SolverOpts default_opts(void) {
 
         .restart_first = 100,
         .restart_inc = 1.5,
-        .glucose_restart = false,  // Disabled when Luby is default
-        .luby_restart = true,      // NOW DEFAULT - achieves 100% completeness
+        .glucose_restart = true,   // Enable Glucose - test with EMA mode
+        .luby_restart = false,     // Disabled
         .luby_unit = 100,          // Python uses 100, MiniSat uses 512 (using Python's value)
         .restart_postpone = 10,
 
         // Glucose EMA parameters (for --glucose-restart-ema)
-        .glucose_use_ema = true,       // Default to EMA (more conservative)
+        .glucose_use_ema = true,       // Use EMA mode - sliding window has correctness bug
         .glucose_fast_alpha = 0.8,     // Fast MA decay factor (tracks recent ~5 conflicts)
         .glucose_slow_alpha = 0.9999,  // Slow MA decay factor (long-term average)
         .glucose_min_conflicts = 100,  // Minimum conflicts before enabling Glucose
@@ -110,7 +110,7 @@ SolverOpts default_opts(void) {
         .reduce_fraction = 0.5,
         .reduce_interval = 2000,
 
-        .bce = true,              // Enable blocked clause elimination by default
+        .bce = false,             // DISABLED by default - can hurt SAT instance performance
 
         .inprocess = false,
         .inprocess_interval = 10000,
@@ -276,8 +276,9 @@ Solver* solver_new_with_opts(const SolverOpts* opts) {
     s->restart.threshold = opts->restart_first;
     s->restart.luby_index = 0;
 
-    // Initialize Glucose sliding window (if using avg mode)
-    if (!opts->glucose_use_ema && opts->glucose_restart) {
+    // Initialize Glucose sliding window (if using avg mode or as default)
+    // Always allocate if glucose_restart is enabled (may switch modes at runtime)
+    if (opts->glucose_restart) {
         s->restart.recent_lbds = (uint32_t*)calloc(opts->glucose_window_size, sizeof(uint32_t));
         if (!s->restart.recent_lbds) goto error;
         s->restart.recent_lbds_count = 0;
@@ -2045,10 +2046,9 @@ lbool solver_solve_with_assumptions(Solver* s, const Lit* assumps, uint32_t n_as
             solver_minimize_clause(s, learnt_clause, &learnt_size);
             s->stats.minimized_literals += (original_size - learnt_size);
 
-            // Backtrack (chronological or non-chronological)
-            // Chronological backtracking: step down one level at a time
-            // Non-chronological: jump directly to target level
-            // Research shows chronological is often better - enabled by default
+            // Backtrack (chronological - step down one level at a time)
+            // The chronological backtracking function may return a different level
+            // than requested if the learned clause becomes unit at an earlier level
             Level actual_backtrack_level = solver_backtrack_chronological(s, learnt_clause, learnt_size, backtrack_level);
 
             // Update backtrack_level to reflect where we actually ended up
