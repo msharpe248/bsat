@@ -87,18 +87,21 @@ SolverOpts default_opts(void);
  *********************************************************************/
 
 typedef struct VarInfo {
+    // VSIDS activity - first for 8-byte alignment and cache-friendly heap access
+    double   activity;       // Variable activity score
+
+    // Core assignment state - most frequently accessed together
     lbool    value;          // Current assignment (UNDEF/TRUE/FALSE)
     Level    level;          // Decision level
     CRef     reason;         // Reason clause (INVALID_CLAUSE for decisions)
     uint32_t trail_pos;      // Position in trail
 
-    // Phase saving
-    bool     polarity;       // Saved polarity
+    // Less frequently accessed
     uint32_t last_polarity;  // Last conflict where polarity was saved
-
-    // VSIDS activity
-    double   activity;       // Variable activity score
     uint32_t heap_pos;       // Position in VSIDS heap
+
+    // Phase saving - 1 byte, naturally packs at end with padding
+    bool     polarity;       // Saved polarity
 } VarInfo;
 
 /*********************************************************************

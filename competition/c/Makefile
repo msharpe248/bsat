@@ -3,6 +3,7 @@
 # Compiler and flags
 CC = cc
 CFLAGS = -std=c11 -Wall -Wextra -pedantic
+# Optimization flags for SAT solver performance
 OPTFLAGS = -O3 -march=native -flto
 DEBUGFLAGS = -g -O0 -DDEBUG -fsanitize=address -fsanitize=undefined
 PROFFLAGS = -pg -O2

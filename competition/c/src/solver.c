@@ -921,24 +921,26 @@ CRef solver_propagate(Solver* s) {
  *********************************************************************/
 
 static uint32_t calc_lbd(Solver* s, const Lit* lits, uint32_t size) {
-    static Level levels[256];
+    // O(n) LBD calculation using seen array as level bitset
+    // The seen array is sized for num_vars, and decision level <= num_vars,
+    // so we can safely use it indexed by level. Clear after use.
     uint32_t lbd = 0;
 
+    // Track which levels we've seen
     for (uint32_t i = 0; i < size; i++) {
         Level level = s->vars[var(lits[i])].level;
-        if (level == 0) continue;
-
-        // Check if we've seen this level
-        bool seen = false;
-        for (uint32_t j = 0; j < lbd; j++) {
-            if (levels[j] == level) {
-                seen = true;
-                break;
-            }
+        if (level == 0) continue;  // Level 0 doesn't count for LBD
+        if (level < s->var_capacity && !s->seen[level]) {
+            s->seen[level] = 1;
+            lbd++;
         }
+    }
 
-        if (!seen && lbd < 256) {
-            levels[lbd++] = level;
+    // Clear the seen flags for levels we marked
+    for (uint32_t i = 0; i < size; i++) {
+        Level level = s->vars[var(lits[i])].level;
+        if (level != 0 && level < s->var_capacity) {
+            s->seen[level] = 0;
         }
     }
 
