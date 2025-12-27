@@ -111,6 +111,7 @@ SolverOpts default_opts(void) {
         .reduce_interval = 2000,
 
         .bce = false,             // DISABLED by default - can hurt SAT instance performance
+        .probing = true,          // Enable failed literal probing
 
         .inprocess = false,
         .inprocess_interval = 10000,
@@ -1892,6 +1893,109 @@ static uint32_t solver_eliminate_blocked_clauses(Solver* s) {
 }
 
 /*********************************************************************
+ * Failed Literal Probing
+ *********************************************************************/
+
+// Try assigning a literal and propagate. Returns:
+//  - TRUE if propagation succeeds (no conflict)
+//  - FALSE if conflict found (literal's negation is implied)
+static bool probe_literal(Solver* s, Lit lit) {
+    ASSERT(s->decision_level == 0);
+
+    // Make temporary assignment at level 1
+    s->decision_level = 1;
+    s->trail_lims[1] = s->trail_size;
+
+    Var v = var(lit);
+    s->vars[v].value = sign(lit) ? FALSE : TRUE;
+    s->vars[v].level = 1;
+    s->vars[v].reason = INVALID_CLAUSE;
+    s->vars[v].trail_pos = s->trail_size;
+
+    s->trail[s->trail_size].lit = lit;
+    s->trail[s->trail_size].level = 1;
+    s->trail_size++;
+
+    // Propagate
+    CRef conflict = solver_propagate(s);
+
+    // Backtrack to level 0
+    solver_backtrack(s, 0);
+
+    return (conflict == INVALID_CLAUSE);
+}
+
+// Perform failed literal probing at decision level 0
+// Returns the number of unit clauses discovered, or -1 if UNSAT detected
+static int failed_literal_probing(Solver* s) {
+    if (s->decision_level > 0) return 0;
+
+    int units_found = 0;
+    bool made_progress = true;
+
+    // Repeat until no more units found (fixed point)
+    while (made_progress) {
+        made_progress = false;
+
+        for (Var v = 1; v <= s->num_vars; v++) {
+            // Skip assigned variables
+            if (s->vars[v].value != UNDEF) continue;
+
+            Lit pos = mkLit(v, false);  // v = true
+            Lit neg = mkLit(v, true);   // v = false
+
+            bool pos_ok = probe_literal(s, pos);
+            bool neg_ok = probe_literal(s, neg);
+
+            if (!pos_ok && !neg_ok) {
+                // Both polarities lead to conflict = UNSAT
+                return -1;
+            } else if (!pos_ok) {
+                // Positive leads to conflict, so v must be false
+                s->vars[v].value = FALSE;
+                s->vars[v].level = 0;
+                s->vars[v].reason = INVALID_CLAUSE;
+                s->vars[v].trail_pos = s->trail_size;
+
+                s->trail[s->trail_size].lit = neg;
+                s->trail[s->trail_size].level = 0;
+                s->trail_size++;
+
+                units_found++;
+                made_progress = true;
+
+                // Propagate the new unit
+                CRef conflict = solver_propagate(s);
+                if (conflict != INVALID_CLAUSE) {
+                    return -1;  // UNSAT
+                }
+            } else if (!neg_ok) {
+                // Negative leads to conflict, so v must be true
+                s->vars[v].value = TRUE;
+                s->vars[v].level = 0;
+                s->vars[v].reason = INVALID_CLAUSE;
+                s->vars[v].trail_pos = s->trail_size;
+
+                s->trail[s->trail_size].lit = pos;
+                s->trail[s->trail_size].level = 0;
+                s->trail_size++;
+
+                units_found++;
+                made_progress = true;
+
+                // Propagate the new unit
+                CRef conflict = solver_propagate(s);
+                if (conflict != INVALID_CLAUSE) {
+                    return -1;  // UNSAT
+                }
+            }
+        }
+    }
+
+    return units_found;
+}
+
+/*********************************************************************
  * Simplification
  *********************************************************************/
 
@@ -1947,6 +2051,19 @@ lbool solver_solve_with_assumptions(Solver* s, const Lit* assumps, uint32_t n_as
     if (s->opts.bce) {
         uint32_t blocked = solver_eliminate_blocked_clauses(s);
         s->stats.blocked_clauses = blocked;
+    }
+
+    // Preprocessing: Failed Literal Probing
+    if (s->opts.probing) {
+        int probing_result = failed_literal_probing(s);
+        if (probing_result < 0) {
+            // UNSAT detected during probing
+            s->result = FALSE;
+            return FALSE;
+        }
+        if (probing_result > 0 && !s->opts.quiet) {
+            printf("c [Probing] Found %d implied units\n", probing_result);
+        }
     }
 
     // Add assumptions

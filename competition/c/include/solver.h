@@ -60,6 +60,7 @@ typedef struct SolverOpts {
 
     // Preprocessing
     bool     bce;               // Enable blocked clause elimination (true)
+    bool     probing;           // Enable failed literal probing (true)
 
     // Inprocessing
     bool     inprocess;         // Enable inprocessing (false)

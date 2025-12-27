@@ -83,7 +83,52 @@ benchmark: $(TARGET)
 
 # Clean build artifacts
 clean:
-	rm -rf $(OBJDIR) $(BINDIR)
+	rm -rf $(OBJDIR) $(BINDIR) pgo_data
+
+# Profile-Guided Optimization (PGO) targets
+# Works with both clang (LLVM) and gcc
+.PHONY: pgo pgo-generate pgo-train pgo-merge pgo-use
+
+# Full PGO build (generate, train, merge, use)
+pgo: pgo-generate pgo-train pgo-merge pgo-use
+
+# Step 1: Build with profiling instrumentation
+pgo-generate: clean dirs
+	@echo "Building with profile instrumentation..."
+	$(CC) $(CFLAGS) -O3 -march=native -fprofile-instr-generate -c -o $(OBJDIR)/arena.o $(SRCDIR)/arena.c
+	$(CC) $(CFLAGS) -O3 -march=native -fprofile-instr-generate -c -o $(OBJDIR)/dimacs.o $(SRCDIR)/dimacs.c
+	$(CC) $(CFLAGS) -O3 -march=native -fprofile-instr-generate -c -o $(OBJDIR)/main.o $(SRCDIR)/main.c
+	$(CC) $(CFLAGS) -O3 -march=native -fprofile-instr-generate -c -o $(OBJDIR)/solver.o $(SRCDIR)/solver.c
+	$(CC) $(CFLAGS) -O3 -march=native -fprofile-instr-generate -c -o $(OBJDIR)/watch.o $(SRCDIR)/watch.c
+	$(CC) $(CFLAGS) -O3 -march=native -fprofile-instr-generate -o $(BINDIR)/bsat_pgo_gen $(OBJECTS) -lm
+
+# Step 2: Run training workload to collect profile data
+pgo-train:
+	@echo "Running training workload..."
+	@rm -rf pgo_data && mkdir -p pgo_data
+	@LLVM_PROFILE_FILE="pgo_data/bsat_%p.profraw" ; \
+	export LLVM_PROFILE_FILE; \
+	for f in /Users/msharpe/python/bsat/dataset/medium_tests/medium_suite/*.cnf; do \
+		timeout 5s $(BINDIR)/bsat_pgo_gen "$$f" > /dev/null 2>&1 || true; \
+	done
+	@echo "Profile data collected."
+
+# Step 3: Merge profile data (clang/LLVM)
+pgo-merge:
+	@echo "Merging profile data..."
+	xcrun llvm-profdata merge -output=pgo_data/default.profdata pgo_data/*.profraw
+	@echo "Profile data merged."
+
+# Step 4: Rebuild with profile data
+pgo-use: dirs
+	@echo "Building with profile optimization..."
+	$(CC) $(CFLAGS) -O3 -march=native -flto -fprofile-instr-use=pgo_data/default.profdata -c -o $(OBJDIR)/arena.o $(SRCDIR)/arena.c
+	$(CC) $(CFLAGS) -O3 -march=native -flto -fprofile-instr-use=pgo_data/default.profdata -c -o $(OBJDIR)/dimacs.o $(SRCDIR)/dimacs.c
+	$(CC) $(CFLAGS) -O3 -march=native -flto -fprofile-instr-use=pgo_data/default.profdata -c -o $(OBJDIR)/main.o $(SRCDIR)/main.c
+	$(CC) $(CFLAGS) -O3 -march=native -flto -fprofile-instr-use=pgo_data/default.profdata -c -o $(OBJDIR)/solver.o $(SRCDIR)/solver.c
+	$(CC) $(CFLAGS) -O3 -march=native -flto -fprofile-instr-use=pgo_data/default.profdata -c -o $(OBJDIR)/watch.o $(SRCDIR)/watch.c
+	$(CC) $(CFLAGS) -O3 -march=native -flto -fprofile-instr-use=pgo_data/default.profdata -o $(TARGET) $(OBJECTS) -lm
+	@echo "PGO build complete: $(TARGET)"
 
 # Help message
 help:
@@ -96,6 +141,7 @@ help:
 	@echo "  clean     - Remove build artifacts"
 	@echo "  test      - Build and run tests"
 	@echo "  benchmark - Run benchmarks"
+	@echo "  pgo       - Full PGO build (generate + train + use)"
 	@echo "  help      - Show this message"
 	@echo ""
 	@echo "Modes:"
