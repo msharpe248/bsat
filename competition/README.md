@@ -111,10 +111,10 @@ competition/
 |---------|---|--------|-------|
 | **Propagation** |
 | Two-Watched Literals | ✅ | ✅ | 50-100× faster than naive |
-| Blocking Literal Optimization | ✅ | ❌ | C-only 5-10% improvement |
+| Blocking Literal Optimization | ✅ | ✅ | 5-10% improvement |
 | **Learning** |
 | First UIP Conflict Analysis | ✅ | ✅ | Standard 1-UIP scheme |
-| MiniSat Clause Minimization | ✅ | ❌ | 67% literal reduction |
+| MiniSat Clause Minimization | ✅ | ✅ | 67% literal reduction |
 | LBD Calculation | ✅ | ✅ | O(n) with bitset |
 | Clause Database Reduction | ✅ | ✅ | LBD-based with glue protection |
 | On-the-Fly Subsumption | ✅ | ❌ | Remove subsumed clauses |
@@ -129,7 +129,7 @@ competition/
 | Glucose Adaptive (AVG) | ✅ | ❌ | Aggressive sliding window |
 | Restart Postponing | ✅ | ✅ | Block when trail growing |
 | **Preprocessing** |
-| Failed Literal Probing | ✅ | ❌ | Discover implied units |
+| Failed Literal Probing | ✅ | ✅ (opt-in) | Discover implied units |
 | Blocked Clause Elimination | ✅ | ❌ | Remove redundant clauses |
 | **Inprocessing** |
 | Vivification | ✅ | ❌ | Strengthen learned clauses |

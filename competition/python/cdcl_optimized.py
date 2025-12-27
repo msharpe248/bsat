@@ -3,7 +3,10 @@ CDCL (Conflict-Driven Clause Learning) SAT Solver - OPTIMIZED FOR COMPETITION
 
 This is a heavily optimized version of CDCL implementing:
 - ✅ Two-watched literal scheme for O(1) amortized unit propagation
+- ✅ Blocking literal optimization (skip clause if blocker is satisfied)
 - ✅ LBD (Literal Block Distance) clause quality management
+- ✅ MiniSat-style clause minimization (remove redundant literals from learned clauses)
+- ✅ Failed literal probing (discover implied units, disabled by default for performance)
 - ⏳ Inprocessing (subsumption, variable elimination) - disabled by default (too slow in Python)
 - ✅ Advanced restart strategies (Glucose-style adaptive restarts)
 - ✅ Restart postponing (Glucose 2.1+ - blocks restarts when trail growing)
@@ -17,10 +20,10 @@ This is a heavily optimized version of CDCL implementing:
 PERFORMANCE TARGET:
 - 50-100× faster than original CDCL (via two-watched literals)
 - Handle 1000-5000 variable competition instances
-- Foundation for eventual C implementation
+- Feature parity with C implementation
 
 COPIED FROM: ../src/bsat/cdcl.py
-STATUS: Two-watched literals ✅ | LBD ✅ | Adaptive restarts ✅ | Restart postponing ✅ | Phase saving ✅ | Random phase ✅ | Adaptive random ✅ | Inprocessing ⚠️ (experimental, disabled by default)
+STATUS: Two-watched literals ✅ | Blocking literal ✅ | LBD ✅ | Clause minimization ✅ | Failed literal probing ✅ (opt-in) | Adaptive restarts ✅ | Restart postponing ✅ | Phase saving ✅ | Random phase ✅ | Adaptive random ✅ | Inprocessing ⚠️ (experimental)
 """
 
 import sys
@@ -72,6 +75,12 @@ class CDCLStats:
         self.inprocessing_calls = 0
         self.inprocessing_subsumed = 0
         self.inprocessing_eliminated_vars = 0
+        # NEW: Clause minimization stats
+        self.minimized_literals = 0
+        # NEW: Failed literal probing stats
+        self.probing_implied_units = 0
+        # NEW: Blocking literal stats
+        self.blocker_skips = 0
 
     def __str__(self):
         return (
@@ -82,6 +91,9 @@ class CDCLStats:
             f"  Learned clauses: {self.learned_clauses}\n"
             f"  Glue clauses (LBD≤2): {self.glue_clauses}\n"
             f"  Deleted clauses: {self.deleted_clauses}\n"
+            f"  Minimized literals: {self.minimized_literals}\n"
+            f"  Probing implied units: {self.probing_implied_units}\n"
+            f"  Blocker skips: {self.blocker_skips}\n"
             f"  Inprocessing calls: {self.inprocessing_calls}\n"
             f"  Inprocessing subsumed: {self.inprocessing_subsumed}\n"
             f"  Inprocessing eliminated vars: {self.inprocessing_eliminated_vars}\n"
@@ -123,12 +135,16 @@ class WatchedLiteralManager:
     - n = average clause length
 
     Expected speedup: 50-100× on unit propagation (which is 70-80% of solver time)
+
+    Blocking literal optimization: Each watch also stores a "blocker" literal.
+    If the blocker is satisfied, we can skip checking the clause entirely.
     """
 
     def __init__(self):
-        # Map: Literal → List of (clause_index, other_watch_index)
+        # Map: Literal → List of (clause_index, other_watch_index, blocker_literal)
         # When literal L becomes false, check clauses in watch_lists[~L]
-        self.watch_lists: Dict[Tuple[str, bool], List[Tuple[int, int]]] = defaultdict(list)
+        # blocker_literal: if this is satisfied, skip the clause
+        self.watch_lists: Dict[Tuple[str, bool], List[Tuple[int, int, Tuple[str, bool]]]] = defaultdict(list)
 
         # Map: clause_index → (watch1_literal, watch2_literal)
         self.watched: Dict[int, Tuple[Tuple[str, bool], Tuple[str, bool]]] = {}
@@ -147,6 +163,7 @@ class WatchedLiteralManager:
 
         For each clause, choose 2 literals to watch (preferably unassigned or true).
         If clause has < 2 literals, watch what's available.
+        The blocker literal is set to the other watched literal initially.
         """
         for idx, clause in enumerate(clauses):
             if len(clause.literals) == 0:
@@ -156,14 +173,15 @@ class WatchedLiteralManager:
                 # Unit clause - watch the single literal
                 lit_key = self._literal_key(clause.literals[0])
                 self.watched[idx] = (lit_key, lit_key)  # Watch same literal twice
-                self.watch_lists[lit_key].append((idx, 0))
+                self.watch_lists[lit_key].append((idx, 0, lit_key))  # blocker = self
             else:
                 # Watch first two literals initially
+                # Blocker for each watch is the other watched literal
                 lit1 = self._literal_key(clause.literals[0])
                 lit2 = self._literal_key(clause.literals[1])
                 self.watched[idx] = (lit1, lit2)
-                self.watch_lists[lit1].append((idx, 1))  # If lit1 becomes false, check clause
-                self.watch_lists[lit2].append((idx, 0))  # If lit2 becomes false, check clause
+                self.watch_lists[lit1].append((idx, 1, lit2))  # If lit1 becomes false, blocker is lit2
+                self.watch_lists[lit2].append((idx, 0, lit1))  # If lit2 becomes false, blocker is lit1
 
     def add_clause_watches(self, clause_idx: int, clause: Clause):
         """Add watches for a newly added clause (e.g., learned clause)."""
@@ -174,21 +192,22 @@ class WatchedLiteralManager:
             # Unit clause - watch the single literal
             lit_key = self._literal_key(clause.literals[0])
             self.watched[clause_idx] = (lit_key, lit_key)
-            self.watch_lists[lit_key].append((clause_idx, 0))
+            self.watch_lists[lit_key].append((clause_idx, 0, lit_key))
         else:
             # Watch first two literals
             # NOTE: For learned clauses from 1UIP, clause.literals[0] should be the asserting literal
+            # Blocker for each watch is the other watched literal
             lit1 = self._literal_key(clause.literals[0])
             lit2 = self._literal_key(clause.literals[1])
             self.watched[clause_idx] = (lit1, lit2)
-            self.watch_lists[lit1].append((clause_idx, 1))
-            self.watch_lists[lit2].append((clause_idx, 0))
+            self.watch_lists[lit1].append((clause_idx, 1, lit2))
+            self.watch_lists[lit2].append((clause_idx, 0, lit1))
 
     def propagate(self,
                   assigned_lit_key: Tuple[str, bool],
                   clauses: List[Clause],
                   assignment: Dict[str, bool],
-                  get_literal_value) -> Tuple[Optional[Clause], Optional[Tuple[str, bool]], Optional[Clause], int]:
+                  get_literal_value) -> Tuple[Optional[Clause], Optional[Tuple[str, bool]], Optional[Clause], int, int]:
         """
         Propagate assignment of a literal using two-watched literals.
 
@@ -199,11 +218,12 @@ class WatchedLiteralManager:
             get_literal_value: Function to get value of a literal
 
         Returns:
-            (conflict_clause, unit_literal_key, antecedent_clause, num_checks)
+            (conflict_clause, unit_literal_key, antecedent_clause, num_checks, blocker_skips)
             - conflict_clause: Clause that is conflicting, or None
             - unit_literal_key: Literal that must be assigned (unit propagation), or None
             - antecedent_clause: Clause that caused unit propagation, or None
             - num_checks: Number of clauses checked (for statistics)
+            - blocker_skips: Number of clauses skipped due to satisfied blocker
         """
         # When a literal becomes TRUE, its negation becomes FALSE
         # Check all clauses watching the now-FALSE literal
@@ -212,8 +232,18 @@ class WatchedLiteralManager:
         # Important: Create a copy of watch list because we'll modify it during iteration
         clauses_to_check = list(self.watch_lists[false_lit_key])
         checks = 0
+        blocker_skips = 0
 
-        for clause_idx, other_watch_idx in clauses_to_check:
+        for clause_idx, other_watch_idx, blocker in clauses_to_check:
+            # Blocking literal optimization: if blocker is satisfied, skip clause
+            blocker_var, blocker_neg = blocker
+            if blocker_var in assignment:
+                blocker_val = assignment[blocker_var]
+                # blocker is satisfied if: (not negated and val=True) or (negated and val=False)
+                if (not blocker_neg and blocker_val) or (blocker_neg and not blocker_val):
+                    blocker_skips += 1
+                    continue
+
             checks += 1
             clause = clauses[clause_idx]
 
@@ -234,10 +264,13 @@ class WatchedLiteralManager:
 
             if other_val is True:
                 # Clause is satisfied by other watch - nothing to do
+                # Update blocker to other_watch for future checks
+                self._update_blocker(false_lit_key, clause_idx, other_watch_idx, other_watch)
                 continue
 
             # Try to find a new watch (an unassigned or true literal, not the other watch)
             found_new_watch = False
+            new_blocker = other_watch  # Default blocker is the other watch
             for lit in clause.literals:
                 lit_key = self._literal_key(lit)
                 if lit_key == other_watch or lit_key == false_watch:
@@ -246,6 +279,9 @@ class WatchedLiteralManager:
                 lit_val = get_literal_value(lit)
                 if lit_val is None or lit_val is True:
                     # Found a new watch!
+                    if lit_val is True:
+                        new_blocker = lit_key  # Use satisfied literal as blocker
+
                     # Update watches for this clause
                     if watch1 == false_lit_key:
                         self.watched[clause_idx] = (lit_key, watch2)
@@ -253,8 +289,8 @@ class WatchedLiteralManager:
                         self.watched[clause_idx] = (watch1, lit_key)
 
                     # Update watch lists
-                    self.watch_lists[false_lit_key].remove((clause_idx, other_watch_idx))
-                    self.watch_lists[lit_key].append((clause_idx, 1 if watch1 == false_lit_key else 0))
+                    self.watch_lists[false_lit_key].remove((clause_idx, other_watch_idx, blocker))
+                    self.watch_lists[lit_key].append((clause_idx, 1 if watch1 == false_lit_key else 0, new_blocker))
 
                     found_new_watch = True
                     break
@@ -268,12 +304,21 @@ class WatchedLiteralManager:
 
             if other_val is None:
                 # Unit propagation needed
-                return (None, other_watch, clause, checks)
+                return (None, other_watch, clause, checks, blocker_skips)
             else:  # other_val is False
                 # Conflict!
-                return (clause, None, None, checks)
+                return (clause, None, None, checks, blocker_skips)
 
-        return (None, None, None, checks)
+        return (None, None, None, checks, blocker_skips)
+
+    def _update_blocker(self, watched_lit: Tuple[str, bool], clause_idx: int,
+                        other_watch_idx: int, new_blocker: Tuple[str, bool]):
+        """Update the blocker for a watch entry."""
+        watch_list = self.watch_lists[watched_lit]
+        for i, (cidx, oidx, _) in enumerate(watch_list):
+            if cidx == clause_idx and oidx == other_watch_idx:
+                watch_list[i] = (cidx, oidx, new_blocker)
+                return
 
     def _key_to_literal(self, key: Tuple[str, bool], clause: Clause) -> Literal:
         """Find the Literal object in clause matching the key."""
@@ -316,7 +361,8 @@ class CDCLSolver:
                  random_seed: Optional[int] = None,
                  adaptive_random_phase: bool = True,
                  adaptive_threshold: int = 1000,
-                 adaptive_restart_ratio: float = 0.2):
+                 adaptive_restart_ratio: float = 0.2,
+                 enable_probing: bool = False):
         """
         Initialize optimized CDCL solver.
 
@@ -340,6 +386,7 @@ class CDCLSolver:
             adaptive_random_phase: Enable adaptive random phase (auto-enable when stuck, recommended)
             adaptive_threshold: Minimum conflicts before enabling adaptive behavior (1000 typical)
             adaptive_restart_ratio: Restart/conflict ratio threshold for enabling (0.2 = 20% restart rate)
+            enable_probing: Enable failed literal probing (disabled by default, slow in Python)
         """
         self.original_cnf = cnf
         self.clauses = list(cnf.clauses)  # Original + learned clauses
@@ -371,6 +418,9 @@ class CDCLSolver:
         self.adaptive_threshold = adaptive_threshold
         self.adaptive_restart_ratio = adaptive_restart_ratio
         self.adaptive_enabled = False  # Track if adaptive kicked in
+
+        # Failed literal probing
+        self.enable_probing = enable_probing
 
         # Restart strategy
         self.restart_strategy = restart_strategy
@@ -488,6 +538,7 @@ class CDCLSolver:
         Unit propagation using two-watched literals.
 
         This is the OPTIMIZED version (50-100× faster than naive).
+        Includes blocking literal optimization to skip satisfied clauses.
         """
         # We need to propagate all assignments on the trail that haven't been propagated yet
         # For simplicity in this initial version, we'll track propagated assignments
@@ -509,7 +560,7 @@ class CDCLSolver:
             assigned_lit_key = (assignment.variable, not assignment.value)
 
             # Propagate this assignment
-            conflict, unit_lit_key, antecedent_clause, checks = self.watch_manager.propagate(
+            conflict, unit_lit_key, antecedent_clause, checks, blocker_skips = self.watch_manager.propagate(
                 assigned_lit_key,
                 self.clauses,
                 self.assignment,
@@ -517,6 +568,7 @@ class CDCLSolver:
             )
 
             self.stats.clauses_checked += checks
+            self.stats.blocker_skips += blocker_skips
 
             if conflict is not None:
                 return conflict
@@ -659,8 +711,172 @@ class CDCLSolver:
             levels.sort(reverse=True)
             backtrack_level = levels[1] if len(levels) > 1 else 0
 
+        # MiniSat convention: asserting literal at position 0, second-highest level at position 1
+        # This is important for:
+        # 1. Watch list setup (positions 0 and 1 are watched)
+        # 2. Clause minimization (position 0 is kept unconditionally)
+        if len(learned_literals) > 1:
+            # Asserting literal is at the end, move to position 0
+            learned_literals[0], learned_literals[-1] = learned_literals[-1], learned_literals[0]
+
+            # Move second-highest decision level to position 1 for proper watch setup
+            if len(learned_literals) > 2:
+                max_level = -1
+                max_idx = 1
+                for i in range(1, len(learned_literals)):
+                    for assign in self.trail:
+                        if assign.variable == learned_literals[i].variable:
+                            if assign.decision_level > max_level:
+                                max_level = assign.decision_level
+                                max_idx = i
+                            break
+                if max_idx != 1:
+                    learned_literals[1], learned_literals[max_idx] = learned_literals[max_idx], learned_literals[1]
+
         learned_clause = Clause(learned_literals)
-        return learned_clause, backtrack_level
+
+        # MiniSat-style clause minimization
+        minimized_clause, num_removed = self._minimize_clause(learned_clause)
+        self.stats.minimized_literals += num_removed
+
+        return minimized_clause, backtrack_level
+
+    def _minimize_clause(self, clause: Clause) -> Tuple[Clause, int]:
+        """
+        MiniSat-style clause minimization with abstract level pruning.
+
+        Removes redundant literals from learned clause. A literal is redundant if
+        it can be derived from other literals in the clause through the implication graph.
+
+        Uses abstract level bitmask for O(1) quick pruning.
+
+        Note: Position 0 is the asserting literal (guaranteed by _analyze_conflict).
+
+        Returns:
+            Tuple of (minimized_clause, num_literals_removed)
+        """
+        if len(clause.literals) <= 2:
+            return clause, 0
+
+        # Build set of variables in the clause (for quick lookup)
+        clause_vars = {lit.variable for lit in clause.literals}
+
+        # Compute abstract level bitmask for quick pruning
+        abstract_levels = 0
+        var_to_level = {}
+        for lit in clause.literals:
+            for assign in self.trail:
+                if assign.variable == lit.variable:
+                    level = assign.decision_level
+                    var_to_level[lit.variable] = level
+                    abstract_levels |= (1 << (level & 63))
+                    break
+
+        # Track which literals to keep
+        # Position 0 is the asserting literal - always keep it
+        kept_literals = [clause.literals[0]]
+        removed_count = 0
+
+        # Track seen variables for cycle detection
+        seen = set()
+        redundant_cache = {}  # Cache for redundancy checks
+
+        for lit in clause.literals[1:]:  # Skip the asserting literal (position 0)
+            # Check if this literal is redundant by examining its antecedent
+            # Note: We pass is_initial=True to skip the "in clause" check for the first call
+            if self._lit_redundant(lit.variable, clause_vars, abstract_levels,
+                                  var_to_level, seen, redundant_cache, is_initial=True):
+                removed_count += 1
+            else:
+                kept_literals.append(lit)
+
+        if removed_count == 0:
+            return clause, 0
+
+        return Clause(kept_literals), removed_count
+
+    def _lit_redundant(self, var: str, clause_vars: Set[str], abstract_levels: int,
+                       var_to_level: Dict[str, int], seen: Set[str],
+                       cache: Dict[str, bool], is_initial: bool = False) -> bool:
+        """
+        Check if a literal is redundant using recursive deep analysis.
+
+        A literal is redundant if its reason clause only contains literals that are:
+        1. At decision level 0 (always safe)
+        2. Already in the learned clause (dominated)
+        3. Themselves redundant (recursively)
+
+        Args:
+            var: Variable to check
+            clause_vars: Set of variables in the learned clause
+            abstract_levels: Bitmask of decision levels in the clause
+            var_to_level: Map from variable to decision level
+            seen: Set of variables currently being explored (cycle detection)
+            cache: Cache of already-checked variables
+            is_initial: True for the first call (checking clause literal), False for recursive calls
+
+        Returns:
+            True if literal is redundant (can be removed), False otherwise
+        """
+        if var in cache:
+            return cache[var]
+
+        # For recursive calls only: if variable is in the clause, it's dominated
+        # (We skip this for initial calls since we're checking if the clause literal itself is redundant)
+        if not is_initial and var in clause_vars:
+            return True  # Variable is in the clause, so it's dominated
+
+        if var in seen:
+            return False  # Cycle detected - being explored
+
+        # Find the assignment for this variable
+        var_assign = None
+        for assign in self.trail:
+            if assign.variable == var:
+                var_assign = assign
+                break
+
+        if var_assign is None:
+            return False  # Not assigned
+
+        # Decision variables cannot be redundant (no reason clause)
+        if var_assign.antecedent is None:
+            cache[var] = False
+            return False
+
+        # Quick check: if variable's level is not in abstract_levels, can't be redundant
+        level = var_to_level.get(var, var_assign.decision_level)
+        if level > 0 and not (abstract_levels & (1 << (level & 63))):
+            cache[var] = False
+            return False
+
+        # Mark as being explored (cycle detection)
+        seen.add(var)
+
+        # Check all literals in the antecedent
+        for lit in var_assign.antecedent.literals:
+            if lit.variable == var:
+                continue  # Skip self
+
+            # Level 0 variables are always safe (dominated)
+            lit_assign = None
+            for assign in self.trail:
+                if assign.variable == lit.variable:
+                    lit_assign = assign
+                    break
+            if lit_assign and lit_assign.decision_level == 0:
+                continue
+
+            # Recursively check if this literal is dominated
+            if not self._lit_redundant(lit.variable, clause_vars, abstract_levels,
+                                       var_to_level, seen, cache):
+                seen.discard(var)
+                cache[var] = False
+                return False
+
+        seen.discard(var)
+        cache[var] = True
+        return True
 
     def _pick_branching_variable(self) -> Optional[Tuple[str, bool]]:
         """
@@ -973,6 +1189,68 @@ class CDCLSolver:
         # Update next inprocessing trigger
         self.next_inprocessing = self.stats.conflicts + self.inprocessing_interval
 
+    def _failed_literal_probing(self) -> bool:
+        """
+        Failed literal probing preprocessing.
+
+        At decision level 0, try assigning each unassigned literal and propagate:
+        - If conflict → literal's negation is implied (unit clause)
+        - If both polarities lead to conflict → UNSAT
+
+        Returns:
+            True if no conflict found, False if UNSAT detected
+        """
+        if self.decision_level != 0:
+            return True
+
+        # Get unassigned variables
+        unassigned = [var for var in self.variables if var not in self.assignment]
+
+        for var in unassigned:
+            if var in self.assignment:
+                continue  # May have been assigned by previous probing
+
+            # Try both polarities
+            implied_value = None
+
+            for test_value in [True, False]:
+                # Save state
+                old_trail_len = len(self.trail)
+                old_assignment = dict(self.assignment)
+                old_prop_idx = self._propagated_index
+
+                # Make test assignment at level 1
+                self.decision_level = 1
+                self._assign(var, test_value)
+
+                # Propagate
+                conflict = self._propagate()
+
+                # Restore state
+                self.trail = self.trail[:old_trail_len]
+                self.assignment = old_assignment
+                self._propagated_index = old_prop_idx
+                self.decision_level = 0
+
+                if conflict is not None:
+                    # This polarity leads to conflict
+                    if implied_value is not None:
+                        # Both polarities lead to conflict → UNSAT
+                        return False
+                    implied_value = not test_value
+
+            if implied_value is not None:
+                # Found implied unit
+                self._assign(var, implied_value)
+                self.stats.probing_implied_units += 1
+
+                # Propagate the new assignment
+                conflict = self._propagate()
+                if conflict is not None:
+                    return False  # UNSAT
+
+        return True
+
     def solve(self, max_conflicts: int = 1000000) -> Optional[Dict[str, bool]]:
         """
         Solve the SAT formula using optimized CDCL.
@@ -1013,6 +1291,10 @@ class CDCLSolver:
         conflict = self._propagate()
         if conflict is not None:
             return None  # UNSAT at level 0
+
+        # Failed literal probing - discover implied units at level 0
+        if self.enable_probing and not self._failed_literal_probing():
+            return None  # UNSAT detected during probing
 
         while True:
             # Check conflict limit
@@ -1089,6 +1371,14 @@ class CDCLSolver:
 
                 # Reset propagation index after backtracking
                 self._propagated_index = len(self.trail)
+
+                # Assign the asserting literal (position 0 of learned clause)
+                # This is crucial: the two-watched literal scheme only triggers when
+                # a watched literal becomes FALSE. After backtracking, the asserting
+                # literal is UNASSIGNED, so we must explicitly assign it.
+                asserting_lit = learned_clause.literals[0]
+                asserting_value = not asserting_lit.negated  # Make the literal TRUE
+                self._assign(asserting_lit.variable, asserting_value, antecedent=learned_clause)
 
                 # Decay VSIDS scores
                 self._decay_vsids_scores()
