@@ -8,6 +8,7 @@ This is a heavily optimized version of CDCL implementing:
 - ✅ MiniSat-style clause minimization (remove redundant literals from learned clauses)
 - ✅ On-the-fly subsumption (remove subsumed learned clauses)
 - ✅ Blocked clause elimination (remove blocked clauses, opt-in)
+- ✅ Vivification inprocessing (strengthen learned clauses, opt-in)
 - ✅ Failed literal probing (discover implied units, disabled by default for performance)
 - ⏳ Inprocessing (subsumption, variable elimination) - disabled by default (too slow in Python)
 - ✅ Advanced restart strategies: Luby, Glucose AVG (default), Glucose EMA
@@ -88,6 +89,9 @@ class CDCLStats:
         self.otf_subsumed = 0
         # NEW: Blocked clause elimination stats
         self.bce_eliminated = 0
+        # NEW: Vivification stats
+        self.vivified_clauses = 0
+        self.vivified_literals = 0
 
     def __str__(self):
         return (
@@ -103,6 +107,8 @@ class CDCLStats:
             f"  Blocker skips: {self.blocker_skips}\n"
             f"  OTF subsumed: {self.otf_subsumed}\n"
             f"  BCE eliminated: {self.bce_eliminated}\n"
+            f"  Vivified clauses: {self.vivified_clauses}\n"
+            f"  Vivified literals: {self.vivified_literals}\n"
             f"  Inprocessing calls: {self.inprocessing_calls}\n"
             f"  Inprocessing subsumed: {self.inprocessing_subsumed}\n"
             f"  Inprocessing eliminated vars: {self.inprocessing_eliminated_vars}\n"
@@ -401,7 +407,9 @@ class CDCLSolver:
                  adaptive_restart_ratio: float = 0.2,
                  enable_probing: bool = False,
                  enable_bce: bool = False,
-                 enable_chrono_bt: bool = False):
+                 enable_chrono_bt: bool = False,
+                 enable_vivification: bool = False,
+                 vivification_interval: int = 5000):
         """
         Initialize optimized CDCL solver.
 
@@ -434,6 +442,8 @@ class CDCLSolver:
             enable_probing: Enable failed literal probing (disabled by default, slow in Python)
             enable_bce: Enable blocked clause elimination preprocessing (disabled by default)
             enable_chrono_bt: Enable chronological backtracking (disabled by default)
+            enable_vivification: Enable vivification inprocessing (disabled by default)
+            vivification_interval: Conflicts between vivification rounds (5000 default)
         """
         self.original_cnf = cnf
         self.clauses = list(cnf.clauses)  # Original + learned clauses
@@ -474,6 +484,11 @@ class CDCLSolver:
 
         # Chronological backtracking
         self.enable_chrono_bt = enable_chrono_bt
+
+        # Vivification
+        self.enable_vivification = enable_vivification
+        self.vivification_interval = vivification_interval
+        self.next_vivification = vivification_interval
 
         # Restart strategy
         self.restart_strategy = restart_strategy
@@ -1345,6 +1360,170 @@ class CDCLSolver:
         # Update next inprocessing trigger
         self.next_inprocessing = self.stats.conflicts + self.inprocessing_interval
 
+    def _vivify_clause(self, clause_idx: int) -> Tuple[bool, int]:
+        """
+        Try to strengthen a clause by removing redundant literals.
+
+        For each literal L in the clause:
+        1. Assume all other literals are FALSE
+        2. Propagate
+        3. If conflict or L becomes FALSE → L is redundant
+
+        Args:
+            clause_idx: Index of clause to vivify
+
+        Returns:
+            Tuple of (was_strengthened, literals_removed)
+        """
+        if self.decision_level != 0:
+            return False, 0
+
+        clause = self.clauses[clause_idx]
+        if len(clause.literals) <= 2:
+            return False, 0  # Skip unit and binary clauses
+
+        # Save current state
+        old_trail_len = len(self.trail)
+        old_assignment = dict(self.assignment)
+        old_prop_idx = self._propagated_index
+
+        kept_literals = []
+        removed_count = 0
+
+        for i, test_lit in enumerate(clause.literals):
+            # Assume all OTHER literals are FALSE
+            conflict_found = False
+
+            for j, other_lit in enumerate(clause.literals):
+                if i == j:
+                    continue
+
+                var = other_lit.variable
+                if var in self.assignment:
+                    # Already assigned
+                    var_value = self.assignment[var]
+                    lit_is_true = (var_value and not other_lit.negated) or (not var_value and other_lit.negated)
+                    if lit_is_true:
+                        # Clause is already satisfied - restore and return
+                        self.trail = self.trail[:old_trail_len]
+                        self.assignment = old_assignment
+                        self._propagated_index = old_prop_idx
+                        return False, 0
+                    continue
+
+                # Assign the negation (assume this literal is false)
+                neg_value = other_lit.negated  # If lit is ¬x, we want x=True (making ¬x false)
+                self._assign(var, neg_value)
+
+            # Now propagate
+            conflict = self._propagate()
+
+            if conflict is not None:
+                # Conflict! test_lit is redundant (implied by other literals)
+                removed_count += 1
+            else:
+                # Check if test_lit was propagated to false
+                if test_lit.variable in self.assignment:
+                    test_var_value = self.assignment[test_lit.variable]
+                    test_lit_is_true = (test_var_value and not test_lit.negated) or (not test_var_value and test_lit.negated)
+                    if not test_lit_is_true:
+                        # test_lit is false - it's redundant
+                        removed_count += 1
+                    else:
+                        kept_literals.append(test_lit)
+                else:
+                    # Literal not assigned - keep it
+                    kept_literals.append(test_lit)
+
+            # Restore state for next iteration
+            self.trail = self.trail[:old_trail_len]
+            self.assignment = dict(old_assignment)
+            self._propagated_index = old_prop_idx
+
+        # If we removed any literals, update the clause
+        if removed_count > 0 and len(kept_literals) > 0:
+            new_clause = Clause(kept_literals)
+
+            # Remove old watches
+            if self.use_watched_literals:
+                self.watch_manager.remove_clause_watches(clause_idx, clause)
+
+            # Update clause in place
+            self.clauses[clause_idx] = new_clause
+
+            # Handle special cases
+            if len(kept_literals) == 1:
+                # Became unit - propagate it
+                unit_lit = kept_literals[0]
+                unit_value = not unit_lit.negated
+                if unit_lit.variable not in self.assignment:
+                    self._assign(unit_lit.variable, unit_value, antecedent=new_clause)
+            else:
+                # Add new watches
+                if self.use_watched_literals:
+                    self.watch_manager.add_clause_watches(clause_idx, new_clause)
+
+            # Update clause info if exists
+            if clause_idx in self.clause_info:
+                # Recompute LBD for the strengthened clause
+                lbd = self._compute_lbd(new_clause)
+                protected = (lbd <= 2)
+                self.clause_info[clause_idx] = ClauseInfo(lbd=lbd, protected=protected)
+
+            return True, removed_count
+
+        elif removed_count > 0 and len(kept_literals) == 0:
+            # Clause became empty - this shouldn't happen in valid vivification
+            return False, 0
+
+        return False, 0
+
+    def _vivify(self) -> bool:
+        """
+        Vivification inprocessing: strengthen learned clauses.
+
+        Called periodically during search. Only processes a limited number
+        of clauses per round to avoid slowing down the search.
+
+        Returns:
+            True if no UNSAT detected, False if UNSAT
+        """
+        if self.decision_level != 0:
+            return True
+
+        vivified_count = 0
+        literals_removed = 0
+
+        # Only vivify a limited number of clauses per round
+        num_learned = len(self.clauses) - self.num_original_clauses
+        max_to_check = min(100, num_learned)
+
+        for i in range(self.num_original_clauses, self.num_original_clauses + max_to_check):
+            if i >= len(self.clauses):
+                break
+
+            clause = self.clauses[i]
+            if not clause.literals:
+                continue  # Skip empty/deleted clauses
+
+            was_strengthened, removed = self._vivify_clause(i)
+            if was_strengthened:
+                vivified_count += 1
+                literals_removed += removed
+
+        self.stats.vivified_clauses += vivified_count
+        self.stats.vivified_literals += literals_removed
+
+        # Update next vivification time
+        self.next_vivification = self.stats.conflicts + self.vivification_interval
+
+        # Propagate any new unit clauses
+        conflict = self._propagate()
+        if conflict is not None:
+            return False  # UNSAT
+
+        return True
+
     def _backtrack_chronological(self, learned_clause: Clause, target_level: int) -> int:
         """
         Chronological backtracking: backtrack one level at a time.
@@ -1726,6 +1905,11 @@ class CDCLSolver:
                     # Check for inprocessing
                     if self.enable_inprocessing and self.stats.conflicts >= self.next_inprocessing:
                         self._inprocess()
+
+                    # Check for vivification
+                    if self.enable_vivification and self.stats.conflicts >= self.next_vivification:
+                        if not self._vivify():
+                            return None  # UNSAT detected during vivification
 
                     break
 

@@ -132,7 +132,7 @@ competition/
 | Failed Literal Probing | ✅ | ✅ (opt-in) | Discover implied units |
 | Blocked Clause Elimination | ✅ | ✅ (opt-in) | Remove redundant clauses |
 | **Inprocessing** |
-| Vivification | ✅ | ❌ | Strengthen learned clauses |
+| Vivification | ✅ | ✅ (opt-in) | Strengthen learned clauses |
 | **Backtracking** |
 | Chronological Backtracking | ✅ | ✅ (opt-in) | Preserve more assignments |
 

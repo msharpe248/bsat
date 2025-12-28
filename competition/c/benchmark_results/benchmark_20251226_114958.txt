@@ -1,0 +1,101 @@
+========================================
+BSAT Solver Benchmark
+Date: Fri Dec 26 11:49:58 CST 2025
+Timeout: 30s per instance
+========================================
+
+[0;34m=== Testing: Simple ===[0m
+
+Instance                                      C Solver        Python Solver   Speedup   
+--------                                      --------        -------------   -------   
+[0;32mrandom3sat_v10_c43.cnf                        0.007s (SATISFIABLE) 0.052s (SATISFIABLE) 7.02x     [0m
+[0;32mrandom3sat_v15_c64.cnf                        0.006s (SATISFIABLE) 0.051s (SATISFIABLE) 8.54x     [0m
+[0;32mrandom3sat_v20_c86.cnf                        0.006s (SATISFIABLE) 0.034s (SATISFIABLE) 5.40x     [0m
+[0;32mrandom3sat_v30_c129.cnf                       0.006s (SATISFIABLE) 0.047s (SATISFIABLE) 7.86x     [0m
+[0;32mrandom3sat_v5_c21.cnf                         0.006s (SATISFIABLE) 0.034s (SATISFIABLE) 5.50x     [0m
+[0;32mrandom3sat_v7_c30.cnf                         0.006s (SATISFIABLE) 0.034s (SATISFIABLE) 5.60x     [0m
+[0;32msat_v10.cnf                                   0.006s (SATISFIABLE) 0.033s (SATISFIABLE) 5.57x     [0m
+[0;32msat_v20.cnf                                   0.006s (SATISFIABLE) 0.033s (SATISFIABLE) 5.58x     [0m
+[0;32msat_v30.cnf                                   0.006s (SATISFIABLE) 0.034s (SATISFIABLE) 5.36x     [0m
+
+[0;34m=== Testing: Medium ===[0m
+
+Instance                                      C Solver        Python Solver   Speedup   
+--------                                      --------        -------------   -------   
+[0;32measy_3sat_v010_c0042.cnf                      0.006s (SATISFIABLE) 0.033s (SATISFIABLE) 5.21x     [0m
+[0;32measy_3sat_v012_c0050.cnf                      0.006s (UNSATISFIABLE) TIMEOUT         C only    [0m
+[0;32measy_3sat_v014_c0058.cnf                      0.006s (UNSATISFIABLE) TIMEOUT         C only    [0m
+[0;32measy_3sat_v016_c0067.cnf                      0.006s (UNSATISFIABLE) TIMEOUT         C only    [0m
+[0;32measy_3sat_v018_c0075.cnf                      0.006s (SATISFIABLE) 0.035s (SATISFIABLE) 5.71x     [0m
+[0;32measy_3sat_v020_c0084.cnf                      0.006s (SATISFIABLE) 0.047s (SATISFIABLE) 7.37x     [0m
+[0;32measy_3sat_v022_c0092.cnf                      0.006s (UNSATISFIABLE) TIMEOUT         C only    [0m
+[0;32measy_3sat_v024_c0100.cnf                      0.006s (SATISFIABLE) 0.037s (SATISFIABLE) 6.07x     [0m
+[0;32measy_3sat_v026_c0109.cnf                      0.006s (UNSATISFIABLE) TIMEOUT         C only    [0m
+[0;32measy_3sat_v028_c0117.cnf                      0.006s (SATISFIABLE) 0.036s (SATISFIABLE) 5.78x     [0m
+[0;32measy_3sat_v030_c0126.cnf                      0.006s (SATISFIABLE) 0.036s (SATISFIABLE) 5.98x     [0m
+[0;32mhard_3sat_v090_c0384.cnf                      0.006s (SATISFIABLE) 0.318s (SATISFIABLE) 53.88x    [0m
+[0;32mhard_3sat_v093_c0397.cnf                      0.007s (SATISFIABLE) 0.138s (SATISFIABLE) 20.60x    [0m
+[0;32mhard_3sat_v096_c0409.cnf                      0.008s (UNSATISFIABLE) TIMEOUT         C only    [0m
+[0;32mhard_3sat_v099_c0422.cnf                      0.008s (SATISFIABLE) 0.424s (SATISFIABLE) 56.17x    [0m
+[0;32mhard_3sat_v102_c0435.cnf                      0.008s (UNSATISFIABLE) TIMEOUT         C only    [0m
+[0;32mhard_3sat_v105_c0448.cnf                      0.006s (SATISFIABLE) 0.060s (SATISFIABLE) 9.31x     [0m
+[0;32mhard_3sat_v108_c0461.cnf                      0.009s (SATISFIABLE) 0.104s (SATISFIABLE) 12.22x    [0m
+[0;32mhard_3sat_v111_c0473.cnf                      0.007s (SATISFIABLE) 0.056s (SATISFIABLE) 8.29x     [0m
+[0;32mhard_3sat_v114_c0486.cnf                      0.009s (SATISFIABLE) 0.058s (SATISFIABLE) 6.48x     [0m
+[0;32mhard_3sat_v117_c0499.cnf                      0.009s (UNSATISFIABLE) TIMEOUT         C only    [0m
+[0;32mhard_3sat_v120_c0512.cnf                      0.009s (SATISFIABLE) 0.041s (SATISFIABLE) 4.46x     [0m
+[0;32mmedium_3sat_v040_c0170.cnf                    0.006s (SATISFIABLE) 0.038s (SATISFIABLE) 6.22x     [0m
+[0;31mmedium_3sat_v042_c0178.cnf                    0.006s (UNSATISFIABLE) 0.055s (SATISFIABLE) MISMATCH! [0m
+[0;32mmedium_3sat_v044_c0187.cnf                    0.006s (SATISFIABLE) 0.037s (SATISFIABLE) 6.28x     [0m
+[0;32mmedium_3sat_v046_c0195.cnf                    0.006s (SATISFIABLE) 0.041s (SATISFIABLE) 7.03x     [0m
+[0;32mmedium_3sat_v048_c0204.cnf                    0.007s (SATISFIABLE) 0.041s (SATISFIABLE) 6.14x     [0m
+[0;32mmedium_3sat_v050_c0213.cnf                    0.006s (SATISFIABLE) 0.039s (SATISFIABLE) 6.51x     [0m
+[0;32mmedium_3sat_v052_c0221.cnf                    0.006s (SATISFIABLE) 0.042s (SATISFIABLE) 6.83x     [0m
+[0;32mmedium_3sat_v054_c0230.cnf                    0.006s (SATISFIABLE) 0.040s (SATISFIABLE) 6.39x     [0m
+[0;32mmedium_3sat_v056_c0238.cnf                    0.006s (SATISFIABLE) 0.042s (SATISFIABLE) 7.18x     [0m
+[0;32mmedium_3sat_v058_c0247.cnf                    0.006s (SATISFIABLE) 0.035s (SATISFIABLE) 5.79x     [0m
+[0;32mmedium_3sat_v060_c0255.cnf                    0.006s (SATISFIABLE) 0.051s (SATISFIABLE) 8.56x     [0m
+[0;32mmedium_3sat_v062_c0264.cnf                    0.006s (UNSATISFIABLE) TIMEOUT         C only    [0m
+[0;32mmedium_3sat_v064_c0272.cnf                    0.006s (SATISFIABLE) 0.043s (SATISFIABLE) 6.97x     [0m
+[0;32mmedium_3sat_v066_c0281.cnf                    0.006s (UNSATISFIABLE) TIMEOUT         C only    [0m
+[0;32mmedium_3sat_v068_c0289.cnf                    0.007s (UNSATISFIABLE) TIMEOUT         C only    [0m
+[0;32mmedium_3sat_v070_c0298.cnf                    0.006s (UNSATISFIABLE) TIMEOUT         C only    [0m
+[0;32mmedium_3sat_v072_c0306.cnf                    0.007s (UNSATISFIABLE) TIMEOUT         C only    [0m
+[0;32mmedium_3sat_v074_c0315.cnf                    0.006s (SATISFIABLE) 1.042s (SATISFIABLE) 168.37x   [0m
+[0;32mmedium_3sat_v076_c0323.cnf                    0.007s (SATISFIABLE) 0.041s (SATISFIABLE) 6.28x     [0m
+[0;31mmedium_3sat_v078_c0332.cnf                    0.007s (UNSATISFIABLE) 0.052s (SATISFIABLE) MISMATCH! [0m
+[0;32mmedium_3sat_v080_c0340.cnf                    0.007s (SATISFIABLE) 0.116s (SATISFIABLE) 17.23x    [0m
+[0;32mmixed_4sat_v030_c0135.cnf                     0.006s (SATISFIABLE) 0.034s (SATISFIABLE) 5.56x     [0m
+[0;32mmixed_4sat_v040_c0192.cnf                     0.006s (SATISFIABLE) 0.034s (SATISFIABLE) 5.94x     [0m
+[0;32mmixed_4sat_v060_c0270.cnf                     0.006s (SATISFIABLE) 0.038s (SATISFIABLE) 6.37x     [0m
+[0;32mmixed_5sat_v050_c0260.cnf                     0.006s (SATISFIABLE) 0.035s (SATISFIABLE) 5.49x     [0m
+[0;32mmixed_5sat_v070_c0350.cnf                     0.006s (SATISFIABLE) 0.036s (SATISFIABLE) 6.15x     [0m
+[0;32msat_known_v040.cnf                            0.006s (SATISFIABLE) 0.036s (SATISFIABLE) 6.01x     [0m
+[0;32msat_known_v060.cnf                            0.006s (SATISFIABLE) 0.035s (SATISFIABLE) 5.98x     [0m
+[0;32msat_known_v080.cnf                            0.006s (SATISFIABLE) 0.035s (SATISFIABLE) 5.91x     [0m
+[0;32msat_known_v100.cnf                            0.006s (SATISFIABLE) 0.035s (SATISFIABLE) 5.97x     [0m
+[0;32msat_known_v120.cnf                            0.006s (SATISFIABLE) 0.036s (SATISFIABLE) 5.97x     [0m
+
+========================================
+SUMMARY
+========================================
+
+Total instances tested: 62
+
+Instances solved:
+  C solver:        62 / 62 (100.0%)
+  Python solver:   49 / 62 (79.0%)
+
+Comparison (both solved same instances):
+  Both solved:     49
+  C faster:        49
+  Python faster:   0
+  C only solved:   13
+  Py only solved:  0
+  Neither solved:  0
+
+Average speedup (C vs Python): 9.71x
+  Total C time:      0.400s
+  Total Python time: 3.884s
+
+Results saved to: benchmark_results/benchmark_20251226_114958.txt
