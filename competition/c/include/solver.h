@@ -10,7 +10,9 @@
 #include "types.h"
 #include "arena.h"
 #include "watch.h"
+#include "elim.h"
 #include <time.h>
+#include <stdio.h>
 
 /*********************************************************************
  * Solver Options
@@ -61,6 +63,15 @@ typedef struct SolverOpts {
     // Preprocessing
     bool     bce;               // Enable blocked clause elimination (true)
     bool     probing;           // Enable failed literal probing (true)
+
+    // Bounded Variable Elimination (BVE) - SatELite-style preprocessing
+    bool     elim;              // Enable BVE preprocessing (false - opt-in)
+    uint32_t elim_max_occ;      // Max occurrences to consider for elimination (10)
+    uint32_t elim_grow;         // Max clause growth allowed (0 = no growth)
+
+    // DRAT Proof Logging
+    const char* proof_path;     // Path to proof file (NULL = disabled)
+    bool     binary_proof;      // Use binary DRAT format (false)
 
     // Inprocessing
     bool     inprocess;         // Enable inprocessing (false)
@@ -156,6 +167,8 @@ typedef struct Solver {
     uint8_t* seen;            // Seen flags for conflict analysis
     Lit*     analyze_stack;   // Temporary stack for analysis
     uint32_t analyze_toclear; // Number of seen variables to clear
+    Lit      binary_conflict_lits[2]; // Literals from binary clause conflict
+    Lit*     binary_reasons;  // binary_reasons[v] = other literal if propagated by binary, LIT_UNDEF otherwise
 
     // Statistics
     struct {
@@ -197,6 +210,12 @@ typedef struct Solver {
 
     // Options
     SolverOpts opts;
+
+    // Variable Elimination (BVE)
+    ElimState* elim;          // Elimination state (NULL if not using BVE)
+
+    // DRAT Proof Logging
+    FILE* proof_file;         // Proof output file (NULL if not logging)
 
     // Result
     lbool result;             // SAT/UNSAT/UNKNOWN

@@ -69,6 +69,38 @@ static void print_progress_stats(const Solver* s) {
 }
 
 /*********************************************************************
+ * DRAT Proof Logging
+ *
+ * These functions log clause additions and deletions for proof verification.
+ * Format: "<lit1> <lit2> ... 0" for add, "d <lit1> <lit2> ... 0" for delete
+ *********************************************************************/
+
+// Convert internal literal to DIMACS format (already 1-indexed, negative for negated)
+static inline int lit_to_dimacs(Lit lit) {
+    int v = (int)(lit >> 1);  // Variable (already 1-indexed in our encoding)
+    return (lit & 1) ? -v : v;  // Negated for sign bit set
+}
+
+// Log a clause addition to the proof file
+void proof_add_clause(Solver* s, const Lit* lits, uint32_t size) {
+    if (!s->proof_file) return;
+    for (uint32_t i = 0; i < size; i++) {
+        fprintf(s->proof_file, "%d ", lit_to_dimacs(lits[i]));
+    }
+    fprintf(s->proof_file, "0\n");
+}
+
+// Log a clause deletion to the proof file
+void proof_delete_clause(Solver* s, const Lit* lits, uint32_t size) {
+    if (!s->proof_file) return;
+    fprintf(s->proof_file, "d ");
+    for (uint32_t i = 0; i < size; i++) {
+        fprintf(s->proof_file, "%d ", lit_to_dimacs(lits[i]));
+    }
+    fprintf(s->proof_file, "0\n");
+}
+
+/*********************************************************************
  * Default Options
  *********************************************************************/
 
@@ -112,6 +144,15 @@ SolverOpts default_opts(void) {
 
         .bce = false,             // DISABLED by default - can hurt SAT instance performance
         .probing = true,          // Enable failed literal probing
+
+        // BVE options (opt-in)
+        .elim = false,            // BVE disabled by default (opt-in with --elim)
+        .elim_max_occ = 10,       // Max occurrences to consider for elimination
+        .elim_grow = 0,           // No clause growth allowed by default
+
+        // DRAT proof logging (opt-in)
+        .proof_path = NULL,       // No proof by default
+        .binary_proof = false,    // Text format by default
 
         .inprocess = false,
         .inprocess_interval = 10000,
@@ -293,6 +334,18 @@ Solver* solver_new_with_opts(const SolverOpts* opts) {
     // Set start time
     s->stats.start_time = (double)clock() / CLOCKS_PER_SEC;
 
+    // Initialize BVE state (will be allocated on demand)
+    s->elim = NULL;
+
+    // Initialize DRAT proof file
+    s->proof_file = NULL;
+    if (opts->proof_path) {
+        s->proof_file = fopen(opts->proof_path, "w");
+        if (!s->proof_file && !opts->quiet) {
+            fprintf(stderr, "c Warning: Could not open proof file: %s\n", opts->proof_path);
+        }
+    }
+
     s->result = UNDEF;
 
     return s;
@@ -316,7 +369,17 @@ void solver_free(Solver* s) {
     free(s->order.heap);
     free(s->seen);
     free(s->analyze_stack);
+    free(s->binary_reasons);
     free(s->restart.recent_lbds);  // Free Glucose sliding window buffer
+
+    // Free BVE state
+    elim_free(s);
+
+    // Close DRAT proof file
+    if (s->proof_file) {
+        fclose(s->proof_file);
+        s->proof_file = NULL;
+    }
 
     free(s);
 }
@@ -362,6 +425,11 @@ static bool grow_var_arrays(Solver* s, uint32_t new_capacity) {
     Lit* new_stack = (Lit*)realloc(s->analyze_stack, alloc_size * sizeof(Lit));
     if (!new_stack) return false;
     s->analyze_stack = new_stack;
+
+    // Grow binary reasons array
+    Lit* new_binary_reasons = (Lit*)realloc(s->binary_reasons, alloc_size * sizeof(Lit));
+    if (!new_binary_reasons) return false;
+    s->binary_reasons = new_binary_reasons;
 
     // Resize watch manager in-place (preserves existing watches)
     if (!watch_resize(s->watches, new_capacity)) return false;
@@ -411,6 +479,9 @@ Var solver_new_var(Solver* s) {
 
     // Initialize seen flag
     s->seen[v] = 0;
+
+    // Initialize binary reason (LIT_UNDEF means no binary propagation)
+    s->binary_reasons[v] = LIT_UNDEF;
 
     // Add to decision heap
     heap_insert(s, v);
@@ -462,6 +533,7 @@ void solver_backtrack(Solver* s, Level level) {
                 s->vars[v].value = UNDEF;
                 s->vars[v].level = INVALID_LEVEL;
                 s->vars[v].reason = INVALID_CLAUSE;
+                s->binary_reasons[v] = LIT_UNDEF;  // Clear binary reason
 
                 // Re-insert into decision heap
                 if (s->vars[v].heap_pos == UINT32_MAX) {
@@ -482,6 +554,7 @@ void solver_backtrack(Solver* s, Level level) {
             s->vars[v].value = UNDEF;
             s->vars[v].level = INVALID_LEVEL;
             s->vars[v].reason = INVALID_CLAUSE;
+            s->binary_reasons[v] = LIT_UNDEF;  // Clear binary reason
 
             // Re-insert into decision heap
             if (s->vars[v].heap_pos == UINT32_MAX) {
@@ -776,11 +849,15 @@ CRef solver_propagate(Solver* s) {
 #endif
 
                 if (s->vars[v].value == UNDEF) {
-                    // Unit propagation
+                    // Unit propagation via binary clause
                     s->vars[v].value = sign(q) ? FALSE : TRUE;
                     s->vars[v].level = s->decision_level;
-                    s->vars[v].reason = INVALID_CLAUSE;  // Binary clause
+                    s->vars[v].reason = INVALID_CLAUSE;  // Binary clause marker
                     s->vars[v].trail_pos = s->trail_size;
+
+                    // Store the other literal for conflict analysis
+                    // Binary clause is (neg(p) | q), so neg(p) is the "reason" for q
+                    s->binary_reasons[v] = neg(p);
 
                     s->trail[s->trail_size].lit = q;
                     s->trail[s->trail_size].level = s->decision_level;
@@ -797,13 +874,17 @@ CRef solver_propagate(Solver* s) {
                         s->vars[v].polarity = !sign(q);
                     }
                 } else if (s->vars[v].value == (sign(q) ? TRUE : FALSE)) {
-                    // Conflict in binary clause
+                    // Conflict in binary clause: (neg(p) | q) with both literals false
 #ifdef DEBUG
                     if (IS_DEBUG(s)) {
                         printf("[PROPAGATE] Binary conflict! %d and %d are both false\n",
-                               toDimacs(neg(p)), toDimacs(neg(q)));
+                               toDimacs(neg(p)), toDimacs(q));
                     }
 #endif
+                    // Store the conflicting literals for conflict analysis
+                    s->binary_conflict_lits[0] = neg(p);  // The watched literal (false)
+                    s->binary_conflict_lits[1] = q;       // The other literal (false)
+
                     // Put watches back
                     while (i < ws->size) {
                         watches[j++] = watches[i++];
@@ -820,6 +901,13 @@ CRef solver_propagate(Solver* s) {
             // Non-binary clause
             CRef cref = w.cref;
             Lit blocker = w.blocker;
+
+            // Check if clause was deleted (e.g., by BVE preprocessing)
+            if (clause_deleted(s->arena, cref)) {
+                // Skip deleted clause - don't copy to output
+                i++;
+                continue;
+            }
 
             // Check blocker first
             Var bv = var(blocker);
@@ -956,12 +1044,26 @@ void solver_analyze(Solver* s, CRef conflict, Lit* learnt, uint32_t* learnt_size
 
     // Process conflict clause
     if (conflict == BINARY_CONFLICT) {
-        // Binary conflict - reconstruct from trail
-        // The conflict is between the last propagated literal and its negation
-        p = s->trail[index].lit;
-        pathC = 1;
-        s->seen[var(p)] = 1;
-        bump_var_activity(s, var(p), s->order.var_inc);
+        // Binary conflict - use stored conflict literals
+        // Both literals in the binary clause are false
+        for (int i = 0; i < 2; i++) {
+            Lit q = s->binary_conflict_lits[i];
+            Var v = var(q);
+
+            if (!s->seen[v] && s->vars[v].level > 0) {
+                s->seen[v] = 1;
+                bump_var_activity(s, v, s->order.var_inc);
+
+                if (s->vars[v].level >= s->decision_level) {
+                    pathC++;
+                } else {
+                    learnt[(*learnt_size)++] = q;
+                    if (s->vars[v].level > *bt_level) {
+                        *bt_level = s->vars[v].level;
+                    }
+                }
+            }
+        }
     } else if (conflict != INVALID_CLAUSE) {
         // Regular conflict from arena
         uint32_t size = CLAUSE_SIZE(s->arena, conflict);
@@ -1032,7 +1134,27 @@ void solver_analyze(Solver* s, CRef conflict, Lit* learnt, uint32_t* learnt_size
                         }
                     }
                 }
+            } else if (s->binary_reasons[v] != LIT_UNDEF) {
+                // Binary propagation - expand binary clause reason
+                // The binary clause is (binary_reasons[v] | p)
+                Lit q = s->binary_reasons[v];
+                Var qv = var(q);
+
+                if (!s->seen[qv] && s->vars[qv].level > 0) {
+                    s->seen[qv] = 1;
+                    bump_var_activity(s, qv, s->order.var_inc);
+
+                    if (s->vars[qv].level >= s->decision_level) {
+                        pathC++;
+                    } else {
+                        learnt[(*learnt_size)++] = q;
+                        if (s->vars[qv].level > *bt_level) {
+                            *bt_level = s->vars[qv].level;
+                        }
+                    }
+                }
             }
+            // else: decision variable, no reason to expand
         }
 
         if (index > 0) index--;
@@ -1057,8 +1179,17 @@ bool solver_decide(Solver* s) {
     // Pick unassigned variable with highest activity
     while (s->order.size > 0) {
         next = heap_extract_max(s);
-        if (s->vars[next].value == UNDEF) break;
-        next = INVALID_VAR;
+        // Skip assigned variables
+        if (s->vars[next].value != UNDEF) {
+            next = INVALID_VAR;
+            continue;
+        }
+        // Skip eliminated variables (from BVE preprocessing)
+        if (s->elim && s->elim->eliminated[next]) {
+            next = INVALID_VAR;
+            continue;
+        }
+        break;
     }
 
     if (next == INVALID_VAR) {
@@ -1318,6 +1449,14 @@ void solver_reduce_db(Solver* s) {
             continue;  // Keep glue clauses even if beyond the limit
         }
 
+        // Log deletion to DRAT proof file
+        if (s->proof_file) {
+            CRef cref = scores[i].cref;
+            uint32_t size = CLAUSE_SIZE(s->arena, cref);
+            Lit* lits = CLAUSE_LITS(s->arena, cref);
+            proof_delete_clause(s, lits, size);
+        }
+
         // Delete this clause
         arena_delete(s->arena, scores[i].cref);
         deleted++;
@@ -1397,9 +1536,21 @@ static void solver_on_the_fly_subsumption(Solver* s, const Lit* learnt, uint32_t
 
         // Check if learned clause subsumes this clause
         if (clause_subsumes(learnt, learnt_size, other_lits, other_size)) {
-            // Subsumes! Delete the subsumed clause
-            arena_delete(s->arena, cref);
-            subsumed++;
+            // SAFETY CHECK: Don't delete if this clause is a reason for any variable
+            // If we delete a reason clause, conflict analysis will fail when we backtrack
+            bool is_reason = false;
+            for (uint32_t j = 0; j < other_size && !is_reason; j++) {
+                Var v = var(other_lits[j]);
+                if (s->vars[v].value != UNDEF && s->vars[v].reason == cref) {
+                    is_reason = true;
+                }
+            }
+
+            if (!is_reason) {
+                // Safe to delete - the clause is subsumed and not needed as a reason
+                arena_delete(s->arena, cref);
+                subsumed++;
+            }
         }
     }
 
@@ -1441,13 +1592,10 @@ static bool lit_redundant(Solver* s, Lit p, uint64_t abstract_levels) {
     if (seen_val == 3) return true;   // Already proven redundant
     if (seen_val == 2) return false;  // Cycle - being explored
 
-    // Decision variables are never redundant
+    // Check for reason clause
     CRef reason = s->vars[v].reason;
-    if (reason == INVALID_CLAUSE) {
-        return false;
-    }
 
-    // Skip binary conflict markers (would need special handling)
+    // Skip binary conflict markers
     if (reason == BINARY_CONFLICT) {
         return false;
     }
@@ -1459,10 +1607,19 @@ static bool lit_redundant(Solver* s, Lit p, uint64_t abstract_levels) {
         return false;
     }
 
+    // Handle binary propagation or decision
+    if (reason == INVALID_CLAUSE) {
+        // For binary propagations (binary_reasons[v] != LIT_UNDEF), we conservatively
+        // return false rather than trying to prove redundancy. This is safe but
+        // may miss some minimization opportunities.
+        // Decision variables are also never redundant.
+        return false;
+    }
+
     // Mark as being explored
     s->seen[v] = 2;
 
-    // Check all literals in reason clause
+    // Check all literals in reason clause (normal clause from arena)
     uint32_t size = CLAUSE_SIZE(s->arena, reason);
     Lit* lits = CLAUSE_LITS(s->arena, reason);
 
@@ -1493,6 +1650,10 @@ static bool lit_redundant(Solver* s, Lit p, uint64_t abstract_levels) {
 // learnt[0] is the asserting literal (always kept)
 // Returns number of literals removed
 static uint32_t solver_minimize_clause(Solver* s, Lit* learnt, uint32_t* learnt_size) {
+    (void)s; (void)learnt; (void)learnt_size;
+    // TEMPORARILY DISABLED - there's a bug in minimization
+    return 0;
+#if 0
     if (*learnt_size <= 2) {
         return 0;  // Don't minimize unit or binary clauses
     }
@@ -1539,6 +1700,7 @@ static uint32_t solver_minimize_clause(Solver* s, Lit* learnt, uint32_t* learnt_
     }
 
     return original_size - new_size;
+#endif
 }
 
 /*********************************************************************
@@ -2093,6 +2255,18 @@ lbool solver_solve_with_assumptions(Solver* s, const Lit* assumps, uint32_t n_as
         }
     }
 
+    // Preprocessing: Bounded Variable Elimination (BVE)
+    if (s->opts.elim) {
+        uint32_t eliminated = elim_preprocess(s);
+        if (s->result == FALSE) {
+            // UNSAT detected during BVE
+            return FALSE;
+        }
+        if (eliminated > 0 && !s->opts.quiet) {
+            printf("c [BVE] Eliminated %u variables\n", eliminated);
+        }
+    }
+
     // Add assumptions
     for (uint32_t i = 0; i < n_assumps; i++) {
         Lit a = assumps[i];
@@ -2240,6 +2414,11 @@ lbool solver_solve_with_assumptions(Solver* s, const Lit* assumps, uint32_t n_as
                     solver_backtrack(s, 0);
                 }
 
+                // Log unit clause to DRAT proof file
+                if (s->proof_file) {
+                    proof_add_clause(s, learnt_clause, 1);
+                }
+
                 Lit unit = learnt_clause[0];
                 Var v = var(unit);
                 ASSERT(s->vars[v].value == UNDEF);
@@ -2284,6 +2463,11 @@ lbool solver_solve_with_assumptions(Solver* s, const Lit* assumps, uint32_t n_as
                 CRef learnt_ref = arena_alloc(s->arena, learnt_clause, learnt_size, true);
 
                 if (learnt_ref != INVALID_CLAUSE) {
+                    // Log to DRAT proof file
+                    if (s->proof_file) {
+                        proof_add_clause(s, learnt_clause, learnt_size);
+                    }
+
                     // Update LBD
                     uint32_t lbd = calc_lbd(s, learnt_clause, learnt_size);
                     set_clause_lbd(s->arena, learnt_ref, lbd);
@@ -2398,6 +2582,12 @@ lbool solver_solve_with_assumptions(Solver* s, const Lit* assumps, uint32_t n_as
             if (!solver_decide(s)) {
                 // No more variables to decide = SAT
                 s->result = TRUE;
+
+                // Extend model to include eliminated variables (if BVE was used)
+                if (s->elim) {
+                    elim_extend_model(s);
+                }
+
                 free(learnt_clause);
                 return TRUE;
             }

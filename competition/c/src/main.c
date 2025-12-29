@@ -71,10 +71,19 @@ static void print_usage(const char* program) {
     printf("\n");
     printf("Preprocessing:\n");
     printf("  --no-bce                  Disable blocked clause elimination\n");
+    printf("  --elim                    [EXPERIMENTAL] Enable bounded variable elimination (BVE)\n");
+    printf("  --no-elim                 Disable BVE (default)\n");
+    printf("  --elim-max-occ <n>        Max occurrences for BVE (default: 10)\n");
+    printf("  --elim-grow <n>           Max clause growth for BVE (default: 0)\n");
+    printf("  --no-probing              Disable failed literal probing\n");
     printf("\n");
     printf("Inprocessing:\n");
     printf("  --inprocess               Enable inprocessing (vivification, etc.)\n");
     printf("  --inprocess-interval <n>  Conflicts between inprocessing (default: 10000)\n");
+    printf("\n");
+    printf("Proof logging:\n");
+    printf("  --proof <file>            Write DRAT proof to file\n");
+    printf("  --binary-proof            Use binary DRAT format (more compact)\n");
     printf("\n");
     printf("Output format:\n");
     printf("  Standard DIMACS output format\n");
@@ -121,8 +130,15 @@ static struct option long_options[] = {
     {"reduce-fraction", required_argument, 0, 0},
     {"reduce-interval", required_argument, 0, 0},
     {"no-bce",          no_argument,       0, 0},
+    {"elim",            no_argument,       0, 0},
+    {"no-elim",         no_argument,       0, 0},
+    {"elim-max-occ",    required_argument, 0, 0},
+    {"elim-grow",       required_argument, 0, 0},
+    {"no-probing",      no_argument,       0, 0},
     {"inprocess",       no_argument,       0, 0},
     {"inprocess-interval", required_argument, 0, 0},
+    {"proof",           required_argument, 0, 0},
+    {"binary-proof",    no_argument,       0, 0},
     {0, 0, 0, 0}
 };
 
@@ -231,10 +247,24 @@ int main(int argc, char** argv) {
                     opts.reduce_interval = (uint32_t)atol(optarg);
                 } else if (strcmp(long_options[option_index].name, "no-bce") == 0) {
                     opts.bce = false;
+                } else if (strcmp(long_options[option_index].name, "elim") == 0) {
+                    opts.elim = true;
+                } else if (strcmp(long_options[option_index].name, "no-elim") == 0) {
+                    opts.elim = false;
+                } else if (strcmp(long_options[option_index].name, "elim-max-occ") == 0) {
+                    opts.elim_max_occ = (uint32_t)atol(optarg);
+                } else if (strcmp(long_options[option_index].name, "elim-grow") == 0) {
+                    opts.elim_grow = (uint32_t)atol(optarg);
+                } else if (strcmp(long_options[option_index].name, "no-probing") == 0) {
+                    opts.probing = false;
                 } else if (strcmp(long_options[option_index].name, "inprocess") == 0) {
                     opts.inprocess = true;
                 } else if (strcmp(long_options[option_index].name, "inprocess-interval") == 0) {
                     opts.inprocess_interval = (uint32_t)atol(optarg);
+                } else if (strcmp(long_options[option_index].name, "proof") == 0) {
+                    opts.proof_path = optarg;
+                } else if (strcmp(long_options[option_index].name, "binary-proof") == 0) {
+                    opts.binary_proof = true;
                 }
                 break;
 
