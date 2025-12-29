@@ -1582,14 +1582,16 @@ static inline uint64_t abstract_level(Level level) {
 
 // Check if literal is redundant using recursive deep analysis
 // abstract_levels: bitmask of levels present in learned clause
-// Uses seen array: 0=unseen, 1=in learned clause, 2=exploring, 3=proven redundant
+// Uses seen array: 0=unseen, 1=in learned clause, 2=exploring
+//
+// Returns true if literal p can be proven redundant (its reason chain
+// terminates at literals in the learned clause or level 0).
 static bool lit_redundant(Solver* s, Lit p, uint64_t abstract_levels) {
     Var v = var(p);
 
     // Check seen status
     uint8_t seen_val = s->seen[v];
-    if (seen_val == 1) return true;   // In learned clause
-    if (seen_val == 3) return true;   // Already proven redundant
+    if (seen_val == 1) return true;   // In learned clause - definitely covered
     if (seen_val == 2) return false;  // Cycle - being explored
 
     // Check for reason clause
@@ -1616,7 +1618,9 @@ static bool lit_redundant(Solver* s, Lit p, uint64_t abstract_levels) {
         return false;
     }
 
-    // Mark as being explored
+    // Mark as being explored (cycle detection)
+    // Save original value to restore on failure
+    uint8_t orig_seen = s->seen[v];
     s->seen[v] = 2;
 
     // Check all literals in reason clause (normal clause from arena)
@@ -1633,34 +1637,40 @@ static bool lit_redundant(Solver* s, Lit p, uint64_t abstract_levels) {
         // Level 0 literals are always satisfied
         if (s->vars[qv].level == 0) continue;
 
-        // Recursively check if this literal is redundant
+        // Recursively check if this literal is covered
         if (!lit_redundant(s, q, abstract_levels)) {
-            // Not redundant - restore seen and fail
-            s->seen[v] = 0;
+            // Not covered - restore seen and fail
+            s->seen[v] = orig_seen;
             return false;
         }
     }
 
-    // All reason literals are redundant - mark as proven
-    s->seen[v] = 3;
+    // All reason literals are covered - restore original value and return true
+    // We don't change the seen value here; the caller manages seen[] for
+    // literals it's considering removing
+    s->seen[v] = orig_seen;
     return true;
 }
 
 // Main minimization function - called after conflict analysis
 // learnt[0] is the asserting literal (always kept)
 // Returns number of literals removed
+//
+// Algorithm: For each literal L in the clause, check if all paths from L
+// back to decision variables pass through other literals in the clause.
+// If so, L is redundant and can be removed.
+//
+// Key safety: lit_redundant only treats seen==1 as coverage, preventing
+// circular dependency chains (A depends on B, B depends on A) from causing
+// both to be incorrectly removed.
 static uint32_t solver_minimize_clause(Solver* s, Lit* learnt, uint32_t* learnt_size) {
-    (void)s; (void)learnt; (void)learnt_size;
-    // TEMPORARILY DISABLED - there's a bug in minimization
-    return 0;
-#if 0
     if (*learnt_size <= 2) {
         return 0;  // Don't minimize unit or binary clauses
     }
 
     uint32_t original_size = *learnt_size;
 
-    // Step 1: Compute abstract level bitmask
+    // Step 1: Compute abstract level bitmask for quick filtering
     uint64_t abstract_levels = 0;
     for (uint32_t i = 0; i < *learnt_size; i++) {
         Level level = s->vars[var(learnt[i])].level;
@@ -1678,29 +1688,34 @@ static uint32_t solver_minimize_clause(Solver* s, Lit* learnt, uint32_t* learnt_
         Lit p = learnt[i];
         Var v = var(p);
 
-        // Keep if it's a decision or not provably redundant
-        if (s->vars[v].reason == INVALID_CLAUSE || !lit_redundant(s, p, abstract_levels)) {
+        // Skip decision variables and binary propagations
+        if (s->vars[v].reason == INVALID_CLAUSE) {
+            learnt[new_size++] = p;
+            continue;
+        }
+
+        // CRITICAL: Temporarily clear seen[v] before checking redundancy.
+        // This prevents circular dependencies where literal p uses itself
+        // as coverage (e.g., p's reason leads to q, q's reason leads to p).
+        s->seen[v] = 0;
+
+        if (!lit_redundant(s, p, abstract_levels)) {
+            // Not redundant - restore and keep
+            s->seen[v] = 1;
             learnt[new_size++] = p;
         }
-        // else: redundant, don't include
+        // else: redundant, leave seen[v] = 0 so future checks can't use it
     }
 
     *learnt_size = new_size;
 
-    // Step 4: Clear seen array (only clear what we touched)
-    for (uint32_t i = 0; i < original_size; i++) {
+    // Step 4: Clear seen array
+    // Clear remaining literals in the learned clause
+    for (uint32_t i = 0; i < new_size; i++) {
         s->seen[var(learnt[i])] = 0;
-    }
-    // Also clear variables marked during recursion (seen = 2 or 3)
-    // We need to track these - use analyze_stack as scratch space
-    for (Var v = 1; v <= s->num_vars; v++) {
-        if (s->seen[v]) {
-            s->seen[v] = 0;
-        }
     }
 
     return original_size - new_size;
-#endif
 }
 
 /*********************************************************************
