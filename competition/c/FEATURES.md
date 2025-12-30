@@ -1,505 +1,434 @@
 # BSAT C Solver - Feature Implementation Summary
 
-This document provides a comprehensive overview of all CDCL optimizations implemented in the C solver.
+This document provides a comprehensive overview of all CDCL optimizations implemented in the C solver, including default states and command-line flags.
+
+## Feature Quick Reference
+
+| Feature | Default | Enable | Disable |
+|---------|---------|--------|---------|
+| VSIDS branching | ON | `--vsids` | `--lrb` |
+| LRB/CHB branching | OFF | `--lrb` | `--vsids` |
+| Glucose EMA restarts | ON | `--glucose-restart-ema` | `--no-restarts` |
+| Phase saving | ON | - | `--no-phase-saving` |
+| Target rephasing | ON | - | `--no-rephase` |
+| Random phase | ON | `--random-phase` | - |
+| Clause minimization | ON | - | `--no-minimize` |
+| On-the-fly subsumption | ON | - | `--no-subsumption` |
+| Failed literal probing | ON | - | `--no-probing` |
+| Blocked clause elimination | OFF | `--bce` | `--no-bce` |
+| Bounded variable elimination | OFF | `--elim` | `--no-elim` |
+| Vivification inprocessing | OFF | `--inprocess` | - |
+| Local search | OFF | `--local-search` | - |
+| DRAT proof logging | OFF | `--proof <file>` | - |
+
+---
 
 ## Core Algorithm: CDCL (Conflict-Driven Clause Learning)
 
-The solver implements a modern CDCL SAT solver with the following components:
-
-### 1. **VSIDS (Variable State Independent Decaying Sum)** - Variable Selection Heuristic
+### 1. **VSIDS (Variable State Independent Decaying Sum)** - DEFAULT: ON
 - **Purpose**: Intelligently choose which variable to assign next
 - **Implementation**: Binary max-heap ordered by activity scores
 - **Activity decay**: 0.95 (configurable via `--var-decay`)
 - **Bump strategy**: Increase activity for variables in conflict clauses
-- **Location**: `src/solver.c:540-712` (heap operations)
 
-### 2. **Two-Watched Literals** - Efficient Unit Propagation
+**Configuration:**
+```bash
+--vsids              # Use VSIDS (default)
+--var-decay <f>      # Activity decay factor (default: 0.95)
+--var-inc <f>        # Activity increment (default: 1.0)
+```
+
+### 2. **LRB/CHB (Learning Rate Branching)** - DEFAULT: OFF
+- **Purpose**: Alternative to VSIDS based on learning rate
+- **Implementation**: Hybrid VSIDS+LRB with recency-weighted bumps
+- **Strategy**: Variables recently involved in conflicts get higher weight
+- **Reference**: Liang et al. (2016) - "Learning Rate Based Branching Heuristic"
+
+**Configuration:**
+```bash
+--lrb                # Enable LRB/CHB branching
+--vsids              # Disable LRB, use VSIDS (default)
+```
+
+**Impact**: Different behavior on different instances - neither universally better.
+
+### 3. **Two-Watched Literals** - ALWAYS ON
 - **Purpose**: O(1) propagation overhead per clause
 - **Implementation**: Each clause watched by exactly 2 literals
-- **Watch update**: Only update watches when a watched literal becomes false
-- **Location**: `src/watch.c`, `src/solver.c:718-885` (propagation)
+- **Watch update**: Only when a watched literal becomes false
 
-### 3. **First-UIP Clause Learning** - Conflict Analysis
+### 4. **First-UIP Clause Learning** - ALWAYS ON
 - **Purpose**: Learn high-quality clauses from conflicts
 - **Strategy**: First Unique Implication Point (asserting clause)
 - **LBD tracking**: Literal Block Distance for clause quality measurement
-- **Location**: `src/solver.c:936-1056` (analyze function)
 
-## Advanced Optimizations
+---
 
-### 4. **Hybrid Glucose/Geometric Restarts** ✅ IMPLEMENTED
-- **Purpose**: Escape from search space dead-ends
-- **Primary**: Glucose adaptive restarts (LBD-based moving averages)
-  - Fast MA (α=0.8): Recent ~5 conflicts
-  - Slow MA (α=0.9999): Long-term average
-  - Restart when: `fast_MA > slow_MA`
-- **Fallback**: Geometric restarts (threshold × 1.5)
-- **Benefits**: Combines adaptivity with guaranteed progress
-- **Status**: Enabled by default
-- **Location**: `src/solver.c:890-936`
-- **Commit**: 41b6f69
+## Phase Management
 
-**Configuration:**
-```bash
-# Enable Glucose restarts (default)
-./bin/bsat --glucose-restart input.cnf
-
-# Tune Glucose parameters
-./bin/bsat --glucose-restart \
-           --glucose-fast-alpha 0.8 \
-           --glucose-slow-alpha 0.9999 \
-           --glucose-min-conflicts 100 \
-           input.cnf
-
-# Disable (use pure geometric)
-./bin/bsat input.cnf  # Without --glucose-restart flag
-```
-
-### 5. **Restart Postponing** ✅ IMPLEMENTED
-- **Purpose**: Don't restart when making progress
-- **Strategy**: Block restart if trail size growing (> 10% since last restart)
-- **Benefit**: Avoids interrupting productive search
-- **Location**: `src/solver.c:917-925`
-- **Commit**: 0839fee
-
-### 6. **Phase Saving** ✅ IMPLEMENTED
+### 5. **Phase Saving** - DEFAULT: ON
 - **Purpose**: Remember variable polarities across restarts
 - **Strategy**: Save last assigned polarity for each variable
 - **Benefit**: Quickly return to promising search areas
-- **Status**: Enabled by default
-- **Location**: `src/solver.c:1143-1160`
-- **Commit**: 31d2776
 
 **Configuration:**
 ```bash
-# Disable phase saving
-./bin/bsat --no-phase-saving input.cnf
+--no-phase-saving    # Disable phase saving
 ```
 
-### 8. **Preprocessing Options** ✅ IMPLEMENTED
-- **Purpose**: Control preprocessing techniques before search begins
-- **Available Techniques**:
-  - Blocked Clause Elimination (BCE): Enabled by default
-- **Configuration**:
-```bash
-# Disable BCE if needed (enabled by default)
-./bin/bsat --no-bce input.cnf
-```
-
-### 7. **Adaptive Random Phase Selection** ✅ IMPLEMENTED
-- **Purpose**: Escape local minima when stuck
-- **Detection**: Counts consecutive low-level conflicts (decision level < 10)
-- **Action**: Boost random phase probability to 20% after 100 stuck conflicts
-- **Benefit**: Helps on structured instances
-- **Status**: Enabled by default
-- **Location**: `src/solver.c:1332-1349, 1143-1160`
-- **Commit**: a9be745
-
-### 8. **Clause Database Reduction** ✅ IMPLEMENTED
-- **Purpose**: Limit memory usage and focus on high-quality clauses
-- **Strategy**: LBD-based sorting + activity tiebreaking
-- **Keep**: Best 50% of learned clauses (configurable)
-- **Protection**: Never delete glue clauses (LBD ≤ 2)
-- **Trigger**: Every 2000 conflicts (configurable)
-- **Location**: `src/solver.c:998-1070`
-- **Commit**: (session before current)
+### 6. **Target Phase Rephasing (Kissat-style)** - DEFAULT: ON
+- **Purpose**: Escape local search areas by resetting phases
+- **Strategy**: Track best assignment seen (most variables assigned before conflict)
+- **Action**: Periodically reset saved phases to best phases
+- **Interval**: Every 1000 conflicts (configurable)
+- **Reference**: Biere et al. (2020) - Kissat solver
 
 **Configuration:**
 ```bash
-# Adjust reduction parameters
-./bin/bsat --reduce-fraction 0.5 \
-           --reduce-interval 2000 \
-           --glue-lbd 2 \
-           input.cnf
+--no-rephase             # Disable rephasing
+--rephase-interval <n>   # Conflicts between rephases (default: 1000)
 ```
 
-### 9. **On-the-Fly Backward Subsumption** ✅ IMPLEMENTED
+**Impact**: Up to 58% fewer conflicts on some instances.
+
+### 7. **Random Phase Selection** - DEFAULT: ON (1%)
+- **Purpose**: Escape local minima and prevent stuck states
+- **Probability**: 1% random phase by default
+- **Adaptive**: Increases randomness when solver is stuck
+
+**Configuration:**
+```bash
+--random-phase           # Enable random phase (default: on)
+--random-prob <f>        # Random phase probability (default: 0.01)
+```
+
+---
+
+## Restart Strategies
+
+### 8. **Glucose Adaptive Restarts (EMA)** - DEFAULT: ON
+- **Purpose**: Restart when learning quality degrades
+- **Strategy**: Compare fast vs slow exponential moving averages of LBD
+- **Restart when**: `fast_MA > slow_MA`
+- **Reference**: Audemard & Simon (2009)
+
+**Configuration:**
+```bash
+--glucose-restart        # Enable Glucose restarts (default)
+--glucose-restart-ema    # Glucose with EMA (conservative)
+--glucose-fast-alpha <f> # Fast MA decay (default: 0.8)
+--glucose-slow-alpha <f> # Slow MA decay (default: 0.9999)
+--glucose-min-conflicts <n>  # Min conflicts before Glucose (default: 100)
+```
+
+### 9. **Glucose Adaptive Restarts (AVG)** - DEFAULT: OFF
+- **Purpose**: More aggressive restart strategy
+- **Strategy**: Sliding window averaging
+- **Restart when**: Short-term average > threshold * long-term average
+
+**Configuration:**
+```bash
+--glucose-restart-avg    # Enable aggressive mode
+--glucose-window-size <n> # Window size (default: 50)
+--glucose-k <f>          # Threshold multiplier (default: 0.8)
+```
+
+### 10. **Luby Sequence Restarts** - DEFAULT: ON (fallback)
+- **Purpose**: Provably good restart sequence
+- **Sequence**: 1, 1, 2, 1, 1, 2, 4, 1, 1, 2, 1, 1, 2, 4, 8, ...
+
+**Configuration:**
+```bash
+--restart-first <n>      # First restart interval (default: 100)
+--restart-inc <f>        # Restart multiplier (default: 1.5)
+--no-restarts            # Disable all restarts
+```
+
+---
+
+## Clause Management
+
+### 11. **MiniSat-Style Clause Minimization** - DEFAULT: ON
+- **Purpose**: Remove redundant literals from learned clauses
+- **Strategy**: Recursive analysis with abstract level pruning
+- **Results**: **67% literal reduction** on test instances
+
+**Configuration:**
+```bash
+--no-minimize            # Disable minimization
+```
+
+### 12. **On-the-Fly Backward Subsumption** - DEFAULT: ON
 - **Purpose**: Remove redundant clauses during learning
 - **Strategy**: Check if new learned clause subsumes existing clauses
-- **Optimization**: Only check small clauses (size ≤ 5) for efficiency
-- **Results**: 88% subsumption rate on test instances!
-- **Location**: `src/solver.c:1061-1122, 1337`
-- **Commit**: 7dde076
-
-**Example**: If we learn `(x ∨ y)` and database has `(x ∨ y ∨ z)`, delete the latter.
-
-### 10. **MiniSat-Style Clause Minimization** ✅ IMPLEMENTED
-- **Purpose**: Remove redundant literals from learned clauses
-- **Strategy**: MiniSat-style recursive analysis with abstract level pruning
-  - Compute abstract level bitmask for O(1) quick pruning
-  - Recursively check if literal can be proven redundant
-  - A literal is redundant if ALL literals in its reason are:
-    - Already in the learned clause (seen=1), OR
-    - At decision level 0, OR
-    - Recursively redundant (seen=3)
-- **Implementation**:
-  - `abstract_level()`: Compute bitmask for quick level filtering
-  - `lit_redundant()`: Recursive redundancy check with cycle detection
-  - `solver_minimize_clause()`: Main entry point after conflict analysis
-- **Safety**: Cycle detection (seen=2), proper seen array cleanup
-- **Results**: **67% literal reduction** on test instances
-- **Location**: `src/solver.c:1415-1542`
-- **Commit**: e247b26
-
-**Example**: Learning `(a ∨ b ∨ c)` where `c`'s reason is `(a ∨ b)` → minimize to `(a ∨ b)`.
-
-### 11. **Failed Literal Probing** ✅ IMPLEMENTED
-- **Purpose**: Discover implied unit clauses during preprocessing
-- **Strategy**: For each unassigned variable v:
-  - Try assigning v = true, propagate
-  - Try assigning v = false, propagate
-  - If one assignment leads to conflict → opposite is implied!
-  - If both conflict → formula is UNSAT
-- **Implementation**:
-  - `probe_literal()`: Test if a literal assignment causes conflict
-  - `failed_literal_probing()`: Main probing loop over all variables
-- **When**: Called at start of solve, before main CDCL loop
-- **Status**: ✅ **Enabled by default** (disable with `--no-probing`)
-- **Location**: `src/solver.c:1760-1840`
-- **Commit**: c16b36d
-
-### 12. **Vivification (Inprocessing)** ✅ IMPLEMENTED (OPTIONAL)
-- **Purpose**: Strengthen clauses by removing provably redundant literals
-- **Strategy**: For each literal in a clause:
-  - Assume all OTHER literals are false
-  - Unit propagate to see if this literal is implied
-  - If conflict or literal propagates to false → redundant!
-- **Watch List Management**: Properly removes and re-adds watches when clause is modified
-  - `remove_watch_for_clause()`: Helper to remove watch by CRef
-  - Watches removed before clause modification
-  - New watches added for shortened clause
-- **Optimization**: Only vivify at decision level 0
-- **Status**: ✅ **Implemented - Enable with `--inprocess` flag**
-- **Interval**: Runs every 10000 conflicts (configurable with `--inprocess-interval`)
-- **Location**: `src/solver.c:1545-1693`
-- **Commit**: 704b33c (bug fix), enabled
+- **Results**: **73% subsumption rate** on UNSAT instances
 
 **Configuration:**
 ```bash
-# Enable inprocessing (vivification, etc.)
-./bin/bsat --inprocess input.cnf
-
-# Adjust inprocessing interval
-./bin/bsat --inprocess --inprocess-interval 5000 input.cnf
+--no-subsumption         # Disable subsumption
 ```
 
-**Example**: Clause `(a ∨ b ∨ c)`, assuming `¬a ∧ ¬b` causes conflict → `c` is redundant, clause becomes `(a ∨ b)`.
+### 13. **LBD-Based Clause Database Reduction** - DEFAULT: ON
+- **Purpose**: Limit memory and focus on high-quality clauses
+- **Strategy**: LBD-based sorting + activity tiebreaking
+- **Keep**: Best 50% of learned clauses
+- **Protection**: Never delete glue clauses (LBD <= 2)
 
-### 13. **Chronological Backtracking** ✅ IMPLEMENTED
-- **Purpose**: Improve search efficiency by preserving more learned information
-- **Strategy**: Instead of jumping directly to target level:
-  - Backtrack one decision level at a time
-  - At each level, check if learned clause is unit (exactly 1 unassigned literal)
-  - If unit, stop and propagate; otherwise continue
-- **Benefit**: Keeps more assignments on the trail, often reduces conflicts
-- **Research**: Recent breakthrough (2018-2020) showing significant improvements
-- **Status**: Enabled by default
-- **Location**: `src/solver.c:334-377, 1596-1603`
-- **Commit**: (current session)
+**Configuration:**
+```bash
+--max-lbd <n>            # Max LBD for keeping clauses (default: 30)
+--glue-lbd <n>           # Glue clause threshold (default: 2)
+--reduce-fraction <f>    # Fraction to keep (default: 0.5)
+--reduce-interval <n>    # Conflicts between reductions (default: 2000)
+```
 
-**Example**: Conflict at level 10 learns clause that would backtrack to level 3. With chronological: check levels 9, 8, 7... If clause becomes unit at level 6, stop there instead of jumping to 3.
+---
 
-### 14. **Signal-Based Progress Monitoring** ✅ IMPLEMENTED
-- **Purpose**: Monitor solver progress on long-running instances without interrupting search
-- **Method**: Send SIGUSR1 signal to get current statistics
-- **Benefits**:
-  - Non-intrusive (zero overhead when not used)
-  - Works during both search and preprocessing (BCE can be slow)
-  - Helps distinguish hung processes from slow progress
-- **Status**: ✅ Enabled by default
-- **Location**: `src/solver.c:10-54` (signal handler)
-- **Checks**: Main solve loop + BCE loop
+## Preprocessing
+
+### 14. **Failed Literal Probing** - DEFAULT: ON
+- **Purpose**: Discover implied unit clauses
+- **Strategy**: For each variable, try both polarities and check for conflict
+- **When**: Called at start before main CDCL loop
+
+**Configuration:**
+```bash
+--no-probing             # Disable probing
+```
+
+### 15. **Blocked Clause Elimination (BCE)** - DEFAULT: OFF
+- **Purpose**: Remove blocked clauses before search
+- **Theory**: A clause is blocked if all resolvents are tautologies
+- **Results**: 10-20% clause elimination on typical instances
+
+**Configuration:**
+```bash
+--bce                    # Enable BCE (experimental)
+--no-bce                 # Disable BCE (default)
+```
+
+### 16. **Bounded Variable Elimination (BVE)** - DEFAULT: OFF
+- **Purpose**: SatELite-style variable elimination
+- **Strategy**: Resolve away variables if resolvent count doesn't increase
+- **Model Extension**: Reconstructs eliminated variables after solving
+- **Reference**: Een & Biere (2005) - SatELite
+
+**Configuration:**
+```bash
+--elim                   # Enable BVE (experimental)
+--no-elim                # Disable BVE (default)
+--elim-max-occ <n>       # Max occurrences to consider (default: 10)
+--elim-grow <n>          # Max clause growth allowed (default: 0)
+```
+
+---
+
+## Inprocessing
+
+### 17. **Vivification** - DEFAULT: OFF
+- **Purpose**: Strengthen clauses during search
+- **Strategy**: Check if literals can be proven redundant via propagation
+- **When**: Runs periodically during search
+
+**Configuration:**
+```bash
+--inprocess              # Enable vivification
+--inprocess-interval <n> # Conflicts between runs (default: 10000)
+```
+
+---
+
+## Local Search Hybridization
+
+### 18. **WalkSAT Local Search** - DEFAULT: OFF
+- **Purpose**: Complement CDCL with local search for SAT instances
+- **Strategy**: WalkSAT with configurable noise parameter
+- **When**: Periodically called during CDCL search
+- **Benefits**: Can find SAT solutions faster than pure CDCL
+
+**Configuration:**
+```bash
+--local-search           # Enable local search
+--ls-interval <n>        # Conflicts between calls (default: 5000)
+--ls-max-flips <n>       # Max flips per call (default: 100000)
+--ls-noise <f>           # Noise parameter 0.0-1.0 (default: 0.5)
+```
+
+**Impact**: Reduced conflicts on SAT instances (e.g., 500 vs 2114).
+
+---
+
+## Proof Logging
+
+### 19. **DRAT Proof Logging** - DEFAULT: OFF
+- **Purpose**: Generate verifiable proofs for UNSAT instances
+- **Format**: DRAT (Deletion Resolution Asymmetric Tautology)
+- **Usage**: Verify with drat-trim or other DRAT checkers
+
+**Configuration:**
+```bash
+--proof <file>           # Write DRAT proof to file
+--binary-proof           # Use binary format (more compact)
+```
+
+**Verification:**
+```bash
+./bin/bsat --proof proof.drat instance.cnf
+drat-trim instance.cnf proof.drat
+# Expected: s VERIFIED
+```
+
+---
+
+## Additional Features
+
+### 20. **Chronological Backtracking** - ALWAYS ON
+- **Purpose**: Preserve more learned information
+- **Strategy**: Backtrack one level at a time checking for unit clauses
+
+### 21. **Signal-Based Progress Monitoring** - ALWAYS ON
+- **Purpose**: Monitor solver progress without interrupting
+- **Method**: Send SIGUSR1 to get current statistics
 
 **Usage:**
 ```bash
-# Start solver in background
-./bin/bsat large_instance.cnf &
-
-# Get progress update (solver prints PID at startup)
-kill -USR1 <pid>
-
-# Continuous monitoring every 2 seconds
-watch -n 2 "pgrep bsat | xargs -I {} kill -USR1 {}"
+./bin/bsat instance.cnf &
+kill -USR1 <pid>         # Get progress update
 ```
 
-**Output Example:**
-```
-c ========== Progress Update ==========
-c Elapsed time     : 45.3 s
-c Decisions        : 124532
-c Propagations     : 5234234
-c Conflicts        : 23452
-c Restarts         : 45
-c Learned clauses  : 12453
-c Decision level   : 15
-c Trail size       : 234
-c Conflicts/sec    : 518
-c Decisions/sec    : 2749
-c ======================================
-```
+---
 
-### 15. **Blocked Clause Elimination (BCE)** ✅ IMPLEMENTED
-- **Purpose**: Preprocessing to eliminate blocked clauses before search
-- **Theory**: A clause C is blocked on literal L if for every clause D containing ¬L,
-  resolving C and D on L produces a tautology
-- **Strategy**:
-  - For each original clause C
-  - For each literal L in C
-  - Check if ALL resolvents of C with clauses containing ¬L are tautologies
-  - If yes, C is blocked on L → safe to eliminate!
-- **Soundness**: Preserves satisfiability (blocked clauses cannot participate in resolution refutations)
-- **Results**: Eliminates 10-20% of clauses on typical instances
-- **Example**: On medium_3sat_v040_c0170.cnf: 34/170 clauses eliminated (20%)
-- **Status**: ✅ Enabled by default (can disable with `--no-bce`)
-- **Location**: `src/solver.c:1429-1586`
-- **Commit**: (current session)
+## Complete Command-Line Reference
 
-**Configuration:**
+### Output Control
 ```bash
-# Disable BCE if needed (enabled by default)
-./bin/bsat --no-bce input.cnf
+-h, --help               # Show help message
+-v, --verbose            # Verbose runtime diagnostics (default: OFF)
+    --debug              # Debug output (default: OFF)
+-q, --quiet              # Suppress output except result (default: OFF)
+-s, --stats              # Print statistics (default: ON)
 ```
 
-**Example**: Clause C = `(x ∨ y)` and all clauses with `¬x` resolve to tautologies with C → C is blocked on x.
+### Resource Limits
+```bash
+-c, --conflicts <n>      # Max conflicts (default: unlimited)
+-d, --decisions <n>      # Max decisions (default: unlimited)
+-t, --time <sec>         # Time limit in seconds (default: unlimited)
+```
 
-## Low-Level Optimizations
+### Branching Heuristic
+```bash
+--vsids                  # Use VSIDS (default: ON)
+--lrb                    # Use LRB/CHB (default: OFF)
+--var-decay <f>          # VSIDS decay factor (default: 0.95)
+--var-inc <f>            # VSIDS increment (default: 1.0)
+```
 
-### 16. **O(n) LBD Calculation** ✅ IMPLEMENTED
-- **Problem**: Original LBD calculation was O(n²) with linear level search
-- **Solution**: Use seen array as bitset indexed by decision level
-- **Impact**: 5-10% overall speedup (LBD called on every conflict)
-- **Location**: `src/solver.c:calc_lbd()`
-- **Commit**: Optimization session
+### Restart Parameters
+```bash
+--restart-first <n>      # First restart interval (default: 100)
+--restart-inc <f>        # Restart multiplier (default: 1.5)
+--glucose-restart        # Glucose EMA restarts (default: ON)
+--glucose-restart-ema    # Glucose EMA mode (default: ON)
+--glucose-restart-avg    # Glucose AVG mode (default: OFF)
+--no-restarts            # Disable all restarts
+```
 
-### 17. **VarInfo Struct Cache Alignment** ✅ IMPLEMENTED
-- **Problem**: Poor field ordering caused cache misses
-- **Solution**: Reorder fields by size (largest first)
-  - `activity` (double, 8 bytes) first for 8-byte alignment
-  - Core assignment state grouped together
-  - Struct reduced from 40+ bytes to 32 bytes
-- **Impact**: 10-15% propagation speedup
-- **Location**: `include/solver.h:VarInfo`
-- **Commit**: Optimization session
+### Glucose Tuning
+```bash
+--glucose-fast-alpha <f>     # Fast MA decay (default: 0.8)
+--glucose-slow-alpha <f>     # Slow MA decay (default: 0.9999)
+--glucose-min-conflicts <n>  # Min conflicts (default: 100)
+--glucose-window-size <n>    # AVG window size (default: 50)
+--glucose-k <f>              # AVG threshold (default: 0.8)
+```
 
-### 18. **Watch Manager In-Place Resize** ✅ IMPLEMENTED
-- **Problem**: Adding variables caused O(n) watch rebuild
-- **Solution**: `watch_resize()` grows arrays in-place
-  - Realloc the WatchList array
-  - Initialize new entries to empty
-  - Preserves all existing watches
-- **Impact**: 20-30% improvement on variable-heavy problems
-- **Location**: `src/watch.c:watch_resize()`
-- **Commit**: d230280
+### Phase Management
+```bash
+--no-phase-saving        # Disable phase saving (default: ON)
+--random-phase           # Enable random phase (default: ON)
+--random-prob <f>        # Random probability (default: 0.01)
+--no-rephase             # Disable rephasing (default: ON)
+--rephase-interval <n>   # Rephase interval (default: 1000)
+```
 
-### 19. **PGO Build Infrastructure** ✅ IMPLEMENTED
-- **Purpose**: Profile-Guided Optimization for better branch prediction
-- **Targets**:
-  - `make pgo-generate`: Build with instrumentation
-  - `make pgo-train`: Run training workload
-  - `make pgo-merge`: Merge profile data (clang/LLVM)
-  - `make pgo-use`: Rebuild with optimization
-- **Location**: `Makefile:pgo-*`
-- **Commit**: c16b36d
+### Clause Management
+```bash
+--max-lbd <n>            # Max LBD (default: 30)
+--glue-lbd <n>           # Glue threshold (default: 2)
+--reduce-fraction <f>    # Keep fraction (default: 0.5)
+--reduce-interval <n>    # Reduce interval (default: 2000)
+--no-minimize            # Disable minimization (default: ON)
+--no-subsumption         # Disable subsumption (default: ON)
+```
+
+### Preprocessing
+```bash
+--no-bce                 # Disable BCE (default: OFF)
+--elim                   # Enable BVE (default: OFF)
+--no-elim                # Disable BVE (default)
+--elim-max-occ <n>       # BVE max occurrences (default: 10)
+--elim-grow <n>          # BVE max growth (default: 0)
+--no-probing             # Disable probing (default: ON)
+```
+
+### Inprocessing
+```bash
+--inprocess              # Enable vivification (default: OFF)
+--inprocess-interval <n> # Vivification interval (default: 10000)
+```
+
+### Local Search
+```bash
+--local-search           # Enable local search (default: OFF)
+--ls-interval <n>        # LS interval (default: 5000)
+--ls-max-flips <n>       # Max flips (default: 100000)
+--ls-noise <f>           # Noise parameter (default: 0.5)
+```
+
+### Proof Logging
+```bash
+--proof <file>           # Write DRAT proof (default: OFF)
+--binary-proof           # Binary format (default: OFF)
+```
+
+---
 
 ## Performance Results
 
-### Test Suite: Medium/Hard Instances (53 instances)
-- ✅ **All tests pass**: 53/53 passed, 0 failures, 0 timeouts
-- ✅ **Correctness**: All SAT/UNSAT results verified
+### Test Suite: 53 Medium/Hard Instances
+- **All tests pass**: 53/53 passed
+- **Correctness**: All SAT/UNSAT results verified
+- **DRAT proofs**: All UNSAT proofs verify
 
 ### Performance vs Python CDCL
 
 | Test Set | C Solver | Python Solver | Speedup |
 |----------|----------|---------------|---------|
-| 5 hard instances | 0.010s | 2.258s | **226×** |
-| 53 all instances | 0.082s | ~60s | **700×+** |
+| 5 hard instances | 0.010s | 2.258s | **226x** |
+| 53 all instances | 0.082s | ~60s | **700x+** |
 
-### Optimization Impact (hard_3sat_v102_c0435.cnf)
-- **Conflicts**: 25673
-- **Decisions**: 28265
-- **Learned clauses**: 17
-- **Learned literals**: 42
-- **Minimized literals**: 84 (**67% reduction!**)
-- **Time**: 0.027s
+### Feature Impact
 
-### Clause Minimization Effectiveness
-- **Before**: 126 literals in learned clauses
-- **After**: 42 literals (67% removed)
-- **Technique**: MiniSat-style with abstract level pruning
-
-## Command-Line Interface
-
-### Resource Limits
-```bash
--c, --conflicts <n>       Maximum conflicts
--d, --decisions <n>       Maximum decisions
--t, --time <sec>          Time limit in seconds
-```
-
-### VSIDS Parameters
-```bash
---var-decay <f>           Variable activity decay (default: 0.95)
---var-inc <f>             Variable activity increment (default: 1.0)
-```
-
-### Restart Parameters
-```bash
---restart-first <n>       First restart interval (default: 100)
---restart-inc <f>         Restart multiplier (default: 1.5)
---glucose-restart         Use Glucose adaptive restarts (RECOMMENDED)
---glucose-fast-alpha <f>  Glucose fast MA decay (default: 0.8)
---glucose-slow-alpha <f>  Glucose slow MA decay (default: 0.9999)
---glucose-min-conflicts <n> Min conflicts before Glucose (default: 100)
---no-restarts             Disable all restarts
-```
-
-### Phase Selection
-```bash
---no-phase-saving         Disable phase saving
---random-phase            Force random phase selection
---random-prob <f>         Random phase probability (default: 0.01)
-```
-
-### Preprocessing
-```bash
---no-bce                  Disable blocked clause elimination
-```
-
-### Inprocessing
-```bash
---inprocess               Enable inprocessing (vivification, etc.)
---inprocess-interval <n>  Conflicts between inprocessing (default: 10000)
-```
-
-### Progress Monitoring
-```bash
-# Signal-based monitoring (no command-line flag needed)
-# Solver prints PID at startup, send SIGUSR1 for progress:
-kill -USR1 <pid>          # Get current statistics
-```
-
-### Clause Management
-```bash
---max-lbd <n>             Max LBD for keeping clauses (default: 30)
---glue-lbd <n>            LBD threshold for glue clauses (default: 2)
---reduce-fraction <f>     Fraction of clauses to keep (default: 0.5)
---reduce-interval <n>     Conflicts between reductions (default: 2000)
-```
-
-### Output Control
-```bash
--v, --verbose             Verbose output
--q, --quiet               Suppress all output except result
--s, --stats               Print statistics (default: true)
-```
-
-## Statistics Output
-
-The solver provides comprehensive statistics after solving:
-
-```
-c ========== Statistics ==========
-c CPU time          : 0.000 s
-c Decisions         : 134
-c Propagations      : 697
-c Conflicts         : 128
-c Restarts          : 1
-c Learned clauses   : 110
-c Learned literals  : 379
-c Deleted clauses   : 0
-c Blocked clauses   : 34       ← Blocked clause elimination (BCE)
-c Subsumed clauses  : 97       ← On-the-fly subsumption
-c Minimized literals: 8        ← Clause minimization
-c Glue clauses      : 58       ← High-quality (LBD ≤ 2)
-c Max LBD           : 4
-c Decisions/sec     : 1126050
-c Propagations/sec  : 5857143
-c Conflicts/sec     : 1075630
-c Memory used       : 0.01 MB
-c Memory allocated  : 16.00 MB
-```
-
-## Code Organization
-
-### Core Files
-- `include/solver.h` - Solver interface and data structures
-- `src/solver.c` - Main CDCL implementation (~1531 lines)
-- `include/arena.h` - Memory allocator for clauses
-- `src/arena.c` - Arena implementation
-- `include/watch.h` - Watch list manager
-- `src/watch.c` - Watch list implementation
-- `include/dimacs.h` - DIMACS format parser
-- `src/dimacs.c` - DIMACS I/O
-- `src/main.c` - CLI interface
-
-### Test Scripts
-- `tests/test_simple.sh` - Simple instance tests
-- `tests/test_medium_suite.sh` - Medium instance tests
-- `tests/compare_restart_strategies.sh` - Restart strategy comparison
-- `tests/benchmark_all_features.sh` - Comprehensive feature benchmark
-
-## Build System
-
-### Standard Build
-```bash
-make              # Optimized build (-O3 -march=native)
-make clean        # Remove build artifacts
-```
-
-### Debug Build
-```bash
-make debug        # Build with -g -O0 for debugging
-```
-
-### Compiler Flags
-- **Optimization**: `-O3 -march=native -flto`
-- **Standards**: `-std=c11 -Wall -Wextra -pedantic`
-- **LTO**: Link-time optimization enabled
-
-## Future Enhancements
-
-Potential improvements for even better performance:
-
-1. **Variable Elimination**: Bounded variable elimination (BVE) preprocessing
-2. **Extended Resolution**: Add extension variables for stronger reasoning
-3. **On-the-Fly BCE**: Apply blocked clause elimination during search (not just preprocessing)
-4. **Parallel Solving**: Multi-threaded portfolio or divide-and-conquer search
-5. **Proof Logging**: Generate DRAT/DRUP proofs for verification
-6. **Research Solver Ports**: Port CoBD-SAT (community detection), CGPM-SAT (conflict graph patterns), BB-CDCL (backbone detection) from Python research implementations
-
-## References
-
-- **MiniSat**: Eén & Sörensson (2003) - Foundation for CDCL solvers
-- **Glucose**: Audemard & Simon (2009) - LBD and adaptive restarts
-- **Chaff**: Moskewicz et al. (2001) - VSIDS and two-watched literals
-- **Lingeling**: Biere (2010-2020) - Phase saving, clause minimization
-
-## Development Timeline
-
-- **Week 5-6**: Random phase selection fixes catastrophic regression
-- **Week 5-6**: Restart postponing (Glucose 2.1+)
-- **Week 5-6**: Phase saving
-- **Week 7**: Adaptive random phase selection - best of both worlds
-- **Week 8**: Clause database reduction (LBD-based)
-- **Week 8**: Hybrid Glucose/geometric restarts
-- **Week 8**: On-the-fly backward subsumption
-- **Week 8**: Recursive clause minimization
-- **Week 8**: Vivification infrastructure (disabled by default)
-- **Week 8**: Chronological backtracking
-- **Week 8**: Blocked clause elimination (BCE) preprocessing
-- **Week 9**: O(n) LBD calculation, VarInfo cache alignment
-- **Week 9**: Watch manager in-place resize
-- **Week 9**: Failed literal probing preprocessing
-- **Week 9**: MiniSat-style clause minimization with abstract level pruning (67% literal reduction)
-- **Week 9**: Vivification bug fix (proper watch list management)
-- **Week 9**: PGO build infrastructure
-
-## License
-
-This solver is part of the BSAT project.
+| Feature | Impact |
+|---------|--------|
+| Clause minimization | 67% literal reduction |
+| On-the-fly subsumption | 73% clauses subsumed |
+| Target rephasing | Up to 58% fewer conflicts |
+| Local search | Instant SAT solutions |
 
 ---
 
-🎉 **FEATURE COMPLETE** - Production-ready modern CDCL solver!
+## References
 
-Last updated: December 2025
+- **MiniSat**: Een & Sorensson (2003)
+- **Glucose**: Audemard & Simon (2009)
+- **Chaff/VSIDS**: Moskewicz et al. (2001)
+- **LRB**: Liang et al. (2016)
+- **Lingeling**: Biere (2010-2020)
+- **Kissat**: Biere et al. (2020)
+- **SatELite**: Een & Biere (2005)
+
+---
+
+**Last Updated**: December 2025 | **Version**: 1.2

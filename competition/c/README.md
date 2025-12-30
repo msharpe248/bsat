@@ -1,15 +1,15 @@
 # BSAT C Solver - Production-Ready CDCL Implementation
 
-A high-performance SAT solver implementing modern CDCL (Conflict-Driven Clause Learning) with state-of-the-art optimizations.
+A high-performance SAT solver implementing modern CDCL (Conflict-Driven Clause Learning) with state-of-the-art optimizations including LRB branching, target phase rephasing, local search hybridization, and DRAT proof logging.
 
-## Status: ✅ Production Ready
+## Status: Production Ready
 
-**Complete CDCL implementation with all modern features**
+**Complete CDCL implementation with competition-level features**
 
 ### Test Results
-- ✅ **100% success rate** on medium test suite (53/53 instances)
-- ✅ **100-226× faster than Python** on hard instances
-- ✅ **Solves hard instances in 0.01s** that Python takes 2+ seconds
+- **100% success rate** on medium test suite (53/53 instances)
+- **100-226x faster than Python** on hard instances
+- **Solves hard instances in 0.01s** that Python takes 2+ seconds
 
 ---
 
@@ -22,11 +22,11 @@ make
 # Solve a CNF instance
 ./bin/bsat instance.cnf
 
-# With statistics
-./bin/bsat --stats instance.cnf
+# With all optimizations enabled (LRB + local search)
+./bin/bsat --lrb --local-search instance.cnf
 
-# With verbose runtime diagnostics
-./bin/bsat --verbose instance.cnf
+# Generate DRAT proof for UNSAT instances
+./bin/bsat --proof proof.drat instance.cnf
 
 # Test on medium test suite (53 instances)
 ./scripts/test_medium_suite.sh
@@ -37,59 +37,66 @@ make
 ## Features
 
 ### Core CDCL Algorithm
-- ✅ **Two-watched literals** for efficient unit propagation
-- ✅ **Conflict analysis** with 1-UIP learning scheme
-- ✅ **MiniSat-style clause minimization** with abstract level pruning (67% literal reduction)
-- ✅ **Chronological backtracking** for improved search efficiency
+- **Two-watched literals** for efficient unit propagation
+- **Conflict analysis** with 1-UIP learning scheme
+- **MiniSat-style clause minimization** with abstract level pruning (67% literal reduction)
+- **Chronological backtracking** for improved search efficiency
 
 ### Modern Optimizations
 
-#### Variable Ordering (VSIDS)
-- Dynamic variable activity scoring
-- Configurable decay factor (default: 0.95)
-- Efficient binary heap implementation
+#### Variable Ordering
+| Feature | Default | Flag | Description |
+|---------|---------|------|-------------|
+| **VSIDS** | ON | `--vsids` | Dynamic activity scoring with decay |
+| **LRB/CHB** | OFF | `--lrb` | Learning Rate Branching with recency weighting |
 
-#### Restart Strategies (3 modes)
-1. **Luby Sequence** (default) - Provably good for all instance types
-   - Unit size: 100 conflicts
-   - Sequence: 1, 1, 2, 1, 1, 2, 4, 8, ...
-   - Achieves 100% test completeness
+#### Restart Strategies
+| Strategy | Default | Flag | Description |
+|----------|---------|------|-------------|
+| **Luby Sequence** | ON (fallback) | - | Provably good for all instance types |
+| **Glucose EMA** | ON | `--glucose-restart-ema` | Conservative, paper-accurate |
+| **Glucose AVG** | OFF | `--glucose-restart-avg` | Aggressive, Python-style |
 
-2. **Glucose Adaptive (EMA)** - Conservative, paper-accurate
-   - Exponential moving averages with α_fast=0.8, α_slow=0.9999
-   - Restarts when fast_ma > slow_ma (recent quality worse than average)
-   - Good for industrial instances
-   - Enable with: `--glucose-restart-ema`
-
-3. **Glucose Adaptive (AVG)** - Aggressive, Python-style
-   - Sliding window averaging (window=50, threshold=0.8)
-   - Restarts when short_term_avg > long_term_avg * 0.8
-   - Very aggressive restart frequency
-   - Good for random instances
-   - Enable with: `--glucose-restart-avg`
-
-#### Phase Saving
-- ✅ Saves variable polarities across restarts
-- ✅ **Random phase selection** (1% probability) - prevents catastrophic stuck states
-- ✅ **Adaptive random boost** - increases randomness when solver is stuck
+#### Phase Management
+| Feature | Default | Flag | Description |
+|---------|---------|------|-------------|
+| **Phase Saving** | ON | `--no-phase-saving` | Saves polarities across restarts |
+| **Target Rephasing** | ON | `--no-rephase` | Kissat-style periodic phase reset |
+| **Random Phase** | ON (1%) | `--random-prob <f>` | Prevents stuck states |
 
 #### Clause Management
-- ✅ **LBD (Literal Block Distance)** quality metric
-- ✅ **Clause database reduction** - keeps best 50% when threshold exceeded
-- ✅ **Glue clause protection** - never deletes clauses with LBD ≤ 2
-- ✅ **On-the-fly subsumption** during conflict analysis
+| Feature | Default | Flag | Description |
+|---------|---------|------|-------------|
+| **Clause Minimization** | ON | `--no-minimize` | MiniSat-style recursive minimization |
+| **On-the-fly Subsumption** | ON | `--no-subsumption` | Removes subsumed clauses |
+| **LBD-based Reduction** | ON | `--reduce-interval <n>` | Keeps best 50% of clauses |
+| **Glue Protection** | ON | `--glue-lbd <n>` | Never deletes LBD <= 2 |
 
 #### Preprocessing
-- ✅ **Failed Literal Probing** - discovers implied unit clauses
-- ✅ **Blocked Clause Elimination (BCE)** - removes redundant clauses
-- ✅ **Unit propagation** at level 0
+| Feature | Default | Flag | Description |
+|---------|---------|------|-------------|
+| **Failed Literal Probing** | ON | `--no-probing` | Discovers implied units |
+| **Blocked Clause Elimination** | OFF | `--bce` | Removes redundant clauses |
+| **Bounded Variable Elimination** | OFF | `--elim` | SatELite-style BVE |
 
-#### Inprocessing (optional, `--inprocess`)
-- ✅ **Vivification** - strengthens learned clauses by removing redundant literals
+#### Inprocessing
+| Feature | Default | Flag | Description |
+|---------|---------|------|-------------|
+| **Vivification** | OFF | `--inprocess` | Strengthens learned clauses |
+
+#### Local Search Hybridization
+| Feature | Default | Flag | Description |
+|---------|---------|------|-------------|
+| **WalkSAT** | OFF | `--local-search` | Periodic local search for SAT |
+
+#### Proof Logging
+| Feature | Default | Flag | Description |
+|---------|---------|------|-------------|
+| **DRAT Proofs** | OFF | `--proof <file>` | Generates verifiable proofs |
 
 ---
 
-## Command-Line Interface
+## Command-Line Reference
 
 ### Basic Usage
 ```bash
@@ -97,70 +104,123 @@ make
 ```
 
 ### Output Control
-```
--h, --help                Show help message
--v, --verbose             Verbose runtime diagnostics (same as BSAT_VERBOSE=1)
-    --debug               Debug output (same as DEBUG_CDCL=1)
--q, --quiet               Suppress all output except result
--s, --stats               Print statistics (default)
-```
+| Flag | Default | Description |
+|------|---------|-------------|
+| `-h, --help` | - | Show help message |
+| `-v, --verbose` | OFF | Verbose runtime diagnostics |
+| `--debug` | OFF | Debug output |
+| `-q, --quiet` | OFF | Suppress all output except result |
+| `-s, --stats` | ON | Print statistics |
 
 ### Resource Limits
-```
--c, --conflicts <n>       Maximum number of conflicts
--d, --decisions <n>       Maximum number of decisions
--t, --time <sec>          Time limit in seconds
-```
+| Flag | Default | Description |
+|------|---------|-------------|
+| `-c, --conflicts <n>` | unlimited | Maximum number of conflicts |
+| `-d, --decisions <n>` | unlimited | Maximum number of decisions |
+| `-t, --time <sec>` | unlimited | Time limit in seconds |
+
+### Branching Heuristic
+| Flag | Default | Description |
+|------|---------|-------------|
+| `--vsids` | ON | Use VSIDS variable ordering |
+| `--lrb` | OFF | Use LRB/CHB (Learning Rate Branching) |
+| `--var-decay <f>` | 0.95 | Variable activity decay for VSIDS |
+| `--var-inc <f>` | 1.0 | Variable activity increment |
 
 ### Restart Parameters
-```
---restart-first <n>       First restart interval (default: 100)
---restart-inc <f>         Restart multiplier (default: 1.5)
---glucose-restart-ema     Use Glucose with EMA (conservative, original paper)
---glucose-restart-avg     Use Glucose with sliding window (Python-style, aggressive)
---no-restarts             Disable restarts
-```
+| Flag | Default | Description |
+|------|---------|-------------|
+| `--restart-first <n>` | 100 | First restart interval |
+| `--restart-inc <f>` | 1.5 | Restart interval multiplier |
+| `--glucose-restart` | ON | Use Glucose adaptive restarts (EMA mode) |
+| `--glucose-restart-ema` | ON | Glucose with EMA (conservative) |
+| `--glucose-restart-avg` | OFF | Glucose with sliding window (aggressive) |
+| `--no-restarts` | - | Disable all restarts |
 
-### Glucose Tuning
+### Glucose EMA Tuning (with `--glucose-restart` or `--glucose-restart-ema`)
+| Flag | Default | Description |
+|------|---------|-------------|
+| `--glucose-fast-alpha <f>` | 0.8 | Fast MA decay factor |
+| `--glucose-slow-alpha <f>` | 0.9999 | Slow MA decay factor |
+| `--glucose-min-conflicts <n>` | 100 | Min conflicts before Glucose kicks in |
 
-**EMA mode** (with --glucose-restart-ema):
-```
---glucose-fast-alpha <f>  Fast MA decay factor (default: 0.8)
---glucose-slow-alpha <f>  Slow MA decay factor (default: 0.9999)
---glucose-min-conflicts <n>  Min conflicts before Glucose (default: 100)
-```
+### Glucose AVG Tuning (with `--glucose-restart-avg`)
+| Flag | Default | Description |
+|------|---------|-------------|
+| `--glucose-window-size <n>` | 50 | Window size for short-term average |
+| `--glucose-k <f>` | 0.8 | Threshold multiplier |
 
-**AVG mode** (with --glucose-restart-avg):
-```
---glucose-window-size <n> Window size for short-term average (default: 50)
---glucose-k <f>           Threshold multiplier (default: 0.8)
-```
-
-### Phase Selection
-```
---no-phase-saving         Disable phase saving
---random-phase            Enable random phase selection
---random-prob <f>         Random phase probability (default: 0.01)
-```
+### Phase Saving
+| Flag | Default | Description |
+|------|---------|-------------|
+| `--no-phase-saving` | - | Disable phase saving (ON by default) |
+| `--random-phase` | ON | Enable random phase selection |
+| `--random-prob <f>` | 0.01 | Random phase probability (1%) |
+| `--no-rephase` | - | Disable target phase rephasing (ON by default) |
+| `--rephase-interval <n>` | 1000 | Conflicts between rephases |
 
 ### Clause Management
-```
---max-lbd <n>             Max LBD for keeping clauses (default: 30)
---glue-lbd <n>            LBD threshold for glue clauses (default: 2)
---reduce-fraction <f>     Fraction of clauses to keep (default: 0.5)
---reduce-interval <n>     Conflicts between reductions (default: 2000)
-```
+| Flag | Default | Description |
+|------|---------|-------------|
+| `--max-lbd <n>` | 30 | Max LBD for keeping learned clauses |
+| `--glue-lbd <n>` | 2 | LBD threshold for glue clauses |
+| `--reduce-fraction <f>` | 0.5 | Fraction of clauses to keep |
+| `--reduce-interval <n>` | 2000 | Conflicts between reductions |
+| `--no-minimize` | - | Disable clause minimization (ON by default) |
+| `--no-subsumption` | - | Disable on-the-fly subsumption (ON by default) |
 
 ### Preprocessing
-```
---no-bce                  Disable blocked clause elimination
-```
+| Flag | Default | Description |
+|------|---------|-------------|
+| `--no-bce` | - | Disable blocked clause elimination (OFF by default) |
+| `--elim` | OFF | Enable bounded variable elimination (BVE) |
+| `--no-elim` | ON | Disable BVE (default) |
+| `--elim-max-occ <n>` | 10 | Max occurrences to consider for BVE |
+| `--elim-grow <n>` | 0 | Max clause growth allowed for BVE |
+| `--no-probing` | - | Disable failed literal probing (ON by default) |
 
-### VSIDS Parameters
-```
---var-decay <f>           Variable activity decay (default: 0.95)
---var-inc <f>             Variable activity increment (default: 1.0)
-```
+### Inprocessing
+| Flag | Default | Description |
+|------|---------|-------------|
+| `--inprocess` | OFF | Enable inprocessing (vivification) |
+| `--inprocess-interval <n>` | 10000 | Conflicts between inprocessing |
+
+### Local Search Hybridization
+| Flag | Default | Description |
+|------|---------|-------------|
+| `--local-search` | OFF | Enable WalkSAT-style local search |
+| `--ls-interval <n>` | 5000 | Conflicts between local search calls |
+| `--ls-max-flips <n>` | 100000 | Max flips per local search call |
+| `--ls-noise <f>` | 0.5 | WalkSAT noise parameter (0.0-1.0) |
+
+### Proof Logging
+| Flag | Default | Description |
+|------|---------|-------------|
+| `--proof <file>` | OFF | Write DRAT proof to file |
+| `--binary-proof` | OFF | Use binary DRAT format (more compact) |
+
+---
+
+## Default Configuration Summary
+
+### Features ON by Default
+- VSIDS variable ordering
+- Glucose EMA restarts
+- Phase saving
+- Target phase rephasing (every 1000 conflicts)
+- Random phase selection (1% probability)
+- Clause minimization (MiniSat-style)
+- On-the-fly subsumption
+- Failed literal probing
+- LBD-based clause reduction
+
+### Features OFF by Default (opt-in)
+- LRB/CHB branching (`--lrb`)
+- Bounded Variable Elimination (`--elim`)
+- Blocked Clause Elimination (`--bce`)
+- Vivification inprocessing (`--inprocess`)
+- Local search hybridization (`--local-search`)
+- DRAT proof logging (`--proof <file>`)
 
 ---
 
@@ -169,14 +229,7 @@ make
 Standard DIMACS output format:
 
 ```
-s SATISFIABLE / UNSATISFIABLE / UNKNOWN
-v <literals> 0  (for SAT results)
-c <comments>    (for statistics)
-```
-
-Example:
-```
-c BSAT Competition Solver v1.0
+c BSAT Competition Solver v1.1
 c PID: 12345 (send SIGUSR1 for progress: kill -USR1 12345)
 c Reading from instance.cnf
 c Variables: 100
@@ -218,28 +271,23 @@ c Max LBD           : 8
 # Total:   53
 ```
 
+### Verify DRAT Proofs
+```bash
+# Generate proof for UNSAT instance
+./bin/bsat --proof proof.drat unsat_instance.cnf
+
+# Verify with drat-trim
+drat-trim unsat_instance.cnf proof.drat
+# Expected: s VERIFIED
+```
+
 ### Performance Comparison
 ```bash
 # Compare C vs Python on test instances
 ./scripts/compare_c_vs_python.sh
 
-# Compare Glucose EMA vs AVG modes
-./scripts/test_glucose_comparison.sh
-
 # Benchmark on custom instances
 ./scripts/benchmark.sh instance1.cnf instance2.cnf ...
-```
-
-### Unit Tests
-```bash
-# Run all unit tests (completes in ~100ms)
-make test
-
-# Individual test binaries
-./bin/test_dimacs     # DIMACS I/O tests
-./bin/test_solver     # Core solver tests
-./bin/test_arena      # Memory arena tests
-./bin/test_watch      # Watch list tests
 ```
 
 ---
@@ -249,48 +297,37 @@ make test
 ### Directory Structure
 ```
 competition/c/
-├── src/              # Source files
-│   ├── main.c        # Main entry point and CLI
-│   ├── solver.c      # Core CDCL solver implementation
-│   ├── dimacs.c      # DIMACS format parser
-│   ├── arena.c       # Memory arena for clause storage
-│   └── watch.c       # Two-watched literal manager
-├── include/          # Header files
-│   ├── solver.h      # Solver interface and options
-│   ├── types.h       # Core type definitions
-│   ├── dimacs.h      # DIMACS parser interface
-│   ├── arena.h       # Arena allocator interface
-│   └── watch.h       # Watch manager interface
-├── tests/            # Unit tests
-├── scripts/          # Utility scripts
-│   ├── test_medium_suite.sh       # Main test suite (53 instances)
-│   ├── benchmark.sh               # Performance benchmarking
-│   ├── compare_c_vs_python.sh     # C vs Python comparison
-│   └── test_glucose_comparison.sh # Glucose EMA vs AVG comparison
-├── bin/              # Compiled binaries
-├── build/            # Build artifacts (.o files)
-├── FEATURES.md                    # Detailed feature list
-├── GLUCOSE_ANALYSIS.md            # Glucose algorithm analysis
-├── GLUCOSE_DUAL_MODE_SUMMARY.md   # Dual-mode implementation docs
-└── README.md                      # This file
+├── src/                  # Source files
+│   ├── main.c            # Main entry point and CLI
+│   ├── solver.c          # Core CDCL solver implementation
+│   ├── dimacs.c          # DIMACS format parser
+│   ├── arena.c           # Memory arena for clause storage
+│   ├── watch.c           # Two-watched literal manager
+│   ├── elim.c            # Bounded variable elimination (BVE)
+│   └── local_search.c    # WalkSAT local search
+├── include/              # Header files
+│   ├── solver.h          # Solver interface and options
+│   ├── types.h           # Core type definitions
+│   ├── dimacs.h          # DIMACS parser interface
+│   ├── arena.h           # Arena allocator interface
+│   ├── watch.h           # Watch manager interface
+│   ├── elim.h            # BVE interface
+│   └── local_search.h    # Local search interface
+├── tests/                # Unit tests
+├── scripts/              # Utility scripts
+├── docs/                 # Detailed documentation
+├── bin/                  # Compiled binaries
+├── build/                # Build artifacts
+├── FEATURES.md           # Detailed feature list
+└── README.md             # This file
 ```
 
 ### Core Data Structures
-
-#### Solver State
-- **VarInfo[]**: Per-variable information (value, level, reason, polarity, activity)
+- **VarInfo[]**: Per-variable info (value, level, reason, polarity, activity)
 - **Trail**: Assignment stack with decision levels
 - **WatchManager**: Two-watched literals for each clause
 - **Arena**: Compact clause storage with reference-based access
-
-#### Clause Storage
-- **CRef**: 32-bit clause reference (offset into arena)
-- **Clause header**: metadata (size, LBD, activity, glue flag)
-- **Compact layout**: No per-literal pointers, cache-friendly
-
-#### VSIDS Heap
-- Binary max-heap of variables ordered by activity
-- O(log n) insert, extract-max, update operations
+- **LocalSearchState**: Occurrence lists and break counts for WalkSAT
 
 ---
 
@@ -298,71 +335,19 @@ competition/c/
 
 ### vs Python Competition Solver
 
-Tested on 53 medium/hard instances:
-
 | Metric | C Solver | Python Solver | Speedup |
 |--------|----------|---------------|---------|
-| **Hard instances (5)** | 0.010s | 2.258s | **226×** |
-| **All instances (53)** | 0.082s | ~60s | **700×+** |
-| **Per instance avg** | 0.002s | 0.040s | **20×** |
+| **Hard instances (5)** | 0.010s | 2.258s | **226x** |
+| **All instances (53)** | 0.082s | ~60s | **700x+** |
 
-### Key Optimizations Contributing to Performance
+### Feature Impact
 
 | Optimization | Impact |
 |--------------|--------|
 | MiniSat clause minimization | 67% literal reduction |
-| O(n) LBD calculation | 5-10% speedup |
-| VarInfo struct alignment | 10-15% cache improvement |
-| Failed literal probing | Early unit discovery |
-| Watch manager resize | Eliminates O(n) rebuild |
-
-### Memory Usage
-- Compact clause storage: ~40 bytes per clause (vs 80+ in Python)
-- Arena allocation: Zero fragmentation, excellent cache locality
-- Cache-aligned VarInfo struct: 32 bytes per variable
-- Peak memory: <10MB for all test instances
-
----
-
-## Implementation Highlights
-
-### 1. Two-Watched Literals
-Efficient O(1) unit propagation per assigned variable:
-- Only two watched literals per clause
-- Watch list update only when watch becomes false
-- No need to scan entire clause
-
-### 2. Conflict Analysis (1-UIP) + MiniSat Minimization
-Modern conflict-driven learning:
-- First Unique Implication Point (1-UIP) learning scheme
-- **MiniSat-style recursive clause minimization**:
-  - Abstract level bitmask for O(1) pruning
-  - Recursive redundancy checking with cycle detection
-  - Typical reduction: **67% fewer literals**
-
-### 3. Glucose Adaptive Restarts
-Two implementations available:
-- **EMA mode**: Paper-accurate with exponential moving averages
-  - Conservative: Restarts only when quality degrades significantly
-  - Good for industrial/structured instances
-- **AVG mode**: Python-style with sliding window
-  - Aggressive: Very frequent restarts (~0.1 per conflict)
-  - Good for random instances
-
-See [GLUCOSE_DUAL_MODE_SUMMARY.md](GLUCOSE_DUAL_MODE_SUMMARY.md) for detailed comparison.
-
-### 4. Phase Saving + Random Phase
-Hybrid approach prevents both thrashing and stuck states:
-- **Phase saving**: Remembers polarity across restarts (preserves good partial assignments)
-- **Random phase**: 1% random selection prevents infinite loops
-- **Adaptive boost**: Increases randomness when stuck (low decision level)
-
-### 5. LBD-Based Clause Management
-Quality-aware clause database:
-- LBD (Literal Block Distance) measures clause quality
-- Keep clauses with low LBD (span few decision levels)
-- Glue clauses (LBD ≤ 2) never deleted
-- Reduction triggered every 2000 conflicts
+| On-the-fly subsumption | 73% clauses subsumed (UNSAT) |
+| Target rephasing | Up to 58% fewer conflicts |
+| Local search | Instant SAT solutions |
 
 ---
 
@@ -375,29 +360,8 @@ make MODE=debug   # Build with debug symbols and sanitizers
 make MODE=profile # Build for profiling
 make test         # Run all unit tests
 make clean        # Remove build artifacts
+make pgo          # Full Profile-Guided Optimization build
 make help         # Show available targets
-```
-
-### Profile-Guided Optimization (PGO)
-```bash
-make pgo          # Full PGO build (generate + train + use)
-
-# Or step by step:
-make pgo-generate # Build with instrumentation
-make pgo-train    # Run on training workload
-make pgo-merge    # Merge profile data (clang/LLVM)
-make pgo-use      # Rebuild with profile optimization
-```
-
-### Build Flags
-**Release build** (-O3, -march=native, -flto):
-```bash
-make
-```
-
-**Debug build** (-g, -O0, sanitizers):
-```bash
-make MODE=debug
 ```
 
 ### Compiler Requirements
@@ -407,71 +371,36 @@ make MODE=debug
 
 ---
 
-## Troubleshooting
-
-### Solver hangs or times out
-1. Try Glucose adaptive restarts: `--glucose-restart-avg`
-2. Increase random phase: `--random-prob 0.05`
-3. Disable restart postponing: set `restart_postpone = 0` in code
-
-### Memory issues
-1. Reduce clause database size: `--reduce-interval 1000`
-2. Lower max LBD: `--max-lbd 20`
-3. Disable BCE: `--no-bce`
-
-### Performance issues
-1. Check if instance is UNSAT (may require many conflicts)
-2. Try different restart strategies
-3. Enable verbose mode: `--verbose` to see progress
-
----
-
-## Documentation
-
-- **[FEATURES.md](FEATURES.md)** - Detailed feature list with implementation notes
-- **[GLUCOSE_ANALYSIS.md](GLUCOSE_ANALYSIS.md)** - Analysis of Python vs C Glucose implementations
-- **[GLUCOSE_DUAL_MODE_SUMMARY.md](GLUCOSE_DUAL_MODE_SUMMARY.md)** - Dual-mode Glucose implementation guide
-
----
-
-## License
-
-Part of the BSAT project.
-
----
-
 ## References
 
 ### Academic Papers
-1. **CDCL**: Marques-Silva & Sakallah (1996) - "GRASP: A New Search Algorithm for Satisfiability"
-2. **VSIDS**: Moskewicz et al. (2001) - "Chaff: Engineering an Efficient SAT Solver" (ZCHAFF)
-3. **Clause Learning**: Zhang et al. (2001) - "Efficient Conflict Driven Learning in a Boolean Satisfiability Solver"
-4. **Glucose**: Audemard & Simon (2009) - "Predicting Learnt Clauses Quality in Modern SAT Solvers"
-5. **LBD**: Audemard & Simon (2012) - "Refining Restarts Strategies for SAT and UNSAT"
-6. **Phase Saving**: Pipatsrisawat & Darwiche (2007) - "A Lightweight Component Caching Scheme for Satisfiability Solvers"
-
-### SAT Competition
-- This solver is based on techniques from top SAT Competition solvers (MiniSat, Glucose, CryptoMiniSat)
-- Achieves competitive performance on random and structured instances
-- Optimized for educational clarity and production use
+1. **CDCL**: Marques-Silva & Sakallah (1996) - GRASP
+2. **VSIDS**: Moskewicz et al. (2001) - Chaff
+3. **Glucose**: Audemard & Simon (2009) - LBD and adaptive restarts
+4. **LRB**: Liang et al. (2016) - Learning Rate Branching
+5. **Phase Saving**: Pipatsrisawat & Darwiche (2007)
+6. **BVE**: Een & Biere (2005) - SatELite
+7. **Target Phases**: Biere et al. (2020) - Kissat
 
 ---
 
-## Development Notes
+## Version History
 
-**Last Updated**: December 2025
+### v1.2 (Current)
+- LRB/CHB branching heuristic
+- Target phase rephasing (Kissat-style)
+- WalkSAT local search hybridization
+- Bounded Variable Elimination (BVE)
+- DRAT proof logging
 
-**Version**: 1.1 (Production Ready)
+### v1.1
+- MiniSat-style clause minimization
+- Failed literal probing
+- Vivification inprocessing
+- PGO build support
 
-**Test Coverage**: 100% on medium test suite (53/53 instances)
-
-**Performance**: 100-226× faster than optimized Python implementation
-
-### Recent Changes (v1.1)
-- MiniSat-style clause minimization with abstract level pruning
-- Failed literal probing preprocessing
-- Fixed vivification with proper watch list management
-- O(n) LBD calculation (was O(n²))
-- VarInfo struct cache alignment optimization
-- Watch manager in-place resize
-- PGO build targets
+### v1.0
+- Core CDCL with two-watched literals
+- Glucose adaptive restarts
+- Phase saving with random phase
+- LBD-based clause management
