@@ -66,6 +66,8 @@ static void print_usage(const char* program) {
     printf("  --no-phase-saving         Disable phase saving\n");
     printf("  --random-phase            Enable random phase selection\n");
     printf("  --random-prob <f>         Random phase probability (default: 0.01)\n");
+    printf("  --no-rephase              Disable target phase rephasing\n");
+    printf("  --rephase-interval <n>    Conflicts between rephases (default: 1000)\n");
     printf("\n");
     printf("Clause management:\n");
     printf("  --max-lbd <n>             Max LBD for keeping clauses (default: 30)\n");
@@ -133,6 +135,8 @@ static struct option long_options[] = {
     {"random-phase",    no_argument,       0, 0},
     {"no-random-phase", no_argument,       0, 0},
     {"random-prob",     required_argument, 0, 0},
+    {"no-rephase",      no_argument,       0, 0},
+    {"rephase-interval", required_argument, 0, 0},
     {"max-lbd",         required_argument, 0, 0},
     {"glue-lbd",        required_argument, 0, 0},
     {"reduce-fraction", required_argument, 0, 0},
@@ -251,6 +255,10 @@ int main(int argc, char** argv) {
                     opts.random_phase = false;
                 } else if (strcmp(long_options[option_index].name, "random-prob") == 0) {
                     opts.random_phase_prob = atof(optarg);
+                } else if (strcmp(long_options[option_index].name, "no-rephase") == 0) {
+                    opts.rephase = false;
+                } else if (strcmp(long_options[option_index].name, "rephase-interval") == 0) {
+                    opts.rephase_interval = (uint32_t)atol(optarg);
                 } else if (strcmp(long_options[option_index].name, "max-lbd") == 0) {
                     opts.max_lbd = (uint32_t)atol(optarg);
                 } else if (strcmp(long_options[option_index].name, "glue-lbd") == 0) {

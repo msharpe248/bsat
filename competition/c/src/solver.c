@@ -140,6 +140,8 @@ SolverOpts default_opts(void) {
         .random_phase = true,          // Enable by default - prevents catastrophic stuck states
         .random_phase_prob = 0.01,     // 1% random phase - best overall balance (52/53 instances)
         .adaptive_random = true,
+        .rephase = true,               // Kissat-style target phase rephasing
+        .rephase_interval = 1000,      // Rephase every 1000 conflicts
 
         .max_lbd = 30,
         .glue_lbd = 2,
@@ -379,6 +381,12 @@ Solver* solver_new_with_opts(const SolverOpts* opts) {
         }
     }
 
+    // Initialize rephasing state
+    s->rephase.best_phase = NULL;  // Allocated on demand in grow_var_arrays
+    s->rephase.best_trail_size = 0;
+    s->rephase.conflicts_since = 0;
+    s->rephase.rephase_count = 0;
+
     s->result = UNDEF;
 
     return s;
@@ -404,6 +412,7 @@ void solver_free(Solver* s) {
     free(s->analyze_stack);
     free(s->binary_reasons);
     free(s->restart.recent_lbds);  // Free Glucose sliding window buffer
+    free(s->rephase.best_phase);   // Free rephasing best phase array
 
     // Free BVE state
     elim_free(s);
@@ -463,6 +472,17 @@ static bool grow_var_arrays(Solver* s, uint32_t new_capacity) {
     Lit* new_binary_reasons = (Lit*)realloc(s->binary_reasons, alloc_size * sizeof(Lit));
     if (!new_binary_reasons) return false;
     s->binary_reasons = new_binary_reasons;
+
+    // Grow best phase array (for rephasing)
+    if (s->opts.rephase) {
+        bool* new_best_phase = (bool*)realloc(s->rephase.best_phase, alloc_size * sizeof(bool));
+        if (!new_best_phase) return false;
+        s->rephase.best_phase = new_best_phase;
+        // Initialize new entries to false (negative phase)
+        for (uint32_t i = s->var_capacity + 1; i <= new_capacity; i++) {
+            s->rephase.best_phase[i] = false;
+        }
+    }
 
     // Resize watch manager in-place (preserves existing watches)
     if (!watch_resize(s->watches, new_capacity)) return false;
@@ -1266,6 +1286,54 @@ bool solver_decide(Solver* s) {
     s->stats.decisions++;
 
     return true;
+}
+
+/*********************************************************************
+ * Target Phases / Rephasing (Kissat-style)
+ *********************************************************************/
+
+/**
+ * Save current assignment as best if we've assigned more variables than ever before.
+ * This tracks the assignment that got closest to a solution.
+ */
+static void solver_maybe_save_best_phases(Solver* s) {
+    if (!s->opts.rephase || !s->rephase.best_phase) return;
+
+    // Only save if we've assigned more variables than the previous best
+    if (s->trail_size > s->rephase.best_trail_size) {
+        s->rephase.best_trail_size = s->trail_size;
+
+        // Save current polarities for all assigned variables
+        for (uint32_t i = 0; i < s->trail_size; i++) {
+            Lit lit = s->trail[i].lit;
+            Var v = var(lit);
+            // Save polarity: true=positive, false=negative
+            s->rephase.best_phase[v] = !sign(lit);
+        }
+    }
+}
+
+/**
+ * Perform rephasing: reset saved phases to best phases seen so far.
+ * This helps break out of local search areas.
+ */
+static void solver_rephase(Solver* s) {
+    if (!s->opts.rephase || !s->rephase.best_phase) return;
+
+    // Copy best phases to saved polarities
+    for (Var v = 1; v <= s->num_vars; v++) {
+        s->vars[v].polarity = s->rephase.best_phase[v];
+    }
+
+    s->rephase.conflicts_since = 0;
+    s->rephase.rephase_count++;
+
+    if (IS_VERBOSE(s)) {
+        fprintf(stderr, "c [Rephase #%u] Reset phases to best (trail=%u/%u)\n",
+                s->rephase.rephase_count,
+                s->rephase.best_trail_size,
+                s->num_vars);
+    }
 }
 
 /*********************************************************************
@@ -2650,6 +2718,14 @@ lbool solver_solve_with_assumptions(Solver* s, const Lit* assumps, uint32_t n_as
                 s->stats.restarts++;
             }
 
+            // Check for rephasing (Kissat-style target phases)
+            if (s->opts.rephase) {
+                s->rephase.conflicts_since++;
+                if (s->rephase.conflicts_since >= s->opts.rephase_interval) {
+                    solver_rephase(s);
+                }
+            }
+
             // Reduce clause database periodically
             if (s->stats.conflicts % s->opts.reduce_interval == 0) {
                 solver_reduce_db(s);
@@ -2672,6 +2748,9 @@ lbool solver_solve_with_assumptions(Solver* s, const Lit* assumps, uint32_t n_as
                 free(learnt_clause);
                 return TRUE;
             }
+
+            // Track best assignment for rephasing (Kissat-style target phases)
+            solver_maybe_save_best_phases(s);
         }
 
         // Check resource limits

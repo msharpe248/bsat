@@ -56,6 +56,8 @@ typedef struct SolverOpts {
     bool     random_phase;       // Use random phase selection (false)
     double   random_phase_prob;  // Probability of random phase (0.01)
     bool     adaptive_random;    // Enable when stuck (true)
+    bool     rephase;            // Enable periodic rephasing (true)
+    uint32_t rephase_interval;   // Conflicts between rephases (1000)
 
     // Clause management
     uint32_t max_lbd;           // Max LBD for keeping learned clauses (30)
@@ -221,6 +223,14 @@ typedef struct Solver {
 
     // DRAT Proof Logging
     FILE* proof_file;         // Proof output file (NULL if not logging)
+
+    // Rephasing state (Kissat-style target phases)
+    struct {
+        bool*    best_phase;      // Best assignment seen (polarity for each var)
+        uint32_t best_trail_size; // Trail size when best assignment was saved
+        uint32_t conflicts_since; // Conflicts since last rephase
+        uint32_t rephase_count;   // Number of rephases performed
+    } rephase;
 
     // Result
     lbool result;             // SAT/UNSAT/UNKNOWN
