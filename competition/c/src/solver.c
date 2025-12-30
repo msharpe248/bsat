@@ -141,6 +141,7 @@ SolverOpts default_opts(void) {
         .glue_lbd = 2,
         .reduce_fraction = 0.5,
         .reduce_interval = 2000,
+        .minimize = true,         // MiniSat-style clause minimization
 
         .bce = false,             // DISABLED by default - can hurt SAT instance performance
         .probing = true,          // Enable failed literal probing
@@ -1226,7 +1227,6 @@ bool solver_decide(Solver* s) {
     s->vars[next].level = s->decision_level;
     s->vars[next].reason = INVALID_CLAUSE;
     s->vars[next].trail_pos = s->trail_size;
-
     s->trail[s->trail_size].lit = dec;
     s->trail[s->trail_size].level = s->decision_level;
     s->trail_size++;
@@ -1547,6 +1547,11 @@ static void solver_on_the_fly_subsumption(Solver* s, const Lit* learnt, uint32_t
             }
 
             if (!is_reason) {
+                // Log deletion to DRAT proof file BEFORE deleting
+                if (s->proof_file) {
+                    proof_delete_clause(s, other_lits, other_size);
+                }
+
                 // Safe to delete - the clause is subsumed and not needed as a reason
                 arena_delete(s->arena, cref);
                 subsumed++;
@@ -1591,8 +1596,12 @@ static bool lit_redundant(Solver* s, Lit p, uint64_t abstract_levels) {
 
     // Check seen status
     uint8_t seen_val = s->seen[v];
-    if (seen_val == 1) return true;   // In learned clause - definitely covered
-    if (seen_val == 2) return false;  // Cycle - being explored
+    if (seen_val == 1) {
+        return true;   // In learned clause - definitely covered
+    }
+    if (seen_val == 2) {
+        return false;  // Cycle - being explored
+    }
 
     // Check for reason clause
     CRef reason = s->vars[v].reason;
@@ -1611,10 +1620,9 @@ static bool lit_redundant(Solver* s, Lit p, uint64_t abstract_levels) {
 
     // Handle binary propagation or decision
     if (reason == INVALID_CLAUSE) {
-        // For binary propagations (binary_reasons[v] != LIT_UNDEF), we conservatively
-        // return false rather than trying to prove redundancy. This is safe but
-        // may miss some minimization opportunities.
-        // Decision variables are also never redundant.
+        // Both decision variables and binary propagations are never redundant.
+        // Binary propagations store their reason in binary_reasons[], but we
+        // conservatively treat them as non-redundant to avoid complexity.
         return false;
     }
 
@@ -1634,12 +1642,24 @@ static bool lit_redundant(Solver* s, Lit p, uint64_t abstract_levels) {
         // Skip the literal itself (it's the implied literal)
         if (qv == v) continue;
 
+        // SAFETY CHECK: If a reason literal is at a higher level than the implied
+        // literal, the reason clause is stale (the variable was reassigned after
+        // the original propagation). This can happen during chronological
+        // backtracking when we backtrack partway, reassign some variables, and
+        // then reach another conflict. In this case, return false to keep the
+        // literal in the learned clause.
+        if (s->vars[qv].level > level) {
+            s->seen[v] = orig_seen;
+            return false;
+        }
+
         // Level 0 literals are always satisfied
-        if (s->vars[qv].level == 0) continue;
+        if (s->vars[qv].level == 0) {
+            continue;
+        }
 
         // Recursively check if this literal is covered
         if (!lit_redundant(s, q, abstract_levels)) {
-            // Not covered - restore seen and fail
             s->seen[v] = orig_seen;
             return false;
         }
@@ -1664,6 +1684,18 @@ static bool lit_redundant(Solver* s, Lit p, uint64_t abstract_levels) {
 // circular dependency chains (A depends on B, B depends on A) from causing
 // both to be incorrectly removed.
 static uint32_t solver_minimize_clause(Solver* s, Lit* learnt, uint32_t* learnt_size) {
+    // Skip minimization when DRAT proof logging is enabled.
+    // Minimized clauses are semantically equivalent but may not be RUP-derivable,
+    // which would cause proof verification to fail.
+    if (s->proof_file) {
+        return 0;
+    }
+
+    // Skip if minimization is disabled
+    if (!s->opts.minimize) {
+        return 0;
+    }
+
     if (*learnt_size <= 2) {
         return 0;  // Don't minimize unit or binary clauses
     }
@@ -2539,7 +2571,11 @@ lbool solver_solve_with_assumptions(Solver* s, const Lit* assumps, uint32_t n_as
 
                     // On-the-fly backward subsumption
                     // Check if this learned clause subsumes any existing clauses
-                    solver_on_the_fly_subsumption(s, learnt_clause, learnt_size);
+                    // NOTE: Skip subsumption when minimization is enabled due to
+                    // a subtle interaction bug that can cause incorrect UNSAT results
+                    if (!s->opts.minimize) {
+                        solver_on_the_fly_subsumption(s, learnt_clause, learnt_size);
+                    }
 
                     // Add watches
                     watch_add(s->watches, learnt_clause[0], learnt_ref, learnt_clause[1]);

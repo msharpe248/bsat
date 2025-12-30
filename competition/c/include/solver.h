@@ -59,6 +59,7 @@ typedef struct SolverOpts {
     uint32_t glue_lbd;          // LBD threshold for glue clauses (2)
     double   reduce_fraction;   // Fraction of learned clauses to keep (0.5)
     uint32_t reduce_interval;   // Conflicts between reductions (2000)
+    bool     minimize;          // Enable clause minimization (true)
 
     // Preprocessing
     bool     bce;               // Enable blocked clause elimination (true)
