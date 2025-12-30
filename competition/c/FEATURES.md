@@ -421,13 +421,13 @@ kill -USR1 <pid>         # Get progress update
 
 ## References
 
-- **MiniSat**: Een & Sorensson (2003)
+- **MiniSat**: Eén & Sörensson (2003)
 - **Glucose**: Audemard & Simon (2009)
 - **Chaff/VSIDS**: Moskewicz et al. (2001)
-- **LRB**: Liang et al. (2016)
+- **MapleSat/LRB**: Liang et al. (2016)
 - **Lingeling**: Biere (2010-2020)
 - **Kissat**: Biere et al. (2020)
-- **SatELite**: Een & Biere (2005)
+- **SatELite**: Eén & Biere (2005)
 
 ---
 

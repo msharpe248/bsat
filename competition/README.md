@@ -162,6 +162,7 @@ No build required. Uses Python 3.7+ with no external dependencies.
 
 - **MiniSat**: Eén & Sörensson (2003) - Original modern CDCL
 - **Glucose**: Audemard & Simon (2009) - LBD and adaptive restarts
+- **MapleSat**: Liang et al. (2016) - LRB/CHB branching heuristic
 - **Kissat**: Biere et al. (2020) - State-of-the-art techniques
 - **SatELite**: Eén & Biere (2005) - Variable elimination
 

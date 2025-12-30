@@ -377,10 +377,10 @@ make help         # Show available targets
 1. **CDCL**: Marques-Silva & Sakallah (1996) - GRASP
 2. **VSIDS**: Moskewicz et al. (2001) - Chaff
 3. **Glucose**: Audemard & Simon (2009) - LBD and adaptive restarts
-4. **LRB**: Liang et al. (2016) - Learning Rate Branching
+4. **MapleSat/LRB**: Liang et al. (2016) - Learning Rate Branching
 5. **Phase Saving**: Pipatsrisawat & Darwiche (2007)
-6. **BVE**: Een & Biere (2005) - SatELite
-7. **Target Phases**: Biere et al. (2020) - Kissat
+6. **SatELite/BVE**: Eén & Biere (2005) - Variable elimination
+7. **Kissat**: Biere et al. (2020) - Target phases, state-of-the-art techniques
 
 ---
 
