@@ -166,6 +166,12 @@ SolverOpts default_opts(void) {
         .subsumption = true,
         .var_elim = true,
 
+        // Local search options (opt-in)
+        .local_search = false,    // Disabled by default
+        .ls_interval = 5000,      // Run local search every 5000 conflicts
+        .ls_max_flips = 100000,   // Max flips per local search call
+        .ls_noise = 0.5,          // WalkSAT noise parameter
+
         .verbose = false,
         .debug = false,
         .quiet = false,
@@ -387,6 +393,12 @@ Solver* solver_new_with_opts(const SolverOpts* opts) {
     s->rephase.conflicts_since = 0;
     s->rephase.rephase_count = 0;
 
+    // Initialize local search state
+    s->local_search.state = NULL;  // Allocated on demand when first needed
+    s->local_search.conflicts_since = 0;
+    s->local_search.calls = 0;
+    s->local_search.successes = 0;
+
     s->result = UNDEF;
 
     return s;
@@ -413,6 +425,11 @@ void solver_free(Solver* s) {
     free(s->binary_reasons);
     free(s->restart.recent_lbds);  // Free Glucose sliding window buffer
     free(s->rephase.best_phase);   // Free rephasing best phase array
+
+    // Free local search state
+    if (s->local_search.state) {
+        local_search_free(s->local_search.state);
+    }
 
     // Free BVE state
     elim_free(s);
@@ -1334,6 +1351,56 @@ static void solver_rephase(Solver* s) {
                 s->rephase.best_trail_size,
                 s->num_vars);
     }
+}
+
+/*********************************************************************
+ * Local Search Hybridization
+ *********************************************************************/
+
+/**
+ * Try to solve with local search.
+ * Returns true if a satisfying assignment was found.
+ */
+static bool solver_try_local_search(Solver* s) {
+    if (!s->opts.local_search) return false;
+
+    // Initialize local search state on first use
+    if (!s->local_search.state) {
+        s->local_search.state = local_search_init(s);
+        if (!s->local_search.state) {
+            // Allocation failed, disable local search
+            s->opts.local_search = false;
+            return false;
+        }
+    }
+
+    s->local_search.calls++;
+
+    if (IS_VERBOSE(s)) {
+        fprintf(stderr, "c [Local Search #%u] Starting with %u max flips, noise=%.2f\n",
+                s->local_search.calls, s->opts.ls_max_flips, s->opts.ls_noise);
+    }
+
+    // Run local search
+    bool found = local_search_run(s, s->local_search.state,
+                                  s->opts.ls_max_flips, s->opts.ls_noise);
+
+    if (found) {
+        s->local_search.successes++;
+        // Copy solution back to solver
+        local_search_copy_solution(s, s->local_search.state);
+
+        if (IS_VERBOSE(s)) {
+            fprintf(stderr, "c [Local Search] Found satisfying assignment!\n");
+        }
+    } else if (IS_VERBOSE(s)) {
+        fprintf(stderr, "c [Local Search] No solution found (%u unsat remaining)\n",
+                s->local_search.state->num_unsat);
+    }
+
+    s->local_search.conflicts_since = 0;
+
+    return found;
 }
 
 /*********************************************************************
@@ -2723,6 +2790,24 @@ lbool solver_solve_with_assumptions(Solver* s, const Lit* assumps, uint32_t n_as
                 s->rephase.conflicts_since++;
                 if (s->rephase.conflicts_since >= s->opts.rephase_interval) {
                     solver_rephase(s);
+                }
+            }
+
+            // Try local search periodically
+            if (s->opts.local_search) {
+                s->local_search.conflicts_since++;
+                if (s->local_search.conflicts_since >= s->opts.ls_interval) {
+                    // Backtrack to level 0 before local search
+                    solver_backtrack(s, 0);
+                    if (solver_try_local_search(s)) {
+                        // Local search found a solution
+                        s->result = TRUE;
+                        if (s->elim) {
+                            elim_extend_model(s);
+                        }
+                        free(learnt_clause);
+                        return TRUE;
+                    }
                 }
             }
 

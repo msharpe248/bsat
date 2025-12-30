@@ -11,6 +11,7 @@
 #include "arena.h"
 #include "watch.h"
 #include "elim.h"
+#include "local_search.h"
 #include <time.h>
 #include <stdio.h>
 
@@ -84,6 +85,12 @@ typedef struct SolverOpts {
     uint32_t inprocess_interval; // Conflicts between inprocessing (10000)
     bool     subsumption;       // Enable subsumption (true)
     bool     var_elim;          // Enable variable elimination (true)
+
+    // Local search hybridization
+    bool     local_search;      // Enable local search (false - opt-in)
+    uint32_t ls_interval;       // Conflicts between local search calls (5000)
+    uint32_t ls_max_flips;      // Max flips per local search call (100000)
+    double   ls_noise;          // Noise parameter for WalkSAT (0.5)
 
     // Output options
     bool     verbose;           // Verbose output (false) - same as BSAT_VERBOSE
@@ -231,6 +238,14 @@ typedef struct Solver {
         uint32_t conflicts_since; // Conflicts since last rephase
         uint32_t rephase_count;   // Number of rephases performed
     } rephase;
+
+    // Local search state
+    struct {
+        LocalSearchState* state;      // Local search state (NULL until first use)
+        uint64_t conflicts_since;     // Conflicts since last local search
+        uint32_t calls;               // Number of local search calls
+        uint32_t successes;           // Number of successful local search calls
+    } local_search;
 
     // Result
     lbool result;             // SAT/UNSAT/UNKNOWN

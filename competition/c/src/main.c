@@ -89,6 +89,12 @@ static void print_usage(const char* program) {
     printf("  --inprocess               Enable inprocessing (vivification, etc.)\n");
     printf("  --inprocess-interval <n>  Conflicts between inprocessing (default: 10000)\n");
     printf("\n");
+    printf("Local search hybridization:\n");
+    printf("  --local-search            Enable WalkSAT-style local search\n");
+    printf("  --ls-interval <n>         Conflicts between local search calls (default: 5000)\n");
+    printf("  --ls-max-flips <n>        Max flips per local search call (default: 100000)\n");
+    printf("  --ls-noise <f>            WalkSAT noise parameter 0.0-1.0 (default: 0.5)\n");
+    printf("\n");
     printf("Proof logging:\n");
     printf("  --proof <file>            Write DRAT proof to file\n");
     printf("  --binary-proof            Use binary DRAT format (more compact)\n");
@@ -151,6 +157,10 @@ static struct option long_options[] = {
     {"no-probing",      no_argument,       0, 0},
     {"inprocess",       no_argument,       0, 0},
     {"inprocess-interval", required_argument, 0, 0},
+    {"local-search",    no_argument,       0, 0},
+    {"ls-interval",     required_argument, 0, 0},
+    {"ls-max-flips",    required_argument, 0, 0},
+    {"ls-noise",        required_argument, 0, 0},
     {"proof",           required_argument, 0, 0},
     {"binary-proof",    no_argument,       0, 0},
     {0, 0, 0, 0}
@@ -287,6 +297,14 @@ int main(int argc, char** argv) {
                     opts.inprocess = true;
                 } else if (strcmp(long_options[option_index].name, "inprocess-interval") == 0) {
                     opts.inprocess_interval = (uint32_t)atol(optarg);
+                } else if (strcmp(long_options[option_index].name, "local-search") == 0) {
+                    opts.local_search = true;
+                } else if (strcmp(long_options[option_index].name, "ls-interval") == 0) {
+                    opts.ls_interval = (uint32_t)atol(optarg);
+                } else if (strcmp(long_options[option_index].name, "ls-max-flips") == 0) {
+                    opts.ls_max_flips = (uint32_t)atol(optarg);
+                } else if (strcmp(long_options[option_index].name, "ls-noise") == 0) {
+                    opts.ls_noise = atof(optarg);
                 } else if (strcmp(long_options[option_index].name, "proof") == 0) {
                     opts.proof_path = optarg;
                 } else if (strcmp(long_options[option_index].name, "binary-proof") == 0) {
