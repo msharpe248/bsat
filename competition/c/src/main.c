@@ -73,6 +73,7 @@ static void print_usage(const char* program) {
     printf("  --reduce-fraction <f>     Fraction of clauses to keep (default: 0.5)\n");
     printf("  --reduce-interval <n>     Conflicts between reductions (default: 2000)\n");
     printf("  --no-minimize             Disable clause minimization\n");
+    printf("  --no-subsumption          Disable on-the-fly subsumption\n");
     printf("\n");
     printf("Preprocessing:\n");
     printf("  --no-bce                  Disable blocked clause elimination\n");
@@ -137,6 +138,7 @@ static struct option long_options[] = {
     {"reduce-fraction", required_argument, 0, 0},
     {"reduce-interval", required_argument, 0, 0},
     {"no-minimize",     no_argument,       0, 0},
+    {"no-subsumption",  no_argument,       0, 0},
     {"no-bce",          no_argument,       0, 0},
     {"elim",            no_argument,       0, 0},
     {"no-elim",         no_argument,       0, 0},
@@ -259,6 +261,8 @@ int main(int argc, char** argv) {
                     opts.reduce_interval = (uint32_t)atol(optarg);
                 } else if (strcmp(long_options[option_index].name, "no-minimize") == 0) {
                     opts.minimize = false;
+                } else if (strcmp(long_options[option_index].name, "no-subsumption") == 0) {
+                    opts.subsumption = false;
                 } else if (strcmp(long_options[option_index].name, "no-bce") == 0) {
                     opts.bce = false;
                 } else if (strcmp(long_options[option_index].name, "elim") == 0) {

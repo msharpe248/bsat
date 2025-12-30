@@ -2603,9 +2603,7 @@ lbool solver_solve_with_assumptions(Solver* s, const Lit* assumps, uint32_t n_as
 
                     // On-the-fly backward subsumption
                     // Check if this learned clause subsumes any existing clauses
-                    // NOTE: Skip subsumption when minimization is enabled due to
-                    // a subtle interaction bug that can cause incorrect UNSAT results
-                    if (!s->opts.minimize) {
+                    if (s->opts.subsumption) {
                         solver_on_the_fly_subsumption(s, learnt_clause, learnt_size);
                     }
 
