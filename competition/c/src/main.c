@@ -58,6 +58,10 @@ static void print_usage(const char* program) {
     printf("  --glucose-window-size <n> Window size for short-term average (default: 50)\n");
     printf("  --glucose-k <f>           Threshold multiplier (default: 0.8)\n");
     printf("\n");
+    printf("Branching heuristic:\n");
+    printf("  --lrb                     Use LRB/CHB instead of VSIDS\n");
+    printf("  --vsids                   Use VSIDS (default)\n");
+    printf("\n");
     printf("Phase saving:\n");
     printf("  --no-phase-saving         Disable phase saving\n");
     printf("  --random-phase            Enable random phase selection\n");
@@ -122,6 +126,8 @@ static struct option long_options[] = {
     {"glucose-min-conflicts", required_argument, 0, 0},
     {"glucose-window-size", required_argument, 0, 0},
     {"glucose-k",       required_argument, 0, 0},
+    {"lrb",             no_argument,       0, 0},
+    {"vsids",           no_argument,       0, 0},
     {"no-phase-saving", no_argument,       0, 0},
     {"random-phase",    no_argument,       0, 0},
     {"no-random-phase", no_argument,       0, 0},
@@ -231,6 +237,10 @@ int main(int argc, char** argv) {
                     opts.glucose_window_size = (uint32_t)atol(optarg);
                 } else if (strcmp(long_options[option_index].name, "glucose-k") == 0) {
                     opts.glucose_k = atof(optarg);
+                } else if (strcmp(long_options[option_index].name, "lrb") == 0) {
+                    opts.lrb = true;
+                } else if (strcmp(long_options[option_index].name, "vsids") == 0) {
+                    opts.lrb = false;
                 } else if (strcmp(long_options[option_index].name, "no-phase-saving") == 0) {
                     opts.phase_saving = false;
                 } else if (strcmp(long_options[option_index].name, "random-phase") == 0) {

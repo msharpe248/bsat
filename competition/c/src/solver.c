@@ -110,9 +110,13 @@ SolverOpts default_opts(void) {
         .max_decisions = 0,        // Unlimited
         .max_time = 0.0,          // Unlimited
 
+        // Branching heuristic
+        .lrb = false,             // Use VSIDS by default
         .var_decay = 0.95,
         .var_inc = 1.0,
         .clause_decay = 0.999,
+        .lrb_step_min = 0.06,     // Minimum step for LRB (from MapleSAT)
+        .lrb_step_max = 0.4,      // Maximum step for LRB (from MapleSAT)
 
         .restart_first = 100,
         .restart_inc = 1.5,
@@ -267,21 +271,49 @@ static Var heap_extract_max(Solver* s) {
 }
 
 static void bump_var_activity(Solver* s, Var v, double inc) {
-    s->vars[v].activity += inc;
-    if (s->vars[v].heap_pos != UINT32_MAX) {
-        heap_percolate_up(s, s->vars[v].heap_pos);
+    if (s->opts.lrb) {
+        // Hybrid VSIDS+LRB: Use VSIDS-style additive bumps with LRB-inspired
+        // weighting based on recency of conflict participation
+        uint64_t current = s->stats.conflicts;
+        uint64_t last = s->vars[v].last_conflict;
+        uint64_t age = (current > last) ? (current - last) : 1;
+
+        // Reward decreases with age: recent participation gets more weight
+        // Use inverse sqrt decay (similar to CHB but additive like VSIDS)
+        double multiplier = 1.0 / (1.0 + 0.1 * sqrt((double)age));
+
+        // Add weighted increment (like VSIDS but with recency bonus)
+        s->vars[v].activity += s->order.var_inc * multiplier;
+        s->vars[v].last_conflict = current;
+
+        // Rescale if needed (same as VSIDS)
+        if (s->vars[v].activity > 1e100) {
+            for (Var i = 1; i <= s->num_vars; i++) {
+                s->vars[i].activity *= 1e-100;
+            }
+            s->order.var_inc *= 1e-100;
+        }
+    } else {
+        // Standard VSIDS: add increment to activity
+        s->vars[v].activity += inc;
+
+        // Rescale if needed
+        if (s->vars[v].activity > 1e100) {
+            for (Var i = 1; i <= s->num_vars; i++) {
+                s->vars[i].activity *= 1e-100;
+            }
+            s->order.var_inc *= 1e-100;
+        }
     }
 
-    // Rescale if needed
-    if (s->vars[v].activity > 1e100) {
-        for (Var i = 1; i <= s->num_vars; i++) {
-            s->vars[i].activity *= 1e-100;
-        }
-        s->order.var_inc *= 1e-100;
+    // Update heap position
+    if (s->vars[v].heap_pos != UINT32_MAX) {
+        heap_percolate_up(s, s->vars[v].heap_pos);
     }
 }
 
 static void decay_var_inc(Solver* s) {
+    // Apply decay for both VSIDS and hybrid LRB
     s->order.var_inc /= s->order.var_decay;
 }
 

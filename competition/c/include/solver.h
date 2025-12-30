@@ -24,10 +24,13 @@ typedef struct SolverOpts {
     uint32_t max_decisions;      // Decision limit (0 = unlimited)
     double   max_time;           // Time limit in seconds (0 = unlimited)
 
-    // VSIDS parameters
-    double   var_decay;          // Variable activity decay (0.95)
+    // Branching heuristic
+    bool     lrb;                // Use LRB/CHB instead of VSIDS (false)
+    double   var_decay;          // Variable activity decay for VSIDS (0.95)
     double   var_inc;            // Variable activity increment (1.0)
     double   clause_decay;       // Clause activity decay (0.999)
+    double   lrb_step_min;       // Minimum step size for LRB (0.06)
+    double   lrb_step_max;       // Maximum step size for LRB (0.4)
 
     // Restart parameters
     uint32_t restart_first;      // First restart interval (100)
@@ -100,7 +103,7 @@ SolverOpts default_opts(void);
  *********************************************************************/
 
 typedef struct VarInfo {
-    // VSIDS activity - first for 8-byte alignment and cache-friendly heap access
+    // VSIDS/LRB activity - first for 8-byte alignment and cache-friendly heap access
     double   activity;       // Variable activity score
 
     // Core assignment state - most frequently accessed together
@@ -112,6 +115,7 @@ typedef struct VarInfo {
     // Less frequently accessed
     uint32_t last_polarity;  // Last conflict where polarity was saved
     uint32_t heap_pos;       // Position in VSIDS heap
+    uint64_t last_conflict;  // Last conflict where variable participated (for LRB)
 
     // Phase saving - 1 byte, naturally packs at end with padding
     bool     polarity;       // Saved polarity
