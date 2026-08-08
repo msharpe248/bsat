@@ -89,6 +89,8 @@ For detailed instructions, see `VALIDATION_GUIDE.md`.
 - **DPLL**: Classic backtracking with unit propagation
 - **CDCL**: Conflict-Driven Clause Learning (industry standard)
 - **Schöning**: Randomized 3-SAT solver
+- **P-BIT**: Probabilistic-bit Gibbs sampling / simulated annealing (core solver; benchmarked
+  via `run_all_benchmarks.py` with a CDCL fallback, added after the historical runs below)
 
 ### Research Solvers
 - **CoBD-SAT**: Community-Based Decomposition SAT

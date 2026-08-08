@@ -10,6 +10,7 @@ Supported Solvers:
 - Original Research: CoBD-SAT, BB-CDCL, LA-CDCL, CGPM-SAT
 - New Research: TPM-SAT, SSTA-SAT, VPL-SAT, CQP-SAT, MAB-SAT, CCG-SAT, HAS-SAT, CEGP-SAT
 - Bio-Inspired: MARKET-SAT, PHYSARUM-SAT, FOLD-SAT
+- Physics-Inspired (core solver): P-BIT
 
 Usage:
     ./run_all_benchmarks.py                    # Run all benchmarks with 120s timeout
@@ -127,6 +128,30 @@ try:
     HAS_FOLD = True
 except:
     HAS_FOLD = False
+
+try:
+    from bsat.pbit import PBitSolver
+    HAS_PBIT = True
+except:
+    HAS_PBIT = False
+
+
+class PBitBenchmarkSolver:
+    """P-bit solver with CDCL fallback for benchmark correctness.
+
+    The core p-bit solver is incomplete: None means "no solution found",
+    not UNSAT. The benchmark runner interprets None as UNSAT, so fall back
+    to CDCL when the p-bit search gives up (same contract as FOLD-SAT).
+    """
+
+    def __init__(self, cnf):
+        self.cnf = cnf
+
+    def solve(self):
+        result = PBitSolver(self.cnf, seed=42).solve()
+        if result is None:
+            result = CDCLSolver(self.cnf).solve()
+        return result
 
 
 def _run_solver_worker(solver_name, cnf_file_path, result_queue):
@@ -253,6 +278,8 @@ def _run_solver_worker(solver_name, cnf_file_path, result_queue):
             solver = PHYSARUMSATSolver(cnf, max_iterations=1000)
         elif solver_name == "FOLD-SAT" and FOLDSATSolver:
             solver = FOLDSATSolver(cnf, max_iterations=10000, T_initial=10.0)
+        elif solver_name == "P-BIT" and HAS_PBIT:
+            solver = PBitBenchmarkSolver(cnf)
         else:
             result_queue.put(("ERROR", f"Unknown solver: {solver_name}", 0.0))
             return
@@ -322,6 +349,10 @@ def get_all_solvers():
         solvers.append(("PHYSARUM-SAT", lambda cnf: PHYSARUMSATSolver(cnf, max_iterations=1000)))
     if HAS_FOLD:
         solvers.append(("FOLD-SAT", lambda cnf: FOLDSATSolver(cnf, max_iterations=10000, T_initial=10.0)))
+
+    # Physics-inspired core solver (src/bsat/pbit.py, benchmarked with CDCL fallback)
+    if HAS_PBIT:
+        solvers.append(("P-BIT", lambda cnf: PBitBenchmarkSolver(cnf)))
 
     return solvers
 

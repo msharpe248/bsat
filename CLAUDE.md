@@ -27,6 +27,7 @@ python tests/test_hornsat.py
 python tests/test_xorsat.py
 python tests/test_walksat.py
 python tests/test_schoening.py
+python tests/test_pbit.py
 python tests/test_preprocessing.py
 python tests/test_reductions.py
 python tests/test_dimacs.py
@@ -51,6 +52,7 @@ python examples/example_hornsat.py
 python examples/example_xorsat.py
 python examples/example_walksat.py
 python examples/example_schoening.py
+python examples/example_pbit.py
 python examples/example_preprocessing.py
 python examples/example_enumerate_solutions.py
 python examples/example_reductions.py
@@ -175,9 +177,16 @@ Each solver is implemented as both a class (for advanced usage) and convenience 
    - Functions: `solve_schoening(cnf, seed=None)`, `get_schoening_stats(cnf)`
    - Incomplete but provably better than O(2^n) for 3SAT
 
+9. **P-Bit Solver** (`pbit.py`) - *Probabilistic Computing*
+   - Gibbs sampling / simulated annealing modeled on p-bit hardware (stochastic MTJs)
+   - Class: `PBitSolver`
+   - Functions: `solve_pbit(cnf, sweeps=1000, restarts=10, beta_min=0.1, beta_max=4.0, schedule='geometric', seed=None)`, `get_pbit_stats(cnf, ...)`
+   - Energy = number of unsatisfied clauses; heat-bath update P(flip) = σ(−β·ΔE)
+   - Incomplete; handles arbitrary clause lengths (any k-SAT)
+
 ### Advanced Features
 
-9. **Preprocessing** (`preprocessing.py`)
+10. **Preprocessing** (`preprocessing.py`)
    - Simplification techniques: unit propagation, subsumption, decomposition
    - Class: `SATPreprocessor`
    - Functions:
@@ -186,7 +195,7 @@ Each solver is implemented as both a class (for advanced usage) and convenience 
      - `decompose_and_preprocess(cnf)` - Combined decomposition + simplification
    - Returns statistics on reductions achieved
 
-10. **k-SAT to 3-SAT Reduction** (`reductions.py`)
+11. **k-SAT to 3-SAT Reduction** (`reductions.py`)
     - Convert any k-SAT formula to equisatisfiable 3-SAT using auxiliary variables
     - Functions:
       - `reduce_to_3sat(cnf)` - Perform reduction
@@ -195,7 +204,7 @@ Each solver is implemented as both a class (for advanced usage) and convenience 
       - `is_3sat(cnf)`, `get_max_clause_size(cnf)` - Check formula properties
     - Theory: Long clauses split into 3-literal clauses linked by new variables
 
-11. **DIMACS Format** (`dimacs.py`)
+12. **DIMACS Format** (`dimacs.py`)
     - Industry-standard file format for SAT competitions
     - Functions:
       - `parse_dimacs(text)` / `read_dimacs_file(path)` - Parse DIMACS CNF
@@ -217,6 +226,7 @@ src/bsat/
 ├── xorsat.py            # XOR-SAT Gaussian elimination solver
 ├── walksat.py           # WalkSAT randomized local search
 ├── schoening.py         # Schöning's randomized k-SAT solver
+├── pbit.py              # P-bit Gibbs-sampling/annealing solver
 ├── preprocessing.py     # SAT preprocessing and decomposition
 ├── reductions.py        # k-SAT to 3-SAT reduction
 └── dimacs.py            # DIMACS format I/O
@@ -230,6 +240,7 @@ tests/
 ├── test_xorsat.py
 ├── test_walksat.py
 ├── test_schoening.py
+├── test_pbit.py
 ├── test_preprocessing.py
 ├── test_reductions.py
 ├── test_dimacs.py

@@ -9,6 +9,7 @@ from .xorsat import XORSATSolver, solve_xorsat, get_xorsat_stats
 from .walksat import WalkSATSolver, solve_walksat, get_walksat_stats
 from .cdcl import CDCLSolver, solve_cdcl, get_cdcl_stats
 from .schoening import SchoeningSolver, solve_schoening, get_schoening_stats
+from .pbit import PBitSolver, solve_pbit, get_pbit_stats, PBitStats
 from .reductions import (
     reduce_to_3sat,
     extract_original_solution,
@@ -66,6 +67,10 @@ __all__ = [
     'SchoeningSolver',
     'solve_schoening',
     'get_schoening_stats',
+    'PBitSolver',
+    'solve_pbit',
+    'get_pbit_stats',
+    'PBitStats',
     'reduce_to_3sat',
     'extract_original_solution',
     'solve_with_reduction',

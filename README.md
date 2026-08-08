@@ -14,6 +14,7 @@ A Python package for learning and solving Boolean satisfiability (SAT) problems 
 ✅ **XOR-SAT Solver**: O(n³) polynomial-time solver using Gaussian elimination over GF(2)
 ✅ **WalkSAT Solver**: Randomized local search (incomplete but often very fast)
 ✅ **Schöning's Algorithm**: Randomized k-SAT solver with O(1.334^n) expected runtime for 3SAT
+✅ **P-Bit Solver**: Probabilistic-bit Gibbs sampling with simulated annealing (physics-inspired, incomplete)
 
 ### Research Solvers 🔬
 ✅ **15 Advanced Research Solvers** - Novel algorithms achieving **100-2710× speedups**
@@ -177,6 +178,27 @@ print(f"Tries: {stats.tries}")
 print(f"Total flips: {stats.total_flips}")
 ```
 
+### P-Bit Solver (Probabilistic Computing)
+
+```python
+from bsat import solve_pbit, get_pbit_stats, CNFExpression
+
+# Gibbs sampling with simulated annealing, modeled on p-bit hardware
+formula = "(a | b | c) & (~a | b | ~c) & (a | ~b | c)"
+cnf = CNFExpression.parse(formula)
+
+result = solve_pbit(cnf, seed=42)
+if result:
+    print(f"Solution: {result}")
+else:
+    print("No solution found (algorithm is incomplete)")
+
+# Get detailed statistics (energy = number of unsatisfied clauses)
+result, stats = get_pbit_stats(cnf, seed=42)
+print(f"Sweeps: {stats.sweeps}")
+print(f"Best energy: {stats.best_energy}")  # 0 means solved
+```
+
 ### SAT Preprocessing (Simplification)
 
 ```python
@@ -298,7 +320,7 @@ stats = solver.get_statistics()
 
 📚 **[Complete Research Documentation](research/README.md)** - Detailed algorithm descriptions, usage examples, and theoretical foundations
 
-📊 **[Benchmark Results](research/BENCHMARKS.md)** - Comprehensive performance analysis across all 15 solvers
+📊 **[Benchmark Results](research/BENCHMARKS.md)** - Comprehensive performance analysis across all 16 benchmarked solvers (15 research + P-BIT)
 
 🔬 **[Algorithm Showcase](research/ALGORITHM_SHOWCASE.md)** - In-depth algorithm descriptions and design motivation
 
@@ -393,9 +415,11 @@ Choose the right solver for your problem:
 | **Modern SAT** | `solve_cdcl()` | O(2ⁿ)* | ✅ Yes | Structured problems, industrial instances |
 | **Random 3SAT** | `solve_schoening()` | O(1.334ⁿ)† | ❌ No | Random 3SAT, theoretical analysis |
 | **Fast SAT** | `solve_walksat()` | Varies | ❌ No | Large SAT instances where speed > completeness |
+| **Physics-based SAT** | `solve_pbit()` | Varies‡ | ❌ No | Boltzmann sampling / annealing demos, any k-SAT |
 
 *Exponential worst-case, but CDCL much faster in practice due to learning
 †Expected time for 3SAT - provably better than O(2ⁿ)!
+‡Gibbs-sampling heuristic — no runtime guarantee (exponential mixing in the worst case)
 
 ### Research Solvers
 
@@ -433,6 +457,7 @@ Choose the right solver for your problem:
 **For educational/theoretical:**
 - Random 3SAT analysis? → Try `solve_schoening()` (provably O(1.334^n))
 - Want fast incomplete solver? → Try `solve_walksat()`
+- Curious about probabilistic/Ising hardware? → Try `solve_pbit()` (Gibbs sampling + annealing)
 - Explore novel paradigms? → Try bio-inspired solvers (MARKET-SAT, PHYSARUM-SAT, FOLD-SAT)
 
 ## Examples
@@ -450,6 +475,7 @@ python examples/example_hornsat.py    # Horn-SAT solver examples
 python examples/example_xorsat.py     # XOR-SAT solver examples
 python examples/example_walksat.py    # WalkSAT solver examples
 python examples/example_schoening.py       # Schöning's algorithm examples
+python examples/example_pbit.py            # P-bit solver examples
 python examples/example_preprocessing.py   # SAT preprocessing examples
 python examples/example_enumerate_solutions.py # Solution enumeration examples
 python examples/example_reductions.py      # k-SAT to 3-SAT reduction examples
@@ -531,6 +557,7 @@ python tests/test_hornsat.py       # Horn-SAT tests
 python tests/test_xorsat.py      # XOR-SAT tests
 python tests/test_walksat.py     # WalkSAT tests
 python tests/test_schoening.py     # Schöning's algorithm tests
+python tests/test_pbit.py          # P-bit solver tests
 python tests/test_preprocessing.py # Preprocessing tests
 python tests/test_reductions.py    # k-SAT reduction tests
 python tests/test_dimacs.py        # DIMACS format tests
@@ -561,6 +588,7 @@ pytest tests/
 - [XOR-SAT Solver](docs/xorsat-solver.md) - Polynomial-time XOR solver via Gaussian elimination
 - [WalkSAT Solver](docs/walksat-solver.md) - Randomized local search (incomplete but fast)
 - [Schöning's Algorithm](docs/schoening-solver.md) - Provably O(1.334^n) randomized 3SAT solver
+- [P-Bit Solver](docs/pbit-solver.md) - Probabilistic-bit Gibbs sampling / simulated annealing
 - [SAT Preprocessing](docs/preprocessing.md) - Simplification and decomposition techniques
 - [k-SAT to 3-SAT Reduction](docs/introduction.md#reducing-k-sat-to-3-sat) - Theory and implementation
 - [DIMACS Format](docs/dimacs.md) - Industry-standard file format for SAT solvers

@@ -393,6 +393,34 @@ This suite explores completely new paradigms for SAT solving, drawing inspiratio
 
 ---
 
+#### 16. P-BIT (Probabilistic-Bit Gibbs Sampling) ⚛️ PHYSICS-INSPIRED
+
+**Status**: ✅ Working (core production solver)
+
+**Location**: `src/bsat/pbit.py` *(core solver, registered here for benchmark comparison)*
+
+**Novelty**: Faithful software model of probabilistic-bit (p-bit) hardware — the building block of Ising machines and p-computers built from stochastic magnetic tunnel junctions.
+
+**Description**: Each variable is a p-bit that flips with probability σ(−β·ΔE), where the energy E is the number of unsatisfied clauses — the exact heat-bath Gibbs update of p-bit devices. Annealing the inverse temperature β from hot (random sampling) to cold (greedy descent) performs simulated annealing whose ground states are exactly the satisfying assignments.
+
+**Key Features**:
+- **Heat-bath p-bit update**: P(flip) = σ(−β·ΔE), the p-bit device equation m = sgn(rand(−1,1) + tanh(I))
+- **Clause-count energy**: E = #unsatisfied clauses — exact for any k-SAT, no auxiliary variables
+- **β-annealing**: geometric or linear schedules from β_min to β_max, plus random restarts
+- **Incremental ΔE**: occurrence lists give O(deg(v)) per p-bit update
+- **Reproducible**: private RNG + sorted variable order
+
+**Theoretical Foundation**:
+- Camsari, Faria, Sutton, Datta (2017): "Stochastic p-bits for invertible logic", PRX 7, 031014
+- Aadit et al. (2022): "Massively parallel probabilistic computing with sparse Ising machines", Nature Electronics 5
+- Kirkpatrick et al. (1983) simulated annealing; Gibbs sampling of the Boltzmann distribution
+
+**Performance**: Incomplete solver (like WalkSAT/Schöning); the benchmark registration wraps it with a CDCL fallback so None never masquerades as UNSAT. The core solver itself has no fallback.
+
+**See**: `docs/pbit-solver.md` for full theory (including the Ising/QUBO hardware embedding)
+
+---
+
 ## Algorithm Comparison
 
 ### Original Research Suite
@@ -425,7 +453,13 @@ This suite explores completely new paradigms for SAT solving, drawing inspiratio
 | **PHYSARUM-SAT** | Slime Mold Network Flow | 🌟🌟 Groundbreaking | ✅ Working |
 | **FOLD-SAT** | Protein Folding Energy | 🌟🌟 Groundbreaking | ✅ Working |
 
-**Total**: 15 research solvers implemented and tested
+### Physics-Inspired (Core Solver)
+
+| Algorithm | Type | Novelty | Status |
+|-----------|------|---------|--------|
+| **P-BIT** | Probabilistic-Bit Gibbs Sampling | ⚛️ Physics-Inspired | ✅ Working |
+
+**Total**: 16 solvers in the benchmark suite (15 research solvers + 1 physics-inspired core solver)
 
 **See** `ALGORITHM_SHOWCASE.md` for comprehensive performance analysis and real-world applications.
 
