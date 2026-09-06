@@ -1,0 +1,130 @@
+diff --git a/competition/c/include/solver.h b/competition/c/include/solver.h
+index 8ceefc3..8a24edf 100644
+--- a/competition/c/include/solver.h
++++ b/competition/c/include/solver.h
+@@ -123,7 +123,6 @@ SolverOpts default_opts(void);
+ 
+ typedef struct VarInfo {
+     // VSIDS/LRB activity - first for 8-byte alignment and cache-friendly heap access
+-    double   activity;       // Variable activity score
+     uint64_t last_conflict;  // Last conflict where variable participated (for LRB)
+ 
+     // Assignment metadata; hot truth values live in Solver.values.
+@@ -162,6 +161,7 @@ typedef struct Solver {
+     // Core data structures
+     Arena*        arena;       // Clause allocator
+     WatchManager* watches;     // Watch lists
++    double*       activities; // Dense variable activity scores
+     VarInfo*      vars;        // Variable information, separate from hot values
+     uint8_t*      values;      // One authoritative UNDEF/FALSE/TRUE byte per variable
+ 
+diff --git a/competition/c/src/solver.c b/competition/c/src/solver.c
+index 20593bf..ae2aa68 100644
+--- a/competition/c/src/solver.c
++++ b/competition/c/src/solver.c
+@@ -215,13 +215,13 @@ static inline uint32_t heap_parent(uint32_t i) { return (i - 1) / 2; }
+ 
+ static void heap_percolate_up(Solver* s, uint32_t i) {
+     Var v = s->order.heap[i];
+-    double act = s->vars[v].activity;
++    double act = s->activities[v];
+ 
+     while (i > 0) {
+         uint32_t p = heap_parent(i);
+         Var pv = s->order.heap[p];
+ 
+-        if (s->vars[pv].activity >= act) break;
++        if (s->activities[pv] >= act) break;
+ 
+         s->order.heap[i] = pv;
+         s->vars[pv].heap_pos = i;
+@@ -234,17 +234,17 @@ static void heap_percolate_up(Solver* s, uint32_t i) {
+ 
+ static void heap_percolate_down(Solver* s, uint32_t i) {
+     Var v = s->order.heap[i];
+-    double act = s->vars[v].activity;
++    double act = s->activities[v];
+ 
+     while (heap_left(i) < s->order.size) {
+         uint32_t child = heap_left(i);
+         if (heap_right(i) < s->order.size &&
+-            s->vars[s->order.heap[heap_right(i)]].activity >
+-            s->vars[s->order.heap[child]].activity) {
++            s->activities[s->order.heap[heap_right(i)]] >
++            s->activities[s->order.heap[child]]) {
+             child = heap_right(i);
+         }
+ 
+-        if (act >= s->vars[s->order.heap[child]].activity) break;
++        if (act >= s->activities[s->order.heap[child]]) break;
+ 
+         s->order.heap[i] = s->order.heap[child];
+         s->vars[s->order.heap[i]].heap_pos = i;
+@@ -279,7 +279,7 @@ static void heap_remove(Solver* s, Var v) {
+     s->order.heap[pos] = last;
+     s->vars[last].heap_pos = pos;
+ 
+-    if (pos > 0 && s->vars[last].activity > s->vars[s->order.heap[heap_parent(pos)]].activity) {
++    if (pos > 0 && s->activities[last] > s->activities[s->order.heap[heap_parent(pos)]]) {
+         heap_percolate_up(s, pos);
+     } else {
+         heap_percolate_down(s, pos);
+@@ -307,24 +307,24 @@ static void bump_var_activity(Solver* s, Var v, double inc) {
+         double multiplier = 1.0 / (1.0 + 0.1 * sqrt((double)age));
+ 
+         // Add weighted increment (like VSIDS but with recency bonus)
+-        s->vars[v].activity += s->order.var_inc * multiplier;
++        s->activities[v] += s->order.var_inc * multiplier;
+         s->vars[v].last_conflict = current;
+ 
+         // Rescale if needed (same as VSIDS)
+-        if (s->vars[v].activity > 1e100) {
++        if (s->activities[v] > 1e100) {
+             for (Var i = 1; i <= s->num_vars; i++) {
+-                s->vars[i].activity *= 1e-100;
++                s->activities[i] *= 1e-100;
+             }
+             s->order.var_inc *= 1e-100;
+         }
+     } else {
+         // Standard VSIDS: add increment to activity
+-        s->vars[v].activity += inc;
++        s->activities[v] += inc;
+ 
+         // Rescale if needed
+-        if (s->vars[v].activity > 1e100) {
++        if (s->activities[v] > 1e100) {
+             for (Var i = 1; i <= s->num_vars; i++) {
+-                s->vars[i].activity *= 1e-100;
++                s->activities[i] *= 1e-100;
+             }
+             s->order.var_inc *= 1e-100;
+         }
+@@ -446,6 +446,7 @@ void solver_free(Solver* s) {
+     free(s->input);
+     free(s->vars);
+     free(s->values);
++    free(s->activities);
+     free(s->trail);
+     free(s->trail_lims);
+     free(s->clauses);
+@@ -497,6 +498,11 @@ static bool grow_var_arrays(Solver* s, uint32_t new_capacity) {
+     if (!new_values) return false;
+     s->values = new_values;
+ 
++    // Dense VSIDS scores avoid loading assignment metadata during heap comparisons.
++    double *new_activities = realloc(s->activities, alloc_size * sizeof *new_activities);
++    if (!new_activities) return false;
++    s->activities = new_activities;
++
+     // Grow trail
+     Trail* new_trail = (Trail*)realloc(s->trail, alloc_size * sizeof(Trail));
+     if (!new_trail) return false;
+@@ -585,6 +591,7 @@ Var solver_new_var(Solver* s) {
+ 
+     // Initialize new variable
+     memset(&s->vars[v], 0, sizeof(VarInfo));
++    s->activities[v] = 0;
+     s->values[v] = UNDEF;
+     s->vars[v].level = INVALID_LEVEL;
+     s->vars[v].reason = INVALID_CLAUSE;

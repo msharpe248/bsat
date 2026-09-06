@@ -1,0 +1,576 @@
+Analysis of sampling bsat-sampling (pid 83993) every 1 millisecond
+Process:         bsat-sampling [83993]
+Path:            /private/tmp/bsat-sampling
+Load Address:    0x1020f4000
+Identifier:      bsat-sampling
+Version:         0
+Code Type:       ARM64
+Platform:        macOS
+Parent Process:  python3.13 [83937]
+Target Type:     live task
+
+Date/Time:       2026-09-06 16:54:40.261 -0500
+Launch Time:     2026-09-06 16:54:40.238 -0500
+OS Version:      macOS 26.6.1 (25G76)
+Report Version:  7
+Analysis Tool:   /usr/bin/sample
+
+Physical footprint:         20.5M
+Physical footprint (peak):  20.5M
+Idle exit:                  untracked
+----
+
+Call graph:
+    2547 Thread_26847909   DispatchQueue_1: com.apple.main-thread  (serial)
+      2547 start  (in dyld) + 6992  [0x1884004e4]
+        2547 main  (in bsat-sampling) + 3160  [0x1020f91a0]  main.c:426
+          1548 solver_solve_with_assumptions  (in bsat-sampling) + 1660  [0x1020feaa4]  solver.c:1912
+          + 251 solver_propagate  (in bsat-sampling) + 544,548,...  [0x1020fbb4c,0x1020fbb50,...]  solver.c:903
+          + 185 solver_propagate  (in bsat-sampling) + 304  [0x1020fba5c]  solver.c:896
+          + 165 solver_propagate  (in bsat-sampling) + 1340,1348,...  [0x1020fbe68,0x1020fbe70,...]  solver.c:792
+          + 120 solver_propagate  (in bsat-sampling) + 512,524,...  [0x1020fbb2c,0x1020fbb38,...]  solver.c:0
+          + 116 solver_propagate  (in bsat-sampling) + 1248  [0x1020fbe0c]  solver.c:941
+          + 115 solver_propagate  (in bsat-sampling) + 580  [0x1020fbb70]  solver.c:908
+          + 90 solver_propagate  (in bsat-sampling) + 352  [0x1020fba8c]  solver.c:819
+          + 84 solver_propagate  (in bsat-sampling) + 1104,712,...  [0x1020fbd7c,0x1020fbbf4,...]  solver.c:928
+          + 60 solver_propagate  (in bsat-sampling) + 332,276,...  [0x1020fba78,0x1020fba40,...]  solver.c:818
+          + 48 solver_propagate  (in bsat-sampling) + 672,684  [0x1020fbbcc,0x1020fbbd8]  solver.c:926
+          + 45 solver_propagate  (in bsat-sampling) + 616  [0x1020fbb94]  solver.c:911
+          + 37 solver_propagate  (in bsat-sampling) + 412  [0x1020fbac8]  solver.c:819
+          + ! 37 clock  (in libsystem_c.dylib) + 52  [0x18867e8cc]
+          + !   37 getrusage  (in libsystem_kernel.dylib) + 8,4  [0x18878f804,0x18878f800]
+          + 26 solver_propagate  (in bsat-sampling) + 1280  [0x1020fbe2c]  solver.c:946
+          + ! 12 watch_add  (in bsat-sampling) + 0,12  [0x1021009a0,0x1021009ac]  watch.c:81
+          + ! 9 watch_add  (in bsat-sampling) + 44  [0x1021009cc]  watch.c:85
+          + ! 3 watch_add  (in bsat-sampling) + 32,36  [0x1021009c0,0x1021009c4]  watch.c:82
+          + ! 2 watch_add  (in bsat-sampling) + 40  [0x1021009c8]  watch.c:84
+          + 25 solver_propagate  (in bsat-sampling) + 632  [0x1020fbba4]  solver.c:918
+          + 23 solver_propagate  (in bsat-sampling) + 904  [0x1020fbcb4]  solver.c:931
+          + 22 solver_propagate  (in bsat-sampling) + 1140,1144  [0x1020fbda0,0x1020fbda4]  solver.c:963
+          + 21 solver_propagate  (in bsat-sampling) + 972  [0x1020fbcf8]  solver.c:932
+          + ! 21 clock  (in libsystem_c.dylib) + 52  [0x18867e8cc]
+          + !   21 getrusage  (in libsystem_kernel.dylib) + 8,4  [0x18878f804,0x18878f800]
+          + 18 solver_propagate  (in bsat-sampling) + 1084,1100,...  [0x1020fbd68,0x1020fbd78,...]  solver.c:939
+          + 17 solver_propagate  (in bsat-sampling) + 136  [0x1020fb9b4]  solver.c:793
+          + ! 17 clock  (in libsystem_c.dylib) + 52  [0x18867e8cc]
+          + !   17 getrusage  (in libsystem_kernel.dylib) + 8  [0x18878f804]
+          + 15 solver_propagate  (in bsat-sampling) + 1220  [0x1020fbdf0]  solver.c:974
+          + 14 watch_add  (in bsat-sampling) + 136,132,...  [0x102100a28,0x102100a24,...]  watch.c:87
+          + 12 solver_propagate  (in bsat-sampling) + 76  [0x1020fb978]  solver.c:793
+          + 10 solver_propagate  (in bsat-sampling) + 1200,1192  [0x1020fbddc,0x1020fbdd4]  solver.c:970
+          + 9 solver_propagate  (in bsat-sampling) + 260,252  [0x1020fba30,0x1020fba28]  solver.c:808
+          + 6 solver_propagate  (in bsat-sampling) + 532,536,...  [0x1020fbb40,0x1020fbb44,...]  solver.c:894
+          + 6 solver_propagate  (in bsat-sampling) + 652  [0x1020fbbb8]  solver.c:919
+          + 2 solver_propagate  (in bsat-sampling) + 212,228  [0x1020fba00,0x1020fba10]  solver.c:794
+          + 2 solver_propagate  (in bsat-sampling) + 1184,1188  [0x1020fbdcc,0x1020fbdd0]  solver.c:968
+          + 1 solver_propagate  (in bsat-sampling) + 264  [0x1020fba34]  solver.c:809
+          + 1 solver_propagate  (in bsat-sampling) + 700  [0x1020fbbe8]  solver.c:927
+          + 1 solver_propagate  (in bsat-sampling) + 888  [0x1020fbca4]  solver.c:930
+          + 1 solver_propagate  (in bsat-sampling) + 916  [0x1020fbcc0]  solver.c:932
+          523 solver_solve_with_assumptions  (in bsat-sampling) + 1740  [0x1020feaf4]  solver.c:1912
+          + 303 solver_analyze  (in bsat-sampling) + 2020  [0x1020fc7fc]  solver.c:1128
+          + ! 266 bump_var_activity  (in bsat-sampling) + 692,728,...  [0x1020fd1ac,0x1020fd1d0,...]  solver.c:335
+          + ! 16 bump_var_activity  (in bsat-sampling) + 212  [0x1020fcfcc]  solver.c:322
+          + ! 14 bump_var_activity  (in bsat-sampling) + 0  [0x1020fcef8]  solver.c:298
+          + ! 7 bump_var_activity  (in bsat-sampling) + 748  [0x1020fd1e4]  solver.c:337
+          + 62 solver_analyze  (in bsat-sampling) + 1980,1972,...  [0x1020fc7d4,0x1020fc7cc,...]  solver.c:1126
+          + 50 solver_analyze  (in bsat-sampling) + 1944  [0x1020fc7b0]  solver.c:1121
+          + 25 solver_analyze  (in bsat-sampling) + 300,292  [0x1020fc144,0x1020fc13c]  solver.c:1100
+          + 15 solver_analyze  (in bsat-sampling) + 340  [0x1020fc16c]  solver.c:1107
+          + 9 solver_analyze  (in bsat-sampling) + 2044  [0x1020fc814]  solver.c:0
+          + 9 solver_analyze  (in bsat-sampling) + 248  [0x1020fc110]  solver.c:1163
+          + 8 solver_analyze  (in bsat-sampling) + 1916  [0x1020fc794]  solver.c:1120
+          + 7 solver_analyze  (in bsat-sampling) + 1940  [0x1020fc7ac]  solver.c:1131
+          + 6 solver_analyze  (in bsat-sampling) + 1952  [0x1020fc7b8]  solver.c:1122
+          + 5 solver_analyze  (in bsat-sampling) + 312  [0x1020fc150]  solver.c:1101
+          + 4 solver_analyze  (in bsat-sampling) + 2032  [0x1020fc808]  solver.c:1130
+          + 3 solver_analyze  (in bsat-sampling) + 352  [0x1020fc178]  solver.c:1109
+          + 3 solver_analyze  (in bsat-sampling) + 364  [0x1020fc184]  solver.c:1114
+          + 2 solver_analyze  (in bsat-sampling) + 3732  [0x1020fceac]  solver.c:1078
+          + ! 1 bump_var_activity  (in bsat-sampling) + 640  [0x1020fd178]  solver.c:335
+          + ! 1 bump_var_activity  (in bsat-sampling) + 748  [0x1020fd1e4]  solver.c:337
+          + 2 solver_analyze  (in bsat-sampling) + 260  [0x1020fc11c]  solver.c:1097
+          + 2 solver_analyze  (in bsat-sampling) + 1960  [0x1020fc7c0]  solver.c:1124
+          + 2 solver_analyze  (in bsat-sampling) + 2072  [0x1020fc830]  solver.c:1134
+          + 1 solver_analyze  (in bsat-sampling) + 3688  [0x1020fce80]  solver.c:1076
+          + 1 solver_analyze  (in bsat-sampling) + 372  [0x1020fc18c]  solver.c:1116
+          + 1 solver_analyze  (in bsat-sampling) + 1956  [0x1020fc7bc]  solver.c:1123
+          + 1 solver_analyze  (in bsat-sampling) + 2084  [0x1020fc83c]  solver.c:1135
+          + 1 solver_analyze  (in bsat-sampling) + 2092  [0x1020fc844]  solver.c:1167
+          + 1 solver_analyze  (in bsat-sampling) + 2160  [0x1020fc888]  solver.c:1173
+          313 solver_solve_with_assumptions  (in bsat-sampling) + 1756  [0x1020feb04]  solver.c:1912
+          + 298 solver_minimize_clause  (in bsat-sampling) + 1544  [0x1020f9dd0]  minimize.c:274
+          + ! 294 lit_redundant  (in bsat-sampling) + 460  [0x1020fa048]  minimize.c:111
+          + ! : 282 lit_redundant  (in bsat-sampling) + 460  [0x1020fa048]  minimize.c:111
+          + ! : | 272 lit_redundant  (in bsat-sampling) + 460  [0x1020fa048]  minimize.c:111
+          + ! : | + 256 lit_redundant  (in bsat-sampling) + 460  [0x1020fa048]  minimize.c:111
+          + ! : | + ! 242 lit_redundant  (in bsat-sampling) + 460  [0x1020fa048]  minimize.c:111
+          + ! : | + ! : 223 lit_redundant  (in bsat-sampling) + 460  [0x1020fa048]  minimize.c:111
+          + ! : | + ! : | 212 lit_redundant  (in bsat-sampling) + 460  [0x1020fa048]  minimize.c:111
+          + ! : | + ! : | + 195 lit_redundant  (in bsat-sampling) + 460  [0x1020fa048]  minimize.c:111
+          + ! : | + ! : | + ! 184 lit_redundant  (in bsat-sampling) + 460  [0x1020fa048]  minimize.c:111
+          + ! : | + ! : | + ! : 180 lit_redundant  (in bsat-sampling) + 460  [0x1020fa048]  minimize.c:111
+          + ! : | + ! : | + ! : | 172 lit_redundant  (in bsat-sampling) + 460  [0x1020fa048]  minimize.c:111
+          + ! : | + ! : | + ! : | + 163 lit_redundant  (in bsat-sampling) + 460  [0x1020fa048]  minimize.c:111
+          + ! : | + ! : | + ! : | + ! 159 lit_redundant  (in bsat-sampling) + 460  [0x1020fa048]  minimize.c:111
+          + ! : | + ! : | + ! : | + ! : 155 lit_redundant  (in bsat-sampling) + 460  [0x1020fa048]  minimize.c:111
+          + ! : | + ! : | + ! : | + ! : | 149 lit_redundant  (in bsat-sampling) + 460  [0x1020fa048]  minimize.c:111
+          + ! : | + ! : | + ! : | + ! : | + 141 lit_redundant  (in bsat-sampling) + 460  [0x1020fa048]  minimize.c:111
+          + ! : | + ! : | + ! : | + ! : | + ! 135 lit_redundant  (in bsat-sampling) + 460  [0x1020fa048]  minimize.c:111
+          + ! : | + ! : | + ! : | + ! : | + ! : 130 lit_redundant  (in bsat-sampling) + 460  [0x1020fa048]  minimize.c:111
+          + ! : | + ! : | + ! : | + ! : | + ! : | 126 lit_redundant  (in bsat-sampling) + 460  [0x1020fa048]  minimize.c:111
+          + ! : | + ! : | + ! : | + ! : | + ! : | + 115 lit_redundant  (in bsat-sampling) + 460  [0x1020fa048]  minimize.c:111
+          + ! : | + ! : | + ! : | + ! : | + ! : | + ! 110 lit_redundant  (in bsat-sampling) + 460  [0x1020fa048]  minimize.c:111
+          + ! : | + ! : | + ! : | + ! : | + ! : | + ! : 101 lit_redundant  (in bsat-sampling) + 460  [0x1020fa048]  minimize.c:111
+          + ! : | + ! : | + ! : | + ! : | + ! : | + ! : | 91 lit_redundant  (in bsat-sampling) + 460  [0x1020fa048]  minimize.c:111
+          + ! : | + ! : | + ! : | + ! : | + ! : | + ! : | + 88 lit_redundant  (in bsat-sampling) + 460  [0x1020fa048]  minimize.c:111
+          + ! : | + ! : | + ! : | + ! : | + ! : | + ! : | + ! 84 lit_redundant  (in bsat-sampling) + 460  [0x1020fa048]  minimize.c:111
+          + ! : | + ! : | + ! : | + ! : | + ! : | + ! : | + ! : 79 lit_redundant  (in bsat-sampling) + 460  [0x1020fa048]  minimize.c:111
+          + ! : | + ! : | + ! : | + ! : | + ! : | + ! : | + ! : | 76 lit_redundant  (in bsat-sampling) + 460  [0x1020fa048]  minimize.c:111
+          + ! : | + ! : | + ! : | + ! : | + ! : | + ! : | + ! : | + 69 lit_redundant  (in bsat-sampling) + 460  [0x1020fa048]  minimize.c:111
+          + ! : | + ! : | + ! : | + ! : | + ! : | + ! : | + ! : | + ! 69 lit_redundant  (in bsat-sampling) + 460  [0x1020fa048]  minimize.c:111
+          + ! : | + ! : | + ! : | + ! : | + ! : | + ! : | + ! : | + !   65 lit_redundant  (in bsat-sampling) + 460  [0x1020fa048]  minimize.c:111
+          + ! : | + ! : | + ! : | + ! : | + ! : | + ! : | + ! : | + !   : 62 lit_redundant  (in bsat-sampling) + 460  [0x1020fa048]  minimize.c:111
+          + ! : | + ! : | + ! : | + ! : | + ! : | + ! : | + ! : | + !   : | 59 lit_redundant  (in bsat-sampling) + 460  [0x1020fa048]  minimize.c:111
+          + ! : | + ! : | + ! : | + ! : | + ! : | + ! : | + ! : | + !   : | + 58 lit_redundant  (in bsat-sampling) + 460  [0x1020fa048]  minimize.c:111
+          + ! : | + ! : | + ! : | + ! : | + ! : | + ! : | + ! : | + !   : | + ! 55 lit_redundant  (in bsat-sampling) + 460  [0x1020fa048]  minimize.c:111
+          + ! : | + ! : | + ! : | + ! : | + ! : | + ! : | + ! : | + !   : | + ! : 54 lit_redundant  (in bsat-sampling) + 460  [0x1020fa048]  minimize.c:111
+          + ! : | + ! : | + ! : | + ! : | + ! : | + ! : | + ! : | + !   : | + ! : | 54 lit_redundant  (in bsat-sampling) + 460  [0x1020fa048]  minimize.c:111
+          + ! : | + ! : | + ! : | + ! : | + ! : | + ! : | + ! : | + !   : | + ! : |   52 lit_redundant  (in bsat-sampling) + 460  [0x1020fa048]  minimize.c:111
+          + ! : | + ! : | + ! : | + ! : | + ! : | + ! : | + ! : | + !   : | + ! : |   + 47 lit_redundant  (in bsat-sampling) + 460  [0x1020fa048]  minimize.c:111
+          + ! : | + ! : | + ! : | + ! : | + ! : | + ! : | + ! : | + !   : | + ! : |   + ! 46 lit_redundant  (in bsat-sampling) + 460  [0x1020fa048]  minimize.c:111
+          + ! : | + ! : | + ! : | + ! : | + ! : | + ! : | + ! : | + !   : | + ! : |   + ! : 43 lit_redundant  (in bsat-sampling) + 460  [0x1020fa048]  minimize.c:111
+          + ! : | + ! : | + ! : | + ! : | + ! : | + ! : | + ! : | + !   : | + ! : |   + ! : | 43 lit_redundant  (in bsat-sampling) + 460  [0x1020fa048]  minimize.c:111
+          + ! : | + ! : | + ! : | + ! : | + ! : | + ! : | + ! : | + !   : | + ! : |   + ! : |   41 lit_redundant  (in bsat-sampling) + 460  [0x1020fa048]  minimize.c:111
+          + ! : | + ! : | + ! : | + ! : | + ! : | + ! : | + ! : | + !   : | + ! : |   + ! : |   + 39 lit_redundant  (in bsat-sampling) + 460  [0x1020fa048]  minimize.c:111
+          + ! : | + ! : | + ! : | + ! : | + ! : | + ! : | + ! : | + !   : | + ! : |   + ! : |   + ! 38 lit_redundant  (in bsat-sampling) + 460  [0x1020fa048]  minimize.c:111
+          + ! : | + ! : | + ! : | + ! : | + ! : | + ! : | + ! : | + !   : | + ! : |   + ! : |   + ! : 37 lit_redundant  (in bsat-sampling) + 460  [0x1020fa048]  minimize.c:111
+          + ! : | + ! : | + ! : | + ! : | + ! : | + ! : | + ! : | + !   : | + ! : |   + ! : |   + ! : | 35 lit_redundant  (in bsat-sampling) + 460  [0x1020fa048]  minimize.c:111
+          + ! : | + ! : | + ! : | + ! : | + ! : | + ! : | + ! : | + !   : | + ! : |   + ! : |   + ! : | + 34 lit_redundant  (in bsat-sampling) + 460  [0x1020fa048]  minimize.c:111
+          + ! : | + ! : | + ! : | + ! : | + ! : | + ! : | + ! : | + !   : | + ! : |   + ! : |   + ! : | + ! 33 lit_redundant  (in bsat-sampling) + 460  [0x1020fa048]  minimize.c:111
+          + ! : | + ! : | + ! : | + ! : | + ! : | + ! : | + ! : | + !   : | + ! : |   + ! : |   + ! : | + ! : 31 lit_redundant  (in bsat-sampling) + 460  [0x1020fa048]  minimize.c:111
+          + ! : | + ! : | + ! : | + ! : | + ! : | + ! : | + ! : | + !   : | + ! : |   + ! : |   + ! : | + ! : | 29 lit_redundant  (in bsat-sampling) + 460  [0x1020fa048]  minimize.c:111
+          + ! : | + ! : | + ! : | + ! : | + ! : | + ! : | + ! : | + !   : | + ! : |   + ! : |   + ! : | + ! : | + 29 lit_redundant  (in bsat-sampling) + 460  [0x1020fa048]  minimize.c:111
+          + ! : | + ! : | + ! : | + ! : | + ! : | + ! : | + ! : | + !   : | + ! : |   + ! : |   + ! : | + ! : | +   27 lit_redundant  (in bsat-sampling) + 460  [0x1020fa048]  minimize.c:111
+          + ! : | + ! : | + ! : | + ! : | + ! : | + ! : | + ! : | + !   : | + ! : |   + ! : |   + ! : | + ! : | +   ! 27 lit_redundant  (in bsat-sampling) + 460  [0x1020fa048]  minimize.c:111
+          + ! : | + ! : | + ! : | + ! : | + ! : | + ! : | + ! : | + !   : | + ! : |   + ! : |   + ! : | + ! : | +   !   26 lit_redundant  (in bsat-sampling) + 460  [0x1020fa048]  minimize.c:111
+          + ! : | + ! : | + ! : | + ! : | + ! : | + ! : | + ! : | + !   : | + ! : |   + ! : |   + ! : | + ! : | +   !   : 26 lit_redundant  (in bsat-sampling) + 460  [0x1020fa048]  minimize.c:111
+          + ! : | + ! : | + ! : | + ! : | + ! : | + ! : | + ! : | + !   : | + ! : |   + ! : |   + ! : | + ! : | +   !   :   25 lit_redundant  (in bsat-sampling) + 460  [0x1020fa048]  minimize.c:111
+          + ! : | + ! : | + ! : | + ! : | + ! : | + ! : | + ! : | + !   : | + ! : |   + ! : |   + ! : | + ! : | +   !   :   | 25 lit_redundant  (in bsat-sampling) + 460  [0x1020fa048]  minimize.c:111
+          + ! : | + ! : | + ! : | + ! : | + ! : | + ! : | + ! : | + !   : | + ! : |   + ! : |   + ! : | + ! : | +   !   :   |   24 lit_redundant  (in bsat-sampling) + 460  [0x1020fa048]  minimize.c:111
+          + ! : | + ! : | + ! : | + ! : | + ! : | + ! : | + ! : | + !   : | + ! : |   + ! : |   + ! : | + ! : | +   !   :   |   + 24 lit_redundant  (in bsat-sampling) + 460  [0x1020fa048]  minimize.c:111
+          + ! : | + ! : | + ! : | + ! : | + ! : | + ! : | + ! : | + !   : | + ! : |   + ! : |   + ! : | + ! : | +   !   :   |   +   22 lit_redundant  (in bsat-sampling) + 460  [0x1020fa048]  minimize.c:111
+          + ! : | + ! : | + ! : | + ! : | + ! : | + ! : | + ! : | + !   : | + ! : |   + ! : |   + ! : | + ! : | +   !   :   |   +   ! 20 lit_redundant  (in bsat-sampling) + 460  [0x1020fa048]  minimize.c:111
+          + ! : | + ! : | + ! : | + ! : | + ! : | + ! : | + ! : | + !   : | + ! : |   + ! : |   + ! : | + ! : | +   !   :   |   +   ! : 18 lit_redundant  (in bsat-sampling) + 460  [0x1020fa048]  minimize.c:111
+          + ! : | + ! : | + ! : | + ! : | + ! : | + ! : | + ! : | + !   : | + ! : |   + ! : |   + ! : | + ! : | +   !   :   |   +   ! : | 16 lit_redundant  (in bsat-sampling) + 460  [0x1020fa048]  minimize.c:111
+          + ! : | + ! : | + ! : | + ! : | + ! : | + ! : | + ! : | + !   : | + ! : |   + ! : |   + ! : | + ! : | +   !   :   |   +   ! : | + 16 lit_redundant  (in bsat-sampling) + 460  [0x1020fa048]  minimize.c:111
+          + ! : | + ! : | + ! : | + ! : | + ! : | + ! : | + ! : | + !   : | + ! : |   + ! : |   + ! : | + ! : | +   !   :   |   +   ! : | +   12 lit_redundant  (in bsat-sampling) + 460  [0x1020fa048]  minimize.c:111
+          + ! : | + ! : | + ! : | + ! : | + ! : | + ! : | + ! : | + !   : | + ! : |   + ! : |   + ! : | + ! : | +   !   :   |   +   ! : | +   ! 10 lit_redundant  (in bsat-sampling) + 460  [0x1020fa048]  minimize.c:111
+          + ! : | + ! : | + ! : | + ! : | + ! : | + ! : | + ! : | + !   : | + ! : |   + ! : |   + ! : | + ! : | +   !   :   |   +   ! : | +   ! : 10 lit_redundant  (in bsat-sampling) + 460  [0x1020fa048]  minimize.c:111
+          + ! : | + ! : | + ! : | + ! : | + ! : | + ! : | + ! : | + !   : | + ! : |   + ! : |   + ! : | + ! : | +   !   :   |   +   ! : | +   ! :   10 lit_redundant  (in bsat-sampling) + 460  [0x1020fa048]  minimize.c:111
+          + ! : | + ! : | + ! : | + ! : | + ! : | + ! : | + ! : | + !   : | + ! : |   + ! : |   + ! : | + ! : | +   !   :   |   +   ! : | +   ! :     9 lit_redundant  (in bsat-sampling) + 460  [0x1020fa048]  minimize.c:111
+          + ! : | + ! : | + ! : | + ! : | + ! : | + ! : | + ! : | + !   : | + ! : |   + ! : |   + ! : | + ! : | +   !   :   |   +   ! : | +   ! :     | 8 lit_redundant  (in bsat-sampling) + 460  [0x1020fa048]  minimize.c:111
+          + ! : | + ! : | + ! : | + ! : | + ! : | + ! : | + ! : | + !   : | + ! : |   + ! : |   + ! : | + ! : | +   !   :   |   +   ! : | +   ! :     | + 8 lit_redundant  (in bsat-sampling) + 460  [0x1020fa048]  minimize.c:111
+          + ! : | + ! : | + ! : | + ! : | + ! : | + ! : | + ! : | + !   : | + ! : |   + ! : |   + ! : | + ! : | +   !   :   |   +   ! : | +   ! :     | +   8 lit_redundant  (in bsat-sampling) + 460  [0x1020fa048]  minimize.c:111
+          + ! : | + ! : | + ! : | + ! : | + ! : | + ! : | + ! : | + !   : | + ! : |   + ! : |   + ! : | + ! : | +   !   :   |   +   ! : | +   ! :     | +     8 lit_redundant  (in bsat-sampling) + 460  [0x1020fa048]  minimize.c:111
+          + ! : | + ! : | + ! : | + ! : | + ! : | + ! : | + ! : | + !   : | + ! : |   + ! : |   + ! : | + ! : | +   !   :   |   +   ! : | +   ! :     | +       8 lit_redundant  (in bsat-sampling) + 460  [0x1020fa048]  minimize.c:111
+          + ! : | + ! : | + ! : | + ! : | + ! : | + ! : | + ! : | + !   : | + ! : |   + ! : |   + ! : | + ! : | +   !   :   |   +   ! : | +   ! :     | +         8 lit_redundant  (in bsat-sampling) + 460  [0x1020fa048]  minimize.c:111
+          + ! : | + ! : | + ! : | + ! : | + ! : | + ! : | + ! : | + !   : | + ! : |   + ! : |   + ! : | + ! : | +   !   :   |   +   ! : | +   ! :     | +           7 lit_redundant  (in bsat-sampling) + 460  [0x1020fa048]  minimize.c:111
+          + ! : | + ! : | + ! : | + ! : | + ! : | + ! : | + ! : | + !   : | + ! : |   + ! : |   + ! : | + ! : | +   !   :   |   +   ! : | +   ! :     | +           ! 5 lit_redundant  (in bsat-sampling) + 460  [0x1020fa048]  minimize.c:111
+          + ! : | + ! : | + ! : | + ! : | + ! : | + ! : | + ! : | + !   : | + ! : |   + ! : |   + ! : | + ! : | +   !   :   |   +   ! : | +   ! :     | +           ! : 5 lit_redundant  (in bsat-sampling) + 460  [0x1020fa048]  minimize.c:111
+          + ! : | + ! : | + ! : | + ! : | + ! : | + ! : | + ! : | + !   : | + ! : |   + ! : |   + ! : | + ! : | +   !   :   |   +   ! : | +   ! :     | +           ! :   5 lit_redundant  (in bsat-sampling) + 460  [0x1020fa048]  minimize.c:111
+          + ! : | + ! : | + ! : | + ! : | + ! : | + ! : | + ! : | + !   : | + ! : |   + ! : |   + ! : | + ! : | +   !   :   |   +   ! : | +   ! :     | +           ! :     5 lit_redundant  (in bsat-sampling) + 460  [0x1020fa048]  minimize.c:111
+          + ! : | + ! : | + ! : | + ! : | + ! : | + ! : | + ! : | + !   : | + ! : |   + ! : |   + ! : | + ! : | +   !   :   |   +   ! : | +   ! :     | +           ! :       5 lit_redundant  (in bsat-sampling) + 460  [0x1020fa048]  minimize.c:111
+          + ! : | + ! : | + ! : | + ! : | + ! : | + ! : | + ! : | + !   : | + ! : |   + ! : |   + ! : | + ! : | +   !   :   |   +   ! : | +   ! :     | +           ! :         4 lit_redundant  (in bsat-sampling) + 460  [0x1020fa048]  minimize.c:111
+          + ! : | + ! : | + ! : | + ! : | + ! : | + ! : | + ! : | + !   : | + ! : |   + ! : |   + ! : | + ! : | +   !   :   |   +   ! : | +   ! :     | +           ! :         | 4 lit_redundant  (in bsat-sampling) + 460  [0x1020fa048]  minimize.c:111
+          + ! : | + ! : | + ! : | + ! : | + ! : | + ! : | + ! : | + !   : | + ! : |   + ! : |   + ! : | + ! : | +   !   :   |   +   ! : | +   ! :     | +           ! :         |   4 lit_redundant  (in bsat-sampling) + 460  [0x1020fa048]  minimize.c:111
+          + ! : | + ! : | + ! : | + ! : | + ! : | + ! : | + ! : | + !   : | + ! : |   + ! : |   + ! : | + ! : | +   !   :   |   +   ! : | +   ! :     | +           ! :         |     4 lit_redundant  (in bsat-sampling) + 460  [0x1020fa048]  minimize.c:111
+          + ! : | + ! : | + ! : | + ! : | + ! : | + ! : | + ! : | + !   : | + ! : |   + ! : |   + ! : | + ! : | +   !   :   |   +   ! : | +   ! :     | +           ! :         |       4 lit_redundant  (in bsat-sampling) + 460  [0x1020fa048]  minimize.c:111
+          + ! : | + ! : | + ! : | + ! : | + ! : | + ! : | + ! : | + !   : | + ! : |   + ! : |   + ! : | + ! : | +   !   :   |   +   ! : | +   ! :     | +           ! :         |         4 lit_redundant  (in bsat-sampling) + 460  [0x1020fa048]  minimize.c:111
+          + ! : | + ! : | + ! : | + ! : | + ! : | + ! : | + ! : | + !   : | + ! : |   + ! : |   + ! : | + ! : | +   !   :   |   +   ! : | +   ! :     | +           ! :         |           4 lit_redundant  (in bsat-sampling) + 460  [0x1020fa048]  minimize.c:111
+          + ! : | + ! : | + ! : | + ! : | + ! : | + ! : | + ! : | + !   : | + ! : |   + ! : |   + ! : | + ! : | +   !   :   |   +   ! : | +   ! :     | +           ! :         |             4 lit_redundant  (in bsat-sampling) + 460  [0x1020fa048]  minimize.c:111
+          + ! : | + ! : | + ! : | + ! : | + ! : | + ! : | + ! : | + !   : | + ! : |   + ! : |   + ! : | + ! : | +   !   :   |   +   ! : | +   ! :     | +           ! :         |               4 lit_redundant  (in bsat-sampling) + 460  [0x1020fa048]  minimize.c:111
+          + ! : | + ! : | + ! : | + ! : | + ! : | + ! : | + ! : | + !   : | + ! : |   + ! : |   + ! : | + ! : | +   !   :   |   +   ! : | +   ! :     | +           ! :         |                 4 lit_redundant  (in bsat-sampling) + 460  [0x1020fa048]  minimize.c:111
+          + ! : | + ! : | + ! : | + ! : | + ! : | + ! : | + ! : | + !   : | + ! : |   + ! : |   + ! : | + ! : | +   !   :   |   +   ! : | +   ! :     | +           ! :         |                   3 lit_redundant  (in bsat-sampling) + 460  [0x1020fa048]  minimize.c:111
+          + ! : | + ! : | + ! : | + ! : | + ! : | + ! : | + ! : | + !   : | + ! : |   + ! : |   + ! : | + ! : | +   !   :   |   +   ! : | +   ! :     | +           ! :         |                   + 3 lit_redundant  (in bsat-sampling) + 460  [0x1020fa048]  minimize.c:111
+          + ! : | + ! : | + ! : | + ! : | + ! : | + ! : | + ! : | + !   : | + ! : |   + ! : |   + ! : | + ! : | +   !   :   |   +   ! : | +   ! :     | +           ! :         |                   +   3 lit_redundant  (in bsat-sampling) + 460  [0x1020fa048]  minimize.c:111
+          + ! : | + ! : | + ! : | + ! : | + ! : | + ! : | + ! : | + !   : | + ! : |   + ! : |   + ! : | + ! : | +   !   :   |   +   ! : | +   ! :     | +           ! :         |                   +     3 lit_redundant  (in bsat-sampling) + 460  [0x1020fa048]  minimize.c:111
+          + ! : | + ! : | + ! : | + ! : | + ! : | + ! : | + ! : | + !   : | + ! : |   + ! : |   + ! : | + ! : | +   !   :   |   +   ! : | +   ! :     | +           ! :         |                   +       3 lit_redundant  (in bsat-sampling) + 460  [0x1020fa048]  minimize.c:111
+          + ! : | + ! : | + ! : | + ! : | + ! : | + ! : | + ! : | + !   : | + ! : |   + ! : |   + ! : | + ! : | +   !   :   |   +   ! : | +   ! :     | +           ! :         |                   +         3 lit_redundant  (in bsat-sampling) + 460  [0x1020fa048]  minimize.c:111
+          + ! : | + ! : | + ! : | + ! : | + ! : | + ! : | + ! : | + !   : | + ! : |   + ! : |   + ! : | + ! : | +   !   :   |   +   ! : | +   ! :     | +           ! :         |                   +           3 lit_redundant  (in bsat-sampling) + 460  [0x1020fa048]  minimize.c:111
+          + ! : | + ! : | + ! : | + ! : | + ! : | + ! : | + ! : | + !   : | + ! : |   + ! : |   + ! : | + ! : | +   !   :   |   +   ! : | +   ! :     | +           ! :         |                   +             2 lit_redundant  (in bsat-sampling) + 460  [0x1020fa048]  minimize.c:111
+          + ! : | + ! : | + ! : | + ! : | + ! : | + ! : | + ! : | + !   : | + ! : |   + ! : |   + ! : | + ! : | +   !   :   |   +   ! : | +   ! :     | +           ! :         |                   +             ! 2 lit_redundant  (in bsat-sampling) + 460  [0x1020fa048]  minimize.c:111
+          + ! : | + ! : | + ! : | + ! : | + ! : | + ! : | + ! : | + !   : | + ! : |   + ! : |   + ! : | + ! : | +   !   :   |   +   ! : | +   ! :     | +           ! :         |                   +             !   2 lit_redundant  (in bsat-sampling) + 460  [0x1020fa048]  minimize.c:111
+          + ! : | + ! : | + ! : | + ! : | + ! : | + ! : | + ! : | + !   : | + ! : |   + ! : |   + ! : | + ! : | +   !   :   |   +   ! : | +   ! :     | +           ! :         |                   +             !     2 lit_redundant  (in bsat-sampling) + 460  [0x1020fa048]  minimize.c:111
+          + ! : | + ! : | + ! : | + ! : | + ! : | + ! : | + ! : | + !   : | + ! : |   + ! : |   + ! : | + ! : | +   !   :   |   +   ! : | +   ! :     | +           ! :         |                   +             !       2 lit_redundant  (in bsat-sampling) + 460  [0x1020fa048]  minimize.c:111
+          + ! : | + ! : | + ! : | + ! : | + ! : | + ! : | + ! : | + !   : | + ! : |   + ! : |   + ! : | + ! : | +   !   :   |   +   ! : | +   ! :     | +           ! :         |                   +             !         2 lit_redundant  (in bsat-sampling) + 460  [0x1020fa048]  minimize.c:111
+          + ! : | + ! : | + ! : | + ! : | + ! : | + ! : | + ! : | + !   : | + ! : |   + ! : |   + ! : | + ! : | +   !   :   |   +   ! : | +   ! :     | +           ! :         |                   +             !           2 lit_redundant  (in bsat-sampling) + 460  [0x1020fa048]  minimize.c:111
+          + ! : | + ! : | + ! : | + ! : | + ! : | + ! : | + ! : | + !   : | + ! : |   + ! : |   + ! : | + ! : | +   !   :   |   +   ! : | +   ! :     | +           ! :         |                   +             !             2 lit_redundant  (in bsat-sampling) + 460  [0x1020fa048]  minimize.c:111
+          + ! : | + ! : | + ! : | + ! : | + ! : | + ! : | + ! : | + !   : | + ! : |   + ! : |   + ! : | + ! : | +   !   :   |   +   ! : | +   ! :     | +           ! :         |                   +             !               1 lit_redundant  (in bsat-sampling) + 460  [0x1020fa048]  minimize.c:111
+          + ! : | + ! : | + ! : | + ! : | + ! : | + ! : | + ! : | + !   : | + ! : |   + ! : |   + ! : | + ! : | +   !   :   |   +   ! : | +   ! :     | +           ! :         |                   +             !               : 1 lit_redundant  (in bsat-sampling) + 460  [0x1020fa048]  minimize.c:111
+          + ! : | + ! : | + ! : | + ! : | + ! : | + ! : | + ! : | + !   : | + ! : |   + ! : |   + ! : | + ! : | +   !   :   |   +   ! : | +   ! :     | +           ! :         |                   +             !               :   1 lit_redundant  (in bsat-sampling) + 460  [0x1020fa048]  minimize.c:111
+          + ! : | + ! : | + ! : | + ! : | + ! : | + ! : | + ! : | + !   : | + ! : |   + ! : |   + ! : | + ! : | +   !   :   |   +   ! : | +   ! :     | +           ! :         |                   +             !               :     1 lit_redundant  (in bsat-sampling) + 460  [0x1020fa048]  minimize.c:111
+          + ! : | + ! : | + ! : | + ! : | + ! : | + ! : | + ! : | + !   : | + ! : |   + ! : |   + ! : | + ! : | +   !   :   |   +   ! : | +   ! :     | +           ! :         |                   +             !               :       1 lit_redundant  (in bsat-sampling) + 460  [0x1020fa048]  minimize.c:111
+          + ! : | + ! : | + ! : | + ! : | + ! : | + ! : | + ! : | + !   : | + ! : |   + ! : |   + ! : | + ! : | +   !   :   |   +   ! : | +   ! :     | +           ! :         |                   +             !               :         1 lit_redundant  (in bsat-sampling) + 460  [0x1020fa048]  minimize.c:111
+          + ! : | + ! : | + ! : | + ! : | + ! : | + ! : | + ! : | + !   : | + ! : |   + ! : |   + ! : | + ! : | +   !   :   |   +   ! : | +   ! :     | +           ! :         |                   +             !               :           1 lit_redundant  (in bsat-sampling) + 460  [0x1020fa048]  minimize.c:111
+          + ! : | + ! : | + ! : | + ! : | + ! : | + ! : | + ! : | + !   : | + ! : |   + ! : |   + ! : | + ! : | +   !   :   |   +   ! : | +   ! :     | +           ! :         |                   +             !               :             1 lit_redundant  (in bsat-sampling) + 460  [0x1020fa048]  minimize.c:111
+          + ! : | + ! : | + ! : | + ! : | + ! : | + ! : | + ! : | + !   : | + ! : |   + ! : |   + ! : | + ! : | +   !   :   |   +   ! : | +   ! :     | +           ! :         |                   +             !               :               1 lit_redundant  (in bsat-sampling) + 460  [0x1020fa048]  minimize.c:111
+          + ! : | + ! : | + ! : | + ! : | + ! : | + ! : | + ! : | + !   : | + ! : |   + ! : |   + ! : | + ! : | +   !   :   |   +   ! : | +   ! :     | +           ! :         |                   +             !               :                 1 lit_redundant  (in bsat-sampling) + 460  [0x1020fa048]  minimize.c:111
+          + ! : | + ! : | + ! : | + ! : | + ! : | + ! : | + ! : | + !   : | + ! : |   + ! : |   + ! : | + ! : | +   !   :   |   +   ! : | +   ! :     | +           ! :         |                   +             !               :                   1 lit_redundant  (in bsat-sampling) + 460  [0x1020fa048]  minimize.c:111
+          + ! : | + ! : | + ! : | + ! : | + ! : | + ! : | + ! : | + !   : | + ! : |   + ! : |   + ! : | + ! : | +   !   :   |   +   ! : | +   ! :     | +           ! :         |                   +             !               :                     1 lit_redundant  (in bsat-sampling) + 460  [0x1020fa048]  minimize.c:111
+          + ! : | + ! : | + ! : | + ! : | + ! : | + ! : | + ! : | + !   : | + ! : |   + ! : |   + ! : | + ! : | +   !   :   |   +   ! : | +   ! :     | +           ! :         |                   +             !               :                       1 lit_redundant  (in bsat-sampling) + 460  [0x1020fa048]  minimize.c:111
+          + ! : | + ! : | + ! : | + ! : | + ! : | + ! : | + ! : | + !   : | + ! : |   + ! : |   + ! : | + ! : | +   !   :   |   +   ! : | +   ! :     | +           ! :         |                   +             !               :                         1 lit_redundant  (in bsat-sampling) + 460  [0x1020fa048]  minimize.c:111
+          + ! : | + ! : | + ! : | + ! : | + ! : | + ! : | + ! : | + !   : | + ! : |   + ! : |   + ! : | + ! : | +   !   :   |   +   ! : | +   ! :     | +           ! :         |                   +             !               :                           1 lit_redundant  (in bsat-sampling) + 460  [0x1020fa048]  minimize.c:111
+          + ! : | + ! : | + ! : | + ! : | + ! : | + ! : | + ! : | + !   : | + ! : |   + ! : |   + ! : | + ! : | +   !   :   |   +   ! : | +   ! :     | +           ! :         |                   +             !               :                             1 lit_redundant  (in bsat-sampling) + 460  [0x1020fa048]  minimize.c:111
+          + ! : | + ! : | + ! : | + ! : | + ! : | + ! : | + ! : | + !   : | + ! : |   + ! : |   + ! : | + ! : | +   !   :   |   +   ! : | +   ! :     | +           ! :         |                   +             !               :                               1 lit_redundant  (in bsat-sampling) + 460  [0x1020fa048]  minimize.c:111
+          + ! : | + ! : | + ! : | + ! : | + ! : | + ! : | + ! : | + !   : | + ! : |   + ! : |   + ! : | + ! : | +   !   :   |   +   ! : | +   ! :     | +           ! :         |                   +             !               :                                 1 lit_redundant  (in bsat-sampling) + 460  [0x1020fa048]  minimize.c:111
+          + ! : | + ! : | + ! : | + ! : | + ! : | + ! : | + ! : | + !   : | + ! : |   + ! : |   + ! : | + ! : | +   !   :   |   +   ! : | +   ! :     | +           ! :         |                   +             !               :                                   1 lit_redundant  (in bsat-sampling) + 72  [0x1020f9ec4]  minimize.c:32
+          + ! : | + ! : | + ! : | + ! : | + ! : | + ! : | + ! : | + !   : | + ! : |   + ! : |   + ! : | + ! : | +   !   :   |   +   ! : | +   ! :     | +           ! :         |                   +             !               1 lit_redundant  (in bsat-sampling) + 200  [0x1020f9f44]  minimize.c:126
+          + ! : | + ! : | + ! : | + ! : | + ! : | + ! : | + ! : | + !   : | + ! : |   + ! : |   + ! : | + ! : | +   !   :   |   +   ! : | +   ! :     | +           ! :         |                   +             1 lit_redundant  (in bsat-sampling) + 72  [0x1020f9ec4]  minimize.c:32
+          + ! : | + ! : | + ! : | + ! : | + ! : | + ! : | + ! : | + !   : | + ! : |   + ! : |   + ! : | + ! : | +   !   :   |   +   ! : | +   ! :     | +           ! :         |                   1 lit_redundant  (in bsat-sampling) + 356  [0x1020f9fe0]  minimize.c:83
+          + ! : | + ! : | + ! : | + ! : | + ! : | + ! : | + ! : | + !   : | + ! : |   + ! : |   + ! : | + ! : | +   !   :   |   +   ! : | +   ! :     | +           ! :         1 lit_redundant  (in bsat-sampling) + 404  [0x1020fa010]  minimize.c:87
+          + ! : | + ! : | + ! : | + ! : | + ! : | + ! : | + ! : | + !   : | + ! : |   + ! : |   + ! : | + ! : | +   !   :   |   +   ! : | +   ! :     | +           ! 1 lit_redundant  (in bsat-sampling) + 404  [0x1020fa010]  minimize.c:87
+          + ! : | + ! : | + ! : | + ! : | + ! : | + ! : | + ! : | + !   : | + ! : |   + ! : |   + ! : | + ! : | +   !   :   |   +   ! : | +   ! :     | +           ! 1 lit_redundant  (in bsat-sampling) + 432  [0x1020fa02c]  minimize.c:99
+          + ! : | + ! : | + ! : | + ! : | + ! : | + ! : | + ! : | + !   : | + ! : |   + ! : |   + ! : | + ! : | +   !   :   |   +   ! : | +   ! :     | +           1 lit_redundant  (in bsat-sampling) + 404  [0x1020fa010]  minimize.c:87
+          + ! : | + ! : | + ! : | + ! : | + ! : | + ! : | + ! : | + !   : | + ! : |   + ! : |   + ! : | + ! : | +   !   :   |   +   ! : | +   ! :     | 1 lit_redundant  (in bsat-sampling) + 84  [0x1020f9ed0]  minimize.c:38
+          + ! : | + ! : | + ! : | + ! : | + ! : | + ! : | + ! : | + !   : | + ! : |   + ! : |   + ! : | + ! : | +   !   :   |   +   ! : | +   ! :     1 lit_redundant  (in bsat-sampling) + 324  [0x1020f9fc0]  minimize.c:77
+          + ! : | + ! : | + ! : | + ! : | + ! : | + ! : | + ! : | + !   : | + ! : |   + ! : |   + ! : | + ! : | +   !   :   |   +   ! : | +   ! 1 lit_redundant  (in bsat-sampling) + 196  [0x1020f9f40]  minimize.c:126
+          + ! : | + ! : | + ! : | + ! : | + ! : | + ! : | + ! : | + !   : | + ! : |   + ! : |   + ! : | + ! : | +   !   :   |   +   ! : | +   ! 1 lit_redundant  (in bsat-sampling) + 168  [0x1020f9f24]  minimize.c:55
+          + ! : | + ! : | + ! : | + ! : | + ! : | + ! : | + ! : | + !   : | + ! : |   + ! : |   + ! : | + ! : | +   !   :   |   +   ! : | +   1 lit_redundant  (in bsat-sampling) + 156  [0x1020f9f18]  minimize.c:0
+          + ! : | + ! : | + ! : | + ! : | + ! : | + ! : | + ! : | + !   : | + ! : |   + ! : |   + ! : | + ! : | +   !   :   |   +   ! : | +   1 lit_redundant  (in bsat-sampling) + 324  [0x1020f9fc0]  minimize.c:77
+          + ! : | + ! : | + ! : | + ! : | + ! : | + ! : | + ! : | + !   : | + ! : |   + ! : |   + ! : | + ! : | +   !   :   |   +   ! : | +   1 lit_redundant  (in bsat-sampling) + 332  [0x1020f9fc8]  minimize.c:81
+          + ! : | + ! : | + ! : | + ! : | + ! : | + ! : | + ! : | + !   : | + ! : |   + ! : |   + ! : | + ! : | +   !   :   |   +   ! : | +   1 lit_redundant  (in bsat-sampling) + 404  [0x1020fa010]  minimize.c:87
+          + ! : | + ! : | + ! : | + ! : | + ! : | + ! : | + ! : | + !   : | + ! : |   + ! : |   + ! : | + ! : | +   !   :   |   +   ! : | 1 lit_redundant  (in bsat-sampling) + 24  [0x1020f9e94]  minimize.c:25
+          + ! : | + ! : | + ! : | + ! : | + ! : | + ! : | + ! : | + !   : | + ! : |   + ! : |   + ! : | + ! : | +   !   :   |   +   ! : | 1 lit_redundant  (in bsat-sampling) + 376  [0x1020f9ff4]  minimize.c:83
+          + ! : | + ! : | + ! : | + ! : | + ! : | + ! : | + ! : | + !   : | + ! : |   + ! : |   + ! : | + ! : | +   !   :   |   +   ! : |   1 solver_budget_exhausted  (in bsat-sampling) + 92  [0x1020fa274]  solver.c:105
+          + ! : | + ! : | + ! : | + ! : | + ! : | + ! : | + ! : | + !   : | + ! : |   + ! : |   + ! : | + ! : | +   !   :   |   +   ! : |     1 clock  (in libsystem_c.dylib) + 52  [0x18867e8cc]
+          + ! : | + ! : | + ! : | + ! : | + ! : | + ! : | + ! : | + !   : | + ! : |   + ! : |   + ! : | + ! : | +   !   :   |   +   ! : |       1 getrusage  (in libsystem_kernel.dylib) + 8  [0x18878f804]
+          + ! : | + ! : | + ! : | + ! : | + ! : | + ! : | + ! : | + !   : | + ! : |   + ! : |   + ! : | + ! : | +   !   :   |   +   ! : 1 lit_redundant  (in bsat-sampling) + 332  [0x1020f9fc8]  minimize.c:81
+          + ! : | + ! : | + ! : | + ! : | + ! : | + ! : | + ! : | + !   : | + ! : |   + ! : |   + ! : | + ! : | +   !   :   |   +   ! : 1 lit_redundant  (in bsat-sampling) + 404  [0x1020fa010]  minimize.c:87
+          + ! : | + ! : | + ! : | + ! : | + ! : | + ! : | + ! : | + !   : | + ! : |   + ! : |   + ! : | + ! : | +   !   :   |   +   ! 1 lit_redundant  (in bsat-sampling) + 40  [0x1020f9ea4]  minimize.c:0
+          + ! : | + ! : | + ! : | + ! : | + ! : | + ! : | + ! : | + !   : | + ! : |   + ! : |   + ! : | + ! : | +   !   :   |   +   ! 1 lit_redundant  (in bsat-sampling) + 92  [0x1020f9ed8]  minimize.c:39
+          + ! : | + ! : | + ! : | + ! : | + ! : | + ! : | + ! : | + !   : | + ! : |   + ! : |   + ! : | + ! : | +   !   :   |   +   1 lit_redundant  (in bsat-sampling) + 460  [0x1020fa048]  minimize.c:111
+          + ! : | + ! : | + ! : | + ! : | + ! : | + ! : | + ! : | + !   : | + ! : |   + ! : |   + ! : | + ! : | +   !   :   |   +   1 lit_redundant  (in bsat-sampling) + 356  [0x1020f9fe0]  minimize.c:83
+          + ! : | + ! : | + ! : | + ! : | + ! : | + ! : | + ! : | + !   : | + ! : |   + ! : |   + ! : | + ! : | +   !   :   |   1 lit_redundant  (in bsat-sampling) + 72  [0x1020f9ec4]  minimize.c:32
+          + ! : | + ! : | + ! : | + ! : | + ! : | + ! : | + ! : | + !   : | + ! : |   + ! : |   + ! : | + ! : | +   !   :   1 lit_redundant  (in bsat-sampling) + 332  [0x1020f9fc8]  minimize.c:81
+          + ! : | + ! : | + ! : | + ! : | + ! : | + ! : | + ! : | + !   : | + ! : |   + ! : |   + ! : | + ! : | +   !   1 lit_redundant  (in bsat-sampling) + 84  [0x1020f9ed0]  minimize.c:38
+          + ! : | + ! : | + ! : | + ! : | + ! : | + ! : | + ! : | + !   : | + ! : |   + ! : |   + ! : | + ! : | +   1 lit_redundant  (in bsat-sampling) + 460  [0x1020fa048]  minimize.c:111
+          + ! : | + ! : | + ! : | + ! : | + ! : | + ! : | + ! : | + !   : | + ! : |   + ! : |   + ! : | + ! : | +   1 lit_redundant  (in bsat-sampling) + 92  [0x1020f9ed8]  minimize.c:39
+          + ! : | + ! : | + ! : | + ! : | + ! : | + ! : | + ! : | + !   : | + ! : |   + ! : |   + ! : | + ! : | 1 lit_redundant  (in bsat-sampling) + 320  [0x1020f9fbc]  minimize.c:77
+          + ! : | + ! : | + ! : | + ! : | + ! : | + ! : | + ! : | + !   : | + ! : |   + ! : |   + ! : | + ! : | 1 lit_redundant  (in bsat-sampling) + 404  [0x1020fa010]  minimize.c:87
+          + ! : | + ! : | + ! : | + ! : | + ! : | + ! : | + ! : | + !   : | + ! : |   + ! : |   + ! : | + ! : 1 lit_redundant  (in bsat-sampling) + 52  [0x1020f9eb0]  minimize.c:30
+          + ! : | + ! : | + ! : | + ! : | + ! : | + ! : | + ! : | + !   : | + ! : |   + ! : |   + ! : | + ! : 1 lit_redundant  (in bsat-sampling) + 324  [0x1020f9fc0]  minimize.c:77
+          + ! : | + ! : | + ! : | + ! : | + ! : | + ! : | + ! : | + !   : | + ! : |   + ! : |   + ! : | + ! 1 lit_redundant  (in bsat-sampling) + 156  [0x1020f9f18]  minimize.c:0
+          + ! : | + ! : | + ! : | + ! : | + ! : | + ! : | + ! : | + !   : | + ! : |   + ! : |   + ! : | + 1 lit_redundant  (in bsat-sampling) + 476  [0x1020fa058]  minimize.c:120
+          + ! : | + ! : | + ! : | + ! : | + ! : | + ! : | + ! : | + !   : | + ! : |   + ! : |   + ! : | 1 lit_redundant  (in bsat-sampling) + 136  [0x1020f9f04]  minimize.c:45
+          + ! : | + ! : | + ! : | + ! : | + ! : | + ! : | + ! : | + !   : | + ! : |   + ! : |   + ! : | 1 lit_redundant  (in bsat-sampling) + 332  [0x1020f9fc8]  minimize.c:81
+          + ! : | + ! : | + ! : | + ! : | + ! : | + ! : | + ! : | + !   : | + ! : |   + ! : |   + ! : 1 lit_redundant  (in bsat-sampling) + 204  [0x1020f9f48]  minimize.c:126
+          + ! : | + ! : | + ! : | + ! : | + ! : | + ! : | + ! : | + !   : | + ! : |   + ! : |   + ! 1 lit_redundant  (in bsat-sampling) + 460  [0x1020fa048]  minimize.c:111
+          + ! : | + ! : | + ! : | + ! : | + ! : | + ! : | + ! : | + !   : | + ! : |   + ! : |   + 1 lit_redundant  (in bsat-sampling) + 444  [0x1020fa038]  minimize.c:105
+          + ! : | + ! : | + ! : | + ! : | + ! : | + ! : | + ! : | + !   : | + ! : |   + ! : |   + 1 lit_redundant  (in bsat-sampling) + 196  [0x1020f9f40]  minimize.c:126
+          + ! : | + ! : | + ! : | + ! : | + ! : | + ! : | + ! : | + !   : | + ! : |   + ! : |   1 lit_redundant  (in bsat-sampling) + 124  [0x1020f9ef8]  minimize.c:45
+          + ! : | + ! : | + ! : | + ! : | + ! : | + ! : | + ! : | + !   : | + ! : |   + ! : |   1 lit_redundant  (in bsat-sampling) + 356  [0x1020f9fe0]  minimize.c:83
+          + ! : | + ! : | + ! : | + ! : | + ! : | + ! : | + ! : | + !   : | + ! : |   + ! : 1 lit_redundant  (in bsat-sampling) + 64  [0x1020f9ebc]  minimize.c:31
+          + ! : | + ! : | + ! : | + ! : | + ! : | + ! : | + ! : | + !   : | + ! : |   + ! : 1 lit_redundant  (in bsat-sampling) + 72  [0x1020f9ec4]  minimize.c:32
+          + ! : | + ! : | + ! : | + ! : | + ! : | + ! : | + ! : | + !   : | + ! : |   + ! : 1 lit_redundant  (in bsat-sampling) + 324  [0x1020f9fc0]  minimize.c:77
+          + ! : | + ! : | + ! : | + ! : | + ! : | + ! : | + ! : | + !   : | + ! : |   + ! 1 lit_redundant  (in bsat-sampling) + 348  [0x1020f9fd8]  minimize.c:83
+          + ! : | + ! : | + ! : | + ! : | + ! : | + ! : | + ! : | + !   : | + ! : |   + 3 lit_redundant  (in bsat-sampling) + 204,200  [0x1020f9f48,0x1020f9f44]  minimize.c:126
+          + ! : | + ! : | + ! : | + ! : | + ! : | + ! : | + ! : | + !   : | + ! : |   + 1 lit_redundant  (in bsat-sampling) + 444  [0x1020fa038]  minimize.c:105
+          + ! : | + ! : | + ! : | + ! : | + ! : | + ! : | + ! : | + !   : | + ! : |   + 1 lit_redundant  (in bsat-sampling) + 124  [0x1020f9ef8]  minimize.c:45
+          + ! : | + ! : | + ! : | + ! : | + ! : | + ! : | + ! : | + !   : | + ! : |   1 lit_redundant  (in bsat-sampling) + 204  [0x1020f9f48]  minimize.c:126
+          + ! : | + ! : | + ! : | + ! : | + ! : | + ! : | + ! : | + !   : | + ! : |   1 lit_redundant  (in bsat-sampling) + 84  [0x1020f9ed0]  minimize.c:38
+          + ! : | + ! : | + ! : | + ! : | + ! : | + ! : | + ! : | + !   : | + ! : 1 lit_redundant  (in bsat-sampling) + 184  [0x1020f9f34]  minimize.c:126
+          + ! : | + ! : | + ! : | + ! : | + ! : | + ! : | + ! : | + !   : | + ! 1 lit_redundant  (in bsat-sampling) + 156  [0x1020f9f18]  minimize.c:0
+          + ! : | + ! : | + ! : | + ! : | + ! : | + ! : | + ! : | + !   : | + ! 1 lit_redundant  (in bsat-sampling) + 460  [0x1020fa048]  minimize.c:111
+          + ! : | + ! : | + ! : | + ! : | + ! : | + ! : | + ! : | + !   : | + ! 1 lit_redundant  (in bsat-sampling) + 72  [0x1020f9ec4]  minimize.c:32
+          + ! : | + ! : | + ! : | + ! : | + ! : | + ! : | + ! : | + !   : | + 1 lit_redundant  (in bsat-sampling) + 204  [0x1020f9f48]  minimize.c:126
+          + ! : | + ! : | + ! : | + ! : | + ! : | + ! : | + ! : | + !   : | 1 lit_redundant  (in bsat-sampling) + 92  [0x1020f9ed8]  minimize.c:39
+          + ! : | + ! : | + ! : | + ! : | + ! : | + ! : | + ! : | + !   : | 1 lit_redundant  (in bsat-sampling) + 136  [0x1020f9f04]  minimize.c:45
+          + ! : | + ! : | + ! : | + ! : | + ! : | + ! : | + ! : | + !   : | 1 lit_redundant  (in bsat-sampling) + 376  [0x1020f9ff4]  minimize.c:83
+          + ! : | + ! : | + ! : | + ! : | + ! : | + ! : | + ! : | + !   : |   1 solver_budget_exhausted  (in bsat-sampling) + 92  [0x1020fa274]  solver.c:105
+          + ! : | + ! : | + ! : | + ! : | + ! : | + ! : | + ! : | + !   : |     1 clock  (in libsystem_c.dylib) + 52  [0x18867e8cc]
+          + ! : | + ! : | + ! : | + ! : | + ! : | + ! : | + ! : | + !   : |       1 getrusage  (in libsystem_kernel.dylib) + 8  [0x18878f804]
+          + ! : | + ! : | + ! : | + ! : | + ! : | + ! : | + ! : | + !   : 2 lit_redundant  (in bsat-sampling) + 156,180  [0x1020f9f18,0x1020f9f30]  minimize.c:0
+          + ! : | + ! : | + ! : | + ! : | + ! : | + ! : | + ! : | + !   : 1 lit_redundant  (in bsat-sampling) + 404  [0x1020fa010]  minimize.c:87
+          + ! : | + ! : | + ! : | + ! : | + ! : | + ! : | + ! : | + !   1 lit_redundant  (in bsat-sampling) + 52  [0x1020f9eb0]  minimize.c:30
+          + ! : | + ! : | + ! : | + ! : | + ! : | + ! : | + ! : | + !   1 lit_redundant  (in bsat-sampling) + 92  [0x1020f9ed8]  minimize.c:39
+          + ! : | + ! : | + ! : | + ! : | + ! : | + ! : | + ! : | + !   1 lit_redundant  (in bsat-sampling) + 148  [0x1020f9f10]  minimize.c:54
+          + ! : | + ! : | + ! : | + ! : | + ! : | + ! : | + ! : | + !   1 lit_redundant  (in bsat-sampling) + 404  [0x1020fa010]  minimize.c:87
+          + ! : | + ! : | + ! : | + ! : | + ! : | + ! : | + ! : | + 4 lit_redundant  (in bsat-sampling) + 184,204  [0x1020f9f34,0x1020f9f48]  minimize.c:126
+          + ! : | + ! : | + ! : | + ! : | + ! : | + ! : | + ! : | + 1 lit_redundant  (in bsat-sampling) + 460  [0x1020fa048]  minimize.c:111
+          + ! : | + ! : | + ! : | + ! : | + ! : | + ! : | + ! : | + 1 lit_redundant  (in bsat-sampling) + 244  [0x1020f9f70]  minimize.c:74
+          + ! : | + ! : | + ! : | + ! : | + ! : | + ! : | + ! : | + 1 lit_redundant  (in bsat-sampling) + 404  [0x1020fa010]  minimize.c:87
+          + ! : | + ! : | + ! : | + ! : | + ! : | + ! : | + ! : | 2 lit_redundant  (in bsat-sampling) + 324  [0x1020f9fc0]  minimize.c:77
+          + ! : | + ! : | + ! : | + ! : | + ! : | + ! : | + ! : | 1 lit_redundant  (in bsat-sampling) + 184  [0x1020f9f34]  minimize.c:126
+          + ! : | + ! : | + ! : | + ! : | + ! : | + ! : | + ! : 3 lit_redundant  (in bsat-sampling) + 124,136  [0x1020f9ef8,0x1020f9f04]  minimize.c:45
+          + ! : | + ! : | + ! : | + ! : | + ! : | + ! : | + ! : 1 lit_redundant  (in bsat-sampling) + 40  [0x1020f9ea4]  minimize.c:0
+          + ! : | + ! : | + ! : | + ! : | + ! : | + ! : | + ! : 1 lit_redundant  (in bsat-sampling) + 404  [0x1020fa010]  minimize.c:87
+          + ! : | + ! : | + ! : | + ! : | + ! : | + ! : | + ! 1 lit_redundant  (in bsat-sampling) + 24  [0x1020f9e94]  minimize.c:25
+          + ! : | + ! : | + ! : | + ! : | + ! : | + ! : | + ! 1 lit_redundant  (in bsat-sampling) + 136  [0x1020f9f04]  minimize.c:45
+          + ! : | + ! : | + ! : | + ! : | + ! : | + ! : | + ! 1 lit_redundant  (in bsat-sampling) + 356  [0x1020f9fe0]  minimize.c:83
+          + ! : | + ! : | + ! : | + ! : | + ! : | + ! : | + ! 1 lit_redundant  (in bsat-sampling) + 404  [0x1020fa010]  minimize.c:87
+          + ! : | + ! : | + ! : | + ! : | + ! : | + ! : | + 1 lit_redundant  (in bsat-sampling) + 204  [0x1020f9f48]  minimize.c:126
+          + ! : | + ! : | + ! : | + ! : | + ! : | + ! : | + 1 lit_redundant  (in bsat-sampling) + 84  [0x1020f9ed0]  minimize.c:38
+          + ! : | + ! : | + ! : | + ! : | + ! : | + ! : | + 1 lit_redundant  (in bsat-sampling) + 356  [0x1020f9fe0]  minimize.c:83
+          + ! : | + ! : | + ! : | + ! : | + ! : | + ! : | 4 lit_redundant  (in bsat-sampling) + 204  [0x1020f9f48]  minimize.c:126
+          + ! : | + ! : | + ! : | + ! : | + ! : | + ! : | 1 lit_redundant  (in bsat-sampling) + 460  [0x1020fa048]  minimize.c:111
+          + ! : | + ! : | + ! : | + ! : | + ! : | + ! : | 1 lit_redundant  (in bsat-sampling) + 56  [0x1020f9eb4]  minimize.c:31
+          + ! : | + ! : | + ! : | + ! : | + ! : | + ! : | 1 lit_redundant  (in bsat-sampling) + 72  [0x1020f9ec4]  minimize.c:32
+          + ! : | + ! : | + ! : | + ! : | + ! : | + ! : | 1 lit_redundant  (in bsat-sampling) + 124  [0x1020f9ef8]  minimize.c:45
+          + ! : | + ! : | + ! : | + ! : | + ! : | + ! : | 1 lit_redundant  (in bsat-sampling) + 160  [0x1020f9f1c]  minimize.c:55
+          + ! : | + ! : | + ! : | + ! : | + ! : | + ! : | 1 lit_redundant  (in bsat-sampling) + 404  [0x1020fa010]  minimize.c:87
+          + ! : | + ! : | + ! : | + ! : | + ! : | + ! : 2 lit_redundant  (in bsat-sampling) + 124,136  [0x1020f9ef8,0x1020f9f04]  minimize.c:45
+          + ! : | + ! : | + ! : | + ! : | + ! : | + ! : 1 lit_redundant  (in bsat-sampling) + 460  [0x1020fa048]  minimize.c:111
+          + ! : | + ! : | + ! : | + ! : | + ! : | + ! : 1 lit_redundant  (in bsat-sampling) + 504  [0x1020fa074]  minimize.c:122
+          + ! : | + ! : | + ! : | + ! : | + ! : | + ! : 1 lit_redundant  (in bsat-sampling) + 204  [0x1020f9f48]  minimize.c:126
+          + ! : | + ! : | + ! : | + ! : | + ! : | + ! : 1 lit_redundant  (in bsat-sampling) + 84  [0x1020f9ed0]  minimize.c:38
+          + ! : | + ! : | + ! : | + ! : | + ! : | + ! : 1 lit_redundant  (in bsat-sampling) + 160  [0x1020f9f1c]  minimize.c:55
+          + ! : | + ! : | + ! : | + ! : | + ! : | + ! : 1 lit_redundant  (in bsat-sampling) + 320  [0x1020f9fbc]  minimize.c:77
+          + ! : | + ! : | + ! : | + ! : | + ! : | + ! : 1 lit_redundant  (in bsat-sampling) + 376  [0x1020f9ff4]  minimize.c:83
+          + ! : | + ! : | + ! : | + ! : | + ! : | + ! :   1 solver_budget_exhausted  (in bsat-sampling) + 92  [0x1020fa274]  solver.c:105
+          + ! : | + ! : | + ! : | + ! : | + ! : | + ! :     1 clock  (in libsystem_c.dylib) + 52  [0x18867e8cc]
+          + ! : | + ! : | + ! : | + ! : | + ! : | + ! :       1 getrusage  (in libsystem_kernel.dylib) + 8  [0x18878f804]
+          + ! : | + ! : | + ! : | + ! : | + ! : | + ! 2 lit_redundant  (in bsat-sampling) + 320,324  [0x1020f9fbc,0x1020f9fc0]  minimize.c:77
+          + ! : | + ! : | + ! : | + ! : | + ! : | + ! 1 lit_redundant  (in bsat-sampling) + 40  [0x1020f9ea4]  minimize.c:0
+          + ! : | + ! : | + ! : | + ! : | + ! : | + ! 1 lit_redundant  (in bsat-sampling) + 84  [0x1020f9ed0]  minimize.c:38
+          + ! : | + ! : | + ! : | + ! : | + ! : | + ! 1 lit_redundant  (in bsat-sampling) + 432  [0x1020fa02c]  minimize.c:99
+          + ! : | + ! : | + ! : | + ! : | + ! : | + 3 lit_redundant  (in bsat-sampling) + 184,200,...  [0x1020f9f34,0x1020f9f44,...]  minimize.c:126
+          + ! : | + ! : | + ! : | + ! : | + ! : | + 2 lit_redundant  (in bsat-sampling) + 332  [0x1020f9fc8]  minimize.c:81
+          + ! : | + ! : | + ! : | + ! : | + ! : | + 1 lit_redundant  (in bsat-sampling) + 444  [0x1020fa038]  minimize.c:105
+          + ! : | + ! : | + ! : | + ! : | + ! : | + 1 lit_redundant  (in bsat-sampling) + 504  [0x1020fa074]  minimize.c:122
+          + ! : | + ! : | + ! : | + ! : | + ! : | + 1 lit_redundant  (in bsat-sampling) + 16  [0x1020f9e8c]  minimize.c:25
+          + ! : | + ! : | + ! : | + ! : | + ! : | + 1 lit_redundant  (in bsat-sampling) + 148  [0x1020f9f10]  minimize.c:54
+          + ! : | + ! : | + ! : | + ! : | + ! : | + 1 lit_redundant  (in bsat-sampling) + 376  [0x1020f9ff4]  minimize.c:83
+          + ! : | + ! : | + ! : | + ! : | + ! : | + ! 1 solver_budget_exhausted  (in bsat-sampling) + 92  [0x1020fa274]  solver.c:105
+          + ! : | + ! : | + ! : | + ! : | + ! : | + !   1 clock  (in libsystem_c.dylib) + 52  [0x18867e8cc]
+          + ! : | + ! : | + ! : | + ! : | + ! : | + !     1 getrusage  (in libsystem_kernel.dylib) + 8  [0x18878f804]
+          + ! : | + ! : | + ! : | + ! : | + ! : | + 1 lit_redundant  (in bsat-sampling) + 356  [0x1020f9fe0]  minimize.c:83
+          + ! : | + ! : | + ! : | + ! : | + ! : | 2 lit_redundant  (in bsat-sampling) + 320,324  [0x1020f9fbc,0x1020f9fc0]  minimize.c:77
+          + ! : | + ! : | + ! : | + ! : | + ! : | 1 lit_redundant  (in bsat-sampling) + 52  [0x1020f9eb0]  minimize.c:30
+          + ! : | + ! : | + ! : | + ! : | + ! : | 1 lit_redundant  (in bsat-sampling) + 404  [0x1020fa010]  minimize.c:87
+          + ! : | + ! : | + ! : | + ! : | + ! : 1 lit_redundant  (in bsat-sampling) + 24  [0x1020f9e94]  minimize.c:25
+          + ! : | + ! : | + ! : | + ! : | + ! : 1 lit_redundant  (in bsat-sampling) + 84  [0x1020f9ed0]  minimize.c:38
+          + ! : | + ! : | + ! : | + ! : | + ! : 1 lit_redundant  (in bsat-sampling) + 124  [0x1020f9ef8]  minimize.c:45
+          + ! : | + ! : | + ! : | + ! : | + ! : 1 lit_redundant  (in bsat-sampling) + 148  [0x1020f9f10]  minimize.c:54
+          + ! : | + ! : | + ! : | + ! : | + ! : 1 lit_redundant  (in bsat-sampling) + 332  [0x1020f9fc8]  minimize.c:81
+          + ! : | + ! : | + ! : | + ! : | + ! 2 lit_redundant  (in bsat-sampling) + 92  [0x1020f9ed8]  minimize.c:39
+          + ! : | + ! : | + ! : | + ! : | + ! 1 lit_redundant  (in bsat-sampling) + 244  [0x1020f9f70]  minimize.c:74
+          + ! : | + ! : | + ! : | + ! : | + ! 1 lit_redundant  (in bsat-sampling) + 324  [0x1020f9fc0]  minimize.c:77
+          + ! : | + ! : | + ! : | + ! : | + ! 1 lit_redundant  (in bsat-sampling) + 332  [0x1020f9fc8]  minimize.c:81
+          + ! : | + ! : | + ! : | + ! : | + ! 1 lit_redundant  (in bsat-sampling) + 404  [0x1020fa010]  minimize.c:87
+          + ! : | + ! : | + ! : | + ! : | + 2 lit_redundant  (in bsat-sampling) + 84  [0x1020f9ed0]  minimize.c:38
+          + ! : | + ! : | + ! : | + ! : | + 2 lit_redundant  (in bsat-sampling) + 124,136  [0x1020f9ef8,0x1020f9f04]  minimize.c:45
+          + ! : | + ! : | + ! : | + ! : | + 2 lit_redundant  (in bsat-sampling) + 324  [0x1020f9fc0]  minimize.c:77
+          + ! : | + ! : | + ! : | + ! : | + 1 lit_redundant  (in bsat-sampling) + 332  [0x1020f9fc8]  minimize.c:81
+          + ! : | + ! : | + ! : | + ! : | + 1 lit_redundant  (in bsat-sampling) + 376  [0x1020f9ff4]  minimize.c:83
+          + ! : | + ! : | + ! : | + ! : | +   1 solver_budget_exhausted  (in bsat-sampling) + 92  [0x1020fa274]  solver.c:105
+          + ! : | + ! : | + ! : | + ! : | +     1 clock  (in libsystem_c.dylib) + 52  [0x18867e8cc]
+          + ! : | + ! : | + ! : | + ! : | +       1 getrusage  (in libsystem_kernel.dylib) + 8  [0x18878f804]
+          + ! : | + ! : | + ! : | + ! : | 2 lit_redundant  (in bsat-sampling) + 124,136  [0x1020f9ef8,0x1020f9f04]  minimize.c:45
+          + ! : | + ! : | + ! : | + ! : | 1 lit_redundant  (in bsat-sampling) + 92  [0x1020f9ed8]  minimize.c:39
+          + ! : | + ! : | + ! : | + ! : | 1 lit_redundant  (in bsat-sampling) + 324  [0x1020f9fc0]  minimize.c:77
+          + ! : | + ! : | + ! : | + ! : | 1 lit_redundant  (in bsat-sampling) + 332  [0x1020f9fc8]  minimize.c:81
+          + ! : | + ! : | + ! : | + ! : | 1 lit_redundant  (in bsat-sampling) + 360  [0x1020f9fe4]  minimize.c:83
+          + ! : | + ! : | + ! : | + ! : 1 lit_redundant  (in bsat-sampling) + 444  [0x1020fa038]  minimize.c:105
+          + ! : | + ! : | + ! : | + ! : 1 lit_redundant  (in bsat-sampling) + 84  [0x1020f9ed0]  minimize.c:38
+          + ! : | + ! : | + ! : | + ! : 1 lit_redundant  (in bsat-sampling) + 356  [0x1020f9fe0]  minimize.c:83
+          + ! : | + ! : | + ! : | + ! : 1 lit_redundant  (in bsat-sampling) + 404  [0x1020fa010]  minimize.c:87
+          + ! : | + ! : | + ! : | + ! 1 lit_redundant  (in bsat-sampling) + 460  [0x1020fa048]  minimize.c:111
+          + ! : | + ! : | + ! : | + ! 1 lit_redundant  (in bsat-sampling) + 204  [0x1020f9f48]  minimize.c:126
+          + ! : | + ! : | + ! : | + ! 1 lit_redundant  (in bsat-sampling) + 24  [0x1020f9e94]  minimize.c:25
+          + ! : | + ! : | + ! : | + ! 1 lit_redundant  (in bsat-sampling) + 84  [0x1020f9ed0]  minimize.c:38
+          + ! : | + ! : | + ! : | + 2 lit_redundant  (in bsat-sampling) + 156,180  [0x1020f9f18,0x1020f9f30]  minimize.c:0
+          + ! : | + ! : | + ! : | + 2 lit_redundant  (in bsat-sampling) + 200  [0x1020f9f44]  minimize.c:126
+          + ! : | + ! : | + ! : | + 1 lit_redundant  (in bsat-sampling) + 84  [0x1020f9ed0]  minimize.c:38
+          + ! : | + ! : | + ! : | + 1 lit_redundant  (in bsat-sampling) + 320  [0x1020f9fbc]  minimize.c:77
+          + ! : | + ! : | + ! : | + 1 lit_redundant  (in bsat-sampling) + 332  [0x1020f9fc8]  minimize.c:81
+          + ! : | + ! : | + ! : | + 1 lit_redundant  (in bsat-sampling) + 344  [0x1020f9fd4]  minimize.c:82
+          + ! : | + ! : | + ! : | + 1 lit_redundant  (in bsat-sampling) + 404  [0x1020fa010]  minimize.c:87
+          + ! : | + ! : | + ! : | 1 lit_redundant  (in bsat-sampling) + 180  [0x1020f9f30]  minimize.c:0
+          + ! : | + ! : | + ! : | 1 lit_redundant  (in bsat-sampling) + 460  [0x1020fa048]  minimize.c:111
+          + ! : | + ! : | + ! : | 1 lit_redundant  (in bsat-sampling) + 196  [0x1020f9f40]  minimize.c:126
+          + ! : | + ! : | + ! : | 1 lit_redundant  (in bsat-sampling) + 92  [0x1020f9ed8]  minimize.c:39
+          + ! : | + ! : | + ! : | 1 lit_redundant  (in bsat-sampling) + 244  [0x1020f9f70]  minimize.c:74
+          + ! : | + ! : | + ! : | 1 lit_redundant  (in bsat-sampling) + 324  [0x1020f9fc0]  minimize.c:77
+          + ! : | + ! : | + ! : | 1 lit_redundant  (in bsat-sampling) + 376  [0x1020f9ff4]  minimize.c:83
+          + ! : | + ! : | + ! : | + 1 solver_budget_exhausted  (in bsat-sampling) + 92  [0x1020fa274]  solver.c:105
+          + ! : | + ! : | + ! : | +   1 clock  (in libsystem_c.dylib) + 52  [0x18867e8cc]
+          + ! : | + ! : | + ! : | +     1 getrusage  (in libsystem_kernel.dylib) + 8  [0x18878f804]
+          + ! : | + ! : | + ! : | 1 lit_redundant  (in bsat-sampling) + 356  [0x1020f9fe0]  minimize.c:83
+          + ! : | + ! : | + ! : 1 lit_redundant  (in bsat-sampling) + 180  [0x1020f9f30]  minimize.c:0
+          + ! : | + ! : | + ! : 1 lit_redundant  (in bsat-sampling) + 92  [0x1020f9ed8]  minimize.c:39
+          + ! : | + ! : | + ! : 1 lit_redundant  (in bsat-sampling) + 148  [0x1020f9f10]  minimize.c:54
+          + ! : | + ! : | + ! : 1 lit_redundant  (in bsat-sampling) + 404  [0x1020fa010]  minimize.c:87
+          + ! : | + ! : | + ! 2 lit_redundant  (in bsat-sampling) + 184,200  [0x1020f9f34,0x1020f9f44]  minimize.c:126
+          + ! : | + ! : | + ! 2 lit_redundant  (in bsat-sampling) + 404  [0x1020fa010]  minimize.c:87
+          + ! : | + ! : | + ! 1 lit_redundant  (in bsat-sampling) + 476  [0x1020fa058]  minimize.c:120
+          + ! : | + ! : | + ! 1 lit_redundant  (in bsat-sampling) + 84  [0x1020f9ed0]  minimize.c:38
+          + ! : | + ! : | + ! 1 lit_redundant  (in bsat-sampling) + 124  [0x1020f9ef8]  minimize.c:45
+          + ! : | + ! : | + ! 1 lit_redundant  (in bsat-sampling) + 148  [0x1020f9f10]  minimize.c:54
+          + ! : | + ! : | + ! 1 lit_redundant  (in bsat-sampling) + 320  [0x1020f9fbc]  minimize.c:77
+          + ! : | + ! : | + ! 1 lit_redundant  (in bsat-sampling) + 332  [0x1020f9fc8]  minimize.c:81
+          + ! : | + ! : | + ! 1 lit_redundant  (in bsat-sampling) + 376  [0x1020f9ff4]  minimize.c:83
+          + ! : | + ! : | + !   1 solver_budget_exhausted  (in bsat-sampling) + 92  [0x1020fa274]  solver.c:105
+          + ! : | + ! : | + !     1 clock  (in libsystem_c.dylib) + 52  [0x18867e8cc]
+          + ! : | + ! : | + !       1 getrusage  (in libsystem_kernel.dylib) + 8  [0x18878f804]
+          + ! : | + ! : | + 3 lit_redundant  (in bsat-sampling) + 84  [0x1020f9ed0]  minimize.c:38
+          + ! : | + ! : | + 2 lit_redundant  (in bsat-sampling) + 444  [0x1020fa038]  minimize.c:105
+          + ! : | + ! : | + 2 lit_redundant  (in bsat-sampling) + 356  [0x1020f9fe0]  minimize.c:83
+          + ! : | + ! : | + 2 lit_redundant  (in bsat-sampling) + 404  [0x1020fa010]  minimize.c:87
+          + ! : | + ! : | + 1 lit_redundant  (in bsat-sampling) + 156  [0x1020f9f18]  minimize.c:0
+          + ! : | + ! : | + 1 lit_redundant  (in bsat-sampling) + 72  [0x1020f9ec4]  minimize.c:32
+          + ! : | + ! : | + 1 lit_redundant  (in bsat-sampling) + 92  [0x1020f9ed8]  minimize.c:39
+          + ! : | + ! : | + 1 lit_redundant  (in bsat-sampling) + 124  [0x1020f9ef8]  minimize.c:45
+          + ! : | + ! : | + 1 lit_redundant  (in bsat-sampling) + 324  [0x1020f9fc0]  minimize.c:77
+          + ! : | + ! : | + 1 lit_redundant  (in bsat-sampling) + 332  [0x1020f9fc8]  minimize.c:81
+          + ! : | + ! : | + 1 lit_redundant  (in bsat-sampling) + 376  [0x1020f9ff4]  minimize.c:83
+          + ! : | + ! : | + ! 1 solver_budget_exhausted  (in bsat-sampling) + 92  [0x1020fa274]  solver.c:105
+          + ! : | + ! : | + !   1 clock  (in libsystem_c.dylib) + 52  [0x18867e8cc]
+          + ! : | + ! : | + !     1 getrusage  (in libsystem_kernel.dylib) + 8  [0x18878f804]
+          + ! : | + ! : | + 1 lit_redundant  (in bsat-sampling) + 432  [0x1020fa02c]  minimize.c:99
+          + ! : | + ! : | 3 lit_redundant  (in bsat-sampling) + 204  [0x1020f9f48]  minimize.c:126
+          + ! : | + ! : | 2 lit_redundant  (in bsat-sampling) + 180  [0x1020f9f30]  minimize.c:0
+          + ! : | + ! : | 2 lit_redundant  (in bsat-sampling) + 72  [0x1020f9ec4]  minimize.c:32
+          + ! : | + ! : | 1 lit_redundant  (in bsat-sampling) + 24  [0x1020f9e94]  minimize.c:25
+          + ! : | + ! : | 1 lit_redundant  (in bsat-sampling) + 84  [0x1020f9ed0]  minimize.c:38
+          + ! : | + ! : | 1 lit_redundant  (in bsat-sampling) + 124  [0x1020f9ef8]  minimize.c:45
+          + ! : | + ! : | 1 lit_redundant  (in bsat-sampling) + 404  [0x1020fa010]  minimize.c:87
+          + ! : | + ! : 4 lit_redundant  (in bsat-sampling) + 124,136  [0x1020f9ef8,0x1020f9f04]  minimize.c:45
+          + ! : | + ! : 3 lit_redundant  (in bsat-sampling) + 40,156,...  [0x1020f9ea4,0x1020f9f18,...]  minimize.c:0
+          + ! : | + ! : 3 lit_redundant  (in bsat-sampling) + 84  [0x1020f9ed0]  minimize.c:38
+          + ! : | + ! : 2 lit_redundant  (in bsat-sampling) + 200,204  [0x1020f9f44,0x1020f9f48]  minimize.c:126
+          + ! : | + ! : 1 lit_redundant  (in bsat-sampling) + 476  [0x1020fa058]  minimize.c:120
+          + ! : | + ! : 1 lit_redundant  (in bsat-sampling) + 72  [0x1020f9ec4]  minimize.c:32
+          + ! : | + ! : 1 lit_redundant  (in bsat-sampling) + 244  [0x1020f9f70]  minimize.c:74
+          + ! : | + ! : 1 lit_redundant  (in bsat-sampling) + 324  [0x1020f9fc0]  minimize.c:77
+          + ! : | + ! : 1 lit_redundant  (in bsat-sampling) + 332  [0x1020f9fc8]  minimize.c:81
+          + ! : | + ! : 1 lit_redundant  (in bsat-sampling) + 404  [0x1020fa010]  minimize.c:87
+          + ! : | + ! : 1 lit_redundant  (in bsat-sampling) + 432  [0x1020fa02c]  minimize.c:99
+          + ! : | + ! 3 lit_redundant  (in bsat-sampling) + 72  [0x1020f9ec4]  minimize.c:32
+          + ! : | + ! 2 lit_redundant  (in bsat-sampling) + 476  [0x1020fa058]  minimize.c:120
+          + ! : | + ! 2 lit_redundant  (in bsat-sampling) + 332  [0x1020f9fc8]  minimize.c:81
+          + ! : | + ! 2 lit_redundant  (in bsat-sampling) + 432  [0x1020fa02c]  minimize.c:99
+          + ! : | + ! 1 lit_redundant  (in bsat-sampling) + 224  [0x1020f9f5c]  minimize.c:0
+          + ! : | + ! 1 lit_redundant  (in bsat-sampling) + 196  [0x1020f9f40]  minimize.c:126
+          + ! : | + ! 1 lit_redundant  (in bsat-sampling) + 24  [0x1020f9e94]  minimize.c:25
+          + ! : | + ! 1 lit_redundant  (in bsat-sampling) + 324  [0x1020f9fc0]  minimize.c:77
+          + ! : | + ! 1 lit_redundant  (in bsat-sampling) + 344  [0x1020f9fd4]  minimize.c:82
+          + ! : | + 2 lit_redundant  (in bsat-sampling) + 184,204  [0x1020f9f34,0x1020f9f48]  minimize.c:126
+          + ! : | + 2 lit_redundant  (in bsat-sampling) + 124,136  [0x1020f9ef8,0x1020f9f04]  minimize.c:45
+          + ! : | + 2 lit_redundant  (in bsat-sampling) + 244  [0x1020f9f70]  minimize.c:74
+          + ! : | + 1 lit_redundant  (in bsat-sampling) + 180  [0x1020f9f30]  minimize.c:0
+          + ! : | + 1 lit_redundant  (in bsat-sampling) + 444  [0x1020fa038]  minimize.c:105
+          + ! : | + 1 lit_redundant  (in bsat-sampling) + 476  [0x1020fa058]  minimize.c:120
+          + ! : | + 1 lit_redundant  (in bsat-sampling) + 504  [0x1020fa074]  minimize.c:122
+          + ! : | + 1 lit_redundant  (in bsat-sampling) + 52  [0x1020f9eb0]  minimize.c:30
+          + ! : | + 1 lit_redundant  (in bsat-sampling) + 72  [0x1020f9ec4]  minimize.c:32
+          + ! : | + 1 lit_redundant  (in bsat-sampling) + 84  [0x1020f9ed0]  minimize.c:38
+          + ! : | + 1 lit_redundant  (in bsat-sampling) + 332  [0x1020f9fc8]  minimize.c:81
+          + ! : | + 1 lit_redundant  (in bsat-sampling) + 356  [0x1020f9fe0]  minimize.c:83
+          + ! : | + 1 lit_redundant  (in bsat-sampling) + 436  [0x1020fa030]  minimize.c:99
+          + ! : | 2 lit_redundant  (in bsat-sampling) + 124,136  [0x1020f9ef8,0x1020f9f04]  minimize.c:45
+          + ! : | 2 lit_redundant  (in bsat-sampling) + 320,324  [0x1020f9fbc,0x1020f9fc0]  minimize.c:77
+          + ! : | 1 lit_redundant  (in bsat-sampling) + 24  [0x1020f9e94]  minimize.c:25
+          + ! : | 1 lit_redundant  (in bsat-sampling) + 72  [0x1020f9ec4]  minimize.c:32
+          + ! : | 1 lit_redundant  (in bsat-sampling) + 84  [0x1020f9ed0]  minimize.c:38
+          + ! : | 1 lit_redundant  (in bsat-sampling) + 244  [0x1020f9f70]  minimize.c:74
+          + ! : | 1 lit_redundant  (in bsat-sampling) + 332  [0x1020f9fc8]  minimize.c:81
+          + ! : | 1 lit_redundant  (in bsat-sampling) + 404  [0x1020fa010]  minimize.c:87
+          + ! : 2 lit_redundant  (in bsat-sampling) + 476  [0x1020fa058]  minimize.c:120
+          + ! : 2 lit_redundant  (in bsat-sampling) + 196,204  [0x1020f9f40,0x1020f9f48]  minimize.c:126
+          + ! : 1 lit_redundant  (in bsat-sampling) + 40  [0x1020f9ea4]  minimize.c:0
+          + ! : 1 lit_redundant  (in bsat-sampling) + 24  [0x1020f9e94]  minimize.c:25
+          + ! : 1 lit_redundant  (in bsat-sampling) + 72  [0x1020f9ec4]  minimize.c:32
+          + ! : 1 lit_redundant  (in bsat-sampling) + 84  [0x1020f9ed0]  minimize.c:38
+          + ! : 1 lit_redundant  (in bsat-sampling) + 160  [0x1020f9f1c]  minimize.c:55
+          + ! : 1 lit_redundant  (in bsat-sampling) + 324  [0x1020f9fc0]  minimize.c:77
+          + ! : 1 lit_redundant  (in bsat-sampling) + 332  [0x1020f9fc8]  minimize.c:81
+          + ! : 1 lit_redundant  (in bsat-sampling) + 376  [0x1020f9ff4]  minimize.c:83
+          + ! :   1 solver_budget_exhausted  (in bsat-sampling) + 92  [0x1020fa274]  solver.c:105
+          + ! :     1 clock  (in libsystem_c.dylib) + 52  [0x18867e8cc]
+          + ! :       1 getrusage  (in libsystem_kernel.dylib) + 8  [0x18878f804]
+          + ! 2 lit_redundant  (in bsat-sampling) + 12,24  [0x1020f9e88,0x1020f9e94]  minimize.c:25
+          + ! 1 lit_redundant  (in bsat-sampling) + 376  [0x1020f9ff4]  minimize.c:83
+          + ! : 1 solver_budget_exhausted  (in bsat-sampling) + 92  [0x1020fa274]  solver.c:105
+          + ! :   1 clock  (in libsystem_c.dylib) + 52  [0x18867e8cc]
+          + ! :     1 getrusage  (in libsystem_kernel.dylib) + 8  [0x18878f804]
+          + ! 1 lit_redundant  (in bsat-sampling) + 432  [0x1020fa02c]  minimize.c:99
+          + 14 solver_minimize_clause  (in bsat-sampling) + 1568,1440,...  [0x1020f9de8,0x1020f9d68,...]  minimize.c:274
+          + 1 lit_redundant  (in bsat-sampling) + 200  [0x1020f9f44]  minimize.c:126
+          58 solver_solve_with_assumptions  (in bsat-sampling) + 2248  [0x1020fecf0]  solver.c:1912
+          + 36 solver_backtrack  (in bsat-sampling) + 116,224,...  [0x1020fada8,0x1020fae14,...]  solver.c:639
+          + 11 solver_backtrack  (in bsat-sampling) + 108,112  [0x1020fada0,0x1020fada4]  solver.c:638
+          + 7 solver_backtrack  (in bsat-sampling) + 64,68  [0x1020fad74,0x1020fad78]  solver.c:633
+          + 2 solver_backtrack  (in bsat-sampling) + 96,104  [0x1020fad94,0x1020fad9c]  solver.c:636
+          + 1 solver_backtrack  (in bsat-sampling) + 0  [0x1020fad34]  solver.c:631
+          + 1 solver_backtrack  (in bsat-sampling) + 76  [0x1020fad80]  solver.c:634
+          43 solver_solve_with_assumptions  (in bsat-sampling) + 3200  [0x1020ff0a8]  solver.c:1912
+          + 42 solver_decide  (in bsat-sampling) + 284,400,...  [0x1020fd304,0x1020fd378,...]  solver.c:1184
+          + 1 solver_decide  (in bsat-sampling) + 32  [0x1020fd208]  solver.c:1186
+          24 solver_solve_with_assumptions  (in bsat-sampling) + 1592  [0x1020fea60]  solver.c:1912
+          + 24 clock  (in libsystem_c.dylib) + 52  [0x18867e8cc]
+          +   24 getrusage  (in libsystem_kernel.dylib) + 8,4  [0x18878f804,0x18878f800]
+          10 solver_solve_with_assumptions  (in bsat-sampling) + 2644  [0x1020fee7c]  solver.c:1912
+          + 3 solver_collect_garbage  (in bsat-sampling) + 228  [0x1020fd824]  solver.c:1455
+          + ! 3 arena_alloc  (in bsat-sampling) + 404  [0x1020f49a8]  arena.c:191
+          + !   3 _platform_memmove  (in libsystem_platform.dylib) + 452,0  [0x1887d5524,0x1887d5360]
+          + 3 solver_reduce_db  (in bsat-sampling) + 208,240  [0x1020fdb48,0x1020fdb68]  solver.c:1508
+          + 2 solver_collect_garbage  (in bsat-sampling) + 480  [0x1020fd920]  solver.c:1462
+          + 1 solver_reduce_db  (in bsat-sampling) + 284  [0x1020fdb94]  solver.c:1511
+          + ! 1 _qsort  (in libsystem_c.dylib) + 1932  [0x188686b10]
+          + !   1 _qsort  (in libsystem_c.dylib) + 1156  [0x188686808]
+          + 1 solver_reduce_db  (in bsat-sampling) + 432  [0x1020fdc28]  solver.c:1515
+          +   1 watch_remove_clause  (in bsat-sampling) + 384  [0x102100bcc]  watch.c:122
+          9 solver_solve_with_assumptions  (in bsat-sampling) + 1784  [0x1020feb20]  solver.c:1912
+          + 4 calc_lbd  (in bsat-sampling) + 440,284,...  [0x1020ff64c,0x1020ff5b0,...]  solver.c:1005
+          + 3 calc_lbd  (in bsat-sampling) + 332,624  [0x1020ff5e0,0x1020ff704]  solver.c:1008
+          + 1 calc_lbd  (in bsat-sampling) + 1200  [0x1020ff944]  solver.c:1014
+          + 1 calc_lbd  (in bsat-sampling) + 972  [0x1020ff860]  solver.c:1015
+          8 solver_solve_with_assumptions  (in bsat-sampling) + 2432  [0x1020feda8]  solver.c:1912
+          + 5 solver_on_the_fly_subsumption  (in bsat-sampling) + 248,236,...  [0x10210025c,0x102100250,...]  solver.c:1589
+          + 3 solver_on_the_fly_subsumption  (in bsat-sampling) + 148  [0x1021001f8]  solver.c:1575
+          5 solver_solve_with_assumptions  (in bsat-sampling) + 1936  [0x1020febb8]  solver.c:1912
+          + 4 solver_backtrack  (in bsat-sampling) + 224,60,...  [0x1020fae14,0x1020fad70,...]  solver.c:639
+          + 1 solver_backtrack  (in bsat-sampling) + 64  [0x1020fad74]  solver.c:633
+          4 solver_solve_with_assumptions  (in bsat-sampling) + 3212  [0x1020ff0b4]  solver.c:1912
+          + 4 solver_maybe_save_best_phases  (in bsat-sampling) + 76  [0x102100744]  solver.c:1241
+          +   3 solver_maybe_save_best_phases  (in bsat-sampling) + 132  [0x10210077c]  solver.c:1243
+          +   1 __bzero  (in libsystem_platform.dylib) + 68  [0x1887d5074]
+          2 solver_solve_with_assumptions  (in bsat-sampling) + 1548,3096  [0x1020fea34,0x1020ff040]  solver.c:1912
+
+Total number in stack (recursive counted multiple, when >=5):
+        124       lit_redundant  (in bsat-sampling) + 460  [0x1020fa048]  minimize.c:111
+        24       lit_redundant  (in bsat-sampling) + 0  [0x1020f9e7c]  minimize.c:126
+        22       lit_redundant  (in bsat-sampling) + 0  [0x1020f9e7c]  minimize.c:87
+        20       lit_redundant  (in bsat-sampling) + 0  [0x1020f9e7c]  minimize.c:77
+        18       lit_redundant  (in bsat-sampling) + 0  [0x1020f9e7c]  minimize.c:38
+        17       lit_redundant  (in bsat-sampling) + 0  [0x1020f9e7c]  minimize.c:45
+        17       lit_redundant  (in bsat-sampling) + 0  [0x1020f9e7c]  minimize.c:81
+        16       lit_redundant  (in bsat-sampling) + 0  [0x1020f9e7c]  minimize.c:0
+        14       clock  (in libsystem_c.dylib) + 52  [0x18867e8cc]
+        14       getrusage  (in libsystem_kernel.dylib) + 0  [0x18878f7fc]
+        13       lit_redundant  (in bsat-sampling) + 0  [0x1020f9e7c]  minimize.c:32
+        12       lit_redundant  (in bsat-sampling) + 0  [0x1020f9e7c]  minimize.c:83
+        10       lit_redundant  (in bsat-sampling) + 0  [0x1020f9e7c]  minimize.c:25
+        10       lit_redundant  (in bsat-sampling) + 376  [0x1020f9ff4]  minimize.c:83
+        10       solver_budget_exhausted  (in bsat-sampling) + 92  [0x1020fa274]  solver.c:105
+        9       lit_redundant  (in bsat-sampling) + 0  [0x1020f9e7c]  minimize.c:111
+        9       lit_redundant  (in bsat-sampling) + 0  [0x1020f9e7c]  minimize.c:39
+        7       lit_redundant  (in bsat-sampling) + 0  [0x1020f9e7c]  minimize.c:99
+        6       lit_redundant  (in bsat-sampling) + 0  [0x1020f9e7c]  minimize.c:105
+        6       lit_redundant  (in bsat-sampling) + 0  [0x1020f9e7c]  minimize.c:120
+        6       lit_redundant  (in bsat-sampling) + 0  [0x1020f9e7c]  minimize.c:74
+        5       lit_redundant  (in bsat-sampling) + 0  [0x1020f9e7c]  minimize.c:54
+
+Sort by top of stack, same collapsed (when >= 5):
+        solver_propagate  (in bsat-sampling)        1433
+        bump_var_activity  (in bsat-sampling)        305
+        lit_redundant  (in bsat-sampling)        289
+        solver_analyze  (in bsat-sampling)        218
+        getrusage  (in libsystem_kernel.dylib)        109
+        solver_backtrack  (in bsat-sampling)        63
+        solver_decide  (in bsat-sampling)        43
+        watch_add  (in bsat-sampling)        40
+        solver_minimize_clause  (in bsat-sampling)        14
+        calc_lbd  (in bsat-sampling)        9
+        solver_on_the_fly_subsumption  (in bsat-sampling)        8

@@ -1,0 +1,122 @@
+Analysis of sampling bsat-sampling (pid 83990) every 1 millisecond
+Process:         bsat-sampling [83990]
+Path:            /private/tmp/bsat-sampling
+Load Address:    0x100a54000
+Identifier:      bsat-sampling
+Version:         0
+Code Type:       ARM64
+Platform:        macOS
+Parent Process:  python3.13 [83937]
+Target Type:     live task
+
+Date/Time:       2026-09-06 16:54:34.077 -0500
+Launch Time:     2026-09-06 16:54:34.034 -0500
+OS Version:      macOS 26.6.1 (25G76)
+Report Version:  7
+Analysis Tool:   /usr/bin/sample
+
+Physical footprint:         20.1M
+Physical footprint (peak):  20.1M
+Idle exit:                  untracked
+----
+
+Call graph:
+    2544 Thread_26847842   DispatchQueue_1: com.apple.main-thread  (serial)
+      2544 start  (in dyld) + 6992  [0x1884004e4]
+        2544 main  (in bsat-sampling) + 3160  [0x100a591a0]  main.c:426
+          993 solver_solve_with_assumptions  (in bsat-sampling) + 3200  [0x100a5f0a8]  solver.c:1912
+          + 966 solver_decide  (in bsat-sampling) + 284,400,...  [0x100a5d304,0x100a5d378,...]  solver.c:1184
+          + 10 solver_decide  (in bsat-sampling) + 220  [0x100a5d2c4]  solver.c:1191
+          + 9 solver_decide  (in bsat-sampling) + 32  [0x100a5d208]  solver.c:1186
+          + 3 solver_decide  (in bsat-sampling) + 632  [0x100a5d460]  solver.c:1205
+          + 2 solver_decide  (in bsat-sampling) + 496  [0x100a5d3d8]  solver.c:1203
+          + 1 solver_decide  (in bsat-sampling) + 40  [0x100a5d210]  solver.c:1183
+          + 1 solver_decide  (in bsat-sampling) + 732  [0x100a5d4c4]  solver.c:1214
+          + 1 solver_decide  (in bsat-sampling) + 776  [0x100a5d4f0]  solver.c:1221
+          868 solver_solve_with_assumptions  (in bsat-sampling) + 1660  [0x100a5eaa4]  solver.c:1912
+          + 291 solver_propagate  (in bsat-sampling) + 524,1312,...  [0x100a5bb38,0x100a5be4c,...]  solver.c:0
+          + 95 solver_propagate  (in bsat-sampling) + 716  [0x100a5bbf8]  solver.c:840
+          + 81 solver_propagate  (in bsat-sampling) + 592  [0x100a5bb7c]  solver.c:838
+          + 65 solver_propagate  (in bsat-sampling) + 596  [0x100a5bb80]  solver.c:863
+          + 48 solver_propagate  (in bsat-sampling) + 332,276  [0x100a5ba78,0x100a5ba40]  solver.c:818
+          + 42 solver_propagate  (in bsat-sampling) + 1340,1320,...  [0x100a5be68,0x100a5be54,...]  solver.c:792
+          + 39 solver_propagate  (in bsat-sampling) + 304  [0x100a5ba5c]  solver.c:896
+          + 38 solver_propagate  (in bsat-sampling) + 544,556  [0x100a5bb4c,0x100a5bb58]  solver.c:903
+          + 31 solver_propagate  (in bsat-sampling) + 352  [0x100a5ba8c]  solver.c:819
+          + 17 solver_propagate  (in bsat-sampling) + 412  [0x100a5bac8]  solver.c:819
+          + ! 17 clock  (in libsystem_c.dylib) + 52  [0x18867e8cc]
+          + !   17 getrusage  (in libsystem_kernel.dylib) + 8,4  [0x18878f804,0x18878f800]
+          + 14 solver_propagate  (in bsat-sampling) + 788  [0x100a5bc40]  solver.c:860
+          + 10 solver_propagate  (in bsat-sampling) + 1248  [0x100a5be0c]  solver.c:941
+          + 9 solver_propagate  (in bsat-sampling) + 888  [0x100a5bca4]  solver.c:930
+          + 8 solver_propagate  (in bsat-sampling) + 684,672  [0x100a5bbd8,0x100a5bbcc]  solver.c:926
+          + 7 solver_propagate  (in bsat-sampling) + 76,84  [0x100a5b978,0x100a5b980]  solver.c:793
+          + 7 solver_propagate  (in bsat-sampling) + 904  [0x100a5bcb4]  solver.c:931
+          + 7 solver_propagate  (in bsat-sampling) + 1200,1192  [0x100a5bddc,0x100a5bdd4]  solver.c:970
+          + 7 solver_propagate  (in bsat-sampling) + 1220  [0x100a5bdf0]  solver.c:974
+          + 6 solver_propagate  (in bsat-sampling) + 756,752  [0x100a5bc20,0x100a5bc1c]  solver.c:847
+          + 6 solver_propagate  (in bsat-sampling) + 616  [0x100a5bb94]  solver.c:911
+          + 6 solver_propagate  (in bsat-sampling) + 1084  [0x100a5bd68]  solver.c:939
+          + 5 solver_propagate  (in bsat-sampling) + 136  [0x100a5b9b4]  solver.c:793
+          + ! 5 clock  (in libsystem_c.dylib) + 52  [0x18867e8cc]
+          + !   5 getrusage  (in libsystem_kernel.dylib) + 8  [0x18878f804]
+          + 5 solver_propagate  (in bsat-sampling) + 252,260  [0x100a5ba28,0x100a5ba30]  solver.c:808
+          + 5 solver_propagate  (in bsat-sampling) + 748  [0x100a5bc18]  solver.c:843
+          + 4 solver_propagate  (in bsat-sampling) + 580  [0x100a5bb70]  solver.c:908
+          + 4 solver_propagate  (in bsat-sampling) + 1104,712,...  [0x100a5bd7c,0x100a5bbf4,...]  solver.c:928
+          + 3 solver_propagate  (in bsat-sampling) + 632  [0x100a5bba4]  solver.c:918
+          + 3 solver_propagate  (in bsat-sampling) + 1280  [0x100a5be2c]  solver.c:946
+          + ! 3 watch_add  (in bsat-sampling) + 44  [0x100a609cc]  watch.c:85
+          + 2 solver_propagate  (in bsat-sampling) + 812  [0x100a5bc58]  solver.c:883
+          + 1 solver_propagate  (in bsat-sampling) + 972  [0x100a5bcf8]  solver.c:932
+          + ! 1 clock  (in libsystem_c.dylib) + 52  [0x18867e8cc]
+          + !   1 getrusage  (in libsystem_kernel.dylib) + 8  [0x18878f804]
+          + 1 solver_propagate  (in bsat-sampling) + 1140  [0x100a5bda0]  solver.c:963
+          + 1 solver_propagate  (in bsat-sampling) + 1628  [0x100a5bf88]  solver.c:993
+          377 solver_solve_with_assumptions  (in bsat-sampling) + 1592  [0x100a5ea60]  solver.c:1912
+          + 377 clock  (in libsystem_c.dylib) + 52  [0x18867e8cc]
+          +   377 getrusage  (in libsystem_kernel.dylib) + 8,4  [0x18878f804,0x18878f800]
+          251 solver_solve_with_assumptions  (in bsat-sampling) + 2248  [0x100a5ecf0]  solver.c:1912
+          + 206 solver_backtrack  (in bsat-sampling) + 224,128,...  [0x100a5ae14,0x100a5adb4,...]  solver.c:639
+          + 45 solver_backtrack  (in bsat-sampling) + 64  [0x100a5ad74]  solver.c:633
+          26 solver_solve_with_assumptions  (in bsat-sampling) + 3212  [0x100a5f0b4]  solver.c:1912
+          + 26 solver_maybe_save_best_phases  (in bsat-sampling) + 76  [0x100a60744]  solver.c:1241
+          +   21 solver_maybe_save_best_phases  (in bsat-sampling) + 132  [0x100a6077c]  solver.c:1243
+          +   5 __bzero  (in libsystem_platform.dylib) + 68  [0x1887d5074]
+          9 solver_solve_with_assumptions  (in bsat-sampling) + 1936  [0x100a5ebb8]  solver.c:1912
+          + 9 solver_backtrack  (in bsat-sampling) + 224,116,...  [0x100a5ae14,0x100a5ada8,...]  solver.c:639
+          6 solver_solve_with_assumptions  (in bsat-sampling) + 1548,1576,...  [0x100a5ea34,0x100a5ea50,...]  solver.c:1912
+          4 solver_solve_with_assumptions  (in bsat-sampling) + 1740  [0x100a5eaf4]  solver.c:1912
+          + 1 solver_analyze  (in bsat-sampling) + 292  [0x100a5c13c]  solver.c:1100
+          + 1 solver_analyze  (in bsat-sampling) + 2020  [0x100a5c7fc]  solver.c:1128
+          + ! 1 bump_var_activity  (in bsat-sampling) + 728  [0x100a5d1d0]  solver.c:335
+          + 1 solver_analyze  (in bsat-sampling) + 2032  [0x100a5c808]  solver.c:1130
+          + 1 solver_analyze  (in bsat-sampling) + 524  [0x100a5c224]  solver.c:1148
+          +   1 bump_var_activity  (in bsat-sampling) + 692  [0x100a5d1ac]  solver.c:335
+          3 solver_solve_with_assumptions  (in bsat-sampling) + 1920  [0x100a5eba8]  solver.c:1912
+          + 2 solver_should_restart  (in bsat-sampling) + 64  [0x100a5d538]  solver.c:0
+          + 1 solver_should_restart  (in bsat-sampling) + 0  [0x100a5d4f8]  solver.c:1348
+          3 solver_solve_with_assumptions  (in bsat-sampling) + 2432  [0x100a5eda8]  solver.c:1912
+          + 3 solver_on_the_fly_subsumption  (in bsat-sampling) + 268,248  [0x100a60270,0x100a6025c]  solver.c:1589
+          1 solver_propagate  (in bsat-sampling) + 1656  [0x100a5bfa4]  solver.c:993
+          1 solver_solve_with_assumptions  (in bsat-sampling) + 1756  [0x100a5eb04]  solver.c:1912
+          + 1 solver_minimize_clause  (in bsat-sampling) + 1544  [0x100a59dd0]  minimize.c:274
+          +   1 lit_redundant  (in bsat-sampling) + 460  [0x100a5a048]  minimize.c:111
+          +     1 lit_redundant  (in bsat-sampling) + 72  [0x100a59ec4]  minimize.c:32
+          1 solver_solve_with_assumptions  (in bsat-sampling) + 2036  [0x100a5ec1c]  solver.c:1912
+          + 1 solver_rephase  (in bsat-sampling) + 268  [0x100a604c0]  solver.c:1261
+          1 solver_solve_with_assumptions  (in bsat-sampling) + 2644  [0x100a5ee7c]  solver.c:1912
+            1 solver_reduce_db  (in bsat-sampling) + 284  [0x100a5db94]  solver.c:1511
+              1 _qsort  (in libsystem_c.dylib) + 1932  [0x188686b10]
+                1 _qsort  (in libsystem_c.dylib) + 940  [0x188686730]
+
+Total number in stack (recursive counted multiple, when >=5):
+
+Sort by top of stack, same collapsed (when >= 5):
+        solver_decide  (in bsat-sampling)        993
+        solver_propagate  (in bsat-sampling)        843
+        getrusage  (in libsystem_kernel.dylib)        400
+        solver_backtrack  (in bsat-sampling)        260
+        solver_maybe_save_best_phases  (in bsat-sampling)        21
+        solver_solve_with_assumptions  (in bsat-sampling)        6
+        __bzero  (in libsystem_platform.dylib)        5

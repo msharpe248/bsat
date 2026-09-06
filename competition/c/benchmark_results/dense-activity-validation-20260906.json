@@ -1,0 +1,10 @@
+{
+  "unit_executables_passed": {
+    "release": 11,
+    "asan_ubsan": 11
+  },
+  "baseline_sha256": "f48761442d5023bca8391e86434aa555786639a8df0cdafe2a54e3398a39f8dd",
+  "final_sha256": "f48761442d5023bca8391e86434aa555786639a8df0cdafe2a54e3398a39f8dd",
+  "final_matches_baseline": true,
+  "scope": "Rejected layout candidate and restored solver passed unit suites. Benchmark completed answers checked independently; no new full formula matrix run for this discarded layout."
+}

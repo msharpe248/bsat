@@ -183,3 +183,11 @@ The pushed dynamic-LBD baseline also passed
 Final retained-code checks passed 4181 release formula solves and all ten C
 test executables in both release and ASan/UBSan modes. See the
 [final validation record](benchmark_results/clause-activity-final-validation-20260906.json).
+
+## Profile-guided activity-layout experiment
+
+[Dense activity storage](DENSE_ACTIVITY.md) was implemented, tested and rejected
+after longer runs exposed substantial family-specific regressions. The existing
+layout remains unchanged. The retained heap tests cover score initialization,
+growth, ordering, backtracking, large-score rescaling and API rebuilds. Profiles
+also identify CPU-time checking as a separate performance candidate.
