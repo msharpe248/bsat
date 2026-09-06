@@ -73,6 +73,10 @@ reduce cache traffic during propagation. Search order is preserved. See
 Use `--help` for the exact CLI names, including the time-limit option. Preprocessing
 has a deterministic literal-work budget; zero disables it. The time limit is CPU
 time for solving, including preprocessing, checked within long operations.
+Clock reads are amortized between bounded poll/work intervals; cancellation and
+work limits are checked on every poll. Target copying and solver return force
+a CPU-time check. See [DEADLINE_CHECKS.md](DEADLINE_CHECKS.md) for responsiveness
+tests, measured speedups and the limits of this polling scheme.
 BVE, BCE, vivification, local search, and alternating modes remain opt-in.
 Alternating mode combines stable Luby intervals and partial target assignments
 with focused LBD restarts; it is experimental and does not implement every

@@ -99,11 +99,28 @@ static void proof_clause(Solver *s, const Lit *lits, uint32_t size, bool deletio
 void proof_add_clause(Solver *s, const Lit *lits, uint32_t size) { proof_clause(s, lits, size, false); }
 void proof_delete_clause(Solver *s, const Lit *lits, uint32_t size) { proof_clause(s, lits, size, true); }
 
+static void check_cpu_deadline(Solver *s) {
+    if (s->opts.max_time <= 0) return;
+    s->stats.clock_checks++;
+    s->clock_initialized = true;
+    s->clock_polls = 0;
+    s->clock_work = s->work;
+    s->clock_minimize = s->stats.minimize_inspections;
+    if ((double)clock()/CLOCKS_PER_SEC - s->stats.start_time >= s->opts.max_time)
+        s->interrupted = true;
+}
+
 bool solver_budget_exhausted(Solver *s) {
     if (s->watches->failed) s->error = true;
     if (s->error || s->interrupted) return true;
-    if (s->opts.max_time > 0 && (double)clock()/CLOCKS_PER_SEC - s->stats.start_time >= s->opts.max_time)
-        s->interrupted = true;
+    /* Avoid a system clock read at every cheap decision/preprocessing poll.
+       Long inner loops already poll every 1024 inspections: either work counter
+       reaching that interval must force a read, without a second throttle. */
+    if (s->opts.max_time > 0 &&
+        (!s->clock_initialized || ++s->clock_polls >= 128 ||
+         s->work - s->clock_work >= 1024 ||
+         s->stats.minimize_inspections - s->clock_minimize >= 1024))
+        check_cpu_deadline(s);
     return s->interrupted || (s->work_limit && s->work >= s->work_limit);
 }
 
@@ -753,6 +770,7 @@ void solver_print_stats(const Solver* s) {
     printf("c SCC contradictions: %llu\n", (unsigned long long)s->stats.equiv_conflicts);
     printf("c Derived binaries  : %llu\n", (unsigned long long)s->stats.equiv_binaries);
     printf("c LBD improvements  : %llu\n", (unsigned long long)s->stats.lbd_updates);
+    printf("c Deadline clock reads: %llu\n", (unsigned long long)s->stats.clock_checks);
     printf("c Blocked clauses   : %llu\n", (unsigned long long)s->stats.blocked_clauses);
     printf("c Subsumed clauses  : %llu\n", (unsigned long long)s->stats.subsumed_clauses);
     printf("c Minimized literals: %llu\n", (unsigned long long)s->stats.minimized_literals);
@@ -1246,6 +1264,9 @@ static void solver_maybe_save_best_phases(Solver* s) {
             // Save polarity: true=positive, false=negative
             s->rephase.best_phase[v] = sign(lit) ? FALSE : TRUE;
         }
+        // Copying a target can be expensive without advancing either work
+        // counter. Do not defer its deadline check across further decisions.
+        check_cpu_deadline(s);
     }
 }
 
@@ -1907,6 +1928,7 @@ lbool solver_solve_with_assumptions(Solver *s, const Lit *assumps, uint32_t n_as
     }
     s->stats.start_time=(double)clock()/CLOCKS_PER_SEC;
     s->work_limit=0;s->interrupted=false;
+    s->clock_initialized=false;s->clock_polls=0;
     s->random_state=s->opts.seed;
     install_signal_handlers();
     lbool result=solve_internal(s,assumps,n_assumps);
@@ -1928,6 +1950,9 @@ lbool solver_solve_with_assumptions(Solver *s, const Lit *assumps, uint32_t n_as
     if (result==FALSE && !s->error && !s->interrupted) proof_add_clause(s,NULL,0);
     if (s->proof_file && (fflush(s->proof_file) || ferror(s->proof_file))) s->error=true;
     if (s->watches->failed) s->error=true;
+    /* Cached polls must not permit a completed result after the CPU deadline,
+       including time spent reconstructing/checking models or flushing proofs. */
+    check_cpu_deadline(s);
     if (s->error || s->interrupted) result=UNDEF;
     s->result=result;
     return result;

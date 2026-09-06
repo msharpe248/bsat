@@ -193,6 +193,10 @@ def main():
     configs += [['--dynamic-lbd'],
                 ['--dynamic-lbd', '--reduce-interval', '1', '--reduce-fraction', '0'],
                 ['--dynamic-lbd', '--binary-proof', '--equiv', '--elim', '--bce']]
+    configs += [['--time', '5'],
+                ['--time', '5', '--iterative-minimize', '--equiv', '--elim', '--bce'],
+                ['--time', '5', '--inprocess', '--inprocess-interval', '1',
+                 '--reduce-interval', '1', '--dynamic-lbd', '--binary-proof']]
     fixed = [
         (5, [[1, 2], [1, -2], [-3, 4], [3, -4], [4, 5]], None),
         (5, [[-4], [-1, 2, 4], [1, -2, 4]] +

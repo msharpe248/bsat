@@ -217,6 +217,7 @@ typedef struct Solver {
         uint64_t equiv_conflicts;
         uint64_t equiv_binaries;
         uint64_t lbd_updates;
+        uint64_t clock_checks;      // Actual CPU deadline clock reads
         uint64_t blocked_clauses;    // Clauses removed by blocked clause elimination
         uint64_t max_lbd;
         uint64_t glue_clauses;
@@ -277,6 +278,9 @@ typedef struct Solver {
     size_t input_size, input_capacity;
     uint32_t input_clauses, clauses_capacity;
     bool internal_add, has_solved, error, interrupted;
+    bool clock_initialized;
+    uint32_t clock_polls;
+    uint64_t clock_work, clock_minimize;
     uint64_t work, work_limit, last_vivify, mode_limit;
     uint64_t garbage_collections, lbd_samples, recent_lbd_sum;
     uint32_t subsume_cursor, vivify_cursor;

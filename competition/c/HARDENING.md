@@ -41,7 +41,7 @@ python3 competition/c/tests/validate.py --solver competition/c/bin/bsat_debug \
 
 The validator independently checks the answer by truth table for small formulas,
 checks original-input SAT models, checks all RUP additions, and invokes the external
-DRAT checker on every UNSAT result. It now covers thirty-seven configurations, including
+DRAT checker on every UNSAT result. It now covers forty configurations, including
 binary proofs and aggressive deletion/vivification. Thirteen fixed formulas preserve
 parser, BVE and equivalence regressions. SAT proof prefixes are also checked. CLI checks cover invalid numeric options, proof
 I/O failures, input-file protection and resource-limit UNKNOWN results.
@@ -191,3 +191,16 @@ after longer runs exposed substantial family-specific regressions. The existing
 layout remains unchanged. The retained heap tests cover score initialization,
 growth, ordering, backtracking, large-score rescaling and API rebuilds. Profiles
 also identify CPU-time checking as a separate performance candidate.
+
+## CPU deadline polling
+
+[Amortized CPU clock checks](DEADLINE_CHECKS.md) reduce repeated system-time queries
+while preserving immediate error, cancellation and work-limit checks. General and
+minimization work each trigger clock reads independently; target copying and
+solver return force reads. The timed samples show lower aggregate CPU time at
+matching search counters, with no solved-count gain. CI additionally runs short
+deadline checks through search, preprocessing and empty-watch formulas.
+Final deadline validation passed 4520 release and 4520 ASan/UBSan formula solves
+(seed 20260913), all twelve C test executables in both modes, and twelve additional
+short-deadline runs per mode. See the
+[validation record](benchmark_results/deadline-validation-20260906.json).

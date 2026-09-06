@@ -31,6 +31,7 @@ jobs:
           binary=competition/c/bin/bsat
           if [ '${{ matrix.mode }}' = debug ]; then binary="${binary}_debug"; fi
           python3 competition/c/tests/validate.py --solver "$binary" --cases 100 --checker "$RUNNER_TEMP/drat-trim"
+          python3 competition/c/tests/check_deadlines.py --solver "$binary"
       - uses: actions/upload-artifact@v4
         if: failure()
         with:
