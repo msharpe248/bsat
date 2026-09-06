@@ -1,0 +1,15 @@
+{
+  "scope": "Retained clause-decay validation fix; recency experiment removed",
+  "seed": 20260912,
+  "configurations": 37,
+  "release_formula_validation": "PASS: 4181 solves; truth-table answers, original models, text/binary RUP proofs checked (seed 20260912)",
+  "unit_executables_passed": {
+    "release": 10,
+    "asan_ubsan": 10
+  },
+  "binary_sha256": {
+    "bsat": "f48761442d5023bca8391e86434aa555786639a8df0cdafe2a54e3398a39f8dd",
+    "bsat_debug": "fad5971a56e56fb3e8601194c1f23018fbe00789ad64fc5bb50e3f8a7506c4f8"
+  },
+  "asan_formula_validation": "Not repeated for final restoration; both final sanitizer unit suite and rejected-candidate formula validation are recorded separately."
+}

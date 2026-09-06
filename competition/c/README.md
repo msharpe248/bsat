@@ -112,6 +112,8 @@ Use `solver_model_value` to read assignments; invalid variable indices return
 UNDEF. Internal structure layout changed with the compact assignment array:
 recompile embedding code and replace direct `vars[v].value` accesses with the
 accessor. The C API does not promise a stable binary layout.
+`solver_new_with_opts` returns NULL for invalid numeric options; `clause_decay`
+must be finite and in (0,1].
 `solver_solve_with_assumptions` accepts repeated or contradictory assumptions.
 Subsequent solves, new variables, or added clauses rebuild working state from the
 original input. This restores eliminated clauses and avoids stale assumption

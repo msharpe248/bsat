@@ -1,0 +1,254 @@
+diff --git a/competition/c/include/solver.h b/competition/c/include/solver.h
+index 8ceefc3..446a306 100644
+--- a/competition/c/include/solver.h
++++ b/competition/c/include/solver.h
+@@ -69,6 +69,7 @@ typedef struct SolverOpts {
+     uint32_t reduce_interval;   // Conflicts between reductions (2000)
+     bool     iterative_minimize; // Experimental binary-aware traversal (false)
+     bool     dynamic_lbd;       // Re-evaluate learned-clause quality during analysis
++    bool     recency_activity;  // Conflict-based learned-clause activity decay
+     uint32_t minimize_budget;   // Reason inspections per clause, either mode (0 disables)
+     bool     minimize;          // Enable clause minimization (true)
+ 
+@@ -186,6 +187,7 @@ typedef struct Solver {
+         double   var_inc;     // Activity increment
+         double   var_decay;   // Activity decay factor
+     } order;
++    double clause_inc;          // Shared scale for recent learned-clause uses
+ 
+     // Conflict analysis
+     uint8_t* seen;            // Seen flags for conflict analysis
+diff --git a/competition/c/src/main.c b/competition/c/src/main.c
+index 8d3e1d2..05241a3 100644
+--- a/competition/c/src/main.c
++++ b/competition/c/src/main.c
+@@ -72,6 +72,7 @@ static void print_usage(const char* program) {
+     printf("  --reduce-interval <n>     Conflicts between reductions (default: 2000)\n");
+     printf("  --iterative-minimize     Experimental binary-aware minimization\n");
+     printf("  --dynamic-lbd            Refresh learned-clause LBD during analysis\n");
++    printf("  --recency-activity       Discount learned-clause activity per conflict\n");
+     printf("  --minimize-budget <n>     Reason checks per learned clause (10000)\n");
+     printf("  --no-minimize             Disable clause minimization\n");
+     printf("  --no-subsumption          Disable on-the-fly subsumption\n");
+@@ -156,6 +157,7 @@ static struct option long_options[] = {
+     {"reduce-interval", required_argument, 0, 0},
+     {"iterative-minimize", no_argument, 0, 0},
+     {"dynamic-lbd", no_argument, 0, 0},
++    {"recency-activity", no_argument, 0, 0},
+     {"minimize-budget", required_argument, 0, 0},
+     {"no-minimize",     no_argument,       0, 0},
+     {"no-subsumption",  no_argument,       0, 0},
+@@ -328,6 +330,8 @@ int main(int argc, char** argv) {
+                     opts.iterative_minimize = true;
+                 } else if (strcmp(long_options[option_index].name, "dynamic-lbd") == 0) {
+                     opts.dynamic_lbd = true;
++                } else if (strcmp(long_options[option_index].name, "recency-activity") == 0) {
++                    opts.recency_activity = true;
+                 } else if (strcmp(long_options[option_index].name, "minimize-budget") == 0) {
+                     opts.minimize_budget = (uint32_t)strtoul(optarg, NULL, 10);
+                 } else if (strcmp(long_options[option_index].name, "no-minimize") == 0) {
+diff --git a/competition/c/src/solver.c b/competition/c/src/solver.c
+index 1889ae9..0734aa2 100644
+--- a/competition/c/src/solver.c
++++ b/competition/c/src/solver.c
+@@ -120,6 +120,7 @@ SolverOpts default_opts(void) {
+         .equiv = false,
+         .equiv_budget = 1000000,
+         .dynamic_lbd = false,
++        .recency_activity = false,
+         .max_conflicts = 0,        // Unlimited
+         .max_decisions = 0,        // Unlimited
+         .max_time = 0.0,          // Unlimited
+@@ -353,6 +354,7 @@ Solver* solver_new(void) {
+ Solver* solver_new_with_opts(const SolverOpts* opts) {
+     if (!opts || !isfinite(opts->var_decay) || opts->var_decay <= 0 || opts->var_decay >= 1 ||
+         !isfinite(opts->var_inc) || opts->var_inc <= 0 ||
++        !isfinite(opts->clause_decay) || opts->clause_decay <= 0 || opts->clause_decay > 1 ||
+         !isfinite(opts->restart_inc) || opts->restart_inc < 1 ||
+         !opts->restart_first || !opts->luby_unit || !opts->reduce_interval ||
+         !opts->glucose_window_size || !opts->inprocess_interval || !opts->rephase_interval ||
+@@ -379,6 +381,7 @@ Solver* solver_new_with_opts(const SolverOpts* opts) {
+     // Initialize order heap
+     s->order.var_inc = opts->var_inc;
+     s->order.var_decay = opts->var_decay;
++    s->clause_inc = 1;
+ 
+     // Initialize variable capacity (will allocate on first variable add)
+     s->var_capacity = 0;
+@@ -1020,6 +1023,33 @@ static uint32_t calc_lbd(Solver* s, const Lit* lits, uint32_t size) {
+     return lbd;
+ }
+ 
++static void rescale_clause_activity(Solver *s, double factor) {
++    for (uint32_t i = 0; i < s->num_learnts; ++i) {
++        CRef cr = s->learnts[i];
++        if (cr != INVALID_CLAUSE && !clause_deleted(s->arena, cr))
++            CLAUSE_HEADER(s->arena, cr)->activity *= factor;
++    }
++}
++
++static void reward_clause(Solver *s, CRef cr) {
++    if (!clause_learned(s->arena, cr)) return;
++    bump_clause_activity(s->arena, cr, (float)s->clause_inc);
++    if (clause_activity(s->arena, cr) > 1e20f) {
++        rescale_clause_activity(s, 1e-20);
++        s->clause_inc *= 1e-20;
++    }
++}
++
++static void decay_clause_activity(Solver *s) {
++    if (!s->opts.recency_activity) return;
++    /* Compare before dividing, including tiny positive API decay factors.
++       Reset the scale explicitly if the rescaling factor underflows. */
++    if (s->clause_inc > 1e20 * s->opts.clause_decay) {
++        rescale_clause_activity(s, s->opts.clause_decay / s->clause_inc);
++        s->clause_inc = 1;
++    } else s->clause_inc /= s->opts.clause_decay;
++}
++
+ static void improve_clause_lbd(Solver *s, CRef cr) {
+     if (!s->opts.dynamic_lbd || !clause_learned(s->arena, cr)) return;
+     uint32_t old = clause_lbd(s->arena, cr);
+@@ -1064,6 +1094,7 @@ void solver_analyze(Solver* s, CRef conflict, Lit* learnt, uint32_t* learnt_size
+         }
+     } else if (conflict != INVALID_CLAUSE) {
+         // Regular conflict from arena
++        if (s->opts.recency_activity) reward_clause(s, conflict);
+         improve_clause_lbd(s, conflict);
+         uint32_t size = CLAUSE_SIZE(s->arena, conflict);
+         Lit* lits = CLAUSE_LITS(s->arena, conflict);
+@@ -1116,7 +1147,8 @@ void solver_analyze(Solver* s, CRef conflict, Lit* learnt, uint32_t* learnt_size
+                 uint32_t size = CLAUSE_SIZE(s->arena, reason);
+                 Lit* lits = CLAUSE_LITS(s->arena, reason);
+ 
+-                bump_clause_activity(s->arena, reason, 1.0f);
++                if (s->opts.recency_activity) reward_clause(s, reason);
++                else bump_clause_activity(s->arena, reason, 1.0f);
+                 for (uint32_t i = 0; i < size; i++) {
+                     Lit q = lits[i];
+                     Var qv = var(q);
+@@ -1512,7 +1544,8 @@ void solver_reduce_db(Solver* s) {
+     for (uint32_t i = 0; i < n; ++i) {
+         if (i >= keep || scores[i].lbd > s->opts.max_lbd) {
+             solver_delete_clause(s, scores[i].cref); s->stats.deleted_clauses++;
+-        } else CLAUSE_HEADER(s->arena, scores[i].cref)->activity *= s->opts.clause_decay;
++        } else if (!s->opts.recency_activity)
++            CLAUSE_HEADER(s->arena, scores[i].cref)->activity *= s->opts.clause_decay;
+     }
+     free(scores);
+     uint32_t out = 0;
+@@ -1840,6 +1873,7 @@ static lbool solve_internal(Solver *s, const Lit *assumps, uint32_t n_assumps) {
+                 if (reason==INVALID_CLAUSE) { s->error=true;break; }
+                 set_clause_lbd(s->arena,reason,lbd);
+                 s->learnts[s->num_learnts++]=reason;
++                if (s->opts.recency_activity) reward_clause(s, reason);
+                 if (s->opts.subsumption) solver_on_the_fly_subsumption(s,learnt,n);
+                 watch_add(s->watches,learnt[0],reason,learnt[1]);
+                 watch_add(s->watches,learnt[1],reason,learnt[0]);
+@@ -1850,6 +1884,7 @@ static lbool solve_internal(Solver *s, const Lit *assumps, uint32_t n_assumps) {
+             s->stats.max_lbd=MAX(s->stats.max_lbd,lbd);
+             if (lbd<=s->opts.glue_lbd) s->stats.glue_clauses++;
+             decay_var_inc(s);
++            decay_clause_activity(s);
+             if (s->stats.conflicts % s->opts.reduce_interval==0) solver_reduce_db(s);
+         } else {
+             if (solver_should_restart(s)) { solver_backtrack(s,0);s->stats.restarts++; }
+diff --git a/competition/c/tests/validate.py b/competition/c/tests/validate.py
+index 1aa4762..5c6356f 100644
+--- a/competition/c/tests/validate.py
++++ b/competition/c/tests/validate.py
+@@ -193,6 +193,8 @@ def main():
+     configs += [['--dynamic-lbd'],
+                 ['--dynamic-lbd', '--reduce-interval', '1', '--reduce-fraction', '0'],
+                 ['--dynamic-lbd', '--binary-proof', '--equiv', '--elim', '--bce']]
++    configs += [['--recency-activity'], ['--recency-activity', '--dynamic-lbd'],
++                ['--recency-activity', '--dynamic-lbd', '--binary-proof', '--reduce-interval', '1']]
+     fixed = [
+         (5, [[1, 2], [1, -2], [-3, 4], [3, -4], [4, 5]], None),
+         (5, [[-4], [-1, 2, 4], [1, -2, 4]] +
+--- /dev/null
++++ b/competition/c/tests/test_activity.c
+@@ -0,0 +1,83 @@
++#include "../include/solver.h"
++#include "../include/dimacs.h"
++#include <assert.h>
++#include <float.h>
++#include <math.h>
++#include <stdio.h>
++
++static void ranking(bool recency, bool rescale) {
++    Solver *s = solver_new();assert(s);
++    s->opts.recency_activity = recency;
++    assert(dimacs_parse_string(s, "p cnf 4 3\n-1 -2 3 4 0\n-1 -2 3 -4 0\n-1 -3 0\n") == DIMACS_OK);
++    CRef reason = s->clauses[0], conflict = s->clauses[1];
++    CRef unused = arena_alloc(s->arena, CLAUSE_LITS(s->arena, reason), 4, true);
++    assert(unused != INVALID_CLAUSE);
++    s->learnts = malloc(3 * sizeof *s->learnts);assert(s->learnts);
++    s->learnts[0] = reason;s->learnts[1] = conflict;s->learnts[2] = unused;
++    s->num_learnts = s->learnts_size = 3;
++    for (unsigned i = 0; i < 3; ++i) {
++        CLAUSE_HEADER(s->arena, s->learnts[i])->flags |= CLAUSE_LEARNED;
++        set_clause_lbd(s->arena, s->learnts[i], 4);
++    }
++    CLAUSE_HEADER(s->arena, reason)->activity = rescale ? 1e20f : 20;
++    CLAUSE_HEADER(s->arena, conflict)->activity = 10;
++    CLAUSE_HEADER(s->arena, unused)->activity = 30;
++    s->clause_inc = rescale ? 1e20 : 100;
++    for (Var v = 1; v <= 2; ++v) {
++        assert(s->values[v] == UNDEF);
++        s->trail_lims[++s->decision_level] = s->trail_size;
++        s->values[v] = TRUE;s->vars[v].level = s->decision_level;
++        s->vars[v].reason = INVALID_CLAUSE;s->vars[v].trail_pos = s->trail_size;
++        s->trail[s->trail_size++] = (Trail){mkLit(v, false), s->decision_level};
++        CRef found = solver_propagate(s);
++        assert(found == (v == 1 ? INVALID_CLAUSE : conflict));
++    }
++    assert(s->vars[4].reason == reason);
++    Lit learned[4];uint32_t n;Level backjump;
++    solver_analyze(s, conflict, learned, &n, &backjump);
++    assert(n && backjump == 1 && learned[0] == mkLit(2, true));
++    float a = clause_activity(s->arena, reason), b = clause_activity(s->arena, conflict);
++    if (rescale) {
++        assert(isfinite(s->clause_inc) && fabs(s->clause_inc - 1) < 1e-5);
++        assert(fabs(a - 2) < 1e-5 && fabs(b - 1) < 1e-5);
++        assert(clause_activity(s->arena, unused) < 1e-15);
++    } else {
++        assert(a == (recency ? 120 : 21) && b == (recency ? 110 : 10));
++    }
++    solver_backtrack(s, 0);
++    s->opts.reduce_fraction = 0.34; // Keep exactly one of the three equal-LBD clauses.
++    solver_reduce_db(s);
++    assert(s->num_learnts == 1);
++    // GC may relocate the retained clause; its activity identifies the winner.
++    float retained = clause_activity(s->arena, s->learnts[0]);
++    assert(fabs(retained - (recency ? a : 30 * s->opts.clause_decay)) < 1e-5);
++    solver_free(s);
++}
++
++static void decay_and_reuse(void) {
++    const double factors[] = {0.999, 0.5, DBL_MIN, 1};
++    for (unsigned i = 0; i < sizeof factors/sizeof *factors; ++i) {
++        SolverOpts o = default_opts();o.recency_activity = true;o.probing = false;
++        o.clause_decay = factors[i];
++        Solver *s = solver_new_with_opts(&o);assert(s);
++        // Neither branch of variable 1 works. Search learns a root unit first.
++        assert(dimacs_parse_string(s,"p cnf 3 4\n1 2 0\n1 -2 0\n-1 3 0\n-1 -3 0\n") == DIMACS_OK);
++        assert(solver_solve(s) == FALSE && s->stats.learned_clauses > 0);
++        assert(isfinite(s->clause_inc) && s->clause_inc > 0 && s->clause_inc <= 1e20);
++        if (factors[i] >= 0.5) assert(fabs(s->clause_inc - 1/factors[i]) < 1e-10);
++        else assert(s->clause_inc == 1);
++        assert(solver_solve(s) == FALSE); // Rebuilding must reset the shared scale.
++        if (factors[i] >= 0.5) assert(fabs(s->clause_inc - 1/factors[i]) < 1e-10);
++        solver_free(s);
++    }
++    const double invalid[] = {0, -1, 1.01, INFINITY, NAN};
++    for (unsigned i = 0; i < sizeof invalid/sizeof *invalid; ++i) {
++        SolverOpts o = default_opts();o.clause_decay = invalid[i];
++        assert(!solver_new_with_opts(&o));
++    }
++}
++int main(void) {
++    ranking(false, false);ranking(true, false);ranking(true, true);decay_and_reuse();
++    puts("PASS: clause recency, conflict/reason rewards, ranking, rescaling, decay bounds and reuse");
++    return 0;
++}

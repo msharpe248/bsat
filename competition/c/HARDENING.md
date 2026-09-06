@@ -66,7 +66,7 @@ substitution with bounded traversal, proof logging and model reconstruction.
 Its benchmark showed no solved-count gain, so defaults remain unchanged. Final
 validation passed 3,842 release and 3,842 ASan/UBSan solves (seed 20260910),
 with original-model and SAT/UNSAT proof-addition checks across 34 configurations.
-Both unit suites passed all 11 test executables, including the SCC regressions.
+Both unit suites passed all nine test executables, including the SCC regressions.
 
 ## Final repeated benchmark
 
@@ -161,10 +161,25 @@ configurations combining dynamic LBD with aggressive reduction and preprocessing
 
 Final dynamic-LBD validation passed 4,181 release and 4,181 ASan/UBSan solves
 (seed 20260911), including independent truth-table, original-model and text/binary
-proof checks. Both unit suites passed all 11 test executables.
+proof checks. Both unit suites passed all nine test executables.
 [Validation record](benchmark_results/dynamic-lbd-validation-20260906.json).
 
 The earlier pushed milestones also passed GitHub CI on Linux and macOS:
 [258cb3e](https://github.com/msharpe248/bsat/actions/runs/34054687079) and
 [49aa90a](https://github.com/msharpe248/bsat/actions/runs/34054149907). These results
 precede dynamic LBD and do not certify its subsequent CI run.
+
+## Clause-activity follow-up
+
+The [recency-activity experiment](CLAUSE_ACTIVITY.md) was tested and discarded:
+new-instance measurements did not support retaining it. The production change
+rejects nonfinite or out-of-range C API clause-decay values. A new options test
+covers boundaries and repeated solves. Historical unit-executable counts above
+were corrected from eleven to nine; eleven was the last watch test's case count.
+The retained suite now has ten executables.
+
+The pushed dynamic-LBD baseline also passed
+[Linux/macOS CI](https://github.com/msharpe248/bsat/actions/runs/34060624967).
+Final retained-code checks passed 4181 release formula solves and all ten C
+test executables in both release and ASan/UBSan modes. See the
+[final validation record](benchmark_results/clause-activity-final-validation-20260906.json).

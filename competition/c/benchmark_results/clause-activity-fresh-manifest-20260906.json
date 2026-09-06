@@ -1,0 +1,91 @@
+{
+  "seed": 20260912,
+  "split": "development",
+  "instances": [
+    {
+      "path": "/private/tmp/bsat-activity-fresh/random3sat/v180-0.cnf",
+      "family": "random3sat",
+      "variables": 180,
+      "clauses": 767,
+      "sha256": "18355995b1d28ee2bbd0c97c64e6937e5918b9c45614b573f35dc5ed28692f38"
+    },
+    {
+      "path": "/private/tmp/bsat-activity-fresh/random3sat/v180-1.cnf",
+      "family": "random3sat",
+      "variables": 180,
+      "clauses": 767,
+      "sha256": "4d4dbb12acfa4e39622f4a70ba69b25088f9aa725f216deb2591e75ee878ecab"
+    },
+    {
+      "path": "/private/tmp/bsat-activity-fresh/random3sat/v180-2.cnf",
+      "family": "random3sat",
+      "variables": 180,
+      "clauses": 767,
+      "sha256": "f29bd55aef0a0115cf9e9a788ac8e026f05e52ceadccde20c72287550916273d"
+    },
+    {
+      "path": "/private/tmp/bsat-activity-fresh/random3sat/v180-3.cnf",
+      "family": "random3sat",
+      "variables": 180,
+      "clauses": 767,
+      "sha256": "88acdced0be16deab602467b3d6e554d4a4d621fc8981d8564792832d499a8d1"
+    },
+    {
+      "path": "/private/tmp/bsat-activity-fresh/random3sat/v220-0.cnf",
+      "family": "random3sat",
+      "variables": 220,
+      "clauses": 937,
+      "sha256": "09e629f28d40d1fa662bfe0982b37e4e06dfdc29d260e5d285f97bfcc9e0578f"
+    },
+    {
+      "path": "/private/tmp/bsat-activity-fresh/random3sat/v220-1.cnf",
+      "family": "random3sat",
+      "variables": 220,
+      "clauses": 937,
+      "sha256": "1eb347f37c63094158466d9adb422f5645377d18987f8a4dd2f903127c7a64eb"
+    },
+    {
+      "path": "/private/tmp/bsat-activity-fresh/random3sat/v220-2.cnf",
+      "family": "random3sat",
+      "variables": 220,
+      "clauses": 937,
+      "sha256": "65a77fd243ac26210867502dd793bd88a8c6421bbab3d3f630fc6877beddb7bd"
+    },
+    {
+      "path": "/private/tmp/bsat-activity-fresh/random3sat/v220-3.cnf",
+      "family": "random3sat",
+      "variables": 220,
+      "clauses": 937,
+      "sha256": "3c94d48ae3f5902fdb6a6228a3c1d80a3afc865c1be6333aacf58bbe2ebad8d2"
+    },
+    {
+      "path": "/private/tmp/bsat-activity-fresh/random3sat/v260-0.cnf",
+      "family": "random3sat",
+      "variables": 260,
+      "clauses": 1108,
+      "sha256": "0e452f14da5952fc330071ac3dfcb1fcecb0624d421d006d79a2243e403b8497"
+    },
+    {
+      "path": "/private/tmp/bsat-activity-fresh/random3sat/v260-1.cnf",
+      "family": "random3sat",
+      "variables": 260,
+      "clauses": 1108,
+      "sha256": "fdbc5aeab5bc12cddb1e6a2d689d6ba678cab293dc68006130ee8ca5065ce6d1"
+    },
+    {
+      "path": "/private/tmp/bsat-activity-fresh/random3sat/v260-2.cnf",
+      "family": "random3sat",
+      "variables": 260,
+      "clauses": 1108,
+      "sha256": "3ab6af6e72ba7882f21e8dba166ffb4258c62c53d870195d93efc750db17c4c5"
+    },
+    {
+      "path": "/private/tmp/bsat-activity-fresh/random3sat/v260-3.cnf",
+      "family": "random3sat",
+      "variables": 260,
+      "clauses": 1108,
+      "sha256": "9b0191cd41446a910ade0760ad469b4283e8f9261bbcf53f3bc40b885ed8608a"
+    }
+  ],
+  "selection": "Only new-seed random formulas; repeated pigeonhole formulas excluded."
+}

@@ -65,7 +65,7 @@ the remaining watched literal with the correct reason. These tests pass for the
 original implementation as well as the rejected range implementation.
 
 After restoring the original solver, release and ASan/UBSan unit suites both
-passed all 11 test executables, including the 256 new scan-order cases.
+passed all nine test executables, including the 256 new scan-order cases.
 The earlier milestone's 3842 release and 3842 sanitizer formula-validation results
 apply to that unchanged solver source; they are not new validation runs of these
 experimental candidates. The candidates passed unit tests and benchmark certificate

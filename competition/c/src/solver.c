@@ -353,6 +353,7 @@ Solver* solver_new(void) {
 Solver* solver_new_with_opts(const SolverOpts* opts) {
     if (!opts || !isfinite(opts->var_decay) || opts->var_decay <= 0 || opts->var_decay >= 1 ||
         !isfinite(opts->var_inc) || opts->var_inc <= 0 ||
+        !isfinite(opts->clause_decay) || opts->clause_decay <= 0 || opts->clause_decay > 1 ||
         !isfinite(opts->restart_inc) || opts->restart_inc < 1 ||
         !opts->restart_first || !opts->luby_unit || !opts->reduce_interval ||
         !opts->glucose_window_size || !opts->inprocess_interval || !opts->rephase_interval ||

@@ -1,0 +1,15 @@
+{
+  "scope": "Rejected recency candidate, not the final retained solver",
+  "seed": 20260912,
+  "configurations": 40,
+  "random_cases": 100,
+  "fixed_cases": 13,
+  "validation": {
+    "release": "PASS: 4520 solves; truth-table answers, original models, text/binary RUP proofs checked (seed 20260912)",
+    "asan_ubsan": "PASS: 4520 solves; truth-table answers, original models, text/binary RUP proofs checked (seed 20260912)"
+  },
+  "binary_sha256": {
+    "bsat": "9ccfdd09b5a2dd036b7a15235bed13aa5efea4584f3450ab2bc86a8553b176ea",
+    "bsat_debug": "4671fba9b1a1639284cdfb0ed87eb761c1c2d1aa146a617a983f66c80c3987c2"
+  }
+}

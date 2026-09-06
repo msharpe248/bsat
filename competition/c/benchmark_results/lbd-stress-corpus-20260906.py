@@ -10,7 +10,8 @@ root = Path(sys.argv[1])
 if root.exists() and any(root.iterdir()):
     raise SystemExit('output directory must be empty')
 root.mkdir(parents=True, exist_ok=True)
-rng = random.Random(20260911)
+seed = int(sys.argv[2]) if len(sys.argv) > 2 else 20260911
+rng = random.Random(seed)
 entries = []
 def save(family, name, n, clauses):
     p = root / family / (name + '.cnf')
@@ -26,4 +27,4 @@ for holes in (7, 8, 9):
     clauses = [[v(p,h) for h in range(holes)] for p in range(holes+1)]
     clauses += [[-v(p,h),-v(q,h)] for h in range(holes) for p in range(holes+1) for q in range(p+1,holes+1)]
     save('pigeonhole', f'php-{holes+1}-{holes}', holes*(holes+1), clauses)
-(root/'manifest.json').write_text(json.dumps(dict(seed=20260911,split='development',instances=entries),indent=2)+'\n')
+(root/'manifest.json').write_text(json.dumps(dict(seed=seed,split='development',instances=entries),indent=2)+'\n')
