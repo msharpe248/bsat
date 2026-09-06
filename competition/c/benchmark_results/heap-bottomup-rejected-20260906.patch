@@ -1,0 +1,39 @@
+diff --git a/competition/c/src/solver.c b/competition/c/src/solver.c
+index 915d30d..548363a 100644
+--- a/competition/c/src/solver.c
++++ b/competition/c/src/solver.c
+@@ -253,20 +253,28 @@ static void heap_percolate_down(Solver* s, uint32_t i) {
+     Var v = s->order.heap[i];
+     double act = s->vars[v].activity;
+ 
++    uint32_t start = i;
++    // Descend through the larger children, then place the replacement from below.
++    // Keep the cheap root stop for equal/zero activity heaps.
+     while (heap_left(i) < s->order.size) {
+         uint32_t child = heap_left(i);
+         if (heap_right(i) < s->order.size &&
+             s->vars[s->order.heap[heap_right(i)]].activity >
+-            s->vars[s->order.heap[child]].activity) {
+-            child = heap_right(i);
+-        }
+-
+-        if (act >= s->vars[s->order.heap[child]].activity) break;
+-
++            s->vars[s->order.heap[child]].activity) child = heap_right(i);
++        if (i == start && act >= s->vars[s->order.heap[child]].activity) break;
+         s->order.heap[i] = s->order.heap[child];
+         s->vars[s->order.heap[i]].heap_pos = i;
+         i = child;
+     }
++    while (i > start) {
++        uint32_t parent = heap_parent(i);
++        Var pv = s->order.heap[parent];
++        // Equality must move upward to reproduce the original top-down stop.
++        if (s->vars[pv].activity > act) break;
++        s->order.heap[i] = pv;
++        s->vars[pv].heap_pos = i;
++        i = parent;
++    }
+ 
+     s->order.heap[i] = v;
+     s->vars[v].heap_pos = i;

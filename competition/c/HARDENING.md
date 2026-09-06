@@ -223,3 +223,11 @@ Final validation passed 4520 release and 4520 ASan/UBSan formula solves across
 and twelve short-deadline runs per mode. Checks include independent truth-table
 answers, original models, and text/binary proofs. See the
 [validation record](benchmark_results/target-validation-20260906.json).
+
+## Heap extraction follow-up
+
+[Bottom-up heap extraction](HEAP_EXTRACTION.md) preserved exact search order but
+failed to show a repeatable aggregate speedup in the longer comparison. It was
+reverted. The retained regression checks every extracted variable, heap entry and
+inverse position across 128 configurations, including score ties and partial tree
+levels. Production solver behavior remains that of the target-saving milestone.

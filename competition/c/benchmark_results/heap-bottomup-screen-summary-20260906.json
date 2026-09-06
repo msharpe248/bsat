@@ -1,0 +1,191 @@
+{
+  "summary": {
+    "baseline": {
+      "verified_runs": 9,
+      "runs": 84,
+      "mean_par2": 44.64649826834544,
+      "max_rss_bytes": 42287104,
+      "errors": 0
+    },
+    "bottomup": {
+      "verified_runs": 9,
+      "runs": 84,
+      "mean_par2": 44.646506903280084,
+      "max_rss_bytes": 42156032,
+      "errors": 0
+    }
+  },
+  "counter_mismatches": [],
+  "instances": [
+    {
+      "input": "/Users/msharpe/python/bsat/dataset/sat_competition2025/battleship/d88c6afc13cdad0e2c8371a879692b39.cnf",
+      "baseline_cpu": 0.15795599999999999,
+      "bottomup_cpu": 0.158793,
+      "ratio": 1.0052989440097242
+    },
+    {
+      "input": "/Users/msharpe/python/bsat/dataset/sat_competition2025/belpyramid-puzzle/5831f35622f3e6c666f0cee6cac60e4c.cnf",
+      "baseline_cpu": 2.7456970000000003,
+      "bottomup_cpu": 2.7394060000000002,
+      "ratio": 0.997708778499594
+    },
+    {
+      "input": "/Users/msharpe/python/bsat/dataset/sat_competition2025/coloring/c8d21db50338d9d5743802bcae77a466.cnf",
+      "baseline_cpu": 0.061124,
+      "bottomup_cpu": 0.05946,
+      "ratio": 0.9727766507427524
+    },
+    {
+      "input": "/Users/msharpe/python/bsat/dataset/sat_competition2025/crafted-cec/0876c518e5653369e20fb1ee0bb8db40.cnf",
+      "baseline_cpu": 2.278552,
+      "bottomup_cpu": 2.274221,
+      "ratio": 0.9980992314417226
+    },
+    {
+      "input": "/Users/msharpe/python/bsat/dataset/sat_competition2025/cryptography/99718c1729a8de3347a9946f1836421d.cnf",
+      "baseline_cpu": 0.202945,
+      "bottomup_cpu": 0.19503299999999998,
+      "ratio": 0.9610140678508956
+    },
+    {
+      "input": "/Users/msharpe/python/bsat/dataset/sat_competition2025/discrete-logarithm/0ae917c2e0c1d39cbe411c29b2f5ff08.cnf",
+      "baseline_cpu": 0.5564349999999999,
+      "bottomup_cpu": 0.557199,
+      "ratio": 1.0013730264990521
+    },
+    {
+      "input": "/Users/msharpe/python/bsat/dataset/sat_competition2025/ensemble-computation/67aa1a256f92020dccdf66b235de3986.cnf",
+      "baseline_cpu": 0.7338629999999999,
+      "bottomup_cpu": 0.740413,
+      "ratio": 1.0089253716293096
+    },
+    {
+      "input": "/Users/msharpe/python/bsat/dataset/sat_competition2025/fermat/e207ba2df64495327f715e08155a220f.cnf",
+      "baseline_cpu": 0.41656,
+      "bottomup_cpu": 0.417567,
+      "ratio": 1.002417418859228
+    },
+    {
+      "input": "/Users/msharpe/python/bsat/dataset/sat_competition2025/fpga-routing/1890f49a43a94b97828528b68c32b78e.cnf",
+      "baseline_cpu": 0.112166,
+      "bottomup_cpu": 0.11250099999999999,
+      "ratio": 1.0029866447943225
+    },
+    {
+      "input": "/Users/msharpe/python/bsat/dataset/sat_competition2025/grandtour-puzzle/3f67f6767764855e516e5394be1145e5.cnf",
+      "baseline_cpu": 0.173612,
+      "bottomup_cpu": 0.173948,
+      "ratio": 1.0019353500910075
+    },
+    {
+      "input": "/Users/msharpe/python/bsat/dataset/sat_competition2025/hamiltonian/6e139783cfbcfeec85b49750ad11a615.cnf",
+      "baseline_cpu": 0.013006,
+      "bottomup_cpu": 0.013169,
+      "ratio": 1.0125326772258958
+    },
+    {
+      "input": "/Users/msharpe/python/bsat/dataset/sat_competition2025/hardware-model-checking/51482a5b06b055edfdca576d654ce191.cnf",
+      "baseline_cpu": 1.915877,
+      "bottomup_cpu": 1.923938,
+      "ratio": 1.0042074726091497
+    },
+    {
+      "input": "/Users/msharpe/python/bsat/dataset/sat_competition2025/hgen/2d0c041c0fe72dc32527bfbf34f63e61.cnf",
+      "baseline_cpu": 0.11750599999999999,
+      "bottomup_cpu": 0.116366,
+      "ratio": 0.9902983677429239
+    },
+    {
+      "input": "/Users/msharpe/python/bsat/dataset/sat_competition2025/influence-maximization/f32bb347996c351bc3e9a91c58e8601d.cnf",
+      "baseline_cpu": 1.1604750000000001,
+      "bottomup_cpu": 1.163873,
+      "ratio": 1.002928111333721
+    },
+    {
+      "input": "/Users/msharpe/python/bsat/dataset/sat_competition2025/maximum-constraint-partition/53c21f3e78f060883026b5a12ba691d8.cnf",
+      "baseline_cpu": 0.320806,
+      "bottomup_cpu": 0.32067999999999997,
+      "ratio": 0.9996072392660985
+    },
+    {
+      "input": "/Users/msharpe/python/bsat/dataset/sat_competition2025/mechanical-master-key/dbb42e010bed2259e4e27bc43e4d86c6.cnf",
+      "baseline_cpu": 0.35332899999999995,
+      "bottomup_cpu": 0.356807,
+      "ratio": 1.009843516948793
+    },
+    {
+      "input": "/Users/msharpe/python/bsat/dataset/sat_competition2025/miter/c0e828fb967fc4f0935cf06c6a6b1055.cnf",
+      "baseline_cpu": 0.5157039999999999,
+      "bottomup_cpu": 0.513524,
+      "ratio": 0.9957727688751687
+    },
+    {
+      "input": "/Users/msharpe/python/bsat/dataset/sat_competition2025/multiplier-circuits/90bec6dcf2399d7c7f73acba44a8641e.cnf",
+      "baseline_cpu": 1.854287,
+      "bottomup_cpu": 1.8614899999999999,
+      "ratio": 1.0038845119444832
+    },
+    {
+      "input": "/Users/msharpe/python/bsat/dataset/sat_competition2025/multiplier-verification/fbdca334e6985cd2de8718b60695b5f6.cnf",
+      "baseline_cpu": 0.042835,
+      "bottomup_cpu": 0.043744,
+      "ratio": 1.0212209641648184
+    },
+    {
+      "input": "/Users/msharpe/python/bsat/dataset/sat_competition2025/mutilated-chessboard/45742d067cc851edc1201d8a02586eac.cnf",
+      "baseline_cpu": 0.07039,
+      "bottomup_cpu": 0.05653199999999999,
+      "ratio": 0.8031254439551072
+    },
+    {
+      "input": "/Users/msharpe/python/bsat/dataset/sat_competition2025/pigeon-hole/6f40bd5ac85e2a53b392d8f0369e7f1f.cnf",
+      "baseline_cpu": 0.164011,
+      "bottomup_cpu": 0.164019,
+      "ratio": 1.0000487772161624
+    },
+    {
+      "input": "/Users/msharpe/python/bsat/dataset/sat_competition2025/relativized-pigeon-hole/cb950b9accfb53eb98f77b0f995ac0ae.cnf",
+      "baseline_cpu": 0.17079599999999998,
+      "bottomup_cpu": 0.172847,
+      "ratio": 1.0120084779503034
+    },
+    {
+      "input": "/Users/msharpe/python/bsat/dataset/sat_competition2025/scheduling/69f6dd335626a9b71bfc6f2332f52b9d.cnf",
+      "baseline_cpu": 0.0025649999999999996,
+      "bottomup_cpu": 0.002524,
+      "ratio": 0.9840155945419106
+    },
+    {
+      "input": "/Users/msharpe/python/bsat/dataset/sat_competition2025/scheduling/e707c7e87816dd02ae433d268bd327c6.cnf",
+      "baseline_cpu": 0.469336,
+      "bottomup_cpu": 0.47782699999999995,
+      "ratio": 1.0180915165254742
+    },
+    {
+      "input": "/Users/msharpe/python/bsat/dataset/sat_competition2025/subset-cardinality/b628043a07c5576dd6cd21c9d73a69e0.cnf",
+      "baseline_cpu": 0.059628,
+      "bottomup_cpu": 0.059758,
+      "ratio": 1.0021801838062654
+    },
+    {
+      "input": "/Users/msharpe/python/bsat/dataset/sat_competition2025/tseitin-formulas/42f1311ce504db8cc0cb590a568da20a.cnf",
+      "baseline_cpu": 0.058524,
+      "bottomup_cpu": 0.060461999999999995,
+      "ratio": 1.0331146196432233
+    },
+    {
+      "input": "/Users/msharpe/python/bsat/dataset/sat_competition2025/unknown-cases/6f730dd121471749dc0b4baca2573bf7.cnf",
+      "baseline_cpu": 0.727324,
+      "bottomup_cpu": 0.728903,
+      "ratio": 1.0021709719464778
+    },
+    {
+      "input": "/Users/msharpe/python/bsat/dataset/sat_competition2025/unknown-cases/fab2022deb130fe3ad1136a5c71b4109.cnf",
+      "baseline_cpu": 0.18616,
+      "bottomup_cpu": 0.160435,
+      "ratio": 0.8618124194241513
+    }
+  ],
+  "timing_instances": 25,
+  "geomean_ratio": 0.9863580855101178
+}

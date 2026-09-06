@@ -52,8 +52,56 @@ static void rescale_and_rebuild(void) {
     solver_free(s);
 }
 
+// Independent top-down reference: equality stops and equal children choose left.
+static void reference_down(Var *heap, uint32_t n, uint32_t i, const Solver *s) {
+    Var v = heap[i];
+    while (2*i+1 < n) {
+        uint32_t child = 2*i+1;
+        if (child+1 < n && s->vars[heap[child+1]].activity > s->vars[heap[child]].activity)
+            ++child;
+        if (s->vars[v].activity >= s->vars[heap[child]].activity) break;
+        heap[i] = heap[child];i = child;
+    }
+    heap[i] = v;
+}
+
+static void extraction_reference(void) {
+    uint32_t rng = 20260915;
+    for (uint32_t trial = 0; trial < 128; ++trial) {
+        Solver *s = solver_new();assert(s);
+        s->opts.random_phase = false;
+        uint32_t n = trial < 16 ? trial+1 : 1023 + trial%3;
+        Var reference[1025];
+        for (Var v = 1; v <= n; ++v) {
+            assert(solver_new_var(s) == v);
+            rng ^= rng << 13;rng ^= rng >> 17;rng ^= rng << 5;
+            s->vars[v].activity = trial%4 == 0 ? 0 : rng % (trial%4 == 1 ? 4 : 100000);
+            reference[v-1] = v;
+        }
+        for (uint32_t i = n/2; i; ) reference_down(reference, n, --i, s);
+        for (uint32_t i = 0; i < n; ++i) {
+            s->order.heap[i] = reference[i];s->vars[reference[i]].heap_pos = i;
+        }
+        for (uint32_t remaining = n; remaining; ) {
+            Var expected = reference[0];
+            reference[0] = reference[--remaining];
+            if (remaining) reference_down(reference, remaining, 0, s);
+            assert(solver_decide(s));
+            assert(var(s->trail[s->trail_size-1].lit) == expected);
+            assert(s->vars[expected].heap_pos == UINT32_MAX);
+            assert(s->order.size == remaining);
+            for (uint32_t i = 0; i < remaining; ++i) {
+                assert(s->order.heap[i] == reference[i]);
+                assert(s->vars[reference[i]].heap_pos == i);
+            }
+        }
+        assert(!solver_decide(s));
+        solver_free(s);
+    }
+}
+
 int main(void) {
-    growth_and_order();rescale_and_rebuild();
+    growth_and_order();rescale_and_rebuild();extraction_reference();
     puts("PASS: activity growth, heap ordering, backtracking, rescaling and API rebuild");
     return 0;
 }

@@ -1,0 +1,15 @@
+{
+  "baseline_revision": "0fc2b182344a71e7fe287e231da7a9103c4d9200",
+  "binary_sha256": {
+    "bsat": "c095a0a9af4b55041c4e2a0bd32ce0c0b71934f321647b16015c91036072f831",
+    "bsat_debug": "67d76417c154d910683336d5be36af5e1b178add6c764a532e71b8f98f945d81"
+  },
+  "release_binary_identical_to_validated_baseline": true,
+  "production_sources_and_build_rules_identical_to_baseline": true,
+  "unit_executables_passed": {
+    "release": 13,
+    "asan_ubsan": 13
+  },
+  "heap_reference_configurations": 128,
+  "formula_validation": "Not repeated: release executable is byte-identical and production source/build rules are unchanged from target-validation-20260906.json (4520 release and 4520 ASan/UBSan solves). Rebuilt debug executable has a different hash; it passed all 13 unit executables."
+}
