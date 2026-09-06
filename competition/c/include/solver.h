@@ -218,6 +218,7 @@ typedef struct Solver {
         uint64_t equiv_binaries;
         uint64_t lbd_updates;
         uint64_t clock_checks;      // Actual CPU deadline clock reads
+        uint64_t target_copied, target_cleared;
         uint64_t blocked_clauses;    // Clauses removed by blocked clause elimination
         uint64_t max_lbd;
         uint64_t glue_clauses;
@@ -257,6 +258,7 @@ typedef struct Solver {
     struct {
         lbool*   best_phase;      // Best assignment seen (polarity for each var)
         uint32_t best_trail_size; // Trail size when best assignment was saved
+        bool best_prefix_valid;  // Saved target is still a prefix of the current trail
         uint32_t conflicts_since; // Conflicts since last rephase
         uint32_t rephase_count;   // Number of rephases performed
     } rephase;
@@ -329,6 +331,7 @@ void solver_print_stats(const Solver* s);
  *********************************************************************/
 
 bool solver_budget_exhausted(Solver* s);
+void solver_maybe_save_best_phases(Solver* s);
 uint32_t solver_substitute_equivalences(Solver* s);
 bool solver_check_model(const Solver* s);
 void solver_collect_garbage(Solver* s);

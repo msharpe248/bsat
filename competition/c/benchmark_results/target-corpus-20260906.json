@@ -1,0 +1,25 @@
+{
+  "selection": "Fixed monotone-trail stress sizes, selected before timing. Empty formulas and independent positive binary pairs; all SAT.",
+  "instances": [
+    {
+      "path": "/tmp/bsat-target-corpus/empty-20000.cnf",
+      "sha256": "3629ab313e9dfb1f52c792d83fbc9e9bd4d4dcf49efbd52f63ebde9ff2548045"
+    },
+    {
+      "path": "/tmp/bsat-target-corpus/empty-50000.cnf",
+      "sha256": "8974f6ed539bf1201ef8292e19237c8d8b415facf021cbd4fe9e8e2972393a88"
+    },
+    {
+      "path": "/tmp/bsat-target-corpus/empty-100000.cnf",
+      "sha256": "435148adf4faa488703932747d535d632896841b44888d1be24b5e083d0816cb"
+    },
+    {
+      "path": "/tmp/bsat-target-corpus/pairs-10000.cnf",
+      "sha256": "1d683035b488aeb825e07a714af3733e23bf30a8a8ab8b96e35300de1905138a"
+    },
+    {
+      "path": "/tmp/bsat-target-corpus/pairs-50000.cnf",
+      "sha256": "7c63c4f705c7bb24c81c8b76af20013030840b7b96399fb29635fe213a3eef08"
+    }
+  ]
+}

@@ -38,7 +38,9 @@ cached reading, and a terminal check when an input contradiction bypasses search
 A 100000-variable empty formula exercises deadline expiration with zero watch
 inspections, both with and without target saving, followed by a fresh unlimited
 solve. The unlimited reuse disables target saving to avoid testing its unrelated
-quadratic copying cost.
+quadratic copying cost at that milestone. Subsequent
+[incremental target saving](TARGET_SAVING.md) removes that cost on uninterrupted
+descents while retaining the same forced deadline checks.
 
 `tests/check_deadlines.py` exercises 1 ms, 10 ms and 50 ms CPU limits on pigeonhole
 search, iterative minimization, combined preprocessing, and empty-watch search.

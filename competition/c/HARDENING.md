@@ -204,3 +204,22 @@ Final deadline validation passed 4520 release and 4520 ASan/UBSan formula solves
 (seed 20260913), all twelve C test executables in both modes, and twelve additional
 short-deadline runs per mode. See the
 [validation record](benchmark_results/deadline-validation-20260906.json).
+
+## Incremental target saving
+
+[Best-phase target caching](TARGET_SAVING.md) preserves target assignments while
+copying only an appended suffix on uninterrupted descents. Backtracking into the
+saved prefix invalidates the cache; shorter branches retain the previous target
+until a new record requires rebuilding it. Regression tests compare against the
+previous full-copy algorithm and check exact linear work on a long descent.
+The constructed stress cases improve substantially; the broader competition
+sample has unchanged search counters and no solved-count gain.
+
+The preceding deadline milestone passed
+[Linux/macOS CI](https://github.com/msharpe248/bsat/actions/runs/34064098298).
+
+Final validation passed 4520 release and 4520 ASan/UBSan formula solves across
+40 configurations (seed 20260914), all thirteen C test executables in both modes,
+and twelve short-deadline runs per mode. Checks include independent truth-table
+answers, original models, and text/binary proofs. See the
+[validation record](benchmark_results/target-validation-20260906.json).

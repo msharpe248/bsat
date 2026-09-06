@@ -647,6 +647,7 @@ static inline void push_trail(Solver* s, Lit lit) {
 void solver_backtrack(Solver* s, Level level) {
     if (level >= s->decision_level) return;
     uint32_t pos = s->trail_lims[level + 1];
+    if (pos < s->rephase.best_trail_size) s->rephase.best_prefix_valid = false;
     for (uint32_t i = s->trail_size; i > pos;) {
         Var v = var(s->trail[--i].lit);
         s->values[v] = UNDEF;
@@ -771,6 +772,8 @@ void solver_print_stats(const Solver* s) {
     printf("c Derived binaries  : %llu\n", (unsigned long long)s->stats.equiv_binaries);
     printf("c LBD improvements  : %llu\n", (unsigned long long)s->stats.lbd_updates);
     printf("c Deadline clock reads: %llu\n", (unsigned long long)s->stats.clock_checks);
+    printf("c Target literals copied: %llu\n", (unsigned long long)s->stats.target_copied);
+    printf("c Target values cleared: %llu\n", (unsigned long long)s->stats.target_cleared);
     printf("c Blocked clauses   : %llu\n", (unsigned long long)s->stats.blocked_clauses);
     printf("c Subsumed clauses  : %llu\n", (unsigned long long)s->stats.subsumed_clauses);
     printf("c Minimized literals: %llu\n", (unsigned long long)s->stats.minimized_literals);
@@ -1249,21 +1252,26 @@ bool solver_decide(Solver* s) {
  * Save current assignment as best if we've assigned more variables than ever before.
  * This tracks the assignment that got closest to a solution.
  */
-static void solver_maybe_save_best_phases(Solver* s) {
+void solver_maybe_save_best_phases(Solver* s) {
     if (!s->opts.rephase || !s->rephase.best_phase) return;
 
     // Only save if we've assigned more variables than the previous best
     if (s->trail_size > s->rephase.best_trail_size) {
-        s->rephase.best_trail_size = s->trail_size;
-
-        memset(s->rephase.best_phase, 0, (s->num_vars+1)*sizeof(lbool));
+        uint32_t first = s->rephase.best_prefix_valid ? s->rephase.best_trail_size : 0;
+        if (!s->rephase.best_prefix_valid) {
+            memset(s->rephase.best_phase, 0, (s->num_vars+1)*sizeof(lbool));
+            s->stats.target_cleared += (uint64_t)s->num_vars + 1;
+        }
         // Save the partial target assignment
-        for (uint32_t i = 0; i < s->trail_size; i++) {
+        for (uint32_t i = first; i < s->trail_size; i++) {
             Lit lit = s->trail[i].lit;
             Var v = var(lit);
             // Save polarity: true=positive, false=negative
             s->rephase.best_phase[v] = sign(lit) ? FALSE : TRUE;
         }
+        s->stats.target_copied += s->trail_size - first;
+        s->rephase.best_trail_size = s->trail_size;
+        s->rephase.best_prefix_valid = true;
         // Copying a target can be expensive without advancing either work
         // counter. Do not defer its deadline check across further decisions.
         check_cpu_deadline(s);

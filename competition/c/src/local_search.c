@@ -396,6 +396,7 @@ void local_search_copy_solution(Solver* s, LocalSearchState* ls) {
 
     // Update trail to reflect full assignment
     s->trail_size = 0;
+    s->rephase.best_prefix_valid = false;
     for (Var v = 1; v <= ls->num_vars; v++) {
         Lit lit = mkLit(v, !ls->assignment[v]);
         s->trail[s->trail_size].lit = lit;

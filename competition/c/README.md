@@ -55,6 +55,11 @@ bounded subsumption, learned-clause reduction, and circular watch scanning.
 Binary propagation retains compact implicit watches; every original clause also
 has an arena record for preprocessing and bookkeeping.
 
+Best-phase targets append only new literals while the saved trail prefix remains
+valid. Backtracking into that prefix triggers a full rebuild at the next record.
+This preserves target choices and removes quadratic copying on uninterrupted
+descents. See [TARGET_SAVING.md](TARGET_SAVING.md) for tests and measurements.
+
 Truth assignments use a dense byte array, separate from variable metadata, to
 reduce cache traffic during propagation. Search order is preserved. See
 [VALUES.md](VALUES.md) for before/after measurements and validation.
