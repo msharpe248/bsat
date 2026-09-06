@@ -1,0 +1,47 @@
+{
+  "input": "/Users/msharpe/python/bsat/dataset/sat_competition2025/multiplier-circuits/90bec6dcf2399d7c7f73acba44a8641e.cnf",
+  "cpu_limit": 0.5,
+  "wall_limit": 2,
+  "runs": [
+    {
+      "solver": "baseline",
+      "repeat": 0,
+      "external_timeout": true,
+      "seconds": 2.00271899998188
+    },
+    {
+      "solver": "bounded",
+      "repeat": 0,
+      "code": 0,
+      "seconds": 0.5320312918629497,
+      "stdout": "c BSAT Competition Solver v1.0\nc PID: 95207 (send SIGUSR1 for progress: kill -USR1 95207)\nc Reading from /Users/msharpe/python/bsat/dataset/sat_competition2025/multiplier-circuits/90bec6dcf2399d7c7f73acba44a8641e.cnf\nc Variables: 15479\nc Clauses:   61596\nc\ns UNKNOWN\nc\nc CPU time:         0.500 s\nc\nc ========== Statistics ==========\nc CPU time          : 0.500 s\nc Decisions         : 55211\nc Propagations      : 6742576\nc Conflicts         : 3751\nc Restarts          : 35\nc Learned clauses   : 3751\nc Learned literals  : 357096\nc Deleted clauses   : 484\nc Minimize inspections: 10283946\nc Minimize binary steps: 0\nc Minimize cache hits : 0\nc Minimize budget hits: 935\nc Blocked clauses   : 0\nc Subsumed clauses  : 119\nc Minimized literals: 13072\nc Glue clauses      : 1063\nc Max LBD           : 129\nc Decisions/sec     : 110420\nc Propagations/sec  : 13484882\nc Conflicts/sec     : 7502\nc Literal inspections : 33638567\nc Garbage collections : 0\nc Reductions          : 1\nc Mode                : focused\nc Memory used       : 3.06 MB\nc Memory allocated  : 3.85 MB\nc Memory peak       : 3.06 MB\nc Memory wasted     : 0.12 MB\nc Arena growths     : 17\nc\n"
+    },
+    {
+      "solver": "baseline",
+      "repeat": 1,
+      "external_timeout": true,
+      "seconds": 2.001882459037006
+    },
+    {
+      "solver": "bounded",
+      "repeat": 1,
+      "code": 0,
+      "seconds": 0.5327854170463979,
+      "stdout": "c BSAT Competition Solver v1.0\nc PID: 95209 (send SIGUSR1 for progress: kill -USR1 95209)\nc Reading from /Users/msharpe/python/bsat/dataset/sat_competition2025/multiplier-circuits/90bec6dcf2399d7c7f73acba44a8641e.cnf\nc Variables: 15479\nc Clauses:   61596\nc\ns UNKNOWN\nc\nc CPU time:         0.500 s\nc\nc ========== Statistics ==========\nc CPU time          : 0.500 s\nc Decisions         : 55218\nc Propagations      : 6809644\nc Conflicts         : 3759\nc Restarts          : 35\nc Learned clauses   : 3759\nc Learned literals  : 360520\nc Deleted clauses   : 484\nc Minimize inspections: 10354688\nc Minimize binary steps: 0\nc Minimize cache hits : 0\nc Minimize budget hits: 942\nc Blocked clauses   : 0\nc Subsumed clauses  : 119\nc Minimized literals: 13082\nc Glue clauses      : 1063\nc Max LBD           : 129\nc Decisions/sec     : 110420\nc Propagations/sec  : 13617327\nc Conflicts/sec     : 7517\nc Literal inspections : 33968343\nc Garbage collections : 0\nc Reductions          : 1\nc Mode                : focused\nc Memory used       : 3.08 MB\nc Memory allocated  : 3.85 MB\nc Memory peak       : 3.08 MB\nc Memory wasted     : 0.12 MB\nc Arena growths     : 17\nc\n"
+    },
+    {
+      "solver": "baseline",
+      "repeat": 2,
+      "external_timeout": true,
+      "seconds": 2.0028026669751853
+    },
+    {
+      "solver": "bounded",
+      "repeat": 2,
+      "code": 0,
+      "seconds": 0.5320758330635726,
+      "stdout": "c BSAT Competition Solver v1.0\nc PID: 95211 (send SIGUSR1 for progress: kill -USR1 95211)\nc Reading from /Users/msharpe/python/bsat/dataset/sat_competition2025/multiplier-circuits/90bec6dcf2399d7c7f73acba44a8641e.cnf\nc Variables: 15479\nc Clauses:   61596\nc\ns UNKNOWN\nc\nc CPU time:         0.500 s\nc\nc ========== Statistics ==========\nc CPU time          : 0.500 s\nc Decisions         : 55220\nc Propagations      : 6820199\nc Conflicts         : 3760\nc Restarts          : 35\nc Learned clauses   : 3760\nc Learned literals  : 360967\nc Deleted clauses   : 484\nc Minimize inspections: 10373946\nc Minimize binary steps: 0\nc Minimize cache hits : 0\nc Minimize budget hits: 944\nc Blocked clauses   : 0\nc Subsumed clauses  : 119\nc Minimized literals: 13085\nc Glue clauses      : 1063\nc Max LBD           : 129\nc Decisions/sec     : 110437\nc Propagations/sec  : 13640071\nc Conflicts/sec     : 7520\nc Literal inspections : 34021376\nc Garbage collections : 0\nc Reductions          : 1\nc Mode                : focused\nc Memory used       : 3.08 MB\nc Memory allocated  : 3.85 MB\nc Memory peak       : 3.08 MB\nc Memory wasted     : 0.12 MB\nc Arena growths     : 17\nc\n"
+    }
+  ],
+  "interpretation": "Minimization work/deadline experiment. A depth bound alone does not bound shared-subgraph traversal. Fixed-conflict scores are diagnostic, not competition scores; compare equal-work time only when complete search counters match."
+}

@@ -81,7 +81,8 @@ void watch_clear(WatchManager* wm) {
 void watch_add(WatchManager* wm, Lit lit, CRef cref, Lit blocker) {
     WatchList* wl = watch_list(wm, lit);
     Watch w = {cref, blocker};
-    watchlist_push(wl, w);
+    if (!watchlist_ensure_capacity(wl)) { wm->failed = true; return; }
+    wl->watches[wl->size++] = w;
     wm->updates++;
 }
 
@@ -98,7 +99,7 @@ void watch_remove_clause(WatchManager* wm, Arena* arena, CRef cref) {
         WatchList* wl0 = watch_list(wm, lits[0]);
         for (uint32_t i = 0; i < wl0->size; i++) {
             if (wl0->watches[i].cref == cref ||
-                (is_binary_watch(wl0->watches[i]) && wl0->watches[i].blocker == lits[1])) {
+                (!clause_learned(arena, cref) && is_binary_watch(wl0->watches[i]) && wl0->watches[i].blocker == lits[1])) {
                 watchlist_remove(wl0, i);
                 break;
             }
@@ -108,7 +109,7 @@ void watch_remove_clause(WatchManager* wm, Arena* arena, CRef cref) {
         WatchList* wl1 = watch_list(wm, lits[1]);
         for (uint32_t i = 0; i < wl1->size; i++) {
             if (wl1->watches[i].cref == cref ||
-                (is_binary_watch(wl1->watches[i]) && wl1->watches[i].blocker == lits[0])) {
+                (!clause_learned(arena, cref) && is_binary_watch(wl1->watches[i]) && wl1->watches[i].blocker == lits[0])) {
                 watchlist_remove(wl1, i);
                 break;
             }

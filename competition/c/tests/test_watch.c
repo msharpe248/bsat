@@ -11,9 +11,6 @@
 #include <stdlib.h>
 #include <assert.h>
 
-// Required for linking (normally defined in main.c)
-bool g_verbose = false;
-
 // Test counter
 static int tests_run = 0;
 static int tests_passed = 0;
@@ -40,7 +37,7 @@ static int tests_passed = 0;
  * Test Cases
  *********************************************************************/
 
-void test_watch_manager_creation() {
+void test_watch_manager_creation(void) {
     TEST("Watch manager creation and destruction");
 
     WatchManager* wm = watch_init(10);  // 10 variables
@@ -75,7 +72,7 @@ void test_watch_manager_creation() {
     PASS();
 }
 
-void test_add_single_watch() {
+void test_add_single_watch(void) {
     TEST("Add single watch");
 
     Arena* arena = arena_init(1024);
@@ -108,7 +105,7 @@ void test_add_single_watch() {
     PASS();
 }
 
-void test_add_multiple_watches_same_literal() {
+void test_add_multiple_watches_same_literal(void) {
     TEST("Add multiple watches to same literal");
 
     Arena* arena = arena_init(1024);
@@ -139,7 +136,7 @@ void test_add_multiple_watches_same_literal() {
     PASS();
 }
 
-void test_add_watches_different_literals() {
+void test_add_watches_different_literals(void) {
     TEST("Add watches to different literals");
 
     Arena* arena = arena_init(1024);
@@ -171,7 +168,7 @@ void test_add_watches_different_literals() {
     PASS();
 }
 
-void test_remove_clause_watches() {
+void test_remove_clause_watches(void) {
     TEST("Remove all watches for a clause");
 
     Arena* arena = arena_init(1024);
@@ -209,7 +206,7 @@ void test_remove_clause_watches() {
     PASS();
 }
 
-void test_watch_clear() {
+void test_watch_clear(void) {
     TEST("Clear all watches");
 
     Arena* arena = arena_init(1024);
@@ -243,7 +240,7 @@ void test_watch_clear() {
     PASS();
 }
 
-void test_blocker_literal() {
+void test_blocker_literal(void) {
     TEST("Blocking literal optimization");
 
     Arena* arena = arena_init(1024);
@@ -279,7 +276,7 @@ void test_blocker_literal() {
     PASS();
 }
 
-void test_positive_and_negative_literals() {
+void test_positive_and_negative_literals(void) {
     TEST("Positive and negative literal watches");
 
     Arena* arena = arena_init(1024);
@@ -320,7 +317,7 @@ void test_positive_and_negative_literals() {
     PASS();
 }
 
-void test_watch_list_growth() {
+void test_watch_list_growth(void) {
     TEST("Watch list automatic growth");
 
     Arena* arena = arena_init(1024);

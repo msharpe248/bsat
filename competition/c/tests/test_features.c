@@ -13,9 +13,6 @@
 #include <stdlib.h>
 #include <assert.h>
 
-// Required for linking (normally defined in main.c)
-bool g_verbose = false;
-
 // Test counter
 static int tests_run = 0;
 static int tests_passed = 0;
@@ -38,53 +35,35 @@ static int tests_passed = 0;
         exit(1); \
     } while (0)
 
+static Solver *pigeonhole(unsigned holes) {
+    SolverOpts opts=default_opts();opts.probing=false;
+    opts.reduce_interval=2;opts.glue_lbd=0;opts.reduce_fraction=0;
+    Solver *s=solver_new_with_opts(&opts);
+    for(unsigned i=0;i<(holes+1)*holes;++i) solver_new_var(s);
+    Lit lits[8];
+    for(unsigned p=0;p<=holes;++p) {
+        for(unsigned h=0;h<holes;++h) lits[h]=mkLit(p*holes+h+1,false);
+        solver_add_clause(s,lits,holes);
+    }
+    for(unsigned h=0;h<holes;++h) for(unsigned p=0;p<=holes;++p) for(unsigned q=p+1;q<=holes;++q) {
+        lits[0]=mkLit(p*holes+h+1,true);lits[1]=mkLit(q*holes+h+1,true);
+        solver_add_clause(s,lits,2);
+    }
+    return s;
+}
+
 /*********************************************************************
  * Feature Test Cases
  *********************************************************************/
 
-void test_clause_learning() {
-    TEST("Clause learning (conflicts generate learned clauses)");
-
-    // Use a random 3-SAT instance that requires search and learning
-    // From dataset - this will definitely cause conflicts
-    Solver* s = solver_new();
-    DimacsError err = dimacs_parse_file(s,
-        "../../../dataset/simple_tests/simple_suite/random3sat_v5_c21.cnf");
-
-    if (err != DIMACS_OK) {
-        // If dataset not available, skip test gracefully
-        printf("⏭️  SKIP (dataset not available)\n");
-        solver_free(s);
-        tests_passed++;  // Count as passed
-        return;
-    }
-
-    // Solve - will require conflicts and learning
-    lbool result = solver_solve(s);
-
-    // Should be SAT (most random instances are)
-    if (result == UNDEF) {
-        FAIL("Solver returned UNKNOWN");
-    }
-
-    // Check that conflicts occurred (meaning learning happened)
-    if (s->stats.conflicts == 0) {
-        FAIL("No conflicts occurred - clause learning not triggered");
-    }
-
-    // Check that learned clauses were created
-    if (s->stats.learned_clauses == 0) {
-        FAIL("No learned clauses created");
-    }
-
-    printf("(conflicts=%llu, learned=%llu) ",
-           s->stats.conflicts, s->stats.learned_clauses);
-
-    solver_free(s);
-    PASS();
+void test_clause_learning(void) {
+    TEST("Clause learning on pigeonhole");
+    Solver *s=pigeonhole(4);
+    if(solver_solve(s)!=FALSE || !s->stats.learned_clauses) FAIL("Expected UNSAT with learning");
+    solver_free(s);PASS();
 }
 
-void test_unit_propagation() {
+void test_unit_propagation(void) {
     TEST("Unit propagation (forces assignments)");
 
     Solver* s = solver_new();
@@ -129,13 +108,13 @@ void test_unit_propagation() {
     }
 
     printf("(propagations=%llu, decisions=%llu) ",
-           s->stats.propagations, s->stats.decisions);
+           (unsigned long long)s->stats.propagations, (unsigned long long)s->stats.decisions);
 
     solver_free(s);
     PASS();
 }
 
-void test_restarts() {
+void test_restarts(void) {
     TEST("Restarts (search restarts occur)");
 
     // Load a harder instance that should trigger restarts
@@ -154,13 +133,13 @@ void test_restarts() {
 
     // For simple instances, may not restart, but check stat exists
     // (This test would be better with a harder instance)
-    printf("(restarts=%llu) ", s->stats.restarts);
+    printf("(restarts=%llu) ", (unsigned long long)s->stats.restarts);
 
     solver_free(s);
     PASS();
 }
 
-void test_bce_preprocessing() {
+void test_bce_preprocessing(void) {
     TEST("BCE preprocessing (blocked clauses eliminated)");
 
     Solver* s = solver_new();
@@ -184,13 +163,13 @@ void test_bce_preprocessing() {
     }
 
     // Check BCE stats (if any clauses were eliminated)
-    printf("(blocked_clauses=%llu) ", s->stats.blocked_clauses);
+    printf("(blocked_clauses=%llu) ", (unsigned long long)s->stats.blocked_clauses);
 
     solver_free(s);
     PASS();
 }
 
-void test_lbd_calculation() {
+void test_lbd_calculation(void) {
     TEST("LBD calculation (learned clauses get LBD scores)");
 
     Solver* s = solver_new();
@@ -211,14 +190,14 @@ void test_lbd_calculation() {
     // If we had conflicts and learned clauses, check LBD was calculated
     if (s->stats.conflicts > 0 && s->stats.learned_clauses > 0) {
         // Check max LBD stat
-        printf("(max_lbd=%u) ", s->stats.max_lbd);
+        printf("(max_lbd=%llu) ", (unsigned long long)s->stats.max_lbd);
     }
 
     solver_free(s);
     PASS();
 }
 
-void test_vsids_decisions() {
+void test_vsids_decisions(void) {
     TEST("VSIDS heuristic (decisions are made)");
 
     Solver* s = solver_new();
@@ -251,13 +230,13 @@ void test_vsids_decisions() {
         FAIL("No decisions made - VSIDS not working");
     }
 
-    printf("(decisions=%llu) ", s->stats.decisions);
+    printf("(decisions=%llu) ", (unsigned long long)s->stats.decisions);
 
     solver_free(s);
     PASS();
 }
 
-void test_clause_minimization() {
+void test_clause_minimization(void) {
     TEST("Clause minimization (learned clauses minimized)");
 
     Solver* s = solver_new();
@@ -276,13 +255,13 @@ void test_clause_minimization() {
     }
 
     // Check minimization stats
-    printf("(minimized_literals=%llu) ", s->stats.minimized_literals);
+    printf("(minimized_literals=%llu) ", (unsigned long long)s->stats.minimized_literals);
 
     solver_free(s);
     PASS();
 }
 
-void test_subsumption() {
+void test_subsumption(void) {
     TEST("On-the-fly subsumption (subsumed clauses removed)");
 
     Solver* s = solver_new();
@@ -301,75 +280,24 @@ void test_subsumption() {
     }
 
     // Check subsumption stats
-    printf("(subsumed=%llu) ", s->stats.subsumed_clauses);
+    printf("(subsumed=%llu) ", (unsigned long long)s->stats.subsumed_clauses);
 
     solver_free(s);
     PASS();
 }
 
-void test_database_reduction() {
-    TEST("Clause database reduction (learned clauses deleted)");
-
-    // Use a harder instance from dataset that will trigger database reduction
-    Solver* s = solver_new();
-    DimacsError err = dimacs_parse_file(s,
-        "../../../dataset/simple_tests/simple_suite/random3sat_v10_c43.cnf");
-
-    if (err != DIMACS_OK) {
-        // If dataset not available, skip test gracefully
-        printf("⏭️  SKIP (dataset not available)\n");
-        solver_free(s);
-        tests_passed++;
-        return;
-    }
-
-    lbool result = solver_solve(s);
-
-    // Should solve (SAT or UNSAT doesn't matter)
-    if (result == UNDEF) {
-        FAIL("Solver returned UNKNOWN");
-    }
-
-    // For database reduction to trigger, need many learned clauses
-    // Default threshold is 10000 clauses
-    // Even if not triggered, show stats
-    printf("(learned=%llu, deleted=%llu) ",
-           s->stats.learned_clauses, s->stats.deleted_clauses);
-
-    solver_free(s);
-    PASS();
+void test_database_reduction(void) {
+    TEST("Learned clauses are actually reduced");
+    Solver *s=pigeonhole(5);
+    if(solver_solve(s)!=FALSE || !s->stats.deleted_clauses) FAIL("Expected deletions during UNSAT search");
+    solver_free(s);PASS();
 }
 
-void test_glue_clause_protection() {
-    TEST("Glue clause protection (low-LBD clauses tracked)");
-
-    // Use an instance that generates glue clauses (LBD ≤ 2)
-    Solver* s = solver_new();
-    DimacsError err = dimacs_parse_file(s,
-        "../../../dataset/simple_tests/simple_suite/random3sat_v7_c30.cnf");
-
-    if (err != DIMACS_OK) {
-        // If dataset not available, skip test gracefully
-        printf("⏭️  SKIP (dataset not available)\n");
-        solver_free(s);
-        tests_passed++;
-        return;
-    }
-
-    lbool result = solver_solve(s);
-
-    // Should solve
-    if (result == UNDEF) {
-        FAIL("Solver returned UNKNOWN");
-    }
-
-    // Check if any glue clauses were generated
-    // Glue clauses are learned clauses with LBD ≤ 2
-    printf("(glue_clauses=%llu, max_lbd=%u) ",
-           s->stats.glue_clauses, s->stats.max_lbd);
-
-    solver_free(s);
-    PASS();
+void test_glue_clause_protection(void) {
+    TEST("Low-LBD learned clauses are tracked");
+    Solver *s=pigeonhole(4);s->opts.glue_lbd=2;
+    if(solver_solve(s)!=FALSE || !s->stats.glue_clauses) FAIL("Expected glue clauses");
+    solver_free(s);PASS();
 }
 
 void test_binary_clauses(void) {
@@ -489,7 +417,7 @@ void test_minisat_clause_minimization(void) {
 
     // Check if conflicts occurred and minimization happened
     printf("(conflicts=%llu, minimized=%llu) ",
-           s->stats.conflicts, s->stats.minimized_literals);
+           (unsigned long long)s->stats.conflicts, (unsigned long long)s->stats.minimized_literals);
 
     // If we had conflicts and learned clauses, minimization should work
     // The 67% reduction is achieved on larger instances

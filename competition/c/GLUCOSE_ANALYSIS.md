@@ -1,3 +1,5 @@
+> Historical development snapshot. Current behavior and validation status are documented in [HARDENING.md](HARDENING.md) and [README.md](README.md); older defaults and production-readiness claims below are not current.
+
 # Glucose Implementation Analysis - Python vs C
 
 ## Executive Summary

@@ -10,13 +10,9 @@
 #include <getopt.h>
 #include <time.h>
 #include <unistd.h>
-
-/*********************************************************************
- * Global Output Control Flags (defined here, declared in types.h)
- *********************************************************************/
-
-bool g_verbose = false;
-bool g_debug = false;
+#include <errno.h>
+#include <math.h>
+#include <sys/stat.h>
 
 /*********************************************************************
  * Usage Information
@@ -74,15 +70,25 @@ static void print_usage(const char* program) {
     printf("  --glue-lbd <n>            LBD threshold for glue clauses (default: 2)\n");
     printf("  --reduce-fraction <f>     Fraction of clauses to keep (default: 0.5)\n");
     printf("  --reduce-interval <n>     Conflicts between reductions (default: 2000)\n");
+    printf("  --iterative-minimize     Experimental binary-aware minimization\n");
+    printf("  --minimize-budget <n>     Reason checks per learned clause (10000)\n");
     printf("  --no-minimize             Disable clause minimization\n");
     printf("  --no-subsumption          Disable on-the-fly subsumption\n");
     printf("\n");
     printf("Preprocessing:\n");
+    printf("  --bce                    Enable bounded blocked clause elimination\n");
+    printf("  --alternating            Experimental focused/stable search modes\n");
+    printf("  --no-circular            Disable circular replacement watch search\n");
+    printf("  --seed <n>               Deterministic per-solver random seed\n");
+    printf("  --preprocess-budget <n>  Literal-work budget (0 disables preprocessing)\n");
+    printf("  --subsume-budget <n>     Subsumption candidate budget per conflict\n");
     printf("  --no-bce                  Disable blocked clause elimination\n");
     printf("  --elim                    [EXPERIMENTAL] Enable bounded variable elimination (BVE)\n");
     printf("  --no-elim                 Disable BVE (default)\n");
     printf("  --elim-max-occ <n>        Max occurrences for BVE (default: 10)\n");
     printf("  --elim-grow <n>           Max clause growth for BVE (default: 0)\n");
+    printf("  --equiv                  Enable binary SCC substitution\n");
+    printf("  --equiv-budget <n>       SCC preprocessing work budget (1000000)\n");
     printf("  --no-probing              Disable failed literal probing\n");
     printf("\n");
     printf("Inprocessing:\n");
@@ -147,13 +153,23 @@ static struct option long_options[] = {
     {"glue-lbd",        required_argument, 0, 0},
     {"reduce-fraction", required_argument, 0, 0},
     {"reduce-interval", required_argument, 0, 0},
+    {"iterative-minimize", no_argument, 0, 0},
+    {"minimize-budget", required_argument, 0, 0},
     {"no-minimize",     no_argument,       0, 0},
     {"no-subsumption",  no_argument,       0, 0},
+    {"bce", no_argument, 0, 0},
+    {"alternating", no_argument, 0, 0},
+    {"no-circular", no_argument, 0, 0},
+    {"seed", required_argument, 0, 0},
+    {"preprocess-budget", required_argument, 0, 0},
+    {"subsume-budget", required_argument, 0, 0},
     {"no-bce",          no_argument,       0, 0},
     {"elim",            no_argument,       0, 0},
     {"no-elim",         no_argument,       0, 0},
     {"elim-max-occ",    required_argument, 0, 0},
     {"elim-grow",       required_argument, 0, 0},
+    {"equiv",           no_argument,       0, 0},
+    {"equiv-budget",    required_argument, 0, 0},
     {"no-probing",      no_argument,       0, 0},
     {"inprocess",       no_argument,       0, 0},
     {"inprocess-interval", required_argument, 0, 0},
@@ -179,6 +195,23 @@ int main(int argc, char** argv) {
     int option_index = 0;
 
     while ((c = getopt_long(argc, argv, "hvqsc:d:t:", long_options, &option_index)) != -1) {
+        if (optarg && !(c == 0 && !strcmp(long_options[option_index].name, "proof"))) {
+            const char *name = c == 0 ? long_options[option_index].name : "";
+            bool floating = c == 't' || strstr(name, "decay") || strstr(name, "alpha") ||
+                !strcmp(name,"var-inc") || !strcmp(name,"restart-inc") || !strcmp(name,"glucose-k") ||
+                !strcmp(name,"random-prob") || !strcmp(name,"reduce-fraction") || !strcmp(name,"ls-noise");
+            char *end; errno=0;
+            bool valid;
+            if (floating) {
+                double value=strtod(optarg,&end);
+                valid=!errno && end!=optarg && !*end && isfinite(value) && value>=0;
+            } else {
+                unsigned long long value=strtoull(optarg,&end,10);
+                valid=optarg[0]>='0' && optarg[0]<='9' && !errno && end!=optarg && !*end &&
+                    (!strcmp(name,"preprocess-budget") || !strcmp(name,"equiv-budget") || value<=UINT32_MAX);
+            }
+            if (!valid) { fprintf(stderr,"Error: invalid numeric argument: %s\n",optarg);return 1; }
+        }
         switch (c) {
             case 'h':
                 print_usage(argv[0]);
@@ -213,7 +246,19 @@ int main(int argc, char** argv) {
 
             case 0:
                 // Long option
-                if (strcmp(long_options[option_index].name, "debug") == 0) {
+                if (strcmp(long_options[option_index].name, "bce") == 0) {
+                    opts.bce = true;
+                } else if (strcmp(long_options[option_index].name, "alternating") == 0) {
+                    opts.alternating = true;
+                } else if (strcmp(long_options[option_index].name, "no-circular") == 0) {
+                    opts.circular = false;
+                } else if (strcmp(long_options[option_index].name, "seed") == 0) {
+                    opts.seed = (uint32_t)atol(optarg);
+                } else if (strcmp(long_options[option_index].name, "preprocess-budget") == 0) {
+                    opts.preprocess_budget = strtoull(optarg,NULL,10);
+                } else if (strcmp(long_options[option_index].name, "subsume-budget") == 0) {
+                    opts.subsume_budget = (uint32_t)atol(optarg);
+                } else if (strcmp(long_options[option_index].name, "debug") == 0) {
                     opts.debug = true;
                 } else if (strcmp(long_options[option_index].name, "var-decay") == 0) {
                     opts.var_decay = atof(optarg);
@@ -277,6 +322,10 @@ int main(int argc, char** argv) {
                     opts.reduce_fraction = atof(optarg);
                 } else if (strcmp(long_options[option_index].name, "reduce-interval") == 0) {
                     opts.reduce_interval = (uint32_t)atol(optarg);
+                } else if (strcmp(long_options[option_index].name, "iterative-minimize") == 0) {
+                    opts.iterative_minimize = true;
+                } else if (strcmp(long_options[option_index].name, "minimize-budget") == 0) {
+                    opts.minimize_budget = (uint32_t)strtoul(optarg, NULL, 10);
                 } else if (strcmp(long_options[option_index].name, "no-minimize") == 0) {
                     opts.minimize = false;
                 } else if (strcmp(long_options[option_index].name, "no-subsumption") == 0) {
@@ -291,6 +340,10 @@ int main(int argc, char** argv) {
                     opts.elim_max_occ = (uint32_t)atol(optarg);
                 } else if (strcmp(long_options[option_index].name, "elim-grow") == 0) {
                     opts.elim_grow = (uint32_t)atol(optarg);
+                } else if (strcmp(long_options[option_index].name, "equiv") == 0) {
+                    opts.equiv = true;
+                } else if (strcmp(long_options[option_index].name, "equiv-budget") == 0) {
+                    opts.equiv_budget = strtoull(optarg, NULL, 10);
                 } else if (strcmp(long_options[option_index].name, "no-probing") == 0) {
                     opts.probing = false;
                 } else if (strcmp(long_options[option_index].name, "inprocess") == 0) {
@@ -327,6 +380,11 @@ int main(int argc, char** argv) {
 
     const char* input_file = argv[optind];
 
+    struct stat input_stat, proof_stat;
+    if (opts.proof_path && !stat(input_file,&input_stat) && !stat(opts.proof_path,&proof_stat) &&
+        input_stat.st_dev==proof_stat.st_dev && input_stat.st_ino==proof_stat.st_ino) {
+        fprintf(stderr,"Error: input and proof must be different files\n");return 1;
+    }
     // Initialize global output control flags from options
     g_verbose = opts.verbose;
     g_debug = opts.debug;
@@ -364,6 +422,7 @@ int main(int argc, char** argv) {
     lbool result = solver_solve(solver);
     double solve_time = (double)clock() / CLOCKS_PER_SEC - start_time;
 
+    if (solver->error) fprintf(stderr, "Error: solver allocation, certificate, or model validation failure\n");
     // Print result
     if (result == TRUE) {
         printf("s SATISFIABLE\n");
@@ -403,7 +462,9 @@ int main(int argc, char** argv) {
     }
 
     // Clean up
+    bool failed = solver->error;
     solver_free(solver);
+    if (failed) return 1;
 
     return (result == TRUE || result == FALSE) ? 10 + (result == TRUE ? 0 : 10) : 0;
 }

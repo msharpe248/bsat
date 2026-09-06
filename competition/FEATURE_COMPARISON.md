@@ -1,3 +1,5 @@
+> Historical snapshot. See [C solver hardening](c/HARDENING.md) for current correctness fixes and validation. The older production-readiness claims below are not current.
+
 # Feature Comparison: C vs Python CDCL Solvers
 
 This document compares the C implementation (`competition/c/`) with the Python competition solver (`competition/python/cdcl_optimized.py`) to identify feature parity.

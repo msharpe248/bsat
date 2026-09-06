@@ -1,406 +1,138 @@
-# BSAT C Solver - Production-Ready CDCL Implementation
+# BSAT C solver
 
-A high-performance SAT solver implementing modern CDCL (Conflict-Driven Clause Learning) with state-of-the-art optimizations including LRB branching, target phase rephasing, local search hybridization, and DRAT proof logging.
+BSAT is a CDCL solver under active development. The September 2026 hardening
+work fixes known wrong-answer and memory-management defects and adds independent
+certificate validation. Passing these tests does not establish production
+readiness for arbitrary workloads. See [HARDENING.md](HARDENING.md) for changes,
+validation evidence, research references, and remaining limitations.
 
-## Status: Production Ready
+## Build and verify
 
-**Complete CDCL implementation with competition-level features**
+Requires a C11/POSIX compiler, make, and Python 3 for validation and benchmarks.
 
-### Test Results
-- **100% success rate** on medium test suite (53/53 instances)
-- **100-226x faster than Python** on hard instances
-- **Solves hard instances in 0.01s** that Python takes 2+ seconds
-
----
-
-## Quick Start
-
-```bash
-# Build the solver
-make
-
-# Solve a CNF instance
-./bin/bsat instance.cnf
-
-# With all optimizations enabled (LRB + local search)
-./bin/bsat --lrb --local-search instance.cnf
-
-# Generate DRAT proof for UNSAT instances
-./bin/bsat --proof proof.drat instance.cnf
-
-# Test on medium test suite (53 instances)
-./scripts/test_medium_suite.sh
+```sh
+cd competition/c
+make all test
+make all test MODE=debug
+python3 tests/validate.py --solver bin/bsat --cases 200
+python3 tests/validate.py --solver bin/bsat_debug --cases 100 --checker /path/to/drat-trim
 ```
 
----
+Object and unit-test directories are separated by build mode. The debug build
+uses assertions, AddressSanitizer and UndefinedBehaviorSanitizer. CI checks Linux
+and macOS, and builds a pinned independent `drat-trim` checker. Regression tests
+include malformed DIMACS, clauses crossing line boundaries, empty clauses,
+assumption sequences, clause reduction, locked reasons, and garbage collection.
+The Python validator uses its own truth-table oracle, model parser and RUP
+checker, tries option combinations, and minimizes failing formulas.
 
-## Features
+## Run
 
-### Core CDCL Algorithm
-- **Two-watched literals** for efficient unit propagation
-- **Conflict analysis** with 1-UIP learning scheme
-- **MiniSat-style clause minimization** with abstract level pruning (67% literal reduction)
-- **Chronological backtracking** for improved search efficiency
-
-### Modern Optimizations
-
-#### Variable Ordering
-| Feature | Default | Flag | Description |
-|---------|---------|------|-------------|
-| **VSIDS** | ON | `--vsids` | Dynamic activity scoring with decay |
-| **LRB/CHB** | OFF | `--lrb` | Learning Rate Branching with recency weighting |
-
-#### Restart Strategies
-| Strategy | Default | Flag | Description |
-|----------|---------|------|-------------|
-| **Luby Sequence** | ON (fallback) | - | Provably good for all instance types |
-| **Glucose EMA** | ON | `--glucose-restart-ema` | Conservative, paper-accurate |
-| **Glucose AVG** | OFF | `--glucose-restart-avg` | Aggressive, Python-style |
-
-#### Phase Management
-| Feature | Default | Flag | Description |
-|---------|---------|------|-------------|
-| **Phase Saving** | ON | `--no-phase-saving` | Saves polarities across restarts |
-| **Target Rephasing** | ON | `--no-rephase` | Kissat-style periodic phase reset |
-| **Random Phase** | ON (1%) | `--random-prob <f>` | Prevents stuck states |
-
-#### Clause Management
-| Feature | Default | Flag | Description |
-|---------|---------|------|-------------|
-| **Clause Minimization** | ON | `--no-minimize` | MiniSat-style recursive minimization |
-| **On-the-fly Subsumption** | ON | `--no-subsumption` | Removes subsumed clauses |
-| **LBD-based Reduction** | ON | `--reduce-interval <n>` | Keeps best 50% of clauses |
-| **Glue Protection** | ON | `--glue-lbd <n>` | Never deletes LBD <= 2 |
-
-#### Preprocessing
-| Feature | Default | Flag | Description |
-|---------|---------|------|-------------|
-| **Failed Literal Probing** | ON | `--no-probing` | Discovers implied units |
-| **Blocked Clause Elimination** | OFF | `--bce` | Removes redundant clauses |
-| **Bounded Variable Elimination** | OFF | `--elim` | SatELite-style BVE |
-
-#### Inprocessing
-| Feature | Default | Flag | Description |
-|---------|---------|------|-------------|
-| **Vivification** | OFF | `--inprocess` | Strengthens learned clauses |
-
-#### Local Search Hybridization
-| Feature | Default | Flag | Description |
-|---------|---------|------|-------------|
-| **WalkSAT** | OFF | `--local-search` | Periodic local search for SAT |
-
-#### Proof Logging
-| Feature | Default | Flag | Description |
-|---------|---------|------|-------------|
-| **DRAT Proofs** | OFF | `--proof <file>` | Generates verifiable proofs |
-
----
-
-## Command-Line Reference
-
-### Basic Usage
-```bash
-./bin/bsat [OPTIONS] <input.cnf>
+```sh
+./bin/bsat input.cnf
+./bin/bsat --proof proof.drat input.cnf
+./bin/bsat --binary-proof --proof proof.drat input.cnf
+/path/to/drat-trim input.cnf proof.drat
 ```
 
-### Output Control
-| Flag | Default | Description |
-|------|---------|-------------|
-| `-h, --help` | - | Show help message |
-| `-v, --verbose` | OFF | Verbose runtime diagnostics |
-| `--debug` | OFF | Debug output |
-| `-q, --quiet` | OFF | Suppress all output except result |
-| `-s, --stats` | ON | Print statistics |
+Exit codes: 10 SAT, 20 UNSAT, 0 UNKNOWN/resource limit, 1 input/internal/I/O error.
+Every returned SAT model is checked against the retained original input. Proof
+logging covers search, minimization, probing, equivalence substitution, BVE, BCE
+deletion and vivification;
+UNSAT certificates end with an empty clause. Text and binary DRAT are supported.
+The search algorithm is the same with proof logging enabled or disabled.
 
-### Resource Limits
-| Flag | Default | Description |
-|------|---------|-------------|
-| `-c, --conflicts <n>` | unlimited | Maximum number of conflicts |
-| `-d, --decisions <n>` | unlimited | Maximum number of decisions |
-| `-t, --time <sec>` | unlimited | Time limit in seconds |
+DIMACS requires one `p cnf` header, in-range variables, an exact clause count and
+zero-terminated clauses. Clauses may span lines, and multiple clauses may share
+one line. Duplicates and tautologies are normalized. Numeric overflow and
+unfinished clauses are errors. Empty formulas are SAT; empty clauses are UNSAT.
 
-### Branching Heuristic
-| Flag | Default | Description |
-|------|---------|-------------|
-| `--vsids` | ON | Use VSIDS variable ordering |
-| `--lrb` | OFF | Use LRB/CHB (Learning Rate Branching) |
-| `--var-decay <f>` | 0.95 | Variable activity decay for VSIDS |
-| `--var-inc <f>` | 1.0 | Variable activity increment |
+## Search controls
 
-### Restart Parameters
-| Flag | Default | Description |
-|------|---------|-------------|
-| `--restart-first <n>` | 100 | First restart interval |
-| `--restart-inc <f>` | 1.5 | Restart interval multiplier |
-| `--glucose-restart` | ON | Use Glucose adaptive restarts (EMA mode) |
-| `--glucose-restart-ema` | ON | Glucose with EMA (conservative) |
-| `--glucose-restart-avg` | OFF | Glucose with sliding window (aggressive) |
-| `--no-restarts` | - | Disable all restarts |
+Defaults use VSIDS, phase saving, deterministic random diversification,
+LBD-based EMA restarts, bounded failed-literal probing, clause minimization,
+bounded subsumption, learned-clause reduction, and circular watch scanning.
+Binary propagation retains compact implicit watches; every original clause also
+has an arena record for preprocessing and bookkeeping.
 
-### Glucose EMA Tuning (with `--glucose-restart` or `--glucose-restart-ema`)
-| Flag | Default | Description |
-|------|---------|-------------|
-| `--glucose-fast-alpha <f>` | 0.8 | Fast MA decay factor |
-| `--glucose-slow-alpha <f>` | 0.9999 | Slow MA decay factor |
-| `--glucose-min-conflicts <n>` | 100 | Min conflicts before Glucose kicks in |
+Truth assignments use a dense byte array, separate from variable metadata, to
+reduce cache traffic during propagation. Search order is preserved. See
+[VALUES.md](VALUES.md) for before/after measurements and validation.
 
-### Glucose AVG Tuning (with `--glucose-restart-avg`)
-| Flag | Default | Description |
-|------|---------|-------------|
-| `--glucose-window-size <n>` | 50 | Window size for short-term average |
-| `--glucose-k <f>` | 0.8 | Threshold multiplier |
-
-### Phase Saving
-| Flag | Default | Description |
-|------|---------|-------------|
-| `--no-phase-saving` | - | Disable phase saving (ON by default) |
-| `--random-phase` | ON | Enable random phase selection |
-| `--random-prob <f>` | 0.01 | Random phase probability (1%) |
-| `--no-rephase` | - | Disable target phase rephasing (ON by default) |
-| `--rephase-interval <n>` | 1000 | Conflicts between rephases |
-
-### Clause Management
-| Flag | Default | Description |
-|------|---------|-------------|
-| `--max-lbd <n>` | 30 | Max LBD for keeping learned clauses |
-| `--glue-lbd <n>` | 2 | LBD threshold for glue clauses |
-| `--reduce-fraction <f>` | 0.5 | Fraction of clauses to keep |
-| `--reduce-interval <n>` | 2000 | Conflicts between reductions |
-| `--no-minimize` | - | Disable clause minimization (ON by default) |
-| `--no-subsumption` | - | Disable on-the-fly subsumption (ON by default) |
-
-### Preprocessing
-| Flag | Default | Description |
-|------|---------|-------------|
-| `--no-bce` | - | Disable blocked clause elimination (OFF by default) |
-| `--elim` | OFF | Enable bounded variable elimination (BVE) |
-| `--no-elim` | ON | Disable BVE (default) |
-| `--elim-max-occ <n>` | 10 | Max occurrences to consider for BVE |
-| `--elim-grow <n>` | 0 | Max clause growth allowed for BVE |
-| `--no-probing` | - | Disable failed literal probing (ON by default) |
-
-### Inprocessing
-| Flag | Default | Description |
-|------|---------|-------------|
-| `--inprocess` | OFF | Enable inprocessing (vivification) |
-| `--inprocess-interval <n>` | 10000 | Conflicts between inprocessing |
-
-### Local Search Hybridization
-| Flag | Default | Description |
-|------|---------|-------------|
-| `--local-search` | OFF | Enable WalkSAT-style local search |
-| `--ls-interval <n>` | 5000 | Conflicts between local search calls |
-| `--ls-max-flips <n>` | 100000 | Max flips per local search call |
-| `--ls-noise <f>` | 0.5 | WalkSAT noise parameter (0.0-1.0) |
-
-### Proof Logging
-| Flag | Default | Description |
-|------|---------|-------------|
-| `--proof <file>` | OFF | Write DRAT proof to file |
-| `--binary-proof` | OFF | Use binary DRAT format (more compact) |
-
----
-
-## Default Configuration Summary
-
-### Features ON by Default
-- VSIDS variable ordering
-- Glucose EMA restarts
-- Phase saving
-- Target phase rephasing (every 1000 conflicts)
-- Random phase selection (1% probability)
-- Clause minimization (MiniSat-style)
-- On-the-fly subsumption
-- Failed literal probing
-- LBD-based clause reduction
-
-### Features OFF by Default (opt-in)
-- LRB/CHB branching (`--lrb`)
-- Bounded Variable Elimination (`--elim`)
-- Blocked Clause Elimination (`--bce`)
-- Vivification inprocessing (`--inprocess`)
-- Local search hybridization (`--local-search`)
-- DRAT proof logging (`--proof <file>`)
-
----
-
-## Output Format
-
-Standard DIMACS output format:
-
-```
-c BSAT Competition Solver v1.1
-c PID: 12345 (send SIGUSR1 for progress: kill -USR1 12345)
-c Reading from instance.cnf
-c Variables: 100
-c Clauses:   400
-c
-s SATISFIABLE
-v -1 2 -3 4 -5 6 ... 0
-c
-c CPU time:         0.042 s
-c
-c ========== Statistics ==========
-c CPU time          : 0.042 s
-c Decisions         : 1234
-c Propagations      : 5678
-c Conflicts         : 234
-c Restarts          : 12
-c Learned clauses   : 234
-c Learned literals  : 1012
-c Deleted clauses   : 0
-c Blocked clauses   : 15
-c Subsumed clauses  : 45
-c Minimized literals: 89
-c Glue clauses      : 23
-c Max LBD           : 8
+```sh
+./bin/bsat --seed 42 --time 30 input.cnf
+./bin/bsat --glucose-restart-avg input.cnf
+./bin/bsat --luby-restart --luby-unit 100 input.cnf
+./bin/bsat --elim --bce --preprocess-budget 1000000 input.cnf
+./bin/bsat --equiv --equiv-budget 1000000 input.cnf
+./bin/bsat --inprocess --inprocess-interval 10000 input.cnf
+./bin/bsat --alternating input.cnf
+./bin/bsat --no-circular --subsume-budget 0 input.cnf
 ```
 
----
+Use `--help` for the exact CLI names, including the time-limit option. Preprocessing
+has a deterministic literal-work budget; zero disables it. The time limit is CPU
+time for solving, including preprocessing, checked within long operations.
+BVE, BCE, vivification, local search, and alternating modes remain opt-in.
+Alternating mode combines stable Luby intervals and partial target assignments
+with focused LBD restarts; it is experimental and does not implement every
+Kissat scheduling or branching technique. `--lrb` is the existing recency-weighted
+activity heuristic, not a complete MapleSAT LRB implementation.
 
-## Testing
+Opt-in `--iterative-minimize` follows both implicit binary and arena reasons using
+an iterative traversal with shared successful dependency checks. The
+`--minimize-budget` option caps antecedent inspections per learned clause
+(default 10000; zero disables either minimizer). Exhausting the budget retains
+unproven literals. See [MINIMIZATION.md](MINIMIZATION.md) for validation and
+before/after measurements.
 
-### Full Test Suite
-```bash
-# Run all 53 medium test instances
-./scripts/test_medium_suite.sh
+The default recursive minimizer now uses the same inspection budget, checks
+deadlines inside reason traversal, and caches proven subtrees within each
+literal's redundancy check. Cached heights preserve its existing depth limit.
+Depth alone could not bound work on shared implication graphs. See
+[MINIMIZATION_LIMITS.md](MINIMIZATION_LIMITS.md)
+for the regression and before/after evidence.
 
-# Expected output:
-# Passed:  53
-# Timeout: 0
-# Total:   53
+Opt-in `--equiv` substitutes signed binary SCC equivalences after probing. Its
+separate `--equiv-budget` defaults to 1000000 inspections; zero disables the pass.
+It supports proof logging and model reconstruction, and skips assumption calls.
+Measured runs showed no solved-count gain and increased memory use, so it remains
+experimental. See [EQUIVALENCE.md](EQUIVALENCE.md).
+
+## C API
+
+Include `include/solver.h` and link the core objects without `main.o`.
+Use `solver_model_value` to read assignments; invalid variable indices return
+UNDEF. Internal structure layout changed with the compact assignment array:
+recompile embedding code and replace direct `vars[v].value` accesses with the
+accessor. The C API does not promise a stable binary layout.
+`solver_solve_with_assumptions` accepts repeated or contradictory assumptions.
+Subsequent solves, new variables, or added clauses rebuild working state from the
+original input. This restores eliminated clauses and avoids stale assumption
+results, but does not retain learned clauses across calls. Allocation failures or
+invalid API literals set `Solver.error`; no SAT/UNSAT answer is returned on error.
+
+An assumption solve with proof output configured returns UNKNOWN: the current
+API does not expose conditional proofs. For a certificate of the augmented
+formula, explicitly add the assumptions as unit clauses to that formula.
+The solver still uses process-wide diagnostic flags and a SIGUSR1 progress
+handler; concurrent embedding is not yet a supported API contract.
+
+## Measure performance
+
+```sh
+python3 tests/generate_benchmarks.py /tmp/bsat-development --split development
+python3 tests/generate_benchmarks.py /tmp/bsat-heldout --split heldout
+python3 tests/benchmark.py --checker /path/to/drat-trim \
+  --solver 'bsat=bin/bsat --proof {proof} {input}' \
+  --solver 'kissat=/path/to/kissat {input} {proof}' \
+  --solver 'cadical=/path/to/cadical {input} {proof}' \
+  --timeout 30 --repeats 3 --split heldout --output results.json /tmp/bsat-heldout
 ```
 
-### Verify DRAT Proofs
-```bash
-# Generate proof for UNSAT instance
-./bin/bsat --proof proof.drat unsat_instance.cnf
-
-# Verify with drat-trim
-drat-trim unsat_instance.cnf proof.drat
-# Expected: s VERIFIED
-```
-
-### Performance Comparison
-```bash
-# Compare C vs Python on test instances
-./scripts/compare_c_vs_python.sh
-
-# Benchmark on custom instances
-./scripts/benchmark.sh instance1.cnf instance2.cnf ...
-```
-
----
-
-## Architecture
-
-### Directory Structure
-```
-competition/c/
-├── src/                  # Source files
-│   ├── main.c            # Main entry point and CLI
-│   ├── solver.c          # Core CDCL solver implementation
-│   ├── dimacs.c          # DIMACS format parser
-│   ├── arena.c           # Memory arena for clause storage
-│   ├── watch.c           # Two-watched literal manager
-│   ├── elim.c            # Bounded variable elimination (BVE)
-│   └── local_search.c    # WalkSAT local search
-├── include/              # Header files
-│   ├── solver.h          # Solver interface and options
-│   ├── types.h           # Core type definitions
-│   ├── dimacs.h          # DIMACS parser interface
-│   ├── arena.h           # Arena allocator interface
-│   ├── watch.h           # Watch manager interface
-│   ├── elim.h            # BVE interface
-│   └── local_search.h    # Local search interface
-├── tests/                # Unit tests
-├── scripts/              # Utility scripts
-├── docs/                 # Detailed documentation
-├── bin/                  # Compiled binaries
-├── build/                # Build artifacts
-├── FEATURES.md           # Detailed feature list
-└── README.md             # This file
-```
-
-### Core Data Structures
-- **VarInfo[]**: Per-variable info (value, level, reason, polarity, activity)
-- **Trail**: Assignment stack with decision levels
-- **WatchManager**: Two-watched literals for each clause
-- **Arena**: Compact clause storage with reference-based access
-- **LocalSearchState**: Occurrence lists and break counts for WalkSAT
-
----
-
-## Performance
-
-### vs Python Competition Solver
-
-| Metric | C Solver | Python Solver | Speedup |
-|--------|----------|---------------|---------|
-| **Hard instances (5)** | 0.010s | 2.258s | **226x** |
-| **All instances (53)** | 0.082s | ~60s | **700x+** |
-
-### Feature Impact
-
-| Optimization | Impact |
-|--------------|--------|
-| MiniSat clause minimization | 67% literal reduction |
-| On-the-fly subsumption | 73% clauses subsumed (UNSAT) |
-| Target rephasing | Up to 58% fewer conflicts |
-| Local search | Instant SAT solutions |
-
----
-
-## Build System
-
-### Makefile Targets
-```bash
-make              # Build optimized binary (bin/bsat)
-make MODE=debug   # Build with debug symbols and sanitizers
-make MODE=profile # Build for profiling
-make test         # Run all unit tests
-make clean        # Remove build artifacts
-make pgo          # Full Profile-Guided Optimization build
-make help         # Show available targets
-```
-
-### Compiler Requirements
-- C11 standard
-- GCC or Clang (Clang recommended for PGO)
-- Tested on macOS (Apple Clang) and Linux (GCC)
-
----
-
-## References
-
-### Academic Papers
-1. **CDCL**: Marques-Silva & Sakallah (1996) - GRASP
-2. **VSIDS**: Moskewicz et al. (2001) - Chaff
-3. **Glucose**: Audemard & Simon (2009) - LBD and adaptive restarts
-4. **MapleSat/LRB**: Liang et al. (2016) - Learning Rate Branching
-5. **Phase Saving**: Pipatsrisawat & Darwiche (2007)
-6. **SatELite/BVE**: Eén & Biere (2005) - Variable elimination
-7. **Kissat**: Biere et al. (2020) - Target phases, state-of-the-art techniques
-
----
-
-## Version History
-
-### v1.2 (Current)
-- LRB/CHB branching heuristic
-- Target phase rephasing (Kissat-style)
-- WalkSAT local search hybridization
-- Bounded Variable Elimination (BVE)
-- DRAT proof logging
-
-### v1.1
-- MiniSat-style clause minimization
-- Failed literal probing
-- Vivification inprocessing
-- PGO build support
-
-### v1.0
-- Core CDCL with two-watched literals
-- Glucose adaptive restarts
-- Phase saving with random phase
-- LBD-based clause management
+Runs are serial within the harness and order is seeded. Results include executable
+and input hashes, commands, platform, wall/CPU time, peak RSS, solver counters,
+verified solved counts and PAR-2. Certificate checking is outside solver timing;
+unverified results receive the timeout penalty. Keep development and held-out
+families separate and avoid other workloads during timing. Synthetic cases and
+millisecond process runs establish smoke-test coverage, not industrial speedups.

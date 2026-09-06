@@ -1,0 +1,120 @@
+--- a/competition/c/src/main.c
++++ b/competition/c/src/main.c
+@@ -71,7 +71,7 @@
+     printf("  --reduce-fraction <f>     Fraction of clauses to keep (default: 0.5)\n");
+     printf("  --reduce-interval <n>     Conflicts between reductions (default: 2000)\n");
+     printf("  --iterative-minimize     Experimental binary-aware minimization\n");
+-    printf("  --minimize-budget <n>     Iterative checks per learned clause (10000)\n");
++    printf("  --minimize-budget <n>     Reason checks per learned clause (10000)\n");
+     printf("  --no-minimize             Disable clause minimization\n");
+     printf("  --no-subsumption          Disable on-the-fly subsumption\n");
+     printf("\n");
+--- a/competition/c/src/minimize.c
++++ b/competition/c/src/minimize.c
+@@ -20,7 +20,8 @@
+ //
+ // Returns true if literal p can be proven redundant (its reason chain
+ // terminates at literals in the learned clause or level 0).
+-static bool lit_redundant(Solver* s, Lit p, uint64_t abstract_levels, unsigned depth) {
++static bool lit_redundant(Solver* s, Lit p, uint64_t abstract_levels, unsigned depth,
++                          uint32_t *remaining) {
+     if (depth > 128) return false;
+     Var v = var(p);
+ 
+@@ -66,6 +67,15 @@
+     Lit* lits = CLAUSE_LITS(s->arena, reason);
+ 
+     for (uint32_t i = 0; i < size; i++) {
++        /* A depth bound alone does not bound repeated traversal of shared
++           subgraphs. Charge every inspected reason literal and unwind all
++           scratch marks when the clause budget or solver deadline expires. */
++        if (!*remaining) { s->seen[v] = orig_seen; return false; }
++        --*remaining;
++        if ((++s->stats.minimize_inspections & 1023) == 0 && solver_budget_exhausted(s)) {
++            s->seen[v] = orig_seen;
++            return false;
++        }
+         Lit q = lits[i];
+         Var qv = var(q);
+ 
+@@ -83,13 +93,13 @@
+             return false;
+         }
+ 
+-        // Level 0 literals are always satisfied
++        // Root antecedents need no source-clause literal.
+         if (s->vars[qv].level == 0) {
+             continue;
+         }
+ 
+         // Recursively check if this literal is covered
+-        if (!lit_redundant(s, q, abstract_levels, depth + 1)) {
++        if (!lit_redundant(s, q, abstract_levels, depth + 1, remaining)) {
+             s->seen[v] = orig_seen;
+             return false;
+         }
+@@ -115,7 +125,7 @@
+ // both to be incorrectly removed.
+ static uint32_t legacy_minimize_clause(Solver* s, Lit* learnt, uint32_t* learnt_size) {
+     // Skip if minimization is disabled
+-    if (!s->opts.minimize) {
++    if (!s->opts.minimize || !s->opts.minimize_budget || s->interrupted) {
+         return 0;
+     }
+ 
+@@ -124,6 +134,7 @@
+     }
+ 
+     uint32_t original_size = *learnt_size;
++    uint32_t remaining = s->opts.minimize_budget;
+ 
+     // Step 1: Compute abstract level bitmask for quick filtering
+     uint64_t abstract_levels = 0;
+@@ -144,7 +155,7 @@
+         Var v = var(p);
+ 
+         // Skip decision variables and binary propagations
+-        if (s->vars[v].reason == INVALID_CLAUSE) {
++        if (!remaining || s->interrupted || s->vars[v].reason == INVALID_CLAUSE) {
+             learnt[new_size++] = p;
+             continue;
+         }
+@@ -154,7 +165,7 @@
+         // as coverage (e.g., p's reason leads to q, q's reason leads to p).
+         s->seen[v] = 0;
+ 
+-        if (!lit_redundant(s, p, abstract_levels, 0)) {
++        if (!lit_redundant(s, p, abstract_levels, 0, &remaining)) {
+             // Not redundant - restore and keep
+             s->seen[v] = 1;
+             learnt[new_size++] = p;
+@@ -163,6 +174,7 @@
+     }
+ 
+     *learnt_size = new_size;
++    if (!remaining) s->stats.minimize_budget_hits++;
+ 
+     // Step 4: Clear seen array
+     // Clear remaining literals in the learned clause
+--- a/competition/c/src/solver.c
++++ b/competition/c/src/solver.c
+@@ -159,7 +159,7 @@
+         .reduce_fraction = 0.5,
+         .reduce_interval = 2000,
+         .iterative_minimize = false, // Opt-in pending representative speed gains
+-        .minimize_budget = 10000, // Iterative inspections per learned clause
++        .minimize_budget = 10000, // Reason inspections per learned clause, either mode
+         .minimize = true,         // MiniSat-style clause minimization
+ 
+         .bce = false,             // DISABLED by default - can hurt SAT instance performance
+--- a/competition/c/include/solver.h
++++ b/competition/c/include/solver.h
+@@ -66,7 +66,7 @@
+     double   reduce_fraction;   // Fraction of learned clauses to keep (0.5)
+     uint32_t reduce_interval;   // Conflicts between reductions (2000)
+     bool     iterative_minimize; // Experimental binary-aware traversal (false)
+-    uint32_t minimize_budget;   // Iterative inspections per clause (0 disables)
++    uint32_t minimize_budget;   // Reason inspections per clause, either mode (0 disables)
+     bool     minimize;          // Enable clause minimization (true)
+ 
+     // Preprocessing

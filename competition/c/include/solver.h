@@ -24,6 +24,8 @@ typedef struct SolverOpts {
     uint32_t max_conflicts;      // Conflict limit (0 = unlimited)
     uint32_t max_decisions;      // Decision limit (0 = unlimited)
     double   max_time;           // Time limit in seconds (0 = unlimited)
+    bool     equiv;              // Opt-in binary SCC substitution
+    uint64_t equiv_budget;       // Independent preprocessing work budget
 
     // Branching heuristic
     bool     lrb;                // Use LRB/CHB instead of VSIDS (false)
@@ -65,6 +67,8 @@ typedef struct SolverOpts {
     uint32_t glue_lbd;          // LBD threshold for glue clauses (2)
     double   reduce_fraction;   // Fraction of learned clauses to keep (0.5)
     uint32_t reduce_interval;   // Conflicts between reductions (2000)
+    bool     iterative_minimize; // Experimental binary-aware traversal (false)
+    uint32_t minimize_budget;   // Reason inspections per clause, either mode (0 disables)
     bool     minimize;          // Enable clause minimization (true)
 
     // Preprocessing
@@ -92,6 +96,11 @@ typedef struct SolverOpts {
     uint32_t ls_max_flips;      // Max flips per local search call (100000)
     double   ls_noise;          // Noise parameter for WalkSAT (0.5)
 
+    uint64_t preprocess_budget; // Literal inspections per preprocessing pass
+    uint32_t subsume_budget;    // Candidate clauses per learned clause
+    bool alternating;          // Experimental focused/stable schedule
+    bool circular;             // Circular replacement watch search
+    uint32_t seed;
     // Output options
     bool     verbose;           // Verbose output (false) - same as BSAT_VERBOSE
     bool     debug;             // Debug output (false) - same as DEBUG_CDCL
@@ -114,9 +123,9 @@ SolverOpts default_opts(void);
 typedef struct VarInfo {
     // VSIDS/LRB activity - first for 8-byte alignment and cache-friendly heap access
     double   activity;       // Variable activity score
+    uint64_t last_conflict;  // Last conflict where variable participated (for LRB)
 
-    // Core assignment state - most frequently accessed together
-    lbool    value;          // Current assignment (UNDEF/TRUE/FALSE)
+    // Assignment metadata; hot truth values live in Solver.values.
     Level    level;          // Decision level
     CRef     reason;         // Reason clause (INVALID_CLAUSE for decisions)
     uint32_t trail_pos;      // Position in trail
@@ -124,7 +133,6 @@ typedef struct VarInfo {
     // Less frequently accessed
     uint32_t last_polarity;  // Last conflict where polarity was saved
     uint32_t heap_pos;       // Position in VSIDS heap
-    uint64_t last_conflict;  // Last conflict where variable participated (for LRB)
 
     // Phase saving - 1 byte, naturally packs at end with padding
     bool     polarity;       // Saved polarity
@@ -153,7 +161,8 @@ typedef struct Solver {
     // Core data structures
     Arena*        arena;       // Clause allocator
     WatchManager* watches;     // Watch lists
-    VarInfo*      vars;        // Variable information
+    VarInfo*      vars;        // Variable information, separate from hot values
+    uint8_t*      values;      // One authoritative UNDEF/FALSE/TRUE byte per variable
 
     // Trail (assignment stack)
     Trail*   trail;           // Assignment trail
@@ -179,6 +188,7 @@ typedef struct Solver {
 
     // Conflict analysis
     uint8_t* seen;            // Seen flags for conflict analysis
+    Var*     minimize_touched; // Unique scratch marks to clear after minimization
     Lit*     analyze_stack;   // Temporary stack for analysis
     uint32_t analyze_toclear; // Number of seen variables to clear
     Lit      binary_conflict_lits[2]; // Literals from binary clause conflict
@@ -196,6 +206,15 @@ typedef struct Solver {
         uint64_t deleted_clauses;
         uint64_t subsumed_clauses;   // Clauses removed by on-the-fly subsumption
         uint64_t minimized_literals; // Literals removed by clause minimization
+        uint64_t minimize_inspections;
+        uint64_t minimize_binary_steps;
+        uint64_t minimize_cache_hits;
+        uint64_t minimize_budget_hits;
+        uint64_t equiv_work;
+        uint64_t equiv_variables;
+        uint64_t equiv_clauses;
+        uint64_t equiv_conflicts;
+        uint64_t equiv_binaries;
         uint64_t blocked_clauses;    // Clauses removed by blocked clause elimination
         uint64_t max_lbd;
         uint64_t glue_clauses;
@@ -233,7 +252,7 @@ typedef struct Solver {
 
     // Rephasing state (Kissat-style target phases)
     struct {
-        bool*    best_phase;      // Best assignment seen (polarity for each var)
+        lbool*   best_phase;      // Best assignment seen (polarity for each var)
         uint32_t best_trail_size; // Trail size when best assignment was saved
         uint32_t conflicts_since; // Conflicts since last rephase
         uint32_t rephase_count;   // Number of rephases performed
@@ -247,6 +266,19 @@ typedef struct Solver {
         uint32_t successes;           // Number of successful local search calls
     } local_search;
 
+    /* Immutable input, used for model checking and safe incremental rebuilds. */
+    uint8_t *level_seen;
+    uint32_t levels_capacity, random_state;
+    Lit *conflict_clause;
+    uint32_t conflict_size;
+    Lit *input;
+    size_t input_size, input_capacity;
+    uint32_t input_clauses, clauses_capacity;
+    bool internal_add, has_solved, error, interrupted;
+    uint64_t work, work_limit, last_vivify, mode_limit;
+    uint64_t garbage_collections, lbd_samples, recent_lbd_sum;
+    uint32_t subsume_cursor, vivify_cursor;
+    bool stable_mode;
     // Result
     lbool result;             // SAT/UNSAT/UNKNOWN
 } Solver;
@@ -279,7 +311,8 @@ lbool solver_solve_with_assumptions(Solver* s, const Lit* assumps, uint32_t n_as
 // Get variable value in model
 lbool solver_model_value(const Solver* s, Var v);
 
-// Get conflict clause (for UNSAT)
+// Get a nonminimal clause of negated failed assumptions (empty for base UNSAT).
+// Valid until the next solve or mutation.
 const Lit* solver_conflict(const Solver* s, uint32_t* size);
 
 // Print statistics
@@ -289,8 +322,18 @@ void solver_print_stats(const Solver* s);
  * Internal Functions (for testing/debugging)
  *********************************************************************/
 
+bool solver_budget_exhausted(Solver* s);
+uint32_t solver_substitute_equivalences(Solver* s);
+bool solver_check_model(const Solver* s);
+void solver_collect_garbage(Solver* s);
+void solver_delete_clause(Solver* s, CRef cref);
+void proof_add_clause(Solver* s, const Lit* lits, uint32_t size);
+void proof_delete_clause(Solver* s, const Lit* lits, uint32_t size);
 // Unit propagation
 CRef solver_propagate(Solver* s);
+
+// Minimize an asserting clause while its reason graph is still assigned.
+uint32_t solver_minimize_clause(Solver* s, Lit* learnt, uint32_t* size);
 
 // Analyze conflict and learn clause
 void solver_analyze(Solver* s, CRef conflict, Lit* learnt, uint32_t* learnt_size, Level* bt_level);

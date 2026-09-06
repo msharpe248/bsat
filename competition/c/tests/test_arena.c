@@ -10,9 +10,6 @@
 #include <stdlib.h>
 #include <assert.h>
 
-// Required for linking (normally defined in main.c)
-bool g_verbose = false;
-
 // Test counter
 static int tests_run = 0;
 static int tests_passed = 0;
@@ -39,7 +36,7 @@ static int tests_passed = 0;
  * Test Cases
  *********************************************************************/
 
-void test_arena_creation() {
+void test_arena_creation(void) {
     TEST("Arena creation and destruction");
 
     Arena* arena = arena_init(1024);
@@ -63,7 +60,7 @@ void test_arena_creation() {
     PASS();
 }
 
-void test_single_clause_alloc() {
+void test_single_clause_alloc(void) {
     TEST("Single clause allocation");
 
     Arena* arena = arena_init(1024);
@@ -103,7 +100,7 @@ void test_single_clause_alloc() {
     PASS();
 }
 
-void test_learned_clause() {
+void test_learned_clause(void) {
     TEST("Learned clause allocation");
 
     Arena* arena = arena_init(1024);
@@ -125,7 +122,7 @@ void test_learned_clause() {
     PASS();
 }
 
-void test_multiple_clauses() {
+void test_multiple_clauses(void) {
     TEST("Multiple clause allocations");
 
     Arena* arena = arena_init(1024);
@@ -157,7 +154,7 @@ void test_multiple_clauses() {
     PASS();
 }
 
-void test_lbd_operations() {
+void test_lbd_operations(void) {
     TEST("LBD (Literal Block Distance) operations");
 
     Arena* arena = arena_init(1024);
@@ -186,7 +183,7 @@ void test_lbd_operations() {
     PASS();
 }
 
-void test_activity_operations() {
+void test_activity_operations(void) {
     TEST("Clause activity operations");
 
     Arena* arena = arena_init(1024);
@@ -215,7 +212,7 @@ void test_activity_operations() {
     PASS();
 }
 
-void test_clause_deletion() {
+void test_clause_deletion(void) {
     TEST("Clause deletion");
 
     Arena* arena = arena_init(1024);
@@ -238,7 +235,7 @@ void test_clause_deletion() {
     PASS();
 }
 
-void test_arena_stats() {
+void test_arena_stats(void) {
     TEST("Arena statistics");
 
     Arena* arena = arena_init(1024);
@@ -267,7 +264,7 @@ void test_arena_stats() {
     PASS();
 }
 
-void test_empty_clause() {
+void test_empty_clause(void) {
     TEST("Empty clause handling");
 
     Arena* arena = arena_init(1024);
@@ -287,7 +284,7 @@ void test_empty_clause() {
     PASS();
 }
 
-void test_large_clause() {
+void test_large_clause(void) {
     TEST("Large clause allocation");
 
     Arena* arena = arena_init(1024);
@@ -320,7 +317,7 @@ void test_large_clause() {
     PASS();
 }
 
-void test_arena_growth() {
+void test_arena_growth(void) {
     TEST("Arena automatic growth");
 
     // Start with small arena

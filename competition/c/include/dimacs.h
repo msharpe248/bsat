@@ -47,7 +47,7 @@ const char* dimacs_error_string(DimacsError err);
 void dimacs_write_solution(const Solver* s, FILE* out);
 
 // Write UNSAT proof/core (if available)
-void dimacs_write_proof(const Solver* s, FILE* out);
+bool dimacs_write_proof(const Solver* s, FILE* out);
 
 // Write CNF in DIMACS format (for debugging)
 void dimacs_write_cnf(const Solver* s, FILE* out);

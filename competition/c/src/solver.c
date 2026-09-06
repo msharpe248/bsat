@@ -9,6 +9,10 @@
 #include <math.h>
 #include <signal.h>
 
+bool g_verbose = false;
+bool g_debug = false;
+static bool solver_rebuild(Solver *s);
+
 /*********************************************************************
  * Variable Array Growth Configuration
  *
@@ -48,7 +52,7 @@ static void install_signal_handlers(void) {
 
 // Print progress statistics (safe to call from main loop)
 static void print_progress_stats(const Solver* s) {
-    double elapsed = (double)(clock() - (clock_t)s->stats.start_time) / CLOCKS_PER_SEC;
+    double elapsed = (double)clock() / CLOCKS_PER_SEC - s->stats.start_time;
     fprintf(stderr, "\n");
     fprintf(stderr, "c ========== Progress Update ==========\n");
     fprintf(stderr, "c Elapsed time     : %.3f s\n", elapsed);
@@ -75,29 +79,32 @@ static void print_progress_stats(const Solver* s) {
  * Format: "<lit1> <lit2> ... 0" for add, "d <lit1> <lit2> ... 0" for delete
  *********************************************************************/
 
-// Convert internal literal to DIMACS format (already 1-indexed, negative for negated)
-static inline int lit_to_dimacs(Lit lit) {
-    int v = (int)(lit >> 1);  // Variable (already 1-indexed in our encoding)
-    return (lit & 1) ? -v : v;  // Negated for sign bit set
-}
-
-// Log a clause addition to the proof file
-void proof_add_clause(Solver* s, const Lit* lits, uint32_t size) {
+static void proof_clause(Solver *s, const Lit *lits, uint32_t size, bool deletion) {
     if (!s->proof_file) return;
-    for (uint32_t i = 0; i < size; i++) {
-        fprintf(s->proof_file, "%d ", lit_to_dimacs(lits[i]));
+    if (s->opts.binary_proof) {
+        fputc(deletion ? 'd' : 'a', s->proof_file);
+        for (uint32_t i = 0; i < size; ++i) {
+            uint32_t x = lits[i];
+            while (x >= 128) { fputc((x & 127) | 128, s->proof_file); x >>= 7; }
+            fputc(x, s->proof_file);
+        }
+        fputc(0, s->proof_file);
+    } else {
+        if (deletion) fputs("d ", s->proof_file);
+        for (uint32_t i = 0; i < size; ++i) fprintf(s->proof_file, "%d ", toDimacs(lits[i]));
+        fputs("0\n", s->proof_file);
     }
-    fprintf(s->proof_file, "0\n");
+    if (ferror(s->proof_file)) s->error = true;
 }
+void proof_add_clause(Solver *s, const Lit *lits, uint32_t size) { proof_clause(s, lits, size, false); }
+void proof_delete_clause(Solver *s, const Lit *lits, uint32_t size) { proof_clause(s, lits, size, true); }
 
-// Log a clause deletion to the proof file
-void proof_delete_clause(Solver* s, const Lit* lits, uint32_t size) {
-    if (!s->proof_file) return;
-    fprintf(s->proof_file, "d ");
-    for (uint32_t i = 0; i < size; i++) {
-        fprintf(s->proof_file, "%d ", lit_to_dimacs(lits[i]));
-    }
-    fprintf(s->proof_file, "0\n");
+bool solver_budget_exhausted(Solver *s) {
+    if (s->watches->failed) s->error = true;
+    if (s->error || s->interrupted) return true;
+    if (s->opts.max_time > 0 && (double)clock()/CLOCKS_PER_SEC - s->stats.start_time >= s->opts.max_time)
+        s->interrupted = true;
+    return s->interrupted || (s->work_limit && s->work >= s->work_limit);
 }
 
 /*********************************************************************
@@ -106,6 +113,12 @@ void proof_delete_clause(Solver* s, const Lit* lits, uint32_t size) {
 
 SolverOpts default_opts(void) {
     SolverOpts opts = {
+        .preprocess_budget = 1000000,
+        .subsume_budget = 128,
+        .circular = true,
+        .seed = 1,
+        .equiv = false,
+        .equiv_budget = 1000000,
         .max_conflicts = 0,        // Unlimited
         .max_decisions = 0,        // Unlimited
         .max_time = 0.0,          // Unlimited
@@ -120,25 +133,25 @@ SolverOpts default_opts(void) {
 
         .restart_first = 100,
         .restart_inc = 1.5,
-        .glucose_restart = true,   // Enable Glucose - test with EMA mode
+        .glucose_restart = true,   // LBD-based adaptive restarts
         .luby_restart = false,     // Disabled
-        .luby_unit = 100,          // Python uses 100, MiniSat uses 512 (using Python's value)
+        .luby_unit = 100,          // Base Luby interval
         .restart_postpone = 10,
 
         // Glucose EMA parameters (for --glucose-restart-ema)
-        .glucose_use_ema = true,       // Use EMA mode - sliding window has correctness bug
+        .glucose_use_ema = true,       // EMA alternative; both modes use the corrected threshold
         .glucose_fast_alpha = 0.8,     // Fast MA decay factor (tracks recent ~5 conflicts)
         .glucose_slow_alpha = 0.9999,  // Slow MA decay factor (long-term average)
         .glucose_min_conflicts = 100,  // Minimum conflicts before enabling Glucose
 
         // Glucose sliding window parameters (for --glucose-restart-avg)
-        .glucose_window_size = 50,     // Window size for short-term average (matches Python)
-        .glucose_k = 0.8,              // Threshold multiplier (matches Python)
+        .glucose_window_size = 50,     // Sliding-window length
+        .glucose_k = 0.8,              // Restart when recent_average * K > global_average
 
         .phase_saving = true,
         .phase_reset_period = 10000,
-        .random_phase = true,          // Enable by default - prevents catastrophic stuck states
-        .random_phase_prob = 0.01,     // 1% random phase - best overall balance (52/53 instances)
+        .random_phase = true,          // Controlled, reproducible diversification
+        .random_phase_prob = 0.01,     // 1% random decisions
         .adaptive_random = true,
         .rephase = true,               // Kissat-style target phase rephasing
         .rephase_interval = 1000,      // Rephase every 1000 conflicts
@@ -147,6 +160,8 @@ SolverOpts default_opts(void) {
         .glue_lbd = 2,
         .reduce_fraction = 0.5,
         .reduce_interval = 2000,
+        .iterative_minimize = false, // Opt-in pending representative speed gains
+        .minimize_budget = 10000, // Reason inspections per learned clause, either mode
         .minimize = true,         // MiniSat-style clause minimization
 
         .bce = false,             // DISABLED by default - can hurt SAT instance performance
@@ -335,6 +350,18 @@ Solver* solver_new(void) {
 }
 
 Solver* solver_new_with_opts(const SolverOpts* opts) {
+    if (!opts || !isfinite(opts->var_decay) || opts->var_decay <= 0 || opts->var_decay >= 1 ||
+        !isfinite(opts->var_inc) || opts->var_inc <= 0 ||
+        !isfinite(opts->restart_inc) || opts->restart_inc < 1 ||
+        !opts->restart_first || !opts->luby_unit || !opts->reduce_interval ||
+        !opts->glucose_window_size || !opts->inprocess_interval || !opts->rephase_interval ||
+        !opts->ls_interval || !isfinite(opts->max_time) || opts->max_time < 0 ||
+        !isfinite(opts->reduce_fraction) || opts->reduce_fraction < 0 || opts->reduce_fraction > 1 ||
+        !isfinite(opts->glucose_k) || opts->glucose_k <= 0 || opts->glucose_k > 1 ||
+        !isfinite(opts->glucose_fast_alpha) || opts->glucose_fast_alpha < 0 || opts->glucose_fast_alpha >= 1 ||
+        !isfinite(opts->glucose_slow_alpha) || opts->glucose_slow_alpha < 0 || opts->glucose_slow_alpha >= 1 ||
+        !isfinite(opts->random_phase_prob) || opts->random_phase_prob < 0 || opts->random_phase_prob > 1 ||
+        !isfinite(opts->ls_noise) || opts->ls_noise < 0 || opts->ls_noise > 1) return NULL;
     Solver* s = (Solver*)calloc(1, sizeof(Solver));
     if (!s) return NULL;
 
@@ -381,10 +408,8 @@ Solver* solver_new_with_opts(const SolverOpts* opts) {
     // Initialize DRAT proof file
     s->proof_file = NULL;
     if (opts->proof_path) {
-        s->proof_file = fopen(opts->proof_path, "w");
-        if (!s->proof_file && !opts->quiet) {
-            fprintf(stderr, "c Warning: Could not open proof file: %s\n", opts->proof_path);
-        }
+        s->proof_file = fopen(opts->proof_path, opts->binary_proof ? "wb" : "w");
+        if (!s->proof_file) goto error;
     }
 
     // Initialize rephasing state
@@ -414,7 +439,11 @@ void solver_free(Solver* s) {
     arena_free(s->arena);
     watch_free(s->watches);
 
+    free(s->conflict_clause);
+    free(s->level_seen);
+    free(s->input);
     free(s->vars);
+    free(s->values);
     free(s->trail);
     free(s->trail_lims);
     free(s->clauses);
@@ -422,6 +451,7 @@ void solver_free(Solver* s) {
     free(s->order.heap);
     free(s->seen);
     free(s->analyze_stack);
+    free(s->minimize_touched);
     free(s->binary_reasons);
     free(s->restart.recent_lbds);  // Free Glucose sliding window buffer
     free(s->rephase.best_phase);   // Free rephasing best phase array
@@ -460,6 +490,11 @@ static bool grow_var_arrays(Solver* s, uint32_t new_capacity) {
     if (!new_vars) return false;
     s->vars = new_vars;
 
+    // Dense propagation values: no duplicate assignment state to synchronize.
+    uint8_t *new_values = realloc(s->values, alloc_size * sizeof *new_values);
+    if (!new_values) return false;
+    s->values = new_values;
+
     // Grow trail
     Trail* new_trail = (Trail*)realloc(s->trail, alloc_size * sizeof(Trail));
     if (!new_trail) return false;
@@ -479,11 +514,15 @@ static bool grow_var_arrays(Solver* s, uint32_t new_capacity) {
     uint8_t* new_seen = (uint8_t*)realloc(s->seen, alloc_size * sizeof(uint8_t));
     if (!new_seen) return false;
     s->seen = new_seen;
+    memset(s->seen + s->var_capacity, 0, alloc_size - s->var_capacity);
 
     // Grow analyze stack
     Lit* new_stack = (Lit*)realloc(s->analyze_stack, alloc_size * sizeof(Lit));
     if (!new_stack) return false;
     s->analyze_stack = new_stack;
+    Var *new_touched = realloc(s->minimize_touched, alloc_size * sizeof *new_touched);
+    if (!new_touched) return false;
+    s->minimize_touched = new_touched;
 
     // Grow binary reasons array
     Lit* new_binary_reasons = (Lit*)realloc(s->binary_reasons, alloc_size * sizeof(Lit));
@@ -492,12 +531,12 @@ static bool grow_var_arrays(Solver* s, uint32_t new_capacity) {
 
     // Grow best phase array (for rephasing)
     if (s->opts.rephase) {
-        bool* new_best_phase = (bool*)realloc(s->rephase.best_phase, alloc_size * sizeof(bool));
+        lbool* new_best_phase = (lbool*)realloc(s->rephase.best_phase, alloc_size * sizeof(lbool));
         if (!new_best_phase) return false;
         s->rephase.best_phase = new_best_phase;
         // Initialize new entries to false (negative phase)
         for (uint32_t i = s->var_capacity + 1; i <= new_capacity; i++) {
-            s->rephase.best_phase[i] = false;
+            s->rephase.best_phase[i] = UNDEF;
         }
     }
 
@@ -512,6 +551,7 @@ Var solver_new_var(Solver* s) {
         return INVALID_VAR;
     }
 
+    if (s->has_solved && !solver_rebuild(s)) return INVALID_VAR;
     Var v = ++s->num_vars;
 
     // Grow arrays if needed (geometric growth strategy)
@@ -533,6 +573,8 @@ Var solver_new_var(Solver* s) {
 
         // Grow all variable-related arrays
         if (!grow_var_arrays(s, new_capacity)) {
+            s->num_vars--;
+            s->error = true;
             return INVALID_VAR;
         }
 
@@ -541,7 +583,7 @@ Var solver_new_var(Solver* s) {
 
     // Initialize new variable
     memset(&s->vars[v], 0, sizeof(VarInfo));
-    s->vars[v].value = UNDEF;
+    s->values[v] = UNDEF;
     s->vars[v].level = INVALID_LEVEL;
     s->vars[v].reason = INVALID_CLAUSE;
     s->vars[v].heap_pos = UINT32_MAX;
@@ -565,9 +607,11 @@ Var solver_new_var(Solver* s) {
 
 static inline void push_trail(Solver* s, Lit lit) {
     Var v = var(lit);
-    ASSERT(s->vars[v].value == UNDEF);
+    ASSERT(s->values[v] == UNDEF);
 
-    s->vars[v].value = sign(lit) ? FALSE : TRUE;
+    s->vars[v].reason = INVALID_CLAUSE;
+    s->binary_reasons[v] = LIT_UNDEF;
+    s->values[v] = sign(lit) ? FALSE : TRUE;
     s->vars[v].level = s->decision_level;
     s->vars[v].trail_pos = s->trail_size;
 
@@ -583,226 +627,92 @@ static inline void push_trail(Solver* s, Lit lit) {
 
 void solver_backtrack(Solver* s, Level level) {
     if (level >= s->decision_level) return;
-
-    if (level == 0) {
-        // When backtracking to level 0 (restart), preserve ALL level-0 assignments
-        // Level-0 assignments can appear anywhere in the trail (e.g., from learned unit clauses)
-        // We need to compact the trail to keep only level-0 entries
-        uint32_t write_pos = 0;
-        for (uint32_t i = 0; i < s->trail_size; i++) {
-            Var v = var(s->trail[i].lit);
-            if (s->vars[v].level == 0) {
-                // Keep this level-0 assignment
-                if (write_pos != i) {
-                    s->trail[write_pos] = s->trail[i];
-                    s->vars[v].trail_pos = write_pos;
-                }
-                write_pos++;
-            } else {
-                // Undo this assignment (level > 0)
-                s->vars[v].value = UNDEF;
-                s->vars[v].level = INVALID_LEVEL;
-                s->vars[v].reason = INVALID_CLAUSE;
-                s->binary_reasons[v] = LIT_UNDEF;  // Clear binary reason
-
-                // Re-insert into decision heap
-                if (s->vars[v].heap_pos == UINT32_MAX) {
-                    heap_insert(s, v);
-                }
-            }
-        }
-        s->trail_size = write_pos;
-        s->qhead = write_pos;
-        s->decision_level = 0;
-    } else {
-        // Normal backtrack to level > 0
-        uint32_t trail_pos = s->trail_lims[level];
-
-        // Undo assignments from levels > target
-        for (uint32_t i = trail_pos; i < s->trail_size; i++) {
-            Var v = var(s->trail[i].lit);
-            s->vars[v].value = UNDEF;
-            s->vars[v].level = INVALID_LEVEL;
-            s->vars[v].reason = INVALID_CLAUSE;
-            s->binary_reasons[v] = LIT_UNDEF;  // Clear binary reason
-
-            // Re-insert into decision heap
-            if (s->vars[v].heap_pos == UINT32_MAX) {
-                heap_insert(s, v);
-            }
-        }
-
-        s->trail_size = trail_pos;
-        s->qhead = trail_pos;
-        s->decision_level = level;
+    uint32_t pos = s->trail_lims[level + 1];
+    for (uint32_t i = s->trail_size; i > pos;) {
+        Var v = var(s->trail[--i].lit);
+        s->values[v] = UNDEF;
+        s->vars[v].level = INVALID_LEVEL;
+        s->vars[v].reason = INVALID_CLAUSE;
+        s->binary_reasons[v] = LIT_UNDEF;
+        if (s->vars[v].heap_pos == UINT32_MAX) heap_insert(s, v);
     }
-}
-
-// Chronological backtracking: backtrack one level at a time
-// instead of jumping directly to target level
-// Returns the level we actually backtracked to
-static Level solver_backtrack_chronological(Solver* s, const Lit* learnt, uint32_t learnt_size, Level target_level) {
-    // Always use chronological backtracking if enabled
-    // For each level from current down to target, check if clause is unit
-
-    Level current = s->decision_level;
-
-    // Backtrack one level at a time
-    while (current > target_level) {
-        Level next_level = current - 1;
-
-        // Backtrack to next level
-        solver_backtrack(s, next_level);
-
-        // Count unassigned literals in learned clause at this level
-        uint32_t unassigned = 0;
-        Lit propagate_lit = 0;
-
-        for (uint32_t i = 0; i < learnt_size; i++) {
-            Var v = var(learnt[i]);
-            if (s->vars[v].value == UNDEF) {
-                unassigned++;
-                propagate_lit = learnt[i];
-            } else if (s->vars[v].value == (sign(learnt[i]) ? FALSE : TRUE)) {
-                // Literal is true - clause is satisfied, no need to propagate
-                unassigned = 0;
-                break;
-            }
-        }
-
-        // If clause is unit (exactly one unassigned literal), stop here
-        if (unassigned == 1) {
-            return next_level;
-        }
-
-        // If clause is satisfied or all false, continue
-        current = next_level;
-    }
-
-    // Reached target level
-    return target_level;
+    s->trail_size = pos;
+    if (s->qhead > pos) s->qhead = pos;
+    s->decision_level = level;
 }
 
 /*********************************************************************
  * Clause Addition
  *********************************************************************/
 
+static int compare_lits(const void *a, const void *b) {
+    Lit x = *(const Lit*)a, y = *(const Lit*)b;
+    return (x > y) - (x < y);
+}
+
 bool solver_add_clause(Solver* s, const Lit* lits, uint32_t size) {
-    if (size == 0) {
-        s->result = FALSE;  // Empty clause = UNSAT
-        return false;
+    if (!s || (size && !lits)) return false;
+    if (s->has_solved && !solver_rebuild(s)) return false;
+    ASSERT(s->decision_level == 0);
+    for (uint32_t i = 0; i < size; ++i)
+        if (!var(lits[i]) || var(lits[i]) > s->num_vars) { s->error = true; return false; }
+    if (!s->internal_add) {
+        size_t needed = s->input_size + (size_t)size + 1;
+        if (needed > s->input_capacity) {
+            size_t cap = MAX(needed, s->input_capacity * 2 + 64);
+            Lit *p = realloc(s->input, cap * sizeof *p);
+            if (!p) { s->error = true; return false; }
+            s->input = p; s->input_capacity = cap;
+        }
+        if (size) memcpy(s->input + s->input_size, lits, size * sizeof *lits);
+        s->input_size += size; s->input[s->input_size++] = 0;
+        s->input_clauses++;
     }
-
-    // TODO: Simplify clause (remove duplicates, check tautology)
-
-    // Unit clause - immediately assign
-    if (size == 1) {
-        Var v = var(lits[0]);
-        if (s->vars[v].value == UNDEF) {
-            push_trail(s, lits[0]);
-        } else if (s->vars[v].value == (sign(lits[0]) ? TRUE : FALSE)) {
-            s->result = FALSE;  // Conflicting unit clause
-            return false;
-        }
-        return true;
+    if (s->result == FALSE) return false;
+    Lit *tmp = size ? malloc(size * sizeof *tmp) : NULL;
+    if (size && !tmp) { s->error = true; return false; }
+    if (size) { memcpy(tmp, lits, size * sizeof *tmp); qsort(tmp, size, sizeof *tmp, compare_lits); }
+    uint32_t n = 0;
+    for (uint32_t i = 0; i < size; ++i) {
+        Lit lit = tmp[i];
+        if (n && lit == tmp[n-1]) continue;
+        if (n && lit == neg(tmp[n-1])) { free(tmp); return true; }
+        tmp[n++] = lit;
     }
-
-    // For binary clauses, don't allocate in arena - handle specially
-    CRef cref = INVALID_CLAUSE;
-
-    if (size > 2) {
-        // Allocate non-binary clauses in arena
-        cref = arena_alloc(s->arena, lits, size, false);
-        if (cref == INVALID_CLAUSE) {
-            return false;  // Out of memory
-        }
-
-        // Add to clause list
-        if (s->num_clauses >= s->num_original) {
-            uint32_t new_cap = s->num_original ? s->num_original * 2 : 1024;
-            CRef* new_clauses = (CRef*)realloc(s->clauses, new_cap * sizeof(CRef));
-            if (!new_clauses) {
-                arena_delete(s->arena, cref);
-                return false;
-            }
-            s->clauses = new_clauses;
-            s->num_original = new_cap;
-        }
-        s->clauses[s->num_clauses] = cref;
+    /* Keep all normalized input clauses, including units and binaries, in
+       the arena. Binary propagation still uses compact implicit watches. */
+    CRef cr = arena_alloc(s->arena, tmp, n, false);
+    if (cr == INVALID_CLAUSE) { free(tmp); s->error = true; return false; }
+    if (s->num_clauses == s->clauses_capacity) {
+        uint32_t cap = s->clauses_capacity ? s->clauses_capacity * 2 : 64;
+        CRef *p = realloc(s->clauses, cap * sizeof *p);
+        if (!p) { free(tmp); s->error = true; return false; }
+        s->clauses = p; s->clauses_capacity = cap;
     }
-
-    // Count all clauses, including binary ones
-    s->num_clauses++;
-
-    // Add watches - need to find two non-false literals if possible
-    if (size == 2) {
-        // Binary clause - check if it's already unit or conflicting
-        Var v0 = var(lits[0]);
-        Var v1 = var(lits[1]);
-        lbool val0 = s->vars[v0].value;
-        lbool val1 = s->vars[v1].value;
-
-        // Check for immediate conflict or unit
-        if (val0 == (sign(lits[0]) ? TRUE : FALSE) && val1 == (sign(lits[1]) ? TRUE : FALSE)) {
-            // Both literals are false - conflict
-            s->result = FALSE;
-            return false;
-        } else if (val0 == (sign(lits[0]) ? TRUE : FALSE) && val1 == UNDEF) {
-            // First literal false, second unassigned - unit propagate
-            push_trail(s, lits[1]);
-        } else if (val1 == (sign(lits[1]) ? TRUE : FALSE) && val0 == UNDEF) {
-            // Second literal false, first unassigned - unit propagate
-            push_trail(s, lits[0]);
+    s->clauses[s->num_clauses++] = cr;
+    s->num_original = s->num_clauses;
+    if (!n) { s->result = FALSE; free(tmp); return false; }
+    Lit *cl = CLAUSE_LITS(s->arena, cr);
+    uint32_t alive = 0;
+    for (uint32_t i = 0; i < n; ++i) {
+        if (lxor(s->values[var(cl[i])], sign(cl[i])) != FALSE) {
+            Lit t = cl[alive]; cl[alive++] = cl[i]; cl[i] = t;
         }
-
-        // Always add watches for binary clauses
-        watch_add(s->watches, lits[0], INVALID_CLAUSE, lits[1]);
-        watch_add(s->watches, lits[1], INVALID_CLAUSE, lits[0]);
-    } else {
-        // For larger clauses, find two literals that are not false to watch
-        // First, get the clause literals from arena (they may be reordered)
-        Lit* clause_lits = CLAUSE_LITS(s->arena, cref);
-
-        // Find first non-false literal
-        uint32_t watch1 = 0;
-        for (uint32_t i = 0; i < size; i++) {
-            Var v = var(clause_lits[i]);
-            if (s->vars[v].value != (sign(clause_lits[i]) ? TRUE : FALSE)) {
-                // This literal is not false
-                if (i != 0) {
-                    // Swap it to position 0
-                    Lit tmp = clause_lits[0];
-                    clause_lits[0] = clause_lits[i];
-                    clause_lits[i] = tmp;
-                }
-                watch1 = 0;
-                break;
-            }
-        }
-
-        // Find second non-false literal
-        uint32_t watch2 = 1;
-        for (uint32_t i = 1; i < size; i++) {
-            Var v = var(clause_lits[i]);
-            if (s->vars[v].value != (sign(clause_lits[i]) ? TRUE : FALSE)) {
-                // This literal is not false
-                if (i != 1) {
-                    // Swap it to position 1
-                    Lit tmp = clause_lits[1];
-                    clause_lits[1] = clause_lits[i];
-                    clause_lits[i] = tmp;
-                }
-                watch2 = 1;
-                break;
-            }
-        }
-
-        // Add watches for the two chosen literals
-        watch_add(s->watches, clause_lits[watch1], cref, clause_lits[watch2]);
-        watch_add(s->watches, clause_lits[watch2], cref, clause_lits[watch1]);
     }
-
-    return true;
+    if (n == 2) {
+        watch_add(s->watches, cl[0], INVALID_CLAUSE, cl[1]);
+        watch_add(s->watches, cl[1], INVALID_CLAUSE, cl[0]);
+    } else if (n > 2) {
+        watch_add(s->watches, cl[0], cr, cl[1]);
+        watch_add(s->watches, cl[1], cr, cl[0]);
+    }
+    if (!alive) s->result = FALSE;
+    else if (alive == 1 && s->values[var(cl[0])] == UNDEF) {
+        push_trail(s, cl[0]);
+        s->vars[var(cl[0])].reason = cr;
+    }
+    free(tmp);
+    return s->result != FALSE;
 }
 
 /*********************************************************************
@@ -810,8 +720,8 @@ bool solver_add_clause(Solver* s, const Lit* lits, uint32_t size) {
  *********************************************************************/
 
 lbool solver_model_value(const Solver* s, Var v) {
-    if (v > s->num_vars) return UNDEF;
-    return s->vars[v].value;
+    if (!v || v > s->num_vars) return UNDEF;
+    return s->values[v];
 }
 
 /*********************************************************************
@@ -831,6 +741,15 @@ void solver_print_stats(const Solver* s) {
     printf("c Learned clauses   : %llu\n", (unsigned long long)s->stats.learned_clauses);
     printf("c Learned literals  : %llu\n", (unsigned long long)s->stats.learned_literals);
     printf("c Deleted clauses   : %llu\n", (unsigned long long)s->stats.deleted_clauses);
+    printf("c Minimize inspections: %llu\n", (unsigned long long)s->stats.minimize_inspections);
+    printf("c Minimize binary steps: %llu\n", (unsigned long long)s->stats.minimize_binary_steps);
+    printf("c Minimize cache hits : %llu\n", (unsigned long long)s->stats.minimize_cache_hits);
+    printf("c Minimize budget hits: %llu\n", (unsigned long long)s->stats.minimize_budget_hits);
+    printf("c Equivalence work  : %llu\n", (unsigned long long)s->stats.equiv_work);
+    printf("c Substituted vars  : %llu\n", (unsigned long long)s->stats.equiv_variables);
+    printf("c Rewritten clauses : %llu\n", (unsigned long long)s->stats.equiv_clauses);
+    printf("c SCC contradictions: %llu\n", (unsigned long long)s->stats.equiv_conflicts);
+    printf("c Derived binaries  : %llu\n", (unsigned long long)s->stats.equiv_binaries);
     printf("c Blocked clauses   : %llu\n", (unsigned long long)s->stats.blocked_clauses);
     printf("c Subsumed clauses  : %llu\n", (unsigned long long)s->stats.subsumed_clauses);
     printf("c Minimized literals: %llu\n", (unsigned long long)s->stats.minimized_literals);
@@ -847,6 +766,10 @@ void solver_print_stats(const Solver* s) {
         printf("c Conflicts/sec     : %.0f\n", s->stats.conflicts / cpu_time);
     }
 
+    printf("c Literal inspections : %llu\n", (unsigned long long)s->work);
+    printf("c Garbage collections : %llu\n", (unsigned long long)s->garbage_collections);
+    printf("c Reductions          : %llu\n", (unsigned long long)s->stats.reduces);
+    printf("c Mode                : %s\n", s->stable_mode ? "stable" : "focused");
     // Memory statistics
     ArenaStats astats = arena_stats(s->arena);
     printf("c Memory used       : %.2f MB\n", astats.used_bytes / (1024.0 * 1024.0));
@@ -863,28 +786,14 @@ void solver_print_stats(const Solver* s) {
  *********************************************************************/
 
 CRef solver_propagate(Solver* s) {
-    #ifdef DEBUG
-    static uint64_t prop_count = 0;
-    #endif
-
     while (s->qhead < s->trail_size) {
-        #ifdef DEBUG
-        if (IS_DEBUG(s)) {
-            prop_count++;
-            if (prop_count > 1000) {
-                printf("[ERROR] Infinite propagation loop detected! qhead=%u trail_size=%u\n",
-                       s->qhead, s->trail_size);
-                exit(1);
-            }
-        }
-        #endif
-
+        if ((s->work & 1023) == 0 && solver_budget_exhausted(s)) return INVALID_CLAUSE;
         Lit p = s->trail[s->qhead++].lit;
 
 #ifdef DEBUG
         if (IS_DEBUG(s)) {
             printf("[PROPAGATE] qhead=%u trail_size=%u Processing literal %d (var=%u, value=%d)\n",
-                   s->qhead - 1, s->trail_size, toDimacs(p), var(p), s->vars[var(p)].value);
+                   s->qhead - 1, s->trail_size, toDimacs(p), var(p), s->values[var(p)]);
         }
 #endif
 
@@ -904,6 +813,11 @@ CRef solver_propagate(Solver* s) {
 #endif
 
         while (i < ws->size) {
+            if ((s->work & 1023)==0 && solver_budget_exhausted(s)) {
+                while (i<ws->size) watches[j++]=watches[i++];
+                ws->size=j; s->qhead--; return INVALID_CLAUSE;
+            }
+            s->work++;
             Watch w = watches[i];
 
             // Binary clause special case
@@ -914,13 +828,13 @@ CRef solver_propagate(Solver* s) {
 #ifdef DEBUG
                 if (IS_DEBUG(s)) {
                     printf("[PROPAGATE] Binary clause: literal %d, other lit %d, var %u value=%d\n",
-                           toDimacs(neg(p)), toDimacs(q), v, s->vars[v].value);
+                           toDimacs(neg(p)), toDimacs(q), v, s->values[v]);
                 }
 #endif
 
-                if (s->vars[v].value == UNDEF) {
+                if (s->values[v] == UNDEF) {
                     // Unit propagation via binary clause
-                    s->vars[v].value = sign(q) ? FALSE : TRUE;
+                    s->values[v] = sign(q) ? FALSE : TRUE;
                     s->vars[v].level = s->decision_level;
                     s->vars[v].reason = INVALID_CLAUSE;  // Binary clause marker
                     s->vars[v].trail_pos = s->trail_size;
@@ -943,7 +857,7 @@ CRef solver_propagate(Solver* s) {
                     if (s->opts.phase_saving) {
                         s->vars[v].polarity = !sign(q);
                     }
-                } else if (s->vars[v].value == (sign(q) ? TRUE : FALSE)) {
+                } else if (s->values[v] == (sign(q) ? TRUE : FALSE)) {
                     // Conflict in binary clause: (neg(p) | q) with both literals false
 #ifdef DEBUG
                     if (IS_DEBUG(s)) {
@@ -972,16 +886,9 @@ CRef solver_propagate(Solver* s) {
             CRef cref = w.cref;
             Lit blocker = w.blocker;
 
-            // Check if clause was deleted (e.g., by BVE preprocessing)
-            if (clause_deleted(s->arena, cref)) {
-                // Skip deleted clause - don't copy to output
-                i++;
-                continue;
-            }
-
             // Check blocker first
             Var bv = var(blocker);
-            if (s->vars[bv].value == (sign(blocker) ? FALSE : TRUE)) {
+            if (s->values[bv] == (sign(blocker) ? FALSE : TRUE)) {
                 // Blocker is satisfied - keep watching
                 watches[j++] = w;
                 i++;
@@ -1005,7 +912,7 @@ CRef solver_propagate(Solver* s) {
             Var fv = var(first);
 
             // If first literal is true, clause is satisfied
-            if (s->vars[fv].value == (sign(first) ? FALSE : TRUE)) {
+            if (s->values[fv] == (sign(first) ? FALSE : TRUE)) {
                 watches[j++] = (Watch){cref, first};
                 i++;
                 continue;
@@ -1013,15 +920,25 @@ CRef solver_propagate(Solver* s) {
 
             // Look for another literal to watch
             bool found = false;
-            for (uint32_t k = 2; k < size; k++) {
+            uint32_t begin = s->opts.circular ? CLAUSE_HEADER(s->arena, cref)->search : 2;
+            if (begin < 2 || begin >= size) begin = 2;
+            for (uint32_t offset = 0; offset < size - 2; offset++) {
+                uint32_t k = begin + offset;
+                if (k >= size) k = 2 + k - size;
+                s->work++;
+                if ((s->work & 1023)==0 && solver_budget_exhausted(s)) {
+                    while (i<ws->size) watches[j++]=watches[i++];
+                    ws->size=j; s->qhead--; return INVALID_CLAUSE;
+                }
                 Lit lit = lits[k];
                 Var v = var(lit);
 
-                if (s->vars[v].value != (sign(lit) ? TRUE : FALSE)) {
+                if (s->values[v] != (sign(lit) ? TRUE : FALSE)) {
                     // Found a non-false literal
                     lits[1] = lit;
                     lits[k] = neg(p);
 
+                    CLAUSE_HEADER(s->arena, cref)->search = k;
                     // Add new watch
                     watch_add(s->watches, lit, cref, first);
                     found = true;
@@ -1040,9 +957,9 @@ CRef solver_propagate(Solver* s) {
             i++;
 
             // Check if unit or conflict
-            if (s->vars[fv].value == UNDEF) {
+            if (s->values[fv] == UNDEF) {
                 // Unit clause - propagate
-                s->vars[fv].value = sign(first) ? FALSE : TRUE;
+                s->values[fv] = sign(first) ? FALSE : TRUE;
                 s->vars[fv].level = s->decision_level;
                 s->vars[fv].reason = cref;
                 s->vars[fv].trail_pos = s->trail_size;
@@ -1077,17 +994,15 @@ CRef solver_propagate(Solver* s) {
  *********************************************************************/
 
 static uint32_t calc_lbd(Solver* s, const Lit* lits, uint32_t size) {
-    // O(n) LBD calculation using seen array as level bitset
-    // The seen array is sized for num_vars, and decision level <= num_vars,
-    // so we can safely use it indexed by level. Clear after use.
+    // Separate level marks also cover dummy assumption levels.
     uint32_t lbd = 0;
 
     // Track which levels we've seen
     for (uint32_t i = 0; i < size; i++) {
         Level level = s->vars[var(lits[i])].level;
         if (level == 0) continue;  // Level 0 doesn't count for LBD
-        if (level < s->var_capacity && !s->seen[level]) {
-            s->seen[level] = 1;
+        if (level < s->levels_capacity && !s->level_seen[level]) {
+            s->level_seen[level] = 1;
             lbd++;
         }
     }
@@ -1095,8 +1010,8 @@ static uint32_t calc_lbd(Solver* s, const Lit* lits, uint32_t size) {
     // Clear the seen flags for levels we marked
     for (uint32_t i = 0; i < size; i++) {
         Level level = s->vars[var(lits[i])].level;
-        if (level != 0 && level < s->var_capacity) {
-            s->seen[level] = 0;
+        if (level != 0 && level < s->levels_capacity) {
+            s->level_seen[level] = 0;
         }
     }
 
@@ -1186,9 +1101,11 @@ void solver_analyze(Solver* s, CRef conflict, Lit* learnt, uint32_t* learnt_size
                 uint32_t size = CLAUSE_SIZE(s->arena, reason);
                 Lit* lits = CLAUSE_LITS(s->arena, reason);
 
-                for (uint32_t i = 1; i < size; i++) {  // Skip first (it's p)
+                bump_clause_activity(s->arena, reason, 1.0f);
+                for (uint32_t i = 0; i < size; i++) {
                     Lit q = lits[i];
                     Var qv = var(q);
+                    if (qv == v) continue;
 
                     if (!s->seen[qv] && s->vars[qv].level > 0) {
                         s->seen[qv] = 1;
@@ -1250,7 +1167,7 @@ bool solver_decide(Solver* s) {
     while (s->order.size > 0) {
         next = heap_extract_max(s);
         // Skip assigned variables
-        if (s->vars[next].value != UNDEF) {
+        if (s->values[next] != UNDEF) {
             next = INVALID_VAR;
             continue;
         }
@@ -1266,33 +1183,18 @@ bool solver_decide(Solver* s) {
         return false;  // All variables assigned
     }
 
-    // Choose polarity
-    bool sign = false;
-
-    if (s->opts.phase_saving) {
-        // BUG FIX: Don't check polarity in condition - use saved polarity for ALL variables
-        // polarity stores the last value: true=positive, false=negative
-        // sign is inverted: false=positive, true=negative
-        sign = !s->vars[next].polarity;
-    } else if (s->opts.random_phase) {
-        // Random phase with probability
-        if ((rand() / (double)RAND_MAX) < s->opts.random_phase_prob) {
-            sign = rand() & 1;
-        } else {
-            // BUG FIX: Default to positive (sign=false) like Python does
-            sign = false;
-        }
-    } else {
-        // BUG FIX: Default to positive (sign=false) like Python does
-        sign = false;
-    }
+    bool sign = s->opts.phase_saving ? !s->vars[next].polarity : false;
+    if (s->opts.alternating && s->stable_mode && s->rephase.best_phase && s->rephase.best_phase[next] != UNDEF)
+        sign = s->rephase.best_phase[next] == FALSE;
+    if (s->opts.random_phase && (bsat_random(&s->random_state) / 4294967296.0) < s->opts.random_phase_prob)
+        sign = (bsat_random(&s->random_state) & 1) != 0;
 
     // Make decision
     s->decision_level++;
     s->trail_lims[s->decision_level] = s->trail_size;
 
     Lit dec = mkLit(next, sign);
-    s->vars[next].value = sign ? FALSE : TRUE;
+    s->values[next] = sign ? FALSE : TRUE;
     s->vars[next].level = s->decision_level;
     s->vars[next].reason = INVALID_CLAUSE;
     s->vars[next].trail_pos = s->trail_size;
@@ -1320,12 +1222,13 @@ static void solver_maybe_save_best_phases(Solver* s) {
     if (s->trail_size > s->rephase.best_trail_size) {
         s->rephase.best_trail_size = s->trail_size;
 
-        // Save current polarities for all assigned variables
+        memset(s->rephase.best_phase, 0, (s->num_vars+1)*sizeof(lbool));
+        // Save the partial target assignment
         for (uint32_t i = 0; i < s->trail_size; i++) {
             Lit lit = s->trail[i].lit;
             Var v = var(lit);
             // Save polarity: true=positive, false=negative
-            s->rephase.best_phase[v] = !sign(lit);
+            s->rephase.best_phase[v] = sign(lit) ? FALSE : TRUE;
         }
     }
 }
@@ -1339,7 +1242,8 @@ static void solver_rephase(Solver* s) {
 
     // Copy best phases to saved polarities
     for (Var v = 1; v <= s->num_vars; v++) {
-        s->vars[v].polarity = s->rephase.best_phase[v];
+        if (s->rephase.best_phase[v] != UNDEF)
+            s->vars[v].polarity = s->rephase.best_phase[v] == TRUE;
     }
 
     s->rephase.conflicts_since = 0;
@@ -1410,18 +1314,13 @@ static bool solver_try_local_search(Solver* s) {
 // Compute the i-th value in the Luby sequence
 // Luby sequence: 1, 1, 2, 1, 1, 2, 4, 1, 1, 2, 1, 1, 2, 4, 8, ...
 // This provides a good balance of short and long restarts
-static uint32_t luby_sequence(uint32_t i) {
-    // Find the finite subsequence that contains index i
-    uint32_t k = 1;
-    while ((1U << (k + 1)) - 1 <= i) {
-        k++;
-    }
-
-    // Check if i is at the end of a subsequence
-    if ((1U << k) - 1 == i) {
-        return 1U << (k - 1);
-    } else {
-        return luby_sequence(i - (1U << k) + 1);
+static uint32_t luby_sequence(uint32_t index) {
+    uint64_t i=index ? index : 1;
+    for (;;) {
+        uint64_t boundary=1;
+        while (boundary<i) boundary=2*boundary+1;
+        if (boundary==i) return (uint32_t)((boundary+1)/2);
+        i-=boundary/2;
     }
 }
 
@@ -1430,103 +1329,56 @@ static uint32_t luby_sequence(uint32_t i) {
  *********************************************************************/
 
 bool solver_should_restart(Solver* s) {
-    // Luby restart strategy (if enabled)
-    // Uses TOTAL conflicts vs cumulative threshold, like Python
-    if (s->opts.luby_restart) {
-        // Compute the current Luby threshold (uses luby_index which starts at 0)
-        uint32_t luby_value = luby_sequence(s->restart.luby_index + 1);
-        uint32_t threshold = luby_value * s->opts.luby_unit;
-
-        if (s->stats.conflicts >= (uint64_t)threshold) {
-            s->restart.luby_index++;
-
-            if (IS_VERBOSE(s)) {
-                fprintf(stderr, "[Luby] Restart #%llu at %llu total conflicts (threshold was %u, next is Luby(%u) × %u = %u)\n",
-                        (unsigned long long)s->stats.restarts + 1,
-                        (unsigned long long)s->stats.conflicts,
-                        threshold,
-                        s->restart.luby_index + 1,
-                        s->opts.luby_unit,
-                        luby_sequence(s->restart.luby_index + 1) * s->opts.luby_unit);
-            }
-
-            return true;
-        }
-        return false;
+    if (s->opts.restart_first == UINT32_MAX) return false;
+    if (s->opts.alternating && s->stats.conflicts >= s->mode_limit) {
+        s->stable_mode = !s->stable_mode;
+        s->mode_limit = s->mode_limit ? s->mode_limit * 2 : 1000;
+        s->restart.conflicts_since = 0;
+        return true;
     }
-
-    // Original restart strategies (Glucose or geometric)
-    if (s->opts.glucose_restart) {
-        bool should_restart_glucose = false;
-
-        // Two modes: EMA (exponential moving average) or AVG (sliding window)
-        if (s->opts.glucose_use_ema) {
-            // Glucose EMA mode: Restart when fast_ma > slow_ma
-            // (recent LBD worse than long-term average)
-            if (s->stats.conflicts > s->opts.glucose_min_conflicts &&
-                s->restart.fast_ma > s->restart.slow_ma) {
-                should_restart_glucose = true;
-            }
-        } else {
-            // Glucose sliding window mode (Python-style): Restart when short-term > long-term * K
-            if (s->restart.lbd_count >= s->opts.glucose_window_size) {
-                // Compute short-term average (last N LBDs)
-                double short_term_sum = 0.0;
-                for (uint32_t i = 0; i < s->restart.recent_lbds_count; i++) {
-                    short_term_sum += s->restart.recent_lbds[i];
-                }
-                double short_term_avg = short_term_sum / s->restart.recent_lbds_count;
-
-                // Compute long-term average (all LBDs)
-                double long_term_avg = (double)s->restart.lbd_sum / s->restart.lbd_count;
-
-                // Restart condition: short_term > long_term * K
-                if (short_term_avg > long_term_avg * s->opts.glucose_k) {
-                    should_restart_glucose = true;
-
-                    if (IS_VERBOSE(s)) {
-                        fprintf(stderr, "[Glucose-AVG] short=%.2f, long=%.2f, threshold=%.2f -> RESTART\n",
-                                short_term_avg, long_term_avg, long_term_avg * s->opts.glucose_k);
-                    }
-                }
-            }
+    bool restart = false;
+    if (s->opts.luby_restart || (s->opts.alternating && s->stable_mode)) {
+        uint64_t threshold = (uint64_t)luby_sequence(s->restart.luby_index + 1) * s->opts.luby_unit;
+        if (s->opts.alternating && s->stable_mode) threshold *= 10;
+        restart = s->restart.conflicts_since >= threshold;
+        if (restart) s->restart.luby_index++;
+    } else if (s->opts.glucose_restart) {
+        if (s->restart.conflicts_since >= s->opts.glucose_min_conflicts) {
+            if (s->opts.glucose_use_ema)
+                restart = s->lbd_samples && s->restart.fast_ma * s->opts.glucose_k > s->restart.slow_ma;
+            else if (s->restart.recent_lbds_count == s->opts.glucose_window_size)
+                restart = ((double)s->recent_lbd_sum / s->restart.recent_lbds_count) * s->opts.glucose_k >
+                          (double)s->restart.lbd_sum / s->restart.lbd_count;
         }
-
-        // Restart postponing (Glucose 2.1+): Don't restart if trail is growing
-        if (should_restart_glucose && s->opts.restart_postpone > 0) {
-            // Check if trail has grown significantly since last restart
-            uint32_t trail_growth_threshold = s->opts.restart_postpone;  // e.g., 10% growth
-            if (s->trail_size < trail_growth_threshold) {
-                #ifdef DEBUG
-                if (IS_DEBUG(s)) {
-                    printf("[RESTART] Postponed: trail too small (%u < %u)\n",
-                           s->trail_size, trail_growth_threshold);
-                }
-                #endif
-                should_restart_glucose = false;  // Postpone restart
-            }
-        }
-
-        // Hybrid fallback: If Glucose hasn't triggered in too long, use geometric
-        // This prevents getting stuck when LBD is too stable
-        bool should_restart_geometric = false;
-        if (s->restart.conflicts_since >= s->restart.threshold) {
-            should_restart_geometric = true;
-            s->restart.conflicts_since = 0;
-            s->restart.threshold = (uint32_t)(s->restart.threshold * s->opts.restart_inc);
-        }
-
-        // Restart if either strategy says so
-        return should_restart_glucose || should_restart_geometric;
     } else {
-        // Simple geometric restarts (original strategy)
-        if (s->restart.conflicts_since >= s->restart.threshold) {
-            s->restart.conflicts_since = 0;
-            s->restart.threshold = (uint32_t)(s->restart.threshold * s->opts.restart_inc);
-            return true;
+        restart = s->restart.conflicts_since >= s->restart.threshold;
+        if (restart) {
+            double next = s->restart.threshold * s->opts.restart_inc;
+            s->restart.threshold = next >= UINT32_MAX ? UINT32_MAX : (uint32_t)next;
         }
-        return false;
     }
+    if (restart) {
+        s->restart.conflicts_since = 0;
+        s->restart.recent_lbds_count = s->restart.recent_lbds_head = 0;
+        s->recent_lbd_sum = 0;
+    }
+    return restart;
+}
+
+static void record_lbd(Solver *s, uint32_t lbd) {
+    if (!s->lbd_samples++) s->restart.fast_ma = s->restart.slow_ma = lbd;
+    else {
+        s->restart.fast_ma = s->opts.glucose_fast_alpha * s->restart.fast_ma + (1-s->opts.glucose_fast_alpha)*lbd;
+        s->restart.slow_ma = s->opts.glucose_slow_alpha * s->restart.slow_ma + (1-s->opts.glucose_slow_alpha)*lbd;
+    }
+    s->restart.lbd_sum += lbd; s->restart.lbd_count++;
+    if (!s->restart.recent_lbds) return;
+    uint32_t at = s->restart.recent_lbds_head;
+    if (s->restart.recent_lbds_count == s->opts.glucose_window_size)
+        s->recent_lbd_sum -= s->restart.recent_lbds[at];
+    else s->restart.recent_lbds_count++;
+    s->restart.recent_lbds[at] = lbd; s->recent_lbd_sum += lbd;
+    s->restart.recent_lbds_head = (at + 1) % s->opts.glucose_window_size;
 }
 
 /*********************************************************************
@@ -1558,90 +1410,103 @@ static int compare_clauses(const void* a, const void* b) {
     return 0;
 }
 
+static bool clause_locked(Solver *s, CRef cr) {
+    Lit *lits = CLAUSE_LITS(s->arena, cr);
+    for (uint32_t i = 0; i < CLAUSE_SIZE(s->arena, cr); ++i) {
+        Var v = var(lits[i]);
+        if (s->values[v] != UNDEF && s->vars[v].reason == cr) return true;
+    }
+    return false;
+}
+
+void solver_delete_clause(Solver *s, CRef cr) {
+    if (cr == INVALID_CLAUSE || clause_deleted(s->arena, cr)) return;
+    proof_delete_clause(s, CLAUSE_LITS(s->arena, cr), CLAUSE_SIZE(s->arena, cr));
+    watch_remove_clause(s->watches, s->arena, cr);
+    arena_delete(s->arena, cr);
+}
+
+void solver_collect_garbage(Solver *s) {
+    if (!s->arena->wasted || s->arena->wasted * 4 < s->arena->size) return;
+    Arena *old = s->arena;
+    Arena *fresh = arena_init(MAX((size_t)1024, old->size - old->wasted + 1));
+    CRef *map = malloc(old->size * sizeof *map);
+    if (!fresh || !map) { arena_free(fresh); free(map); return; }
+    for (size_t at = 1; at < old->size;) {
+        uint32_t n = CLAUSE_SIZE(old, at);
+        if (clause_deleted(old, at)) map[at] = INVALID_CLAUSE;
+        else {
+            CRef cr = arena_alloc(fresh, CLAUSE_LITS(old, at), n, clause_learned(old, at));
+            if (cr == INVALID_CLAUSE) { arena_free(fresh); free(map); return; }
+            *CLAUSE_HEADER(fresh, cr) = *CLAUSE_HEADER(old, at);
+            map[at] = cr;
+        }
+        at += sizeof(ClauseHeader)/4 + n;
+    }
+    for (uint32_t l = 0; l < 2*(s->watches->num_vars+1); ++l) {
+        WatchList *wl = &s->watches->lists[l];
+        uint32_t out = 0;
+        for (uint32_t i = 0; i < wl->size; ++i) {
+            Watch w = wl->watches[i];
+            if (!is_binary_watch(w)) { w.cref = map[w.cref]; if (w.cref == INVALID_CLAUSE) continue; }
+            wl->watches[out++] = w;
+        }
+        wl->size = out;
+    }
+    for (Var v = 1; v <= s->num_vars; ++v)
+        if (s->vars[v].reason != INVALID_CLAUSE) {
+            s->vars[v].reason = map[s->vars[v].reason];
+            ASSERT(s->vars[v].reason != INVALID_CLAUSE || s->values[v] == UNDEF);
+        }
+    uint32_t out = 0;
+    for (uint32_t i = 0; i < s->num_clauses; ++i) {
+        CRef cr = s->clauses[i];
+        if (cr != INVALID_CLAUSE && map[cr] != INVALID_CLAUSE) s->clauses[out++] = map[cr];
+    }
+    s->num_original = s->num_clauses = out;
+    out = 0;
+    for (uint32_t i = 0; i < s->num_learnts; ++i) {
+        CRef cr = s->learnts[i];
+        if (cr != INVALID_CLAUSE && map[cr] != INVALID_CLAUSE) s->learnts[out++] = map[cr];
+    }
+    s->num_learnts = out;
+    fresh->peak_size = MAX(old->peak_size, fresh->peak_size);
+    fresh->num_growths += old->num_growths;
+    s->arena = fresh;
+    if (s->elim) {
+        elim_clear_occs(s);
+        s->elim->resolvent_crefs_size = 0;
+        elim_build_occs(s);
+    }
+    free(map); arena_free(old); s->garbage_collections++;
+}
+
 void solver_reduce_db(Solver* s) {
     s->stats.reduces++;
-
-    // Count learned clauses
-    uint32_t num_learned = 0;
-    for (uint32_t i = 0; i < s->num_clauses; i++) {
-        CRef cref = s->clauses[i];
-        if (cref == INVALID_CLAUSE) continue;
-        if (clause_deleted(s->arena, cref)) continue;
-        if (clause_learned(s->arena, cref)) {
-            num_learned++;
-        }
+    ClauseScore *scores = malloc((s->num_learnts ? s->num_learnts : 1) * sizeof *scores);
+    if (!scores) return;
+    uint32_t n = 0;
+    for (uint32_t i = 0; i < s->num_learnts; ++i) {
+        CRef cr = s->learnts[i];
+        if (cr == INVALID_CLAUSE || clause_deleted(s->arena, cr)) continue;
+        if (CLAUSE_SIZE(s->arena, cr) <= 2 || clause_lbd(s->arena, cr) <= s->opts.glue_lbd || clause_locked(s, cr)) continue;
+        scores[n++] = (ClauseScore){cr, clause_lbd(s->arena, cr), clause_activity(s->arena, cr)};
     }
-
-    // If not too many learned clauses, skip reduction
-    uint32_t max_learned = s->num_clauses / 2 + 1000;  // Allow some learned clauses
-    if (num_learned < max_learned) {
-        return;
+    qsort(scores, n, sizeof *scores, compare_clauses);
+    uint32_t keep = (uint32_t)(n * s->opts.reduce_fraction);
+    for (uint32_t i = 0; i < n; ++i) {
+        if (i >= keep || scores[i].lbd > s->opts.max_lbd) {
+            solver_delete_clause(s, scores[i].cref); s->stats.deleted_clauses++;
+        } else CLAUSE_HEADER(s->arena, scores[i].cref)->activity *= s->opts.clause_decay;
     }
-
-    if (IS_VERBOSE(s)) {
-        fprintf(stderr, "c [DB Reduce #%llu] Conflicts: %llu, Learned: %u (max: %u)\n",
-                (unsigned long long)s->stats.reduces,
-                (unsigned long long)s->stats.conflicts,
-                num_learned, max_learned);
-    }
-
-    // Collect all learned clauses with their scores
-    ClauseScore* scores = (ClauseScore*)malloc(num_learned * sizeof(ClauseScore));
-    if (!scores) return;  // Out of memory, skip reduction
-
-    uint32_t j = 0;
-    for (uint32_t i = 0; i < s->num_clauses; i++) {
-        CRef cref = s->clauses[i];
-        if (cref == INVALID_CLAUSE) continue;
-        if (clause_deleted(s->arena, cref)) continue;
-        if (!clause_learned(s->arena, cref)) continue;
-
-        scores[j].cref = cref;
-        scores[j].lbd = clause_lbd(s->arena, cref);
-        scores[j].activity = clause_activity(s->arena, cref);
-        j++;
-    }
-
-    // Sort by quality (low LBD, high activity)
-    qsort(scores, num_learned, sizeof(ClauseScore), compare_clauses);
-
-    // Keep the best half, delete the rest
-    // But ALWAYS keep glue clauses (LBD <= glue_lbd threshold, typically 2)
-    uint32_t to_keep = num_learned / 2;
-    uint32_t deleted = 0;
-
-    for (uint32_t i = to_keep; i < num_learned; i++) {
-        // Check if this is a glue clause - never delete these
-        if (scores[i].lbd <= s->opts.glue_lbd) {
-            continue;  // Keep glue clauses even if beyond the limit
-        }
-
-        // Log deletion to DRAT proof file
-        if (s->proof_file) {
-            CRef cref = scores[i].cref;
-            uint32_t size = CLAUSE_SIZE(s->arena, cref);
-            Lit* lits = CLAUSE_LITS(s->arena, cref);
-            proof_delete_clause(s, lits, size);
-        }
-
-        // Delete this clause
-        arena_delete(s->arena, scores[i].cref);
-        deleted++;
-    }
-
     free(scores);
-
-    s->stats.deleted_clauses += deleted;
-
-    if (IS_VERBOSE(s)) {
-        fprintf(stderr, "c [DB Reduce #%llu] Deleted: %u, Kept: %u, Total deletions: %llu\n",
-                (unsigned long long)s->stats.reduces,
-                deleted, num_learned - deleted,
-                (unsigned long long)s->stats.deleted_clauses);
+    uint32_t out = 0;
+    for (uint32_t i = 0; i < s->num_learnts; ++i) {
+        CRef cr = s->learnts[i];
+        if (cr != INVALID_CLAUSE && !clause_deleted(s->arena, cr)) s->learnts[out++] = cr;
     }
-
-    // Optionally trigger garbage collection if many deletions
-    // For now, let arena GC happen naturally when space is needed
+    s->num_learnts = out;
+    solver_collect_garbage(s);
 }
 
 /*********************************************************************
@@ -1690,7 +1555,9 @@ static void solver_on_the_fly_subsumption(Solver* s, const Lit* learnt, uint32_t
     // The newly added clause is at s->learnts[s->num_learnts - 1]
     uint32_t num_to_check = s->num_learnts > 0 ? s->num_learnts - 1 : 0;
 
-    for (uint32_t i = 0; i < num_to_check; i++) {
+    uint32_t checks = MIN(num_to_check, s->opts.subsume_budget);
+    for (uint32_t k = 0; k < checks; k++) {
+        uint32_t i = s->subsume_cursor++ % num_to_check;
         CRef cref = s->learnts[i];
         if (cref == INVALID_CLAUSE) continue;
 
@@ -1699,6 +1566,7 @@ static void solver_on_the_fly_subsumption(Solver* s, const Lit* learnt, uint32_t
 
         // Get the clause size and literals using macros
         uint32_t other_size = CLAUSE_SIZE(s->arena, cref);
+        if (other_size > 64) continue;
         const Lit* other_lits = CLAUSE_LITS(s->arena, cref);
 
         // Check if learned clause subsumes this clause
@@ -1708,19 +1576,14 @@ static void solver_on_the_fly_subsumption(Solver* s, const Lit* learnt, uint32_t
             bool is_reason = false;
             for (uint32_t j = 0; j < other_size && !is_reason; j++) {
                 Var v = var(other_lits[j]);
-                if (s->vars[v].value != UNDEF && s->vars[v].reason == cref) {
+                if (s->values[v] != UNDEF && s->vars[v].reason == cref) {
                     is_reason = true;
                 }
             }
 
             if (!is_reason) {
                 // Log deletion to DRAT proof file BEFORE deleting
-                if (s->proof_file) {
-                    proof_delete_clause(s, other_lits, other_size);
-                }
-
-                // Safe to delete - the clause is subsumed and not needed as a reason
-                arena_delete(s->arena, cref);
+                solver_delete_clause(s, cref);
                 subsumed++;
             }
         }
@@ -1732,1130 +1595,330 @@ static void solver_on_the_fly_subsumption(Solver* s, const Lit* learnt, uint32_t
 }
 
 /*********************************************************************
- * Clause Minimization (Recursive Literal Removal)
- *********************************************************************/
-
-/*********************************************************************
- * MiniSat-style Clause Minimization
- *
- * Removes redundant literals from learned clauses using two techniques:
- * 1. Self-subsuming resolution: literal can be removed if all literals
- *    in its reason clause are in the learned clause or at level 0
- * 2. Recursive minimization: extends above by recursively checking reasons
- *
- * Uses abstract level bitmask for quick pruning: if a literal's reason
- * contains literals at levels not in the learned clause, it can't be redundant.
- *********************************************************************/
-
-// Compute abstract level bitmask (for quick pruning)
-static inline uint64_t abstract_level(Level level) {
-    return (uint64_t)1 << (level & 63);
-}
-
-// Check if literal is redundant using recursive deep analysis
-// abstract_levels: bitmask of levels present in learned clause
-// Uses seen array: 0=unseen, 1=in learned clause, 2=exploring
-//
-// Returns true if literal p can be proven redundant (its reason chain
-// terminates at literals in the learned clause or level 0).
-static bool lit_redundant(Solver* s, Lit p, uint64_t abstract_levels) {
-    Var v = var(p);
-
-    // Check seen status
-    uint8_t seen_val = s->seen[v];
-    if (seen_val == 1) {
-        return true;   // In learned clause - definitely covered
-    }
-    if (seen_val == 2) {
-        return false;  // Cycle - being explored
-    }
-
-    // Check for reason clause
-    CRef reason = s->vars[v].reason;
-
-    // Skip binary conflict markers
-    if (reason == BINARY_CONFLICT) {
-        return false;
-    }
-
-    // Quick abstract level check: if this level isn't in abstract_levels,
-    // we need to keep this literal (it's at a level not covered)
-    Level level = s->vars[v].level;
-    if (level > 0 && !(abstract_levels & abstract_level(level))) {
-        return false;
-    }
-
-    // Handle binary propagation or decision
-    if (reason == INVALID_CLAUSE) {
-        // Both decision variables and binary propagations are never redundant.
-        // Binary propagations store their reason in binary_reasons[], but we
-        // conservatively treat them as non-redundant to avoid complexity.
-        return false;
-    }
-
-    // Mark as being explored (cycle detection)
-    // Save original value to restore on failure
-    uint8_t orig_seen = s->seen[v];
-    s->seen[v] = 2;
-
-    // Check all literals in reason clause (normal clause from arena)
-    uint32_t size = CLAUSE_SIZE(s->arena, reason);
-    Lit* lits = CLAUSE_LITS(s->arena, reason);
-
-    for (uint32_t i = 0; i < size; i++) {
-        Lit q = lits[i];
-        Var qv = var(q);
-
-        // Skip the literal itself (it's the implied literal)
-        if (qv == v) continue;
-
-        // SAFETY CHECK: If a reason literal is at a higher level than the implied
-        // literal, the reason clause is stale (the variable was reassigned after
-        // the original propagation). This can happen during chronological
-        // backtracking when we backtrack partway, reassign some variables, and
-        // then reach another conflict. In this case, return false to keep the
-        // literal in the learned clause.
-        if (s->vars[qv].level > level) {
-            s->seen[v] = orig_seen;
-            return false;
-        }
-
-        // Level 0 literals are always satisfied
-        if (s->vars[qv].level == 0) {
-            continue;
-        }
-
-        // Recursively check if this literal is covered
-        if (!lit_redundant(s, q, abstract_levels)) {
-            s->seen[v] = orig_seen;
-            return false;
-        }
-    }
-
-    // All reason literals are covered - restore original value and return true
-    // We don't change the seen value here; the caller manages seen[] for
-    // literals it's considering removing
-    s->seen[v] = orig_seen;
-    return true;
-}
-
-// Main minimization function - called after conflict analysis
-// learnt[0] is the asserting literal (always kept)
-// Returns number of literals removed
-//
-// Algorithm: For each literal L in the clause, check if all paths from L
-// back to decision variables pass through other literals in the clause.
-// If so, L is redundant and can be removed.
-//
-// Key safety: lit_redundant only treats seen==1 as coverage, preventing
-// circular dependency chains (A depends on B, B depends on A) from causing
-// both to be incorrectly removed.
-static uint32_t solver_minimize_clause(Solver* s, Lit* learnt, uint32_t* learnt_size) {
-    // Skip minimization when DRAT proof logging is enabled.
-    // Minimized clauses are semantically equivalent but may not be RUP-derivable,
-    // which would cause proof verification to fail.
-    if (s->proof_file) {
-        return 0;
-    }
-
-    // Skip if minimization is disabled
-    if (!s->opts.minimize) {
-        return 0;
-    }
-
-    if (*learnt_size <= 2) {
-        return 0;  // Don't minimize unit or binary clauses
-    }
-
-    uint32_t original_size = *learnt_size;
-
-    // Step 1: Compute abstract level bitmask for quick filtering
-    uint64_t abstract_levels = 0;
-    for (uint32_t i = 0; i < *learnt_size; i++) {
-        Level level = s->vars[var(learnt[i])].level;
-        abstract_levels |= abstract_level(level);
-    }
-
-    // Step 2: Mark all literals in learned clause (seen = 1)
-    for (uint32_t i = 0; i < *learnt_size; i++) {
-        s->seen[var(learnt[i])] = 1;
-    }
-
-    // Step 3: Try to remove each literal (except asserting literal at [0])
-    uint32_t new_size = 1;  // Keep learnt[0] (asserting literal)
-    for (uint32_t i = 1; i < *learnt_size; i++) {
-        Lit p = learnt[i];
-        Var v = var(p);
-
-        // Skip decision variables and binary propagations
-        if (s->vars[v].reason == INVALID_CLAUSE) {
-            learnt[new_size++] = p;
-            continue;
-        }
-
-        // CRITICAL: Temporarily clear seen[v] before checking redundancy.
-        // This prevents circular dependencies where literal p uses itself
-        // as coverage (e.g., p's reason leads to q, q's reason leads to p).
-        s->seen[v] = 0;
-
-        if (!lit_redundant(s, p, abstract_levels)) {
-            // Not redundant - restore and keep
-            s->seen[v] = 1;
-            learnt[new_size++] = p;
-        }
-        // else: redundant, leave seen[v] = 0 so future checks can't use it
-    }
-
-    *learnt_size = new_size;
-
-    // Step 4: Clear seen array
-    // Clear remaining literals in the learned clause
-    for (uint32_t i = 0; i < new_size; i++) {
-        s->seen[var(learnt[i])] = 0;
-    }
-
-    return original_size - new_size;
-}
-
-/*********************************************************************
  * Vivification (Clause Strengthening)
  *********************************************************************/
 
-// Helper: Remove watch for clause cref from literal lit's watch list
-static void remove_watch_for_clause(WatchManager* wm, Lit lit, CRef cref) {
-    WatchList* wl = watch_list(wm, lit);
-    for (uint32_t i = 0; i < wl->size; i++) {
-        if (wl->watches[i].cref == cref) {
-            watchlist_remove(wl, i);
-            return;
-        }
+/* RUP vivification: test removals sequentially against the current formula.
+   Replacing a clause allocates a new arena record; shrinking in place would
+   invalidate arena traversal and garbage collection. */
+static bool rup_candidate(Solver *s, const Lit *lits, uint32_t size) {
+    bool conflict = false;
+    s->decision_level = 1;
+    s->trail_lims[1] = s->trail_size;
+    for (uint32_t i = 0; i < size; ++i) {
+        lbool val = lxor(s->values[var(lits[i])], sign(lits[i]));
+        if (val == TRUE) { conflict = true; break; }
+        if (val == UNDEF) push_trail(s, neg(lits[i]));
     }
+    if (!conflict) conflict = solver_propagate(s) != INVALID_CLAUSE;
+    solver_backtrack(s, 0);
+    return conflict && !s->interrupted && !s->error;
 }
 
-// Try to strengthen a clause by removing redundant literals
-// Returns true if clause was strengthened (or removed), false if unchanged
-static bool vivify_clause(Solver* s, CRef cref) {
-    // Can only vivify at decision level 0
-    if (s->decision_level > 0) return false;
-
-    // Skip unit and binary clauses
-    uint32_t size = CLAUSE_SIZE(s->arena, cref);
-    if (size <= 2) return false;
-
-    Lit* lits = CLAUSE_LITS(s->arena, cref);
-
-    // Save original watched literals for later watch list update
-    Lit old_watch0 = lits[0];
-    Lit old_watch1 = lits[1];
-
-    // Save current trail size for backtracking
-    uint32_t trail_before = s->trail_size;
-
-    // Try to remove each literal
-    bool strengthened = false;
-    uint32_t new_size = 0;
-    Lit new_lits[size];
-
-    for (uint32_t i = 0; i < size; i++) {
-        // Assume all OTHER literals are false
-        for (uint32_t j = 0; j < size; j++) {
-            if (i == j) continue;
-
-            Lit lit = lits[j];
-            Var v = var(lit);
-
-            // If already assigned, skip
-            if (s->vars[v].value != UNDEF) {
-                if (s->vars[v].value == (sign(lit) ? FALSE : TRUE)) {
-                    // Literal is true - clause is satisfied, done
-                    // Backtrack assumptions
-                    while (s->trail_size > trail_before) {
-                        s->trail_size--;
-                        Lit trail_lit = s->trail[s->trail_size].lit;
-                        s->vars[var(trail_lit)].value = UNDEF;
-                    }
-                    return false;
-                }
-                continue;
-            }
-
-            // Assign the negation (assume this literal is false)
-            s->vars[v].value = sign(lit) ? TRUE : FALSE;
-            s->vars[v].level = 0;
-            s->vars[v].reason = INVALID_CLAUSE;
-            s->vars[v].trail_pos = s->trail_size;
-
-            s->trail[s->trail_size].lit = neg(lit);
-            s->trail[s->trail_size].level = 0;
-            s->trail_size++;
-        }
-
-        // Now propagate with all other literals false
-        CRef conflict = solver_propagate(s);
-
-        if (conflict != INVALID_CLAUSE) {
-            // Conflict! This means lits[i] is implied by the other literals
-            // So lits[i] is redundant - don't include it
-            strengthened = true;
-        } else {
-            // Check if lits[i] was propagated to false
-            Var v = var(lits[i]);
-            if (s->vars[v].value == (sign(lits[i]) ? TRUE : FALSE)) {
-                // Literal propagated to false - it's redundant!
-                strengthened = true;
+bool solver_simplify(Solver *s) {
+    if (s->decision_level || !s->opts.inprocess || !s->opts.preprocess_budget ||
+        s->stats.conflicts < s->last_vivify + s->opts.inprocess_interval) return true;
+    s->last_vivify = s->stats.conflicts;
+    s->work_limit = s->work + MIN(s->opts.preprocess_budget, UINT64_MAX-s->work);
+    uint32_t count = MIN(s->num_learnts, 100u);
+    for (uint32_t k = 0; k < count && !solver_budget_exhausted(s); ++k) {
+        uint32_t at = s->vivify_cursor++ % s->num_learnts;
+        CRef cr = s->learnts[at];
+        if (clause_deleted(s->arena, cr) || clause_locked(s, cr)) continue;
+        uint32_t n = CLAUSE_SIZE(s->arena, cr);
+        if (n <= 2 || n > 64) continue;
+        Lit *candidate = malloc(n * sizeof *candidate);
+        if (!candidate) continue;
+        memcpy(candidate, CLAUSE_LITS(s->arena, cr), n * sizeof *candidate);
+        uint32_t old_n = n;
+        for (uint32_t i = 0; i < n && !solver_budget_exhausted(s);) {
+            Lit removed = candidate[i];
+            memmove(candidate+i, candidate+i+1, (n-i-1)*sizeof *candidate);
+            if (rup_candidate(s, candidate, n-1)) {
+                --n; proof_add_clause(s, candidate, n);
             } else {
-                // Literal is not redundant, keep it
-                new_lits[new_size++] = lits[i];
+                memmove(candidate+i+1, candidate+i, (n-i-1)*sizeof *candidate);
+                candidate[i++] = removed;
             }
         }
-
-        // Backtrack all assumptions
-        while (s->trail_size > trail_before) {
-            s->trail_size--;
-            Lit trail_lit = s->trail[s->trail_size].lit;
-            s->vars[var(trail_lit)].value = UNDEF;
-        }
-        s->qhead = trail_before;
-    }
-
-    // If we strengthened the clause, update it
-    if (strengthened && new_size > 0) {
-        // CRITICAL: Remove old watches BEFORE modifying clause
-        remove_watch_for_clause(s->watches, old_watch0, cref);
-        remove_watch_for_clause(s->watches, old_watch1, cref);
-
-        // Update clause in place
-        for (uint32_t i = 0; i < new_size; i++) {
-            lits[i] = new_lits[i];
-        }
-
-        // Update size
-        CLAUSE_HEADER(s->arena, cref)->size = new_size;
-
-        // Handle based on new clause size
-        if (new_size == 1) {
-            // Became unit - propagate it (no watches needed for units)
-            Lit unit = lits[0];
-            Var v = var(unit);
-            if (s->vars[v].value == UNDEF) {
-                s->vars[v].value = sign(unit) ? FALSE : TRUE;
-                s->vars[v].level = 0;
-                s->vars[v].reason = cref;
-                s->vars[v].trail_pos = s->trail_size;
-
-                s->trail[s->trail_size].lit = unit;
-                s->trail[s->trail_size].level = 0;
-                s->trail_size++;
+        if (n < old_n && !s->error) {
+            uint32_t lbd = clause_lbd(s->arena, cr);
+            CRef fresh = arena_alloc(s->arena, candidate, n, true);
+            if (fresh == INVALID_CLAUSE) s->error = true;
+            else {
+                solver_delete_clause(s, cr); s->learnts[at] = fresh;
+                set_clause_lbd(s->arena, fresh, MIN(lbd,n));
+                if (!n) s->result = FALSE;
+                else if (n == 1) {
+                    lbool val = lxor(s->values[var(candidate[0])], sign(candidate[0]));
+                    if (val == FALSE) s->result = FALSE;
+                    else if (val == UNDEF) { push_trail(s, candidate[0]); s->vars[var(candidate[0])].reason = fresh; }
+                } else {
+                    watch_add(s->watches, candidate[0], fresh, candidate[1]);
+                    watch_add(s->watches, candidate[1], fresh, candidate[0]);
+                    /* Existing root assignments must be replayed for new watches. */
+                    s->qhead = 0;
+                }
+                s->stats.minimized_literals += old_n-n;
             }
-        } else {
-            // Add new watches for lits[0] and lits[1]
-            // Blocker is the other watched literal
-            watch_add(s->watches, lits[0], cref, lits[1]);
-            watch_add(s->watches, lits[1], cref, lits[0]);
         }
-
-        return true;
-    } else if (strengthened && new_size == 0) {
-        // Clause became empty - UNSAT!
-        // Remove old watches
-        remove_watch_for_clause(s->watches, old_watch0, cref);
-        remove_watch_for_clause(s->watches, old_watch1, cref);
-        s->result = FALSE;
-        return true;
+        free(candidate);
+        if (s->result == FALSE || s->error) break;
+        /* Complete root propagation before the next temporary RUP check. */
+        s->work_limit = 0;
+        if (solver_propagate(s) != INVALID_CLAUSE) { s->result = FALSE; break; }
+        s->work_limit = s->work + MIN(s->opts.preprocess_budget, UINT64_MAX-s->work) / (count ? count : 1);
     }
-
-    return false;
+    s->work_limit = 0;
+    return s->result != FALSE;
 }
 
-/*********************************************************************
- * Blocked Clause Elimination (BCE)
- *********************************************************************/
-
-// Check if resolving clauses c1 and c2 on variable v results in a tautology
-// A resolvent is a tautology if it contains both a literal and its negation
-static bool resolvent_is_tautology(Solver* s, CRef c1, CRef c2, Var v) {
-    // Safety check: validate clause references before accessing
-    if (c1 == INVALID_CLAUSE || c1 >= s->arena->size ||
-        c2 == INVALID_CLAUSE || c2 >= s->arena->size) {
-        return false;
-    }
-
-    // Safety check: ensure clauses are not deleted
-    if (clause_deleted(s->arena, c1) || clause_deleted(s->arena, c2)) {
-        return false;
-    }
-
-    // Get clause sizes and validate they're reasonable
-    uint32_t size1 = CLAUSE_SIZE(s->arena, c1);
-    uint32_t size2 = CLAUSE_SIZE(s->arena, c2);
-
-    // Safety check: clause sizes must be reasonable (not corrupted)
-    // Maximum clause size should not exceed num_vars
-    if (size1 == 0 || size1 > s->num_vars || size2 == 0 || size2 > s->num_vars) {
-        return false;
-    }
-
-    // Clear seen array
-    for (Var i = 1; i <= s->num_vars; i++) {
-        s->seen[i] = 0;
-    }
-
-    // Add all literals from c1 except v and ¬v
-    Lit* lits1 = CLAUSE_LITS(s->arena, c1);
-    for (uint32_t i = 0; i < size1; i++) {
-        if (var(lits1[i]) != v) {
-            Var lit_var = var(lits1[i]);
-
-            // Safety check: validate literal variable is in bounds
-            if (lit_var < 1 || lit_var > s->num_vars) {
-                // Invalid literal - clause is corrupted, can't check tautology
-                for (Var j = 1; j <= s->num_vars; j++) {
-                    s->seen[j] = 0;
-                }
-                return false;
-            }
-
-            bool is_negated = sign(lits1[i]);
-
-            // Check if we've seen the opposite polarity
-            if (s->seen[lit_var] == (is_negated ? 1 : 2)) {
-                // Tautology! We have both x and ¬x
-                // Clear seen array before returning
-                for (Var j = 1; j <= s->num_vars; j++) {
-                    s->seen[j] = 0;
-                }
-                return true;
-            }
-            // Mark this polarity as seen (1 = positive, 2 = negative)
-            s->seen[lit_var] = is_negated ? 2 : 1;
-        }
-    }
-
-    // Add all literals from c2 except v and ¬v
-    Lit* lits2 = CLAUSE_LITS(s->arena, c2);
-    for (uint32_t i = 0; i < size2; i++) {
-        if (var(lits2[i]) != v) {
-            Var lit_var = var(lits2[i]);
-
-            // Safety check: validate literal variable is in bounds
-            if (lit_var < 1 || lit_var > s->num_vars) {
-                // Invalid literal - clause is corrupted, can't check tautology
-                for (Var j = 1; j <= s->num_vars; j++) {
-                    s->seen[j] = 0;
-                }
-                return false;
-            }
-
-            bool is_negated = sign(lits2[i]);
-
-            // Check if we've seen the opposite polarity
-            if (s->seen[lit_var] == (is_negated ? 1 : 2)) {
-                // Tautology! We have both x and ¬x
-                // Clear seen array before returning
-                for (Var j = 1; j <= s->num_vars; j++) {
-                    s->seen[j] = 0;
-                }
-                return true;
-            }
-            // Mark this polarity as seen (1 = positive, 2 = negative)
-            s->seen[lit_var] = is_negated ? 2 : 1;
-        }
-    }
-
-    // Clear seen array
-    for (Var i = 1; i <= s->num_vars; i++) {
-        s->seen[i] = 0;
-    }
-
-    return false;
-}
-
-// Check if clause c is blocked on literal lit
-// A clause is blocked on a literal L if for every clause D containing ¬L,
-// the resolvent of C and D on var(L) is a tautology
-static bool clause_is_blocked(Solver* s, CRef cref, Lit blocking_lit) {
-    Var v = var(blocking_lit);
-    Lit negated = neg(blocking_lit);
-
-    // Get all clauses containing ¬blocking_lit by checking watch lists
-    WatchList* wl = watch_list(s->watches, negated);
-
-    // Safety check: watch list might not be initialized
-    if (!wl || !wl->watches) {
-        return false;
-    }
-
-    for (uint32_t i = 0; i < wl->size; i++) {
-        CRef other_cref = wl->watches[i].cref;
-
-        // Safety check: validate clause reference
-        if (other_cref == INVALID_CLAUSE || other_cref >= s->arena->size) {
-            continue;
-        }
-
-        // Skip deleted clauses
-        if (clause_deleted(s->arena, other_cref)) {
-            continue;
-        }
-
-        // Skip the same clause
-        if (other_cref == cref) {
-            continue;
-        }
-
-        // Additional validation: check clause size is reasonable
-        uint32_t other_size = CLAUSE_SIZE(s->arena, other_cref);
-        if (other_size == 0 || other_size > s->num_vars) {
-            continue;  // Skip corrupted clauses
-        }
-
-        // Check if resolvent is a tautology
-        if (!resolvent_is_tautology(s, cref, other_cref, v)) {
-            // Found a resolvent that is NOT a tautology
-            // This literal is not blocking
-            return false;
-        }
-    }
-
-    // All resolvents are tautologies (or no clauses with ¬L exist)
-    // This clause is blocked on blocking_lit
-    return true;
-}
-
-// Blocked Clause Elimination preprocessing
-// Removes clauses that are blocked on some literal
-// Returns number of clauses eliminated
-static uint32_t solver_eliminate_blocked_clauses(Solver* s) {
-    if (!s->opts.bce) {
-        return 0;
-    }
-
+static uint32_t solver_eliminate_blocked_clauses(Solver *s) {
+    elim_build_occs(s);
     uint32_t eliminated = 0;
-
-    // Only eliminate from original clauses (not learned clauses)
-    for (uint32_t i = 0; i < s->num_original; i++) {
-        // Check if progress stats requested via signal (BCE can be slow)
-        if (print_stats_requested) {
-            print_stats_requested = 0;
-            fprintf(stderr, "c [BCE] Processing clause %u / %u (%.1f%% complete)\n",
-                    i, s->num_original, (100.0 * i) / s->num_original);
-            fflush(stderr);
-        }
-
-        CRef cref = s->clauses[i];
-
-        // Skip deleted clauses - validate bounds before accessing
-        if (cref == INVALID_CLAUSE || cref >= s->arena->size) {
-            continue;
-        }
-
-        if (clause_deleted(s->arena, cref)) {
-            continue;
-        }
-
-        // Skip learned clauses (shouldn't happen in original clauses, but be safe)
-        if (clause_learned(s->arena, cref)) {
-            continue;
-        }
-
-        uint32_t size = CLAUSE_SIZE(s->arena, cref);
-        Lit* lits = CLAUSE_LITS(s->arena, cref);
-
-        // Try each literal as a blocking literal
-        bool blocked = false;
-        for (uint32_t j = 0; j < size && !blocked; j++) {
-            Lit lit = lits[j];
-
-            if (clause_is_blocked(s, cref, lit)) {
-                // This clause is blocked on lit - eliminate it!
-                // Note: We just mark it as INVALID instead of calling arena_delete()
-                // to avoid corrupting watch lists that still point to this clause.
-                // The clause memory remains allocated but won't be used in search.
-                s->clauses[i] = INVALID_CLAUSE;
-                eliminated++;
-                blocked = true;
-
-                if (s->opts.verbose) {
-                    printf("c [BCE] Eliminated clause blocked on literal %d%d\n",
-                           sign(lit) ? -((int)var(lit)) : (int)var(lit), sign(lit));
-                }
+    if (!s->elim || !s->elim->occs_complete) return 0;
+    for (uint32_t i = 0; i < s->num_clauses && !solver_budget_exhausted(s); ++i) {
+        CRef cr = s->clauses[i];
+        if (clause_deleted(s->arena, cr) || clause_locked(s, cr)) continue;
+        uint32_t size = CLAUSE_SIZE(s->arena, cr);
+        Lit *lits = CLAUSE_LITS(s->arena, cr);
+        if (size < 2) continue;
+        for (uint32_t j = 0; j < size && !solver_budget_exhausted(s); ++j) {
+            Lit pivot = lits[j];
+            if (s->values[var(pivot)] != UNDEF) continue;
+            OccList *o = elim_get_occs(s, neg(pivot));
+            bool blocked = true;
+            for (uint32_t k = 0; k < o->size; ++k) {
+                CRef other = o->clauses[k];
+                if (clause_deleted(s->arena, other)) continue;
+                uint32_t n = CLAUSE_SIZE(s->arena, other);
+                s->work += (uint64_t)size*n;
+                if (solver_budget_exhausted(s) ||
+                    !elim_is_tautology(lits,size,CLAUSE_LITS(s->arena,other),n,var(pivot))) { blocked = false; break; }
+            }
+            if (blocked) {
+                Lit *saved = malloc((size+1)*sizeof *saved);
+                if (!saved) { s->error = true; return eliminated; }
+                memcpy(saved,lits,size*sizeof *saved); saved[size]=0;
+                bool ok = elim_save(s,var(pivot),saved,size+1); free(saved);
+                if (!ok) return eliminated;
+                solver_delete_clause(s,cr); eliminated++; break;
             }
         }
     }
-
-    if (eliminated > 0 && s->opts.verbose) {
-        printf("c [BCE] Eliminated %u blocked clauses\n", eliminated);
-    }
-
     return eliminated;
 }
 
-/*********************************************************************
- * Failed Literal Probing
- *********************************************************************/
-
-// Try assigning a literal and propagate. Returns:
-//  - TRUE if propagation succeeds (no conflict)
-//  - FALSE if conflict found (literal's negation is implied)
-static bool probe_literal(Solver* s, Lit lit) {
-    ASSERT(s->decision_level == 0);
-
-    // Make temporary assignment at level 1
-    s->decision_level = 1;
-    s->trail_lims[1] = s->trail_size;
-
-    Var v = var(lit);
-    s->vars[v].value = sign(lit) ? FALSE : TRUE;
-    s->vars[v].level = 1;
-    s->vars[v].reason = INVALID_CLAUSE;
-    s->vars[v].trail_pos = s->trail_size;
-
-    s->trail[s->trail_size].lit = lit;
-    s->trail[s->trail_size].level = 1;
-    s->trail_size++;
-
-    // Propagate
-    CRef conflict = solver_propagate(s);
-
-    // Backtrack to level 0
-    solver_backtrack(s, 0);
-
-    return (conflict == INVALID_CLAUSE);
-}
-
-// Perform failed literal probing at decision level 0
-// Returns the number of unit clauses discovered, or -1 if UNSAT detected
-static int failed_literal_probing(Solver* s) {
-    if (s->decision_level > 0) return 0;
-
-    int units_found = 0;
-    bool made_progress = true;
-
-    // Repeat until no more units found (fixed point)
-    while (made_progress) {
-        made_progress = false;
-
-        for (Var v = 1; v <= s->num_vars; v++) {
-            // Skip assigned variables
-            if (s->vars[v].value != UNDEF) continue;
-
-            Lit pos = mkLit(v, false);  // v = true
-            Lit neg = mkLit(v, true);   // v = false
-
-            bool pos_ok = probe_literal(s, pos);
-            bool neg_ok = probe_literal(s, neg);
-
-            if (!pos_ok && !neg_ok) {
-                // Both polarities lead to conflict = UNSAT
-                return -1;
-            } else if (!pos_ok) {
-                // Positive leads to conflict, so v must be false
-                s->vars[v].value = FALSE;
-                s->vars[v].level = 0;
-                s->vars[v].reason = INVALID_CLAUSE;
-                s->vars[v].trail_pos = s->trail_size;
-
-                s->trail[s->trail_size].lit = neg;
-                s->trail[s->trail_size].level = 0;
-                s->trail_size++;
-
-                units_found++;
-                made_progress = true;
-
-                // Propagate the new unit
-                CRef conflict = solver_propagate(s);
-                if (conflict != INVALID_CLAUSE) {
-                    return -1;  // UNSAT
-                }
-            } else if (!neg_ok) {
-                // Negative leads to conflict, so v must be true
-                s->vars[v].value = TRUE;
-                s->vars[v].level = 0;
-                s->vars[v].reason = INVALID_CLAUSE;
-                s->vars[v].trail_pos = s->trail_size;
-
-                s->trail[s->trail_size].lit = pos;
-                s->trail[s->trail_size].level = 0;
-                s->trail_size++;
-
-                units_found++;
-                made_progress = true;
-
-                // Propagate the new unit
-                CRef conflict = solver_propagate(s);
-                if (conflict != INVALID_CLAUSE) {
-                    return -1;  // UNSAT
-                }
+static int failed_literal_probing(Solver *s) {
+    int found = 0;
+    for (Var v = 1; v <= s->num_vars && !solver_budget_exhausted(s); ++v) {
+        if (s->values[v] != UNDEF || elim_is_eliminated(s, v)) continue;
+        for (unsigned polarity = 0; polarity < 2; ++polarity) {
+            if (solver_budget_exhausted(s)) break;
+            Lit implied = mkLit(v, polarity != 0);
+            if (rup_candidate(s, &implied, 1)) {
+                proof_add_clause(s, &implied, 1);
+                push_trail(s, implied); found++;
+                /* Root propagation is mandatory even after the probing budget. */
+                uint64_t budget = s->work_limit; s->work_limit = 0;
+                CRef conflict = solver_propagate(s); s->work_limit = budget;
+                if (conflict != INVALID_CLAUSE) return -1;
+                break;
             }
         }
     }
-
-    return units_found;
-}
-
-/*********************************************************************
- * Simplification
- *********************************************************************/
-
-bool solver_simplify(Solver* s) {
-    // Can only simplify at level 0
-    if (s->decision_level > 0) return true;
-
-    // Vivification: strengthen learned clauses by removing redundant literals
-    // Enable with: --inprocess flag
-    static uint64_t last_vivify = 0;
-    if (s->opts.inprocess && s->stats.conflicts >= last_vivify + s->opts.inprocess_interval) {
-        last_vivify = s->stats.conflicts;
-
-        uint32_t vivified = 0;
-        // Only vivify a limited number of clauses per round
-        uint32_t max_vivify = s->num_learnts < 100 ? s->num_learnts : 100;
-        for (uint32_t i = 0; i < max_vivify; i++) {
-            CRef cref = s->learnts[i];
-            if (cref == INVALID_CLAUSE) continue;
-            if (clause_deleted(s->arena, cref)) continue;
-
-            if (vivify_clause(s, cref)) {
-                vivified++;
-            }
-
-            // Check if UNSAT was detected during vivification
-            if (s->result == FALSE) {
-                return false;
-            }
-        }
-
-        if (vivified > 0 && IS_VERBOSE(s)) {
-            printf("c Vivified %u clauses at conflict %llu\n", vivified, s->stats.conflicts);
-        }
-    }
-
-    return true;
+    return found;
 }
 
 /*********************************************************************
  * Main Solve Function
  *********************************************************************/
 
-lbool solver_solve(Solver* s) {
-    return solver_solve_with_assumptions(s, NULL, 0);
+static bool solver_rebuild(Solver *s) {
+    /* Restore input after destructive preprocessing or an assumption solve.
+       This deliberately sacrifices learned-clause reuse for a simple, safe API. */
+    SolverOpts opts = s->opts;
+    const char *path = opts.proof_path;
+    opts.proof_path = NULL;
+    Solver *fresh = solver_new_with_opts(&opts);
+    if (!fresh) { s->error = true; return false; }
+    fresh->opts.proof_path = path;
+    while (fresh->num_vars < s->num_vars) if (!solver_new_var(fresh)) { solver_free(fresh); s->error=true; return false; }
+    size_t start = 0;
+    for (size_t i = 0; i < s->input_size; ++i) if (!s->input[i]) {
+        solver_add_clause(fresh, s->input+start, (uint32_t)(i-start)); start=i+1;
+    }
+    if (fresh->error) { solver_free(fresh); s->error=true; return false; }
+    if (s->proof_file) { fclose(s->proof_file); s->proof_file=NULL; }
+    if (path) {
+        fresh->proof_file=fopen(path, opts.binary_proof ? "wb" : "w");
+        if (!fresh->proof_file) { solver_free(fresh); s->error=true; return false; }
+    }
+    Solver old = *s; *s = *fresh; *fresh = old; solver_free(fresh);
+    return true;
 }
 
-lbool solver_solve_with_assumptions(Solver* s, const Lit* assumps, uint32_t n_assumps) {
-    // Install signal handlers for progress monitoring
-    install_signal_handlers();
-
-    // Check if already solved
-    if (s->result != UNDEF) {
-        return s->result;
+bool solver_check_model(const Solver *s) {
+    bool satisfied = false;
+    for (size_t i=0;i<s->input_size;++i) {
+        Lit l=s->input[i];
+        if (!l) { if (!satisfied) return false; satisfied=false; }
+        else if (lxor(s->values[var(l)], sign(l)) == TRUE) satisfied=true;
     }
+    return true;
+}
 
-    // Preprocessing: Blocked Clause Elimination
-    if (s->opts.bce) {
-        uint32_t blocked = solver_eliminate_blocked_clauses(s);
-        s->stats.blocked_clauses = blocked;
+static lbool solve_internal(Solver *s, const Lit *assumps, uint32_t n_assumps) {
+    if (s->result == FALSE) return FALSE;
+    if (solver_propagate(s) != INVALID_CLAUSE) return FALSE;
+    if (s->error || s->interrupted) return UNDEF;
+    s->work_limit = s->work + MIN(s->opts.preprocess_budget, UINT64_MAX-s->work);
+    if (s->opts.preprocess_budget && s->opts.probing && failed_literal_probing(s) < 0) { s->work_limit=0; return FALSE; }
+    if (!n_assumps && s->opts.equiv && s->opts.equiv_budget) {
+        uint64_t remaining = s->work_limit > s->work ? s->work_limit-s->work : 0;
+        s->work_limit = s->work + MIN(s->opts.equiv_budget, UINT64_MAX-s->work);
+        solver_substitute_equivalences(s);
+        s->work_limit = 0;
+        if (s->error || s->interrupted) return UNDEF;
+        if (s->result == FALSE || solver_propagate(s) != INVALID_CLAUSE) return FALSE;
+        s->work_limit = s->work + MIN(remaining, UINT64_MAX-s->work);
     }
-
-    // Preprocessing: Failed Literal Probing
-    if (s->opts.probing) {
-        int probing_result = failed_literal_probing(s);
-        if (probing_result < 0) {
-            // UNSAT detected during probing
-            s->result = FALSE;
-            return FALSE;
-        }
-        if (probing_result > 0 && !s->opts.quiet) {
-            printf("c [Probing] Found %d implied units\n", probing_result);
-        }
-    }
-
-    // Preprocessing: Bounded Variable Elimination (BVE)
-    if (s->opts.elim) {
-        uint32_t eliminated = elim_preprocess(s);
-        if (s->result == FALSE) {
-            // UNSAT detected during BVE
-            return FALSE;
-        }
-        if (eliminated > 0 && !s->opts.quiet) {
-            printf("c [BVE] Eliminated %u variables\n", eliminated);
-        }
-    }
-
-    // Add assumptions
-    for (uint32_t i = 0; i < n_assumps; i++) {
-        Lit a = assumps[i];
-        Var v = var(a);
-
-        if (s->vars[v].value == UNDEF) {
-            s->decision_level++;
-            s->trail_lims[s->decision_level] = s->trail_size;
-
-            s->vars[v].value = sign(a) ? FALSE : TRUE;
-            s->vars[v].level = s->decision_level;
-            s->vars[v].reason = INVALID_CLAUSE;
-            s->vars[v].trail_pos = s->trail_size;
-
-            s->trail[s->trail_size].lit = a;
-            s->trail[s->trail_size].level = s->decision_level;
-            s->trail_size++;
-        } else if (s->vars[v].value == (sign(a) ? TRUE : FALSE)) {
-            // Conflicting assumption
-            s->result = FALSE;
-            return FALSE;
-        }
-    }
-
-    // Initial unit propagation at level 0
-    #ifdef DEBUG
-    if (IS_DEBUG(s)) {
-        printf("[SOLVE] Starting initial propagation...\n");
-    }
-    #endif
-    CRef initial_conflict = solver_propagate(s);
-    if (initial_conflict != INVALID_CLAUSE) {
-        // Conflict at level 0 = UNSAT
-        #ifdef DEBUG
-        if (IS_DEBUG(s)) {
-            printf("[SOLVE] Initial conflict at level 0 - UNSAT\n");
-        }
-        #endif
-        s->result = FALSE;
-        return FALSE;
-    }
-    #ifdef DEBUG
-    if (IS_DEBUG(s)) {
-        printf("[SOLVE] Initial propagation complete, entering main loop\n");
-    }
-    #endif
-
-    // Main solve loop
-    // Allocate learnt clause buffer - size based on actual number of variables
-    Lit* learnt_clause = (Lit*)malloc((s->num_vars + 1) * sizeof(Lit));
-    if (!learnt_clause) {
-        s->result = UNDEF;
-        return UNDEF;
-    }
-
-    #ifdef DEBUG
-    uint64_t loop_count = 0;
-    #endif
-
+    if (s->opts.preprocess_budget && !n_assumps && s->opts.bce && !solver_budget_exhausted(s))
+        s->stats.blocked_clauses = solver_eliminate_blocked_clauses(s);
+    if (s->opts.preprocess_budget && !n_assumps && s->opts.elim && !solver_budget_exhausted(s)) elim_preprocess(s);
+    s->work_limit = 0;
+    if (s->error || s->interrupted) return UNDEF;
+    if (s->result == FALSE) return FALSE;
+    Lit *learnt = malloc((s->num_vars+1)*sizeof *learnt);
+    if (!learnt) { s->error=true; return UNDEF; }
+    lbool result=UNDEF;
     for (;;) {
-        // Check if progress stats requested via signal
-        if (print_stats_requested) {
-            print_stats_requested = 0;  // Clear flag
-            print_progress_stats(s);
-        }
-
-        #ifdef DEBUG
-        loop_count++;
-        if (loop_count % 10000 == 0 && IS_DEBUG(s)) {
-            printf("[LOOP] Iteration: %llu, Trail: %u, Level: %u\n",
-                   loop_count, s->trail_size, s->decision_level);
-        }
-        #endif
-
-        CRef conflict = solver_propagate(s);
-
+        if (print_stats_requested) { print_stats_requested=0; print_progress_stats(s); }
+        if (solver_budget_exhausted(s)) break;
+        CRef conflict=solver_propagate(s);
+        if (s->error || s->interrupted) break;
         if (conflict != INVALID_CLAUSE) {
-            // Conflict!
-            s->stats.conflicts++;
-            s->restart.conflicts_since++;
-
-            // Adaptive random phase: detect stuck states
-            // If many conflicts at low decision levels, we're likely stuck in a local minimum
-            // Increase random phase probability to escape
-            if (s->opts.random_phase && s->decision_level < 10) {
-                s->restart.stuck_conflicts++;
-                // After 100 consecutive low-level conflicts, boost randomness
-                if (s->restart.stuck_conflicts > 100) {
-                    // Temporarily increase random phase probability
-                    // This helps escape local minima
-                    if (s->opts.random_phase_prob < 0.5) {
-                        // Gradually increase random phase when stuck
-                        // (will be reset on restart)
-                        s->opts.random_phase_prob = 0.2;  // Boost to 20%
-                    }
-                }
-            } else {
-                s->restart.stuck_conflicts = 0;  // Reset if we reach higher levels
+            s->stats.conflicts++; s->restart.conflicts_since++;
+            if (!s->decision_level) { result=FALSE; break; }
+            uint32_t n; Level backtrack;
+            solver_analyze(s, conflict, learnt, &n, &backtrack);
+            s->stats.minimized_literals += solver_minimize_clause(s,learnt,&n);
+            uint32_t lbd=calc_lbd(s,learnt,n);
+            record_lbd(s,lbd);
+            /* Put the highest remaining decision level in watch position 1. */
+            backtrack=0;
+            for (uint32_t i=1;i<n;++i) if (s->vars[var(learnt[i])].level > backtrack) {
+                backtrack=s->vars[var(learnt[i])].level;
+                Lit tmp=learnt[1];learnt[1]=learnt[i];learnt[i]=tmp;
             }
-
-            // Progress output every 1000 conflicts
-            if (s->stats.conflicts % 1000 == 0 && IS_VERBOSE(s)) {
-                fprintf(stderr, "c [Progress] Conflicts: %llu, Decisions: %llu, Propagations: %llu, Level: %u\n",
-                        (unsigned long long)s->stats.conflicts,
-                        (unsigned long long)s->stats.decisions,
-                        (unsigned long long)s->stats.propagations,
-                        s->decision_level);
-                fprintf(stderr, "c [Progress] Learned: %llu, Restarts: %llu, Reductions: %llu\n",
-                        (unsigned long long)s->stats.learned_clauses,
-                        (unsigned long long)s->stats.restarts,
-                        (unsigned long long)s->stats.reduces);
+            solver_backtrack(s,backtrack);
+            proof_add_clause(s,learnt,n);
+            CRef reason=INVALID_CLAUSE;
+            if (n>1) {
+                if (s->num_learnts == s->learnts_size) {
+                    uint32_t cap=s->learnts_size ? s->learnts_size*2 : 64;
+                    CRef *p=realloc(s->learnts,cap*sizeof *p);
+                    if (!p) { s->error=true;break; }
+                    s->learnts=p;s->learnts_size=cap;
+                }
+                reason=arena_alloc(s->arena,learnt,n,true);
+                if (reason==INVALID_CLAUSE) { s->error=true;break; }
+                set_clause_lbd(s->arena,reason,lbd);
+                s->learnts[s->num_learnts++]=reason;
+                if (s->opts.subsumption) solver_on_the_fly_subsumption(s,learnt,n);
+                watch_add(s->watches,learnt[0],reason,learnt[1]);
+                watch_add(s->watches,learnt[1],reason,learnt[0]);
             }
-
-            if (s->decision_level == 0) {
-                // Conflict at level 0 = UNSAT
-                s->result = FALSE;
-                free(learnt_clause);
-                return FALSE;
-            }
-
-            // Learn clause
-            uint32_t learnt_size;
-            Level backtrack_level;
-            solver_analyze(s, conflict, learnt_clause, &learnt_size, &backtrack_level);
-
-            // Minimize the learned clause using MiniSat-style recursive analysis
-            // This must happen BEFORE backtracking while all reason clauses are valid
-            uint32_t minimized = solver_minimize_clause(s, learnt_clause, &learnt_size);
-            s->stats.minimized_literals += minimized;
-
-            // Backtrack (chronological - step down one level at a time)
-            // The chronological backtracking function may return a different level
-            // than requested if the learned clause becomes unit at an earlier level
-            Level actual_backtrack_level = solver_backtrack_chronological(s, learnt_clause, learnt_size, backtrack_level);
-
-            // Update backtrack_level to reflect where we actually ended up
-            backtrack_level = actual_backtrack_level;
-
-            // Add learned clause
-            if (learnt_size == 1) {
-                // Unit clause - must backtrack ALL THE WAY to level 0
-                // The chronological backtracking may have stopped at a higher level
-                // but unit clauses are permanent at level 0
-                if (s->decision_level > 0) {
-                    solver_backtrack(s, 0);
-                }
-
-                // Log unit clause to DRAT proof file
-                if (s->proof_file) {
-                    proof_add_clause(s, learnt_clause, 1);
-                }
-
-                Lit unit = learnt_clause[0];
-                Var v = var(unit);
-                ASSERT(s->vars[v].value == UNDEF);
-
-                s->vars[v].value = sign(unit) ? FALSE : TRUE;
-                s->vars[v].level = 0;
-                s->vars[v].reason = INVALID_CLAUSE;
-                s->vars[v].trail_pos = s->trail_size;
-
-                s->trail[s->trail_size].lit = unit;
-                s->trail[s->trail_size].level = 0;
-                s->trail_size++;
-
-                // Update Glucose LBD tracking for unit clauses (LBD = 1)
-                if (s->opts.glucose_restart) {
-                    uint32_t lbd = 1;  // Unit clauses have LBD = 1 (best possible)
-                    if (s->opts.glucose_use_ema) {
-                        // EMA mode
-                        if (s->stats.conflicts > 0) {
-                            double alpha_fast = s->opts.glucose_fast_alpha;
-                            double alpha_slow = s->opts.glucose_slow_alpha;
-                            s->restart.fast_ma = alpha_fast * s->restart.fast_ma + (1.0 - alpha_fast) * lbd;
-                            s->restart.slow_ma = alpha_slow * s->restart.slow_ma + (1.0 - alpha_slow) * lbd;
-                        } else {
-                            s->restart.fast_ma = 1;
-                            s->restart.slow_ma = 1;
-                        }
-                    } else {
-                        // Sliding window mode
-                        s->restart.lbd_sum += lbd;
-                        s->restart.lbd_count++;
-                        if (s->restart.recent_lbds_count < s->opts.glucose_window_size) {
-                            s->restart.recent_lbds[s->restart.recent_lbds_count++] = lbd;
-                        } else {
-                            s->restart.recent_lbds[s->restart.recent_lbds_head] = lbd;
-                            s->restart.recent_lbds_head = (s->restart.recent_lbds_head + 1) % s->opts.glucose_window_size;
-                        }
-                    }
-                }
-            } else {
-                // Add learned clause
-                CRef learnt_ref = arena_alloc(s->arena, learnt_clause, learnt_size, true);
-
-                if (learnt_ref != INVALID_CLAUSE) {
-                    // Log to DRAT proof file
-                    if (s->proof_file) {
-                        proof_add_clause(s, learnt_clause, learnt_size);
-                    }
-
-                    // Update LBD
-                    uint32_t lbd = calc_lbd(s, learnt_clause, learnt_size);
-                    set_clause_lbd(s->arena, learnt_ref, lbd);
-
-                    if (lbd > s->stats.max_lbd) {
-                        s->stats.max_lbd = lbd;
-                    }
-                    if (lbd <= s->opts.glue_lbd) {
-                        s->stats.glue_clauses++;
-                    }
-
-                    // Update LBD tracking for Glucose adaptive restarts
-                    if (s->opts.glucose_restart) {
-                        if (s->opts.glucose_use_ema) {
-                            // EMA mode: Update exponential moving averages
-                            if (s->stats.conflicts > 0) {
-                                double alpha_fast = s->opts.glucose_fast_alpha;
-                                double alpha_slow = s->opts.glucose_slow_alpha;
-                                s->restart.fast_ma = alpha_fast * s->restart.fast_ma + (1.0 - alpha_fast) * lbd;
-                                s->restart.slow_ma = alpha_slow * s->restart.slow_ma + (1.0 - alpha_slow) * lbd;
-                            } else {
-                                s->restart.fast_ma = lbd;
-                                s->restart.slow_ma = lbd;
-                            }
-                        } else {
-                            // Sliding window mode: Add to circular buffer
-                            s->restart.lbd_sum += lbd;
-                            s->restart.lbd_count++;
-
-                            // Add to circular buffer
-                            if (s->restart.recent_lbds_count < s->opts.glucose_window_size) {
-                                // Buffer not full yet
-                                s->restart.recent_lbds[s->restart.recent_lbds_count++] = lbd;
-                            } else {
-                                // Buffer full, replace oldest
-                                s->restart.recent_lbds[s->restart.recent_lbds_head] = lbd;
-                                s->restart.recent_lbds_head = (s->restart.recent_lbds_head + 1) % s->opts.glucose_window_size;
-                            }
-                        }
-                    }
-
-                    // Add to learned clauses
-                    if (s->num_learnts >= s->learnts_size) {
-                        uint32_t new_size = s->learnts_size ? s->learnts_size * 2 : 1024;
-                        CRef* new_learnts = (CRef*)realloc(s->learnts, new_size * sizeof(CRef));
-                        if (new_learnts) {
-                            s->learnts = new_learnts;
-                            s->learnts_size = new_size;
-                        }
-                    }
-                    if (s->num_learnts < s->learnts_size) {
-                        s->learnts[s->num_learnts++] = learnt_ref;
-                    }
-
-                    // On-the-fly backward subsumption
-                    // Check if this learned clause subsumes any existing clauses
-                    if (s->opts.subsumption) {
-                        solver_on_the_fly_subsumption(s, learnt_clause, learnt_size);
-                    }
-
-                    // Add watches
-                    watch_add(s->watches, learnt_clause[0], learnt_ref, learnt_clause[1]);
-                    watch_add(s->watches, learnt_clause[1], learnt_ref, learnt_clause[0]);
-
-                    // Unit propagate the asserting literal
-                    Lit unit = learnt_clause[0];
-                    Var v = var(unit);
-                    ASSERT(s->vars[v].value == UNDEF);
-
-                    s->vars[v].value = sign(unit) ? FALSE : TRUE;
-                    s->vars[v].level = backtrack_level;
-                    s->vars[v].reason = learnt_ref;
-                    s->vars[v].trail_pos = s->trail_size;
-
-                    s->trail[s->trail_size].lit = unit;
-                    s->trail[s->trail_size].level = backtrack_level;
-                    s->trail_size++;
-
-                    s->stats.learned_clauses++;
-                    s->stats.learned_literals += learnt_size;
-                }
-            }
-
-            // Decay activities
+            ASSERT(n && s->values[var(learnt[0])]==UNDEF);
+            push_trail(s,learnt[0]);s->vars[var(learnt[0])].reason=reason;
+            s->stats.learned_clauses++;s->stats.learned_literals+=n;
+            s->stats.max_lbd=MAX(s->stats.max_lbd,lbd);
+            if (lbd<=s->opts.glue_lbd) s->stats.glue_clauses++;
             decay_var_inc(s);
-
-            // Check for restart
-            if (solver_should_restart(s)) {
-                if (IS_VERBOSE(s)) {
-                    fprintf(stderr, "c [Restart #%llu] Conflicts: %llu, Level: %u",
-                            (unsigned long long)s->stats.restarts + 1,
-                            (unsigned long long)s->stats.conflicts,
-                            s->decision_level);
-                    if (s->opts.glucose_restart) {
-                        fprintf(stderr, ", LBD fast_MA: %.2f, slow_MA: %.2f",
-                                s->restart.fast_ma, s->restart.slow_ma);
-                    }
-                    fprintf(stderr, "\n");
-                }
-                solver_backtrack(s, n_assumps);  // Keep assumptions
-                s->stats.restarts++;
-            }
-
-            // Check for rephasing (Kissat-style target phases)
-            if (s->opts.rephase) {
-                s->rephase.conflicts_since++;
-                if (s->rephase.conflicts_since >= s->opts.rephase_interval) {
-                    solver_rephase(s);
-                }
-            }
-
-            // Try local search periodically
-            if (s->opts.local_search) {
-                s->local_search.conflicts_since++;
-                if (s->local_search.conflicts_since >= s->opts.ls_interval) {
-                    // Backtrack to level 0 before local search
-                    solver_backtrack(s, 0);
-                    if (solver_try_local_search(s)) {
-                        // Local search found a solution
-                        s->result = TRUE;
-                        if (s->elim) {
-                            elim_extend_model(s);
-                        }
-                        free(learnt_clause);
-                        return TRUE;
-                    }
-                }
-            }
-
-            // Reduce clause database periodically
-            if (s->stats.conflicts % s->opts.reduce_interval == 0) {
-                solver_reduce_db(s);
-            }
-
-            // Simplify/vivify clauses periodically
-            solver_simplify(s);
-
+            if (s->stats.conflicts % s->opts.reduce_interval==0) solver_reduce_db(s);
         } else {
-            // No conflict
-            if (!solver_decide(s)) {
-                // No more variables to decide = SAT
-                s->result = TRUE;
-
-                // Extend model to include eliminated variables (if BVE was used)
-                if (s->elim) {
-                    elim_extend_model(s);
-                }
-
-                free(learnt_clause);
-                return TRUE;
+            if (solver_should_restart(s)) { solver_backtrack(s,0);s->stats.restarts++; }
+            if (!s->decision_level) {
+                if (!solver_simplify(s)) { result=FALSE;break; }
+                if (s->qhead<s->trail_size) continue;
             }
-
-            // Track best assignment for rephasing (Kissat-style target phases)
+            if (s->opts.rephase && s->stats.conflicts >= s->rephase.conflicts_since+s->opts.rephase_interval) {
+                solver_rephase(s);s->rephase.conflicts_since=s->stats.conflicts;
+            }
+            if (!n_assumps && !s->elim && s->opts.local_search &&
+                s->stats.conflicts >= s->local_search.conflicts_since+s->opts.ls_interval) {
+                solver_backtrack(s,0);
+                bool found=solver_try_local_search(s);
+                s->local_search.conflicts_since=s->stats.conflicts;
+                if (found) { result=TRUE;break; }
+            }
+            bool assumption=false;
+            while (s->decision_level<n_assumps) {
+                Lit a=assumps[s->decision_level];
+                lbool value=lxor(s->values[var(a)],sign(a));
+                if (value==FALSE) { result=FALSE;goto done; }
+                s->decision_level++;s->trail_lims[s->decision_level]=s->trail_size;
+                if (value==UNDEF) { push_trail(s,a);assumption=true;break; }
+            }
+            if (!assumption && !solver_decide(s)) { result=TRUE;break; }
             solver_maybe_save_best_phases(s);
         }
+        if ((s->opts.max_conflicts && s->stats.conflicts>=s->opts.max_conflicts) ||
+            (s->opts.max_decisions && s->stats.decisions>=s->opts.max_decisions)) break;
+    }
+done:
+    free(learnt);
+    return result;
+}
 
-        // Check resource limits
-        if (s->opts.max_conflicts && s->stats.conflicts >= s->opts.max_conflicts) {
-            s->result = UNDEF;
-            free(learnt_clause);
-            return UNDEF;
-        }
-        if (s->opts.max_decisions && s->stats.decisions >= s->opts.max_decisions) {
-            s->result = UNDEF;
-            free(learnt_clause);
-            return UNDEF;
-        }
-        if (s->opts.max_time > 0) {
-            double elapsed = (double)clock() / CLOCKS_PER_SEC - s->stats.start_time;
-            if (elapsed >= s->opts.max_time) {
-                s->result = UNDEF;
-                free(learnt_clause);
-                return UNDEF;
-            }
+lbool solver_solve_with_assumptions(Solver *s, const Lit *assumps, uint32_t n_assumps) {
+    if (!s || (n_assumps && !assumps)) return UNDEF;
+    if (s->has_solved && !solver_rebuild(s)) return UNDEF;
+    for (uint32_t i=0;i<n_assumps;++i)
+        if (!var(assumps[i]) || var(assumps[i])>s->num_vars) return UNDEF;
+    /* Proofs under assumptions need an augmented input or a conditional proof
+       interface. Do not emit an unconditional UNSAT certificate for them. */
+    if (n_assumps && s->proof_file) return UNDEF;
+    if ((uint64_t)n_assumps+s->num_vars>s->var_capacity) {
+        Level *p=realloc(s->trail_lims,((size_t)n_assumps+s->num_vars+2)*sizeof *p);
+        if (!p) { s->error=true;return UNDEF; } s->trail_lims=p;
+    }
+    uint32_t levels=n_assumps+s->num_vars+2;
+    if (levels>s->levels_capacity) {
+        uint8_t *p=calloc(levels,1);
+        if (!p) { s->error=true;return UNDEF; }
+        free(s->level_seen);s->level_seen=p;s->levels_capacity=levels;
+    }
+    s->stats.start_time=(double)clock()/CLOCKS_PER_SEC;
+    s->work_limit=0;s->interrupted=false;
+    s->random_state=s->opts.seed;
+    install_signal_handlers();
+    lbool result=solve_internal(s,assumps,n_assumps);
+    s->has_solved=true;
+    if (result==TRUE) {
+        elim_extend_model(s);
+        if (!solver_check_model(s)) s->error=true;
+        for (uint32_t i=0;i<n_assumps;++i)
+            if (lxor(s->values[var(assumps[i])],sign(assumps[i]))!=TRUE) s->error=true;
+    }
+    if (result==FALSE && n_assumps) {
+        s->conflict_clause=malloc(n_assumps*sizeof *s->conflict_clause);
+        if (!s->conflict_clause) s->error=true;
+        else {
+            s->conflict_size=n_assumps;
+            for (uint32_t i=0;i<n_assumps;++i) s->conflict_clause[i]=neg(assumps[i]);
         }
     }
+    if (result==FALSE && !s->error && !s->interrupted) proof_add_clause(s,NULL,0);
+    if (s->proof_file && (fflush(s->proof_file) || ferror(s->proof_file))) s->error=true;
+    if (s->watches->failed) s->error=true;
+    if (s->error || s->interrupted) result=UNDEF;
+    s->result=result;
+    return result;
+}
+lbool solver_solve(Solver *s) { return solver_solve_with_assumptions(s,NULL,0); }
+
+const Lit *solver_conflict(const Solver *s, uint32_t *size) {
+    if (size) *size=s && s->result==FALSE ? s->conflict_size : 0;
+    return s && s->result==FALSE ? s->conflict_clause : NULL;
 }

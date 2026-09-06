@@ -11,9 +11,6 @@
 #include <string.h>
 #include <assert.h>
 
-// Required for linking (normally defined in main.c)
-bool g_verbose = false;
-
 // Test counter
 static int tests_run = 0;
 static int tests_passed = 0;
@@ -40,7 +37,7 @@ static int tests_passed = 0;
  * Test Cases
  *********************************************************************/
 
-void test_trivial_sat() {
+void test_trivial_sat(void) {
     TEST("trivial_sat.cnf");
 
     Solver* s = solver_new();
@@ -62,7 +59,7 @@ void test_trivial_sat() {
     PASS();
 }
 
-void test_trivial_unsat() {
+void test_trivial_unsat(void) {
     TEST("trivial_unsat.cnf");
 
     Solver* s = solver_new();
@@ -81,7 +78,7 @@ void test_trivial_unsat() {
     PASS();
 }
 
-void test_empty() {
+void test_empty(void) {
     TEST("empty.cnf");
 
     Solver* s = solver_new();
@@ -100,7 +97,7 @@ void test_empty() {
     PASS();
 }
 
-void test_parse_with_comments() {
+void test_parse_with_comments(void) {
     TEST("Parse with comments");
 
     const char* dimacs_str =
@@ -125,7 +122,7 @@ void test_parse_with_comments() {
     PASS();
 }
 
-void test_parse_unit_clauses() {
+void test_parse_unit_clauses(void) {
     TEST("Parse unit clauses");
 
     const char* dimacs_str =
@@ -149,7 +146,7 @@ void test_parse_unit_clauses() {
     PASS();
 }
 
-void test_parse_empty_lines() {
+void test_parse_empty_lines(void) {
     TEST("Parse with empty lines");
 
     const char* dimacs_str =
@@ -175,16 +172,17 @@ void test_parse_empty_lines() {
     PASS();
 }
 
-void test_malformed_input() {
+void test_malformed_input(void) {
     TEST("Malformed input error handling");
 
-    // TODO: Parser is lenient and doesn't strictly validate
-    // This is acceptable - skip for now
-    printf("⏭️  SKIP (parser is lenient)\n");
-    tests_run--;  // Don't count as run
+    Solver* s = solver_new();
+    if (dimacs_parse_string(s, "p cnf 1 1\n1") != DIMACS_ERROR_FORMAT)
+        FAIL("Unterminated clause must be rejected");
+    solver_free(s);
+    PASS();
 }
 
-void test_unit_propagation() {
+void test_unit_propagation(void) {
     TEST("unit_propagation.cnf");
 
     Solver* s = solver_new();
@@ -203,7 +201,7 @@ void test_unit_propagation() {
     PASS();
 }
 
-void test_simple_sat_3() {
+void test_simple_sat_3(void) {
     TEST("simple_sat_3.cnf");
 
     Solver* s = solver_new();
@@ -222,7 +220,7 @@ void test_simple_sat_3() {
     PASS();
 }
 
-void test_simple_unsat_3() {
+void test_simple_unsat_3(void) {
     TEST("simple_unsat_3.cnf");
 
     Solver* s = solver_new();
@@ -241,7 +239,7 @@ void test_simple_unsat_3() {
     PASS();
 }
 
-void test_horn_sat() {
+void test_horn_sat(void) {
     TEST("horn_sat.cnf");
 
     Solver* s = solver_new();
@@ -260,7 +258,7 @@ void test_horn_sat() {
     PASS();
 }
 
-void test_horn_unsat() {
+void test_horn_unsat(void) {
     TEST("horn_unsat.cnf");
 
     Solver* s = solver_new();
@@ -283,7 +281,7 @@ void test_horn_unsat() {
  * Main Test Runner
  *********************************************************************/
 
-int main() {
+int main(void) {
     printf("========================================\n");
     printf("BSAT DIMACS I/O Unit Tests\n");
     printf("========================================\n\n");

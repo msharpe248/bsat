@@ -66,22 +66,14 @@ def solve_with_c(fixture_path):
             if line.startswith('s '):
                 status = line[2:].strip()
                 if status == 'SATISFIABLE':
-                    # Find solution line
+                    solution = {}
                     for sol_line in result.stdout.splitlines():
                         if sol_line.startswith('v '):
-                            # Parse DIMACS solution: "v 1 -2 3 0"
-                            solution_str = sol_line[2:].strip()
-                            literals = [int(x) for x in solution_str.split() if x != '0']
-
-                            # Convert to dict: {x1: True, x2: False, x3: True}
-                            solution = {}
-                            for lit in literals:
-                                var_num = abs(lit)
-                                var_name = f'x{var_num}'
-                                solution[var_name] = (lit > 0)
-
-                            return "SAT", solution
-                    return "SAT", {}  # SAT but no solution found
+                            for token in sol_line[2:].split():
+                                lit = int(token)
+                                if lit:
+                                    solution[f'x{abs(lit)}'] = lit > 0
+                    return "SAT", solution
                 elif status == 'UNSATISFIABLE':
                     return "UNSAT", None
                 else:

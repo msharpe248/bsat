@@ -50,8 +50,8 @@ typedef struct OccList {
 
 typedef struct ElimEntry {
     Var      var;         // The eliminated variable
-    Lit*     clause;      // Copy of one clause containing +var (for reconstruction)
-    uint32_t clause_size; // Size of the saved clause
+    Lit*     clause;      // Zero-delimited copies of removed clauses
+    uint32_t clause_size; // Number of words in the reconstruction record
 } ElimEntry;
 
 /*********************************************************************
@@ -75,6 +75,7 @@ typedef struct ElimState {
     bool*    eliminated;     // eliminated[v] = true if v was eliminated
     uint32_t elim_capacity;  // Capacity of eliminated array
 
+    bool occs_complete;
     // Statistics
     uint64_t vars_eliminated;
     uint64_t clauses_removed;
@@ -89,6 +90,8 @@ typedef struct ElimState {
 /*********************************************************************
  * Initialization and Cleanup
  *********************************************************************/
+
+bool elim_save(struct Solver* s, Var v, const Lit* lits, uint32_t size);
 
 // Initialize elimination state (call after solver has variables)
 void elim_init(struct Solver* s);
@@ -148,10 +151,10 @@ void elim_extend_model(struct Solver* s);
  *********************************************************************/
 
 // Check if a variable has been eliminated
-static inline bool elim_is_eliminated(const struct Solver* s, Var v);
+bool elim_is_eliminated(const struct Solver* s, Var v);
 
 // Get occurrence list for a literal
-static inline OccList* elim_get_occs(struct Solver* s, Lit lit);
+OccList* elim_get_occs(struct Solver* s, Lit lit);
 
 // Print elimination statistics
 void elim_print_stats(const struct Solver* s);

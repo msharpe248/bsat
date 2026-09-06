@@ -35,6 +35,7 @@ typedef struct Arena {
 typedef struct ClauseHeader {
     uint32_t size     : 28;  // Number of literals (max 268M)
     uint32_t flags    : 4;   // Clause flags (learned, deleted, etc.)
+    uint32_t search;         // Circular watch search cursor
     uint32_t lbd;            // Literal Block Distance score
     float    activity;       // Clause activity for deletion
 } ClauseHeader;
@@ -76,10 +77,7 @@ CRef arena_alloc(Arena* arena, const Lit* lits, uint32_t size, bool learned);
 // Mark clause as deleted (doesn't free memory immediately)
 void arena_delete(Arena* arena, CRef cref);
 
-// Garbage collect deleted clauses and compact memory
-// Updates all CRefs in the provided arrays
-void arena_gc(Arena* arena, CRef** watches, uint32_t num_watches,
-              CRef* clauses, uint32_t* num_clauses);
+// Relocation requires all solver references; see solver_collect_garbage().
 
 // Get current memory usage statistics
 typedef struct {

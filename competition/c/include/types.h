@@ -63,6 +63,14 @@ typedef uint32_t CRef;
 // Decision level
 typedef uint32_t Level;
 
+/* Per-instance deterministic generator: no process-global rand() state. */
+static inline uint32_t bsat_random(uint32_t *state) {
+    uint32_t x = *state ? *state : 0x9e3779b9u;
+    x ^= x << 13; x ^= x >> 17; x ^= x << 5;
+    *state = x;
+    return x;
+}
+
 // Truth values
 typedef enum {
     UNDEF = 0,

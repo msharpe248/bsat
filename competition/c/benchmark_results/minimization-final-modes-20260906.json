@@ -1,0 +1,110 @@
+{
+  "purpose": "Confirm final option gate preserves measured algorithms. Counters only; no performance claim. This check overlapped validation workloads. No proof flag in this check; prior models/proofs independently validated.",
+  "binary_sha256": "40ee4eb71e7083fae6f2250160966f64ca8c3ea682a76aaaccf3fd506e32c24b",
+  "checks": [
+    {
+      "family": "scheduling",
+      "mode": "default",
+      "exit_code": 10,
+      "matched_counters": {
+        "Conflicts": "22",
+        "Decisions": "51",
+        "Propagations": "4417",
+        "Learned literals": "196",
+        "Minimized literals": "1",
+        "Literal inspections": "20325"
+      }
+    },
+    {
+      "family": "scheduling",
+      "mode": "iterative",
+      "exit_code": 10,
+      "matched_counters": {
+        "Conflicts": "22",
+        "Decisions": "51",
+        "Propagations": "4417",
+        "Learned literals": "194",
+        "Minimized literals": "3",
+        "Literal inspections": "20305"
+      }
+    },
+    {
+      "family": "hgen",
+      "mode": "default",
+      "exit_code": 0,
+      "matched_counters": {
+        "Conflicts": "30000",
+        "Decisions": "44582",
+        "Propagations": "1633912",
+        "Learned literals": "713548",
+        "Minimized literals": "118442",
+        "Literal inspections": "23589895"
+      }
+    },
+    {
+      "family": "hgen",
+      "mode": "iterative",
+      "exit_code": 0,
+      "matched_counters": {
+        "Conflicts": "30000",
+        "Decisions": "44582",
+        "Propagations": "1633912",
+        "Learned literals": "713548",
+        "Minimized literals": "118442",
+        "Literal inspections": "23589895"
+      }
+    },
+    {
+      "family": "hamiltonian",
+      "mode": "default",
+      "exit_code": 10,
+      "matched_counters": {
+        "Conflicts": "1039",
+        "Decisions": "1739",
+        "Propagations": "77011",
+        "Learned literals": "29012",
+        "Minimized literals": "610",
+        "Literal inspections": "822014"
+      }
+    },
+    {
+      "family": "hamiltonian",
+      "mode": "iterative",
+      "exit_code": 10,
+      "matched_counters": {
+        "Conflicts": "24370",
+        "Decisions": "34537",
+        "Propagations": "1761043",
+        "Learned literals": "515082",
+        "Minimized literals": "152492",
+        "Literal inspections": "40027410"
+      }
+    },
+    {
+      "family": "miter",
+      "mode": "default",
+      "exit_code": 0,
+      "matched_counters": {
+        "Conflicts": "30000",
+        "Decisions": "46006",
+        "Propagations": "16674745",
+        "Learned literals": "2728014",
+        "Minimized literals": "229193",
+        "Literal inspections": "92893061"
+      }
+    },
+    {
+      "family": "miter",
+      "mode": "iterative",
+      "exit_code": 0,
+      "matched_counters": {
+        "Conflicts": "30000",
+        "Decisions": "43922",
+        "Propagations": "14900047",
+        "Learned literals": "1107225",
+        "Minimized literals": "790237",
+        "Literal inspections": "78575269"
+      }
+    }
+  ]
+}

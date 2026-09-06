@@ -1,0 +1,101 @@
+{
+  "selection": "First 12 families by file size after requiring >=1 MB and >=10000 variables, smallest qualifying file per family; selected before measuring candidate performance. Larger follow-up sample, not heldout families.",
+  "instances": [
+    {
+      "path": "/Users/msharpe/python/bsat/dataset/sat_competition2025/belpyramid-puzzle/5831f35622f3e6c666f0cee6cac60e4c.cnf",
+      "family": "belpyramid-puzzle",
+      "variables": 28044,
+      "clauses": 71346,
+      "bytes": 1112287,
+      "sha256": "e73caf0c3d62cfa5ce1b8c80c83c30df50c7e99275f1f43f69acdd043f050735"
+    },
+    {
+      "path": "/Users/msharpe/python/bsat/dataset/sat_competition2025/unknown-cases/6f730dd121471749dc0b4baca2573bf7.cnf",
+      "family": "unknown-cases",
+      "variables": 14174,
+      "clauses": 66783,
+      "bytes": 1126500,
+      "sha256": "874eb53114d44c94bf073395c9630e3e73460063121a58dc965982dd874dc62e"
+    },
+    {
+      "path": "/Users/msharpe/python/bsat/dataset/sat_competition2025/multiplier-circuits/90bec6dcf2399d7c7f73acba44a8641e.cnf",
+      "family": "multiplier-circuits",
+      "variables": 15479,
+      "clauses": 61596,
+      "bytes": 1152327,
+      "sha256": "c20ea0635d0d4859123436fd529bf13d1a1e4a6c44969bc6eff68975f04c29a0"
+    },
+    {
+      "path": "/Users/msharpe/python/bsat/dataset/sat_competition2025/ensemble-computation/67aa1a256f92020dccdf66b235de3986.cnf",
+      "family": "ensemble-computation",
+      "variables": 11607,
+      "clauses": 73804,
+      "bytes": 1326903,
+      "sha256": "8ad4576ce039ec124baef313cec7789f1d234ec93bc372f3d016731be74723d7"
+    },
+    {
+      "path": "/Users/msharpe/python/bsat/dataset/sat_competition2025/scheduling/e707c7e87816dd02ae433d268bd327c6.cnf",
+      "family": "scheduling",
+      "variables": 24089,
+      "clauses": 86884,
+      "bytes": 1352651,
+      "sha256": "dd878bbdde2626d0dedaee5bd017a29252ba5eb4899c79684923c8fc4b58e6dc"
+    },
+    {
+      "path": "/Users/msharpe/python/bsat/dataset/sat_competition2025/crafted-cec/0876c518e5653369e20fb1ee0bb8db40.cnf",
+      "family": "crafted-cec",
+      "variables": 30587,
+      "clauses": 91703,
+      "bytes": 1386753,
+      "sha256": "9393c755ea428b704e28893fb6431573fbb0097e4a3473cd3383b746038b3efe"
+    },
+    {
+      "path": "/Users/msharpe/python/bsat/dataset/sat_competition2025/fermat/e207ba2df64495327f715e08155a220f.cnf",
+      "family": "fermat",
+      "variables": 12258,
+      "clauses": 69476,
+      "bytes": 1407579,
+      "sha256": "821c3de4a3f7af4edb8fd94235a2940a8b642c004c8204bb8bebffdf3aee19dc"
+    },
+    {
+      "path": "/Users/msharpe/python/bsat/dataset/sat_competition2025/multiplier-verification/fbdca334e6985cd2de8718b60695b5f6.cnf",
+      "family": "multiplier-verification",
+      "variables": 14441,
+      "clauses": 86450,
+      "bytes": 1510219,
+      "sha256": "ead8eb33c4c9365737c7c8b3580ca8ee9c3a8ae244ddea0d68f361bd63bb93c9"
+    },
+    {
+      "path": "/Users/msharpe/python/bsat/dataset/sat_competition2025/influence-maximization/f32bb347996c351bc3e9a91c58e8601d.cnf",
+      "family": "influence-maximization",
+      "variables": 21208,
+      "clauses": 122064,
+      "bytes": 2168437,
+      "sha256": "d9a175de15fb7e0315c7e6115b2430166b3e376c3db9b61356550f3f27f51929"
+    },
+    {
+      "path": "/Users/msharpe/python/bsat/dataset/sat_competition2025/hardware-model-checking/51482a5b06b055edfdca576d654ce191.cnf",
+      "family": "hardware-model-checking",
+      "variables": 51108,
+      "clauses": 152338,
+      "bytes": 2505718,
+      "sha256": "6598c85169bf89b7477d1e94a82c3264d0e6136c150fab7de647b9d60f9b96de"
+    },
+    {
+      "path": "/Users/msharpe/python/bsat/dataset/sat_competition2025/maximum-constraint-partition/53c21f3e78f060883026b5a12ba691d8.cnf",
+      "family": "maximum-constraint-partition",
+      "variables": 30252,
+      "clauses": 123402,
+      "bytes": 2547977,
+      "sha256": "cb0ebf34b5a5e971d8469fb01e2f816dc92f74958437df45ced506221fd72fb3"
+    },
+    {
+      "path": "/Users/msharpe/python/bsat/dataset/sat_competition2025/discrete-logarithm/0ae917c2e0c1d39cbe411c29b2f5ff08.cnf",
+      "family": "discrete-logarithm",
+      "variables": 22151,
+      "clauses": 120226,
+      "bytes": 2640798,
+      "sha256": "5543dd604cf80ee9f1052fa7014ac370536aba152f43c9a2895a3f80535c2e5d"
+    }
+  ]
+}

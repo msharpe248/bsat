@@ -1,0 +1,101 @@
+{
+  "selection": "Smallest available instance per family, first 16 families by file size; selected before performance measurement.",
+  "instances": [
+    {
+      "path": "/Users/msharpe/python/bsat/dataset/sat_competition2025/subset-cardinality/b628043a07c5576dd6cd21c9d73a69e0.cnf",
+      "family": "subset-cardinality",
+      "bytes": 8120,
+      "sha256": "f846af1254e91d2d222cbd3e14f20db68a174881b2a76e7a147e72a553526faa"
+    },
+    {
+      "path": "/Users/msharpe/python/bsat/dataset/sat_competition2025/tseitin-formulas/42f1311ce504db8cc0cb590a568da20a.cnf",
+      "family": "tseitin-formulas",
+      "bytes": 10806,
+      "sha256": "9e4c57b9739f39a924d03267f05542831dc87fec9e9e2238f5e4ba11886378f4"
+    },
+    {
+      "path": "/Users/msharpe/python/bsat/dataset/sat_competition2025/fpga-routing/1890f49a43a94b97828528b68c32b78e.cnf",
+      "family": "fpga-routing",
+      "bytes": 11880,
+      "sha256": "74c4889146ed0f5397665500ac03893196208843e8169a5e8d9ef8c7ba0ad4d3"
+    },
+    {
+      "path": "/Users/msharpe/python/bsat/dataset/sat_competition2025/scheduling/69f6dd335626a9b71bfc6f2332f52b9d.cnf",
+      "family": "scheduling",
+      "bytes": 12237,
+      "sha256": "adca1afbe357cffd40eda927094e3ab3cc96d90b6b43153d403728aeb39ca96e"
+    },
+    {
+      "path": "/Users/msharpe/python/bsat/dataset/sat_competition2025/hgen/2d0c041c0fe72dc32527bfbf34f63e61.cnf",
+      "family": "hgen",
+      "bytes": 16364,
+      "sha256": "b15bdf2acd29a6a149b96135c7d098e375600370ef63eefc22cdbe43b7d8eaa1"
+    },
+    {
+      "path": "/Users/msharpe/python/bsat/dataset/sat_competition2025/battleship/d88c6afc13cdad0e2c8371a879692b39.cnf",
+      "family": "battleship",
+      "bytes": 18609,
+      "sha256": "19dd9305587ecbb694f8ebd1685af6eeab8e046d3dfa6384cbfde7ac2810dff4"
+    },
+    {
+      "path": "/Users/msharpe/python/bsat/dataset/sat_competition2025/mutilated-chessboard/45742d067cc851edc1201d8a02586eac.cnf",
+      "family": "mutilated-chessboard",
+      "bytes": 31950,
+      "sha256": "b37e298fb08ca8fc5c41817996daf7308ab259714d82193affc670f61d27245f"
+    },
+    {
+      "path": "/Users/msharpe/python/bsat/dataset/sat_competition2025/hamiltonian/6e139783cfbcfeec85b49750ad11a615.cnf",
+      "family": "hamiltonian",
+      "bytes": 32507,
+      "sha256": "89cd0d3be21de667864f6c2d63637431f65f19defa9ce0d1233334ab826bb505"
+    },
+    {
+      "path": "/Users/msharpe/python/bsat/dataset/sat_competition2025/pigeon-hole/6f40bd5ac85e2a53b392d8f0369e7f1f.cnf",
+      "family": "pigeon-hole",
+      "bytes": 36251,
+      "sha256": "7e3b80732b5c4b69e059effda1a52029c9ace8a534f1298b4f168c7e10e0c656"
+    },
+    {
+      "path": "/Users/msharpe/python/bsat/dataset/sat_competition2025/grandtour-puzzle/3f67f6767764855e516e5394be1145e5.cnf",
+      "family": "grandtour-puzzle",
+      "bytes": 45932,
+      "sha256": "21137d85fa8ae64830504ba3bd15ddc5dbffd806d55c225a86547d0a5d09e968"
+    },
+    {
+      "path": "/Users/msharpe/python/bsat/dataset/sat_competition2025/unknown-cases/fab2022deb130fe3ad1136a5c71b4109.cnf",
+      "family": "unknown-cases",
+      "bytes": 55885,
+      "sha256": "5d8f5a621357cac8ba878c6c81c2606c010d44d8c8a5c4a5a86a36566c5e7b0d"
+    },
+    {
+      "path": "/Users/msharpe/python/bsat/dataset/sat_competition2025/coloring/c8d21db50338d9d5743802bcae77a466.cnf",
+      "family": "coloring",
+      "bytes": 79323,
+      "sha256": "71a0df3992835e3493c82b2f8a92cd902e728f6d1cf807b48cd892b672e6f409"
+    },
+    {
+      "path": "/Users/msharpe/python/bsat/dataset/sat_competition2025/mechanical-master-key/dbb42e010bed2259e4e27bc43e4d86c6.cnf",
+      "family": "mechanical-master-key",
+      "bytes": 85307,
+      "sha256": "163e390edd9a4dd010ef36ab7299e62cbb9ee0e1edbbd3f724b14a8d839b951e"
+    },
+    {
+      "path": "/Users/msharpe/python/bsat/dataset/sat_competition2025/miter/c0e828fb967fc4f0935cf06c6a6b1055.cnf",
+      "family": "miter",
+      "bytes": 104581,
+      "sha256": "062e3e1caccde25d126877403d6ff35dd5888dc0cc0552f48cfd1470298f648b"
+    },
+    {
+      "path": "/Users/msharpe/python/bsat/dataset/sat_competition2025/relativized-pigeon-hole/cb950b9accfb53eb98f77b0f995ac0ae.cnf",
+      "family": "relativized-pigeon-hole",
+      "bytes": 104941,
+      "sha256": "73f560c2cf04de935addbe01bf4f19e25aaa1cfba80e0fc35a0c69d460298e6d"
+    },
+    {
+      "path": "/Users/msharpe/python/bsat/dataset/sat_competition2025/cryptography/99718c1729a8de3347a9946f1836421d.cnf",
+      "family": "cryptography",
+      "bytes": 109311,
+      "sha256": "fbf923ffc448f1283dbdc4d8c1991d95d7baa0768ac83226ac968641ccac2df8"
+    }
+  ]
+}

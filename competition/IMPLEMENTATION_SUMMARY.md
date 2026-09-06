@@ -1,3 +1,5 @@
+> Historical snapshot. See [C solver hardening](c/HARDENING.md) for current correctness fixes and validation. The older production-readiness claims below are not current.
+
 # C CDCL Solver - Implementation Summary
 
 ## Date: 2025-10-21

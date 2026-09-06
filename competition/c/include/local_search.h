@@ -22,6 +22,7 @@ typedef struct LocalSearchState {
     // Current assignment (1-indexed)
     bool*    assignment;     // assignment[v] = true/false for variable v
     uint32_t num_vars;
+    uint32_t random_state;
 
     // Clause satisfaction tracking
     uint32_t* num_true_lits;  // num_true_lits[c] = count of true literals in clause c

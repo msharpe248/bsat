@@ -2,7 +2,7 @@
 
 # Compiler and flags
 CC = cc
-CFLAGS = -std=c11 -Wall -Wextra -pedantic
+CFLAGS = -std=c11 -D_POSIX_C_SOURCE=200809L -Wall -Wextra -pedantic
 # Optimization flags for SAT solver performance
 OPTFLAGS = -O3 -march=native -flto
 DEBUGFLAGS = -g -O0 -DDEBUG -fsanitize=address -fsanitize=undefined
@@ -11,7 +11,8 @@ PROFFLAGS = -pg -O2
 # Directories
 SRCDIR = src
 INCDIR = include
-OBJDIR = build
+MODE ?= release
+OBJDIR = build/$(MODE)
 BINDIR = bin
 TESTDIR = tests
 
@@ -24,7 +25,8 @@ OBJECTS = $(patsubst $(SRCDIR)/%.c,$(OBJDIR)/%.o,$(SOURCES))
 
 # Test files
 TEST_SOURCES = $(wildcard $(TESTDIR)/test_*.c)
-TEST_BINARIES = $(patsubst $(TESTDIR)/test_%.c,$(BINDIR)/test_%,$(TEST_SOURCES))
+TEST_BINDIR = $(BINDIR)/tests/$(MODE)
+TEST_BINARIES = $(patsubst $(TESTDIR)/test_%.c,$(TEST_BINDIR)/test_%,$(TEST_SOURCES))
 
 # Build modes
 MODE ?= release
@@ -43,7 +45,7 @@ endif
 CFLAGS += -I$(INCDIR)
 
 # Phony targets
-.PHONY: all clean test benchmark help dirs
+.PHONY: all clean test tests benchmark help dirs check
 
 # Default target
 all: dirs $(TARGET)
@@ -58,10 +60,11 @@ $(TARGET): $(OBJECTS)
 
 # Object files
 $(OBJDIR)/%.o: $(SRCDIR)/%.c
-	$(CC) $(CFLAGS) -c -o $@ $<
+	$(CC) $(CFLAGS) -MMD -MP -c -o $@ $<
 
 # Test binaries (match only test_* files to avoid conflict with main solver)
-$(BINDIR)/test_%: $(TESTDIR)/test_%.c $(filter-out $(OBJDIR)/main.o,$(OBJECTS))
+$(TEST_BINDIR)/test_%: $(TESTDIR)/test_%.c $(filter-out $(OBJDIR)/main.o,$(OBJECTS))
+	@mkdir -p $(TEST_BINDIR)
 	$(CC) $(CFLAGS) -o $@ $^ -lm
 
 # Build all tests
@@ -79,14 +82,14 @@ test: tests
 # Run benchmarks
 benchmark: $(TARGET)
 	@echo "Running benchmarks..."
-	@$(TESTDIR)/benchmark.sh $(TARGET)
+	python3 $(TESTDIR)/benchmark.py --solver bsat=$(TARGET) --help
 
 # Clean build artifacts
 clean:
 	rm -rf $(OBJDIR) $(BINDIR) pgo_data
 
 # Profile-Guided Optimization (PGO) targets
-# Works with both clang (LLVM) and gcc
+# Requires clang/LLVM instrumentation and llvm-profdata
 .PHONY: pgo pgo-generate pgo-train pgo-merge pgo-use
 
 # Full PGO build (generate, train, merge, use)
@@ -98,7 +101,9 @@ pgo-generate: clean dirs
 	$(CC) $(CFLAGS) -O3 -march=native -fprofile-instr-generate -c -o $(OBJDIR)/arena.o $(SRCDIR)/arena.c
 	$(CC) $(CFLAGS) -O3 -march=native -fprofile-instr-generate -c -o $(OBJDIR)/dimacs.o $(SRCDIR)/dimacs.c
 	$(CC) $(CFLAGS) -O3 -march=native -fprofile-instr-generate -c -o $(OBJDIR)/elim.o $(SRCDIR)/elim.c
+	$(CC) $(CFLAGS) -O3 -march=native -fprofile-instr-generate -c -o $(OBJDIR)/equiv.o $(SRCDIR)/equiv.c
 	$(CC) $(CFLAGS) -O3 -march=native -fprofile-instr-generate -c -o $(OBJDIR)/local_search.o $(SRCDIR)/local_search.c
+	$(CC) $(CFLAGS) -O3 -march=native -fprofile-instr-generate -c -o $(OBJDIR)/minimize.o $(SRCDIR)/minimize.c
 	$(CC) $(CFLAGS) -O3 -march=native -fprofile-instr-generate -c -o $(OBJDIR)/main.o $(SRCDIR)/main.c
 	$(CC) $(CFLAGS) -O3 -march=native -fprofile-instr-generate -c -o $(OBJDIR)/solver.o $(SRCDIR)/solver.c
 	$(CC) $(CFLAGS) -O3 -march=native -fprofile-instr-generate -c -o $(OBJDIR)/watch.o $(SRCDIR)/watch.c
@@ -110,7 +115,7 @@ pgo-train:
 	@rm -rf pgo_data && mkdir -p pgo_data
 	@LLVM_PROFILE_FILE="pgo_data/bsat_%p.profraw" ; \
 	export LLVM_PROFILE_FILE; \
-	for f in /Users/msharpe/python/bsat/dataset/medium_tests/medium_suite/*.cnf; do \
+	for f in ../../dataset/medium_tests/medium_suite/*.cnf; do \
 		timeout 5s $(BINDIR)/bsat_pgo_gen "$$f" > /dev/null 2>&1 || true; \
 	done
 	@echo "Profile data collected."
@@ -127,7 +132,9 @@ pgo-use: dirs
 	$(CC) $(CFLAGS) -O3 -march=native -flto -fprofile-instr-use=pgo_data/default.profdata -c -o $(OBJDIR)/arena.o $(SRCDIR)/arena.c
 	$(CC) $(CFLAGS) -O3 -march=native -flto -fprofile-instr-use=pgo_data/default.profdata -c -o $(OBJDIR)/dimacs.o $(SRCDIR)/dimacs.c
 	$(CC) $(CFLAGS) -O3 -march=native -flto -fprofile-instr-use=pgo_data/default.profdata -c -o $(OBJDIR)/elim.o $(SRCDIR)/elim.c
+	$(CC) $(CFLAGS) -O3 -march=native -flto -fprofile-instr-use=pgo_data/default.profdata -c -o $(OBJDIR)/equiv.o $(SRCDIR)/equiv.c
 	$(CC) $(CFLAGS) -O3 -march=native -flto -fprofile-instr-use=pgo_data/default.profdata -c -o $(OBJDIR)/local_search.o $(SRCDIR)/local_search.c
+	$(CC) $(CFLAGS) -O3 -march=native -flto -fprofile-instr-use=pgo_data/default.profdata -c -o $(OBJDIR)/minimize.o $(SRCDIR)/minimize.c
 	$(CC) $(CFLAGS) -O3 -march=native -flto -fprofile-instr-use=pgo_data/default.profdata -c -o $(OBJDIR)/main.o $(SRCDIR)/main.c
 	$(CC) $(CFLAGS) -O3 -march=native -flto -fprofile-instr-use=pgo_data/default.profdata -c -o $(OBJDIR)/solver.o $(SRCDIR)/solver.c
 	$(CC) $(CFLAGS) -O3 -march=native -flto -fprofile-instr-use=pgo_data/default.profdata -c -o $(OBJDIR)/watch.o $(SRCDIR)/watch.c
@@ -159,10 +166,8 @@ help:
 	@echo "  make test MODE=debug"
 	@echo "  make benchmark"
 
-# Dependencies (auto-generated)
+# Header dependencies are emitted alongside each object.
 -include $(OBJECTS:.o=.d)
 
-# Generate dependencies
-$(OBJDIR)/%.d: $(SRCDIR)/%.c
-	@mkdir -p $(OBJDIR)
-	@$(CC) -MM $(CFLAGS) $< | sed 's,\($*\)\.o[ :]*,$(OBJDIR)/\1.o $@ : ,g' > $@
+check: all test
+	python3 tests/validate.py --solver $(TARGET)

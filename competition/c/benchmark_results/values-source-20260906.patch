@@ -1,0 +1,364 @@
+--- a/competition/c/include/solver.h
++++ b/competition/c/include/solver.h
+@@ -121,9 +121,9 @@
+ typedef struct VarInfo {
+     // VSIDS/LRB activity - first for 8-byte alignment and cache-friendly heap access
+     double   activity;       // Variable activity score
+-
+-    // Core assignment state - most frequently accessed together
+-    lbool    value;          // Current assignment (UNDEF/TRUE/FALSE)
++    uint64_t last_conflict;  // Last conflict where variable participated (for LRB)
++
++    // Assignment metadata; hot truth values live in Solver.values.
+     Level    level;          // Decision level
+     CRef     reason;         // Reason clause (INVALID_CLAUSE for decisions)
+     uint32_t trail_pos;      // Position in trail
+@@ -131,7 +131,6 @@
+     // Less frequently accessed
+     uint32_t last_polarity;  // Last conflict where polarity was saved
+     uint32_t heap_pos;       // Position in VSIDS heap
+-    uint64_t last_conflict;  // Last conflict where variable participated (for LRB)
+ 
+     // Phase saving - 1 byte, naturally packs at end with padding
+     bool     polarity;       // Saved polarity
+@@ -160,7 +159,8 @@
+     // Core data structures
+     Arena*        arena;       // Clause allocator
+     WatchManager* watches;     // Watch lists
+-    VarInfo*      vars;        // Variable information
++    VarInfo*      vars;        // Variable information, separate from hot values
++    uint8_t*      values;      // One authoritative UNDEF/FALSE/TRUE byte per variable
+ 
+     // Trail (assignment stack)
+     Trail*   trail;           // Assignment trail
+--- a/competition/c/src/elim.c
++++ b/competition/c/src/elim.c
+@@ -69,7 +69,7 @@
+     o->size = n;
+ }
+ int elim_cost(Solver *s, Var v) {
+-    if (!s->elim || s->vars[v].value != UNDEF || s->elim->eliminated[v]) return -1;
++    if (!s->elim || s->values[v] != UNDEF || s->elim->eliminated[v]) return -1;
+     OccList *p = &s->elim->occs[mkLit(v, false)], *n = &s->elim->occs[mkLit(v, true)];
+     clean_occ(s, p); clean_occ(s, n);
+     if (!p->size && !n->size) return -1;
+@@ -175,7 +175,7 @@
+     return count;
+ }
+ void elim_extend_model(Solver *s) {
+-    for (Var v = 1; v <= s->num_vars; ++v) if (s->vars[v].value == UNDEF) s->vars[v].value = TRUE;
++    for (Var v = 1; v <= s->num_vars; ++v) if (s->values[v] == UNDEF) s->values[v] = TRUE;
+     if (!s->elim) return;
+     for (uint32_t i = s->elim->stack_size; i > 0;) {
+         ElimEntry *e = &s->elim->stack[--i];
+@@ -184,10 +184,10 @@
+         for (uint32_t j = 0; j < e->clause_size; ++j) {
+             Lit l = e->clause[j];
+             if (!l) {
+-                if (!satisfied && pivot) s->vars[e->var].value = sign(pivot) ? FALSE : TRUE;
++                if (!satisfied && pivot) s->values[e->var] = sign(pivot) ? FALSE : TRUE;
+                 satisfied = false; pivot = 0;
+             } else if (var(l) == e->var) pivot = l;
+-            else if (lxor(s->vars[var(l)].value, sign(l)) == TRUE) satisfied = true;
++            else if (lxor(s->values[var(l)], sign(l)) == TRUE) satisfied = true;
+         }
+     }
+ }
+--- a/competition/c/src/local_search.c
++++ b/competition/c/src/local_search.c
+@@ -388,7 +388,7 @@
+ void local_search_copy_solution(Solver* s, LocalSearchState* ls) {
+     // Copy solution to solver's variable values
+     for (Var v = 1; v <= ls->num_vars; v++) {
+-        s->vars[v].value = ls->assignment[v] ? TRUE : FALSE;
++        s->values[v] = ls->assignment[v] ? TRUE : FALSE;
+         s->vars[v].polarity = ls->assignment[v];
+         s->vars[v].level = 0;
+         s->vars[v].reason = INVALID_CLAUSE;
+--- a/competition/c/src/minimize.c
++++ b/competition/c/src/minimize.c
+@@ -217,8 +217,8 @@
+             if (!implicit && u == v) continue;  // The propagated literal in an explicit reason.
+             /* Reject stale or cyclic reasons rather than making a deletion
+                depend on scratch-mark traversal order. */
+-            if (s->vars[u].value == UNDEF || s->vars[u].trail_pos >= s->vars[v].trail_pos ||
+-                lxor(s->vars[u].value, sign(q)) != FALSE) { success = false; break; }
++            if (s->values[u] == UNDEF || s->vars[u].trail_pos >= s->vars[v].trail_pos ||
++                lxor(s->values[u], sign(q)) != FALSE) { success = false; break; }
+             if (!s->vars[u].level) continue;
+             uint8_t mark = s->seen[u];
+             if (mark == SOURCE) continue;
+--- a/competition/c/src/solver.c
++++ b/competition/c/src/solver.c
+@@ -441,6 +441,7 @@
+     free(s->level_seen);
+     free(s->input);
+     free(s->vars);
++    free(s->values);
+     free(s->trail);
+     free(s->trail_lims);
+     free(s->clauses);
+@@ -487,6 +488,11 @@
+     if (!new_vars) return false;
+     s->vars = new_vars;
+ 
++    // Dense propagation values: no duplicate assignment state to synchronize.
++    uint8_t *new_values = realloc(s->values, alloc_size * sizeof *new_values);
++    if (!new_values) return false;
++    s->values = new_values;
++
+     // Grow trail
+     Trail* new_trail = (Trail*)realloc(s->trail, alloc_size * sizeof(Trail));
+     if (!new_trail) return false;
+@@ -575,7 +581,7 @@
+ 
+     // Initialize new variable
+     memset(&s->vars[v], 0, sizeof(VarInfo));
+-    s->vars[v].value = UNDEF;
++    s->values[v] = UNDEF;
+     s->vars[v].level = INVALID_LEVEL;
+     s->vars[v].reason = INVALID_CLAUSE;
+     s->vars[v].heap_pos = UINT32_MAX;
+@@ -599,11 +605,11 @@
+ 
+ static inline void push_trail(Solver* s, Lit lit) {
+     Var v = var(lit);
+-    ASSERT(s->vars[v].value == UNDEF);
++    ASSERT(s->values[v] == UNDEF);
+ 
+     s->vars[v].reason = INVALID_CLAUSE;
+     s->binary_reasons[v] = LIT_UNDEF;
+-    s->vars[v].value = sign(lit) ? FALSE : TRUE;
++    s->values[v] = sign(lit) ? FALSE : TRUE;
+     s->vars[v].level = s->decision_level;
+     s->vars[v].trail_pos = s->trail_size;
+ 
+@@ -622,7 +628,7 @@
+     uint32_t pos = s->trail_lims[level + 1];
+     for (uint32_t i = s->trail_size; i > pos;) {
+         Var v = var(s->trail[--i].lit);
+-        s->vars[v].value = UNDEF;
++        s->values[v] = UNDEF;
+         s->vars[v].level = INVALID_LEVEL;
+         s->vars[v].reason = INVALID_CLAUSE;
+         s->binary_reasons[v] = LIT_UNDEF;
+@@ -687,7 +693,7 @@
+     Lit *cl = CLAUSE_LITS(s->arena, cr);
+     uint32_t alive = 0;
+     for (uint32_t i = 0; i < n; ++i) {
+-        if (lxor(s->vars[var(cl[i])].value, sign(cl[i])) != FALSE) {
++        if (lxor(s->values[var(cl[i])], sign(cl[i])) != FALSE) {
+             Lit t = cl[alive]; cl[alive++] = cl[i]; cl[i] = t;
+         }
+     }
+@@ -699,7 +705,7 @@
+         watch_add(s->watches, cl[1], cr, cl[0]);
+     }
+     if (!alive) s->result = FALSE;
+-    else if (alive == 1 && s->vars[var(cl[0])].value == UNDEF) {
++    else if (alive == 1 && s->values[var(cl[0])] == UNDEF) {
+         push_trail(s, cl[0]);
+         s->vars[var(cl[0])].reason = cr;
+     }
+@@ -712,8 +718,8 @@
+  *********************************************************************/
+ 
+ lbool solver_model_value(const Solver* s, Var v) {
+-    if (v > s->num_vars) return UNDEF;
+-    return s->vars[v].value;
++    if (!v || v > s->num_vars) return UNDEF;
++    return s->values[v];
+ }
+ 
+ /*********************************************************************
+@@ -780,7 +786,7 @@
+ #ifdef DEBUG
+         if (IS_DEBUG(s)) {
+             printf("[PROPAGATE] qhead=%u trail_size=%u Processing literal %d (var=%u, value=%d)\n",
+-                   s->qhead - 1, s->trail_size, toDimacs(p), var(p), s->vars[var(p)].value);
++                   s->qhead - 1, s->trail_size, toDimacs(p), var(p), s->values[var(p)]);
+         }
+ #endif
+ 
+@@ -815,13 +821,13 @@
+ #ifdef DEBUG
+                 if (IS_DEBUG(s)) {
+                     printf("[PROPAGATE] Binary clause: literal %d, other lit %d, var %u value=%d\n",
+-                           toDimacs(neg(p)), toDimacs(q), v, s->vars[v].value);
++                           toDimacs(neg(p)), toDimacs(q), v, s->values[v]);
+                 }
+ #endif
+ 
+-                if (s->vars[v].value == UNDEF) {
++                if (s->values[v] == UNDEF) {
+                     // Unit propagation via binary clause
+-                    s->vars[v].value = sign(q) ? FALSE : TRUE;
++                    s->values[v] = sign(q) ? FALSE : TRUE;
+                     s->vars[v].level = s->decision_level;
+                     s->vars[v].reason = INVALID_CLAUSE;  // Binary clause marker
+                     s->vars[v].trail_pos = s->trail_size;
+@@ -844,7 +850,7 @@
+                     if (s->opts.phase_saving) {
+                         s->vars[v].polarity = !sign(q);
+                     }
+-                } else if (s->vars[v].value == (sign(q) ? TRUE : FALSE)) {
++                } else if (s->values[v] == (sign(q) ? TRUE : FALSE)) {
+                     // Conflict in binary clause: (neg(p) | q) with both literals false
+ #ifdef DEBUG
+                     if (IS_DEBUG(s)) {
+@@ -875,7 +881,7 @@
+ 
+             // Check blocker first
+             Var bv = var(blocker);
+-            if (s->vars[bv].value == (sign(blocker) ? FALSE : TRUE)) {
++            if (s->values[bv] == (sign(blocker) ? FALSE : TRUE)) {
+                 // Blocker is satisfied - keep watching
+                 watches[j++] = w;
+                 i++;
+@@ -899,7 +905,7 @@
+             Var fv = var(first);
+ 
+             // If first literal is true, clause is satisfied
+-            if (s->vars[fv].value == (sign(first) ? FALSE : TRUE)) {
++            if (s->values[fv] == (sign(first) ? FALSE : TRUE)) {
+                 watches[j++] = (Watch){cref, first};
+                 i++;
+                 continue;
+@@ -920,7 +926,7 @@
+                 Lit lit = lits[k];
+                 Var v = var(lit);
+ 
+-                if (s->vars[v].value != (sign(lit) ? TRUE : FALSE)) {
++                if (s->values[v] != (sign(lit) ? TRUE : FALSE)) {
+                     // Found a non-false literal
+                     lits[1] = lit;
+                     lits[k] = neg(p);
+@@ -944,9 +950,9 @@
+             i++;
+ 
+             // Check if unit or conflict
+-            if (s->vars[fv].value == UNDEF) {
++            if (s->values[fv] == UNDEF) {
+                 // Unit clause - propagate
+-                s->vars[fv].value = sign(first) ? FALSE : TRUE;
++                s->values[fv] = sign(first) ? FALSE : TRUE;
+                 s->vars[fv].level = s->decision_level;
+                 s->vars[fv].reason = cref;
+                 s->vars[fv].trail_pos = s->trail_size;
+@@ -1154,7 +1160,7 @@
+     while (s->order.size > 0) {
+         next = heap_extract_max(s);
+         // Skip assigned variables
+-        if (s->vars[next].value != UNDEF) {
++        if (s->values[next] != UNDEF) {
+             next = INVALID_VAR;
+             continue;
+         }
+@@ -1181,7 +1187,7 @@
+     s->trail_lims[s->decision_level] = s->trail_size;
+ 
+     Lit dec = mkLit(next, sign);
+-    s->vars[next].value = sign ? FALSE : TRUE;
++    s->values[next] = sign ? FALSE : TRUE;
+     s->vars[next].level = s->decision_level;
+     s->vars[next].reason = INVALID_CLAUSE;
+     s->vars[next].trail_pos = s->trail_size;
+@@ -1401,7 +1407,7 @@
+     Lit *lits = CLAUSE_LITS(s->arena, cr);
+     for (uint32_t i = 0; i < CLAUSE_SIZE(s->arena, cr); ++i) {
+         Var v = var(lits[i]);
+-        if (s->vars[v].value != UNDEF && s->vars[v].reason == cr) return true;
++        if (s->values[v] != UNDEF && s->vars[v].reason == cr) return true;
+     }
+     return false;
+ }
+@@ -1443,7 +1449,7 @@
+     for (Var v = 1; v <= s->num_vars; ++v)
+         if (s->vars[v].reason != INVALID_CLAUSE) {
+             s->vars[v].reason = map[s->vars[v].reason];
+-            ASSERT(s->vars[v].reason != INVALID_CLAUSE || s->vars[v].value == UNDEF);
++            ASSERT(s->vars[v].reason != INVALID_CLAUSE || s->values[v] == UNDEF);
+         }
+     uint32_t out = 0;
+     for (uint32_t i = 0; i < s->num_clauses; ++i) {
+@@ -1563,7 +1569,7 @@
+             bool is_reason = false;
+             for (uint32_t j = 0; j < other_size && !is_reason; j++) {
+                 Var v = var(other_lits[j]);
+-                if (s->vars[v].value != UNDEF && s->vars[v].reason == cref) {
++                if (s->values[v] != UNDEF && s->vars[v].reason == cref) {
+                     is_reason = true;
+                 }
+             }
+@@ -1593,7 +1599,7 @@
+     s->decision_level = 1;
+     s->trail_lims[1] = s->trail_size;
+     for (uint32_t i = 0; i < size; ++i) {
+-        lbool val = lxor(s->vars[var(lits[i])].value, sign(lits[i]));
++        lbool val = lxor(s->values[var(lits[i])], sign(lits[i]));
+         if (val == TRUE) { conflict = true; break; }
+         if (val == UNDEF) push_trail(s, neg(lits[i]));
+     }
+@@ -1637,7 +1643,7 @@
+                 set_clause_lbd(s->arena, fresh, MIN(lbd,n));
+                 if (!n) s->result = FALSE;
+                 else if (n == 1) {
+-                    lbool val = lxor(s->vars[var(candidate[0])].value, sign(candidate[0]));
++                    lbool val = lxor(s->values[var(candidate[0])], sign(candidate[0]));
+                     if (val == FALSE) s->result = FALSE;
+                     else if (val == UNDEF) { push_trail(s, candidate[0]); s->vars[var(candidate[0])].reason = fresh; }
+                 } else {
+@@ -1672,7 +1678,7 @@
+         if (size < 2) continue;
+         for (uint32_t j = 0; j < size && !solver_budget_exhausted(s); ++j) {
+             Lit pivot = lits[j];
+-            if (s->vars[var(pivot)].value != UNDEF) continue;
++            if (s->values[var(pivot)] != UNDEF) continue;
+             OccList *o = elim_get_occs(s, neg(pivot));
+             bool blocked = true;
+             for (uint32_t k = 0; k < o->size; ++k) {
+@@ -1699,7 +1705,7 @@
+ static int failed_literal_probing(Solver *s) {
+     int found = 0;
+     for (Var v = 1; v <= s->num_vars && !solver_budget_exhausted(s); ++v) {
+-        if (s->vars[v].value != UNDEF) continue;
++        if (s->values[v] != UNDEF) continue;
+         for (unsigned polarity = 0; polarity < 2; ++polarity) {
+             if (solver_budget_exhausted(s)) break;
+             Lit implied = mkLit(v, polarity != 0);
+@@ -1750,7 +1756,7 @@
+     for (size_t i=0;i<s->input_size;++i) {
+         Lit l=s->input[i];
+         if (!l) { if (!satisfied) return false; satisfied=false; }
+-        else if (lxor(s->vars[var(l)].value, sign(l)) == TRUE) satisfied=true;
++        else if (lxor(s->values[var(l)], sign(l)) == TRUE) satisfied=true;
+     }
+     return true;
+ }
+@@ -1807,7 +1813,7 @@
+                 watch_add(s->watches,learnt[0],reason,learnt[1]);
+                 watch_add(s->watches,learnt[1],reason,learnt[0]);
+             }
+-            ASSERT(n && s->vars[var(learnt[0])].value==UNDEF);
++            ASSERT(n && s->values[var(learnt[0])]==UNDEF);
+             push_trail(s,learnt[0]);s->vars[var(learnt[0])].reason=reason;
+             s->stats.learned_clauses++;s->stats.learned_literals+=n;
+             s->stats.max_lbd=MAX(s->stats.max_lbd,lbd);
+@@ -1833,7 +1839,7 @@
+             bool assumption=false;
+             while (s->decision_level<n_assumps) {
+                 Lit a=assumps[s->decision_level];
+-                lbool value=lxor(s->vars[var(a)].value,sign(a));
++                lbool value=lxor(s->values[var(a)],sign(a));
+                 if (value==FALSE) { result=FALSE;goto done; }
+                 s->decision_level++;s->trail_lims[s->decision_level]=s->trail_size;
+                 if (value==UNDEF) { push_trail(s,a);assumption=true;break; }
+@@ -1877,7 +1883,7 @@
+         elim_extend_model(s);
+         if (!solver_check_model(s)) s->error=true;
+         for (uint32_t i=0;i<n_assumps;++i)
+-            if (lxor(s->vars[var(assumps[i])].value,sign(assumps[i]))!=TRUE) s->error=true;
++            if (lxor(s->values[var(assumps[i])],sign(assumps[i]))!=TRUE) s->error=true;
+     }
+     if (result==FALSE && n_assumps) {
+         s->conflict_clause=malloc(n_assumps*sizeof *s->conflict_clause);

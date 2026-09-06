@@ -45,6 +45,7 @@ typedef struct WatchList {
 typedef struct WatchManager {
     WatchList* lists;     // Array of watch lists (2 * num_vars)
     uint32_t   num_vars;  // Number of variables
+    bool failed;         // Allocation failure must propagate as UNKNOWN
     uint64_t   updates;   // Statistics: watch updates
     uint64_t   visits;    // Statistics: clause visits
     uint64_t   skipped;   // Statistics: skipped by blocker

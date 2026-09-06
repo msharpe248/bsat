@@ -1,0 +1,38 @@
+name: C solver correctness
+on:
+  push:
+    paths: ['competition/c/**', 'competition/tests/**', '.github/workflows/c-solver.yml']
+  pull_request:
+    paths: ['competition/c/**', 'competition/tests/**', '.github/workflows/c-solver.yml']
+permissions:
+  contents: read
+jobs:
+  check:
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+        mode: [release, debug]
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Build independent proof checker
+        run: |
+          curl -Lf https://raw.githubusercontent.com/marijnheule/drat-trim/2e3b2dc0ecf938addbd779d42877b6ed69d9a985/drat-trim.c -o "$RUNNER_TEMP/drat-trim.c"
+          cc -O2 "$RUNNER_TEMP/drat-trim.c" -o "$RUNNER_TEMP/drat-trim"
+      - name: Unit and API regressions
+        run: make -C competition/c all test MODE=${{ matrix.mode }}
+      - name: Independent formula and certificate validation
+        shell: bash
+        run: |
+          binary=competition/c/bin/bsat
+          if [ '${{ matrix.mode }}' = debug ]; then binary="${binary}_debug"; fi
+          python3 competition/c/tests/validate.py --solver "$binary" --cases 100 --checker "$RUNNER_TEMP/drat-trim"
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: failures-${{ matrix.os }}-${{ matrix.mode }}
+          path: validation-failures/

@@ -178,7 +178,7 @@ static void update_after_flip(LocalSearchState* ls, Var v) {
  */
 static uint32_t pick_unsat_clause(LocalSearchState* ls) {
     // Count unsatisfied clauses and pick random one
-    uint32_t target = rand() % ls->num_unsat;
+    uint32_t target = bsat_random(&ls->random_state) % ls->num_unsat;
     uint32_t count = 0;
     for (uint32_t c = 0; c < ls->num_clauses; c++) {
         if (ls->num_true_lits[c] == 0) {
@@ -199,8 +199,8 @@ static uint32_t pick_unsat_clause(LocalSearchState* ls) {
  */
 static Var pick_var_to_flip(LocalSearchState* ls, uint32_t c, double noise) {
     // Random walk with probability noise
-    if ((rand() / (double)RAND_MAX) < noise) {
-        uint32_t idx = rand() % ls->clause_sizes[c];
+    if ((bsat_random(&ls->random_state) / 4294967296.0) < noise) {
+        uint32_t idx = bsat_random(&ls->random_state) % ls->clause_sizes[c];
         return var(ls->clause_lits[c][idx]);
     }
 
@@ -227,6 +227,7 @@ LocalSearchState* local_search_init(Solver* s) {
     LocalSearchState* ls = (LocalSearchState*)calloc(1, sizeof(LocalSearchState));
     if (!ls) return NULL;
 
+    ls->random_state = s->opts.seed ^ 0xa511e9b3u;
     ls->num_vars = s->num_vars;
     ls->num_clauses = s->num_clauses;
 
@@ -365,6 +366,7 @@ bool local_search_run(Solver* s, LocalSearchState* ls, uint32_t max_flips, doubl
 
     // Main WalkSAT loop
     for (uint32_t flip = 0; flip < max_flips && ls->num_unsat > 0; flip++) {
+        if ((flip & 255) == 0 && solver_budget_exhausted(s)) return false;
         // Pick a random unsatisfied clause
         uint32_t c = pick_unsat_clause(ls);
 
@@ -386,7 +388,7 @@ bool local_search_run(Solver* s, LocalSearchState* ls, uint32_t max_flips, doubl
 void local_search_copy_solution(Solver* s, LocalSearchState* ls) {
     // Copy solution to solver's variable values
     for (Var v = 1; v <= ls->num_vars; v++) {
-        s->vars[v].value = ls->assignment[v] ? TRUE : FALSE;
+        s->values[v] = ls->assignment[v] ? TRUE : FALSE;
         s->vars[v].polarity = ls->assignment[v];
         s->vars[v].level = 0;
         s->vars[v].reason = INVALID_CLAUSE;

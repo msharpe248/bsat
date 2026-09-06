@@ -8,227 +8,79 @@
 #include <string.h>
 #include <ctype.h>
 #include <errno.h>
+#include <sys/stat.h>
+#include <unistd.h>
 
-// Maximum line length for reading
-#define MAX_LINE 1048576  // 1MB should be enough for any line
-
-// Temporary buffer for clause literals
-#define MAX_CLAUSE_SIZE 100000
-
-/*********************************************************************
- * Helper Functions
- *********************************************************************/
-
-// Skip whitespace
-static const char* skip_whitespace(const char* p) {
-    while (isspace(*p)) p++;
-    return p;
+/* DIMACS clauses are terminated by zero, never by a physical line. */
+static int token(FILE *f, char *buf, size_t cap) {
+    int c;
+    do {
+        c = fgetc(f);
+        if (c == 'c') {
+            while (c != '\n' && c != EOF) c = fgetc(f);
+        }
+    } while (c != EOF && isspace((unsigned char)c));
+    if (c == EOF) return ferror(f) ? -1 : 0;
+    size_t n = 0;
+    do {
+        if (n + 1 >= cap) return -1;
+        buf[n++] = (char)c;
+        c = fgetc(f);
+    } while (c != EOF && !isspace((unsigned char)c));
+    buf[n] = 0;
+    return 1;
 }
 
-// Skip rest of line
-static const char* skip_line(const char* p) {
-    while (*p && *p != '\n') p++;
-    if (*p == '\n') p++;
-    return p;
+static bool integer(const char *buf, long long *v) {
+    char *end;
+    errno = 0;
+    *v = strtoll(buf, &end, 10);
+    return !errno && end != buf && !*end;
 }
 
-// Parse integer
-static const char* parse_int(const char* p, int* value) {
-    p = skip_whitespace(p);
-
-    int sign = 1;
-    if (*p == '-') {
-        sign = -1;
-        p++;
-    } else if (*p == '+') {
-        p++;
+DimacsError dimacs_parse_stream(Solver *s, FILE *file) {
+    if (!s || !file) return DIMACS_ERROR_FILE;
+    char buf[64];
+    Lit *clause = NULL;
+    uint32_t size = 0, capacity = 0, count = 0;
+    long long nvars = 0, nclauses = 0;
+    DimacsError result = DIMACS_ERROR_FORMAT;
+    if (token(file, buf, sizeof buf) != 1 || strcmp(buf, "p")) goto done;
+    /* Read cnf without comment skipping: it is the format token. */
+    if (fscanf(file, " %63s", buf) != 1 || strcmp(buf, "cnf")) goto done;
+    if (token(file, buf, sizeof buf) != 1 || !integer(buf, &nvars) ||
+        nvars < 0 || nvars > MAX_VARS) goto done;
+    if (token(file, buf, sizeof buf) != 1 || !integer(buf, &nclauses) ||
+        nclauses < 0 || nclauses > MAX_CLAUSES) goto done;
+    while (s->num_vars < (uint32_t)nvars) {
+        if (!solver_new_var(s)) { result = DIMACS_ERROR_MEMORY; goto done; }
     }
-
-    if (!isdigit(*p)) {
-        return NULL;  // Not a number
-    }
-
-    int val = 0;
-    while (isdigit(*p)) {
-        val = val * 10 + (*p - '0');
-        p++;
-    }
-
-    *value = sign * val;
-    return p;
-}
-
-/*********************************************************************
- * Main Parser
- *********************************************************************/
-
-DimacsError dimacs_parse_stream(Solver* s, FILE* file) {
-    if (!s || !file) {
-        return DIMACS_ERROR_FILE;
-    }
-
-    char* line = (char*)malloc(MAX_LINE);
-    if (!line) {
-        return DIMACS_ERROR_MEMORY;
-    }
-
-    Lit* clause = (Lit*)malloc(MAX_CLAUSE_SIZE * sizeof(Lit));
-    if (!clause) {
-        free(line);
-        return DIMACS_ERROR_MEMORY;
-    }
-
-    uint32_t expected_vars = 0;
-    uint32_t expected_clauses = 0;
-    uint32_t parsed_clauses = 0;
-    bool header_found = false;
-
-    DimacsError result = DIMACS_OK;
-
-    // Read line by line
-    while (fgets(line, MAX_LINE, file)) {
-        #ifdef DEBUG
-        if (IS_DEBUG(s)) {
-            printf("[DIMACS] Read line: %s", line);
-        }
-        #endif
-        const char* p = skip_whitespace(line);
-
-        // Skip empty lines
-        if (*p == '\0' || *p == '\n') {
-            continue;
-        }
-
-        // Skip comments (except special ones)
-        if (*p == 'c') {
-            // Could parse special comments here (e.g., "c ind" for independent set)
-            continue;
-        }
-
-        // Parse header
-        if (*p == 'p') {
-            if (header_found) {
-                result = DIMACS_ERROR_FORMAT;  // Multiple headers
-                goto cleanup;
+    for (;;) {
+        int status = token(file, buf, sizeof buf);
+        if (!status) break;
+        long long value;
+        if (status < 0 || !integer(buf, &value)) goto done;
+        if (!value) {
+            if (++count > (uint32_t)nclauses) goto done;
+            solver_add_clause(s, clause, size);
+            if (s->error) { result = DIMACS_ERROR_MEMORY; goto done; }
+            size = 0;
+        } else {
+            if (value < -nvars || value > nvars) goto done;
+            if (size == capacity) {
+                if (capacity >= (1u << 27)) { result = DIMACS_ERROR_SIZE; goto done; }
+                uint32_t next = capacity ? capacity * 2 : 16;
+                Lit *grown = realloc(clause, (size_t)next * sizeof *clause);
+                if (!grown) { result = DIMACS_ERROR_MEMORY; goto done; }
+                clause = grown; capacity = next;
             }
-
-            p = skip_whitespace(p + 1);
-
-            // Check for "cnf"
-            if (strncmp(p, "cnf", 3) != 0) {
-                result = DIMACS_ERROR_FORMAT;
-                goto cleanup;
-            }
-            p += 3;
-
-            // Parse number of variables
-            int nvars;
-            p = parse_int(p, &nvars);
-            if (!p || nvars < 0 || nvars > MAX_VARS) {
-                result = DIMACS_ERROR_FORMAT;
-                goto cleanup;
-            }
-            expected_vars = (uint32_t)nvars;
-
-            // Parse number of clauses
-            int nclauses;
-            p = parse_int(p, &nclauses);
-            if (!p || nclauses < 0 || nclauses > MAX_CLAUSES) {
-                result = DIMACS_ERROR_FORMAT;
-                goto cleanup;
-            }
-            expected_clauses = (uint32_t)nclauses;
-
-            header_found = true;
-
-            // Ensure we have enough variables
-            while (s->num_vars < expected_vars) {
-                solver_new_var(s);
-            }
-
-            // Reserve arena capacity based on problem size
-            size_t estimated_capacity = estimate_arena_size(expected_clauses, expected_vars);
-            if (!arena_reserve(s->arena, estimated_capacity)) {
-                result = DIMACS_ERROR_MEMORY;
-                goto cleanup;
-            }
-
-            continue;
-        }
-
-        // Parse clause
-        if (!header_found) {
-            // Allow clauses before header for lenient parsing
-            // Deduce problem size from clauses
-        }
-
-        uint32_t clause_size = 0;
-        const char* clause_start = p;
-
-        while (*p) {
-            int lit;
-            const char* next = parse_int(p, &lit);
-
-            if (!next) {
-                // Check if line continues
-                if (strchr(p, '\n')) {
-                    break;  // End of line, incomplete clause
-                }
-                result = DIMACS_ERROR_FORMAT;
-                goto cleanup;
-            }
-
-            p = next;
-
-            if (lit == 0) {
-                // End of clause
-                break;
-            }
-
-            // Ensure variable exists
-            Var v = abs(lit);
-            if (v > MAX_VARS) {
-                result = DIMACS_ERROR_SIZE;
-                goto cleanup;
-            }
-
-            while (s->num_vars < v) {
-                solver_new_var(s);
-            }
-
-            // Add literal to clause
-            if (clause_size >= MAX_CLAUSE_SIZE) {
-                result = DIMACS_ERROR_SIZE;
-                goto cleanup;
-            }
-            clause[clause_size++] = fromDimacs(lit);
-        }
-
-        // Add clause to solver
-        if (clause_size > 0) {
-            #ifdef DEBUG
-            if (IS_DEBUG(s)) {
-                printf("[DIMACS] Adding clause %u with %u literals\n", parsed_clauses + 1, clause_size);
-            }
-            #endif
-            if (!solver_add_clause(s, clause, clause_size)) {
-                // Solver detected UNSAT during clause addition (empty clause)
-                // This is OK, continue parsing to validate format
-            }
-            parsed_clauses++;
+            clause[size++] = fromDimacs((int)value);
         }
     }
-
-    // Check if we got the expected number of clauses (warning only)
-    if (header_found && parsed_clauses != expected_clauses) {
-        // This is common in competition instances, just warn
-        // fprintf(stderr, "Warning: expected %u clauses but parsed %u\n",
-        //         expected_clauses, parsed_clauses);
-    }
-
-cleanup:
+    if (ferror(file)) result = DIMACS_ERROR_FILE;
+    else if (!size && count == (uint32_t)nclauses) result = DIMACS_OK;
+done:
     free(clause);
-    free(line);
     return result;
 }
 
@@ -311,26 +163,30 @@ void dimacs_write_solution(const Solver* s, FILE* out) {
     }
 }
 
-void dimacs_write_proof(const Solver* s, FILE* out) {
-    // TODO: Implement proof output (DRAT format)
-    (void)s;
-    (void)out;
+bool dimacs_write_proof(const Solver* s, FILE* out) {
+    if (!s || !out || !s->proof_file || !s->opts.proof_path || s->result != FALSE) return false;
+    if (fflush(s->proof_file)) return false;
+    FILE *input=fopen(s->opts.proof_path,"rb");
+    if (!input) return false;
+    struct stat source, target;
+    if (!fstat(fileno(input), &source) && !fstat(fileno(out), &target) &&
+        source.st_dev == target.st_dev && source.st_ino == target.st_ino) {
+        fclose(input); return false;
+    }
+    char buffer[8192];size_t n;
+    bool ok=true;
+    while ((n=fread(buffer,1,sizeof buffer,input)))
+        if (fwrite(buffer,1,n,out)!=n) { ok=false;break; }
+    if (ferror(input)) ok=false;
+    fclose(input);
+    return ok && !fflush(out);
 }
 
 void dimacs_write_cnf(const Solver* s, FILE* out) {
-    fprintf(out, "p cnf %u %u\n", s->num_vars, s->num_original);
-
-    // Write only original clauses
-    for (uint32_t i = 0; i < s->num_clauses; i++) {
-        CRef cref = s->clauses[i];
-        if (!clause_learned(s->arena, cref)) {
-            uint32_t size = CLAUSE_SIZE(s->arena, cref);
-            Lit* lits = CLAUSE_LITS(s->arena, cref);
-
-            for (uint32_t j = 0; j < size; j++) {
-                fprintf(out, "%d ", toDimacs(lits[j]));
-            }
-            fprintf(out, "0\n");
-        }
+    fprintf(out, "p cnf %u %u\n", s->num_vars, s->input_clauses);
+    for (size_t i = 0; i < s->input_size; ++i) {
+        Lit lit = s->input[i];
+        if (lit) fprintf(out, "%d ", toDimacs(lit));
+        else fprintf(out, "0\n");
     }
 }

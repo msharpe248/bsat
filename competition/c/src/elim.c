@@ -1,759 +1,198 @@
-/*********************************************************************
- * BSAT Competition Solver - Bounded Variable Elimination (BVE)
- *
- * Implements SatELite-style variable elimination preprocessing.
- * Reference: Eén & Biere, "Effective Preprocessing in SAT through
- *            Variable and Clause Elimination" (SAT 2005)
- *********************************************************************/
-
-#include "../include/elim.h"
+/* Bounded resolution elimination. All removed clauses are retained for model
+ * reconstruction; resolvents are staged before arena mutations invalidate pointers. */
 #include "../include/solver.h"
-#include <stdlib.h>
-#include <string.h>
 #include <stdio.h>
-#include <limits.h>
+#include <string.h>
 
-/*********************************************************************
- * Initial Capacity Constants
- *********************************************************************/
-
-#define INITIAL_OCC_CAPACITY 8
-#define INITIAL_STACK_CAPACITY 256
-
-/*********************************************************************
- * Forward Declarations
- *********************************************************************/
-
-// DRAT proof logging (defined in solver.c when proof is enabled)
-extern void proof_add_clause(Solver* s, const Lit* lits, uint32_t size);
-extern void proof_delete_clause(Solver* s, const Lit* lits, uint32_t size);
-
-/*********************************************************************
- * Occurrence List Management
- *********************************************************************/
-
-static void occ_ensure_capacity(OccList* occ, uint32_t min_cap) {
-    if (occ->capacity >= min_cap) return;
-
-    uint32_t new_cap = occ->capacity ? occ->capacity * 2 : INITIAL_OCC_CAPACITY;
-    while (new_cap < min_cap) new_cap *= 2;
-
-    CRef* new_clauses = (CRef*)realloc(occ->clauses, new_cap * sizeof(CRef));
-    if (!new_clauses) {
-        // Out of memory - just return, caller will handle
-        return;
-    }
-    occ->clauses = new_clauses;
-    occ->capacity = new_cap;
-}
-
-void elim_add_occ(Solver* s, Lit lit, CRef cref) {
-    if (!s->elim || lit >= s->elim->occs_capacity) return;
-
-    OccList* occ = &s->elim->occs[lit];
-    occ_ensure_capacity(occ, occ->size + 1);
-    if (occ->size < occ->capacity) {
-        occ->clauses[occ->size++] = cref;
-    }
-}
-
-void elim_remove_occ(Solver* s, Lit lit, CRef cref) {
-    if (!s->elim || lit >= s->elim->occs_capacity) return;
-
-    OccList* occ = &s->elim->occs[lit];
-    for (uint32_t i = 0; i < occ->size; i++) {
-        if (occ->clauses[i] == cref) {
-            // Swap with last and shrink
-            occ->clauses[i] = occ->clauses[occ->size - 1];
-            occ->size--;
-            return;
-        }
-    }
-}
-
-void elim_clear_occs(Solver* s) {
-    if (!s->elim) return;
-
-    for (uint32_t i = 0; i < s->elim->occs_capacity; i++) {
-        s->elim->occs[i].size = 0;
-    }
-}
-
-/*********************************************************************
- * Initialization and Cleanup
- *********************************************************************/
-
-void elim_init(Solver* s) {
-    if (s->elim) return;  // Already initialized
-
-    s->elim = (ElimState*)calloc(1, sizeof(ElimState));
-    if (!s->elim) return;
-
-    // Allocate occurrence lists (2 per variable: positive and negative literal)
-    uint32_t num_lits = 2 * (s->num_vars + 1);
-    s->elim->occs = (OccList*)calloc(num_lits, sizeof(OccList));
-    s->elim->occs_capacity = num_lits;
-
-    // Allocate elimination stack
-    s->elim->stack = (ElimEntry*)malloc(INITIAL_STACK_CAPACITY * sizeof(ElimEntry));
-    s->elim->stack_capacity = INITIAL_STACK_CAPACITY;
-    s->elim->stack_size = 0;
-
-    // Allocate eliminated flags
-    s->elim->eliminated = (bool*)calloc(s->num_vars + 1, sizeof(bool));
+void elim_init(Solver *s) {
+    if (s->elim) return;
+    s->elim = calloc(1, sizeof *s->elim);
+    if (!s->elim) { s->error = true; return; }
+    s->elim->occs_capacity = 2 * (s->num_vars + 1);
     s->elim->elim_capacity = s->num_vars + 1;
-
-    // Initialize statistics
-    s->elim->vars_eliminated = 0;
-    s->elim->clauses_removed = 0;
-    s->elim->resolvents_added = 0;
-
-    // Initialize resolvent tracking for debugging
-    s->elim->resolvent_crefs = NULL;
-    s->elim->resolvent_crefs_size = 0;
-    s->elim->resolvent_crefs_capacity = 0;
+    s->elim->occs = calloc(s->elim->occs_capacity, sizeof(OccList));
+    s->elim->eliminated = calloc(s->elim->elim_capacity, sizeof(bool));
+    if (!s->elim->occs || !s->elim->eliminated) s->error = true;
 }
-
-void elim_free(Solver* s) {
-    if (!s->elim) return;
-
-    // Free occurrence lists
-    if (s->elim->occs) {
-        for (uint32_t i = 0; i < s->elim->occs_capacity; i++) {
-            free(s->elim->occs[i].clauses);
-        }
-        free(s->elim->occs);
-    }
-
-    // Free elimination stack entries (clauses are copies)
-    if (s->elim->stack) {
-        for (uint32_t i = 0; i < s->elim->stack_size; i++) {
-            free(s->elim->stack[i].clause);
-        }
-        free(s->elim->stack);
-    }
-
-    // Free eliminated flags
-    free(s->elim->eliminated);
-
-    // Free resolvent tracking
-    free(s->elim->resolvent_crefs);
-
-    free(s->elim);
+void elim_free(Solver *s) {
+    ElimState *e = s->elim;
+    if (!e) return;
+    if (e->occs) for (uint32_t i = 0; i < e->occs_capacity; ++i) free(e->occs[i].clauses);
+    for (uint32_t i = 0; i < e->stack_size; ++i) free(e->stack[i].clause);
+    free(e->occs); free(e->eliminated); free(e->stack); free(e->resolvent_crefs); free(e);
     s->elim = NULL;
 }
-
-/*********************************************************************
- * Build Occurrence Lists
- *********************************************************************/
-
-void elim_build_occs(Solver* s) {
-    if (!s->elim) return;
-
-    elim_clear_occs(s);
-
-    // Iterate through all clauses in the arena
-    for (uint32_t i = 0; i < s->num_clauses; i++) {
-        CRef cref = s->clauses[i];
-        if (cref == INVALID_CLAUSE) continue;
-        if (clause_deleted(s->arena, cref)) continue;
-
-        uint32_t size = CLAUSE_SIZE(s->arena, cref);
-        Lit* lits = CLAUSE_LITS(s->arena, cref);
-
-        for (uint32_t j = 0; j < size; j++) {
-            elim_add_occ(s, lits[j], cref);
-        }
-    }
-
-    // Also process binary clauses from watch lists
-    // Binary clauses are stored implicitly in watches
-    // We need to iterate through watches to find them
-    for (Var v = 1; v <= s->num_vars; v++) {
-        for (int sign_val = 0; sign_val <= 1; sign_val++) {
-            Lit lit = mkLit(v, sign_val);
-            WatchList* wl = watch_list(s->watches, lit);
-
-            for (uint32_t i = 0; i < wl->size; i++) {
-                Watch w = wl->watches[i];
-                // Binary clauses have INVALID_CLAUSE as cref
-                if (w.cref == INVALID_CLAUSE) {
-                    // This is a binary clause: (neg(lit), w.blocker)
-                    // We record it in occurrence list for the other literal
-                    // But we need to be careful not to double-count
-                    // Only add when we see the smaller literal first
-                    if (lit < neg(lit)) {
-                        // We can't use arena clauses for binary - skip for now
-                        // Binary clause handling is more complex
-                    }
-                }
-            }
-        }
-    }
+void elim_clear_occs(Solver *s) {
+    if (s->elim && s->elim->occs)
+        for (uint32_t i = 0; i < s->elim->occs_capacity; ++i) s->elim->occs[i].size = 0;
 }
-
-/*********************************************************************
- * Tautology Check
- *********************************************************************/
-
-bool elim_is_tautology(const Lit* c1, uint32_t s1,
-                       const Lit* c2, uint32_t s2,
-                       Var pivot) {
-    // Check if resolving c1 and c2 on pivot produces a tautology
-    // A resolvent is a tautology if it contains both x and ¬x for some variable
-
-    // Quick check: mark all literals from c1 (except pivot)
-    // Then check if c2 contains the negation of any
-
-    // For efficiency, use a simple O(n*m) approach for small clauses
-    // For larger clauses, could use a bitmap
-
-    for (uint32_t i = 0; i < s1; i++) {
-        Var vi = var(c1[i]);
-        if (vi == pivot) continue;
-
-        for (uint32_t j = 0; j < s2; j++) {
-            Var vj = var(c2[j]);
-            if (vj == pivot) continue;
-
-            // Check if c1[i] and c2[j] are opposite literals of same variable
-            if (vi == vj && sign(c1[i]) != sign(c2[j])) {
-                return true;  // Tautology!
-            }
+void elim_add_occ(Solver *s, Lit l, CRef cr) {
+    OccList *o = &s->elim->occs[l];
+    if (o->size == o->capacity) {
+        uint32_t cap = o->capacity ? o->capacity * 2 : 8;
+        CRef *p = realloc(o->clauses, cap * sizeof *p);
+        if (!p) { s->error = true; return; }
+        o->clauses = p; o->capacity = cap;
+    }
+    o->clauses[o->size++] = cr;
+}
+void elim_remove_occ(Solver *s, Lit l, CRef cr) {
+    OccList *o = &s->elim->occs[l];
+    for (uint32_t i = 0; i < o->size; ++i)
+        if (o->clauses[i] == cr) { o->clauses[i] = o->clauses[--o->size]; return; }
+}
+void elim_build_occs(Solver *s) {
+    elim_init(s);
+    if (s->error) return;
+    elim_clear_occs(s);
+    s->elim->occs_complete=false;
+    for (uint32_t i = 0; i < s->num_clauses; ++i) {
+        CRef cr = s->clauses[i];
+        if (cr == INVALID_CLAUSE || clause_deleted(s->arena, cr)) continue;
+        for (uint32_t j = 0; j < CLAUSE_SIZE(s->arena, cr); ++j) {
+            s->work++;
+            if ((s->work & 1023)==0 && solver_budget_exhausted(s)) return;
+            elim_add_occ(s, CLAUSE_LITS(s->arena, cr)[j], cr);
         }
     }
-
+    s->elim->occs_complete=!s->error;
+}
+bool elim_is_tautology(const Lit *a, uint32_t na, const Lit *b, uint32_t nb, Var v) {
+    for (uint32_t i = 0; i < na; ++i) if (var(a[i]) != v)
+        for (uint32_t j = 0; j < nb; ++j) if (var(b[j]) != v && a[i] == neg(b[j])) return true;
     return false;
 }
-
-/*********************************************************************
- * Elimination Cost Calculation
- *********************************************************************/
-
-// Sentinel value meaning "don't eliminate this variable"
-#define ELIM_SKIP INT_MAX
-
-int elim_cost(Solver* s, Var v) {
-    if (!s->elim || v >= s->elim->elim_capacity) return ELIM_SKIP;
-    if (s->elim->eliminated[v]) return ELIM_SKIP;
-    if (s->vars[v].value != UNDEF) return ELIM_SKIP;  // Already assigned
-
-    Lit pos = mkLit(v, false);  // Positive literal
-    Lit negl = mkLit(v, true);   // Negative literal
-
-    OccList* pos_occs = &s->elim->occs[pos];
-    OccList* neg_occs = &s->elim->occs[negl];
-
-    uint32_t pos_count = pos_occs->size;
-    uint32_t neg_count = neg_occs->size;
-
-    // Check occurrence limits
-    if (pos_count > s->opts.elim_max_occ || neg_count > s->opts.elim_max_occ) {
-        return ELIM_SKIP;  // Too many occurrences
-    }
-
-    // If either side has no occurrences, elimination is trivially beneficial
-    if (pos_count == 0 || neg_count == 0) {
-        return 0;  // Can eliminate with 0 resolvents
-    }
-
-    // Count non-tautological resolvents
-    int resolvent_count = 0;
-    int original_count = (int)pos_count + (int)neg_count;
-
-    for (uint32_t i = 0; i < pos_count; i++) {
-        CRef cref_i = pos_occs->clauses[i];
-        if (clause_deleted(s->arena, cref_i)) continue;
-
-        uint32_t size_i = CLAUSE_SIZE(s->arena, cref_i);
-        Lit* lits_i = CLAUSE_LITS(s->arena, cref_i);
-
-        for (uint32_t j = 0; j < neg_count; j++) {
-            CRef cref_j = neg_occs->clauses[j];
-            if (clause_deleted(s->arena, cref_j)) continue;
-
-            uint32_t size_j = CLAUSE_SIZE(s->arena, cref_j);
-            Lit* lits_j = CLAUSE_LITS(s->arena, cref_j);
-
-            if (!elim_is_tautology(lits_i, size_i, lits_j, size_j, v)) {
-                resolvent_count++;
-
-                // Early termination: if resolvents already exceed original count + growth limit
-                if (resolvent_count > original_count + (int)s->opts.elim_grow) {
-                    return ELIM_SKIP;  // Not beneficial
-                }
-            }
-        }
-    }
-
-    // Check if elimination is beneficial
-    if (resolvent_count <= original_count + (int)s->opts.elim_grow) {
-        return resolvent_count - original_count;  // Return net change (negative = good)
-    }
-
-    return ELIM_SKIP;  // Not beneficial
+static void clean_occ(Solver *s, OccList *o) {
+    uint32_t n = 0;
+    for (uint32_t i = 0; i < o->size; ++i)
+        if (!clause_deleted(s->arena, o->clauses[i])) o->clauses[n++] = o->clauses[i];
+    o->size = n;
 }
-
-/*********************************************************************
- * Compute Resolvent
- *********************************************************************/
-
-// Compute resolvent of two clauses on pivot variable
-// Returns allocated array of literals (caller must free)
-// Returns NULL if resolvent is tautology
-static Lit* compute_resolvent(const Lit* c1, uint32_t s1,
-                              const Lit* c2, uint32_t s2,
-                              Var pivot, uint32_t* result_size) {
-    // Maximum size of resolvent
-    uint32_t max_size = s1 + s2 - 2;  // Remove one literal from each
-    Lit* result = (Lit*)malloc(max_size * sizeof(Lit));
-    if (!result) return NULL;
-
-    uint32_t rsize = 0;
-
-    // Add all literals from c1 except pivot
-    for (uint32_t i = 0; i < s1; i++) {
-        if (var(c1[i]) != pivot) {
-            result[rsize++] = c1[i];
-        }
+int elim_cost(Solver *s, Var v) {
+    if (!s->elim || s->values[v] != UNDEF || s->elim->eliminated[v]) return -1;
+    OccList *p = &s->elim->occs[mkLit(v, false)], *n = &s->elim->occs[mkLit(v, true)];
+    clean_occ(s, p); clean_occ(s, n);
+    if (!p->size && !n->size) return -1;
+    if (p->size > s->opts.elim_max_occ || n->size > s->opts.elim_max_occ) return -1;
+    int count = 0;
+    for (uint32_t i = 0; i < p->size; ++i) for (uint32_t j = 0; j < n->size; ++j) {
+        CRef a = p->clauses[i], b = n->clauses[j];
+        uint32_t na = CLAUSE_SIZE(s->arena, a), nb = CLAUSE_SIZE(s->arena, b);
+        s->work += (uint64_t)na * nb;
+        if (solver_budget_exhausted(s)) return -1;
+        if (!elim_is_tautology(CLAUSE_LITS(s->arena, a), na, CLAUSE_LITS(s->arena, b), nb, v)) count++;
+        if ((uint32_t)count > p->size + n->size + s->opts.elim_grow) return -1;
     }
-
-    // Add literals from c2 except pivot and duplicates
-    for (uint32_t j = 0; j < s2; j++) {
-        Lit lit = c2[j];
-        if (var(lit) == pivot) continue;
-
-        // Check for duplicate or opposite
-        bool found = false;
-        for (uint32_t k = 0; k < rsize; k++) {
-            if (var(result[k]) == var(lit)) {
-                if (sign(result[k]) != sign(lit)) {
-                    // Tautology! (opposite literals)
-                    free(result);
-                    return NULL;
-                }
-                found = true;  // Duplicate
-                break;
-            }
-        }
-
-        if (!found) {
-            result[rsize++] = lit;
-        }
-    }
-
-    *result_size = rsize;
-    return result;
+    return count;
 }
-
-/*********************************************************************
- * Eliminate Variable
- *********************************************************************/
-
-bool elim_eliminate_var(Solver* s, Var v) {
-    if (!s->elim) return false;
-    if (s->elim->eliminated[v]) return false;
-    if (s->vars[v].value != UNDEF) return false;
-
-    Lit pos = mkLit(v, false);
-    Lit negl = mkLit(v, true);
-
-    OccList* pos_occs = &s->elim->occs[pos];
-    OccList* neg_occs = &s->elim->occs[negl];
-
-    // Save one positive clause for reconstruction
-    // (We need to save a clause containing +v before deletion)
-    ElimEntry entry;
-    entry.var = v;
-    entry.clause = NULL;
-    entry.clause_size = 0;
-
-    if (pos_occs->size > 0) {
-        CRef cref = pos_occs->clauses[0];
-        if (!clause_deleted(s->arena, cref)) {
-            uint32_t size = CLAUSE_SIZE(s->arena, cref);
-            Lit* lits = CLAUSE_LITS(s->arena, cref);
-            entry.clause = (Lit*)malloc(size * sizeof(Lit));
-            if (entry.clause) {
-                memcpy(entry.clause, lits, size * sizeof(Lit));
-                entry.clause_size = size;
-            }
-        }
+bool elim_save(Solver *s, Var v, const Lit *lits, uint32_t size) {
+    elim_init(s);
+    if (s->error) return false;
+    ElimState *e = s->elim;
+    if (e->stack_size == e->stack_capacity) {
+        uint32_t cap = e->stack_capacity ? e->stack_capacity * 2 : 32;
+        ElimEntry *p = realloc(e->stack, cap * sizeof *p);
+        if (!p) { s->error = true; return false; }
+        e->stack = p; e->stack_capacity = cap;
     }
-
-    // If no positive clause, try negative
-    if (!entry.clause && neg_occs->size > 0) {
-        CRef cref = neg_occs->clauses[0];
-        if (!clause_deleted(s->arena, cref)) {
-            uint32_t size = CLAUSE_SIZE(s->arena, cref);
-            Lit* lits = CLAUSE_LITS(s->arena, cref);
-            entry.clause = (Lit*)malloc(size * sizeof(Lit));
-            if (entry.clause) {
-                memcpy(entry.clause, lits, size * sizeof(Lit));
-                entry.clause_size = size;
-            }
-        }
-    }
-
-    // Generate all resolvents
-    for (uint32_t i = 0; i < pos_occs->size; i++) {
-        CRef cref_i = pos_occs->clauses[i];
-        if (clause_deleted(s->arena, cref_i)) continue;
-
-        uint32_t size_i = CLAUSE_SIZE(s->arena, cref_i);
-        Lit* lits_i = CLAUSE_LITS(s->arena, cref_i);
-
-        for (uint32_t j = 0; j < neg_occs->size; j++) {
-            CRef cref_j = neg_occs->clauses[j];
-            if (clause_deleted(s->arena, cref_j)) continue;
-
-            uint32_t size_j = CLAUSE_SIZE(s->arena, cref_j);
-            Lit* lits_j = CLAUSE_LITS(s->arena, cref_j);
-
-            uint32_t rsize;
-            Lit* resolvent = compute_resolvent(lits_i, size_i, lits_j, size_j, v, &rsize);
-
-            if (resolvent) {
-                if (rsize == 0) {
-                    // Empty clause - UNSAT
-                    free(resolvent);
-                    free(entry.clause);
-                    s->result = FALSE;
-                    return false;
-                }
-
-                if (rsize == 1) {
-                    // Unit clause - propagate immediately at level 0
-                    Lit unit = resolvent[0];
-                    Var uv = var(unit);
-                    lbool val = s->vars[uv].value;
-                    if (val == UNDEF) {
-                        // Propagate immediately at level 0
-                        s->vars[uv].value = sign(unit) ? FALSE : TRUE;
-                        s->vars[uv].level = 0;
-                        s->vars[uv].reason = INVALID_CLAUSE;
-                        s->vars[uv].trail_pos = s->trail_size;
-                        s->trail[s->trail_size].lit = unit;
-                        s->trail[s->trail_size].level = 0;
-                        s->trail_size++;
-                        if (s->proof_file) {
-                            proof_add_clause(s, resolvent, 1);
-                        }
-                        s->elim->resolvents_added++;
-                    } else if ((val == TRUE && sign(unit)) || (val == FALSE && !sign(unit))) {
-                        // Conflict - unit clause is falsified
-                        free(resolvent);
-                        free(entry.clause);
-                        s->result = FALSE;
-                        return false;
-                    }
-                    // Already satisfied - skip
-                } else {
-                    // Check resolvent status at level 0 before adding
-                    // Some literals might already be assigned from earlier unit propagations
-                    uint32_t unassigned_count = 0;
-                    uint32_t first_unassigned = UINT32_MAX;
-                    uint32_t second_unassigned = UINT32_MAX;
-                    bool satisfied = false;
-
-                    for (uint32_t k = 0; k < rsize; k++) {
-                        Var rv = var(resolvent[k]);
-                        lbool val = s->vars[rv].value;
-                        if (val == UNDEF) {
-                            if (first_unassigned == UINT32_MAX) {
-                                first_unassigned = k;
-                            } else if (second_unassigned == UINT32_MAX) {
-                                second_unassigned = k;
-                            }
-                            unassigned_count++;
-                        } else if ((val == TRUE && !sign(resolvent[k])) ||
-                                   (val == FALSE && sign(resolvent[k]))) {
-                            // Literal is true - clause is satisfied
-                            satisfied = true;
-                            break;
-                        }
-                        // else: literal is false, continue checking
-                    }
-
-                    if (satisfied) {
-                        // Clause already satisfied, skip it
-                        free(resolvent);
-                        continue;
-                    }
-
-                    if (unassigned_count == 0) {
-                        // All literals are false - conflict at level 0 = UNSAT
-                        free(resolvent);
-                        free(entry.clause);
-                        s->result = FALSE;
-                        return false;
-                    }
-
-                    if (unassigned_count == 1) {
-                        // Unit clause - propagate immediately
-                        Lit unit = resolvent[first_unassigned];
-                        Var uv = var(unit);
-                        s->vars[uv].value = sign(unit) ? FALSE : TRUE;
-                        s->vars[uv].level = 0;
-                        s->vars[uv].reason = INVALID_CLAUSE;
-                        s->vars[uv].trail_pos = s->trail_size;
-                        s->trail[s->trail_size].lit = unit;
-                        s->trail[s->trail_size].level = 0;
-                        s->trail_size++;
-                        if (s->proof_file) {
-                            proof_add_clause(s, resolvent, rsize);
-                        }
-                        s->elim->resolvents_added++;
-                        free(resolvent);
-                        continue;
-                    }
-
-                    // Move unassigned literals to front for proper watching
-                    if (first_unassigned != 0) {
-                        Lit tmp = resolvent[0];
-                        resolvent[0] = resolvent[first_unassigned];
-                        resolvent[first_unassigned] = tmp;
-                        if (second_unassigned == 0) {
-                            second_unassigned = first_unassigned;
-                        }
-                    }
-                    if (second_unassigned != 1) {
-                        Lit tmp = resolvent[1];
-                        resolvent[1] = resolvent[second_unassigned];
-                        resolvent[second_unassigned] = tmp;
-                    }
-
-                    // Add resolvent clause
-                    CRef new_cref = arena_alloc(s->arena, resolvent, rsize, false);
-                    if (new_cref != INVALID_CLAUSE) {
-                        // Add to occurrence lists for all literals
-                        for (uint32_t k = 0; k < rsize; k++) {
-                            elim_add_occ(s, resolvent[k], new_cref);
-                        }
-
-                        // Add watches for first two (unassigned) literals
-                        watch_add(s->watches, resolvent[0], new_cref, resolvent[1]);
-                        watch_add(s->watches, resolvent[1], new_cref, resolvent[0]);
-
-                        // Log to DRAT if enabled
-                        if (s->proof_file) {
-                            proof_add_clause(s, resolvent, rsize);
-                        }
-
-                        // Track resolvent CRef for debugging
-                        if (s->elim->resolvent_crefs_size >= s->elim->resolvent_crefs_capacity) {
-                            uint32_t new_cap = s->elim->resolvent_crefs_capacity ? s->elim->resolvent_crefs_capacity * 2 : 64;
-                            CRef* new_arr = (CRef*)realloc(s->elim->resolvent_crefs, new_cap * sizeof(CRef));
-                            if (new_arr) {
-                                s->elim->resolvent_crefs = new_arr;
-                                s->elim->resolvent_crefs_capacity = new_cap;
-                            }
-                        }
-                        if (s->elim->resolvent_crefs_size < s->elim->resolvent_crefs_capacity) {
-                            s->elim->resolvent_crefs[s->elim->resolvent_crefs_size++] = new_cref;
-                        }
-
-                        s->elim->resolvents_added++;
-                    }
-                }
-
-                free(resolvent);
-            }
-        }
-    }
-
-    // Delete original clauses containing v
-    for (uint32_t i = 0; i < pos_occs->size; i++) {
-        CRef cref = pos_occs->clauses[i];
-        if (clause_deleted(s->arena, cref)) continue;
-
-        uint32_t size = CLAUSE_SIZE(s->arena, cref);
-        Lit* lits = CLAUSE_LITS(s->arena, cref);
-
-        // Log deletion to DRAT
-        if (s->proof_file) {
-            proof_delete_clause(s, lits, size);
-        }
-
-        // Remove from occurrence lists
-        for (uint32_t j = 0; j < size; j++) {
-            if (var(lits[j]) != v) {
-                elim_remove_occ(s, lits[j], cref);
-            }
-        }
-
-        // Mark as deleted
-        arena_delete(s->arena, cref);
-        s->elim->clauses_removed++;
-    }
-
-    for (uint32_t i = 0; i < neg_occs->size; i++) {
-        CRef cref = neg_occs->clauses[i];
-        if (clause_deleted(s->arena, cref)) continue;
-
-        uint32_t size = CLAUSE_SIZE(s->arena, cref);
-        Lit* lits = CLAUSE_LITS(s->arena, cref);
-
-        // Log deletion to DRAT
-        if (s->proof_file) {
-            proof_delete_clause(s, lits, size);
-        }
-
-        // Remove from occurrence lists
-        for (uint32_t j = 0; j < size; j++) {
-            if (var(lits[j]) != v) {
-                elim_remove_occ(s, lits[j], cref);
-            }
-        }
-
-        // Mark as deleted
-        arena_delete(s->arena, cref);
-        s->elim->clauses_removed++;
-    }
-
-    // Clear occurrence lists for this variable
-    pos_occs->size = 0;
-    neg_occs->size = 0;
-
-    // Mark variable as eliminated
-    s->elim->eliminated[v] = true;
-    s->elim->vars_eliminated++;
-
-    // Push to elimination stack
-    if (s->elim->stack_size >= s->elim->stack_capacity) {
-        uint32_t new_cap = s->elim->stack_capacity * 2;
-        ElimEntry* new_stack = (ElimEntry*)realloc(s->elim->stack, new_cap * sizeof(ElimEntry));
-        if (new_stack) {
-            s->elim->stack = new_stack;
-            s->elim->stack_capacity = new_cap;
-        }
-    }
-
-    if (s->elim->stack_size < s->elim->stack_capacity) {
-        s->elim->stack[s->elim->stack_size++] = entry;
-    } else {
-        free(entry.clause);  // Couldn't save, free the copy
-    }
-
-    // Note: eliminated variables are tracked in s->elim->eliminated[v]
-    // The solver's decide() function should check this before making decisions
-    // We don't set value=TRUE because that would confuse the solver
-
+    Lit *copy = malloc((size ? size : 1) * sizeof *copy);
+    if (!copy) { s->error = true; return false; }
+    if (size) memcpy(copy, lits, size * sizeof *copy);
+    e->stack[e->stack_size++] = (ElimEntry){v, copy, size};
     return true;
 }
-
-/*********************************************************************
- * Main BVE Preprocessing Loop
- *********************************************************************/
-
-uint32_t elim_preprocess(Solver* s) {
-    if (!s->opts.elim) return 0;
-
-    // Initialize elimination state
-    elim_init(s);
-    if (!s->elim) return 0;
-
-    // Build occurrence lists
+bool elim_eliminate_var(Solver *s, Var v) {
+    int cost = elim_cost(s, v);
+    if (cost < 0) return false;
+    OccList *p = &s->elim->occs[mkLit(v, false)], *n = &s->elim->occs[mkLit(v, true)];
+    uint32_t count = p->size + n->size;
+    CRef *removed = malloc(count * sizeof *removed);
+    Lit **res = calloc((size_t)cost + 1, sizeof *res);
+    uint32_t *sizes = calloc((size_t)cost + 1, sizeof *sizes);
+    Lit *saved = NULL;
+    uint32_t saved_size = 0, nr = 0;
+    if (!removed || !res || !sizes) { s->error = true; goto done; }
+    if (p->size) memcpy(removed, p->clauses, p->size * sizeof *removed);
+    if (n->size) memcpy(removed + p->size, n->clauses, n->size * sizeof *removed);
+    for (uint32_t i = 0; i < count; ++i) saved_size += CLAUSE_SIZE(s->arena, removed[i]) + 1;
+    saved = malloc(saved_size * sizeof *saved);
+    if (!saved) { s->error = true; goto done; }
+    uint32_t at = 0;
+    for (uint32_t i = 0; i < count; ++i) {
+        uint32_t z = CLAUSE_SIZE(s->arena, removed[i]);
+        memcpy(saved + at, CLAUSE_LITS(s->arena, removed[i]), z * sizeof *saved);
+        at += z; saved[at++] = 0;
+    }
+    for (uint32_t i = 0; i < p->size; ++i) for (uint32_t j = 0; j < n->size; ++j) {
+        CRef ca = p->clauses[i], cb = n->clauses[j];
+        uint32_t na = CLAUSE_SIZE(s->arena, ca), nb = CLAUSE_SIZE(s->arena, cb);
+        Lit *a = CLAUSE_LITS(s->arena, ca), *b = CLAUSE_LITS(s->arena, cb);
+        if (elim_is_tautology(a, na, b, nb, v)) continue;
+        Lit *r = malloc((na + nb) * sizeof *r);
+        if (!r) { s->error = true; goto done; }
+        uint32_t z = 0;
+        for (uint32_t k = 0; k < na; ++k) if (var(a[k]) != v) r[z++] = a[k];
+        for (uint32_t k = 0; k < nb; ++k) if (var(b[k]) != v) {
+            bool duplicate = false;
+            for (uint32_t t = 0; t < z; ++t) if (r[t] == b[k]) duplicate = true;
+            if (!duplicate) r[z++] = b[k];
+        }
+        res[nr] = r; sizes[nr++] = z;
+    }
+    if (!elim_save(s, v, saved, saved_size)) goto done;
+    for (uint32_t i = 0; i < nr && !s->error && s->result != FALSE; ++i) {
+        proof_add_clause(s, res[i], sizes[i]);
+        uint32_t before = s->num_clauses;
+        s->internal_add = true;
+        solver_add_clause(s, res[i], sizes[i]);
+        s->internal_add = false;
+        for (uint32_t k = before; k < s->num_clauses; ++k) {
+            CRef cr = s->clauses[k];
+            for (uint32_t j = 0; j < CLAUSE_SIZE(s->arena, cr); ++j)
+                elim_add_occ(s, CLAUSE_LITS(s->arena, cr)[j], cr);
+        }
+        s->elim->resolvents_added++;
+    }
+    if (!s->error) {
+        for (uint32_t i = 0; i < count; ++i) solver_delete_clause(s, removed[i]);
+        s->elim->eliminated[v] = true;
+        s->elim->vars_eliminated++; s->elim->clauses_removed += count;
+    }
+done:
+    for (uint32_t i = 0; i < nr; ++i) free(res[i]);
+    free(res); free(sizes); free(removed); free(saved);
+    return !s->error;
+}
+uint32_t elim_preprocess(Solver *s) {
     elim_build_occs(s);
-
-    uint32_t eliminated = 0;
-
-    // Single pass elimination (safer than iterative)
-    // Can do multiple passes but requires careful occurrence list management
-    for (Var v = 1; v <= s->num_vars; v++) {
-        if (s->elim->eliminated[v]) continue;
-        if (s->vars[v].value != UNDEF) continue;
-
-        int cost = elim_cost(s, v);
-        if (cost != ELIM_SKIP && cost <= 0) {  // Beneficial (cost <= 0 means net reduction)
-            if (elim_eliminate_var(s, v)) {
-                eliminated++;
-
-                // Check for UNSAT
-                if (s->result == FALSE) {
-                    return eliminated;
-                }
-            }
-        }
+    uint32_t count = 0;
+    if (!s->elim || !s->elim->occs_complete) return 0;
+    for (Var v = 1; v <= s->num_vars && !s->error && s->result != FALSE; ++v) {
+        if (solver_budget_exhausted(s)) break;
+        if (elim_eliminate_var(s, v)) count++;
+        if (solver_propagate(s) != INVALID_CLAUSE) s->result = FALSE;
     }
-
-    if (eliminated > 0 && !s->opts.quiet) {
-        printf("c [BVE] Eliminated %u variables, removed %llu clauses, added %llu resolvents\n",
-               eliminated,
-               (unsigned long long)s->elim->clauses_removed,
-               (unsigned long long)s->elim->resolvents_added);
-    }
-
-    return eliminated;
+    return count;
 }
-
-/*********************************************************************
- * Solution Reconstruction
- *********************************************************************/
-
-void elim_extend_model(Solver* s) {
-    if (!s->elim || s->elim->stack_size == 0) return;
-
-    // Process elimination stack in reverse order
-    for (int i = (int)s->elim->stack_size - 1; i >= 0; i--) {
-        ElimEntry* entry = &s->elim->stack[i];
-        Var v = entry->var;
-
-        if (!entry->clause || entry->clause_size == 0) {
-            // No saved clause - assign arbitrarily (true)
-            s->vars[v].value = TRUE;
-            continue;
-        }
-
-        // Check if saved clause is satisfied by current model
-        bool satisfied = false;
-        Lit v_lit = INVALID_LIT;
-
-        for (uint32_t j = 0; j < entry->clause_size; j++) {
-            Lit lit = entry->clause[j];
-            if (var(lit) == v) {
-                v_lit = lit;
-            } else {
-                // Check if this literal is satisfied
-                lbool val = s->vars[var(lit)].value;
-                if ((val == TRUE && !sign(lit)) || (val == FALSE && sign(lit))) {
-                    satisfied = true;
-                    break;
-                }
-            }
-        }
-
-        if (!satisfied && v_lit != INVALID_LIT) {
-            // Clause is not satisfied by other literals
-            // v_lit must be true to satisfy clause
-            s->vars[v].value = sign(v_lit) ? FALSE : TRUE;
-        } else {
-            // Clause already satisfied, assign v arbitrarily
-            s->vars[v].value = TRUE;
-        }
-    }
-}
-
-/*********************************************************************
- * Utility Functions
- *********************************************************************/
-
-bool elim_is_eliminated(const Solver* s, Var v) {
-    if (!s->elim || v >= s->elim->elim_capacity) return false;
-    return s->elim->eliminated[v];
-}
-
-OccList* elim_get_occs(Solver* s, Lit lit) {
-    if (!s->elim || lit >= s->elim->occs_capacity) return NULL;
-    return &s->elim->occs[lit];
-}
-
-void elim_print_stats(const Solver* s) {
+void elim_extend_model(Solver *s) {
+    for (Var v = 1; v <= s->num_vars; ++v) if (s->values[v] == UNDEF) s->values[v] = TRUE;
     if (!s->elim) return;
-
-    printf("c ========== BVE Statistics ==========\n");
-    printf("c Variables eliminated: %llu\n", (unsigned long long)s->elim->vars_eliminated);
-    printf("c Clauses removed     : %llu\n", (unsigned long long)s->elim->clauses_removed);
-    printf("c Resolvents added    : %llu\n", (unsigned long long)s->elim->resolvents_added);
-    printf("c =====================================\n");
+    for (uint32_t i = s->elim->stack_size; i > 0;) {
+        ElimEntry *e = &s->elim->stack[--i];
+        bool satisfied = false;
+        Lit pivot = 0;
+        for (uint32_t j = 0; j < e->clause_size; ++j) {
+            Lit l = e->clause[j];
+            if (!l) {
+                if (!satisfied && pivot) s->values[e->var] = sign(pivot) ? FALSE : TRUE;
+                satisfied = false; pivot = 0;
+            } else if (var(l) == e->var) pivot = l;
+            else if (lxor(s->values[var(l)], sign(l)) == TRUE) satisfied = true;
+        }
+    }
+}
+bool elim_is_eliminated(const Solver *s, Var v) { return s->elim && v < s->elim->elim_capacity && s->elim->eliminated[v]; }
+OccList *elim_get_occs(Solver *s, Lit l) { return s->elim && l < s->elim->occs_capacity ? &s->elim->occs[l] : NULL; }
+void elim_print_stats(const Solver *s) {
+    if (s->elim) printf("c Eliminated variables: %llu\\n", (unsigned long long)s->elim->vars_eliminated);
 }

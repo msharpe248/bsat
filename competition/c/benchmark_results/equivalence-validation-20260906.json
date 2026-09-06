@@ -1,0 +1,19 @@
+{
+  "seed": 20260910,
+  "random_cases": 100,
+  "fixed_cases": 13,
+  "configurations": 34,
+  "validation": {
+    "release": "PASS: 3842 solves; truth-table answers, original models, text/binary RUP proofs checked (seed 20260910)",
+    "asan_ubsan": "PASS: 3842 solves; truth-table answers, original models, text/binary RUP proofs checked (seed 20260910)"
+  },
+  "units": {
+    "release": "11/11 passed",
+    "asan_ubsan": "11/11 passed"
+  },
+  "binaries": {
+    "bsat": "628331dd10a2ff67ac822716843c05bdae202a3b41f7519e656c93a1c78d6f5e",
+    "bsat_debug": "004526fcd1c19e6fc929795598fb115136de57977e986282c4f7d34cd7c14181"
+  },
+  "checker_sha256": "9bfc20a5fa9eb2a0ffadd2b0cfc7cdd4a20f6aa9c8d7de5b6c771160b847f630"
+}

@@ -1,0 +1,26 @@
+{
+  "input": "/Users/msharpe/python/bsat/dataset/sat_competition2025/multiplier-circuits/90bec6dcf2399d7c7f73acba44a8641e.cnf",
+  "cpu_limit": 0.5,
+  "wall_limit": 2,
+  "binary_sha256": "21f4aad1cbb7995d5bd376178dc7ee952f514f91d6f6ed198ea795151f60142c",
+  "runs": [
+    {
+      "repeat": 0,
+      "code": 0,
+      "seconds": 0.6767345839180052,
+      "stdout": "c BSAT Competition Solver v1.0\nc PID: 98059 (send SIGUSR1 for progress: kill -USR1 98059)\nc Reading from /Users/msharpe/python/bsat/dataset/sat_competition2025/multiplier-circuits/90bec6dcf2399d7c7f73acba44a8641e.cnf\nc Variables: 15479\nc Clauses:   61596\nc\ns UNKNOWN\nc\nc CPU time:         0.500 s\nc\nc ========== Statistics ==========\nc CPU time          : 0.500 s\nc Decisions         : 53203\nc Propagations      : 6949192\nc Conflicts         : 3374\nc Restarts          : 32\nc Learned clauses   : 3374\nc Learned literals  : 328555\nc Deleted clauses   : 490\nc Minimize inspections: 8547232\nc Minimize binary steps: 0\nc Minimize cache hits : 1669011\nc Minimize budget hits: 756\nc Blocked clauses   : 0\nc Subsumed clauses  : 116\nc Minimized literals: 23849\nc Glue clauses      : 997\nc Max LBD           : 55\nc Decisions/sec     : 106403\nc Propagations/sec  : 13898023\nc Conflicts/sec     : 6748\nc Literal inspections : 34176000\nc Garbage collections : 0\nc Reductions          : 1\nc Mode                : focused\nc Memory used       : 2.95 MB\nc Memory allocated  : 3.85 MB\nc Memory peak       : 2.95 MB\nc Memory wasted     : 0.05 MB\nc Arena growths     : 17\nc\n"
+    },
+    {
+      "repeat": 1,
+      "code": 0,
+      "seconds": 0.5322329169139266,
+      "stdout": "c BSAT Competition Solver v1.0\nc PID: 98060 (send SIGUSR1 for progress: kill -USR1 98060)\nc Reading from /Users/msharpe/python/bsat/dataset/sat_competition2025/multiplier-circuits/90bec6dcf2399d7c7f73acba44a8641e.cnf\nc Variables: 15479\nc Clauses:   61596\nc\ns UNKNOWN\nc\nc CPU time:         0.500 s\nc\nc ========== Statistics ==========\nc CPU time          : 0.500 s\nc Decisions         : 53209\nc Propagations      : 7002437\nc Conflicts         : 3380\nc Restarts          : 32\nc Learned clauses   : 3380\nc Learned literals  : 331060\nc Deleted clauses   : 490\nc Minimize inspections: 8597504\nc Minimize binary steps: 0\nc Minimize cache hits : 1680201\nc Minimize budget hits: 761\nc Blocked clauses   : 0\nc Subsumed clauses  : 116\nc Minimized literals: 23953\nc Glue clauses      : 997\nc Max LBD           : 55\nc Decisions/sec     : 106408\nc Propagations/sec  : 14003502\nc Conflicts/sec     : 6759\nc Literal inspections : 34427057\nc Garbage collections : 0\nc Reductions          : 1\nc Mode                : focused\nc Memory used       : 2.96 MB\nc Memory allocated  : 3.85 MB\nc Memory peak       : 2.96 MB\nc Memory wasted     : 0.05 MB\nc Arena growths     : 17\nc\n"
+    },
+    {
+      "repeat": 2,
+      "code": 0,
+      "seconds": 0.5321721669752151,
+      "stdout": "c BSAT Competition Solver v1.0\nc PID: 98061 (send SIGUSR1 for progress: kill -USR1 98061)\nc Reading from /Users/msharpe/python/bsat/dataset/sat_competition2025/multiplier-circuits/90bec6dcf2399d7c7f73acba44a8641e.cnf\nc Variables: 15479\nc Clauses:   61596\nc\ns UNKNOWN\nc\nc CPU time:         0.500 s\nc\nc ========== Statistics ==========\nc CPU time          : 0.500 s\nc Decisions         : 53205\nc Propagations      : 6976969\nc Conflicts         : 3377\nc Restarts          : 32\nc Learned clauses   : 3377\nc Learned literals  : 329878\nc Deleted clauses   : 490\nc Minimize inspections: 8577232\nc Minimize binary steps: 0\nc Minimize cache hits : 1675651\nc Minimize budget hits: 759\nc Blocked clauses   : 0\nc Subsumed clauses  : 116\nc Minimized literals: 23909\nc Glue clauses      : 997\nc Max LBD           : 55\nc Decisions/sec     : 106403\nc Propagations/sec  : 13953045\nc Conflicts/sec     : 6754\nc Literal inspections : 34305024\nc Garbage collections : 0\nc Reductions          : 1\nc Mode                : focused\nc Memory used       : 2.95 MB\nc Memory allocated  : 3.85 MB\nc Memory peak       : 2.95 MB\nc Memory wasted     : 0.05 MB\nc Arena growths     : 17\nc\n"
+    }
+  ]
+}

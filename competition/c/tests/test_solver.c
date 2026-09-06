@@ -9,9 +9,6 @@
 #include <stdlib.h>
 #include <assert.h>
 
-// Required for linking (normally defined in main.c)
-bool g_verbose = false;
-
 // Test counter
 static int tests_run = 0;
 static int tests_passed = 0;
@@ -38,7 +35,7 @@ static int tests_passed = 0;
  * Test Cases
  *********************************************************************/
 
-void test_solver_creation() {
+void test_solver_creation(void) {
     TEST("Solver creation and destruction");
 
     Solver* s = solver_new();
@@ -58,7 +55,7 @@ void test_solver_creation() {
     PASS();
 }
 
-void test_add_variables() {
+void test_add_variables(void) {
     TEST("Add variables");
 
     Solver* s = solver_new();
@@ -76,7 +73,7 @@ void test_add_variables() {
     PASS();
 }
 
-void test_add_clause() {
+void test_add_clause(void) {
     TEST("Add clause");
 
     Solver* s = solver_new();
@@ -103,7 +100,7 @@ void test_add_clause() {
     PASS();
 }
 
-void test_empty_formula_sat() {
+void test_empty_formula_sat(void) {
     TEST("Empty formula is SAT");
 
     Solver* s = solver_new();
@@ -117,7 +114,7 @@ void test_empty_formula_sat() {
     PASS();
 }
 
-void test_single_unit_clause() {
+void test_single_unit_clause(void) {
     TEST("Single unit clause");
 
     Solver* s = solver_new();
@@ -143,7 +140,7 @@ void test_single_unit_clause() {
     PASS();
 }
 
-void test_contradiction() {
+void test_contradiction(void) {
     TEST("Contradiction: (x) ∧ (~x)");
 
     Solver* s = solver_new();
@@ -169,7 +166,7 @@ void test_contradiction() {
     PASS();
 }
 
-void test_simple_sat() {
+void test_simple_sat(void) {
     TEST("Simple SAT: (x ∨ y) ∧ (~x ∨ z)");
 
     Solver* s = solver_new();
@@ -199,7 +196,7 @@ void test_simple_sat() {
     PASS();
 }
 
-void test_statistics_tracking() {
+void test_statistics_tracking(void) {
     TEST("Statistics tracking");
 
     Solver* s = solver_new();
@@ -226,7 +223,7 @@ void test_statistics_tracking() {
     PASS();
 }
 
-void test_conflict_limit() {
+void test_conflict_limit(void) {
     TEST("Conflict limit");
 
     SolverOpts opts = default_opts();
@@ -258,7 +255,7 @@ void test_conflict_limit() {
     PASS();
 }
 
-void test_assumptions() {
+void test_assumptions(void) {
     TEST("Solving with assumptions");
 
     Solver* s = solver_new();
@@ -291,7 +288,7 @@ void test_assumptions() {
     PASS();
 }
 
-void test_multiple_solves() {
+void test_multiple_solves(void) {
     TEST("Multiple solve calls");
 
     Solver* s = solver_new();
@@ -323,7 +320,7 @@ void test_multiple_solves() {
  * Main Test Runner
  *********************************************************************/
 
-int main() {
+int main(void) {
     printf("========================================\n");
     printf("BSAT Core Solver Unit Tests\n");
     printf("========================================\n\n");
