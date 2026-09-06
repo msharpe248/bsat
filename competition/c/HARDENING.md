@@ -143,3 +143,11 @@ asymptotic complexity or production readiness from a small solved fraction.
   ablations and representative benchmarks rather than assuming more features help.
 - [DRAT-trim](https://github.com/marijnheule/drat-trim), independent proof checker;
   CI pins `2e3b2dc0ecf938addbd779d42877b6ed69d9a985`.
+
+## Subsequent propagation experiments
+
+[Blocker refresh and contiguous circular scans](PROPAGATION_EXPERIMENTS.md) were
+implemented, tested and benchmarked. Blocker refresh lost a solved instance;
+contiguous scans preserved search counters but showed negligible aggregate timing
+change. Both were reverted. The retained regression adds 256 scan-order cases;
+these experiments do not establish a competition-performance improvement.

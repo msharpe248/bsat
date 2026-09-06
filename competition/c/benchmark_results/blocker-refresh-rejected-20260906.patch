@@ -1,0 +1,71 @@
+diff --git a/competition/c/src/solver.c b/competition/c/src/solver.c
+index e815b25..7396738 100644
+--- a/competition/c/src/solver.c
++++ b/competition/c/src/solver.c
+@@ -953,6 +953,9 @@ CRef solver_propagate(Solver* s) {
+             }
+ 
+             // Clause is unit or conflicting
++            // The other watch may have moved since this entry was attached.
++            // Cache the current first literal, which becomes true on propagation.
++            w.blocker = first;
+             watches[j++] = w;
+             i++;
+ 
+diff --git a/competition/c/tests/test_regressions.c b/competition/c/tests/test_regressions.c
+index aa02165..aa08d54 100644
+--- a/competition/c/tests/test_regressions.c
++++ b/competition/c/tests/test_regressions.c
+@@ -120,6 +120,43 @@ static void assignment_growth(void) {
+     assert(solver_model_value(s,decision)==TRUE && solver_check_model(s));
+     solver_free(s);
+ }
++/* Controlled decisions keep the watch-movement history reproducible. */
++static void enqueue_test_decision(Solver *s, Lit lit) {
++    Var v = var(lit);
++    assert(s->values[v] == UNDEF);
++    s->trail_lims[++s->decision_level] = s->trail_size;
++    s->values[v] = sign(lit) ? FALSE : TRUE;
++    s->vars[v].level = s->decision_level;
++    s->vars[v].reason = INVALID_CLAUSE;
++    s->vars[v].trail_pos = s->trail_size;
++    s->trail[s->trail_size++] = (Trail){lit, s->decision_level};
++}
++static void refreshed_blocker(void) {
++    for (unsigned circular = 0; circular < 2; ++circular) {
++        Solver *s = formula("p cnf 3 1\n1 2 3 0\n");
++        s->opts.circular = circular;
++        /* Move watch 2 to 3, then falsify 1 so that 3 is implied. */
++        enqueue_test_decision(s, mkLit(2, true));
++        assert(solver_propagate(s) == INVALID_CLAUSE);
++        enqueue_test_decision(s, mkLit(1, true));
++        assert(solver_propagate(s) == INVALID_CLAUSE);
++        assert(s->values[3] == TRUE && s->vars[3].reason == s->clauses[0]);
++        solver_backtrack(s, 0);
++
++        /* On another branch 3 is already true and the old blocker 2 is
++           unassigned. Revisiting watch 1 must use the cached satisfying 3. */
++        enqueue_test_decision(s, mkLit(3, false));
++        assert(solver_propagate(s) == INVALID_CLAUSE);
++        uint64_t skipped = s->watches->skipped;
++        enqueue_test_decision(s, mkLit(1, true));
++        assert(solver_propagate(s) == INVALID_CLAUSE);
++        assert(s->watches->skipped == skipped + 1);
++        assert(s->values[2] == UNDEF && s->trail_size == 2);
++        solver_backtrack(s, 0);
++        assert(solver_solve(s) == TRUE && solver_check_model(s));
++        solver_free(s);
++    }
++}
+ static void reduction_and_gc(void) {
+     Solver *s=formula("p cnf 3 1\n1 2 3 0\n");
+     s->opts.reduce_fraction=0;s->opts.glue_lbd=2;
+@@ -167,7 +204,7 @@ static void proof_export(void) {
+     }
+ }
+ int main(void) {
+-    parser();assumptions();api_fuzz();backtrack();assignment_growth();reduction_and_gc();restart();proof_export();
++    parser();assumptions();api_fuzz();backtrack();assignment_growth();refreshed_blocker();reduction_and_gc();restart();proof_export();
+     puts("PASS: parser, 800 API solves, assumptions, backjump boundaries, reduction/GC, restart regressions");
+     return 0;
+ }

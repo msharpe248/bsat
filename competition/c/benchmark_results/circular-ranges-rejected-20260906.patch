@@ -1,0 +1,56 @@
+diff --git a/competition/c/src/solver.c b/competition/c/src/solver.c
+index e815b25..859dd60 100644
+--- a/competition/c/src/solver.c
++++ b/competition/c/src/solver.c
+@@ -922,27 +922,30 @@ CRef solver_propagate(Solver* s) {
+             bool found = false;
+             uint32_t begin = s->opts.circular ? CLAUSE_HEADER(s->arena, cref)->search : 2;
+             if (begin < 2 || begin >= size) begin = 2;
+-            for (uint32_t offset = 0; offset < size - 2; offset++) {
+-                uint32_t k = begin + offset;
+-                if (k >= size) k = 2 + k - size;
+-                s->work++;
+-                if ((s->work & 1023)==0 && solver_budget_exhausted(s)) {
+-                    while (i<ws->size) watches[j++]=watches[i++];
+-                    ws->size=j; s->qhead--; return INVALID_CLAUSE;
+-                }
+-                Lit lit = lits[k];
+-                Var v = var(lit);
+-
+-                if (s->values[v] != (sign(lit) ? TRUE : FALSE)) {
+-                    // Found a non-false literal
+-                    lits[1] = lit;
+-                    lits[k] = neg(p);
+-
+-                    CLAUSE_HEADER(s->arena, cref)->search = k;
+-                    // Add new watch
+-                    watch_add(s->watches, lit, cref, first);
+-                    found = true;
+-                    break;
++            // Two contiguous ranges preserve circular order without wrapping
++            // the index on every literal inspection.
++            for (unsigned pass = 0; pass < 2 && !found; ++pass) {
++                uint32_t end = pass ? begin : size;
++                for (uint32_t k = pass ? 2 : begin; k < end; ++k) {
++                    s->work++;
++                    if ((s->work & 1023)==0 && solver_budget_exhausted(s)) {
++                        while (i<ws->size) watches[j++]=watches[i++];
++                        ws->size=j; s->qhead--; return INVALID_CLAUSE;
++                    }
++                    Lit lit = lits[k];
++                    Var v = var(lit);
++
++                    if (s->values[v] != (sign(lit) ? TRUE : FALSE)) {
++                        // Found a non-false literal
++                        lits[1] = lit;
++                        lits[k] = neg(p);
++
++                        CLAUSE_HEADER(s->arena, cref)->search = k;
++                        // Add new watch
++                        watch_add(s->watches, lit, cref, first);
++                        found = true;
++                        break;
++                    }
+                 }
+             }
+ 

@@ -120,6 +120,43 @@ static void assignment_growth(void) {
     assert(solver_model_value(s,decision)==TRUE && solver_check_model(s));
     solver_free(s);
 }
+static void circular_scan_order(void) {
+    for (unsigned circular = 0; circular < 2; ++circular)
+    for (unsigned cursor = 0; cursor <= 7; ++cursor)
+    for (unsigned mask = 0; mask < 16; ++mask) {
+        Solver *s = formula("p cnf 6 1\n1 2 3 4 5 6 0\n");
+        s->opts.circular = circular;
+        CRef cr = s->clauses[0];
+        CLAUSE_HEADER(s->arena, cr)->search = cursor;
+        /* Establish already-processed false tail literals, then falsify watch 1. */
+        for (Var v = 3; v <= 6; ++v) if (!(mask & (1u << (v-3)))) {
+            s->values[v] = FALSE;
+            s->vars[v].level = 0;
+            s->trail[s->trail_size++] = (Trail){mkLit(v, true), 0};
+        }
+        s->qhead = s->trail_size;
+        s->values[1] = FALSE;
+        s->vars[1].level = 0;
+        s->trail[s->trail_size++] = (Trail){mkLit(1, true), 0};
+        unsigned begin = circular && cursor >= 2 && cursor < 6 ? cursor : 2;
+        unsigned inspections = 0, expected = 0;
+        for (unsigned offset = 0; offset < 4; ++offset) {
+            unsigned k = 2 + (begin - 2 + offset) % 4;
+            inspections++;
+            if (mask & (1u << (k-2))) { expected = k+1; break; }
+        }
+        uint64_t work = s->work;
+        assert(solver_propagate(s) == INVALID_CLAUSE);
+        assert(s->work - work == 1 + inspections);
+        if (expected) {
+            assert(CLAUSE_LITS(s->arena, cr)[1] == mkLit(expected, false));
+            assert(s->values[2] == UNDEF);
+        } else {
+            assert(s->values[2] == TRUE && s->vars[2].reason == cr);
+        }
+        solver_free(s);
+    }
+}
 static void reduction_and_gc(void) {
     Solver *s=formula("p cnf 3 1\n1 2 3 0\n");
     s->opts.reduce_fraction=0;s->opts.glue_lbd=2;
@@ -167,7 +204,7 @@ static void proof_export(void) {
     }
 }
 int main(void) {
-    parser();assumptions();api_fuzz();backtrack();assignment_growth();reduction_and_gc();restart();proof_export();
+    parser();assumptions();api_fuzz();backtrack();assignment_growth();circular_scan_order();reduction_and_gc();restart();proof_export();
     puts("PASS: parser, 800 API solves, assumptions, backjump boundaries, reduction/GC, restart regressions");
     return 0;
 }
