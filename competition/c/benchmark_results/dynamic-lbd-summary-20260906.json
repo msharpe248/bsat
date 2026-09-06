@@ -1,0 +1,386 @@
+{
+  "baseline_revision": "258cb3eead12ae0552d81cd4e431e00a886b6506",
+  "candidate_sha256": "f15d323fc53934716f12b4db5cdf9e3e10c099a935bd708ccc585bbaba51878a",
+  "completed_comparisons": 14,
+  "completed_geometric_mean_cpu_ratio": 0.896786430000375,
+  "sum_completed_median_cpu": {
+    "baseline": 8.845608499999999,
+    "dynamic": 5.566654499999999
+  },
+  "instances": [
+    {
+      "input": "/private/tmp/bsat-lbd-stress/pigeonhole/php-10-9.cnf",
+      "solvers": {
+        "dynamic": {
+          "verified": 0,
+          "runs": 2,
+          "median_cpu": 4.9323695,
+          "median_conflicts": null
+        },
+        "kissat": {
+          "verified": 2,
+          "runs": 2,
+          "median_cpu": 0.25351049999999997,
+          "median_conflicts": null
+        },
+        "baseline": {
+          "verified": 0,
+          "runs": 2,
+          "median_cpu": 5.002529,
+          "median_conflicts": 376637.0
+        }
+      },
+      "both_bsat_versions_completed": false
+    },
+    {
+      "input": "/private/tmp/bsat-lbd-stress/pigeonhole/php-8-7.cnf",
+      "solvers": {
+        "dynamic": {
+          "verified": 2,
+          "runs": 2,
+          "median_cpu": 0.0637295,
+          "median_conflicts": 5642.0
+        },
+        "baseline": {
+          "verified": 2,
+          "runs": 2,
+          "median_cpu": 0.0736285,
+          "median_conflicts": 5951.0
+        },
+        "kissat": {
+          "verified": 2,
+          "runs": 2,
+          "median_cpu": 0.017769,
+          "median_conflicts": null
+        }
+      },
+      "both_bsat_versions_completed": true,
+      "cpu_ratio": 0.8655547783806542
+    },
+    {
+      "input": "/private/tmp/bsat-lbd-stress/pigeonhole/php-9-8.cnf",
+      "solvers": {
+        "baseline": {
+          "verified": 2,
+          "runs": 2,
+          "median_cpu": 0.5502685,
+          "median_conflicts": 43007.0
+        },
+        "dynamic": {
+          "verified": 2,
+          "runs": 2,
+          "median_cpu": 0.29919949999999995,
+          "median_conflicts": 22938.0
+        },
+        "kissat": {
+          "verified": 2,
+          "runs": 2,
+          "median_cpu": 0.068941,
+          "median_conflicts": null
+        }
+      },
+      "both_bsat_versions_completed": true,
+      "cpu_ratio": 0.5437336500272139
+    },
+    {
+      "input": "/private/tmp/bsat-lbd-stress/random3sat/v180-0.cnf",
+      "solvers": {
+        "kissat": {
+          "verified": 2,
+          "runs": 2,
+          "median_cpu": 0.11257799999999998,
+          "median_conflicts": null
+        },
+        "dynamic": {
+          "verified": 2,
+          "runs": 2,
+          "median_cpu": 0.076523,
+          "median_conflicts": 8460.0
+        },
+        "baseline": {
+          "verified": 2,
+          "runs": 2,
+          "median_cpu": 0.0783585,
+          "median_conflicts": 8698.0
+        }
+      },
+      "both_bsat_versions_completed": true,
+      "cpu_ratio": 0.9765756108143979
+    },
+    {
+      "input": "/private/tmp/bsat-lbd-stress/random3sat/v180-1.cnf",
+      "solvers": {
+        "baseline": {
+          "verified": 2,
+          "runs": 2,
+          "median_cpu": 0.004014499999999999,
+          "median_conflicts": 244.0
+        },
+        "kissat": {
+          "verified": 2,
+          "runs": 2,
+          "median_cpu": 0.031564,
+          "median_conflicts": null
+        },
+        "dynamic": {
+          "verified": 2,
+          "runs": 2,
+          "median_cpu": 0.0044495,
+          "median_conflicts": 244.0
+        }
+      },
+      "both_bsat_versions_completed": true,
+      "cpu_ratio": 1.108357205131399
+    },
+    {
+      "input": "/private/tmp/bsat-lbd-stress/random3sat/v180-2.cnf",
+      "solvers": {
+        "baseline": {
+          "verified": 2,
+          "runs": 2,
+          "median_cpu": 0.059014,
+          "median_conflicts": 6992.0
+        },
+        "kissat": {
+          "verified": 2,
+          "runs": 2,
+          "median_cpu": 0.152783,
+          "median_conflicts": null
+        },
+        "dynamic": {
+          "verified": 2,
+          "runs": 2,
+          "median_cpu": 0.063065,
+          "median_conflicts": 7146.0
+        }
+      },
+      "both_bsat_versions_completed": true,
+      "cpu_ratio": 1.0686447283695395
+    },
+    {
+      "input": "/private/tmp/bsat-lbd-stress/random3sat/v180-3.cnf",
+      "solvers": {
+        "dynamic": {
+          "verified": 2,
+          "runs": 2,
+          "median_cpu": 0.0679805,
+          "median_conflicts": 7734.0
+        },
+        "kissat": {
+          "verified": 2,
+          "runs": 2,
+          "median_cpu": 0.04950399999999999,
+          "median_conflicts": null
+        },
+        "baseline": {
+          "verified": 2,
+          "runs": 2,
+          "median_cpu": 0.07503599999999999,
+          "median_conflicts": 8056.0
+        }
+      },
+      "both_bsat_versions_completed": true,
+      "cpu_ratio": 0.9059718002025695
+    },
+    {
+      "input": "/private/tmp/bsat-lbd-stress/random3sat/v220-0.cnf",
+      "solvers": {
+        "dynamic": {
+          "verified": 2,
+          "runs": 2,
+          "median_cpu": 0.1805915,
+          "median_conflicts": 17450.0
+        },
+        "kissat": {
+          "verified": 2,
+          "runs": 2,
+          "median_cpu": 0.093175,
+          "median_conflicts": null
+        },
+        "baseline": {
+          "verified": 2,
+          "runs": 2,
+          "median_cpu": 0.16501749999999998,
+          "median_conflicts": 16194.0
+        }
+      },
+      "both_bsat_versions_completed": true,
+      "cpu_ratio": 1.0943778690138926
+    },
+    {
+      "input": "/private/tmp/bsat-lbd-stress/random3sat/v220-1.cnf",
+      "solvers": {
+        "dynamic": {
+          "verified": 2,
+          "runs": 2,
+          "median_cpu": 0.326781,
+          "median_conflicts": 30066.0
+        },
+        "baseline": {
+          "verified": 2,
+          "runs": 2,
+          "median_cpu": 0.14214500000000002,
+          "median_conflicts": 13978.0
+        },
+        "kissat": {
+          "verified": 2,
+          "runs": 2,
+          "median_cpu": 0.046620999999999996,
+          "median_conflicts": null
+        }
+      },
+      "both_bsat_versions_completed": true,
+      "cpu_ratio": 2.2989271518519816
+    },
+    {
+      "input": "/private/tmp/bsat-lbd-stress/random3sat/v220-2.cnf",
+      "solvers": {
+        "baseline": {
+          "verified": 2,
+          "runs": 2,
+          "median_cpu": 0.376528,
+          "median_conflicts": 36952.0
+        },
+        "kissat": {
+          "verified": 2,
+          "runs": 2,
+          "median_cpu": 0.041629,
+          "median_conflicts": null
+        },
+        "dynamic": {
+          "verified": 2,
+          "runs": 2,
+          "median_cpu": 0.5500814999999999,
+          "median_conflicts": 46177.0
+        }
+      },
+      "both_bsat_versions_completed": true,
+      "cpu_ratio": 1.4609311923681636
+    },
+    {
+      "input": "/private/tmp/bsat-lbd-stress/random3sat/v220-3.cnf",
+      "solvers": {
+        "baseline": {
+          "verified": 2,
+          "runs": 2,
+          "median_cpu": 0.36395750000000004,
+          "median_conflicts": 37387.0
+        },
+        "dynamic": {
+          "verified": 2,
+          "runs": 2,
+          "median_cpu": 0.46570199999999995,
+          "median_conflicts": 41466.0
+        },
+        "kissat": {
+          "verified": 2,
+          "runs": 2,
+          "median_cpu": 0.6018595,
+          "median_conflicts": null
+        }
+      },
+      "both_bsat_versions_completed": true,
+      "cpu_ratio": 1.2795504969673654
+    },
+    {
+      "input": "/private/tmp/bsat-lbd-stress/random3sat/v260-0.cnf",
+      "solvers": {
+        "baseline": {
+          "verified": 2,
+          "runs": 2,
+          "median_cpu": 0.4084325,
+          "median_conflicts": 36556.0
+        },
+        "kissat": {
+          "verified": 2,
+          "runs": 2,
+          "median_cpu": 0.0443465,
+          "median_conflicts": null
+        },
+        "dynamic": {
+          "verified": 2,
+          "runs": 2,
+          "median_cpu": 0.1280595,
+          "median_conflicts": 12004.0
+        }
+      },
+      "both_bsat_versions_completed": true,
+      "cpu_ratio": 0.31353895686557753
+    },
+    {
+      "input": "/private/tmp/bsat-lbd-stress/random3sat/v260-1.cnf",
+      "solvers": {
+        "baseline": {
+          "verified": 2,
+          "runs": 2,
+          "median_cpu": 0.010908999999999999,
+          "median_conflicts": 1101.0
+        },
+        "kissat": {
+          "verified": 2,
+          "runs": 2,
+          "median_cpu": 0.307395,
+          "median_conflicts": null
+        },
+        "dynamic": {
+          "verified": 2,
+          "runs": 2,
+          "median_cpu": 0.011199,
+          "median_conflicts": 1101.0
+        }
+      },
+      "both_bsat_versions_completed": true,
+      "cpu_ratio": 1.0265835548629574
+    },
+    {
+      "input": "/private/tmp/bsat-lbd-stress/random3sat/v260-2.cnf",
+      "solvers": {
+        "dynamic": {
+          "verified": 2,
+          "runs": 2,
+          "median_cpu": 2.167293,
+          "median_conflicts": 155457.0
+        },
+        "kissat": {
+          "verified": 2,
+          "runs": 2,
+          "median_cpu": 2.1269055000000003,
+          "median_conflicts": null
+        },
+        "baseline": {
+          "verified": 2,
+          "runs": 2,
+          "median_cpu": 4.699699,
+          "median_conflicts": 417959.0
+        }
+      },
+      "both_bsat_versions_completed": true,
+      "cpu_ratio": 0.4611557038014562
+    },
+    {
+      "input": "/private/tmp/bsat-lbd-stress/random3sat/v260-3.cnf",
+      "solvers": {
+        "kissat": {
+          "verified": 2,
+          "runs": 2,
+          "median_cpu": 1.242115,
+          "median_conflicts": null
+        },
+        "dynamic": {
+          "verified": 2,
+          "runs": 2,
+          "median_cpu": 1.162,
+          "median_conflicts": 94542.0
+        },
+        "baseline": {
+          "verified": 2,
+          "runs": 2,
+          "median_cpu": 1.8386,
+          "median_conflicts": 167388.0
+        }
+      },
+      "both_bsat_versions_completed": true,
+      "cpu_ratio": 0.6320026106820407
+    }
+  ]
+}

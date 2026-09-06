@@ -41,7 +41,7 @@ python3 competition/c/tests/validate.py --solver competition/c/bin/bsat_debug \
 
 The validator independently checks the answer by truth table for small formulas,
 checks original-input SAT models, checks all RUP additions, and invokes the external
-DRAT checker on every UNSAT result. It now covers thirty-four configurations, including
+DRAT checker on every UNSAT result. It now covers thirty-seven configurations, including
 binary proofs and aggressive deletion/vivification. Thirteen fixed formulas preserve
 parser, BVE and equivalence regressions. SAT proof prefixes are also checked. CLI checks cover invalid numeric options, proof
 I/O failures, input-file protection and resource-limit UNKNOWN results.
@@ -151,3 +151,20 @@ implemented, tested and benchmarked. Blocker refresh lost a solved instance;
 contiguous scans preserved search counters but showed negligible aggregate timing
 change. Both were reverted. The retained regression adds 256 scan-order cases;
 these experiments do not establish a competition-performance improvement.
+
+## Dynamic learned-clause quality
+
+[Dynamic LBD](DYNAMIC_LBD.md) is an opt-in retention experiment. The fixed graph
+regression checks conflict/reason updates, unchanged original clauses, independent
+scratch marks and glue retention after backtracking. The validator adds three
+configurations combining dynamic LBD with aggressive reduction and preprocessing.
+
+Final dynamic-LBD validation passed 4,181 release and 4,181 ASan/UBSan solves
+(seed 20260911), including independent truth-table, original-model and text/binary
+proof checks. Both unit suites passed all 11 test executables.
+[Validation record](benchmark_results/dynamic-lbd-validation-20260906.json).
+
+The earlier pushed milestones also passed GitHub CI on Linux and macOS:
+[258cb3e](https://github.com/msharpe248/bsat/actions/runs/34054687079) and
+[49aa90a](https://github.com/msharpe248/bsat/actions/runs/34054149907). These results
+precede dynamic LBD and do not certify its subsequent CI run.

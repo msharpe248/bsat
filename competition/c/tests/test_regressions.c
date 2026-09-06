@@ -157,6 +157,57 @@ static void circular_scan_order(void) {
         solver_free(s);
     }
 }
+static void dynamic_clause_quality(void) {
+    for (unsigned enabled = 0; enabled < 2; ++enabled)
+    for (unsigned learned = 0; learned < 2; ++learned) {
+        Solver *s = formula("p cnf 4 3\n-1 -2 3 4 0\n-1 -2 3 -4 0\n-1 -3 0\n");
+        s->opts.dynamic_lbd = enabled;
+        /* Normal solve setup allocates independent decision-level marks. */
+        s->levels_capacity = 5;
+        s->level_seen = calloc(s->levels_capacity, sizeof *s->level_seen);
+        assert(s->level_seen);
+        CRef a = s->clauses[0], b = s->clauses[1];
+        set_clause_lbd(s->arena, a, 4);
+        set_clause_lbd(s->arena, b, 4);
+        if (learned) {
+            CLAUSE_HEADER(s->arena, a)->flags |= CLAUSE_LEARNED;
+            CLAUSE_HEADER(s->arena, b)->flags |= CLAUSE_LEARNED;
+        }
+        /* Chosen decisions cause real propagation: 1 implies -3, then 2
+           causes the first long clause to imply 4 and the second to conflict. */
+        CRef conflict = INVALID_CLAUSE;
+        for (Var v = 1; v <= 2; ++v) {
+            assert(s->values[v] == UNDEF);
+            s->trail_lims[++s->decision_level] = s->trail_size;
+            s->values[v] = TRUE;
+            s->vars[v].level = s->decision_level;
+            s->vars[v].reason = INVALID_CLAUSE;
+            s->vars[v].trail_pos = s->trail_size;
+            s->trail[s->trail_size++] = (Trail){mkLit(v, false), s->decision_level};
+            conflict = solver_propagate(s);
+            if (v == 1) assert(conflict == INVALID_CLAUSE && s->values[3] == FALSE);
+        }
+        assert(conflict == b && s->vars[4].reason == a);
+        Lit learnt[4];uint32_t size;Level backjump;
+        solver_analyze(s, conflict, learnt, &size, &backjump);
+        assert(size > 0 && learnt[0] == mkLit(2, true) && backjump == 1);
+        unsigned expected = enabled && learned ? 2 : 4;
+        assert(clause_lbd(s->arena, a) == expected && clause_lbd(s->arena, b) == expected);
+        assert(s->stats.lbd_updates == (enabled && learned ? 2u : 0u));
+        for (Var v = 1; v <= 4; ++v) assert(!s->seen[v]);
+        for (unsigned level = 0; level < s->levels_capacity; ++level) assert(!s->level_seen[level]);
+        solver_backtrack(s, 0);
+        if (learned) {
+            s->learnts = malloc(2 * sizeof *s->learnts);assert(s->learnts);
+            s->learnts[0] = a;s->learnts[1] = b;
+            s->num_learnts = s->learnts_size = 2;
+            s->opts.reduce_fraction = 0;
+            solver_reduce_db(s);
+            assert(s->num_learnts == (enabled ? 2u : 0u));
+        }
+        solver_free(s);
+    }
+}
 static void reduction_and_gc(void) {
     Solver *s=formula("p cnf 3 1\n1 2 3 0\n");
     s->opts.reduce_fraction=0;s->opts.glue_lbd=2;
@@ -204,7 +255,7 @@ static void proof_export(void) {
     }
 }
 int main(void) {
-    parser();assumptions();api_fuzz();backtrack();assignment_growth();circular_scan_order();reduction_and_gc();restart();proof_export();
+    parser();assumptions();api_fuzz();backtrack();assignment_growth();circular_scan_order();dynamic_clause_quality();reduction_and_gc();restart();proof_export();
     puts("PASS: parser, 800 API solves, assumptions, backjump boundaries, reduction/GC, restart regressions");
     return 0;
 }

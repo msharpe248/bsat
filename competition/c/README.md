@@ -99,6 +99,12 @@ It supports proof logging and model reconstruction, and skips assumption calls.
 Measured runs showed no solved-count gain and increased memory use, so it remains
 experimental. See [EQUIVALENCE.md](EQUIVALENCE.md).
 
+Opt-in `--dynamic-lbd` lowers learned-clause quality scores when later conflict
+analysis uses fewer decision levels. This changes retention during reduction.
+The stress sample showed mixed timing improvements and regressions, with no
+competition solved-count gain. See [DYNAMIC_LBD.md](DYNAMIC_LBD.md) for tests,
+measurements and the comparison with Glucose.
+
 ## C API
 
 Include `include/solver.h` and link the core objects without `main.o`.

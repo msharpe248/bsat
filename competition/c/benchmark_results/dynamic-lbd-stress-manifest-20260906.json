@@ -1,0 +1,111 @@
+{
+  "seed": 20260911,
+  "split": "development",
+  "instances": [
+    {
+      "path": "/private/tmp/bsat-lbd-stress/random3sat/v180-0.cnf",
+      "family": "random3sat",
+      "variables": 180,
+      "clauses": 767,
+      "sha256": "f092661fb48e8ebda16505c6e8a7fbc59b8bf775386da38d1e7e592f63c8b967"
+    },
+    {
+      "path": "/private/tmp/bsat-lbd-stress/random3sat/v180-1.cnf",
+      "family": "random3sat",
+      "variables": 180,
+      "clauses": 767,
+      "sha256": "6382d4e6941cce6bf921cc15cc35c468dcf1b9a0e42e2037e113822a83cae9fa"
+    },
+    {
+      "path": "/private/tmp/bsat-lbd-stress/random3sat/v180-2.cnf",
+      "family": "random3sat",
+      "variables": 180,
+      "clauses": 767,
+      "sha256": "b62408ce4ec89398636ca823c7531ca107dd6fc5c758a04fe7651fbc95b9a063"
+    },
+    {
+      "path": "/private/tmp/bsat-lbd-stress/random3sat/v180-3.cnf",
+      "family": "random3sat",
+      "variables": 180,
+      "clauses": 767,
+      "sha256": "3eba70cb2713a60b18c9529d178b1784f0b97182a6a713364d04eb615e82cbb6"
+    },
+    {
+      "path": "/private/tmp/bsat-lbd-stress/random3sat/v220-0.cnf",
+      "family": "random3sat",
+      "variables": 220,
+      "clauses": 937,
+      "sha256": "2ce86f0cc384ea478d72478865991084432bb72545b9614ef7900322f0cbe1df"
+    },
+    {
+      "path": "/private/tmp/bsat-lbd-stress/random3sat/v220-1.cnf",
+      "family": "random3sat",
+      "variables": 220,
+      "clauses": 937,
+      "sha256": "3ec7fba36b6f16448943edb8c315c95e036668048b2e78ed6eea2fbb680f8901"
+    },
+    {
+      "path": "/private/tmp/bsat-lbd-stress/random3sat/v220-2.cnf",
+      "family": "random3sat",
+      "variables": 220,
+      "clauses": 937,
+      "sha256": "fba51b41072d0ed1d7bc593871423f1b01d9105a6dd7e24f05dd3ecab31e4d38"
+    },
+    {
+      "path": "/private/tmp/bsat-lbd-stress/random3sat/v220-3.cnf",
+      "family": "random3sat",
+      "variables": 220,
+      "clauses": 937,
+      "sha256": "2dde700bfbfef3acc06c5baa0faa0f37c18033c0679bcaaaf4834846f4a74281"
+    },
+    {
+      "path": "/private/tmp/bsat-lbd-stress/random3sat/v260-0.cnf",
+      "family": "random3sat",
+      "variables": 260,
+      "clauses": 1108,
+      "sha256": "9da00db116c012092da061b0d4ee4df9e58542f212035ae1d252074debdb6903"
+    },
+    {
+      "path": "/private/tmp/bsat-lbd-stress/random3sat/v260-1.cnf",
+      "family": "random3sat",
+      "variables": 260,
+      "clauses": 1108,
+      "sha256": "1b0b1d021b9d2c98e7b7672e5514e32990657688775773d56a3c7e89c4cf5046"
+    },
+    {
+      "path": "/private/tmp/bsat-lbd-stress/random3sat/v260-2.cnf",
+      "family": "random3sat",
+      "variables": 260,
+      "clauses": 1108,
+      "sha256": "ebb145a404d1371045dd14b0b19c5f235041c1c9e40a9218cbbc1787a60c5809"
+    },
+    {
+      "path": "/private/tmp/bsat-lbd-stress/random3sat/v260-3.cnf",
+      "family": "random3sat",
+      "variables": 260,
+      "clauses": 1108,
+      "sha256": "fb199e39c01a8f0a4fdab56362c53ab6756618c67b4441b6f6fe9a18da079655"
+    },
+    {
+      "path": "/private/tmp/bsat-lbd-stress/pigeonhole/php-8-7.cnf",
+      "family": "pigeonhole",
+      "variables": 56,
+      "clauses": 204,
+      "sha256": "9d3cf44ea2c5ff0475e8ace839471cd56afbe7f08c421d4a9539c0e32ac8cc1e"
+    },
+    {
+      "path": "/private/tmp/bsat-lbd-stress/pigeonhole/php-9-8.cnf",
+      "family": "pigeonhole",
+      "variables": 72,
+      "clauses": 297,
+      "sha256": "026f8b7061585ae8f0c983bb57c72935426775f31f4a04c03035c9af8377c052"
+    },
+    {
+      "path": "/private/tmp/bsat-lbd-stress/pigeonhole/php-10-9.cnf",
+      "family": "pigeonhole",
+      "variables": 90,
+      "clauses": 415,
+      "sha256": "d271d10fd48d937a0c7ccc3d7c4caa672d3d3fc3fa648f1fc18c05ae0462f4bf"
+    }
+  ]
+}

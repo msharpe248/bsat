@@ -68,6 +68,7 @@ typedef struct SolverOpts {
     double   reduce_fraction;   // Fraction of learned clauses to keep (0.5)
     uint32_t reduce_interval;   // Conflicts between reductions (2000)
     bool     iterative_minimize; // Experimental binary-aware traversal (false)
+    bool     dynamic_lbd;       // Re-evaluate learned-clause quality during analysis
     uint32_t minimize_budget;   // Reason inspections per clause, either mode (0 disables)
     bool     minimize;          // Enable clause minimization (true)
 
@@ -215,6 +216,7 @@ typedef struct Solver {
         uint64_t equiv_clauses;
         uint64_t equiv_conflicts;
         uint64_t equiv_binaries;
+        uint64_t lbd_updates;
         uint64_t blocked_clauses;    // Clauses removed by blocked clause elimination
         uint64_t max_lbd;
         uint64_t glue_clauses;

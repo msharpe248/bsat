@@ -119,6 +119,7 @@ SolverOpts default_opts(void) {
         .seed = 1,
         .equiv = false,
         .equiv_budget = 1000000,
+        .dynamic_lbd = false,
         .max_conflicts = 0,        // Unlimited
         .max_decisions = 0,        // Unlimited
         .max_time = 0.0,          // Unlimited
@@ -750,6 +751,7 @@ void solver_print_stats(const Solver* s) {
     printf("c Rewritten clauses : %llu\n", (unsigned long long)s->stats.equiv_clauses);
     printf("c SCC contradictions: %llu\n", (unsigned long long)s->stats.equiv_conflicts);
     printf("c Derived binaries  : %llu\n", (unsigned long long)s->stats.equiv_binaries);
+    printf("c LBD improvements  : %llu\n", (unsigned long long)s->stats.lbd_updates);
     printf("c Blocked clauses   : %llu\n", (unsigned long long)s->stats.blocked_clauses);
     printf("c Subsumed clauses  : %llu\n", (unsigned long long)s->stats.subsumed_clauses);
     printf("c Minimized literals: %llu\n", (unsigned long long)s->stats.minimized_literals);
@@ -1018,6 +1020,17 @@ static uint32_t calc_lbd(Solver* s, const Lit* lits, uint32_t size) {
     return lbd;
 }
 
+static void improve_clause_lbd(Solver *s, CRef cr) {
+    if (!s->opts.dynamic_lbd || !clause_learned(s->arena, cr)) return;
+    uint32_t old = clause_lbd(s->arena, cr);
+    if (old <= s->opts.glue_lbd) return;
+    uint32_t current = calc_lbd(s, CLAUSE_LITS(s->arena, cr), CLAUSE_SIZE(s->arena, cr));
+    if (current < old) {
+        set_clause_lbd(s->arena, cr, current);
+        s->stats.lbd_updates++;
+    }
+}
+
 void solver_analyze(Solver* s, CRef conflict, Lit* learnt, uint32_t* learnt_size, Level* bt_level) {
     uint32_t index = s->trail_size - 1;
     uint32_t pathC = 0;
@@ -1051,6 +1064,7 @@ void solver_analyze(Solver* s, CRef conflict, Lit* learnt, uint32_t* learnt_size
         }
     } else if (conflict != INVALID_CLAUSE) {
         // Regular conflict from arena
+        improve_clause_lbd(s, conflict);
         uint32_t size = CLAUSE_SIZE(s->arena, conflict);
         Lit* lits = CLAUSE_LITS(s->arena, conflict);
 
@@ -1098,6 +1112,7 @@ void solver_analyze(Solver* s, CRef conflict, Lit* learnt, uint32_t* learnt_size
             // Not the asserting literal yet
             if (reason != INVALID_CLAUSE) {
                 // Expand reason clause
+                improve_clause_lbd(s, reason);
                 uint32_t size = CLAUSE_SIZE(s->arena, reason);
                 Lit* lits = CLAUSE_LITS(s->arena, reason);
 

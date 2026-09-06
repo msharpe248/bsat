@@ -190,6 +190,9 @@ def main():
     configs += [['--equiv'], ['--equiv', '--binary-proof'],
                 ['--equiv', '--elim', '--bce'], ['--equiv', '--equiv-budget', '1'],
                 ['--equiv', '--equiv-budget', '64'], ['--equiv', '--equiv-budget', '128']]
+    configs += [['--dynamic-lbd'],
+                ['--dynamic-lbd', '--reduce-interval', '1', '--reduce-fraction', '0'],
+                ['--dynamic-lbd', '--binary-proof', '--equiv', '--elim', '--bce']]
     fixed = [
         (5, [[1, 2], [1, -2], [-3, 4], [3, -4], [4, 5]], None),
         (5, [[-4], [-1, 2, 4], [1, -2, 4]] +
