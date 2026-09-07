@@ -43,6 +43,8 @@ def main():
                  (hard, ['--random-phase', '--vmtf']),
                  (hard, ['--vmtf']),
                  (empty, ['--vmtf', '--no-probing'])]
+        modes += [(inp, options + ['--ls-save-phases'])
+                  for inp, options in modes if '--local-search' in options]
         for limit in (0.001, 0.01, 0.05):
             for inp, options in modes:
                 cmd = [solver, '--time', str(limit), '--proof', str(root/'proof.drat'), *options, str(inp)]

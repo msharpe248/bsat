@@ -25,6 +25,7 @@ def main():
         ['--local-search', '--ls-interval', '1', '--equiv', '--iterative-minimize'],
         ['--local-search', '--ls-interval', '1', '--no-phase-saving', '--binary-proof'],
     ]
+    configs += [options + ['--ls-save-phases'] for options in configs]
     formulas = [(2, [[1, 2], [1, -2], [-1, 2]]),
                 (2, [[1, 2], [1, -2], [-1, 2], [-1, -2]])]
     rng = random.Random(20261004)

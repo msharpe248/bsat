@@ -130,6 +130,10 @@ local-search flips, so configured limits can be compared with actual work.
 An [inverse-square probabilistic walk experiment](PROBABILISTIC_WALK_EXPERIMENT.md)
 was rejected after repeated structured-instance regressions; its tested patch and
 positive and negative results are preserved for reproducibility.
+Experimental `--ls-save-phases` feeds improved walks back into non-root saved
+phases when local search and phase saving are enabled. See
+[WALK_PHASE_FEEDBACK_EXPERIMENT.md](WALK_PHASE_FEEDBACK_EXPERIMENT.md) for the
+reproduced targeted gains, broader results, and remaining Kissat performance gap.
 
 Successful local-search model transfer resets assignment positions, reasons and
 the propagation cursor consistently. See

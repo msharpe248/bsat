@@ -213,6 +213,7 @@ SolverOpts default_opts(void) {
         .local_search = false,    // Disabled by default
         .ls_interval = 5000,      // Run local search every 5000 conflicts
         .ls_max_flips = 100000,   // Max flips per local search call
+        .ls_save_phases = false,
         .ls_noise = 0.5,          // WalkSAT noise parameter
 
         .verbose = false,

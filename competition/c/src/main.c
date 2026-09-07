@@ -106,6 +106,7 @@ static void print_usage(const char* program) {
     printf("  --local-search            Enable WalkSAT-style local search\n");
     printf("  --ls-interval <n>         Conflicts between local search calls (default: 5000)\n");
     printf("  --ls-max-flips <n>        Max flips per local search call (default: 100000)\n");
+    printf("  --ls-save-phases          Save improved walk phases (requires phase saving)\n");
     printf("  --ls-noise <f>            WalkSAT noise parameter 0.0-1.0 (default: 0.5)\n");
     printf("\n");
     printf("Proof logging:\n");
@@ -188,6 +189,7 @@ static struct option long_options[] = {
     {"local-search",    no_argument,       0, 0},
     {"ls-interval",     required_argument, 0, 0},
     {"ls-max-flips",    required_argument, 0, 0},
+    {"ls-save-phases", no_argument, 0, 0},
     {"ls-noise",        required_argument, 0, 0},
     {"proof",           required_argument, 0, 0},
     {"binary-proof",    no_argument,       0, 0},
@@ -378,6 +380,8 @@ int main(int argc, char** argv) {
                     opts.ls_interval = (uint32_t)atol(optarg);
                 } else if (strcmp(long_options[option_index].name, "ls-max-flips") == 0) {
                     opts.ls_max_flips = (uint32_t)atol(optarg);
+                } else if (strcmp(long_options[option_index].name, "ls-save-phases") == 0) {
+                    opts.ls_save_phases = true;
                 } else if (strcmp(long_options[option_index].name, "ls-noise") == 0) {
                     opts.ls_noise = atof(optarg);
                 } else if (strcmp(long_options[option_index].name, "proof") == 0) {

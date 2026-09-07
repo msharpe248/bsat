@@ -99,6 +99,7 @@ typedef struct SolverOpts {
     bool     local_search;      // Enable local search (false - opt-in)
     uint32_t ls_interval;       // Conflicts between local search calls (5000)
     uint32_t ls_max_flips;      // Max flips per local search call (100000)
+    bool     ls_save_phases;    // Experimental feedback from improved walks
     double   ls_noise;          // Noise parameter for WalkSAT (0.5)
 
     uint64_t preprocess_budget; // Literal inspections per preprocessing pass

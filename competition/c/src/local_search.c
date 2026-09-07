@@ -336,12 +336,25 @@ void local_search_free(LocalSearchState* ls) {
     free(ls);
 }
 
+/* Save hints only: live assignments, reasons, levels and the trail are untouched.
+   A cancelled copy may leave a prefix of valid phase hints, never a partial model. */
+static bool save_walk_phases(Solver *s, const LocalSearchState *ls) {
+    for (Var v = 1; v <= ls->num_vars; ++v) {
+        if (!(v & 1023) && solver_budget_exhausted_now(s)) return false;
+        if (!root_fixed(s, v)) s->vars[v].polarity = ls->assignment[v];
+    }
+    return true;
+}
+
 bool local_search_run(Solver* s, LocalSearchState* ls, uint32_t max_flips, double noise) {
     // Initialize assignment from saved phases
     bool fixed = init_assignment_from_phases(ls, s);
 
     // Initialize clause satisfaction state
     init_clause_state(ls);
+
+    uint32_t best_unsat = ls->num_unsat;
+    bool save_phases = s->opts.ls_save_phases && s->opts.phase_saving;
 
     // If already satisfied, we're done
     if (ls->num_unsat == 0) {
@@ -367,6 +380,10 @@ bool local_search_run(Solver* s, LocalSearchState* ls, uint32_t max_flips, doubl
         update_after_flip(ls, v);
 
         ls->flips++;
+        if (save_phases && ls->num_unsat && ls->num_unsat < best_unsat) {
+            best_unsat = ls->num_unsat;
+            if (!save_walk_phases(s, ls)) return false;
+        }
     }
 
     return ls->num_unsat == 0;
