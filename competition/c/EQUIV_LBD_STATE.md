@@ -96,3 +96,8 @@ policies with correct bookkeeping. Retaining the fix avoids silently treating
 every learned clause as glue; it does not establish competition performance.
 Full commands, hashes, timings and counters are in
 `benchmark_results/equiv-lbd-initial-20260907.json`.
+
+The subsequent [policy investigation](EQUIV_LBD_POLICY_INVESTIGATION.md)
+isolates the random-circuit regression to an interaction between retention
+and focused restarts. Smaller retention adjustments did not recover the solve;
+no new policy was promoted from that single-instance experiment.
