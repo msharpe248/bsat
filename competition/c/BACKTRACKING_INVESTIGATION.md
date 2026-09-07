@@ -62,3 +62,10 @@ Raw evidence is preserved in
 diagnostic source) and `backtracking-kissat-ablation-20260907.json` (commands,
 hashes, timings, counters and proof-check results). No BSAT runtime changes are
 part of this investigation milestone.
+
+The subsequent [ordered-trail prototype](CHRONOLOGICAL_BACKTRACKING.md) passed
+independent correctness checks but regressed performance, especially on
+belpyramid. It was archived and removed from the active solver. The next
+experiment needs to address actual implication levels and retention during trail
+compaction; changing the backtrack target and replaying retained watches was
+insufficient.

@@ -1,0 +1,1554 @@
+{
+  "schema": 1,
+  "base_revision": "c8ab1eb",
+  "sources": {
+    "src/solver.c": "7f1f32cd41a91aaad07078b348944b6ab6852bf4de4d42dca0d7833710c08977",
+    "src/main.c": "319eacf0fa94512de3a85f8c3ed81e61350403b4bce7c75a2dfa0a6e5bb0ce68",
+    "include/solver.h": "d8a56376be413538c09269789e3e6c3b10dff0654665467664df27d28e9330d1",
+    "tests/test_chrono.c": "33cf9ccbbef61e54a1dfb57c6eb81ecbc5ef7455b063c41e0ef9784dbed29697",
+    "tests/validate.py": "bf82582dfb3727ee46a75b5f52b461a735d6d7f88748c086f9861ea819b756ef",
+    "tests/check_deadlines.py": "25cf6564aae04b6ee7433bcdc330bbae74d39ecb60026d08300eda6101eb1e33"
+  },
+  "checker": {
+    "path": "/tmp/bsat-drat-trim",
+    "sha256": "9bfc20a5fa9eb2a0ffadd2b0cfc7cdd4a20f6aa9c8d7de5b6c771160b847f630"
+  },
+  "builds": {
+    "release": {
+      "binary_sha256": "48006bc6800ebd60e933f6c267c7ec8fa66c339bfdba9a5320caed7eace35ecd",
+      "c_test_count": 46,
+      "c_test_log": "cc -std=c11 -D_POSIX_C_SOURCE=200809L -Wall -Wextra -pedantic -O3 -march=native -flto -Iinclude -o bin/tests/release/test_chrono tests/test_chrono.c build/release/arena.o build/release/congruence.o build/release/dimacs.o build/release/elim.o build/release/equiv.o build/release/local_search.o build/release/minimize.o build/release/solver.o build/release/vmtf.o build/release/watch.o -lm\nRunning unit tests...\nRunning bin/tests/release/test_arena...\n========================================\nBSAT Arena Allocator Unit Tests\n========================================\n\nTesting Arena creation and destruction... \u2705 PASS\nTesting Single clause allocation... \u2705 PASS\nTesting Learned clause allocation... \u2705 PASS\nTesting Multiple clause allocations... \u2705 PASS\nTesting LBD (Literal Block Distance) operations... \u2705 PASS\nTesting Clause activity operations... \u2705 PASS\nTesting Clause deletion... \u2705 PASS\nTesting Arena statistics... \u2705 PASS\nTesting Empty clause handling... \u2705 PASS\nTesting Large clause allocation... \u2705 PASS\nTesting Arena automatic growth... \u2705 PASS\n\n========================================\nResults: 11/11 tests passed\n========================================\nRunning bin/tests/release/test_bce_linear...\nPASS: 6561 canonical pairs, 111537 budget cutoffs, scratch cleanup and bounded BCE model reconstruction\nRunning bin/tests/release/test_binary_minimize...\nPASS: signed binary resolution, duplicate/deleted/long watches, budgets, cancellation and truth tables\nRunning bin/tests/release/test_blocker_dispatch...\nPASS: 10368 mixed implicit/tagged/long watch truth, order, reason and phase cases\nRunning bin/tests/release/test_chrono...\nPASS: 12288 exact seven-variable formula/assumption solves; 225 chronological backtracks, 82 replay positions, 0 lower conflicts\nPASS: implicit/arena binary and long-clause replay, implication chains, root units and lower conflicts\nRunning bin/tests/release/test_clause_locks...\nPASS: active reason protection, every implied position, replay, GC and backtracking\nRunning bin/tests/release/test_compact_vars...\nPASS: compact variable growth/rebuild and eight VSIDS/LRB scoring/rescaling cases\nRunning bin/tests/release/test_congruence...\nPASS: 384 signed AND/XOR/ITE cases; 192 with proved aliases; every added clause truth-table checked\nPASS: 65 congruence budget cutoffs and subsequent complete solves (full work 1078)\nPASS: RUP rejection and exhausted-budget paths leave input and core unchanged\nPASS: 1152 signed binary-alias, fixed-output, fixed-input and cyclic-gate cases\nPASS: 64 signed conditional-alternative ITE cases with proved output equivalence\nPASS: 24 signed ternary/binary strengthening cases and 4 binary-unit cases\nRunning bin/tests/release/test_deadline...\nPASS: deadline poll bounds, work/minimization triggers, immediate limits and API reuse\nRunning bin/tests/release/test_dimacs...\n========================================\nBSAT DIMACS I/O Unit Tests\n========================================\n\nTesting trivial_sat.cnf... \u2705 PASS\nTesting trivial_unsat.cnf... \u2705 PASS\nTesting empty.cnf... \u2705 PASS\nTesting Parse with comments... \u2705 PASS\nTesting Parse unit clauses... \u2705 PASS\nTesting Parse with empty lines... \u2705 PASS\nTesting Malformed input error handling... \u2705 PASS\nTesting unit_propagation.cnf... \u2705 PASS\nTesting simple_sat_3.cnf... \u2705 PASS\nTesting simple_unsat_3.cnf... \u2705 PASS\nTesting horn_sat.cnf... \u2705 PASS\nTesting horn_unsat.cnf... \u2705 PASS\n\n========================================\nResults: 12/12 tests passed\n========================================\nRunning bin/tests/release/test_elim_preprocess...\nPASS: 512 BVE truth/residual-model cases and 1539 cutoff/resume cases\nRunning bin/tests/release/test_elim_records...\nPASS: 16384 multi-parent projection/model checks and minimum-word record choice\nRunning bin/tests/release/test_elim_resolution...\nPASS: 5408 projected truth-table/model checks and all resolution work cutoffs plus an internal deadline\nRunning bin/tests/release/test_elim_staging...\nPASS: pure staging deadline, 68 work boundaries, copy contract and owned-record growth\nRunning bin/tests/release/test_equiv...\nPASS: signed SCCs, contradiction, 10000-node cycle, budget rollback, reconstruction and API reuse\nRunning bin/tests/release/test_features...\n========================================\nBSAT Feature-Specific Tests\n========================================\n\nTesting Clause learning on pigeonhole... \u2705 PASS\nTesting Unit propagation (forces assignments)... (propagations=3, decisions=0) \u2705 PASS\nTesting VSIDS heuristic (decisions are made)... (decisions=4) \u2705 PASS\nTesting Binary clause handling (efficient storage)... (binary clauses stored efficiently) \u2705 PASS\nTesting LBD calculation (learned clauses get LBD scores)... \u2705 PASS\nTesting Restarts (search restarts occur)... (restarts=0) \u2705 PASS\nTesting BCE preprocessing (blocked clauses eliminated)... (blocked_clauses=0) \u2705 PASS\nTesting Clause minimization (learned clauses minimized)... (minimized_literals=0) \u2705 PASS\nTesting On-the-fly subsumption (subsumed clauses removed)... (subsumed=0) \u2705 PASS\nTesting Learned clauses are actually reduced... \u2705 PASS\nTesting Low-LBD learned clauses are tracked... \u2705 PASS\nTesting Failed literal probing (discovers implications)... (probing enabled, solved correctly) \u2705 PASS\nTesting MiniSat clause minimization (67%% literal reduction)... (conflicts=1, minimized=0) [minimization active] \u2705 PASS\nTesting Vivification inprocessing (clause strengthening)... (inprocess enabled, result=SAT) \u2705 PASS\n\n========================================\nResults: 14/14 tests passed\n========================================\nRunning bin/tests/release/test_gc_budget...\nPASS: 82 GC work cutoffs, exact rollback/retry and cached expired deadline\nRunning bin/tests/release/test_gc_forwarding...\nPASS: 512 GC deletion patterns and BVE occurrence relocation\nRunning bin/tests/release/test_geometric_growth...\nTesting geometric growth optimization\n=====================================\n\nInitial state:\n  num_vars: 0\n  var_capacity: 0\n\nAdding 200 variables:\n  Var# | Capacity | Growth Event\n  -----|----------|-------------\n     1 |      128 | \u2705 Grew from 0\n   129 |      256 | \u2705 Grew from 128\n\nFinal state:\n  num_vars: 200\n  var_capacity: 256\n  Reallocations: 2\n  Wasted capacity: 56 (21.9%)\n\nPerformance analysis:\n  Theoretical minimum reallocs (2x growth from 128): 2\n  Actual reallocs: 2\n  Linear growth would require: 200 reallocs\n  Improvement: 100.0x fewer reallocs\n\n\u2705 SUCCESS: Geometric growth working correctly!\nRunning bin/tests/release/test_heap...\nPASS: activity growth, heap ordering, backtracking, rescaling and API rebuild\nRunning bin/tests/release/test_input_reader...\nPASS: input refill boundaries, embedded NUL rejection, token limits and read errors\nRunning bin/tests/release/test_learned_binaries...\nPASS: compact learned binary propagation, analysis, GC, deletion and rebuilding\nRunning bin/tests/release/test_local_search_budget...\nPASS: exact walk budgets, fresh deadline checkpoints and cancellation\nRunning bin/tests/release/test_local_search_roots...\nPASS: root values override phases and remain fixed during random walks\nRunning bin/tests/release/test_local_search_scores...\nPASS: 1788 walk prefixes checked against full score recomputation\nRunning bin/tests/release/test_local_search_selection...\nPASS: 2040 walk prefixes match scan oracle across tree boundaries\nRunning bin/tests/release/test_minimize...\nPASS: 160 signed binary graph/budget cases, independent entailment, stable subsequence and cleanup\nPASS: binary/arena minimization, shared dependencies, 2000-edge chains, failure rollback, budgets and scratch cleanup\nRunning bin/tests/release/test_mode_start...\nPASS: 32 alternating boundaries, focused/target phases and disabled policies\nRunning bin/tests/release/test_model_transfer...\nPASS: complete local-search transfer metadata and subsequent API solves\nRunning bin/tests/release/test_options...\nPASS: finite clause-decay bounds, valid solver construction and repeated solves\nRunning bin/tests/release/test_phases...\nPASS: save decision phases across random overrides, target phases and backtracking\nRunning bin/tests/release/test_portfolio...\nPASS: 512 portfolio answers checked against truth tables, 452 fresh attempts\nPASS: portfolio truth tables, repeated API calls, global limits and proof reset\nRunning bin/tests/release/test_proof_encoding...\nPASS: 288 text/binary proof byte cases, numeric/chunk boundaries and disabled output\nPASS: 22 proof output cutoffs and 2 deferred-flush failures return UNKNOWN\nRunning bin/tests/release/test_reduction_ranking...\nPASS: 51840 reduction rankings, fractions, cutoffs, protected clauses and relocated watches\nRunning bin/tests/release/test_regressions...\nPASS: parser, 800 API solves, assumptions, backjump boundaries, reduction/GC, restart regressions\nRunning bin/tests/release/test_rephase...\nPASS: 16 partial-target rephasing, disabled, boundary and stable/heap/queue cases\nRunning bin/tests/release/test_resolvent_projection...\nPASS: 2048 bounded cost/projection cases (1534 accepted, 514 rejected), collision witnesses and 84 staging cutoffs\nRunning bin/tests/release/test_restart_reuse...\nPASS: heap and queue restart prefix boundaries, fallbacks and order recovery\nRunning bin/tests/release/test_scan_work...\nPASS: 108 scan work cases, circular replacement, unit/conflict and interrupted replay\nRunning bin/tests/release/test_solver...\n========================================\nBSAT Core Solver Unit Tests\n========================================\n\nTesting Solver creation and destruction... \u2705 PASS\nTesting Add variables... \u2705 PASS\nTesting Add clause... \u2705 PASS\nTesting Empty formula is SAT... \u2705 PASS\nTesting Single unit clause... \u2705 PASS\nTesting Contradiction: (x) \u2227 (~x)... \u2705 PASS\nTesting Simple SAT: (x \u2228 y) \u2227 (~x \u2228 z)... \u2705 PASS\nTesting Statistics tracking... \u2705 PASS\nTesting Conflict limit... \u2705 PASS\nTesting Solving with assumptions... \u2705 PASS\nTesting Multiple solve calls... \u2705 PASS\n\n========================================\nResults: 11/11 tests passed\n========================================\nRunning bin/tests/release/test_targets...\nPASS: exact target phases across extensions, changed branches, restarts and API rebuilds\nRunning bin/tests/release/test_vivify_prefix...\nPASS: 2064 signed partial-deletion and failed-trial cutoff cases\nPASS: 8 long-scan vivification cutoffs, temporary-trail rollback and retry\nPASS: 4704 vivification truth-table/RUP, budget, signed implication, root, 512 exact deletion-oracle and subsequent solve cases\nRunning bin/tests/release/test_vmtf...\nPASS: VMTF order, assignment cursor, growth, stamp rollover, conflict use and API rebuild\nRunning bin/tests/release/test_walk_phase_feedback...\nPASS: 6336 feedback cases preserve assignment and keep the best phases\nRunning bin/tests/release/test_watch...\n========================================\nBSAT Watch Manager Unit Tests\n========================================\n\nTesting Watch manager creation and destruction... \u2705 PASS\nTesting Add single watch... \u2705 PASS\nTesting Add multiple watches to same literal... \u2705 PASS\nTesting Add watches to different literals... \u2705 PASS\nTesting Remove all watches for a clause... \u2705 PASS\nTesting Clear all watches... \u2705 PASS\nTesting Blocking literal optimization... \u2705 PASS\nTesting Positive and negative literal watches... \u2705 PASS\nTesting Binary clause (2 literals) watches... \u2705 PASS\nTesting Watch list automatic growth... \u2705 PASS\nTesting Watch manager in-place resize... \u2705 PASS\n\n========================================\nResults: 11/11 tests passed\n========================================\nRunning bin/tests/release/test_watch_lookahead...\nPASS: 459 mixed-watch boundary, unit and conflict cases\nAll tests passed!\n",
+      "validator_command": [
+        "python3",
+        "tests/validate.py",
+        "--solver",
+        "bin/bsat",
+        "--checker",
+        "/tmp/bsat-drat-trim",
+        "--cases",
+        "30",
+        "--seed",
+        "20261231"
+      ],
+      "validator_log": "PASS: 4524 solves; truth-table answers, original models, text/binary RUP proofs checked (seed 20261231)\n",
+      "deadline_log": "PASS: 63 short-deadline runs; maximum observed CPU overrun 0.000s\n",
+      "deadlines": {
+        "solver": "/Users/msharpe/python/bsat/competition/c/bin/bsat",
+        "runs": [
+          {
+            "input": "pigeonhole.cnf",
+            "options": [
+              "--local-search",
+              "--ls-interval",
+              "1",
+              "--no-probing"
+            ],
+            "limit": 0.001,
+            "solving_cpu": 0.001,
+            "wall_seconds": 0.0036392495967447758,
+            "status": "UNKNOWN"
+          },
+          {
+            "input": "pigeonhole.cnf",
+            "options": [
+              "--local-search",
+              "--ls-interval",
+              "1",
+              "--no-probing",
+              "--vmtf",
+              "--reuse-trail"
+            ],
+            "limit": 0.001,
+            "solving_cpu": 0.001,
+            "wall_seconds": 0.003509500063955784,
+            "status": "UNKNOWN"
+          },
+          {
+            "input": "pigeonhole.cnf",
+            "options": [
+              "--reuse-trail"
+            ],
+            "limit": 0.001,
+            "solving_cpu": 0.001,
+            "wall_seconds": 0.003912624903023243,
+            "status": "UNKNOWN"
+          },
+          {
+            "input": "pigeonhole.cnf",
+            "options": [
+              "--reuse-trail",
+              "--vmtf"
+            ],
+            "limit": 0.001,
+            "solving_cpu": 0.001,
+            "wall_seconds": 0.003626250196248293,
+            "status": "UNKNOWN"
+          },
+          {
+            "input": "pigeonhole.cnf",
+            "options": [],
+            "limit": 0.001,
+            "solving_cpu": 0.001,
+            "wall_seconds": 0.003392416052520275,
+            "status": "UNKNOWN"
+          },
+          {
+            "input": "pigeonhole.cnf",
+            "options": [
+              "--iterative-minimize"
+            ],
+            "limit": 0.001,
+            "solving_cpu": 0.001,
+            "wall_seconds": 0.004073500167578459,
+            "status": "UNKNOWN"
+          },
+          {
+            "input": "pigeonhole.cnf",
+            "options": [
+              "--equiv",
+              "--elim",
+              "--bce",
+              "--dynamic-lbd",
+              "--binary-proof"
+            ],
+            "limit": 0.001,
+            "solving_cpu": 0.001,
+            "wall_seconds": 0.003446000162512064,
+            "status": "UNKNOWN"
+          },
+          {
+            "input": "empty.cnf",
+            "options": [
+              "--no-probing"
+            ],
+            "limit": 0.001,
+            "solving_cpu": 0.001,
+            "wall_seconds": 0.006121834274381399,
+            "status": "UNKNOWN"
+          },
+          {
+            "input": "pigeonhole.cnf",
+            "options": [
+              "--binary-minimize",
+              "--vmtf"
+            ],
+            "limit": 0.001,
+            "solving_cpu": 0.001,
+            "wall_seconds": 0.0037835408002138138,
+            "status": "UNKNOWN"
+          },
+          {
+            "input": "pigeonhole.cnf",
+            "options": [
+              "--random-phase",
+              "--vmtf"
+            ],
+            "limit": 0.001,
+            "solving_cpu": 0.001,
+            "wall_seconds": 0.0036555840633809566,
+            "status": "UNKNOWN"
+          },
+          {
+            "input": "pigeonhole.cnf",
+            "options": [
+              "--vmtf"
+            ],
+            "limit": 0.001,
+            "solving_cpu": 0.001,
+            "wall_seconds": 0.003442416898906231,
+            "status": "UNKNOWN"
+          },
+          {
+            "input": "empty.cnf",
+            "options": [
+              "--vmtf",
+              "--no-probing"
+            ],
+            "limit": 0.001,
+            "solving_cpu": 0.001,
+            "wall_seconds": 0.005512624979019165,
+            "status": "UNKNOWN"
+          },
+          {
+            "input": "pigeonhole.cnf",
+            "options": [
+              "--local-search",
+              "--ls-interval",
+              "1",
+              "--no-probing",
+              "--ls-save-phases"
+            ],
+            "limit": 0.001,
+            "solving_cpu": 0.001,
+            "wall_seconds": 0.003666415810585022,
+            "status": "UNKNOWN"
+          },
+          {
+            "input": "pigeonhole.cnf",
+            "options": [
+              "--local-search",
+              "--ls-interval",
+              "1",
+              "--no-probing",
+              "--vmtf",
+              "--reuse-trail",
+              "--ls-save-phases"
+            ],
+            "limit": 0.001,
+            "solving_cpu": 0.001,
+            "wall_seconds": 0.003151583019644022,
+            "status": "UNKNOWN"
+          },
+          {
+            "input": "pigeonhole.cnf",
+            "options": [
+              "--portfolio",
+              "0.000000000001"
+            ],
+            "limit": 0.001,
+            "solving_cpu": 0.001,
+            "wall_seconds": 0.0033087078481912613,
+            "status": "UNKNOWN"
+          },
+          {
+            "input": "pigeonhole.cnf",
+            "options": [
+              "--portfolio",
+              "0.002",
+              "--binary-proof"
+            ],
+            "limit": 0.001,
+            "solving_cpu": 0.001,
+            "wall_seconds": 0.003863167017698288,
+            "status": "UNKNOWN"
+          },
+          {
+            "input": "empty.cnf",
+            "options": [
+              "--portfolio",
+              "0.000000000001",
+              "--no-probing"
+            ],
+            "limit": 0.001,
+            "solving_cpu": 0.001,
+            "wall_seconds": 0.0060400827787816525,
+            "status": "UNKNOWN"
+          },
+          {
+            "input": "pigeonhole.cnf",
+            "options": [
+              "--congruence",
+              "--equiv",
+              "--binary-proof"
+            ],
+            "limit": 0.001,
+            "solving_cpu": 0.001,
+            "wall_seconds": 0.0037343748845160007,
+            "status": "UNKNOWN"
+          },
+          {
+            "input": "empty.cnf",
+            "options": [
+              "--congruence",
+              "--no-probing"
+            ],
+            "limit": 0.001,
+            "solving_cpu": 0.001,
+            "wall_seconds": 0.005890790838748217,
+            "status": "UNKNOWN"
+          },
+          {
+            "input": "pigeonhole.cnf",
+            "options": [
+              "--chrono",
+              "--chrono-levels",
+              "0",
+              "--binary-proof"
+            ],
+            "limit": 0.001,
+            "solving_cpu": 0.001,
+            "wall_seconds": 0.0038468330167233944,
+            "status": "UNKNOWN"
+          },
+          {
+            "input": "empty.cnf",
+            "options": [
+              "--chrono",
+              "--chrono-levels",
+              "0",
+              "--no-probing"
+            ],
+            "limit": 0.001,
+            "solving_cpu": 0.001,
+            "wall_seconds": 0.005762416869401932,
+            "status": "UNKNOWN"
+          },
+          {
+            "input": "pigeonhole.cnf",
+            "options": [
+              "--local-search",
+              "--ls-interval",
+              "1",
+              "--no-probing"
+            ],
+            "limit": 0.01,
+            "solving_cpu": 0.01,
+            "wall_seconds": 0.012839583214372396,
+            "status": "UNKNOWN"
+          },
+          {
+            "input": "pigeonhole.cnf",
+            "options": [
+              "--local-search",
+              "--ls-interval",
+              "1",
+              "--no-probing",
+              "--vmtf",
+              "--reuse-trail"
+            ],
+            "limit": 0.01,
+            "solving_cpu": 0.01,
+            "wall_seconds": 0.013022457715123892,
+            "status": "UNKNOWN"
+          },
+          {
+            "input": "pigeonhole.cnf",
+            "options": [
+              "--reuse-trail"
+            ],
+            "limit": 0.01,
+            "solving_cpu": 0.01,
+            "wall_seconds": 0.012860791757702827,
+            "status": "UNKNOWN"
+          },
+          {
+            "input": "pigeonhole.cnf",
+            "options": [
+              "--reuse-trail",
+              "--vmtf"
+            ],
+            "limit": 0.01,
+            "solving_cpu": 0.01,
+            "wall_seconds": 0.013218875043094158,
+            "status": "UNKNOWN"
+          },
+          {
+            "input": "pigeonhole.cnf",
+            "options": [],
+            "limit": 0.01,
+            "solving_cpu": 0.01,
+            "wall_seconds": 0.012920207809656858,
+            "status": "UNKNOWN"
+          },
+          {
+            "input": "pigeonhole.cnf",
+            "options": [
+              "--iterative-minimize"
+            ],
+            "limit": 0.01,
+            "solving_cpu": 0.01,
+            "wall_seconds": 0.012747750151902437,
+            "status": "UNKNOWN"
+          },
+          {
+            "input": "pigeonhole.cnf",
+            "options": [
+              "--equiv",
+              "--elim",
+              "--bce",
+              "--dynamic-lbd",
+              "--binary-proof"
+            ],
+            "limit": 0.01,
+            "solving_cpu": 0.01,
+            "wall_seconds": 0.012649999931454659,
+            "status": "UNKNOWN"
+          },
+          {
+            "input": "empty.cnf",
+            "options": [
+              "--no-probing"
+            ],
+            "limit": 0.01,
+            "solving_cpu": 0.01,
+            "wall_seconds": 0.014909583143889904,
+            "status": "UNKNOWN"
+          },
+          {
+            "input": "pigeonhole.cnf",
+            "options": [
+              "--binary-minimize",
+              "--vmtf"
+            ],
+            "limit": 0.01,
+            "solving_cpu": 0.01,
+            "wall_seconds": 0.01269545778632164,
+            "status": "UNKNOWN"
+          },
+          {
+            "input": "pigeonhole.cnf",
+            "options": [
+              "--random-phase",
+              "--vmtf"
+            ],
+            "limit": 0.01,
+            "solving_cpu": 0.01,
+            "wall_seconds": 0.01306579215452075,
+            "status": "UNKNOWN"
+          },
+          {
+            "input": "pigeonhole.cnf",
+            "options": [
+              "--vmtf"
+            ],
+            "limit": 0.01,
+            "solving_cpu": 0.01,
+            "wall_seconds": 0.013092207722365856,
+            "status": "UNKNOWN"
+          },
+          {
+            "input": "empty.cnf",
+            "options": [
+              "--vmtf",
+              "--no-probing"
+            ],
+            "limit": 0.01,
+            "solving_cpu": 0.01,
+            "wall_seconds": 0.015309333335608244,
+            "status": "UNKNOWN"
+          },
+          {
+            "input": "pigeonhole.cnf",
+            "options": [
+              "--local-search",
+              "--ls-interval",
+              "1",
+              "--no-probing",
+              "--ls-save-phases"
+            ],
+            "limit": 0.01,
+            "solving_cpu": 0.01,
+            "wall_seconds": 0.012553084176033735,
+            "status": "UNKNOWN"
+          },
+          {
+            "input": "pigeonhole.cnf",
+            "options": [
+              "--local-search",
+              "--ls-interval",
+              "1",
+              "--no-probing",
+              "--vmtf",
+              "--reuse-trail",
+              "--ls-save-phases"
+            ],
+            "limit": 0.01,
+            "solving_cpu": 0.01,
+            "wall_seconds": 0.01319108298048377,
+            "status": "UNKNOWN"
+          },
+          {
+            "input": "pigeonhole.cnf",
+            "options": [
+              "--portfolio",
+              "0.000000000001"
+            ],
+            "limit": 0.01,
+            "solving_cpu": 0.01,
+            "wall_seconds": 0.013061624951660633,
+            "status": "UNKNOWN"
+          },
+          {
+            "input": "pigeonhole.cnf",
+            "options": [
+              "--portfolio",
+              "0.002",
+              "--binary-proof"
+            ],
+            "limit": 0.01,
+            "solving_cpu": 0.01,
+            "wall_seconds": 0.012880625203251839,
+            "status": "UNKNOWN"
+          },
+          {
+            "input": "empty.cnf",
+            "options": [
+              "--portfolio",
+              "0.000000000001",
+              "--no-probing"
+            ],
+            "limit": 0.01,
+            "solving_cpu": 0.01,
+            "wall_seconds": 0.015234959311783314,
+            "status": "UNKNOWN"
+          },
+          {
+            "input": "pigeonhole.cnf",
+            "options": [
+              "--congruence",
+              "--equiv",
+              "--binary-proof"
+            ],
+            "limit": 0.01,
+            "solving_cpu": 0.01,
+            "wall_seconds": 0.012998708989471197,
+            "status": "UNKNOWN"
+          },
+          {
+            "input": "empty.cnf",
+            "options": [
+              "--congruence",
+              "--no-probing"
+            ],
+            "limit": 0.01,
+            "solving_cpu": 0.01,
+            "wall_seconds": 0.015159832779318094,
+            "status": "UNKNOWN"
+          },
+          {
+            "input": "pigeonhole.cnf",
+            "options": [
+              "--chrono",
+              "--chrono-levels",
+              "0",
+              "--binary-proof"
+            ],
+            "limit": 0.01,
+            "solving_cpu": 0.01,
+            "wall_seconds": 0.013245416805148125,
+            "status": "UNKNOWN"
+          },
+          {
+            "input": "empty.cnf",
+            "options": [
+              "--chrono",
+              "--chrono-levels",
+              "0",
+              "--no-probing"
+            ],
+            "limit": 0.01,
+            "solving_cpu": 0.01,
+            "wall_seconds": 0.015024083200842142,
+            "status": "UNKNOWN"
+          },
+          {
+            "input": "pigeonhole.cnf",
+            "options": [
+              "--local-search",
+              "--ls-interval",
+              "1",
+              "--no-probing"
+            ],
+            "limit": 0.05,
+            "solving_cpu": 0.05,
+            "wall_seconds": 0.053377124946564436,
+            "status": "UNKNOWN"
+          },
+          {
+            "input": "pigeonhole.cnf",
+            "options": [
+              "--local-search",
+              "--ls-interval",
+              "1",
+              "--no-probing",
+              "--vmtf",
+              "--reuse-trail"
+            ],
+            "limit": 0.05,
+            "solving_cpu": 0.05,
+            "wall_seconds": 0.05341037502512336,
+            "status": "UNKNOWN"
+          },
+          {
+            "input": "pigeonhole.cnf",
+            "options": [
+              "--reuse-trail"
+            ],
+            "limit": 0.05,
+            "solving_cpu": 0.05,
+            "wall_seconds": 0.053619499783962965,
+            "status": "UNKNOWN"
+          },
+          {
+            "input": "pigeonhole.cnf",
+            "options": [
+              "--reuse-trail",
+              "--vmtf"
+            ],
+            "limit": 0.05,
+            "solving_cpu": 0.05,
+            "wall_seconds": 0.0535260415636003,
+            "status": "UNKNOWN"
+          },
+          {
+            "input": "pigeonhole.cnf",
+            "options": [],
+            "limit": 0.05,
+            "solving_cpu": 0.05,
+            "wall_seconds": 0.05357149988412857,
+            "status": "UNKNOWN"
+          },
+          {
+            "input": "pigeonhole.cnf",
+            "options": [
+              "--iterative-minimize"
+            ],
+            "limit": 0.05,
+            "solving_cpu": 0.05,
+            "wall_seconds": 0.0534751252271235,
+            "status": "UNKNOWN"
+          },
+          {
+            "input": "pigeonhole.cnf",
+            "options": [
+              "--equiv",
+              "--elim",
+              "--bce",
+              "--dynamic-lbd",
+              "--binary-proof"
+            ],
+            "limit": 0.05,
+            "solving_cpu": 0.05,
+            "wall_seconds": 0.053692332934588194,
+            "status": "UNKNOWN"
+          },
+          {
+            "input": "empty.cnf",
+            "options": [
+              "--no-probing"
+            ],
+            "limit": 0.05,
+            "solving_cpu": 0.033,
+            "wall_seconds": 0.04506595805287361,
+            "status": "SATISFIABLE"
+          },
+          {
+            "input": "pigeonhole.cnf",
+            "options": [
+              "--binary-minimize",
+              "--vmtf"
+            ],
+            "limit": 0.05,
+            "solving_cpu": 0.05,
+            "wall_seconds": 0.0531031247228384,
+            "status": "UNKNOWN"
+          },
+          {
+            "input": "pigeonhole.cnf",
+            "options": [
+              "--random-phase",
+              "--vmtf"
+            ],
+            "limit": 0.05,
+            "solving_cpu": 0.05,
+            "wall_seconds": 0.05326370941475034,
+            "status": "UNKNOWN"
+          },
+          {
+            "input": "pigeonhole.cnf",
+            "options": [
+              "--vmtf"
+            ],
+            "limit": 0.05,
+            "solving_cpu": 0.05,
+            "wall_seconds": 0.0526250833645463,
+            "status": "UNKNOWN"
+          },
+          {
+            "input": "empty.cnf",
+            "options": [
+              "--vmtf",
+              "--no-probing"
+            ],
+            "limit": 0.05,
+            "solving_cpu": 0.031,
+            "wall_seconds": 0.04280929174274206,
+            "status": "SATISFIABLE"
+          },
+          {
+            "input": "pigeonhole.cnf",
+            "options": [
+              "--local-search",
+              "--ls-interval",
+              "1",
+              "--no-probing",
+              "--ls-save-phases"
+            ],
+            "limit": 0.05,
+            "solving_cpu": 0.05,
+            "wall_seconds": 0.05290433298796415,
+            "status": "UNKNOWN"
+          },
+          {
+            "input": "pigeonhole.cnf",
+            "options": [
+              "--local-search",
+              "--ls-interval",
+              "1",
+              "--no-probing",
+              "--vmtf",
+              "--reuse-trail",
+              "--ls-save-phases"
+            ],
+            "limit": 0.05,
+            "solving_cpu": 0.05,
+            "wall_seconds": 0.05353345908224583,
+            "status": "UNKNOWN"
+          },
+          {
+            "input": "pigeonhole.cnf",
+            "options": [
+              "--portfolio",
+              "0.000000000001"
+            ],
+            "limit": 0.05,
+            "solving_cpu": 0.05,
+            "wall_seconds": 0.05537970829755068,
+            "status": "UNKNOWN"
+          },
+          {
+            "input": "pigeonhole.cnf",
+            "options": [
+              "--portfolio",
+              "0.002",
+              "--binary-proof"
+            ],
+            "limit": 0.05,
+            "solving_cpu": 0.05,
+            "wall_seconds": 0.05355287529528141,
+            "status": "UNKNOWN"
+          },
+          {
+            "input": "empty.cnf",
+            "options": [
+              "--portfolio",
+              "0.000000000001",
+              "--no-probing"
+            ],
+            "limit": 0.05,
+            "solving_cpu": 0.03,
+            "wall_seconds": 0.0424859169870615,
+            "status": "SATISFIABLE"
+          },
+          {
+            "input": "pigeonhole.cnf",
+            "options": [
+              "--congruence",
+              "--equiv",
+              "--binary-proof"
+            ],
+            "limit": 0.05,
+            "solving_cpu": 0.05,
+            "wall_seconds": 0.053704333025962114,
+            "status": "UNKNOWN"
+          },
+          {
+            "input": "empty.cnf",
+            "options": [
+              "--congruence",
+              "--no-probing"
+            ],
+            "limit": 0.05,
+            "solving_cpu": 0.033,
+            "wall_seconds": 0.04591270815581083,
+            "status": "SATISFIABLE"
+          },
+          {
+            "input": "pigeonhole.cnf",
+            "options": [
+              "--chrono",
+              "--chrono-levels",
+              "0",
+              "--binary-proof"
+            ],
+            "limit": 0.05,
+            "solving_cpu": 0.05,
+            "wall_seconds": 0.052752249874174595,
+            "status": "UNKNOWN"
+          },
+          {
+            "input": "empty.cnf",
+            "options": [
+              "--chrono",
+              "--chrono-levels",
+              "0",
+              "--no-probing"
+            ],
+            "limit": 0.05,
+            "solving_cpu": 0.03,
+            "wall_seconds": 0.041988915763795376,
+            "status": "SATISFIABLE"
+          }
+        ]
+      }
+    },
+    "debug": {
+      "binary_sha256": "6e61d6a5258f9430aafebcc99d069d3697b057f755ea3bfbc1547b0aeec55ceb",
+      "c_test_count": 46,
+      "c_test_log": "cc -std=c11 -D_POSIX_C_SOURCE=200809L -Wall -Wextra -pedantic -g -O0 -DDEBUG -fsanitize=address -fsanitize=undefined -Iinclude -o bin/tests/debug/test_chrono tests/test_chrono.c build/debug/arena.o build/debug/congruence.o build/debug/dimacs.o build/debug/elim.o build/debug/equiv.o build/debug/local_search.o build/debug/minimize.o build/debug/solver.o build/debug/vmtf.o build/debug/watch.o -lm\nRunning unit tests...\nRunning bin/tests/debug/test_arena...\n========================================\nBSAT Arena Allocator Unit Tests\n========================================\n\nTesting Arena creation and destruction... \u2705 PASS\nTesting Single clause allocation... \u2705 PASS\nTesting Learned clause allocation... \u2705 PASS\nTesting Multiple clause allocations... \u2705 PASS\nTesting LBD (Literal Block Distance) operations... \u2705 PASS\nTesting Clause activity operations... \u2705 PASS\nTesting Clause deletion... \u2705 PASS\nTesting Arena statistics... \u2705 PASS\nTesting Empty clause handling... \u2705 PASS\nTesting Large clause allocation... \u2705 PASS\nTesting Arena automatic growth... \u2705 PASS\n\n========================================\nResults: 11/11 tests passed\n========================================\nRunning bin/tests/debug/test_bce_linear...\nPASS: 6561 canonical pairs, 111537 budget cutoffs, scratch cleanup and bounded BCE model reconstruction\nRunning bin/tests/debug/test_binary_minimize...\nPASS: signed binary resolution, duplicate/deleted/long watches, budgets, cancellation and truth tables\nRunning bin/tests/debug/test_blocker_dispatch...\nPASS: 10368 mixed implicit/tagged/long watch truth, order, reason and phase cases\nRunning bin/tests/debug/test_chrono...\nPASS: 12288 exact seven-variable formula/assumption solves; 225 chronological backtracks, 82 replay positions, 0 lower conflicts\nPASS: implicit/arena binary and long-clause replay, implication chains, root units and lower conflicts\nRunning bin/tests/debug/test_clause_locks...\nPASS: active reason protection, every implied position, replay, GC and backtracking\nRunning bin/tests/debug/test_compact_vars...\nPASS: compact variable growth/rebuild and eight VSIDS/LRB scoring/rescaling cases\nRunning bin/tests/debug/test_congruence...\nPASS: 384 signed AND/XOR/ITE cases; 192 with proved aliases; every added clause truth-table checked\nPASS: 65 congruence budget cutoffs and subsequent complete solves (full work 1078)\nPASS: RUP rejection and exhausted-budget paths leave input and core unchanged\nPASS: 1152 signed binary-alias, fixed-output, fixed-input and cyclic-gate cases\nPASS: 64 signed conditional-alternative ITE cases with proved output equivalence\nPASS: 24 signed ternary/binary strengthening cases and 4 binary-unit cases\nRunning bin/tests/debug/test_deadline...\nPASS: deadline poll bounds, work/minimization triggers, immediate limits and API reuse\nRunning bin/tests/debug/test_dimacs...\n========================================\nBSAT DIMACS I/O Unit Tests\n========================================\n\nTesting trivial_sat.cnf... \u2705 PASS\nTesting trivial_unsat.cnf... \u2705 PASS\nTesting empty.cnf... \u2705 PASS\nTesting Parse with comments... \u2705 PASS\nTesting Parse unit clauses... \u2705 PASS\nTesting Parse with empty lines... \u2705 PASS\nTesting Malformed input error handling... \u2705 PASS\nTesting unit_propagation.cnf... \u2705 PASS\nTesting simple_sat_3.cnf... \u2705 PASS\nTesting simple_unsat_3.cnf... \u2705 PASS\nTesting horn_sat.cnf... \u2705 PASS\nTesting horn_unsat.cnf... \u2705 PASS\n\n========================================\nResults: 12/12 tests passed\n========================================\nRunning bin/tests/debug/test_elim_preprocess...\nPASS: 512 BVE truth/residual-model cases and 1539 cutoff/resume cases\nRunning bin/tests/debug/test_elim_records...\nPASS: 16384 multi-parent projection/model checks and minimum-word record choice\nRunning bin/tests/debug/test_elim_resolution...\nPASS: 5408 projected truth-table/model checks and all resolution work cutoffs plus an internal deadline\nRunning bin/tests/debug/test_elim_staging...\nPASS: pure staging deadline, 68 work boundaries, copy contract and owned-record growth\nRunning bin/tests/debug/test_equiv...\nPASS: signed SCCs, contradiction, 10000-node cycle, budget rollback, reconstruction and API reuse\nRunning bin/tests/debug/test_features...\n========================================\nBSAT Feature-Specific Tests\n========================================\n\nTesting Clause learning on pigeonhole... \u2705 PASS\nTesting Unit propagation (forces assignments)... (propagations=3, decisions=0) \u2705 PASS\nTesting VSIDS heuristic (decisions are made)... (decisions=4) \u2705 PASS\nTesting Binary clause handling (efficient storage)... (binary clauses stored efficiently) \u2705 PASS\nTesting LBD calculation (learned clauses get LBD scores)... \u2705 PASS\nTesting Restarts (search restarts occur)... (restarts=0) \u2705 PASS\nTesting BCE preprocessing (blocked clauses eliminated)... (blocked_clauses=0) \u2705 PASS\nTesting Clause minimization (learned clauses minimized)... (minimized_literals=0) \u2705 PASS\nTesting On-the-fly subsumption (subsumed clauses removed)... (subsumed=0) \u2705 PASS\nTesting Learned clauses are actually reduced... \u2705 PASS\nTesting Low-LBD learned clauses are tracked... \u2705 PASS\nTesting Failed literal probing (discovers implications)... (probing enabled, solved correctly) \u2705 PASS\nTesting MiniSat clause minimization (67%% literal reduction)... (conflicts=1, minimized=0) [minimization active] \u2705 PASS\nTesting Vivification inprocessing (clause strengthening)... (inprocess enabled, result=SAT) \u2705 PASS\n\n========================================\nResults: 14/14 tests passed\n========================================\nRunning bin/tests/debug/test_gc_budget...\nPASS: 82 GC work cutoffs, exact rollback/retry and cached expired deadline\nRunning bin/tests/debug/test_gc_forwarding...\nPASS: 512 GC deletion patterns and BVE occurrence relocation\nRunning bin/tests/debug/test_geometric_growth...\nTesting geometric growth optimization\n=====================================\n\nInitial state:\n  num_vars: 0\n  var_capacity: 0\n\nAdding 200 variables:\n  Var# | Capacity | Growth Event\n  -----|----------|-------------\n     1 |      128 | \u2705 Grew from 0\n   129 |      256 | \u2705 Grew from 128\n\nFinal state:\n  num_vars: 200\n  var_capacity: 256\n  Reallocations: 2\n  Wasted capacity: 56 (21.9%)\n\nPerformance analysis:\n  Theoretical minimum reallocs (2x growth from 128): 2\n  Actual reallocs: 2\n  Linear growth would require: 200 reallocs\n  Improvement: 100.0x fewer reallocs\n\n\u2705 SUCCESS: Geometric growth working correctly!\nRunning bin/tests/debug/test_heap...\nPASS: activity growth, heap ordering, backtracking, rescaling and API rebuild\nRunning bin/tests/debug/test_input_reader...\nPASS: input refill boundaries, embedded NUL rejection, token limits and read errors\nRunning bin/tests/debug/test_learned_binaries...\nPASS: compact learned binary propagation, analysis, GC, deletion and rebuilding\nRunning bin/tests/debug/test_local_search_budget...\nPASS: exact walk budgets, fresh deadline checkpoints and cancellation\nRunning bin/tests/debug/test_local_search_roots...\nPASS: root values override phases and remain fixed during random walks\nRunning bin/tests/debug/test_local_search_scores...\nPASS: 1788 walk prefixes checked against full score recomputation\nRunning bin/tests/debug/test_local_search_selection...\nPASS: 2040 walk prefixes match scan oracle across tree boundaries\nRunning bin/tests/debug/test_minimize...\nPASS: 160 signed binary graph/budget cases, independent entailment, stable subsequence and cleanup\nPASS: binary/arena minimization, shared dependencies, 2000-edge chains, failure rollback, budgets and scratch cleanup\nRunning bin/tests/debug/test_mode_start...\nPASS: 32 alternating boundaries, focused/target phases and disabled policies\nRunning bin/tests/debug/test_model_transfer...\nPASS: complete local-search transfer metadata and subsequent API solves\nRunning bin/tests/debug/test_options...\nPASS: finite clause-decay bounds, valid solver construction and repeated solves\nRunning bin/tests/debug/test_phases...\nPASS: save decision phases across random overrides, target phases and backtracking\nRunning bin/tests/debug/test_portfolio...\nPASS: 512 portfolio answers checked against truth tables, 461 fresh attempts\nPASS: portfolio truth tables, repeated API calls, global limits and proof reset\nRunning bin/tests/debug/test_proof_encoding...\nPASS: 288 text/binary proof byte cases, numeric/chunk boundaries and disabled output\nPASS: 22 proof output cutoffs and 2 deferred-flush failures return UNKNOWN\nRunning bin/tests/debug/test_reduction_ranking...\nPASS: 51840 reduction rankings, fractions, cutoffs, protected clauses and relocated watches\nRunning bin/tests/debug/test_regressions...\nPASS: parser, 800 API solves, assumptions, backjump boundaries, reduction/GC, restart regressions\nRunning bin/tests/debug/test_rephase...\nPASS: 16 partial-target rephasing, disabled, boundary and stable/heap/queue cases\nRunning bin/tests/debug/test_resolvent_projection...\nPASS: 2048 bounded cost/projection cases (1534 accepted, 514 rejected), collision witnesses and 84 staging cutoffs\nRunning bin/tests/debug/test_restart_reuse...\nPASS: heap and queue restart prefix boundaries, fallbacks and order recovery\nRunning bin/tests/debug/test_scan_work...\nPASS: 108 scan work cases, circular replacement, unit/conflict and interrupted replay\nRunning bin/tests/debug/test_solver...\n========================================\nBSAT Core Solver Unit Tests\n========================================\n\nTesting Solver creation and destruction... \u2705 PASS\nTesting Add variables... \u2705 PASS\nTesting Add clause... \u2705 PASS\nTesting Empty formula is SAT... \u2705 PASS\nTesting Single unit clause... \u2705 PASS\nTesting Contradiction: (x) \u2227 (~x)... \u2705 PASS\nTesting Simple SAT: (x \u2228 y) \u2227 (~x \u2228 z)... \u2705 PASS\nTesting Statistics tracking... \u2705 PASS\nTesting Conflict limit... \u2705 PASS\nTesting Solving with assumptions... \u2705 PASS\nTesting Multiple solve calls... \u2705 PASS\n\n========================================\nResults: 11/11 tests passed\n========================================\nRunning bin/tests/debug/test_targets...\nPASS: exact target phases across extensions, changed branches, restarts and API rebuilds\nRunning bin/tests/debug/test_vivify_prefix...\nPASS: 2064 signed partial-deletion and failed-trial cutoff cases\nPASS: 8 long-scan vivification cutoffs, temporary-trail rollback and retry\nPASS: 4704 vivification truth-table/RUP, budget, signed implication, root, 512 exact deletion-oracle and subsequent solve cases\nRunning bin/tests/debug/test_vmtf...\nPASS: VMTF order, assignment cursor, growth, stamp rollover, conflict use and API rebuild\nRunning bin/tests/debug/test_walk_phase_feedback...\nPASS: 6336 feedback cases preserve assignment and keep the best phases\nRunning bin/tests/debug/test_watch...\n========================================\nBSAT Watch Manager Unit Tests\n========================================\n\nTesting Watch manager creation and destruction... \u2705 PASS\nTesting Add single watch... \u2705 PASS\nTesting Add multiple watches to same literal... \u2705 PASS\nTesting Add watches to different literals... \u2705 PASS\nTesting Remove all watches for a clause... \u2705 PASS\nTesting Clear all watches... \u2705 PASS\nTesting Blocking literal optimization... \u2705 PASS\nTesting Positive and negative literal watches... \u2705 PASS\nTesting Binary clause (2 literals) watches... \u2705 PASS\nTesting Watch list automatic growth... \u2705 PASS\nTesting Watch manager in-place resize... \u2705 PASS\n\n========================================\nResults: 11/11 tests passed\n========================================\nRunning bin/tests/debug/test_watch_lookahead...\nPASS: 459 mixed-watch boundary, unit and conflict cases\nAll tests passed!\n",
+      "validator_command": [
+        "python3",
+        "tests/validate.py",
+        "--solver",
+        "bin/bsat_debug",
+        "--checker",
+        "/tmp/bsat-drat-trim",
+        "--cases",
+        "30",
+        "--seed",
+        "20261231"
+      ],
+      "validator_log": "PASS: 4524 solves; truth-table answers, original models, text/binary RUP proofs checked (seed 20261231)\n",
+      "deadline_log": "PASS: 63 short-deadline runs; maximum observed CPU overrun 0.001s\n",
+      "deadlines": {
+        "solver": "/Users/msharpe/python/bsat/competition/c/bin/bsat_debug",
+        "runs": [
+          {
+            "input": "pigeonhole.cnf",
+            "options": [
+              "--local-search",
+              "--ls-interval",
+              "1",
+              "--no-probing"
+            ],
+            "limit": 0.001,
+            "solving_cpu": 0.001,
+            "wall_seconds": 0.05425908276811242,
+            "status": "UNKNOWN"
+          },
+          {
+            "input": "pigeonhole.cnf",
+            "options": [
+              "--local-search",
+              "--ls-interval",
+              "1",
+              "--no-probing",
+              "--vmtf",
+              "--reuse-trail"
+            ],
+            "limit": 0.001,
+            "solving_cpu": 0.001,
+            "wall_seconds": 0.05754666682332754,
+            "status": "UNKNOWN"
+          },
+          {
+            "input": "pigeonhole.cnf",
+            "options": [
+              "--reuse-trail"
+            ],
+            "limit": 0.001,
+            "solving_cpu": 0.001,
+            "wall_seconds": 0.06085579190403223,
+            "status": "UNKNOWN"
+          },
+          {
+            "input": "pigeonhole.cnf",
+            "options": [
+              "--reuse-trail",
+              "--vmtf"
+            ],
+            "limit": 0.001,
+            "solving_cpu": 0.001,
+            "wall_seconds": 0.059572209138423204,
+            "status": "UNKNOWN"
+          },
+          {
+            "input": "pigeonhole.cnf",
+            "options": [],
+            "limit": 0.001,
+            "solving_cpu": 0.001,
+            "wall_seconds": 0.0635138750076294,
+            "status": "UNKNOWN"
+          },
+          {
+            "input": "pigeonhole.cnf",
+            "options": [
+              "--iterative-minimize"
+            ],
+            "limit": 0.001,
+            "solving_cpu": 0.001,
+            "wall_seconds": 0.06225966615602374,
+            "status": "UNKNOWN"
+          },
+          {
+            "input": "pigeonhole.cnf",
+            "options": [
+              "--equiv",
+              "--elim",
+              "--bce",
+              "--dynamic-lbd",
+              "--binary-proof"
+            ],
+            "limit": 0.001,
+            "solving_cpu": 0.001,
+            "wall_seconds": 0.06427837489172816,
+            "status": "UNKNOWN"
+          },
+          {
+            "input": "empty.cnf",
+            "options": [
+              "--no-probing"
+            ],
+            "limit": 0.001,
+            "solving_cpu": 0.001,
+            "wall_seconds": 0.08460454177111387,
+            "status": "UNKNOWN"
+          },
+          {
+            "input": "pigeonhole.cnf",
+            "options": [
+              "--binary-minimize",
+              "--vmtf"
+            ],
+            "limit": 0.001,
+            "solving_cpu": 0.001,
+            "wall_seconds": 0.06219283305108547,
+            "status": "UNKNOWN"
+          },
+          {
+            "input": "pigeonhole.cnf",
+            "options": [
+              "--random-phase",
+              "--vmtf"
+            ],
+            "limit": 0.001,
+            "solving_cpu": 0.001,
+            "wall_seconds": 0.06516104191541672,
+            "status": "UNKNOWN"
+          },
+          {
+            "input": "pigeonhole.cnf",
+            "options": [
+              "--vmtf"
+            ],
+            "limit": 0.001,
+            "solving_cpu": 0.001,
+            "wall_seconds": 0.06543879117816687,
+            "status": "UNKNOWN"
+          },
+          {
+            "input": "empty.cnf",
+            "options": [
+              "--vmtf",
+              "--no-probing"
+            ],
+            "limit": 0.001,
+            "solving_cpu": 0.001,
+            "wall_seconds": 0.07620383286848664,
+            "status": "UNKNOWN"
+          },
+          {
+            "input": "pigeonhole.cnf",
+            "options": [
+              "--local-search",
+              "--ls-interval",
+              "1",
+              "--no-probing",
+              "--ls-save-phases"
+            ],
+            "limit": 0.001,
+            "solving_cpu": 0.001,
+            "wall_seconds": 0.0645259590819478,
+            "status": "UNKNOWN"
+          },
+          {
+            "input": "pigeonhole.cnf",
+            "options": [
+              "--local-search",
+              "--ls-interval",
+              "1",
+              "--no-probing",
+              "--vmtf",
+              "--reuse-trail",
+              "--ls-save-phases"
+            ],
+            "limit": 0.001,
+            "solving_cpu": 0.001,
+            "wall_seconds": 0.06738945795223117,
+            "status": "UNKNOWN"
+          },
+          {
+            "input": "pigeonhole.cnf",
+            "options": [
+              "--portfolio",
+              "0.000000000001"
+            ],
+            "limit": 0.001,
+            "solving_cpu": 0.001,
+            "wall_seconds": 0.06509075034409761,
+            "status": "UNKNOWN"
+          },
+          {
+            "input": "pigeonhole.cnf",
+            "options": [
+              "--portfolio",
+              "0.002",
+              "--binary-proof"
+            ],
+            "limit": 0.001,
+            "solving_cpu": 0.001,
+            "wall_seconds": 0.06481120781973004,
+            "status": "UNKNOWN"
+          },
+          {
+            "input": "empty.cnf",
+            "options": [
+              "--portfolio",
+              "0.000000000001",
+              "--no-probing"
+            ],
+            "limit": 0.001,
+            "solving_cpu": 0.001,
+            "wall_seconds": 0.09103554114699364,
+            "status": "UNKNOWN"
+          },
+          {
+            "input": "pigeonhole.cnf",
+            "options": [
+              "--congruence",
+              "--equiv",
+              "--binary-proof"
+            ],
+            "limit": 0.001,
+            "solving_cpu": 0.001,
+            "wall_seconds": 0.06796150002628565,
+            "status": "UNKNOWN"
+          },
+          {
+            "input": "empty.cnf",
+            "options": [
+              "--congruence",
+              "--no-probing"
+            ],
+            "limit": 0.001,
+            "solving_cpu": 0.001,
+            "wall_seconds": 0.09018883388489485,
+            "status": "UNKNOWN"
+          },
+          {
+            "input": "pigeonhole.cnf",
+            "options": [
+              "--chrono",
+              "--chrono-levels",
+              "0",
+              "--binary-proof"
+            ],
+            "limit": 0.001,
+            "solving_cpu": 0.001,
+            "wall_seconds": 0.06777254119515419,
+            "status": "UNKNOWN"
+          },
+          {
+            "input": "empty.cnf",
+            "options": [
+              "--chrono",
+              "--chrono-levels",
+              "0",
+              "--no-probing"
+            ],
+            "limit": 0.001,
+            "solving_cpu": 0.001,
+            "wall_seconds": 0.08688875008374453,
+            "status": "UNKNOWN"
+          },
+          {
+            "input": "pigeonhole.cnf",
+            "options": [
+              "--local-search",
+              "--ls-interval",
+              "1",
+              "--no-probing"
+            ],
+            "limit": 0.01,
+            "solving_cpu": 0.01,
+            "wall_seconds": 0.07961925026029348,
+            "status": "UNKNOWN"
+          },
+          {
+            "input": "pigeonhole.cnf",
+            "options": [
+              "--local-search",
+              "--ls-interval",
+              "1",
+              "--no-probing",
+              "--vmtf",
+              "--reuse-trail"
+            ],
+            "limit": 0.01,
+            "solving_cpu": 0.01,
+            "wall_seconds": 0.07823466695845127,
+            "status": "UNKNOWN"
+          },
+          {
+            "input": "pigeonhole.cnf",
+            "options": [
+              "--reuse-trail"
+            ],
+            "limit": 0.01,
+            "solving_cpu": 0.01,
+            "wall_seconds": 0.07780854217708111,
+            "status": "UNKNOWN"
+          },
+          {
+            "input": "pigeonhole.cnf",
+            "options": [
+              "--reuse-trail",
+              "--vmtf"
+            ],
+            "limit": 0.01,
+            "solving_cpu": 0.01,
+            "wall_seconds": 0.08077287534251809,
+            "status": "UNKNOWN"
+          },
+          {
+            "input": "pigeonhole.cnf",
+            "options": [],
+            "limit": 0.01,
+            "solving_cpu": 0.01,
+            "wall_seconds": 0.07538195792585611,
+            "status": "UNKNOWN"
+          },
+          {
+            "input": "pigeonhole.cnf",
+            "options": [
+              "--iterative-minimize"
+            ],
+            "limit": 0.01,
+            "solving_cpu": 0.01,
+            "wall_seconds": 0.08112729201093316,
+            "status": "UNKNOWN"
+          },
+          {
+            "input": "pigeonhole.cnf",
+            "options": [
+              "--equiv",
+              "--elim",
+              "--bce",
+              "--dynamic-lbd",
+              "--binary-proof"
+            ],
+            "limit": 0.01,
+            "solving_cpu": 0.01,
+            "wall_seconds": 0.08034270908683538,
+            "status": "UNKNOWN"
+          },
+          {
+            "input": "empty.cnf",
+            "options": [
+              "--no-probing"
+            ],
+            "limit": 0.01,
+            "solving_cpu": 0.01,
+            "wall_seconds": 0.09965904196724296,
+            "status": "UNKNOWN"
+          },
+          {
+            "input": "pigeonhole.cnf",
+            "options": [
+              "--binary-minimize",
+              "--vmtf"
+            ],
+            "limit": 0.01,
+            "solving_cpu": 0.01,
+            "wall_seconds": 0.07948445901274681,
+            "status": "UNKNOWN"
+          },
+          {
+            "input": "pigeonhole.cnf",
+            "options": [
+              "--random-phase",
+              "--vmtf"
+            ],
+            "limit": 0.01,
+            "solving_cpu": 0.01,
+            "wall_seconds": 0.07672254228964448,
+            "status": "UNKNOWN"
+          },
+          {
+            "input": "pigeonhole.cnf",
+            "options": [
+              "--vmtf"
+            ],
+            "limit": 0.01,
+            "solving_cpu": 0.01,
+            "wall_seconds": 0.076665333006531,
+            "status": "UNKNOWN"
+          },
+          {
+            "input": "empty.cnf",
+            "options": [
+              "--vmtf",
+              "--no-probing"
+            ],
+            "limit": 0.01,
+            "solving_cpu": 0.01,
+            "wall_seconds": 0.09986370801925659,
+            "status": "UNKNOWN"
+          },
+          {
+            "input": "pigeonhole.cnf",
+            "options": [
+              "--local-search",
+              "--ls-interval",
+              "1",
+              "--no-probing",
+              "--ls-save-phases"
+            ],
+            "limit": 0.01,
+            "solving_cpu": 0.01,
+            "wall_seconds": 0.08313437504693866,
+            "status": "UNKNOWN"
+          },
+          {
+            "input": "pigeonhole.cnf",
+            "options": [
+              "--local-search",
+              "--ls-interval",
+              "1",
+              "--no-probing",
+              "--vmtf",
+              "--reuse-trail",
+              "--ls-save-phases"
+            ],
+            "limit": 0.01,
+            "solving_cpu": 0.01,
+            "wall_seconds": 0.08063062513247132,
+            "status": "UNKNOWN"
+          },
+          {
+            "input": "pigeonhole.cnf",
+            "options": [
+              "--portfolio",
+              "0.000000000001"
+            ],
+            "limit": 0.01,
+            "solving_cpu": 0.01,
+            "wall_seconds": 0.08046070812270045,
+            "status": "UNKNOWN"
+          },
+          {
+            "input": "pigeonhole.cnf",
+            "options": [
+              "--portfolio",
+              "0.002",
+              "--binary-proof"
+            ],
+            "limit": 0.01,
+            "solving_cpu": 0.01,
+            "wall_seconds": 0.07700608391314745,
+            "status": "UNKNOWN"
+          },
+          {
+            "input": "empty.cnf",
+            "options": [
+              "--portfolio",
+              "0.000000000001",
+              "--no-probing"
+            ],
+            "limit": 0.01,
+            "solving_cpu": 0.011,
+            "wall_seconds": 0.10252495808526874,
+            "status": "UNKNOWN"
+          },
+          {
+            "input": "pigeonhole.cnf",
+            "options": [
+              "--congruence",
+              "--equiv",
+              "--binary-proof"
+            ],
+            "limit": 0.01,
+            "solving_cpu": 0.01,
+            "wall_seconds": 0.08160016592592001,
+            "status": "UNKNOWN"
+          },
+          {
+            "input": "empty.cnf",
+            "options": [
+              "--congruence",
+              "--no-probing"
+            ],
+            "limit": 0.01,
+            "solving_cpu": 0.01,
+            "wall_seconds": 0.1018538330681622,
+            "status": "UNKNOWN"
+          },
+          {
+            "input": "pigeonhole.cnf",
+            "options": [
+              "--chrono",
+              "--chrono-levels",
+              "0",
+              "--binary-proof"
+            ],
+            "limit": 0.01,
+            "solving_cpu": 0.01,
+            "wall_seconds": 0.08373650023713708,
+            "status": "UNKNOWN"
+          },
+          {
+            "input": "empty.cnf",
+            "options": [
+              "--chrono",
+              "--chrono-levels",
+              "0",
+              "--no-probing"
+            ],
+            "limit": 0.01,
+            "solving_cpu": 0.01,
+            "wall_seconds": 0.10083083296194673,
+            "status": "UNKNOWN"
+          },
+          {
+            "input": "pigeonhole.cnf",
+            "options": [
+              "--local-search",
+              "--ls-interval",
+              "1",
+              "--no-probing"
+            ],
+            "limit": 0.05,
+            "solving_cpu": 0.05,
+            "wall_seconds": 0.11999025009572506,
+            "status": "UNKNOWN"
+          },
+          {
+            "input": "pigeonhole.cnf",
+            "options": [
+              "--local-search",
+              "--ls-interval",
+              "1",
+              "--no-probing",
+              "--vmtf",
+              "--reuse-trail"
+            ],
+            "limit": 0.05,
+            "solving_cpu": 0.05,
+            "wall_seconds": 0.12161954073235393,
+            "status": "UNKNOWN"
+          },
+          {
+            "input": "pigeonhole.cnf",
+            "options": [
+              "--reuse-trail"
+            ],
+            "limit": 0.05,
+            "solving_cpu": 0.05,
+            "wall_seconds": 0.12012041686102748,
+            "status": "UNKNOWN"
+          },
+          {
+            "input": "pigeonhole.cnf",
+            "options": [
+              "--reuse-trail",
+              "--vmtf"
+            ],
+            "limit": 0.05,
+            "solving_cpu": 0.05,
+            "wall_seconds": 0.12084979098290205,
+            "status": "UNKNOWN"
+          },
+          {
+            "input": "pigeonhole.cnf",
+            "options": [],
+            "limit": 0.05,
+            "solving_cpu": 0.05,
+            "wall_seconds": 0.12089424999430776,
+            "status": "UNKNOWN"
+          },
+          {
+            "input": "pigeonhole.cnf",
+            "options": [
+              "--iterative-minimize"
+            ],
+            "limit": 0.05,
+            "solving_cpu": 0.05,
+            "wall_seconds": 0.12225475022569299,
+            "status": "UNKNOWN"
+          },
+          {
+            "input": "pigeonhole.cnf",
+            "options": [
+              "--equiv",
+              "--elim",
+              "--bce",
+              "--dynamic-lbd",
+              "--binary-proof"
+            ],
+            "limit": 0.05,
+            "solving_cpu": 0.05,
+            "wall_seconds": 0.1225187499076128,
+            "status": "UNKNOWN"
+          },
+          {
+            "input": "empty.cnf",
+            "options": [
+              "--no-probing"
+            ],
+            "limit": 0.05,
+            "solving_cpu": 0.05,
+            "wall_seconds": 0.14186624996364117,
+            "status": "UNKNOWN"
+          },
+          {
+            "input": "pigeonhole.cnf",
+            "options": [
+              "--binary-minimize",
+              "--vmtf"
+            ],
+            "limit": 0.05,
+            "solving_cpu": 0.05,
+            "wall_seconds": 0.12345845904201269,
+            "status": "UNKNOWN"
+          },
+          {
+            "input": "pigeonhole.cnf",
+            "options": [
+              "--random-phase",
+              "--vmtf"
+            ],
+            "limit": 0.05,
+            "solving_cpu": 0.05,
+            "wall_seconds": 0.1214670417830348,
+            "status": "UNKNOWN"
+          },
+          {
+            "input": "pigeonhole.cnf",
+            "options": [
+              "--vmtf"
+            ],
+            "limit": 0.05,
+            "solving_cpu": 0.05,
+            "wall_seconds": 0.11948041711002588,
+            "status": "UNKNOWN"
+          },
+          {
+            "input": "empty.cnf",
+            "options": [
+              "--vmtf",
+              "--no-probing"
+            ],
+            "limit": 0.05,
+            "solving_cpu": 0.05,
+            "wall_seconds": 0.14424374978989363,
+            "status": "UNKNOWN"
+          },
+          {
+            "input": "pigeonhole.cnf",
+            "options": [
+              "--local-search",
+              "--ls-interval",
+              "1",
+              "--no-probing",
+              "--ls-save-phases"
+            ],
+            "limit": 0.05,
+            "solving_cpu": 0.05,
+            "wall_seconds": 0.11725016729906201,
+            "status": "UNKNOWN"
+          },
+          {
+            "input": "pigeonhole.cnf",
+            "options": [
+              "--local-search",
+              "--ls-interval",
+              "1",
+              "--no-probing",
+              "--vmtf",
+              "--reuse-trail",
+              "--ls-save-phases"
+            ],
+            "limit": 0.05,
+            "solving_cpu": 0.05,
+            "wall_seconds": 0.12096708314493299,
+            "status": "UNKNOWN"
+          },
+          {
+            "input": "pigeonhole.cnf",
+            "options": [
+              "--portfolio",
+              "0.000000000001"
+            ],
+            "limit": 0.05,
+            "solving_cpu": 0.05,
+            "wall_seconds": 0.12137387506663799,
+            "status": "UNKNOWN"
+          },
+          {
+            "input": "pigeonhole.cnf",
+            "options": [
+              "--portfolio",
+              "0.002",
+              "--binary-proof"
+            ],
+            "limit": 0.05,
+            "solving_cpu": 0.05,
+            "wall_seconds": 0.11809391668066382,
+            "status": "UNKNOWN"
+          },
+          {
+            "input": "empty.cnf",
+            "options": [
+              "--portfolio",
+              "0.000000000001",
+              "--no-probing"
+            ],
+            "limit": 0.05,
+            "solving_cpu": 0.05,
+            "wall_seconds": 0.13696883292868733,
+            "status": "UNKNOWN"
+          },
+          {
+            "input": "pigeonhole.cnf",
+            "options": [
+              "--congruence",
+              "--equiv",
+              "--binary-proof"
+            ],
+            "limit": 0.05,
+            "solving_cpu": 0.05,
+            "wall_seconds": 0.12358758272603154,
+            "status": "UNKNOWN"
+          },
+          {
+            "input": "empty.cnf",
+            "options": [
+              "--congruence",
+              "--no-probing"
+            ],
+            "limit": 0.05,
+            "solving_cpu": 0.05,
+            "wall_seconds": 0.1436730409041047,
+            "status": "UNKNOWN"
+          },
+          {
+            "input": "pigeonhole.cnf",
+            "options": [
+              "--chrono",
+              "--chrono-levels",
+              "0",
+              "--binary-proof"
+            ],
+            "limit": 0.05,
+            "solving_cpu": 0.05,
+            "wall_seconds": 0.11676104180514812,
+            "status": "UNKNOWN"
+          },
+          {
+            "input": "empty.cnf",
+            "options": [
+              "--chrono",
+              "--chrono-levels",
+              "0",
+              "--no-probing"
+            ],
+            "limit": 0.05,
+            "solving_cpu": 0.05,
+            "wall_seconds": 0.13304408406838775,
+            "status": "UNKNOWN"
+          }
+        ]
+      }
+    }
+  }
+}

@@ -1,0 +1,20 @@
+{
+  "schema": 1,
+  "base_revision": "c8ab1eb",
+  "decision": "Reject ordered-trail replay prototype: repeated verified answers, but major belpyramid slowdown and no extra solves in matched development comparison.",
+  "patch": "chrono-ordered-prototype-20260907.patch",
+  "patch_sha256": "c72250c6bde8eefb5db9fb1c4c1f4c58992ccf66ad9d10a21a9fd95d38546d0b",
+  "sources": {
+    "src/solver.c": "7f1f32cd41a91aaad07078b348944b6ab6852bf4de4d42dca0d7833710c08977",
+    "src/main.c": "319eacf0fa94512de3a85f8c3ed81e61350403b4bce7c75a2dfa0a6e5bb0ce68",
+    "include/solver.h": "d8a56376be413538c09269789e3e6c3b10dff0654665467664df27d28e9330d1",
+    "tests/test_chrono.c": "33cf9ccbbef61e54a1dfb57c6eb81ecbc5ef7455b063c41e0ef9784dbed29697",
+    "tests/validate.py": "bf82582dfb3727ee46a75b5f52b461a735d6d7f88748c086f9861ea819b756ef",
+    "tests/check_deadlines.py": "25cf6564aae04b6ee7433bcdc330bbae74d39ecb60026d08300eda6101eb1e33"
+  },
+  "release_binary_sha256": "48006bc6800ebd60e933f6c267c7ec8fa66c339bfdba9a5320caed7eace35ecd",
+  "apply_check": "PASS: git apply --check --unidiff-zero against baseline files",
+  "validation": "chrono-validation-20260907.json",
+  "performance": "chrono-initial-20260907.json",
+  "next": "Investigate actual implication levels, retention of lower-level assignments during backtracking, propagation-head remapping and highest-level conflict watches."
+}
