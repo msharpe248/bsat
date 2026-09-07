@@ -306,6 +306,9 @@ typedef struct Solver {
     uint64_t garbage_collections, lbd_samples, recent_lbd_sum;
     uint32_t subsume_cursor, vivify_cursor;
     bool stable_mode;
+    /* Portfolio diagnostics: ordinary stats describe the final attempt. */
+    unsigned portfolio_attempts;
+    uint64_t portfolio_first_conflicts, portfolio_first_decisions;
     // Result
     lbool result;             // SAT/UNSAT/UNKNOWN
 } Solver;
@@ -331,6 +334,12 @@ bool solver_add_clause(Solver* s, const Lit* lits, uint32_t size);
 
 // Main solve function
 lbool solver_solve(Solver* s);
+
+/* Experimental focused search for focused_seconds CPU seconds, then fresh
+   alternating search. max_time/conflicts/decisions bound the whole call.
+   No assumptions; a proof stream requires opts.proof_path so it can be reset.
+   Ordinary stats describe the final attempt; options are restored on return. */
+lbool solver_solve_portfolio(Solver* s, double focused_seconds);
 
 // Solve with assumptions
 lbool solver_solve_with_assumptions(Solver* s, const Lit* assumps, uint32_t n_assumps);

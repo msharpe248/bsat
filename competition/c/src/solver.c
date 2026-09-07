@@ -815,6 +815,13 @@ void solver_print_stats(const Solver* s) {
     printf("c\n");
     printf("c ========== Statistics ==========\n");
     printf("c CPU time          : %.3f s\n", cpu_time);
+    if (s->portfolio_attempts) {
+        printf("c Portfolio attempts: %u\n", s->portfolio_attempts);
+        printf("c Portfolio first conflicts: %llu\n", (unsigned long long)s->portfolio_first_conflicts);
+        printf("c Portfolio first decisions: %llu\n", (unsigned long long)s->portfolio_first_decisions);
+        printf("c Portfolio total conflicts: %llu\n", (unsigned long long)(s->portfolio_first_conflicts+s->stats.conflicts));
+        printf("c Portfolio total decisions: %llu\n", (unsigned long long)(s->portfolio_first_decisions+s->stats.decisions));
+    }
     printf("c Decisions         : %llu\n", (unsigned long long)s->stats.decisions);
     printf("c Propagations      : %llu\n", (unsigned long long)s->stats.propagations);
     printf("c Conflicts         : %llu\n", (unsigned long long)s->stats.conflicts);
@@ -1928,7 +1935,7 @@ static int failed_literal_probing(Solver *s) {
  * Main Solve Function
  *********************************************************************/
 
-static bool solver_rebuild(Solver *s) {
+static bool solver_rebuild_timed(Solver *s, double start_time, double max_time) {
     /* Restore input after destructive preprocessing or an assumption solve.
        This deliberately sacrifices learned-clause reuse for a simple, safe API. */
     SolverOpts opts = s->opts;
@@ -1937,20 +1944,40 @@ static bool solver_rebuild(Solver *s) {
     Solver *fresh = solver_new_with_opts(&opts);
     if (!fresh) { s->error = true; return false; }
     fresh->opts.proof_path = path;
-    while (fresh->num_vars < s->num_vars) if (!solver_new_var(fresh)) { solver_free(fresh); s->error=true; return false; }
+    fresh->stats.start_time = start_time;
+    fresh->opts.max_time = max_time;
+    while (fresh->num_vars < s->num_vars) {
+        if (solver_budget_exhausted(fresh)) goto incomplete;
+        if (!solver_new_var(fresh)) { solver_free(fresh); s->error=true; return false; }
+    }
     size_t start = 0;
-    for (size_t i = 0; i < s->input_size; ++i) if (!s->input[i]) {
-        solver_add_clause(fresh, s->input+start, (uint32_t)(i-start)); start=i+1;
+    for (size_t i = 0; i < s->input_size; ++i) {
+        if (!(i & 1023) && solver_budget_exhausted_now(fresh)) goto incomplete;
+        if (!s->input[i]) {
+            solver_add_clause(fresh, s->input+start, (uint32_t)(i-start)); start=i+1;
+        }
     }
     if (fresh->error) { solver_free(fresh); s->error=true; return false; }
-    if (s->proof_file) { fclose(s->proof_file); s->proof_file=NULL; }
+    if (solver_budget_exhausted_now(fresh)) goto incomplete;
+    fresh->opts.max_time = opts.max_time;
+    if (s->proof_file) {
+        int failed = fclose(s->proof_file); s->proof_file=NULL;
+        if (failed) { solver_free(fresh); s->error=true; return false; }
+    }
     if (path) {
         fresh->proof_file=fopen(path, opts.binary_proof ? "wb" : "w");
         if (!fresh->proof_file) { solver_free(fresh); s->error=true; return false; }
     }
     Solver old = *s; *s = *fresh; *fresh = old; solver_free(fresh);
     return true;
+incomplete:
+    s->error |= fresh->error;
+    s->interrupted |= fresh->interrupted;
+    solver_free(fresh);
+    return false;
 }
+
+static bool solver_rebuild(Solver *s) { return solver_rebuild_timed(s, 0, 0); }
 
 bool solver_check_model(const Solver *s) {
     bool satisfied = false;
@@ -2078,7 +2105,7 @@ done:
     return result;
 }
 
-lbool solver_solve_with_assumptions(Solver *s, const Lit *assumps, uint32_t n_assumps) {
+static lbool solver_solve_at(Solver *s, const Lit *assumps, uint32_t n_assumps, double start_time) {
     if (!s || (n_assumps && !assumps)) return UNDEF;
     if (s->has_solved && !solver_rebuild(s)) return UNDEF;
     for (uint32_t i=0;i<n_assumps;++i)
@@ -2096,7 +2123,7 @@ lbool solver_solve_with_assumptions(Solver *s, const Lit *assumps, uint32_t n_as
         if (!p) { s->error=true;return UNDEF; }
         free(s->level_seen);s->level_seen=p;s->levels_capacity=levels;
     }
-    s->stats.start_time=(double)clock()/CLOCKS_PER_SEC;
+    s->stats.start_time=start_time < 0 ? (double)clock()/CLOCKS_PER_SEC : start_time;
     s->work_limit=0;s->interrupted=false;
     s->clock_initialized=false;s->clock_polls=0;
     s->random_state=s->opts.seed;
@@ -2127,7 +2154,51 @@ lbool solver_solve_with_assumptions(Solver *s, const Lit *assumps, uint32_t n_as
     s->result=result;
     return result;
 }
+lbool solver_solve_with_assumptions(Solver *s, const Lit *assumps, uint32_t n_assumps) {
+    return solver_solve_at(s, assumps, n_assumps, -1);
+}
 lbool solver_solve(Solver *s) { return solver_solve_with_assumptions(s,NULL,0); }
+
+lbool solver_solve_portfolio(Solver *s, double focused_seconds) {
+    if (!s || !isfinite(focused_seconds) || focused_seconds <= 0 || s->error ||
+        (s->proof_file && !s->opts.proof_path)) return UNDEF;
+    SolverOpts saved = s->opts;
+    double start = (double)clock()/CLOCKS_PER_SEC;
+    lbool result = UNDEF;
+    unsigned attempts = 0;
+    uint64_t first_conflicts = 0, first_decisions = 0;
+    /* Repeated calls also charge rebuilding to the total deadline. */
+    if (s->has_solved && !solver_rebuild_timed(s, start, saved.max_time)) goto done;
+    attempts = 1;
+    s->opts.alternating = false;
+    s->opts.max_time = saved.max_time > 0 ? fmin(saved.max_time, focused_seconds) : focused_seconds;
+    result = solver_solve_at(s, NULL, 0, start);
+    if (result != UNDEF || s->error || !s->interrupted) goto done;
+    /* Only expiration of the private first slice authorizes a second attempt.
+       Global conflict/decision limits must never be refreshed by rebuilding. */
+    double elapsed = (double)clock()/CLOCKS_PER_SEC - start;
+    if (elapsed < focused_seconds || (saved.max_time > 0 && elapsed >= saved.max_time) ||
+        (saved.max_conflicts && s->stats.conflicts >= saved.max_conflicts) ||
+        (saved.max_decisions && s->stats.decisions >= saved.max_decisions)) goto done;
+    uint64_t conflicts = s->stats.conflicts, decisions = s->stats.decisions;
+    s->opts = saved;
+    if (!solver_rebuild_timed(s, start, saved.max_time)) goto done;
+    attempts = 2;
+    first_conflicts = conflicts;
+    first_decisions = decisions;
+    s->opts.alternating = true;
+    if (saved.max_conflicts) s->opts.max_conflicts -= (uint32_t)conflicts;
+    if (saved.max_decisions) s->opts.max_decisions -= (uint32_t)decisions;
+    result = solver_solve_at(s, NULL, 0, start);
+done:
+    s->portfolio_attempts = attempts;
+    s->portfolio_first_conflicts = first_conflicts;
+    s->portfolio_first_decisions = first_decisions;
+    s->opts = saved;
+    s->stats.start_time = start;
+    s->result = result;
+    return result;
+}
 
 const Lit *solver_conflict(const Solver *s, uint32_t *size) {
     if (size) *size=s && s->result==FALSE ? s->conflict_size : 0;

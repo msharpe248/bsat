@@ -85,6 +85,7 @@ static void print_usage(const char* program) {
     printf("Preprocessing:\n");
     printf("  --bce                    Enable bounded blocked clause elimination\n");
     printf("  --alternating            Experimental focused/stable search modes\n");
+    printf("  --portfolio <sec>        Focused CPU slice, then fresh alternating search (experimental)\n");
     printf("  --no-circular            Disable circular replacement watch search\n");
     printf("  --seed <n>               Deterministic per-solver random seed\n");
     printf("  --preprocess-budget <n>  Literal-work budget (0 disables preprocessing)\n");
@@ -172,6 +173,7 @@ static struct option long_options[] = {
     {"no-subsumption",  no_argument,       0, 0},
     {"bce", no_argument, 0, 0},
     {"alternating", no_argument, 0, 0},
+    {"portfolio", required_argument, 0, 0},
     {"no-circular", no_argument, 0, 0},
     {"seed", required_argument, 0, 0},
     {"preprocess-budget", required_argument, 0, 0},
@@ -203,6 +205,7 @@ static struct option long_options[] = {
 int main(int argc, char** argv) {
     // Default options
     SolverOpts opts = default_opts();
+    double portfolio_seconds = 0;
 
     // Parse command line options
     int c;
@@ -213,7 +216,7 @@ int main(int argc, char** argv) {
             const char *name = c == 0 ? long_options[option_index].name : "";
             bool floating = c == 't' || strstr(name, "decay") || strstr(name, "alpha") ||
                 !strcmp(name,"var-inc") || !strcmp(name,"restart-inc") || !strcmp(name,"glucose-k") ||
-                !strcmp(name,"random-prob") || !strcmp(name,"reduce-fraction") || !strcmp(name,"ls-noise");
+                !strcmp(name,"random-prob") || !strcmp(name,"reduce-fraction") || !strcmp(name,"ls-noise") || !strcmp(name,"portfolio");
             char *end; errno=0;
             bool valid;
             if (floating) {
@@ -264,6 +267,9 @@ int main(int argc, char** argv) {
                     opts.bce = true;
                 } else if (strcmp(long_options[option_index].name, "alternating") == 0) {
                     opts.alternating = true;
+                } else if (strcmp(long_options[option_index].name, "portfolio") == 0) {
+                    portfolio_seconds = atof(optarg);
+                    if (portfolio_seconds <= 0) { fprintf(stderr,"Error: portfolio slice must be positive\n");return 1; }
                 } else if (strcmp(long_options[option_index].name, "no-circular") == 0) {
                     opts.circular = false;
                 } else if (strcmp(long_options[option_index].name, "seed") == 0) {
@@ -445,7 +451,7 @@ int main(int argc, char** argv) {
 
     // Solve
     double start_time = (double)clock() / CLOCKS_PER_SEC;
-    lbool result = solver_solve(solver);
+    lbool result = portfolio_seconds ? solver_solve_portfolio(solver, portfolio_seconds) : solver_solve(solver);
     double solve_time = (double)clock() / CLOCKS_PER_SEC - start_time;
 
     if (solver->error) fprintf(stderr, "Error: solver allocation, certificate, or model validation failure\n");

@@ -233,6 +233,10 @@ def main():
                 ['--no-rephase', '--no-probing'],
                 ['--rephase-interval', '1', '--alternating'],
                 ['--rephase-interval', '1', '--vmtf', '--binary-proof']]
+    configs += [['--portfolio', '0.000000000001'],
+                ['--portfolio', '0.000000000001', '--binary-proof'],
+                ['--portfolio', '0.000000000001', '--elim', '--bce', '--equiv'],
+                ['--portfolio', '2']]
     fixed = [
         (5, [[1, 2], [1, -2], [-3, 4], [3, -4], [4, 5]], None),
         (5, [[-4], [-1, 2, 4], [1, -2, 4]] +

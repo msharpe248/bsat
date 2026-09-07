@@ -57,6 +57,14 @@ unfinished clauses are errors. Empty formulas are SAT; empty clauses are UNSAT.
 
 ## Search controls
 
+Experimental `--portfolio 2` gives focused search two CPU seconds, then starts
+fresh alternating search if that slice expires. `--time`, conflict and decision
+limits cover both attempts; the second attempt resets its proof to the original
+input. It combines complementary development solves at the cost of rebuilding,
+extra memory and slower answers on some inputs. It does not change the default.
+See [PORTFOLIO_SEARCH.md](PORTFOLIO_SEARCH.md) for the API contract, independent
+checks and benchmark evidence.
+
 Random phase overrides are disabled by default. Enable the previous random-phase
 policy with `--random-phase`; `--random-prob` sets its probability (default 0.01)
 but does not enable it on its own. `--no-random-phase` explicitly disables it.
