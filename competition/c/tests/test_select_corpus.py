@@ -54,6 +54,25 @@ class SelectionTests(unittest.TestCase):
             with self.assertRaises(ValueError):
                 select(self.dataset,self.reports,self.output,count,maximum)
 
+    def test_size_range_boundaries_and_history(self):
+        self.cnf('a', 'small.cnf', 'x' * 9)
+        low = self.cnf('a', 'low.cnf', 'x' * 10)
+        high = self.cnf('b', 'high.cnf', 'y' * 20)
+        self.cnf('c', 'large.cnf', 'z' * 21)
+        result = select(self.dataset, self.reports, self.output, 2, 20, 10)
+        self.assertEqual(list(result['inputs']), [str(low), str(high)])
+        self.assertEqual((result['min_bytes'], result['max_bytes']), (10, 20))
+        (self.reports/'prior.json').write_text(json.dumps({'sha256': digest(low)}))
+        with self.assertRaisesRegex(ValueError, 'only 1 eligible'):
+            select(self.dataset, self.reports, self.output, 2, 20, 10)
+        self.assertEqual(list(select(self.dataset, self.reports, self.output,
+                                     1, 0, 20)['inputs']), [str(high)])
+
+    def test_invalid_size_ranges(self):
+        for minimum, maximum in ((-1, 0), (21, 20)):
+            with self.assertRaises(ValueError):
+                select(self.dataset, self.reports, self.output, 1, maximum, minimum)
+
 
 if __name__ == '__main__':
     unittest.main()

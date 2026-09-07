@@ -269,7 +269,9 @@ millisecond process runs establish smoke-test coverage, not industrial speedups.
 
 For an additional-instance screen, `tests/select_corpus.py` can exclude filenames
 and content hashes already recorded in a JSON results directory and select one
-small input per family. Pass its output to `tests/benchmark.py --manifest FILE`;
+input per family, smallest first within optional inclusive `--min-bytes` and
+`--max-bytes` limits (zero maximum means unlimited). Pass its output to
+`tests/benchmark.py --manifest FILE`;
 the runner verifies input hashes before starting and records the manifest hash.
 See [DEFAULT_BRANCHING.md](DEFAULT_BRANCHING.md) for commands, tests, sampling
 limitations, and the additional-input comparison supporting the heap default.
@@ -331,3 +333,9 @@ commit, charges header/copy work, and supports rollback at copy-chunk boundaries
 The committed relocation phase remains synchronous. Tests reproduce the old
 ignored-budget behavior; measured aggregate CPU cost is about 0.9% on the fixed
 work development screen, with unchanged solved counts.
+
+[Larger fresh-input evaluation](LARGE_FRESH_EVALUATION.md) uses eight previously
+unrecorded inputs with roughly 240,000–373,000 clauses and a 30-second wall limit. BSAT
+verifies 1/8 answers versus Kissat 3/8, identifying two further search targets.
+A five-repeat check confirms BSAT's fast result on the shared multiplier case;
+this does not establish overall parity.

@@ -1,0 +1,431 @@
+{
+  "schema": 1,
+  "platform": "macOS-26.6.1-arm64-arm-64bit-Mach-O",
+  "machine": "arm64",
+  "revision": "c15b9572168ae90bfed6a124a05f30b532803ff6",
+  "dirty": true,
+  "split": "development",
+  "seed": 20261019,
+  "timeout": 30.0,
+  "repeats": 1,
+  "solvers": {
+    "bsat": {
+      "command": [
+        "/Users/msharpe/python/bsat/competition/c/bin/bsat",
+        "--proof",
+        "{proof}",
+        "{input}"
+      ],
+      "sha256": "f9e6fd687599410b40718fedaa4842870e554fdfbbd1901e7ad451362b94636c"
+    },
+    "kissat": {
+      "command": [
+        "/private/tmp/kissat-8af8e56f174b778aef3aa45af9f739b2a5f492c2/build/kissat",
+        "{input}",
+        "{proof}"
+      ],
+      "sha256": "5cad8e92487416008cf8ec4573c2ab2a02b7c1927ab06e8c8cacb317908cff1f"
+    }
+  },
+  "inputs": {
+    "/Users/msharpe/python/bsat/dataset/sat_competition2025/grs-fp-comm/56913ff910c49dd5010653720970d944.cnf": {
+      "sha256": "7f3e57a9bf962129671128877b8e013f97009124f67d04e4fefc3ea097b41a8e",
+      "family": "grs-fp-comm"
+    },
+    "/Users/msharpe/python/bsat/dataset/sat_competition2025/scheduling/3a1f1b4b9a521737cc760017fe9d8b43.cnf": {
+      "sha256": "181b73ff4a56dca6860e6e5feee38835d4d6d23208337fbc1303e4b93467a87f",
+      "family": "scheduling"
+    },
+    "/Users/msharpe/python/bsat/dataset/sat_competition2025/oddball-weighing/fdefca5f5236d5a8361dbdff0d017eeb.cnf": {
+      "sha256": "18e5798af169c4967c731763a3095229a3f5b99d66f70ff3f82bec7cb6de5f64",
+      "family": "oddball-weighing"
+    },
+    "/Users/msharpe/python/bsat/dataset/sat_competition2025/ktf/86173292a2c6a506acf27a81db853bb5.cnf": {
+      "sha256": "a8aea7e4da078513ac5af84fc390d3ab27f8bd26ee7eced9fac2589d18504d1f",
+      "family": "ktf"
+    },
+    "/Users/msharpe/python/bsat/dataset/sat_competition2025/unknown-cases/4e3195a382f5af213444736fcc8b364f.cnf": {
+      "sha256": "f1d044b3fec9b1906e0f23f1c3c16500af307c60f76d573cae3de8e1967b0024",
+      "family": "unknown-cases"
+    },
+    "/Users/msharpe/python/bsat/dataset/sat_competition2025/hardware-verification/d672bdbca3b1fb26d585e78add79537e.cnf": {
+      "sha256": "7b715a14a0044105a7593f2eb8fafe039ac7888ae48993dc8303cd6f546d84e3",
+      "family": "hardware-verification"
+    },
+    "/Users/msharpe/python/bsat/dataset/sat_competition2025/hamiltonian-cycle/334aa882de28856fc8c75885285d2a3c.cnf": {
+      "sha256": "bea38a58bbae66f071a82e4140a23df3bc37b41904085e66e5fd53f78aaa2892",
+      "family": "hamiltonian-cycle"
+    },
+    "/Users/msharpe/python/bsat/dataset/sat_competition2025/multiplier-verification/03e852aa864cfe6eb49c264b462b8157.cnf": {
+      "sha256": "0981c92590473e1e688842b0adff3627f9b08889327034182f1a2601c7668158",
+      "family": "multiplier-verification"
+    }
+  },
+  "checker": {
+    "path": "/tmp/bsat-drat-trim",
+    "sha256": "9bfc20a5fa9eb2a0ffadd2b0cfc7cdd4a20f6aa9c8d7de5b6c771160b847f630"
+  },
+  "runs": [
+    {
+      "solver": "kissat",
+      "input": "/Users/msharpe/python/bsat/dataset/sat_competition2025/unknown-cases/4e3195a382f5af213444736fcc8b364f.cnf",
+      "repeat": 0,
+      "status": "UNKNOWN",
+      "verified": false,
+      "seconds": 30.005997708067298,
+      "cpu_seconds": 29.988364,
+      "peak_rss_bytes": 86769664,
+      "par2": 60.0,
+      "stats": {
+        "Sun Sep 6 12": "02:44 CDT 2026 Darwin Michaels-Mini 25.6.0 arm64",
+        "opened and writing proof to DRAT file": "",
+        "opened and reading DIMACS file": ""
+      },
+      "diagnostic": ""
+    },
+    {
+      "solver": "kissat",
+      "input": "/Users/msharpe/python/bsat/dataset/sat_competition2025/multiplier-verification/03e852aa864cfe6eb49c264b462b8157.cnf",
+      "repeat": 0,
+      "status": "UNSAT",
+      "verified": true,
+      "seconds": 3.2033942081034184,
+      "cpu_seconds": 3.161413,
+      "peak_rss_bytes": 85737472,
+      "par2": 3.2033942081034184,
+      "stats": {
+        "Sun Sep 6 12": "02:44 CDT 2026 Darwin Michaels-Mini 25.6.0 arm64",
+        "opened and writing proof to DRAT file": "",
+        "opened and reading DIMACS file": "",
+        "chronological": "2                0 %  conflicts",
+        "conflicts": "2605              824.01 per second",
+        "congruent": "1113                2 %  variables",
+        "decisions": "4718                1.81 per conflict",
+        "factored": "12                0 %  variables",
+        "propagations": "54314833         17180779    per second",
+        "reductions": "2             1302    interval",
+        "rephased": "2             1302    interval",
+        "restarts": "22              118    interval",
+        "substituted": "1113                2 %  variables",
+        "switched": "1             2605    interval",
+        "vivified": "263               91 %  checks",
+        "walks": "1             2605    interval",
+        "maximum-resident-set-size": "87795171328 bytes      83728 MB",
+        "process-time": "3s               3.16 seconds"
+      },
+      "diagnostic": ""
+    },
+    {
+      "solver": "bsat",
+      "input": "/Users/msharpe/python/bsat/dataset/sat_competition2025/oddball-weighing/fdefca5f5236d5a8361dbdff0d017eeb.cnf",
+      "repeat": 0,
+      "status": "UNKNOWN",
+      "verified": false,
+      "seconds": 30.00480570923537,
+      "cpu_seconds": 24.459661,
+      "peak_rss_bytes": 54378496,
+      "par2": 60.0,
+      "stats": {},
+      "diagnostic": ""
+    },
+    {
+      "solver": "bsat",
+      "input": "/Users/msharpe/python/bsat/dataset/sat_competition2025/scheduling/3a1f1b4b9a521737cc760017fe9d8b43.cnf",
+      "repeat": 0,
+      "status": "UNKNOWN",
+      "verified": false,
+      "seconds": 30.004390832968056,
+      "cpu_seconds": 27.793894,
+      "peak_rss_bytes": 66813952,
+      "par2": 60.0,
+      "stats": {},
+      "diagnostic": ""
+    },
+    {
+      "solver": "kissat",
+      "input": "/Users/msharpe/python/bsat/dataset/sat_competition2025/scheduling/3a1f1b4b9a521737cc760017fe9d8b43.cnf",
+      "repeat": 0,
+      "status": "UNKNOWN",
+      "verified": false,
+      "seconds": 30.00350020872429,
+      "cpu_seconds": 29.804904999999998,
+      "peak_rss_bytes": 80101376,
+      "par2": 60.0,
+      "stats": {
+        "Sun Sep 6 12": "02:44 CDT 2026 Darwin Michaels-Mini 25.6.0 arm64",
+        "opened and writing proof to DRAT file": "",
+        "opened and reading DIMACS file": ""
+      },
+      "diagnostic": ""
+    },
+    {
+      "solver": "kissat",
+      "input": "/Users/msharpe/python/bsat/dataset/sat_competition2025/oddball-weighing/fdefca5f5236d5a8361dbdff0d017eeb.cnf",
+      "repeat": 0,
+      "status": "UNKNOWN",
+      "verified": false,
+      "seconds": 30.006428209133446,
+      "cpu_seconds": 29.717893,
+      "peak_rss_bytes": 74285056,
+      "par2": 60.0,
+      "stats": {
+        "Sun Sep 6 12": "02:44 CDT 2026 Darwin Michaels-Mini 25.6.0 arm64",
+        "opened and writing proof to DRAT file": "",
+        "opened and reading DIMACS file": ""
+      },
+      "diagnostic": ""
+    },
+    {
+      "solver": "bsat",
+      "input": "/Users/msharpe/python/bsat/dataset/sat_competition2025/hardware-verification/d672bdbca3b1fb26d585e78add79537e.cnf",
+      "repeat": 0,
+      "status": "UNKNOWN",
+      "verified": false,
+      "seconds": 30.007619165815413,
+      "cpu_seconds": 27.719281000000002,
+      "peak_rss_bytes": 83099648,
+      "par2": 60.0,
+      "stats": {},
+      "diagnostic": ""
+    },
+    {
+      "solver": "bsat",
+      "input": "/Users/msharpe/python/bsat/dataset/sat_competition2025/grs-fp-comm/56913ff910c49dd5010653720970d944.cnf",
+      "repeat": 0,
+      "status": "UNKNOWN",
+      "verified": false,
+      "seconds": 30.008286874741316,
+      "cpu_seconds": 28.795707,
+      "peak_rss_bytes": 174112768,
+      "par2": 60.0,
+      "stats": {},
+      "diagnostic": ""
+    },
+    {
+      "solver": "kissat",
+      "input": "/Users/msharpe/python/bsat/dataset/sat_competition2025/hamiltonian-cycle/334aa882de28856fc8c75885285d2a3c.cnf",
+      "repeat": 0,
+      "status": "UNKNOWN",
+      "verified": false,
+      "seconds": 30.007459290791303,
+      "cpu_seconds": 29.83692,
+      "peak_rss_bytes": 185368576,
+      "par2": 60.0,
+      "stats": {
+        "Sun Sep 6 12": "02:44 CDT 2026 Darwin Michaels-Mini 25.6.0 arm64",
+        "opened and writing proof to DRAT file": "",
+        "opened and reading DIMACS file": ""
+      },
+      "diagnostic": ""
+    },
+    {
+      "solver": "bsat",
+      "input": "/Users/msharpe/python/bsat/dataset/sat_competition2025/multiplier-verification/03e852aa864cfe6eb49c264b462b8157.cnf",
+      "repeat": 0,
+      "status": "UNSAT",
+      "verified": true,
+      "seconds": 0.07411933364346623,
+      "cpu_seconds": 0.067323,
+      "peak_rss_bytes": 48971776,
+      "par2": 0.07411933364346623,
+      "stats": {
+        "PID": "3539 (send SIGUSR1 for progress: kill -USR1 3539)",
+        "Variables": "50777",
+        "Clauses": "304360",
+        "CPU time": "0.023 s",
+        "Decisions": "45565",
+        "Propagations": "414818",
+        "Conflicts": "40",
+        "Restarts": "0",
+        "Reused levels": "0",
+        "Local search calls": "0",
+        "Local search wins": "0",
+        "Local search flips": "0",
+        "Learned clauses": "39",
+        "Learned literals": "971",
+        "Deleted clauses": "0",
+        "Binary minimize checks": "0",
+        "Binary minimize removed": "0",
+        "Minimize inspections": "73155",
+        "Minimize binary steps": "0",
+        "Minimize cache hits": "0",
+        "Minimize budget hits": "0",
+        "Equivalence work": "0",
+        "Substituted vars": "0",
+        "Rewritten clauses": "0",
+        "SCC contradictions": "0",
+        "Derived binaries": "0",
+        "LBD improvements": "0",
+        "Deadline clock reads": "0",
+        "Target literals copied": "151910",
+        "Target values cleared": "152334",
+        "Blocked clauses": "0",
+        "Subsumed clauses": "2",
+        "Minimized literals": "29",
+        "Glue clauses": "10",
+        "Max LBD": "51",
+        "Decisions/sec": "1962486",
+        "Propagations/sec": "17866224",
+        "Conflicts/sec": "1723",
+        "Literal inspections": "2061827",
+        "Garbage collections": "0",
+        "Reductions": "0",
+        "Mode": "focused",
+        "Memory used": "8.13 MB",
+        "Memory allocated": "8.67 MB",
+        "Memory peak": "8.13 MB",
+        "Memory wasted": "0.00 MB",
+        "Arena growths": "19"
+      },
+      "diagnostic": ""
+    },
+    {
+      "solver": "kissat",
+      "input": "/Users/msharpe/python/bsat/dataset/sat_competition2025/grs-fp-comm/56913ff910c49dd5010653720970d944.cnf",
+      "repeat": 0,
+      "status": "UNKNOWN",
+      "verified": false,
+      "seconds": 30.005168166942894,
+      "cpu_seconds": 29.885749999999998,
+      "peak_rss_bytes": 106201088,
+      "par2": 60.0,
+      "stats": {
+        "Sun Sep 6 12": "02:44 CDT 2026 Darwin Michaels-Mini 25.6.0 arm64",
+        "opened and writing proof to DRAT file": "",
+        "opened and reading DIMACS file": ""
+      },
+      "diagnostic": ""
+    },
+    {
+      "solver": "bsat",
+      "input": "/Users/msharpe/python/bsat/dataset/sat_competition2025/unknown-cases/4e3195a382f5af213444736fcc8b364f.cnf",
+      "repeat": 0,
+      "status": "UNKNOWN",
+      "verified": false,
+      "seconds": 30.008339665830135,
+      "cpu_seconds": 28.054613999999997,
+      "peak_rss_bytes": 58654720,
+      "par2": 60.0,
+      "stats": {},
+      "diagnostic": ""
+    },
+    {
+      "solver": "bsat",
+      "input": "/Users/msharpe/python/bsat/dataset/sat_competition2025/ktf/86173292a2c6a506acf27a81db853bb5.cnf",
+      "repeat": 0,
+      "status": "UNKNOWN",
+      "verified": false,
+      "seconds": 30.008832041174173,
+      "cpu_seconds": 28.710654,
+      "peak_rss_bytes": 62963712,
+      "par2": 60.0,
+      "stats": {},
+      "diagnostic": ""
+    },
+    {
+      "solver": "bsat",
+      "input": "/Users/msharpe/python/bsat/dataset/sat_competition2025/hamiltonian-cycle/334aa882de28856fc8c75885285d2a3c.cnf",
+      "repeat": 0,
+      "status": "UNKNOWN",
+      "verified": false,
+      "seconds": 30.008025750052184,
+      "cpu_seconds": 28.140311,
+      "peak_rss_bytes": 252788736,
+      "par2": 60.0,
+      "stats": {},
+      "diagnostic": ""
+    },
+    {
+      "solver": "kissat",
+      "input": "/Users/msharpe/python/bsat/dataset/sat_competition2025/ktf/86173292a2c6a506acf27a81db853bb5.cnf",
+      "repeat": 0,
+      "status": "SAT",
+      "verified": true,
+      "seconds": 20.86648912495002,
+      "cpu_seconds": 20.799814,
+      "peak_rss_bytes": 120225792,
+      "par2": 20.86648912495002,
+      "stats": {
+        "Sun Sep 6 12": "02:44 CDT 2026 Darwin Michaels-Mini 25.6.0 arm64",
+        "opened and writing proof to DRAT file": "",
+        "opened and reading DIMACS file": "",
+        "chronological": "383                0 %  conflicts",
+        "conflicts": "124993             6009.35 per second",
+        "decisions": "1616270               12.93 per conflict",
+        "eliminated": "45367               75 %  variables",
+        "factored": "8167               14 %  variables",
+        "iterations": "22                0 %  variables",
+        "propagations": "267116533         12842290    per second",
+        "reductions": "33             3788    interval",
+        "reordered": "4            31248    interval",
+        "rephased": "11            11363    interval",
+        "restarts": "6626               19    interval",
+        "strengthened": "367                0 %  checks",
+        "subsumed": "664                0 %  checks",
+        "switched": "13             9615    interval",
+        "vivified": "11381               14 %  checks",
+        "walks": "4            31248    interval",
+        "maximum-resident-set-size": "123111211008 bytes     117408 MB",
+        "process-time": "21s              20.80 seconds"
+      },
+      "diagnostic": ""
+    },
+    {
+      "solver": "kissat",
+      "input": "/Users/msharpe/python/bsat/dataset/sat_competition2025/hardware-verification/d672bdbca3b1fb26d585e78add79537e.cnf",
+      "repeat": 0,
+      "status": "UNSAT",
+      "verified": true,
+      "seconds": 18.083433417137712,
+      "cpu_seconds": 17.923911,
+      "peak_rss_bytes": 62226432,
+      "par2": 18.083433417137712,
+      "stats": {
+        "Sun Sep 6 12": "02:44 CDT 2026 Darwin Michaels-Mini 25.6.0 arm64",
+        "opened and writing proof to DRAT file": "",
+        "opened and reading DIMACS file": "",
+        "chronological": "5883                1 %  conflicts",
+        "conflicts": "507546            28316.79 per second",
+        "congruent": "3                0 %  variables",
+        "decisions": "4123622                8.12 per conflict",
+        "eliminated": "13843               78 %  variables",
+        "factored": "8168               46 %  variables",
+        "iterations": "25                0 %  variables",
+        "propagations": "381893129         21306418    per second",
+        "reductions": "83             6115    interval",
+        "reordered": "9            56394    interval",
+        "rephased": "19            26713    interval",
+        "restarts": "14984               34    interval",
+        "strengthened": "16431                0 %  checks",
+        "substituted": "947                5 %  variables",
+        "subsumed": "6436                0 %  checks",
+        "switched": "27            18798    interval",
+        "vivified": "65531               65 %  checks",
+        "walks": "6            84591    interval",
+        "maximum-resident-set-size": "63719866368 bytes      60768 MB",
+        "process-time": "18s              17.92 seconds"
+      },
+      "diagnostic": ""
+    }
+  ],
+  "manifest": {
+    "path": "/Users/msharpe/python/bsat/competition/c/benchmark_results/large-fresh-corpus-20260907.json",
+    "sha256": "cd1cf1c1bbc1b3db2c6dadeb112b8558e32cd04f89a4251e462c503332939368"
+  },
+  "summary": {
+    "bsat": {
+      "verified_runs": 1,
+      "runs": 8,
+      "mean_par2": 52.50926491670543,
+      "max_rss_bytes": 252788736,
+      "errors": 0
+    },
+    "kissat": {
+      "verified_runs": 3,
+      "runs": 8,
+      "mean_par2": 42.769164593773894,
+      "max_rss_bytes": 185368576,
+      "errors": 0
+    }
+  }
+}

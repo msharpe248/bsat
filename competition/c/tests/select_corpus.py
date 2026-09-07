@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Select small, distinct-family CNFs absent from recorded JSON benchmark history."""
+"""Select distinct-family CNFs in a size range, excluding recorded JSON history."""
 import argparse
 import hashlib
 import json
@@ -15,9 +15,11 @@ def digest(path):
     return h.hexdigest()
 
 
-def select(dataset, reports, output, families, max_bytes=0):
-    if families <= 0 or max_bytes < 0:
-        raise ValueError('families must be positive and max-bytes nonnegative')
+def select(dataset, reports, output, families, max_bytes=0, min_bytes=0):
+    if families <= 0 or max_bytes < 0 or min_bytes < 0:
+        raise ValueError('families must be positive and byte limits nonnegative')
+    if max_bytes and min_bytes > max_bytes:
+        raise ValueError('min-bytes must not exceed max-bytes')
     dataset, reports, output = dataset.resolve(), reports.resolve(), output.resolve()
     if not dataset.is_dir() or not reports.is_dir():
         raise ValueError('dataset and reports must be existing directories')
@@ -35,7 +37,8 @@ def select(dataset, reports, output, families, max_bytes=0):
     selected, used_families, used_hashes = {}, set(), set()
     for path in candidates:
         family, size = path.parent.name, path.stat().st_size
-        if family in used_families or path.name in names or (max_bytes and size > max_bytes):
+        if (family in used_families or path.name in names or size < min_bytes
+                or (max_bytes and size > max_bytes)):
             continue
         sha = digest(path)
         if sha in hashes or sha in used_hashes:
@@ -49,7 +52,8 @@ def select(dataset, reports, output, families, max_bytes=0):
         raise ValueError(f'only {len(selected)} eligible distinct families; requested {families}')
     return {'schema': 1, 'policy': 'smallest eligible file first; one per family; path breaks size ties',
             'exclusions': 'CNF filenames and SHA256 strings appearing in JSON history; duplicate selected content',
-            'dataset': str(dataset), 'requested_families': families, 'max_bytes': max_bytes,
+            'dataset': str(dataset), 'requested_families': families,
+            'min_bytes': min_bytes, 'max_bytes': max_bytes,
             'history': history, 'inputs': selected}
 
 
@@ -60,9 +64,11 @@ def main():
     p.add_argument('--output', required=True, type=Path)
     p.add_argument('--families', type=int, default=16)
     p.add_argument('--max-bytes', type=int, default=0)
+    p.add_argument('--min-bytes', type=int, default=0)
     args = p.parse_args()
     try:
-        result = select(args.dataset, args.reports, args.output, args.families, args.max_bytes)
+        result = select(args.dataset, args.reports, args.output, args.families,
+                        args.max_bytes, args.min_bytes)
     except (ValueError, OSError) as error:
         p.error(str(error))
     args.output.parent.mkdir(parents=True, exist_ok=True)
