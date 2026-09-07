@@ -91,6 +91,9 @@ seconds. There is no consistent belpyramid speed gain in the repeat runs.
 Retain the implemented control as opt-in. The repeatable hardware benefit
 justifies further evaluation, but the unchanged solve count, random-circuit
 timeout and higher memory do not justify a default change. A fresh corpus
-evaluation remains outstanding. Confirmation commands, hashes, timings and
+evaluation is recorded in [REDUCTION_GROWTH_HELDOUT.md](REDUCTION_GROWTH_HELDOUT.md):
+it found no added solves, a slower completed case and higher memory on all six
+inputs. Growing intervals remain excluded from the general experimental
+competition profile. Confirmation commands, hashes, timings and
 verification results are in
 `benchmark_results/reduce-growth-confirm-20260907.json`.
