@@ -1,0 +1,840 @@
+{
+  "schema": 1,
+  "platform": "macOS-26.6.1-arm64-arm-64bit-Mach-O",
+  "machine": "arm64",
+  "revision": "d0c3b766929d3b11d934a4089d0b528a7749f22a",
+  "dirty": true,
+  "split": "development",
+  "seed": 1,
+  "timeout": 10.0,
+  "repeats": 1,
+  "solvers": {
+    "walksat-s1": {
+      "command": [
+        "/Users/msharpe/python/bsat/competition/c/bin/local_search_benchmark_release",
+        "{input}",
+        "20000",
+        "1",
+        "1",
+        "walksat"
+      ],
+      "sha256": "a9a2cedc11b7b0a5b4a1999dcfe6d45e1bbfff5df4a0bce8df9252f4b65f3c01"
+    },
+    "probabilistic-s1": {
+      "command": [
+        "/Users/msharpe/python/bsat/competition/c/bin/local_search_benchmark_release",
+        "{input}",
+        "20000",
+        "1",
+        "1",
+        "probabilistic"
+      ],
+      "sha256": "a9a2cedc11b7b0a5b4a1999dcfe6d45e1bbfff5df4a0bce8df9252f4b65f3c01"
+    },
+    "walksat-s2": {
+      "command": [
+        "/Users/msharpe/python/bsat/competition/c/bin/local_search_benchmark_release",
+        "{input}",
+        "20000",
+        "2",
+        "1",
+        "walksat"
+      ],
+      "sha256": "a9a2cedc11b7b0a5b4a1999dcfe6d45e1bbfff5df4a0bce8df9252f4b65f3c01"
+    },
+    "probabilistic-s2": {
+      "command": [
+        "/Users/msharpe/python/bsat/competition/c/bin/local_search_benchmark_release",
+        "{input}",
+        "20000",
+        "2",
+        "1",
+        "probabilistic"
+      ],
+      "sha256": "a9a2cedc11b7b0a5b4a1999dcfe6d45e1bbfff5df4a0bce8df9252f4b65f3c01"
+    },
+    "walksat-s3": {
+      "command": [
+        "/Users/msharpe/python/bsat/competition/c/bin/local_search_benchmark_release",
+        "{input}",
+        "20000",
+        "3",
+        "1",
+        "walksat"
+      ],
+      "sha256": "a9a2cedc11b7b0a5b4a1999dcfe6d45e1bbfff5df4a0bce8df9252f4b65f3c01"
+    },
+    "probabilistic-s3": {
+      "command": [
+        "/Users/msharpe/python/bsat/competition/c/bin/local_search_benchmark_release",
+        "{input}",
+        "20000",
+        "3",
+        "1",
+        "probabilistic"
+      ],
+      "sha256": "a9a2cedc11b7b0a5b4a1999dcfe6d45e1bbfff5df4a0bce8df9252f4b65f3c01"
+    }
+  },
+  "inputs": {
+    "/Users/msharpe/python/bsat/competition/c/tests/fixtures/local_search_scores/vars50/seed0.cnf": {
+      "sha256": "99026ebbeeba60653cc0927ee5b8fd21f92a09ed6aaf32cfe8a11aaab29c56a6",
+      "family": "vars50"
+    },
+    "/Users/msharpe/python/bsat/competition/c/tests/fixtures/local_search_scores/vars50/seed1.cnf": {
+      "sha256": "f1ee30e40217482b1076bcb2af61674782fece044e0dbe0a9fe4f6575e9972d3",
+      "family": "vars50"
+    },
+    "/Users/msharpe/python/bsat/competition/c/tests/fixtures/local_search_scores/vars100/seed0.cnf": {
+      "sha256": "a29bcffd1e7cfb56c1815a828a599f59f60b73f4c9388095f3aa28c5ca47964e",
+      "family": "vars100"
+    },
+    "/Users/msharpe/python/bsat/competition/c/tests/fixtures/local_search_scores/vars100/seed1.cnf": {
+      "sha256": "b48006e759efa572d3b5487ea3d3ca1dd316b6457d99d384b5752192656d651d",
+      "family": "vars100"
+    },
+    "/Users/msharpe/python/bsat/competition/c/tests/fixtures/local_search_scores/vars200/seed0.cnf": {
+      "sha256": "e73a9baad1ba0b14220fa0ce4d0420070419ac67629c532bf5e4930e72e2e441",
+      "family": "vars200"
+    },
+    "/Users/msharpe/python/bsat/competition/c/tests/fixtures/local_search_scores/vars200/seed1.cnf": {
+      "sha256": "51d3ae87166e320025777e222a85391def773822f5a47dc4bcabc766db540f32",
+      "family": "vars200"
+    }
+  },
+  "checker": null,
+  "runs": [
+    {
+      "solver": "probabilistic-s3",
+      "input": "/Users/msharpe/python/bsat/competition/c/tests/fixtures/local_search_scores/vars50/seed0.cnf",
+      "repeat": 0,
+      "status": "SAT",
+      "verified": true,
+      "seconds": 0.24137162510305643,
+      "cpu_seconds": 0.002245,
+      "peak_rss_bytes": 1523712,
+      "par2": 0.24137162510305643,
+      "stats": {
+        "Walk CPU time": "0.000029",
+        "Walk flips": "90",
+        "Walk unsatisfied": "0",
+        "Walk runs": "1",
+        "Walk unsatisfied sum": "0"
+      },
+      "diagnostic": ""
+    },
+    {
+      "solver": "probabilistic-s2",
+      "input": "/Users/msharpe/python/bsat/competition/c/tests/fixtures/local_search_scores/vars50/seed0.cnf",
+      "repeat": 0,
+      "status": "SAT",
+      "verified": true,
+      "seconds": 0.005440791603177786,
+      "cpu_seconds": 0.0021079999999999996,
+      "peak_rss_bytes": 1523712,
+      "par2": 0.005440791603177786,
+      "stats": {
+        "Walk CPU time": "0.000026",
+        "Walk flips": "78",
+        "Walk unsatisfied": "0",
+        "Walk runs": "1",
+        "Walk unsatisfied sum": "0"
+      },
+      "diagnostic": ""
+    },
+    {
+      "solver": "walksat-s1",
+      "input": "/Users/msharpe/python/bsat/competition/c/tests/fixtures/local_search_scores/vars200/seed0.cnf",
+      "repeat": 0,
+      "status": "SAT",
+      "verified": true,
+      "seconds": 0.005106333177536726,
+      "cpu_seconds": 0.00228,
+      "peak_rss_bytes": 1769472,
+      "par2": 0.005106333177536726,
+      "stats": {
+        "Walk CPU time": "0.000163",
+        "Walk flips": "844",
+        "Walk unsatisfied": "0",
+        "Walk runs": "1",
+        "Walk unsatisfied sum": "0"
+      },
+      "diagnostic": ""
+    },
+    {
+      "solver": "probabilistic-s3",
+      "input": "/Users/msharpe/python/bsat/competition/c/tests/fixtures/local_search_scores/vars100/seed0.cnf",
+      "repeat": 0,
+      "status": "SAT",
+      "verified": true,
+      "seconds": 0.005292707588523626,
+      "cpu_seconds": 0.0021479999999999997,
+      "peak_rss_bytes": 1605632,
+      "par2": 0.005292707588523626,
+      "stats": {
+        "Walk CPU time": "0.000103",
+        "Walk flips": "346",
+        "Walk unsatisfied": "0",
+        "Walk runs": "1",
+        "Walk unsatisfied sum": "0"
+      },
+      "diagnostic": ""
+    },
+    {
+      "solver": "probabilistic-s2",
+      "input": "/Users/msharpe/python/bsat/competition/c/tests/fixtures/local_search_scores/vars100/seed1.cnf",
+      "repeat": 0,
+      "status": "SAT",
+      "verified": true,
+      "seconds": 0.004763625096529722,
+      "cpu_seconds": 0.002136,
+      "peak_rss_bytes": 1605632,
+      "par2": 0.004763625096529722,
+      "stats": {
+        "Walk CPU time": "0.000150",
+        "Walk flips": "505",
+        "Walk unsatisfied": "0",
+        "Walk runs": "1",
+        "Walk unsatisfied sum": "0"
+      },
+      "diagnostic": ""
+    },
+    {
+      "solver": "walksat-s3",
+      "input": "/Users/msharpe/python/bsat/competition/c/tests/fixtures/local_search_scores/vars200/seed1.cnf",
+      "repeat": 0,
+      "status": "SAT",
+      "verified": true,
+      "seconds": 0.00540033308789134,
+      "cpu_seconds": 0.00362,
+      "peak_rss_bytes": 1802240,
+      "par2": 0.00540033308789134,
+      "stats": {
+        "Walk CPU time": "0.001838",
+        "Walk flips": "14428",
+        "Walk unsatisfied": "0",
+        "Walk runs": "1",
+        "Walk unsatisfied sum": "0"
+      },
+      "diagnostic": ""
+    },
+    {
+      "solver": "probabilistic-s2",
+      "input": "/Users/msharpe/python/bsat/competition/c/tests/fixtures/local_search_scores/vars50/seed1.cnf",
+      "repeat": 0,
+      "status": "SAT",
+      "verified": true,
+      "seconds": 0.005175708327442408,
+      "cpu_seconds": 0.0019439999999999998,
+      "peak_rss_bytes": 1523712,
+      "par2": 0.005175708327442408,
+      "stats": {
+        "Walk CPU time": "0.000017",
+        "Walk flips": "54",
+        "Walk unsatisfied": "0",
+        "Walk runs": "1",
+        "Walk unsatisfied sum": "0"
+      },
+      "diagnostic": ""
+    },
+    {
+      "solver": "walksat-s2",
+      "input": "/Users/msharpe/python/bsat/competition/c/tests/fixtures/local_search_scores/vars50/seed1.cnf",
+      "repeat": 0,
+      "status": "SAT",
+      "verified": true,
+      "seconds": 0.005301250144839287,
+      "cpu_seconds": 0.0019129999999999998,
+      "peak_rss_bytes": 1540096,
+      "par2": 0.005301250144839287,
+      "stats": {
+        "Walk CPU time": "0.000016",
+        "Walk flips": "52",
+        "Walk unsatisfied": "0",
+        "Walk runs": "1",
+        "Walk unsatisfied sum": "0"
+      },
+      "diagnostic": ""
+    },
+    {
+      "solver": "probabilistic-s3",
+      "input": "/Users/msharpe/python/bsat/competition/c/tests/fixtures/local_search_scores/vars200/seed1.cnf",
+      "repeat": 0,
+      "status": "SAT",
+      "verified": true,
+      "seconds": 0.005254790652543306,
+      "cpu_seconds": 0.0024029999999999998,
+      "peak_rss_bytes": 1818624,
+      "par2": 0.005254790652543306,
+      "stats": {
+        "Walk CPU time": "0.000249",
+        "Walk flips": "868",
+        "Walk unsatisfied": "0",
+        "Walk runs": "1",
+        "Walk unsatisfied sum": "0"
+      },
+      "diagnostic": ""
+    },
+    {
+      "solver": "probabilistic-s1",
+      "input": "/Users/msharpe/python/bsat/competition/c/tests/fixtures/local_search_scores/vars50/seed0.cnf",
+      "repeat": 0,
+      "status": "SAT",
+      "verified": true,
+      "seconds": 0.005163207650184631,
+      "cpu_seconds": 0.0019619999999999998,
+      "peak_rss_bytes": 1540096,
+      "par2": 0.005163207650184631,
+      "stats": {
+        "Walk CPU time": "0.000022",
+        "Walk flips": "56",
+        "Walk unsatisfied": "0",
+        "Walk runs": "1",
+        "Walk unsatisfied sum": "0"
+      },
+      "diagnostic": ""
+    },
+    {
+      "solver": "probabilistic-s1",
+      "input": "/Users/msharpe/python/bsat/competition/c/tests/fixtures/local_search_scores/vars50/seed1.cnf",
+      "repeat": 0,
+      "status": "SAT",
+      "verified": true,
+      "seconds": 0.005622999742627144,
+      "cpu_seconds": 0.0020039999999999997,
+      "peak_rss_bytes": 1540096,
+      "par2": 0.005622999742627144,
+      "stats": {
+        "Walk CPU time": "0.000015",
+        "Walk flips": "43",
+        "Walk unsatisfied": "0",
+        "Walk runs": "1",
+        "Walk unsatisfied sum": "0"
+      },
+      "diagnostic": ""
+    },
+    {
+      "solver": "probabilistic-s2",
+      "input": "/Users/msharpe/python/bsat/competition/c/tests/fixtures/local_search_scores/vars100/seed0.cnf",
+      "repeat": 0,
+      "status": "SAT",
+      "verified": true,
+      "seconds": 0.005219999700784683,
+      "cpu_seconds": 0.0020340000000000002,
+      "peak_rss_bytes": 1605632,
+      "par2": 0.005219999700784683,
+      "stats": {
+        "Walk CPU time": "0.000058",
+        "Walk flips": "201",
+        "Walk unsatisfied": "0",
+        "Walk runs": "1",
+        "Walk unsatisfied sum": "0"
+      },
+      "diagnostic": ""
+    },
+    {
+      "solver": "walksat-s1",
+      "input": "/Users/msharpe/python/bsat/competition/c/tests/fixtures/local_search_scores/vars50/seed1.cnf",
+      "repeat": 0,
+      "status": "SAT",
+      "verified": true,
+      "seconds": 0.005230541806668043,
+      "cpu_seconds": 0.0020109999999999998,
+      "peak_rss_bytes": 1540096,
+      "par2": 0.005230541806668043,
+      "stats": {
+        "Walk CPU time": "0.000014",
+        "Walk flips": "51",
+        "Walk unsatisfied": "0",
+        "Walk runs": "1",
+        "Walk unsatisfied sum": "0"
+      },
+      "diagnostic": ""
+    },
+    {
+      "solver": "walksat-s1",
+      "input": "/Users/msharpe/python/bsat/competition/c/tests/fixtures/local_search_scores/vars100/seed1.cnf",
+      "repeat": 0,
+      "status": "SAT",
+      "verified": true,
+      "seconds": 0.005115916021168232,
+      "cpu_seconds": 0.002107,
+      "peak_rss_bytes": 1589248,
+      "par2": 0.005115916021168232,
+      "stats": {
+        "Walk CPU time": "0.000107",
+        "Walk flips": "496",
+        "Walk unsatisfied": "0",
+        "Walk runs": "1",
+        "Walk unsatisfied sum": "0"
+      },
+      "diagnostic": ""
+    },
+    {
+      "solver": "probabilistic-s1",
+      "input": "/Users/msharpe/python/bsat/competition/c/tests/fixtures/local_search_scores/vars200/seed1.cnf",
+      "repeat": 0,
+      "status": "SAT",
+      "verified": true,
+      "seconds": 0.005359666887670755,
+      "cpu_seconds": 0.00228,
+      "peak_rss_bytes": 1802240,
+      "par2": 0.005359666887670755,
+      "stats": {
+        "Walk CPU time": "0.000118",
+        "Walk flips": "529",
+        "Walk unsatisfied": "0",
+        "Walk runs": "1",
+        "Walk unsatisfied sum": "0"
+      },
+      "diagnostic": ""
+    },
+    {
+      "solver": "probabilistic-s3",
+      "input": "/Users/msharpe/python/bsat/competition/c/tests/fixtures/local_search_scores/vars200/seed0.cnf",
+      "repeat": 0,
+      "status": "SAT",
+      "verified": true,
+      "seconds": 0.005269291810691357,
+      "cpu_seconds": 0.00229,
+      "peak_rss_bytes": 1802240,
+      "par2": 0.005269291810691357,
+      "stats": {
+        "Walk CPU time": "0.000187",
+        "Walk flips": "656",
+        "Walk unsatisfied": "0",
+        "Walk runs": "1",
+        "Walk unsatisfied sum": "0"
+      },
+      "diagnostic": ""
+    },
+    {
+      "solver": "probabilistic-s3",
+      "input": "/Users/msharpe/python/bsat/competition/c/tests/fixtures/local_search_scores/vars50/seed1.cnf",
+      "repeat": 0,
+      "status": "SAT",
+      "verified": true,
+      "seconds": 0.005246584303677082,
+      "cpu_seconds": 0.00199,
+      "peak_rss_bytes": 1540096,
+      "par2": 0.005246584303677082,
+      "stats": {
+        "Walk CPU time": "0.000026",
+        "Walk flips": "79",
+        "Walk unsatisfied": "0",
+        "Walk runs": "1",
+        "Walk unsatisfied sum": "0"
+      },
+      "diagnostic": ""
+    },
+    {
+      "solver": "walksat-s3",
+      "input": "/Users/msharpe/python/bsat/competition/c/tests/fixtures/local_search_scores/vars50/seed1.cnf",
+      "repeat": 0,
+      "status": "SAT",
+      "verified": true,
+      "seconds": 0.005215082783252001,
+      "cpu_seconds": 0.001942,
+      "peak_rss_bytes": 1523712,
+      "par2": 0.005215082783252001,
+      "stats": {
+        "Walk CPU time": "0.000007",
+        "Walk flips": "22",
+        "Walk unsatisfied": "0",
+        "Walk runs": "1",
+        "Walk unsatisfied sum": "0"
+      },
+      "diagnostic": ""
+    },
+    {
+      "solver": "probabilistic-s2",
+      "input": "/Users/msharpe/python/bsat/competition/c/tests/fixtures/local_search_scores/vars200/seed1.cnf",
+      "repeat": 0,
+      "status": "SAT",
+      "verified": true,
+      "seconds": 0.005415334366261959,
+      "cpu_seconds": 0.002914,
+      "peak_rss_bytes": 1785856,
+      "par2": 0.005415334366261959,
+      "stats": {
+        "Walk CPU time": "0.000679",
+        "Walk flips": "2599",
+        "Walk unsatisfied": "0",
+        "Walk runs": "1",
+        "Walk unsatisfied sum": "0"
+      },
+      "diagnostic": ""
+    },
+    {
+      "solver": "walksat-s2",
+      "input": "/Users/msharpe/python/bsat/competition/c/tests/fixtures/local_search_scores/vars100/seed1.cnf",
+      "repeat": 0,
+      "status": "SAT",
+      "verified": true,
+      "seconds": 0.005172708071768284,
+      "cpu_seconds": 0.0020959999999999998,
+      "peak_rss_bytes": 1605632,
+      "par2": 0.005172708071768284,
+      "stats": {
+        "Walk CPU time": "0.000048",
+        "Walk flips": "179",
+        "Walk unsatisfied": "0",
+        "Walk runs": "1",
+        "Walk unsatisfied sum": "0"
+      },
+      "diagnostic": ""
+    },
+    {
+      "solver": "walksat-s3",
+      "input": "/Users/msharpe/python/bsat/competition/c/tests/fixtures/local_search_scores/vars200/seed0.cnf",
+      "repeat": 0,
+      "status": "SAT",
+      "verified": true,
+      "seconds": 0.0051865000277757645,
+      "cpu_seconds": 0.002745,
+      "peak_rss_bytes": 1785856,
+      "par2": 0.0051865000277757645,
+      "stats": {
+        "Walk CPU time": "0.000550",
+        "Walk flips": "3263",
+        "Walk unsatisfied": "0",
+        "Walk runs": "1",
+        "Walk unsatisfied sum": "0"
+      },
+      "diagnostic": ""
+    },
+    {
+      "solver": "walksat-s1",
+      "input": "/Users/msharpe/python/bsat/competition/c/tests/fixtures/local_search_scores/vars100/seed0.cnf",
+      "repeat": 0,
+      "status": "SAT",
+      "verified": true,
+      "seconds": 0.005139084067195654,
+      "cpu_seconds": 0.0019459999999999998,
+      "peak_rss_bytes": 1622016,
+      "par2": 0.005139084067195654,
+      "stats": {
+        "Walk CPU time": "0.000069",
+        "Walk flips": "354",
+        "Walk unsatisfied": "0",
+        "Walk runs": "1",
+        "Walk unsatisfied sum": "0"
+      },
+      "diagnostic": ""
+    },
+    {
+      "solver": "walksat-s3",
+      "input": "/Users/msharpe/python/bsat/competition/c/tests/fixtures/local_search_scores/vars50/seed0.cnf",
+      "repeat": 0,
+      "status": "SAT",
+      "verified": true,
+      "seconds": 0.005249207839369774,
+      "cpu_seconds": 0.002026,
+      "peak_rss_bytes": 1523712,
+      "par2": 0.005249207839369774,
+      "stats": {
+        "Walk CPU time": "0.000046",
+        "Walk flips": "233",
+        "Walk unsatisfied": "0",
+        "Walk runs": "1",
+        "Walk unsatisfied sum": "0"
+      },
+      "diagnostic": ""
+    },
+    {
+      "solver": "walksat-s1",
+      "input": "/Users/msharpe/python/bsat/competition/c/tests/fixtures/local_search_scores/vars200/seed1.cnf",
+      "repeat": 0,
+      "status": "SAT",
+      "verified": true,
+      "seconds": 0.005385333206504583,
+      "cpu_seconds": 0.0035399999999999997,
+      "peak_rss_bytes": 1818624,
+      "par2": 0.005385333206504583,
+      "stats": {
+        "Walk CPU time": "0.001331",
+        "Walk flips": "8725",
+        "Walk unsatisfied": "0",
+        "Walk runs": "1",
+        "Walk unsatisfied sum": "0"
+      },
+      "diagnostic": ""
+    },
+    {
+      "solver": "probabilistic-s1",
+      "input": "/Users/msharpe/python/bsat/competition/c/tests/fixtures/local_search_scores/vars100/seed0.cnf",
+      "repeat": 0,
+      "status": "SAT",
+      "verified": true,
+      "seconds": 0.00518979225307703,
+      "cpu_seconds": 0.002062,
+      "peak_rss_bytes": 1622016,
+      "par2": 0.00518979225307703,
+      "stats": {
+        "Walk CPU time": "0.000049",
+        "Walk flips": "141",
+        "Walk unsatisfied": "0",
+        "Walk runs": "1",
+        "Walk unsatisfied sum": "0"
+      },
+      "diagnostic": ""
+    },
+    {
+      "solver": "walksat-s3",
+      "input": "/Users/msharpe/python/bsat/competition/c/tests/fixtures/local_search_scores/vars100/seed1.cnf",
+      "repeat": 0,
+      "status": "SAT",
+      "verified": true,
+      "seconds": 0.005140958819538355,
+      "cpu_seconds": 0.002236,
+      "peak_rss_bytes": 1605632,
+      "par2": 0.005140958819538355,
+      "stats": {
+        "Walk CPU time": "0.000225",
+        "Walk flips": "1044",
+        "Walk unsatisfied": "0",
+        "Walk runs": "1",
+        "Walk unsatisfied sum": "0"
+      },
+      "diagnostic": ""
+    },
+    {
+      "solver": "walksat-s2",
+      "input": "/Users/msharpe/python/bsat/competition/c/tests/fixtures/local_search_scores/vars100/seed0.cnf",
+      "repeat": 0,
+      "status": "SAT",
+      "verified": true,
+      "seconds": 0.005117000080645084,
+      "cpu_seconds": 0.00211,
+      "peak_rss_bytes": 1622016,
+      "par2": 0.005117000080645084,
+      "stats": {
+        "Walk CPU time": "0.000090",
+        "Walk flips": "507",
+        "Walk unsatisfied": "0",
+        "Walk runs": "1",
+        "Walk unsatisfied sum": "0"
+      },
+      "diagnostic": ""
+    },
+    {
+      "solver": "probabilistic-s2",
+      "input": "/Users/msharpe/python/bsat/competition/c/tests/fixtures/local_search_scores/vars200/seed0.cnf",
+      "repeat": 0,
+      "status": "SAT",
+      "verified": true,
+      "seconds": 0.005199875216931105,
+      "cpu_seconds": 0.002231,
+      "peak_rss_bytes": 1769472,
+      "par2": 0.005199875216931105,
+      "stats": {
+        "Walk CPU time": "0.000177",
+        "Walk flips": "621",
+        "Walk unsatisfied": "0",
+        "Walk runs": "1",
+        "Walk unsatisfied sum": "0"
+      },
+      "diagnostic": ""
+    },
+    {
+      "solver": "walksat-s2",
+      "input": "/Users/msharpe/python/bsat/competition/c/tests/fixtures/local_search_scores/vars200/seed1.cnf",
+      "repeat": 0,
+      "status": "SAT",
+      "verified": true,
+      "seconds": 0.005193208809942007,
+      "cpu_seconds": 0.0024219999999999997,
+      "peak_rss_bytes": 1802240,
+      "par2": 0.005193208809942007,
+      "stats": {
+        "Walk CPU time": "0.000309",
+        "Walk flips": "1578",
+        "Walk unsatisfied": "0",
+        "Walk runs": "1",
+        "Walk unsatisfied sum": "0"
+      },
+      "diagnostic": ""
+    },
+    {
+      "solver": "walksat-s2",
+      "input": "/Users/msharpe/python/bsat/competition/c/tests/fixtures/local_search_scores/vars200/seed0.cnf",
+      "repeat": 0,
+      "status": "SAT",
+      "verified": true,
+      "seconds": 0.005206083878874779,
+      "cpu_seconds": 0.002382,
+      "peak_rss_bytes": 1785856,
+      "par2": 0.005206083878874779,
+      "stats": {
+        "Walk CPU time": "0.000186",
+        "Walk flips": "866",
+        "Walk unsatisfied": "0",
+        "Walk runs": "1",
+        "Walk unsatisfied sum": "0"
+      },
+      "diagnostic": ""
+    },
+    {
+      "solver": "walksat-s3",
+      "input": "/Users/msharpe/python/bsat/competition/c/tests/fixtures/local_search_scores/vars100/seed0.cnf",
+      "repeat": 0,
+      "status": "SAT",
+      "verified": true,
+      "seconds": 0.005281875375658274,
+      "cpu_seconds": 0.002045,
+      "peak_rss_bytes": 1605632,
+      "par2": 0.005281875375658274,
+      "stats": {
+        "Walk CPU time": "0.000056",
+        "Walk flips": "277",
+        "Walk unsatisfied": "0",
+        "Walk runs": "1",
+        "Walk unsatisfied sum": "0"
+      },
+      "diagnostic": ""
+    },
+    {
+      "solver": "probabilistic-s3",
+      "input": "/Users/msharpe/python/bsat/competition/c/tests/fixtures/local_search_scores/vars100/seed1.cnf",
+      "repeat": 0,
+      "status": "SAT",
+      "verified": true,
+      "seconds": 0.005149791017174721,
+      "cpu_seconds": 0.0021349999999999997,
+      "peak_rss_bytes": 1605632,
+      "par2": 0.005149791017174721,
+      "stats": {
+        "Walk CPU time": "0.000149",
+        "Walk flips": "560",
+        "Walk unsatisfied": "0",
+        "Walk runs": "1",
+        "Walk unsatisfied sum": "0"
+      },
+      "diagnostic": ""
+    },
+    {
+      "solver": "probabilistic-s1",
+      "input": "/Users/msharpe/python/bsat/competition/c/tests/fixtures/local_search_scores/vars100/seed1.cnf",
+      "repeat": 0,
+      "status": "SAT",
+      "verified": true,
+      "seconds": 0.0052292500622570515,
+      "cpu_seconds": 0.0021009999999999996,
+      "peak_rss_bytes": 1605632,
+      "par2": 0.0052292500622570515,
+      "stats": {
+        "Walk CPU time": "0.000140",
+        "Walk flips": "619",
+        "Walk unsatisfied": "0",
+        "Walk runs": "1",
+        "Walk unsatisfied sum": "0"
+      },
+      "diagnostic": ""
+    },
+    {
+      "solver": "walksat-s2",
+      "input": "/Users/msharpe/python/bsat/competition/c/tests/fixtures/local_search_scores/vars50/seed0.cnf",
+      "repeat": 0,
+      "status": "SAT",
+      "verified": true,
+      "seconds": 0.00527220917865634,
+      "cpu_seconds": 0.001994,
+      "peak_rss_bytes": 1540096,
+      "par2": 0.00527220917865634,
+      "stats": {
+        "Walk CPU time": "0.000035",
+        "Walk flips": "150",
+        "Walk unsatisfied": "0",
+        "Walk runs": "1",
+        "Walk unsatisfied sum": "0"
+      },
+      "diagnostic": ""
+    },
+    {
+      "solver": "walksat-s1",
+      "input": "/Users/msharpe/python/bsat/competition/c/tests/fixtures/local_search_scores/vars50/seed0.cnf",
+      "repeat": 0,
+      "status": "SAT",
+      "verified": true,
+      "seconds": 0.005121124908328056,
+      "cpu_seconds": 0.0019879999999999997,
+      "peak_rss_bytes": 1540096,
+      "par2": 0.005121124908328056,
+      "stats": {
+        "Walk CPU time": "0.000026",
+        "Walk flips": "99",
+        "Walk unsatisfied": "0",
+        "Walk runs": "1",
+        "Walk unsatisfied sum": "0"
+      },
+      "diagnostic": ""
+    },
+    {
+      "solver": "probabilistic-s1",
+      "input": "/Users/msharpe/python/bsat/competition/c/tests/fixtures/local_search_scores/vars200/seed0.cnf",
+      "repeat": 0,
+      "status": "SAT",
+      "verified": true,
+      "seconds": 0.005392916966229677,
+      "cpu_seconds": 0.0022849999999999997,
+      "peak_rss_bytes": 1818624,
+      "par2": 0.005392916966229677,
+      "stats": {
+        "Walk CPU time": "0.000152",
+        "Walk flips": "531",
+        "Walk unsatisfied": "0",
+        "Walk runs": "1",
+        "Walk unsatisfied sum": "0"
+      },
+      "diagnostic": ""
+    }
+  ],
+  "manifest": {
+    "path": "/Users/msharpe/python/bsat/competition/c/benchmark_results/walk-score-corpus-20260907.json",
+    "sha256": "b21a02d3723eded81d73e8bd83875dd3cdad6473c1dfb01f240714e6e45f8cea"
+  },
+  "summary": {
+    "walksat-s1": {
+      "verified_runs": 6,
+      "runs": 6,
+      "mean_par2": 0.005183055531233549,
+      "max_rss_bytes": 1818624,
+      "errors": 0
+    },
+    "probabilistic-s1": {
+      "verified_runs": 6,
+      "runs": 6,
+      "mean_par2": 0.005326305593674381,
+      "max_rss_bytes": 1818624,
+      "errors": 0
+    },
+    "walksat-s2": {
+      "verified_runs": 6,
+      "runs": 6,
+      "mean_par2": 0.005210410027454297,
+      "max_rss_bytes": 1802240,
+      "errors": 0
+    },
+    "probabilistic-s2": {
+      "verified_runs": 6,
+      "runs": 6,
+      "mean_par2": 0.005202555718521277,
+      "max_rss_bytes": 1785856,
+      "errors": 0
+    },
+    "walksat-s3": {
+      "verified_runs": 6,
+      "runs": 6,
+      "mean_par2": 0.005245659655580918,
+      "max_rss_bytes": 1802240,
+      "errors": 0
+    },
+    "probabilistic-s3": {
+      "verified_runs": 6,
+      "runs": 6,
+      "mean_par2": 0.044597465079277754,
+      "max_rss_bytes": 1818624,
+      "errors": 0
+    }
+  }
+}

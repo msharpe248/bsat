@@ -127,6 +127,9 @@ and preliminary flip-budget comparisons.
 The [broader budget evaluation](LOCAL_SEARCH_BUDGET_EVALUATION.md) compares
 10,000 and 100,000 flips across 44 fixed inputs. Statistics also report total
 local-search flips, so configured limits can be compared with actual work.
+An [inverse-square probabilistic walk experiment](PROBABILISTIC_WALK_EXPERIMENT.md)
+was rejected after repeated structured-instance regressions; its tested patch and
+positive and negative results are preserved for reproducibility.
 
 Successful local-search model transfer resets assignment positions, reasons and
 the propagation cursor consistently. See

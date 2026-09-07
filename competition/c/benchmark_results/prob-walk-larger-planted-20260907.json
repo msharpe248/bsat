@@ -1,0 +1,840 @@
+{
+  "schema": 1,
+  "platform": "macOS-26.6.1-arm64-arm-64bit-Mach-O",
+  "machine": "arm64",
+  "revision": "d0c3b766929d3b11d934a4089d0b528a7749f22a",
+  "dirty": true,
+  "split": "development",
+  "seed": 1,
+  "timeout": 10.0,
+  "repeats": 1,
+  "solvers": {
+    "walksat-s1": {
+      "command": [
+        "/Users/msharpe/python/bsat/competition/c/bin/local_search_benchmark_release",
+        "{input}",
+        "100000",
+        "1",
+        "1",
+        "walksat"
+      ],
+      "sha256": "a9a2cedc11b7b0a5b4a1999dcfe6d45e1bbfff5df4a0bce8df9252f4b65f3c01"
+    },
+    "probabilistic-s1": {
+      "command": [
+        "/Users/msharpe/python/bsat/competition/c/bin/local_search_benchmark_release",
+        "{input}",
+        "100000",
+        "1",
+        "1",
+        "probabilistic"
+      ],
+      "sha256": "a9a2cedc11b7b0a5b4a1999dcfe6d45e1bbfff5df4a0bce8df9252f4b65f3c01"
+    },
+    "walksat-s2": {
+      "command": [
+        "/Users/msharpe/python/bsat/competition/c/bin/local_search_benchmark_release",
+        "{input}",
+        "100000",
+        "2",
+        "1",
+        "walksat"
+      ],
+      "sha256": "a9a2cedc11b7b0a5b4a1999dcfe6d45e1bbfff5df4a0bce8df9252f4b65f3c01"
+    },
+    "probabilistic-s2": {
+      "command": [
+        "/Users/msharpe/python/bsat/competition/c/bin/local_search_benchmark_release",
+        "{input}",
+        "100000",
+        "2",
+        "1",
+        "probabilistic"
+      ],
+      "sha256": "a9a2cedc11b7b0a5b4a1999dcfe6d45e1bbfff5df4a0bce8df9252f4b65f3c01"
+    },
+    "walksat-s3": {
+      "command": [
+        "/Users/msharpe/python/bsat/competition/c/bin/local_search_benchmark_release",
+        "{input}",
+        "100000",
+        "3",
+        "1",
+        "walksat"
+      ],
+      "sha256": "a9a2cedc11b7b0a5b4a1999dcfe6d45e1bbfff5df4a0bce8df9252f4b65f3c01"
+    },
+    "probabilistic-s3": {
+      "command": [
+        "/Users/msharpe/python/bsat/competition/c/bin/local_search_benchmark_release",
+        "{input}",
+        "100000",
+        "3",
+        "1",
+        "probabilistic"
+      ],
+      "sha256": "a9a2cedc11b7b0a5b4a1999dcfe6d45e1bbfff5df4a0bce8df9252f4b65f3c01"
+    }
+  },
+  "inputs": {
+    "/private/tmp/bsat-prob-corpus/vars500-seed0.cnf": {
+      "sha256": "8dbbaea438f20eb6e37fd9f6d242049bd3256b542ba870c440a3da8e675f8055",
+      "family": "bsat-prob-corpus"
+    },
+    "/private/tmp/bsat-prob-corpus/vars500-seed1.cnf": {
+      "sha256": "879070062bda1c5b4f2e39e0a6b301b4a6a0c9ead82f7ff637d9ef03eb8735af",
+      "family": "bsat-prob-corpus"
+    },
+    "/private/tmp/bsat-prob-corpus/vars1000-seed0.cnf": {
+      "sha256": "d94906118d57cd8329be9ee6832944e780cf5327b69bacc9b217a73610ec0d8e",
+      "family": "bsat-prob-corpus"
+    },
+    "/private/tmp/bsat-prob-corpus/vars1000-seed1.cnf": {
+      "sha256": "b3a64c492622e1e2a3f4183dfe8f3d3b20586347b3506a7a31e64c483a87a4a8",
+      "family": "bsat-prob-corpus"
+    },
+    "/private/tmp/bsat-prob-corpus/vars2000-seed0.cnf": {
+      "sha256": "5815e8d6446583c3968aece84212fa551573aa049005b8da25c3f736e4f73c8a",
+      "family": "bsat-prob-corpus"
+    },
+    "/private/tmp/bsat-prob-corpus/vars2000-seed1.cnf": {
+      "sha256": "4502499311a4d963b5f2e4d4a64a11f83a2b04c7b69c2ebe3ae21db43c07bbee",
+      "family": "bsat-prob-corpus"
+    }
+  },
+  "checker": null,
+  "runs": [
+    {
+      "solver": "probabilistic-s3",
+      "input": "/private/tmp/bsat-prob-corpus/vars500-seed0.cnf",
+      "repeat": 0,
+      "status": "SAT",
+      "verified": true,
+      "seconds": 0.0052540418691933155,
+      "cpu_seconds": 0.002764,
+      "peak_rss_bytes": 2293760,
+      "par2": 0.0052540418691933155,
+      "stats": {
+        "Walk CPU time": "0.000420",
+        "Walk flips": "1402",
+        "Walk unsatisfied": "0",
+        "Walk runs": "1",
+        "Walk unsatisfied sum": "0"
+      },
+      "diagnostic": ""
+    },
+    {
+      "solver": "probabilistic-s2",
+      "input": "/private/tmp/bsat-prob-corpus/vars500-seed0.cnf",
+      "repeat": 0,
+      "status": "SAT",
+      "verified": true,
+      "seconds": 0.005228583235293627,
+      "cpu_seconds": 0.003639,
+      "peak_rss_bytes": 2293760,
+      "par2": 0.005228583235293627,
+      "stats": {
+        "Walk CPU time": "0.001108",
+        "Walk flips": "4179",
+        "Walk unsatisfied": "0",
+        "Walk runs": "1",
+        "Walk unsatisfied sum": "0"
+      },
+      "diagnostic": ""
+    },
+    {
+      "solver": "walksat-s1",
+      "input": "/private/tmp/bsat-prob-corpus/vars2000-seed0.cnf",
+      "repeat": 0,
+      "status": "SAT",
+      "verified": true,
+      "seconds": 0.010207333136349916,
+      "cpu_seconds": 0.008312,
+      "peak_rss_bytes": 3850240,
+      "par2": 0.010207333136349916,
+      "stats": {
+        "Walk CPU time": "0.004442",
+        "Walk flips": "19590",
+        "Walk unsatisfied": "0",
+        "Walk runs": "1",
+        "Walk unsatisfied sum": "0"
+      },
+      "diagnostic": ""
+    },
+    {
+      "solver": "probabilistic-s3",
+      "input": "/private/tmp/bsat-prob-corpus/vars1000-seed0.cnf",
+      "repeat": 0,
+      "status": "SAT",
+      "verified": true,
+      "seconds": 0.00526904221624136,
+      "cpu_seconds": 0.0037729999999999994,
+      "peak_rss_bytes": 2850816,
+      "par2": 0.00526904221624136,
+      "stats": {
+        "Walk CPU time": "0.000938",
+        "Walk flips": "2979",
+        "Walk unsatisfied": "0",
+        "Walk runs": "1",
+        "Walk unsatisfied sum": "0"
+      },
+      "diagnostic": ""
+    },
+    {
+      "solver": "probabilistic-s2",
+      "input": "/private/tmp/bsat-prob-corpus/vars1000-seed1.cnf",
+      "repeat": 0,
+      "status": "SAT",
+      "verified": true,
+      "seconds": 0.005318500101566315,
+      "cpu_seconds": 0.003862,
+      "peak_rss_bytes": 2867200,
+      "par2": 0.005318500101566315,
+      "stats": {
+        "Walk CPU time": "0.000967",
+        "Walk flips": "2936",
+        "Walk unsatisfied": "0",
+        "Walk runs": "1",
+        "Walk unsatisfied sum": "0"
+      },
+      "diagnostic": ""
+    },
+    {
+      "solver": "walksat-s3",
+      "input": "/private/tmp/bsat-prob-corpus/vars2000-seed1.cnf",
+      "repeat": 0,
+      "status": "SAT",
+      "verified": true,
+      "seconds": 0.010501709301024675,
+      "cpu_seconds": 0.006894,
+      "peak_rss_bytes": 3899392,
+      "par2": 0.010501709301024675,
+      "stats": {
+        "Walk CPU time": "0.003029",
+        "Walk flips": "13367",
+        "Walk unsatisfied": "0",
+        "Walk runs": "1",
+        "Walk unsatisfied sum": "0"
+      },
+      "diagnostic": ""
+    },
+    {
+      "solver": "probabilistic-s2",
+      "input": "/private/tmp/bsat-prob-corpus/vars500-seed1.cnf",
+      "repeat": 0,
+      "status": "SAT",
+      "verified": true,
+      "seconds": 0.005207499954849482,
+      "cpu_seconds": 0.002691,
+      "peak_rss_bytes": 2310144,
+      "par2": 0.005207499954849482,
+      "stats": {
+        "Walk CPU time": "0.000253",
+        "Walk flips": "741",
+        "Walk unsatisfied": "0",
+        "Walk runs": "1",
+        "Walk unsatisfied sum": "0"
+      },
+      "diagnostic": ""
+    },
+    {
+      "solver": "walksat-s2",
+      "input": "/private/tmp/bsat-prob-corpus/vars500-seed1.cnf",
+      "repeat": 0,
+      "status": "SAT",
+      "verified": true,
+      "seconds": 0.005345833953469992,
+      "cpu_seconds": 0.0027990000000000003,
+      "peak_rss_bytes": 2310144,
+      "par2": 0.005345833953469992,
+      "stats": {
+        "Walk CPU time": "0.000331",
+        "Walk flips": "1500",
+        "Walk unsatisfied": "0",
+        "Walk runs": "1",
+        "Walk unsatisfied sum": "0"
+      },
+      "diagnostic": ""
+    },
+    {
+      "solver": "probabilistic-s3",
+      "input": "/private/tmp/bsat-prob-corpus/vars2000-seed1.cnf",
+      "repeat": 0,
+      "status": "SAT",
+      "verified": true,
+      "seconds": 0.010229500010609627,
+      "cpu_seconds": 0.006434,
+      "peak_rss_bytes": 3883008,
+      "par2": 0.010229500010609627,
+      "stats": {
+        "Walk CPU time": "0.002596",
+        "Walk flips": "7613",
+        "Walk unsatisfied": "0",
+        "Walk runs": "1",
+        "Walk unsatisfied sum": "0"
+      },
+      "diagnostic": ""
+    },
+    {
+      "solver": "probabilistic-s1",
+      "input": "/private/tmp/bsat-prob-corpus/vars500-seed0.cnf",
+      "repeat": 0,
+      "status": "SAT",
+      "verified": true,
+      "seconds": 0.005194749683141708,
+      "cpu_seconds": 0.0030559999999999997,
+      "peak_rss_bytes": 2293760,
+      "par2": 0.005194749683141708,
+      "stats": {
+        "Walk CPU time": "0.000618",
+        "Walk flips": "2161",
+        "Walk unsatisfied": "0",
+        "Walk runs": "1",
+        "Walk unsatisfied sum": "0"
+      },
+      "diagnostic": ""
+    },
+    {
+      "solver": "probabilistic-s1",
+      "input": "/private/tmp/bsat-prob-corpus/vars500-seed1.cnf",
+      "repeat": 0,
+      "status": "SAT",
+      "verified": true,
+      "seconds": 0.005683750379830599,
+      "cpu_seconds": 0.0031219999999999998,
+      "peak_rss_bytes": 2310144,
+      "par2": 0.005683750379830599,
+      "stats": {
+        "Walk CPU time": "0.000499",
+        "Walk flips": "1762",
+        "Walk unsatisfied": "0",
+        "Walk runs": "1",
+        "Walk unsatisfied sum": "0"
+      },
+      "diagnostic": ""
+    },
+    {
+      "solver": "probabilistic-s2",
+      "input": "/private/tmp/bsat-prob-corpus/vars1000-seed0.cnf",
+      "repeat": 0,
+      "status": "SAT",
+      "verified": true,
+      "seconds": 0.005486417096108198,
+      "cpu_seconds": 0.003856,
+      "peak_rss_bytes": 2916352,
+      "par2": 0.005486417096108198,
+      "stats": {
+        "Walk CPU time": "0.000895",
+        "Walk flips": "2719",
+        "Walk unsatisfied": "0",
+        "Walk runs": "1",
+        "Walk unsatisfied sum": "0"
+      },
+      "diagnostic": ""
+    },
+    {
+      "solver": "walksat-s1",
+      "input": "/private/tmp/bsat-prob-corpus/vars500-seed1.cnf",
+      "repeat": 0,
+      "status": "SAT",
+      "verified": true,
+      "seconds": 0.005291542038321495,
+      "cpu_seconds": 0.0029509999999999996,
+      "peak_rss_bytes": 2310144,
+      "par2": 0.005291542038321495,
+      "stats": {
+        "Walk CPU time": "0.000401",
+        "Walk flips": "1706",
+        "Walk unsatisfied": "0",
+        "Walk runs": "1",
+        "Walk unsatisfied sum": "0"
+      },
+      "diagnostic": ""
+    },
+    {
+      "solver": "walksat-s1",
+      "input": "/private/tmp/bsat-prob-corpus/vars1000-seed1.cnf",
+      "repeat": 0,
+      "status": "SAT",
+      "verified": true,
+      "seconds": 0.010210457723587751,
+      "cpu_seconds": 0.004087,
+      "peak_rss_bytes": 2932736,
+      "par2": 0.010210457723587751,
+      "stats": {
+        "Walk CPU time": "0.001157",
+        "Walk flips": "5517",
+        "Walk unsatisfied": "0",
+        "Walk runs": "1",
+        "Walk unsatisfied sum": "0"
+      },
+      "diagnostic": ""
+    },
+    {
+      "solver": "probabilistic-s1",
+      "input": "/private/tmp/bsat-prob-corpus/vars2000-seed1.cnf",
+      "repeat": 0,
+      "status": "SAT",
+      "verified": true,
+      "seconds": 0.01025183405727148,
+      "cpu_seconds": 0.0069489999999999994,
+      "peak_rss_bytes": 3833856,
+      "par2": 0.01025183405727148,
+      "stats": {
+        "Walk CPU time": "0.003019",
+        "Walk flips": "8954",
+        "Walk unsatisfied": "0",
+        "Walk runs": "1",
+        "Walk unsatisfied sum": "0"
+      },
+      "diagnostic": ""
+    },
+    {
+      "solver": "probabilistic-s3",
+      "input": "/private/tmp/bsat-prob-corpus/vars2000-seed0.cnf",
+      "repeat": 0,
+      "status": "SAT",
+      "verified": true,
+      "seconds": 0.0103560839779675,
+      "cpu_seconds": 0.006733,
+      "peak_rss_bytes": 3883008,
+      "par2": 0.0103560839779675,
+      "stats": {
+        "Walk CPU time": "0.002824",
+        "Walk flips": "8262",
+        "Walk unsatisfied": "0",
+        "Walk runs": "1",
+        "Walk unsatisfied sum": "0"
+      },
+      "diagnostic": ""
+    },
+    {
+      "solver": "probabilistic-s3",
+      "input": "/private/tmp/bsat-prob-corpus/vars500-seed1.cnf",
+      "repeat": 0,
+      "status": "SAT",
+      "verified": true,
+      "seconds": 0.004764125216752291,
+      "cpu_seconds": 0.0026939999999999998,
+      "peak_rss_bytes": 2293760,
+      "par2": 0.004764125216752291,
+      "stats": {
+        "Walk CPU time": "0.000471",
+        "Walk flips": "1772",
+        "Walk unsatisfied": "0",
+        "Walk runs": "1",
+        "Walk unsatisfied sum": "0"
+      },
+      "diagnostic": ""
+    },
+    {
+      "solver": "walksat-s3",
+      "input": "/private/tmp/bsat-prob-corpus/vars500-seed1.cnf",
+      "repeat": 0,
+      "status": "SAT",
+      "verified": true,
+      "seconds": 0.005100250244140625,
+      "cpu_seconds": 0.002444,
+      "peak_rss_bytes": 2310144,
+      "par2": 0.005100250244140625,
+      "stats": {
+        "Walk CPU time": "0.000293",
+        "Walk flips": "1305",
+        "Walk unsatisfied": "0",
+        "Walk runs": "1",
+        "Walk unsatisfied sum": "0"
+      },
+      "diagnostic": ""
+    },
+    {
+      "solver": "probabilistic-s2",
+      "input": "/private/tmp/bsat-prob-corpus/vars2000-seed1.cnf",
+      "repeat": 0,
+      "status": "SAT",
+      "verified": true,
+      "seconds": 0.009899834170937538,
+      "cpu_seconds": 0.0060669999999999995,
+      "peak_rss_bytes": 3817472,
+      "par2": 0.009899834170937538,
+      "stats": {
+        "Walk CPU time": "0.002491",
+        "Walk flips": "7527",
+        "Walk unsatisfied": "0",
+        "Walk runs": "1",
+        "Walk unsatisfied sum": "0"
+      },
+      "diagnostic": ""
+    },
+    {
+      "solver": "walksat-s2",
+      "input": "/private/tmp/bsat-prob-corpus/vars1000-seed1.cnf",
+      "repeat": 0,
+      "status": "SAT",
+      "verified": true,
+      "seconds": 0.005144666880369186,
+      "cpu_seconds": 0.003839,
+      "peak_rss_bytes": 2883584,
+      "par2": 0.005144666880369186,
+      "stats": {
+        "Walk CPU time": "0.000828",
+        "Walk flips": "3430",
+        "Walk unsatisfied": "0",
+        "Walk runs": "1",
+        "Walk unsatisfied sum": "0"
+      },
+      "diagnostic": ""
+    },
+    {
+      "solver": "walksat-s3",
+      "input": "/private/tmp/bsat-prob-corpus/vars2000-seed0.cnf",
+      "repeat": 0,
+      "status": "SAT",
+      "verified": true,
+      "seconds": 0.010226625017821789,
+      "cpu_seconds": 0.007626,
+      "peak_rss_bytes": 3883008,
+      "par2": 0.010226625017821789,
+      "stats": {
+        "Walk CPU time": "0.003808",
+        "Walk flips": "16875",
+        "Walk unsatisfied": "0",
+        "Walk runs": "1",
+        "Walk unsatisfied sum": "0"
+      },
+      "diagnostic": ""
+    },
+    {
+      "solver": "walksat-s1",
+      "input": "/private/tmp/bsat-prob-corpus/vars1000-seed0.cnf",
+      "repeat": 0,
+      "status": "SAT",
+      "verified": true,
+      "seconds": 0.010376207996159792,
+      "cpu_seconds": 0.00383,
+      "peak_rss_bytes": 2899968,
+      "par2": 0.010376207996159792,
+      "stats": {
+        "Walk CPU time": "0.000981",
+        "Walk flips": "4334",
+        "Walk unsatisfied": "0",
+        "Walk runs": "1",
+        "Walk unsatisfied sum": "0"
+      },
+      "diagnostic": ""
+    },
+    {
+      "solver": "walksat-s3",
+      "input": "/private/tmp/bsat-prob-corpus/vars500-seed0.cnf",
+      "repeat": 0,
+      "status": "SAT",
+      "verified": true,
+      "seconds": 0.00521362479776144,
+      "cpu_seconds": 0.002686,
+      "peak_rss_bytes": 2293760,
+      "par2": 0.00521362479776144,
+      "stats": {
+        "Walk CPU time": "0.000290",
+        "Walk flips": "1073",
+        "Walk unsatisfied": "0",
+        "Walk runs": "1",
+        "Walk unsatisfied sum": "0"
+      },
+      "diagnostic": ""
+    },
+    {
+      "solver": "walksat-s1",
+      "input": "/private/tmp/bsat-prob-corpus/vars2000-seed1.cnf",
+      "repeat": 0,
+      "status": "SAT",
+      "verified": true,
+      "seconds": 0.010084917303174734,
+      "cpu_seconds": 0.006942,
+      "peak_rss_bytes": 3850240,
+      "par2": 0.010084917303174734,
+      "stats": {
+        "Walk CPU time": "0.003113",
+        "Walk flips": "12205",
+        "Walk unsatisfied": "0",
+        "Walk runs": "1",
+        "Walk unsatisfied sum": "0"
+      },
+      "diagnostic": ""
+    },
+    {
+      "solver": "probabilistic-s1",
+      "input": "/private/tmp/bsat-prob-corpus/vars1000-seed0.cnf",
+      "repeat": 0,
+      "status": "SAT",
+      "verified": true,
+      "seconds": 0.005199833307415247,
+      "cpu_seconds": 0.0037939999999999996,
+      "peak_rss_bytes": 2965504,
+      "par2": 0.005199833307415247,
+      "stats": {
+        "Walk CPU time": "0.000952",
+        "Walk flips": "2786",
+        "Walk unsatisfied": "0",
+        "Walk runs": "1",
+        "Walk unsatisfied sum": "0"
+      },
+      "diagnostic": ""
+    },
+    {
+      "solver": "walksat-s3",
+      "input": "/private/tmp/bsat-prob-corpus/vars1000-seed1.cnf",
+      "repeat": 0,
+      "status": "SAT",
+      "verified": true,
+      "seconds": 0.010290917009115219,
+      "cpu_seconds": 0.004038,
+      "peak_rss_bytes": 2981888,
+      "par2": 0.010290917009115219,
+      "stats": {
+        "Walk CPU time": "0.001179",
+        "Walk flips": "5264",
+        "Walk unsatisfied": "0",
+        "Walk runs": "1",
+        "Walk unsatisfied sum": "0"
+      },
+      "diagnostic": ""
+    },
+    {
+      "solver": "walksat-s2",
+      "input": "/private/tmp/bsat-prob-corpus/vars1000-seed0.cnf",
+      "repeat": 0,
+      "status": "SAT",
+      "verified": true,
+      "seconds": 0.010256291832774878,
+      "cpu_seconds": 0.004333999999999999,
+      "peak_rss_bytes": 2883584,
+      "par2": 0.010256291832774878,
+      "stats": {
+        "Walk CPU time": "0.001452",
+        "Walk flips": "7699",
+        "Walk unsatisfied": "0",
+        "Walk runs": "1",
+        "Walk unsatisfied sum": "0"
+      },
+      "diagnostic": ""
+    },
+    {
+      "solver": "probabilistic-s2",
+      "input": "/private/tmp/bsat-prob-corpus/vars2000-seed0.cnf",
+      "repeat": 0,
+      "status": "SAT",
+      "verified": true,
+      "seconds": 0.010186791885644197,
+      "cpu_seconds": 0.007386,
+      "peak_rss_bytes": 3899392,
+      "par2": 0.010186791885644197,
+      "stats": {
+        "Walk CPU time": "0.003484",
+        "Walk flips": "10434",
+        "Walk unsatisfied": "0",
+        "Walk runs": "1",
+        "Walk unsatisfied sum": "0"
+      },
+      "diagnostic": ""
+    },
+    {
+      "solver": "walksat-s2",
+      "input": "/private/tmp/bsat-prob-corpus/vars2000-seed1.cnf",
+      "repeat": 0,
+      "status": "SAT",
+      "verified": true,
+      "seconds": 0.010184333194047213,
+      "cpu_seconds": 0.005568,
+      "peak_rss_bytes": 3801088,
+      "par2": 0.010184333194047213,
+      "stats": {
+        "Walk CPU time": "0.002211",
+        "Walk flips": "10511",
+        "Walk unsatisfied": "0",
+        "Walk runs": "1",
+        "Walk unsatisfied sum": "0"
+      },
+      "diagnostic": ""
+    },
+    {
+      "solver": "walksat-s2",
+      "input": "/private/tmp/bsat-prob-corpus/vars2000-seed0.cnf",
+      "repeat": 0,
+      "status": "SAT",
+      "verified": true,
+      "seconds": 0.020359250251203775,
+      "cpu_seconds": 0.009025,
+      "peak_rss_bytes": 3866624,
+      "par2": 0.020359250251203775,
+      "stats": {
+        "Walk CPU time": "0.005148",
+        "Walk flips": "21416",
+        "Walk unsatisfied": "0",
+        "Walk runs": "1",
+        "Walk unsatisfied sum": "0"
+      },
+      "diagnostic": ""
+    },
+    {
+      "solver": "walksat-s3",
+      "input": "/private/tmp/bsat-prob-corpus/vars1000-seed0.cnf",
+      "repeat": 0,
+      "status": "SAT",
+      "verified": true,
+      "seconds": 0.010278834030032158,
+      "cpu_seconds": 0.004182,
+      "peak_rss_bytes": 2916352,
+      "par2": 0.010278834030032158,
+      "stats": {
+        "Walk CPU time": "0.001260",
+        "Walk flips": "6125",
+        "Walk unsatisfied": "0",
+        "Walk runs": "1",
+        "Walk unsatisfied sum": "0"
+      },
+      "diagnostic": ""
+    },
+    {
+      "solver": "probabilistic-s3",
+      "input": "/private/tmp/bsat-prob-corpus/vars1000-seed1.cnf",
+      "repeat": 0,
+      "status": "SAT",
+      "verified": true,
+      "seconds": 0.010219749994575977,
+      "cpu_seconds": 0.003941,
+      "peak_rss_bytes": 2965504,
+      "par2": 0.010219749994575977,
+      "stats": {
+        "Walk CPU time": "0.001078",
+        "Walk flips": "3440",
+        "Walk unsatisfied": "0",
+        "Walk runs": "1",
+        "Walk unsatisfied sum": "0"
+      },
+      "diagnostic": ""
+    },
+    {
+      "solver": "probabilistic-s1",
+      "input": "/private/tmp/bsat-prob-corpus/vars1000-seed1.cnf",
+      "repeat": 0,
+      "status": "SAT",
+      "verified": true,
+      "seconds": 0.010260375216603279,
+      "cpu_seconds": 0.004148,
+      "peak_rss_bytes": 2949120,
+      "par2": 0.010260375216603279,
+      "stats": {
+        "Walk CPU time": "0.001296",
+        "Walk flips": "4225",
+        "Walk unsatisfied": "0",
+        "Walk runs": "1",
+        "Walk unsatisfied sum": "0"
+      },
+      "diagnostic": ""
+    },
+    {
+      "solver": "walksat-s2",
+      "input": "/private/tmp/bsat-prob-corpus/vars500-seed0.cnf",
+      "repeat": 0,
+      "status": "SAT",
+      "verified": true,
+      "seconds": 0.010271500330418348,
+      "cpu_seconds": 0.00396,
+      "peak_rss_bytes": 2310144,
+      "par2": 0.010271500330418348,
+      "stats": {
+        "Walk CPU time": "0.001561",
+        "Walk flips": "8377",
+        "Walk unsatisfied": "0",
+        "Walk runs": "1",
+        "Walk unsatisfied sum": "0"
+      },
+      "diagnostic": ""
+    },
+    {
+      "solver": "walksat-s1",
+      "input": "/private/tmp/bsat-prob-corpus/vars500-seed0.cnf",
+      "repeat": 0,
+      "status": "SAT",
+      "verified": true,
+      "seconds": 0.0052559999749064445,
+      "cpu_seconds": 0.0034909999999999997,
+      "peak_rss_bytes": 2310144,
+      "par2": 0.0052559999749064445,
+      "stats": {
+        "Walk CPU time": "0.000871",
+        "Walk flips": "4294",
+        "Walk unsatisfied": "0",
+        "Walk runs": "1",
+        "Walk unsatisfied sum": "0"
+      },
+      "diagnostic": ""
+    },
+    {
+      "solver": "probabilistic-s1",
+      "input": "/private/tmp/bsat-prob-corpus/vars2000-seed0.cnf",
+      "repeat": 0,
+      "status": "SAT",
+      "verified": true,
+      "seconds": 0.010144958272576332,
+      "cpu_seconds": 0.007209,
+      "peak_rss_bytes": 3850240,
+      "par2": 0.010144958272576332,
+      "stats": {
+        "Walk CPU time": "0.003456",
+        "Walk flips": "9819",
+        "Walk unsatisfied": "0",
+        "Walk runs": "1",
+        "Walk unsatisfied sum": "0"
+      },
+      "diagnostic": ""
+    }
+  ],
+  "manifest": {
+    "path": "/private/tmp/bsat-prob-corpus/manifest.json",
+    "sha256": "6bc45f030d0e33206443eeee1adf64c4016d931172c577d353573661ec61bcb0"
+  },
+  "summary": {
+    "walksat-s1": {
+      "verified_runs": 6,
+      "runs": 6,
+      "mean_par2": 0.008571076362083355,
+      "max_rss_bytes": 3850240,
+      "errors": 0
+    },
+    "probabilistic-s1": {
+      "verified_runs": 6,
+      "runs": 6,
+      "mean_par2": 0.007789250152806441,
+      "max_rss_bytes": 3850240,
+      "errors": 0
+    },
+    "walksat-s2": {
+      "verified_runs": 6,
+      "runs": 6,
+      "mean_par2": 0.010260312740380565,
+      "max_rss_bytes": 3866624,
+      "errors": 0
+    },
+    "probabilistic-s2": {
+      "verified_runs": 6,
+      "runs": 6,
+      "mean_par2": 0.006887937740733226,
+      "max_rss_bytes": 3899392,
+      "errors": 0
+    },
+    "walksat-s3": {
+      "verified_runs": 6,
+      "runs": 6,
+      "mean_par2": 0.008601993399982652,
+      "max_rss_bytes": 3899392,
+      "errors": 0
+    },
+    "probabilistic-s3": {
+      "verified_runs": 6,
+      "runs": 6,
+      "mean_par2": 0.007682090547556679,
+      "max_rss_bytes": 3883008,
+      "errors": 0
+    }
+  }
+}
