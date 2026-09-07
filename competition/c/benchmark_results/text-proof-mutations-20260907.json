@@ -1,0 +1,20 @@
+{
+  "schema": 1,
+  "base_revision": "62af9c4",
+  "test_sha256": "63d880b29704a4c1da8bd73463bd72b85a965b342f58ddb8d0556fcd398be5c9",
+  "candidate_source_sha256": "a92293ed3f274473754d091903200389616603a8cae170a332e131933b75b923",
+  "mutants": {
+    "drop-minus-sign": {
+      "returncode": -6,
+      "stderr": "Assertion failed: (nx==ny && !memcmp(x,y,nx)), function equal, file test_proof_encoding.c, line 35.\n"
+    },
+    "drop-final-chunk": {
+      "returncode": -6,
+      "stderr": "Assertion failed: (nx==ny && !memcmp(x,y,nx)), function equal, file test_proof_encoding.c, line 35.\n"
+    },
+    "ignore-final-flush": {
+      "returncode": -6,
+      "stderr": "Assertion failed: (solver_solve(s)==UNDEF && s->error && sink.calls), function failures, file test_proof_encoding.c, line 109.\n"
+    }
+  }
+}

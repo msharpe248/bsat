@@ -79,6 +79,40 @@ static void print_progress_stats(const Solver* s) {
  * Format: "<lit1> <lit2> ... 0" for add, "d <lit1> <lit2> ... 0" for delete
  *********************************************************************/
 
+/* Write complete chunks through stdio so its normal buffering and final flush
+   semantics remain intact. A short write invalidates the solve certificate. */
+static bool proof_text_write(Solver *s, const char *buffer, uint32_t size) {
+    if (fwrite(buffer, 1, size, s->proof_file) == size) return true;
+    s->error = true;
+    return false;
+}
+
+static void proof_text_clause(Solver *s, const Lit *lits, uint32_t size, bool deletion) {
+    char buffer[4096];
+    uint32_t used = 0;
+    if (deletion) { buffer[used++] = 'd'; buffer[used++] = ' '; }
+    for (uint32_t i = 0; i < size; ++i) {
+        /* uint32_t literals contain at most a ten-digit variable number,
+           one minus sign and a separating space. */
+        if (sizeof buffer - used < 12) {
+            if (!proof_text_write(s, buffer, used)) return;
+            used = 0;
+        }
+        uint32_t value = var(lits[i]);
+        if (sign(lits[i]) && value) buffer[used++] = '-';
+        char digits[10];uint32_t count = 0;
+        do { digits[count++] = (char)('0' + value % 10); value /= 10; } while (value);
+        while (count) buffer[used++] = digits[--count];
+        buffer[used++] = ' ';
+    }
+    if (sizeof buffer - used < 2) {
+        if (!proof_text_write(s, buffer, used)) return;
+        used = 0;
+    }
+    buffer[used++] = '0';buffer[used++] = '\n';
+    proof_text_write(s, buffer, used);
+}
+
 static void proof_clause(Solver *s, const Lit *lits, uint32_t size, bool deletion) {
     if (!s->proof_file) return;
     if (s->opts.binary_proof) {
@@ -90,9 +124,7 @@ static void proof_clause(Solver *s, const Lit *lits, uint32_t size, bool deletio
         }
         fputc(0, s->proof_file);
     } else {
-        if (deletion) fputs("d ", s->proof_file);
-        for (uint32_t i = 0; i < size; ++i) fprintf(s->proof_file, "%d ", toDimacs(lits[i]));
-        fputs("0\n", s->proof_file);
+        proof_text_clause(s, lits, size, deletion);
     }
     if (ferror(s->proof_file)) s->error = true;
 }

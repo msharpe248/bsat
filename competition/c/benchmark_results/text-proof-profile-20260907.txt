@@ -1,0 +1,343 @@
+Analysis of sampling bsat-sampled-release (pid 51510) every 10 milliseconds
+Process:         bsat-sampled-release [51510]
+Path:            /private/tmp/bsat-sampled-release
+Load Address:    0x10288c000
+Identifier:      bsat-sampled-release
+Version:         0
+Code Type:       ARM64
+Platform:        macOS
+Parent Process:  python3.13 [51457]
+Target Type:     live task
+
+Date/Time:       2026-09-07 11:40:56.525 -0500
+Launch Time:     2026-09-07 11:40:55.491 -0500
+OS Version:      macOS 26.6.1 (25G76)
+Report Version:  7
+Analysis Tool:   /usr/bin/sample
+
+Physical footprint:         53.0M
+Physical footprint (peak):  53.0M
+Idle exit:                  untracked
+----
+
+Call graph:
+    453 Thread_31757890   DispatchQueue_1: com.apple.main-thread  (serial)
+      453 start  (in dyld) + 6992  [0x1884004e4]
+        138 main  (in bsat-sampled-release) + 5848  [0x102890710]  main.c:448
+        + 113 solver_reduce_db  (in bsat-sampled-release) + 464  [0x102895b48]  solver.c:1667
+        + ! 112 proof_clause  (in bsat-sampled-release) + 228  [0x102891fa4]  solver.c:94
+        + ! : 110 fprintf  (in libsystem_c.dylib) + 68  [0x18866af58]
+        + ! : | 80 vfprintf_l  (in libsystem_c.dylib) + 144  [0x18866aff4]
+        + ! : | + 26 __vfprintf  (in libsystem_c.dylib) + 320,356,...  [0x18865ab88,0x18865abac,...]
+        + ! : | + 25 __vfprintf  (in libsystem_c.dylib) + 11568  [0x18865d778]
+        + ! : | + ! 10 __sfvwrite  (in libsystem_c.dylib) + 380  [0x18865dd58]
+        + ! : | + ! : 5 __sfvwrite  (in libsystem_c.dylib) + 492,500  [0x18865ddc8,0x18865ddd0]
+        + ! : | + ! : 5 _platform_memmove  (in libsystem_platform.dylib) + 12,428,...  [0x1887d536c,0x1887d550c,...]
+        + ! : | + ! 6 __vfprintf  (in libsystem_c.dylib) + 11568  [0x18865d778]
+        + ! : | + ! : 6 __sfvwrite  (in libsystem_c.dylib) + 88,48,...  [0x18865dc34,0x18865dc0c,...]
+        + ! : | + ! 5 __sfvwrite  (in libsystem_c.dylib) + 228  [0x18865dcc0]
+        + ! : | + ! : 5 __sflush  (in libsystem_c.dylib) + 232  [0x188669304]
+        + ! : | + ! :   5 _swrite  (in libsystem_c.dylib) + 108  [0x18866b264]
+        + ! : | + ! :     5 __swrite  (in libsystem_c.dylib) + 24  [0x188689ba4]
+        + ! : | + ! :       5 __write_nocancel  (in libsystem_kernel.dylib) + 8  [0x18878bbe4]
+        + ! : | + ! 3 __sfvwrite  (in libsystem_c.dylib) + 928  [0x18865df7c]
+        + ! : | + ! 1 __sfvwrite  (in libsystem_c.dylib) + 208  [0x18865dcac]
+        + ! : | + !   1 _platform_memmove  (in libsystem_platform.dylib) + 460  [0x1887d552c]
+        + ! : | + 10 __vfprintf  (in libsystem_c.dylib) + 5608  [0x18865c030]
+        + ! : | + ! 10 __ultoa  (in libsystem_c.dylib) + 204,224,...  [0x18865e0c4,0x18865e0d8,...]
+        + ! : | + 8 __vfprintf  (in libsystem_c.dylib) + 11648  [0x18865d7c8]
+        + ! : | + ! 3 __sfvwrite  (in libsystem_c.dylib) + 380  [0x18865dd58]
+        + ! : | + ! : 2 _platform_memmove  (in libsystem_platform.dylib) + 452  [0x1887d5524]
+        + ! : | + ! : 1 __sfvwrite  (in libsystem_c.dylib) + 876  [0x18865df48]
+        + ! : | + ! 3 __vfprintf  (in libsystem_c.dylib) + 11648  [0x18865d7c8]
+        + ! : | + ! : 3 __sfvwrite  (in libsystem_c.dylib) + 48,168  [0x18865dc0c,0x18865dc84]
+        + ! : | + ! 1 __sfvwrite  (in libsystem_c.dylib) + 228  [0x18865dcc0]
+        + ! : | + ! : 1 __sflush  (in libsystem_c.dylib) + 232  [0x188669304]
+        + ! : | + ! :   1 _swrite  (in libsystem_c.dylib) + 108  [0x18866b264]
+        + ! : | + ! :     1 __swrite  (in libsystem_c.dylib) + 24  [0x188689ba4]
+        + ! : | + ! :       1 __write_nocancel  (in libsystem_kernel.dylib) + 8  [0x18878bbe4]
+        + ! : | + ! 1 __sfvwrite  (in libsystem_c.dylib) + 928  [0x18865df7c]
+        + ! : | + 4 __vfprintf  (in libsystem_c.dylib) + 11740  [0x18865d824]
+        + ! : | + ! 3 _free  (in libsystem_malloc.dylib) + 0,124  [0x1885f7cd0,0x1885f7d4c]
+        + ! : | + ! 1 DYLD-STUB$$free  (in libsystem_c.dylib) + 12  [0x1886d292c]
+        + ! : | + 3 __vfprintf  (in libsystem_c.dylib) + 168  [0x18865aaf0]
+        + ! : | + ! 2 localeconv_l  (in libsystem_c.dylib) + 308  [0x18865db7c]
+        + ! : | + ! : 1 DYLD-STUB$$os_unfair_lock_unlock  (in libsystem_c.dylib) + 12  [0x1886d2ddc]
+        + ! : | + ! : 1 os_unfair_lock_unlock  (in libsystem_platform.dylib) + 20  [0x1887d28d8]
+        + ! : | + ! 1 localeconv_l  (in libsystem_c.dylib) + 4  [0x18865da4c]
+        + ! : | + 2 __v2printf  (in libsystem_c.dylib) + 216,336  [0x18865a78c,0x18865a804]
+        + ! : | + 2 __xvprintf  (in libsystem_c.dylib) + 12,380  [0x18866b020,0x18866b190]
+        + ! : | 13 vfprintf_l  (in libsystem_c.dylib) + 156  [0x18866b000]
+        + ! : | + 12 funlockfile  (in libsystem_c.dylib) + 40  [0x1886693b4]
+        + ! : | + ! 6 _pthread_mutex_firstfit_unlock_slow  (in libsystem_pthread.dylib) + 176,28,...  [0x1887c6b68,0x1887c6ad4,...]
+        + ! : | + ! 4 _pthread_mutex_unlock_init_slow  (in libsystem_pthread.dylib) + 20  [0x1887c6a28]
+        + ! : | + ! 1 DYLD-STUB$$pthread_mutex_unlock  (in libsystem_c.dylib) + 12  [0x1886d2f8c]
+        + ! : | + ! 1 pthread_mutex_unlock  (in libsystem_pthread.dylib) + 12  [0x1887c6950]
+        + ! : | + 1 _pthread_mutex_unlock_init_slow  (in libsystem_pthread.dylib) + 108  [0x1887c6a80]
+        + ! : | 9 vfprintf_l  (in libsystem_c.dylib) + 116  [0x18866afd8]
+        + ! : | + 4 flockfile  (in libsystem_c.dylib) + 40  [0x188669208]
+        + ! : | + ! 2 _pthread_mutex_firstfit_lock_slow  (in libsystem_pthread.dylib) + 48,144  [0x1887c6838,0x1887c6898]
+        + ! : | + ! 1 DYLD-STUB$$pthread_mutex_lock  (in libsystem_c.dylib) + 12  [0x1886d2f6c]
+        + ! : | + ! 1 pthread_mutex_lock  (in libsystem_pthread.dylib) + 12  [0x1887c6408]
+        + ! : | + 2 _pthread_mutex_firstfit_lock_slow  (in libsystem_pthread.dylib) + 312  [0x1887c6940]
+        + ! : | + 1 _pthread_mutex_lock_init_slow  (in libsystem_pthread.dylib) + 116  [0x1887c6578]
+        + ! : | + 1 flockfile  (in libsystem_c.dylib) + 24  [0x1886691f8]
+        + ! : | + ! 1 __error  (in libsystem_kernel.dylib) + 4  [0x18878861c]
+        + ! : | + 1 flockfile  (in libsystem_c.dylib) + 44  [0x18866920c]
+        + ! : | +   1 DYLD-STUB$$__error  (in libsystem_c.dylib) + 12  [0x1886d22cc]
+        + ! : | 3 __xvprintf  (in libsystem_c.dylib) + 420  [0x18866b1b8]
+        + ! : | 3 vfprintf_l  (in libsystem_c.dylib) + 44  [0x18866af90]
+        + ! : | 2 __vfprintf  (in libsystem_c.dylib) + 11848  [0x18865d890]
+        + ! : 2 DYLD-STUB$$fprintf  (in bsat-sampled-release) + 4  [0x1028987d0]
+        + ! 1 proof_clause  (in bsat-sampled-release) + 180  [0x102891f74]  solver.c:93
+        + !   1 fputs  (in libsystem_c.dylib) + 256  [0x188684e58]
+        + !     1 __sfvwrite  (in libsystem_c.dylib) + 928  [0x18865df7c]
+        + 7 solver_reduce_db  (in bsat-sampled-release) + 1176  [0x102895e10]  solver.c:1677
+        + ! 4 _platform_memmove  (in libsystem_platform.dylib) + 424,448  [0x1887d5508,0x1887d5520]
+        + ! 3 DYLD-STUB$$memcpy  (in bsat-sampled-release) + 4  [0x102898848]
+        + 6 solver_reduce_db  (in bsat-sampled-release) + 1068,1480,...  [0x102895da4,0x102895f40,...]  solver.c:1677
+        + 4 solver_reduce_db  (in bsat-sampled-release) + 1012  [0x102895d6c]  solver.c:1677
+        + ! 2 budget_exhausted  (in bsat-sampled-release) + 92  [0x102892054]  solver.c:120
+        + ! 2 budget_exhausted  (in bsat-sampled-release) + 204  [0x1028920c4]  solver.c:123
+        + !   2 clock  (in libsystem_c.dylib) + 52  [0x18867e8cc]
+        + !     2 getrusage  (in libsystem_kernel.dylib) + 8  [0x18878f804]
+        + 2 solver_reduce_db  (in bsat-sampled-release) + 328  [0x102895ac0]  solver.c:1663
+        + ! 2 _qsort  (in libsystem_c.dylib) + 1868  [0x188686ad0]
+        + !   1 _qsort  (in libsystem_c.dylib) + 1868  [0x188686ad0]
+        + !   : 1 _qsort  (in libsystem_c.dylib) + 928  [0x188686724]
+        + !   1 _qsort  (in libsystem_c.dylib) + 1932  [0x188686b10]
+        + !     1 _qsort  (in libsystem_c.dylib) + 1584  [0x1886869b4]
+        + 2 solver_reduce_db  (in bsat-sampled-release) + 476  [0x102895b54]  solver.c:1667
+        + ! 2 watch_remove_clause  (in bsat-sampled-release) + 436  [0x1028986f4]  watch.c:129
+        + 2 solver_reduce_db  (in bsat-sampled-release) + 1044  [0x102895d8c]  solver.c:1677
+        + ! 1 budget_exhausted  (in bsat-sampled-release) + 4  [0x102891ffc]  solver.c:114
+        + ! 1 budget_exhausted  (in bsat-sampled-release) + 204  [0x1028920c4]  solver.c:123
+        + !   1 clock  (in libsystem_c.dylib) + 52  [0x18867e8cc]
+        + !     1 getrusage  (in libsystem_kernel.dylib) + 4  [0x18878f800]
+        + 2 solver_reduce_db  (in bsat-sampled-release) + 1200  [0x102895e28]  solver.c:1677
+        +   1 budget_exhausted  (in bsat-sampled-release) + 4  [0x102891ffc]  solver.c:114
+        +   1 budget_exhausted  (in bsat-sampled-release) + 44  [0x102892024]  solver.c:115
+        126 main  (in bsat-sampled-release) + 4844  [0x102890324]  main.c:448
+        + 13 solver_propagate  (in bsat-sampled-release) + 1328  [0x102893d58]  solver.c:1007
+        + 10 solver_propagate  (in bsat-sampled-release) + 504,516  [0x102893a20,0x102893a2c]  solver.c:969
+        + 9 solver_propagate  (in bsat-sampled-release) + 884  [0x102893b9c]  solver.c:997
+        + 7 solver_propagate  (in bsat-sampled-release) + 1172  [0x102893cbc]  solver.c:1005
+        + 7 solver_propagate  (in bsat-sampled-release) + 1516,1524  [0x102893e14,0x102893e1c]  solver.c:849
+        + 7 solver_propagate  (in bsat-sampled-release) + 552  [0x102893a50]  solver.c:885
+        + 6 solver_propagate  (in bsat-sampled-release) + 1208,156,...  [0x102893ce0,0x1028938c4,...]  solver.c:0
+        + 6 solver_propagate  (in bsat-sampled-release) + 204  [0x1028938f4]  solver.c:875
+        + 6 solver_propagate  (in bsat-sampled-release) + 1192  [0x102893cd0]  solver.c:994
+        + 5 solver_propagate  (in bsat-sampled-release) + 668  [0x102893ac4]  solver.c:898
+        + 5 solver_propagate  (in bsat-sampled-release) + 176  [0x1028938d8]  solver.c:962
+        + 4 solver_propagate  (in bsat-sampled-release) + 576  [0x102893a68]  solver.c:924
+        + 3 solver_propagate  (in bsat-sampled-release) + 132  [0x1028938ac]  solver.c:865
+        + 3 solver_propagate  (in bsat-sampled-release) + 384  [0x1028939a8]  solver.c:876
+        + ! 3 clock  (in libsystem_c.dylib) + 52  [0x18867e8cc]
+        + !   3 getrusage  (in libsystem_kernel.dylib) + 8  [0x18878f804]
+        + 3 solver_propagate  (in bsat-sampled-release) + 468  [0x1028939fc]  solver.c:881
+        + 3 solver_propagate  (in bsat-sampled-release) + 476  [0x102893a04]  solver.c:959
+        + 3 solver_propagate  (in bsat-sampled-release) + 540  [0x102893a44]  solver.c:974
+        + 3 solver_propagate  (in bsat-sampled-release) + 1060  [0x102893c4c]  solver.c:998
+        + ! 3 clock  (in libsystem_c.dylib) + 52  [0x18867e8cc]
+        + !   3 getrusage  (in libsystem_kernel.dylib) + 8  [0x18878f804]
+        + 3 solver_propagate  (in bsat-sampled-release) + 1504  [0x102893e08]  watch.c:0
+        + 2 solver_propagate  (in bsat-sampled-release) + 1356,1364  [0x102893d74,0x102893d7c]  solver.c:1012
+        + 2 solver_propagate  (in bsat-sampled-release) + 60  [0x102893864]  solver.c:850
+        + 2 solver_propagate  (in bsat-sampled-release) + 224  [0x102893908]  solver.c:876
+        + 2 solver_propagate  (in bsat-sampled-release) + 564  [0x102893a5c]  solver.c:896
+        + 2 solver_propagate  (in bsat-sampled-release) + 704  [0x102893ae8]  solver.c:899
+        + 2 solver_propagate  (in bsat-sampled-release) + 768  [0x102893b28]  solver.c:921
+        + 2 solver_propagate  (in bsat-sampled-release) + 484,492  [0x102893a0c,0x102893a14]  solver.c:960
+        + 1 solver_propagate  (in bsat-sampled-release) + 1288  [0x102893d30]  solver.c:1037
+        + 1 solver_propagate  (in bsat-sampled-release) + 136  [0x1028938b0]  solver.c:866
+        + 1 solver_propagate  (in bsat-sampled-release) + 788  [0x102893b3c]  solver.c:949
+        + 1 solver_propagate  (in bsat-sampled-release) + 608  [0x102893a88]  solver.c:984
+        + 1 solver_propagate  (in bsat-sampled-release) + 864  [0x102893b88]  solver.c:996
+        + 1 solver_propagate  (in bsat-sampled-release) + 888  [0x102893ba0]  solver.c:998
+        108 main  (in bsat-sampled-release) + 5460  [0x10289058c]  main.c:448
+        + 108 proof_clause  (in bsat-sampled-release) + 228  [0x102891fa4]  solver.c:94
+        +   107 fprintf  (in libsystem_c.dylib) + 68  [0x18866af58]
+        +   ! 75 vfprintf_l  (in libsystem_c.dylib) + 144  [0x18866aff4]
+        +   ! : 25 __vfprintf  (in libsystem_c.dylib) + 5788,216,...  [0x18865c0e4,0x18865ab20,...]
+        +   ! : 18 __vfprintf  (in libsystem_c.dylib) + 11568  [0x18865d778]
+        +   ! : | 7 __sfvwrite  (in libsystem_c.dylib) + 380  [0x18865dd58]
+        +   ! : | + 4 __sfvwrite  (in libsystem_c.dylib) + 476,112,...  [0x18865ddb8,0x18865dc4c,...]
+        +   ! : | + 3 _platform_memmove  (in libsystem_platform.dylib) + 0,428  [0x1887d5360,0x1887d550c]
+        +   ! : | 5 __sfvwrite  (in libsystem_c.dylib) + 928,916  [0x18865df7c,0x18865df70]
+        +   ! : | 3 __sfvwrite  (in libsystem_c.dylib) + 228  [0x18865dcc0]
+        +   ! : | + 3 __sflush  (in libsystem_c.dylib) + 232  [0x188669304]
+        +   ! : | +   3 _swrite  (in libsystem_c.dylib) + 108  [0x18866b264]
+        +   ! : | +     3 __swrite  (in libsystem_c.dylib) + 24  [0x188689ba4]
+        +   ! : | +       3 __write_nocancel  (in libsystem_kernel.dylib) + 8  [0x18878bbe4]
+        +   ! : | 3 __vfprintf  (in libsystem_c.dylib) + 11568  [0x18865d778]
+        +   ! : |   3 __sfvwrite  (in libsystem_c.dylib) + 168,60  [0x18865dc84,0x18865dc18]
+        +   ! : 12 __vfprintf  (in libsystem_c.dylib) + 11648  [0x18865d7c8]
+        +   ! : | 5 __sfvwrite  (in libsystem_c.dylib) + 380  [0x18865dd58]
+        +   ! : | + 2 DYLD-STUB$$mkdtempat_np  (in libsystem_c.dylib) + 12  [0x1886d2cac]
+        +   ! : | + 2 __sfvwrite  (in libsystem_c.dylib) + 492,876  [0x18865ddc8,0x18865df48]
+        +   ! : | + 1 _platform_memmove  (in libsystem_platform.dylib) + 428  [0x1887d550c]
+        +   ! : | 3 __sfvwrite  (in libsystem_c.dylib) + 228  [0x18865dcc0]
+        +   ! : | + 3 __sflush  (in libsystem_c.dylib) + 232  [0x188669304]
+        +   ! : | +   3 _swrite  (in libsystem_c.dylib) + 108  [0x18866b264]
+        +   ! : | +     3 __swrite  (in libsystem_c.dylib) + 24  [0x188689ba4]
+        +   ! : | +       3 __write_nocancel  (in libsystem_kernel.dylib) + 8  [0x18878bbe4]
+        +   ! : | 2 __sfvwrite  (in libsystem_c.dylib) + 0,928  [0x18865dbdc,0x18865df7c]
+        +   ! : | 2 __vfprintf  (in libsystem_c.dylib) + 11648  [0x18865d7c8]
+        +   ! : |   2 __sfvwrite  (in libsystem_c.dylib) + 144,168  [0x18865dc6c,0x18865dc84]
+        +   ! : 9 __vfprintf  (in libsystem_c.dylib) + 5608  [0x18865c030]
+        +   ! : | 9 __ultoa  (in libsystem_c.dylib) + 204,224,...  [0x18865e0c4,0x18865e0d8,...]
+        +   ! : 4 __xvprintf  (in libsystem_c.dylib) + 44,380  [0x18866b040,0x18866b190]
+        +   ! : 3 __vfprintf  (in libsystem_c.dylib) + 168  [0x18865aaf0]
+        +   ! : | 3 localeconv_l  (in libsystem_c.dylib) + 60  [0x18865da84]
+        +   ! : |   2 DYLD-STUB$$os_unfair_lock_lock  (in libsystem_c.dylib) + 12  [0x1886d2dbc]
+        +   ! : |   1 os_unfair_lock_lock  (in libsystem_platform.dylib) + 16  [0x1887d2bf8]
+        +   ! : 3 __vfprintf  (in libsystem_c.dylib) + 11740  [0x18865d824]
+        +   ! : | 2 _free  (in libsystem_malloc.dylib) + 124  [0x1885f7d4c]
+        +   ! : | 1 DYLD-STUB$$free  (in libsystem_c.dylib) + 12  [0x1886d292c]
+        +   ! : 1 __v2printf  (in libsystem_c.dylib) + 84  [0x18865a708]
+        +   ! 14 vfprintf_l  (in libsystem_c.dylib) + 116  [0x18866afd8]
+        +   ! : 6 flockfile  (in libsystem_c.dylib) + 24  [0x1886691f8]
+        +   ! : | 3 DYLD-STUB$$__error  (in libsystem_c.dylib) + 12  [0x1886d22cc]
+        +   ! : | 3 __error  (in libsystem_kernel.dylib) + 4  [0x18878861c]
+        +   ! : 5 flockfile  (in libsystem_c.dylib) + 40  [0x188669208]
+        +   ! : | 3 _pthread_mutex_firstfit_lock_slow  (in libsystem_pthread.dylib) + 144,48  [0x1887c6898,0x1887c6838]
+        +   ! : | 1 _pthread_mutex_lock_init_slow  (in libsystem_pthread.dylib) + 24  [0x1887c651c]
+        +   ! : | 1 pthread_mutex_lock  (in libsystem_pthread.dylib) + 12  [0x1887c6408]
+        +   ! : 3 flockfile  (in libsystem_c.dylib) + 44  [0x18866920c]
+        +   ! :   2 DYLD-STUB$$__error  (in libsystem_c.dylib) + 12  [0x1886d22cc]
+        +   ! :   1 __error  (in libsystem_kernel.dylib) + 4  [0x18878861c]
+        +   ! 10 vfprintf_l  (in libsystem_c.dylib) + 156  [0x18866b000]
+        +   ! : 7 funlockfile  (in libsystem_c.dylib) + 40  [0x1886693b4]
+        +   ! : | 6 _pthread_mutex_firstfit_unlock_slow  (in libsystem_pthread.dylib) + 120,28,...  [0x1887c6b30,0x1887c6ad4,...]
+        +   ! : | 1 pthread_mutex_unlock  (in libsystem_pthread.dylib) + 12  [0x1887c6950]
+        +   ! : 2 funlockfile  (in libsystem_c.dylib) + 44  [0x1886693b8]
+        +   ! : | 2 DYLD-STUB$$__error  (in libsystem_c.dylib) + 12  [0x1886d22cc]
+        +   ! : 1 pthread_mutex_unlock  (in libsystem_pthread.dylib) + 160  [0x1887c69e4]
+        +   ! 4 __xvprintf  (in libsystem_c.dylib) + 420,416  [0x18866b1b8,0x18866b1b4]
+        +   ! 2 __vfprintf  (in libsystem_c.dylib) + 11848  [0x18865d890]
+        +   ! 1 flockfile  (in libsystem_c.dylib) + 56  [0x188669218]
+        +   ! 1 vfprintf_l  (in libsystem_c.dylib) + 12  [0x18866af70]
+        +   1 DYLD-STUB$$fprintf  (in bsat-sampled-release) + 4  [0x1028987d0]
+        35 main  (in bsat-sampled-release) + 4924  [0x102890374]  main.c:448
+        + 7 solver_analyze  (in bsat-sampled-release) + 560,552,...  [0x102894204,0x1028941fc,...]  solver.c:1197
+        + 7 solver_analyze  (in bsat-sampled-release) + 600  [0x10289422c]  solver.c:1199
+        + ! 3 bump_var_activity  (in bsat-sampled-release) + 756,672  [0x102894a34,0x1028949e0]  solver.c:369
+        + ! 2 bump_var_activity  (in bsat-sampled-release) + 264  [0x102894848]  solver.c:356
+        + ! 1 bump_var_activity  (in bsat-sampled-release) + 0  [0x102894740]  solver.c:325
+        + ! 1 bump_var_activity  (in bsat-sampled-release) + 772  [0x102894a44]  solver.c:371
+        + 5 solver_analyze  (in bsat-sampled-release) + 208  [0x1028940a4]  solver.c:1149
+        + ! 2 bump_var_activity  (in bsat-sampled-release) + 708,756  [0x102894a04,0x102894a34]  solver.c:369
+        + ! 2 bump_var_activity  (in bsat-sampled-release) + 772  [0x102894a44]  solver.c:371
+        + ! 1 bump_var_activity  (in bsat-sampled-release) + 64  [0x102894780]  solver.c:332
+        + 5 solver_analyze  (in bsat-sampled-release) + 524  [0x1028941e0]  solver.c:1192
+        + 2 solver_analyze  (in bsat-sampled-release) + 532  [0x1028941e8]  solver.c:1193
+        + 2 solver_analyze  (in bsat-sampled-release) + 612  [0x102894238]  solver.c:1201
+        + 2 solver_analyze  (in bsat-sampled-release) + 736  [0x1028942b4]  solver.c:1219
+        + ! 1 bump_var_activity  (in bsat-sampled-release) + 8  [0x102894748]  solver.c:327
+        + ! 1 bump_var_activity  (in bsat-sampled-release) + 756  [0x102894a34]  solver.c:369
+        + 1 solver_analyze  (in bsat-sampled-release) + 144  [0x102894064]  solver.c:1143
+        + 1 solver_analyze  (in bsat-sampled-release) + 164  [0x102894078]  solver.c:1147
+        + 1 solver_analyze  (in bsat-sampled-release) + 140  [0x102894060]  solver.c:1152
+        + 1 solver_analyze  (in bsat-sampled-release) + 452  [0x102894198]  solver.c:1185
+        + 1 solver_analyze  (in bsat-sampled-release) + 1388  [0x102894540]  solver.c:1245
+        20 main  (in bsat-sampled-release) + 5376  [0x102890538]  main.c:448
+        + 18 solver_decide  (in bsat-sampled-release) + 172  [0x102895060]  solver.c:1260
+        + ! 18 heap_extract_max  (in bsat-sampled-release) + 292,300,...  [0x102895348,0x102895350,...]  solver.c:321
+        + 1 solver_decide  (in bsat-sampled-release) + 184  [0x10289506c]  solver.c:1267
+        + 1 solver_decide  (in bsat-sampled-release) + 536  [0x1028951cc]  solver.c:1289
+        11 main  (in bsat-sampled-release) + 5440  [0x102890578]  main.c:448
+        + 4 solver_backtrack  (in bsat-sampled-release) + 96  [0x1028932b0]  solver.c:678
+        + 4 solver_backtrack  (in bsat-sampled-release) + 260,216  [0x102893354,0x102893328]  solver.c:685
+        + 3 solver_backtrack  (in bsat-sampled-release) + 132,128  [0x1028932d4,0x1028932d0]  solver.c:681
+        8 main  (in bsat-sampled-release) + 4940  [0x102890384]  main.c:448
+        + 5 solver_minimize_clause  (in bsat-sampled-release) + 1196,1356,...  [0x1028916c8,0x102891768,...]  minimize.c:274
+        + 3 solver_minimize_clause  (in bsat-sampled-release) + 1508  [0x102891800]  minimize.c:274
+        +   2 lit_redundant  (in bsat-sampled-release) + 452  [0x102891a98]  minimize.c:111
+        +   : 1 lit_redundant  (in bsat-sampled-release) + 452  [0x102891a98]  minimize.c:111
+        +   : | 1 lit_redundant  (in bsat-sampled-release) + 200  [0x10289199c]  minimize.c:126
+        +   : 1 lit_redundant  (in bsat-sampled-release) + 24  [0x1028918ec]  minimize.c:25
+        +   1 lit_redundant  (in bsat-sampled-release) + 424  [0x102891a7c]  minimize.c:99
+        4 main  (in bsat-sampled-release) + 4968  [0x1028903a0]  main.c:448
+        + 3 calc_lbd  (in bsat-sampled-release) + 108,668,...  [0x102896ca0,0x102896ed0,...]  solver.c:1073
+        + 1 calc_lbd  (in bsat-sampled-release) + 240  [0x102896d24]  solver.c:1069
+        3 main  (in bsat-sampled-release) + 4832  [0x102890318]  main.c:448
+          3 budget_exhausted  (in bsat-sampled-release) + 204  [0x1028920c4]  solver.c:123
+            3 clock  (in libsystem_c.dylib) + 52  [0x18867e8cc]
+              3 getrusage  (in libsystem_kernel.dylib) + 8  [0x18878f804]
+
+Total number in stack (recursive counted multiple, when >=5):
+        13       __sfvwrite  (in libsystem_c.dylib) + 0  [0x18865dbdc]
+        6       _platform_memmove  (in libsystem_platform.dylib) + 0  [0x1887d5360]
+        5       clock  (in libsystem_c.dylib) + 52  [0x18867e8cc]
+        5       getrusage  (in libsystem_kernel.dylib) + 0  [0x18878f7fc]
+
+Sort by top of stack, same collapsed (when >= 5):
+        solver_propagate  (in bsat-sampled-release)        120
+        __vfprintf  (in libsystem_c.dylib)        55
+        __sfvwrite  (in libsystem_c.dylib)        38
+        solver_analyze  (in bsat-sampled-release)        21
+        __ultoa  (in libsystem_c.dylib)        19
+        heap_extract_max  (in bsat-sampled-release)        18
+        _platform_memmove  (in libsystem_platform.dylib)        16
+        bump_var_activity  (in bsat-sampled-release)        14
+        __xvprintf  (in libsystem_c.dylib)        13
+        __write_nocancel  (in libsystem_kernel.dylib)        12
+        _pthread_mutex_firstfit_unlock_slow  (in libsystem_pthread.dylib)        12
+        getrusage  (in libsystem_kernel.dylib)        12
+        solver_backtrack  (in bsat-sampled-release)        11
+        DYLD-STUB$$__error  (in libsystem_c.dylib)        8
+        _pthread_mutex_firstfit_lock_slow  (in libsystem_pthread.dylib)        7
+        solver_reduce_db  (in bsat-sampled-release)        6
+        __error  (in libsystem_kernel.dylib)        5
+        _free  (in libsystem_malloc.dylib)        5
+        _pthread_mutex_unlock_init_slow  (in libsystem_pthread.dylib)        5
+        budget_exhausted  (in bsat-sampled-release)        5
+        solver_minimize_clause  (in bsat-sampled-release)        5
+
+Binary Images:
+       0x10288c000 -        0x10289af1b +bsat-sampled-release (0) <664047D9-AF00-3447-91D0-FC5C3B9342A4> /tmp/bsat-sampled-release
+       0x188358000 -        0x1883aab4b  libobjc.A.dylib (951.7) <40277974-D20C-3EC8-B25C-43AE30D8CC60> /usr/lib/libobjc.A.dylib
+       0x1883ab000 -        0x1883dfd58  libdyld.dylib (1387) <634959D0-592E-349C-B549-B91F2FF09858> /usr/lib/system/libdyld.dylib
+       0x1883e0000 -        0x1884934ff  dyld (1.0.0 - 1387) <DF42DD9D-AD11-33A7-8849-9AD5DF30A274> /usr/lib/dyld
+       0x188494000 -        0x188497228  libsystem_blocks.dylib (96) <A712B95E-BCEE-3F12-9F9B-58E6C2060E53> /usr/lib/system/libsystem_blocks.dylib
+       0x188498000 -        0x1884ec55f  libxpc.dylib (3102.160.5) <40BBE226-77D4-332E-9DA8-F0B5BACFB86D> /usr/lib/system/libxpc.dylib
+       0x1884ed000 -        0x18850d9ff  libsystem_trace.dylib (1861.160.4) <E043667E-AD01-3228-837F-A381F32F2B30> /usr/lib/system/libsystem_trace.dylib
+       0x18850e000 -        0x1885bc5f7  libcorecrypto.dylib (1922.160.10) <D54389FC-4078-370D-A863-9FEF16E00DFD> /usr/lib/system/libcorecrypto.dylib
+       0x1885bd000 -        0x18860d257  libsystem_malloc.dylib (812.160.5) <971CDCFE-4D20-300E-A1D6-EC8672FDD258> /usr/lib/system/libsystem_malloc.dylib
+       0x18860e000 -        0x18865523f  libdispatch.dylib (1542.160.2) <243E06A0-7BFF-3C3F-8A9B-D7732729B361> /usr/lib/system/libdispatch.dylib
+       0x188656000 -        0x188658ffb  libsystem_featureflags.dylib (103) <5E7CDBD5-44AB-34C0-A0F5-FC72F6116CDC> /usr/lib/system/libsystem_featureflags.dylib
+       0x188659000 -        0x1886da1e7  libsystem_c.dylib (1752.160.4) <FDC4E366-5C14-3A1E-BC35-D933D28CDCF3> /usr/lib/system/libsystem_c.dylib
+       0x1886db000 -        0x18876bae7  libc++.1.dylib (2100.43) <C6DC2145-7B94-3E01-ADE5-96A6C2D078BC> /usr/lib/libc++.1.dylib
+       0x18876c000 -        0x18878675f  libc++abi.dylib (2100.43) <DDE77B06-5E25-380B-85B7-BA1A27D09021> /usr/lib/libc++abi.dylib
+       0x188787000 -        0x1887c42e7  libsystem_kernel.dylib (12377.161.13) <7CFB3A10-ADB2-32C4-99B5-922A111B3224> /usr/lib/system/libsystem_kernel.dylib
+       0x1887c5000 -        0x1887d1b3b  libsystem_pthread.dylib (539.100.4) <12342372-0084-37A5-9EA6-2E4DC940C685> /usr/lib/system/libsystem_pthread.dylib
+       0x1887d2000 -        0x1887da963  libsystem_platform.dylib (375.120.2) <4C6BD0FE-25F2-38D8-BE5C-24DAC1DEDCFB> /usr/lib/system/libsystem_platform.dylib
+       0x1887db000 -        0x18880a6eb  libsystem_info.dylib (600) <7402662E-F235-3F48-BB65-F64C8CF0F2BB> /usr/lib/system/libsystem_info.dylib
+       0x18c7a8000 -        0x18c7b1e5f  libsystem_darwin.dylib (1752.160.4) <A095E4FE-0EE1-34DF-B00A-7D349FBC55E0> /usr/lib/system/libsystem_darwin.dylib
+       0x18cc13000 -        0x18cc251b6  libsystem_notify.dylib (348.160.3) <F9B1BAFF-4D09-3A1F-839B-189C21EB5FBB> /usr/lib/system/libsystem_notify.dylib
+       0x18eee4000 -        0x18eefef7b  libsystem_networkextension.dylib (2226.160.6) <01D14A9E-16DC-372C-8AA8-CC7AD39E797F> /usr/lib/system/libsystem_networkextension.dylib
+       0x18ef81000 -        0x18ef98fdf  libsystem_asl.dylib (406) <FF57F6FA-F3A1-343D-815D-57B769D31445> /usr/lib/system/libsystem_asl.dylib
+       0x190b3a000 -        0x190b42387  libsystem_symptoms.dylib (2169.160.3) <CE07A0DF-31B6-3528-B7CE-91CAD89AA519> /usr/lib/system/libsystem_symptoms.dylib
+       0x194ddf000 -        0x194e175b7  libsystem_containermanager.dylib (725.160.3) <2E14025A-52C2-361D-8A8F-5DD45825A2C9> /usr/lib/system/libsystem_containermanager.dylib
+       0x1961f1000 -        0x1961f55d7  libsystem_configuration.dylib (1405.160.3) <A14ED142-2F56-33A6-A23C-EEB8417DC90E> /usr/lib/system/libsystem_configuration.dylib
+       0x1961f6000 -        0x1961fc99f  libsystem_sandbox.dylib (2680.160.6) <6592D3CE-38C6-3C08-9EA5-75D64F37993F> /usr/lib/system/libsystem_sandbox.dylib
+       0x197851000 -        0x1978541fb  libquarantine.dylib (196.160.2) <78C5B827-8152-358D-90E9-B02F02A68B17> /usr/lib/system/libquarantine.dylib
+       0x197ff0000 -        0x197ff6d03  libsystem_coreservices.dylib (191.5.1) <F335DA14-69E8-336E-85A3-11EE239255F0> /usr/lib/system/libsystem_coreservices.dylib
+       0x19857f000 -        0x1985bca77  libsystem_m.dylib (3312.100.1) <3739A40F-2C17-3503-92D6-098141E56E89> /usr/lib/system/libsystem_m.dylib
+       0x1985be000 -        0x1985c1527  libmacho.dylib (1387) <3E43AF47-AD89-3BB4-82B9-A9533F4334DF> /usr/lib/system/libmacho.dylib
+       0x1985db000 -        0x1985e83a7  libcommonCrypto.dylib (600035) <72D94140-1281-3886-971B-37C810403C03> /usr/lib/system/libcommonCrypto.dylib
+       0x1985e9000 -        0x1985f2ca3  libunwind.dylib (2100.2) <B21A1015-83D4-31D8-BA41-88688962D9A6> /usr/lib/system/libunwind.dylib
+       0x1985fb000 -        0x198605bef  libcopyfile.dylib (240.160.2.0.1) <58F425CF-7D4F-34FD-9620-706A2A7F8BDC> /usr/lib/system/libcopyfile.dylib
+       0x198606000 -        0x198609987  libcompiler_rt.dylib (103.3) <D60A9B54-A909-3FD5-93B9-3F38BE0A2BE8> /usr/lib/system/libcompiler_rt.dylib
+       0x19860a000 -        0x19860e78b  libsystem_collections.dylib (1752.160.4) <BDA28F78-F479-3C22-B9C7-4ABCB6801592> /usr/lib/system/libsystem_collections.dylib
+       0x19860f000 -        0x1986124cf  libsystem_secinit.dylib (168.100.7) <C85AF062-AA9B-35BB-904C-C055B2C21602> /usr/lib/system/libsystem_secinit.dylib
+       0x198613000 -        0x198615bf7  libremovefile.dylib (85.100.6) <DA9C2B48-7A9C-32EA-888D-6C7AEB5250E6> /usr/lib/system/libremovefile.dylib
+       0x198616000 -        0x198616f27  libkeymgr.dylib (31) <18EFA1CE-C535-3EAC-BC2C-7955593B7382> /usr/lib/system/libkeymgr.dylib
+       0x198617000 -        0x19861fe37  libsystem_dnssd.dylib (2881.160.4) <2C4C3043-008E-3BD8-BC29-AB9AD235DBA9> /usr/lib/system/libsystem_dnssd.dylib
+       0x198620000 -        0x19862509b  libcache.dylib (95) <EA7C2E0B-52BF-3D45-9A33-38F54A535452> /usr/lib/system/libcache.dylib
+       0x198626000 -        0x198627ce3  libSystem.B.dylib (1356) <4CC4CAD6-45A6-361E-9343-DE636A0B5C02> /usr/lib/libSystem.B.dylib
+       0x28c5cf000 -        0x28c5d6349  libRosetta.dylib (367.9) <F41D814B-FE1F-311A-A778-5F0699628188> /usr/lib/libRosetta.dylib
+       0x28e1e2000 -        0x28e1e5a4b  libsystem_darwindirectory.dylib (122) <6C03D78B-BFAB-3C7A-B713-50881791EE08> /usr/lib/system/libsystem_darwindirectory.dylib
+       0x28e1e6000 -        0x28e1f039b  libsystem_eligibility.dylib (319.160.17) <A279E124-8499-3FFC-A788-655070028F97> /usr/lib/system/libsystem_eligibility.dylib
+       0x28e1f1000 -        0x28e1f888b  libsystem_sanitizers.dylib (26.1) <C92FAEE5-DAED-3340-96B3-0C42B005ADF9> /usr/lib/system/libsystem_sanitizers.dylib
+       0x28e1f9000 -        0x28e1f9bb7  libsystem_trial.dylib (474.2.18.2) <2FF186A6-F448-38CD-9A30-8B5B1AEFCA10> /usr/lib/system/libsystem_trial.dylib

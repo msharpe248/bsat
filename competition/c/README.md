@@ -41,6 +41,9 @@ logging covers search, minimization, probing, equivalence substitution, BVE, BCE
 deletion and vivification;
 UNSAT certificates end with an empty clause. Text and binary DRAT are supported.
 The search algorithm is the same with proof logging enabled or disabled.
+Text proofs use chunked decimal encoding. See [CHUNKED_TEXT_PROOFS.md](CHUNKED_TEXT_PROOFS.md)
+for byte/error tests, measured text-proof CPU savings and the larger-input
+comparison with Kissat.
 
 DIMACS input uses a fixed 64 KiB reader to reduce per-byte stdio overhead.
 Embedded NULs in tokens are rejected and stream failures report file errors.

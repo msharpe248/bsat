@@ -1,0 +1,35 @@
+{
+  "schema": 1,
+  "base_revision": "62af9c4",
+  "purpose": "Diagnostic sampling; not a performance timing comparison",
+  "binary": "/tmp/bsat-sampled-release",
+  "binary_sha256": "ea2b301379ef55651b09157e60f390126304ba8eed4635b27540d77b9f71ef21",
+  "input": "/Users/msharpe/python/bsat/dataset/sat_competition2025/hardware-verification/d672bdbca3b1fb26d585e78add79537e.cnf",
+  "input_sha256": "7b715a14a0044105a7593f2eb8fafe039ac7888ae48993dc8303cd6f546d84e3",
+  "solver_options": [
+    "--time",
+    "12",
+    "--proof",
+    "/tmp/bsat-hardware-profile.drat"
+  ],
+  "compiler_options": [
+    "-std=c11",
+    "-D_POSIX_C_SOURCE=200809L",
+    "-O3",
+    "-march=native",
+    "-flto",
+    "-g"
+  ],
+  "sampler": [
+    "/usr/bin/sample",
+    "{pid}",
+    "5",
+    "10",
+    "-file",
+    "{report}"
+  ],
+  "delay_after_launch_seconds": 1,
+  "sample_count": 453,
+  "proof_clause_inclusive_samples": 220,
+  "raw_report_sha256": "71051a3066a3bb391929c7f690d36ddf3c07352364e2ec2f7a2a1ab30220ac9e"
+}
