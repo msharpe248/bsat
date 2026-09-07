@@ -220,6 +220,11 @@ def main():
                 ['--random-phase', '--equiv', '--elim', '--bce'],
                 ['--random-phase', '--inprocess', '--inprocess-interval', '1',
                  '--local-search', '--ls-interval', '1', '--no-probing']]
+    configs += [['--reuse-trail', '--no-probing', '--glucose-min-conflicts', '1'],
+                ['--reuse-trail', '--vmtf', '--binary-proof', '--no-probing'],
+                ['--reuse-trail', '--luby-restart', '--luby-unit', '1', '--no-probing'],
+                ['--reuse-trail', '--equiv', '--elim', '--bce', '--inprocess', '--inprocess-interval', '1'],
+                ['--reuse-trail', '--random-phase', '--local-search', '--ls-interval', '1']]
     fixed = [
         (5, [[1, 2], [1, -2], [-3, 4], [3, -4], [4, 5]], None),
         (5, [[-4], [-1, 2, 4], [1, -2, 4]] +

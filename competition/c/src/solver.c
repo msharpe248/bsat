@@ -770,6 +770,7 @@ void solver_print_stats(const Solver* s) {
     printf("c Propagations      : %llu\n", (unsigned long long)s->stats.propagations);
     printf("c Conflicts         : %llu\n", (unsigned long long)s->stats.conflicts);
     printf("c Restarts          : %llu\n", (unsigned long long)s->stats.restarts);
+    printf("c Reused levels     : %llu\n", (unsigned long long)s->stats.reused_levels);
     printf("c Learned clauses   : %llu\n", (unsigned long long)s->stats.learned_clauses);
     printf("c Learned literals  : %llu\n", (unsigned long long)s->stats.learned_literals);
     printf("c Deleted clauses   : %llu\n", (unsigned long long)s->stats.deleted_clauses);
@@ -1402,6 +1403,39 @@ static uint32_t luby_sequence(uint32_t index) {
  * Restart Decision
  *********************************************************************/
 
+/* Called only after propagation reaches a consistent fixpoint. Keep a prefix
+   whose decisions outrank the next available variable. This is a heuristic,
+   not a promise to reproduce all implications of a fresh root restart. */
+Level solver_restart_level(Solver *s) {
+    if (!s->opts.reuse_trail || s->opts.alternating || !s->decision_level) return 0;
+    Var next = INVALID_VAR;
+    if (s->opts.vmtf) next = solver_vmtf_pick(s);
+    else {
+        uint32_t scanned = 0;
+        while (s->order.size) {
+            if (!(scanned++ & 127) && solver_budget_exhausted(s)) return 0;
+            next = s->order.heap[0];
+            if (s->values[next] == UNDEF && !(s->elim && s->elim->eliminated[next])) break;
+            heap_extract_max(s);
+            next = INVALID_VAR;
+        }
+    }
+    if (s->error || s->interrupted) return 0;
+    if (next == INVALID_VAR) return s->decision_level;
+    Level retained = 0;
+    while (retained < s->decision_level) {
+        if (!(retained & 127) && solver_budget_exhausted(s)) return 0;
+        uint32_t pos = s->trail_lims[retained + 1];
+        ASSERT(pos < s->trail_size);
+        Var v = var(s->trail[pos].lit);
+        if (s->opts.vmtf) {
+            if (s->vmtf.nodes[v].stamp <= s->vmtf.nodes[next].stamp) break;
+        } else if (s->vars[v].activity <= s->vars[next].activity) break;
+        ++retained;
+    }
+    return retained;
+}
+
 bool solver_should_restart(Solver* s) {
     if (s->opts.restart_first == UINT32_MAX) return false;
     if (s->opts.alternating && s->stats.conflicts >= s->mode_limit) {
@@ -1925,7 +1959,11 @@ static lbool solve_internal(Solver *s, const Lit *assumps, uint32_t n_assumps) {
             decay_var_inc(s);
             if (s->stats.conflicts % s->opts.reduce_interval==0) solver_reduce_db(s);
         } else {
-            if (solver_should_restart(s)) { solver_backtrack(s,0);s->stats.restarts++; }
+            if (solver_should_restart(s)) {
+                Level level = n_assumps ? 0 : solver_restart_level(s);
+                solver_backtrack(s,level);
+                s->stats.restarts++;s->stats.reused_levels += level;
+            }
             if (!s->decision_level) {
                 if (!solver_simplify(s)) { result=FALSE;break; }
                 if (s->qhead<s->trail_size) continue;

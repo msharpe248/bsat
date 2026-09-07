@@ -111,38 +111,39 @@ This document provides a comprehensive overview of all CDCL optimizations implem
 ### 8. **Glucose Adaptive Restarts (EMA)** - DEFAULT: ON
 - **Purpose**: Restart when learning quality degrades
 - **Strategy**: Compare fast vs slow exponential moving averages of LBD
-- **Restart when**: `fast_MA > slow_MA`
-- **Reference**: Audemard & Simon (2009)
+- **Restart when**: `fast_MA * K > slow_MA`, after the minimum conflicts since the last restart
+- **Implementation**: See [the restart guide](docs/RESTARTS_AND_CLAUSE_MANAGEMENT.md) for the C formulas and interval gates
 
 **Configuration:**
 ```bash
 --glucose-restart        # Enable Glucose restarts (default)
---glucose-restart-ema    # Glucose with EMA (conservative)
+--glucose-restart-ema    # LBD exponential moving averages
 --glucose-fast-alpha <f> # Fast MA decay (default: 0.8)
 --glucose-slow-alpha <f> # Slow MA decay (default: 0.9999)
---glucose-min-conflicts <n>  # Min conflicts before Glucose (default: 100)
+--glucose-min-conflicts <n>  # Min conflicts since last restart (default: 100)
+--glucose-k <f>          # Shared EMA/AVG threshold multiplier (default: 0.8)
 ```
 
 ### 9. **Glucose Adaptive Restarts (AVG)** - DEFAULT: OFF
-- **Purpose**: More aggressive restart strategy
+- **Purpose**: Compare recent-window and cumulative learned-clause quality
 - **Strategy**: Sliding window averaging
-- **Restart when**: Short-term average > threshold * long-term average
+- **Restart when**: Short-term average * K > cumulative average, after both interval and window gates
 
 **Configuration:**
 ```bash
---glucose-restart-avg    # Enable aggressive mode
+--glucose-restart-avg    # Enable sliding-window mode
 --glucose-window-size <n> # Window size (default: 50)
 --glucose-k <f>          # Threshold multiplier (default: 0.8)
 ```
 
-### 10. **Luby Sequence Restarts** - DEFAULT: ON (fallback)
-- **Purpose**: Provably good restart sequence
+### 10. **Luby Sequence Restarts** - DEFAULT: OFF
+- **Purpose**: Alternate short and long conflict intervals
 - **Sequence**: 1, 1, 2, 1, 1, 2, 4, 1, 1, 2, 1, 1, 2, 4, 8, ...
 
 **Configuration:**
 ```bash
---restart-first <n>      # First restart interval (default: 100)
---restart-inc <f>        # Restart multiplier (default: 1.5)
+--luby-restart           # Select the Luby policy
+--luby-unit <n>          # Base conflict interval (default: 100)
 --no-restarts            # Disable all restarts
 ```
 

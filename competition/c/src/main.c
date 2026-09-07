@@ -38,6 +38,7 @@ static void print_usage(const char* program) {
     printf("  --var-inc <f>             Variable activity increment (default: 1.0)\n");
     printf("\n");
     printf("Restart parameters:\n");
+    printf("  --reuse-trail            Reuse high-priority restart prefixes (experimental)\n");
     printf("  --restart-first <n>       First restart interval (default: 100)\n");
     printf("  --restart-inc <f>         Restart multiplier (default: 1.5)\n");
     printf("  --glucose-restart         Use Glucose adaptive restarts (EMA mode)\n");
@@ -147,6 +148,7 @@ static struct option long_options[] = {
     {"glucose-min-conflicts", required_argument, 0, 0},
     {"glucose-window-size", required_argument, 0, 0},
     {"glucose-k",       required_argument, 0, 0},
+    {"reuse-trail", no_argument, 0, 0},
     {"vmtf", no_argument, 0, 0},
     {"lrb",             no_argument,       0, 0},
     {"vsids",           no_argument,       0, 0},
@@ -308,6 +310,8 @@ int main(int argc, char** argv) {
                     opts.glucose_window_size = (uint32_t)atol(optarg);
                 } else if (strcmp(long_options[option_index].name, "glucose-k") == 0) {
                     opts.glucose_k = atof(optarg);
+                } else if (strcmp(long_options[option_index].name, "reuse-trail") == 0) {
+                    opts.reuse_trail = true;
                 } else if (strcmp(long_options[option_index].name, "vmtf") == 0) {
                     opts.vmtf = true;
                 } else if (strcmp(long_options[option_index].name, "lrb") == 0) {

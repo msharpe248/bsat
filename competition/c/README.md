@@ -118,6 +118,13 @@ experimental. See [ORDERED_VMTF.md](ORDERED_VMTF.md) for the latest measurements
 [VMTF.md](VMTF.md) for the initial implementation, validation, and
 comparison with the existing phase policy and Kissat.
 
+Experimental `--vmtf --reuse-trail` retains high-priority decision prefixes at
+restarts. It repeatedly improved one multiplier-circuit input by about 8.8×,
+but regressed on Hamiltonian inputs; the 44-input screen preserved 7/44 solves.
+It is disabled by default, and using reuse with heap ordering regressed in the
+targeted screen. See [RESTART_REUSE_EXPERIMENT.md](RESTART_REUSE_EXPERIMENT.md)
+for the implementation, verification and complete comparisons.
+
 VMTF skips inactive numeric score updates during conflicts. Fixed-work timing
 shows a modest throughput improvement with matching search counters; see
 [VMTF_SCORES.md](VMTF_SCORES.md) for measurements and timing controls.

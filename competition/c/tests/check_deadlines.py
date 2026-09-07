@@ -32,7 +32,9 @@ def main():
         hard.write_text(f'p cnf {holes*(holes+1)} {len(clauses)}\n' +
                         ''.join(' '.join(map(str, c))+' 0\n' for c in clauses))
         empty = root/'empty.cnf';empty.write_text('p cnf 100000 0\n')
-        modes = [(hard, []), (hard, ['--iterative-minimize']),
+        modes = [(hard, ['--reuse-trail']),
+                 (hard, ['--reuse-trail', '--vmtf']),
+                 (hard, []), (hard, ['--iterative-minimize']),
                  (hard, ['--equiv', '--elim', '--bce', '--dynamic-lbd', '--binary-proof']),
                  (empty, ['--no-probing']),
                  (hard, ['--binary-minimize', '--vmtf']),

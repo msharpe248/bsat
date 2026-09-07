@@ -35,7 +35,11 @@ stable mode uses Luby intervals scaled by ten. An explicitly selected Luby
 policy also applies in focused mode. See the current implementation before
 combining experimental policies.
 
-Restart requests backtrack to decision level zero. There is currently no trail
+Restart requests backtrack to decision level zero by default. Experimental
+`--reuse-trail` can retain a priority-selected decision prefix with heap or
+VMTF ordering; assumption solves and alternating mode retain root restarts.
+See [the reuse experiment](../RESTART_REUSE_EXPERIMENT.md) for its mixed results.
+There is currently no trail
 length postponement in the search loop: the legacy `restart_postpone` options
 field is not consulted. Earlier versions of this guide described postponement
 and different threshold formulas that do not match the implementation.

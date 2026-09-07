@@ -40,6 +40,7 @@ typedef struct SolverOpts {
     uint32_t restart_first;      // First restart interval (100)
     double   restart_inc;        // Restart interval increment (1.5)
     bool     glucose_restart;    // Use Glucose-style adaptive restarts
+    bool     reuse_trail;       // Experimental priority-based restart prefix reuse
     bool     luby_restart;       // Use Luby restart sequence (vs geometric/glucose)
     uint32_t luby_unit;          // Luby unit size (conflicts per Luby unit, default 512)
     uint32_t restart_postpone;   // Min trail growth to postpone restart (10%)
@@ -216,6 +217,7 @@ typedef struct Solver {
         uint64_t propagations;
         uint64_t conflicts;
         uint64_t restarts;
+        uint64_t reused_levels;
         uint64_t reduces;
         uint64_t learned_clauses;
         uint64_t learned_literals;
@@ -380,6 +382,7 @@ void solver_reduce_db(Solver* s);
 
 // Check if should restart
 bool solver_should_restart(Solver* s);
+Level solver_restart_level(Solver* s);
 
 // Simplify clause database
 bool solver_simplify(Solver* s);
