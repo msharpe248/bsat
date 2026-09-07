@@ -1,0 +1,20 @@
+{
+  "schema": 1,
+  "base_revision": "2392333",
+  "candidate_elim_sha256": "9e754337f68679842edecc3c35d4c55e483b7fd2b99a2a6a704524d5993eeabd",
+  "test_sha256": "9c5f43fd8f69366d8532ce142be65db147edcb9d868e6b126904c37021a0d9cc",
+  "mutants": {
+    "trust-equal-size-hash": {
+      "returncode": -6,
+      "stderr": "Assertion failed: (elim_cost(s,1)==(fits?(int)minimal:-1)), function main, file test_unique_resolvents.c, line 91.\n"
+    },
+    "early-growth-rejection": {
+      "returncode": -6,
+      "stderr": "Assertion failed: (elim_cost(s,1)==(fits?(int)minimal:-1)), function main, file test_unique_resolvents.c, line 91.\n"
+    },
+    "leave-subsumption-marks": {
+      "returncode": -6,
+      "stderr": "Assertion failed: (!s->seen[v]), function main, file test_unique_resolvents.c, line 92.\n"
+    }
+  }
+}

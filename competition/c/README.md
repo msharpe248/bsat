@@ -402,3 +402,9 @@ variables on two larger inputs but added no solves and regressed on belpyramid,
 even with a larger budget. Numeric-order elimination remains in place. New
 statistics report eliminated variables, resolvents and removed clauses; retained
 tests check 512 complete BVE formulas and 1,539 cutoff/resume cases.
+
+[Staged-resolvent redundancy experiments](MINIMAL_RESOLVENTS.md) tested exact
+deduplication and removal of implied supersets. Neither added solves; the stronger
+variant's large-budget gain came with an ordinary-budget regression, so both were
+rejected. Retained tests cover 2,048 signed-parent projections and all 84 staging
+cutoffs without requiring either experimental policy.

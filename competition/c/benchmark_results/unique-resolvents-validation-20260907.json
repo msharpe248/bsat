@@ -1,0 +1,77 @@
+{
+  "schema": 1,
+  "base_revision": "2392333",
+  "candidate_elim_sha256": "a02234a2d6567c019e3663971b4b21a951951dfa0e363635142a6effc0223646",
+  "test_sha256": "7a5211ee099c1469ab25014347c5e57f27980d405e8d97da5429258c36dbdb25",
+  "baseline": {
+    "path": "/tmp/bsat-unique-resolvents-baseline",
+    "sha256": "1c450ae61795f41e06117efec80b28bc463dcbd3bf5b67e4c168dc7f312d42ec"
+  },
+  "builds": {
+    "release": {
+      "binary": "/Users/msharpe/python/bsat/competition/c/bin/bsat",
+      "sha256": "2584f64f29f73721db2cf46db5238a7ff75ac89e36b448771410d64c10cc94e9",
+      "unit_test_executables": 43,
+      "signed_set_cases": 2048,
+      "accepted_cases": 1919,
+      "rejected_cases": 129,
+      "unlocked_cases": 257,
+      "staging_cutoffs": 82,
+      "validation_command": [
+        "python3",
+        "competition/c/tests/validate.py",
+        "--solver",
+        "competition/c/bin/bsat",
+        "--checker",
+        "/tmp/bsat-drat-trim",
+        "--cases",
+        "30",
+        "--seed",
+        "20261207"
+      ],
+      "validation": "PASS: 3139 solves; truth-table answers, original models, text/binary RUP proofs checked (seed 20261207)",
+      "deadline_command": [
+        "python3",
+        "competition/c/tests/check_deadlines.py",
+        "--solver",
+        "competition/c/bin/bsat"
+      ],
+      "deadlines": "PASS: 42 short-deadline runs; maximum observed CPU overrun 0.000s",
+      "preserved_binary": "/tmp/bsat-unique-resolvents-exact"
+    },
+    "debug": {
+      "binary": "/Users/msharpe/python/bsat/competition/c/bin/bsat_debug",
+      "sha256": "71facb0f433cdbd203fa88c4254f5d37fcd062f26cdfe32fc2ff6e96c11ba62b",
+      "unit_test_executables": 43,
+      "signed_set_cases": 2048,
+      "accepted_cases": 1919,
+      "rejected_cases": 129,
+      "unlocked_cases": 257,
+      "staging_cutoffs": 82,
+      "validation_command": [
+        "python3",
+        "competition/c/tests/validate.py",
+        "--solver",
+        "competition/c/bin/bsat_debug",
+        "--checker",
+        "/tmp/bsat-drat-trim",
+        "--cases",
+        "30",
+        "--seed",
+        "20261207"
+      ],
+      "validation": "PASS: 3139 solves; truth-table answers, original models, text/binary RUP proofs checked (seed 20261207)",
+      "deadline_command": [
+        "python3",
+        "competition/c/tests/check_deadlines.py",
+        "--solver",
+        "competition/c/bin/bsat_debug"
+      ],
+      "deadlines": "PASS: 42 short-deadline runs; maximum observed CPU overrun 0.000s",
+      "preserved_binary": "/tmp/bsat-unique-resolvents-exact-debug"
+    }
+  },
+  "preserved_source": "/tmp/bsat-unique-resolvents-exact.c",
+  "preserved_test": "/tmp/bsat-unique-resolvents-exact-test.c",
+  "patch_sha256": "fabc5df0f2d7d9e976f3788b13d62e576c7dad38858fa7f2ee3f39cacba481e0"
+}

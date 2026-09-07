@@ -1,0 +1,20 @@
+{
+  "schema": 1,
+  "base_revision": "2392333",
+  "candidate_elim_sha256": "a02234a2d6567c019e3663971b4b21a951951dfa0e363635142a6effc0223646",
+  "test_sha256": "7a5211ee099c1469ab25014347c5e57f27980d405e8d97da5429258c36dbdb25",
+  "mutants": {
+    "trust-hash-collision": {
+      "returncode": -6,
+      "stderr": "Assertion failed: (elim_cost(s,1)==(fits?(int)count:-1)), function main, file test_unique_resolvents.c, line 81.\n"
+    },
+    "retain-duplicates": {
+      "returncode": -6,
+      "stderr": "Assertion failed: (elim_cost(s,1)==(fits?(int)count:-1)), function main, file test_unique_resolvents.c, line 81.\n"
+    },
+    "leave-dedup-marks": {
+      "returncode": -6,
+      "stderr": "Assertion failed: (elim_cost(s,1)==(fits?(int)count:-1)), function main, file test_unique_resolvents.c, line 81.\n"
+    }
+  }
+}
