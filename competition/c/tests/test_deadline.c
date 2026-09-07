@@ -51,7 +51,9 @@ static void empty_watch_search(bool rephase) {
     for (unsigned i = 0; i < 100000; ++i) assert(solver_new_var(s));
     // No watch inspections advance work. Poll-count scheduling must still stop.
     assert(solver_solve(s) == UNDEF && s->interrupted);
-    assert(s->stats.decisions > 0 && s->stats.decisions < s->num_vars);
+    // Startup may consume the limit before the first decision (e.g. under ASan).
+    // Early interruption is valid; completing every decision would miss polling.
+    assert(s->stats.decisions < s->num_vars);
     assert(s->work == 0 && s->stats.clock_checks > 1);
     double elapsed = (double)clock()/CLOCKS_PER_SEC - s->stats.start_time;
     assert(elapsed < 1); // Broad guard against lost deadline polling.
