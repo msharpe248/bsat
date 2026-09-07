@@ -26,7 +26,7 @@ int main(int argc, char **argv) {
     for (unsigned i = 0; i < repeats; ++i) {
         s->decision_level = 1;s->trail_lims[1] = 0;
         s->values[1] = TRUE;s->vars[1].level = 1;s->vars[1].trail_pos = 0;
-        s->trail[0] = (Trail){mkLit(1, false), 1};s->trail_size = 1;
+        s->trail[0] = (Trail){mkLit(1, false)};s->trail_size = 1;
         if (solver_propagate(s) != INVALID_CLAUSE || s->error ||
             s->trail_size != variables || s->values[variables] != TRUE) return 1;
         solver_backtrack(s, 0);

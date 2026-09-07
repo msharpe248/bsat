@@ -1,0 +1,46 @@
+{
+  "heap": {
+    "matched_pairs": 3,
+    "counter_differences": 0,
+    "input_medians": [
+      {
+        "input": "/Users/msharpe/python/bsat/dataset/sat_competition2025/battleship/ed6d842f96d10f3400bce251f9e95bfb.cnf",
+        "median_cpu_seconds": {
+          "baseline": 2.431453,
+          "compact": 2.42869
+        },
+        "ratio": 0.9988636424393151
+      }
+    ]
+  },
+  "vmtf": {
+    "matched_pairs": 9,
+    "counter_differences": 0,
+    "input_medians": [
+      {
+        "input": "/Users/msharpe/python/bsat/dataset/sat_competition2025/belpyramid-puzzle/5831f35622f3e6c666f0cee6cac60e4c.cnf",
+        "median_cpu_seconds": {
+          "baseline": 2.898282,
+          "compact": 2.87201
+        },
+        "ratio": 0.9909353196134814
+      },
+      {
+        "input": "/Users/msharpe/python/bsat/dataset/sat_competition2025/hamiltonian/a497d784c61c330f012dcd80d44dcd43.cnf",
+        "median_cpu_seconds": {
+          "baseline": 0.580853,
+          "compact": 0.585778
+        },
+        "ratio": 1.0084789094659063
+      },
+      {
+        "input": "/Users/msharpe/python/bsat/dataset/sat_competition2025/multiplier-circuits/90bec6dcf2399d7c7f73acba44a8641e.cnf",
+        "median_cpu_seconds": {
+          "baseline": 0.816396,
+          "compact": 0.8130269999999999
+        },
+        "ratio": 0.995873326179942
+      }
+    ]
+  }
+}

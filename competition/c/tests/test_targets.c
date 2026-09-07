@@ -10,7 +10,7 @@ static void decision(Solver *s, Lit lit) {
     s->vars[v].level = s->decision_level;
     s->vars[v].reason = INVALID_CLAUSE;
     s->vars[v].trail_pos = s->trail_size;
-    s->trail[s->trail_size++] = (Trail){lit, s->decision_level};
+    s->trail[s->trail_size++] = (Trail){lit};
 }
 
 static void compare_reference(Solver *s, lbool *reference, uint32_t *best) {

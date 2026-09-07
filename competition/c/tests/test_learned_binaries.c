@@ -9,7 +9,7 @@ static void assign(Solver *s, Lit lit) {
     s->values[v] = sign(lit) ? FALSE : TRUE;
     s->vars[v].level = s->decision_level;
     s->vars[v].trail_pos = s->trail_size;
-    s->trail[s->trail_size++] = (Trail){lit, s->decision_level};
+    s->trail[s->trail_size++] = (Trail){lit};
 }
 
 static unsigned copies(Solver *s, Lit a, Lit b) {

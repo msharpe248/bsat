@@ -645,7 +645,6 @@ static inline void push_trail(Solver* s, Lit lit) {
     s->vars[v].trail_pos = s->trail_size;
 
     s->trail[s->trail_size].lit = lit;
-    s->trail[s->trail_size].level = s->decision_level;
     s->trail_size++;
 
     // Save phase
@@ -888,7 +887,6 @@ CRef solver_propagate(Solver* s) {
                     s->binary_reasons[v] = binary_reason == INVALID_CLAUSE ? neg(p) : LIT_UNDEF;
 
                     s->trail[s->trail_size].lit = q;
-                    s->trail[s->trail_size].level = s->decision_level;
                     s->trail_size++;
 
 #ifdef DEBUG
@@ -1014,7 +1012,6 @@ CRef solver_propagate(Solver* s) {
                 s->vars[fv].trail_pos = s->trail_size;
 
                 s->trail[s->trail_size].lit = first;
-                s->trail[s->trail_size].level = s->decision_level;
                 s->trail_size++;
 
                 if (s->opts.phase_saving) {

@@ -83,6 +83,11 @@ and heap storage for longer ones. Caller arrays and original-input snapshots
 remain unchanged. See [CLAUSE_NORMALIZATION.md](CLAUSE_NORMALIZATION.md) for tests
 and the incremental loading-speed measurement.
 
+Assignment-trail entries contain only a literal (four bytes per slot). Decision
+levels remain authoritative in variable metadata, avoiding a redundant level
+copy in the trail. See [COMPACT_TRAIL.md](COMPACT_TRAIL.md) for validation,
+storage savings and performance measurements.
+
 Truth assignments use a dense byte array, separate from variable metadata, to
 reduce cache traffic during propagation. Search order is preserved. See
 [VALUES.md](VALUES.md) for before/after measurements and validation.

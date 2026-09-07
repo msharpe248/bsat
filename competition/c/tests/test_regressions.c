@@ -93,6 +93,7 @@ static void backtrack(void) {
     solver_backtrack(s,0);assert(s->trail_size==0 && s->values[first]==UNDEF);solver_free(s);
 }
 static void assignment_growth(void) {
+    _Static_assert(sizeof(Trail)==sizeof(Lit), "trail entries must occupy one literal");
     Solver *s=solver_new();assert(s);
     assert(solver_model_value(s,0)==UNDEF);
     for(unsigned v=1;v<=4;++v) assert(solver_new_var(s)==v);
@@ -108,6 +109,7 @@ static void assignment_growth(void) {
         assert(solver_new_var(s)==v && solver_model_value(s,v)==UNDEF);
         assert(solver_model_value(s,1)==TRUE && solver_model_value(s,2)==FALSE);
         assert(solver_model_value(s,decision)==saved);
+        assert(s->vars[decision].level==1 && s->vars[2].level==0);
     }
     assert(s->var_capacity>4*old_capacity);
     solver_backtrack(s,0);
@@ -132,12 +134,12 @@ static void circular_scan_order(void) {
         for (Var v = 3; v <= 6; ++v) if (!(mask & (1u << (v-3)))) {
             s->values[v] = FALSE;
             s->vars[v].level = 0;
-            s->trail[s->trail_size++] = (Trail){mkLit(v, true), 0};
+            s->trail[s->trail_size++] = (Trail){mkLit(v, true)};
         }
         s->qhead = s->trail_size;
         s->values[1] = FALSE;
         s->vars[1].level = 0;
-        s->trail[s->trail_size++] = (Trail){mkLit(1, true), 0};
+        s->trail[s->trail_size++] = (Trail){mkLit(1, true)};
         unsigned begin = circular && cursor >= 2 && cursor < 6 ? cursor : 2;
         unsigned inspections = 0, expected = 0;
         for (unsigned offset = 0; offset < 4; ++offset) {
@@ -186,7 +188,7 @@ static void dynamic_clause_quality(void) {
             s->vars[v].level = s->decision_level;
             s->vars[v].reason = INVALID_CLAUSE;
             s->vars[v].trail_pos = s->trail_size;
-            s->trail[s->trail_size++] = (Trail){mkLit(v, false), s->decision_level};
+            s->trail[s->trail_size++] = (Trail){mkLit(v, false)};
             conflict = solver_propagate(s);
             if (v == 1) assert(conflict == INVALID_CLAUSE && s->values[3] == FALSE);
         }
@@ -238,7 +240,7 @@ static void used_clause_lifecycle(void) {
     CLAUSE_HEADER(s->arena, cr)->flags |= CLAUSE_FROZEN;
     s->values[1] = TRUE;s->vars[1].reason = cr;s->vars[1].level = 1;
     s->vars[1].trail_pos = 0;s->trail_lims[1] = 0;s->decision_level = 1;
-    s->trail[s->trail_size++] = (Trail){mkLit(1, false), 1};
+    s->trail[s->trail_size++] = (Trail){mkLit(1, false)};
     solver_reduce_db(s);assert(s->num_learnts == 1);
     assert(!(CLAUSE_HEADER(s->arena, s->learnts[0])->flags & CLAUSE_FROZEN));
     solver_backtrack(s, 0);solver_reduce_db(s);assert(!s->num_learnts);
@@ -295,7 +297,7 @@ static void reduction_and_gc(void) {
         watch_add(s->watches,lits[0],cr,lits[1]);watch_add(s->watches,lits[1],cr,lits[0]);
     }
     s->values[1]=TRUE;s->vars[1].level=0;s->vars[1].reason=s->learnts[0];
-    s->trail[0]=(Trail){lits[0],0};s->trail_size=1;
+    s->trail[0]=(Trail){lits[0]};s->trail_size=1;
     solver_reduce_db(s);
     assert(s->stats.deleted_clauses==38 && s->num_learnts==2 && s->garbage_collections==1);
     assert(s->arena->wasted==0);

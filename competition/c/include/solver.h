@@ -147,9 +147,9 @@ typedef struct VarInfo {
  * Trail Entry
  *********************************************************************/
 
+/* Assignment levels live in vars[var(lit)].level; trail_lims bounds levels. */
 typedef struct Trail {
     Lit      lit;           // Assigned literal
-    Level    level;         // Decision level
 } Trail;
 
 /*********************************************************************

@@ -24,7 +24,7 @@ static void decision(Solver *s, Lit l) {
     s->vars[v].reason=INVALID_CLAUSE;
     s->binary_reasons[v]=LIT_UNDEF;
     s->vars[v].trail_pos=s->trail_size;
-    s->trail[s->trail_size++]=(Trail){l,s->decision_level};
+    s->trail[s->trail_size++]=(Trail){l};
     assert(solver_propagate(s)==INVALID_CLAUSE);
 }
 static void edge(Solver *s, Var from, Var to) {

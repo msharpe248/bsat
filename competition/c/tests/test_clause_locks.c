@@ -18,7 +18,7 @@ static void protect_reason(unsigned n, unsigned implied) {
     s->decision_level = 1;s->trail_lims[1] = 0;
     for (Var v = 1; v <= n; ++v) if (v != implied) {
         s->values[v] = FALSE;s->vars[v].level = 1;s->vars[v].trail_pos = s->trail_size;
-        s->trail[s->trail_size++] = (Trail){mkLit(v,true),1};
+        s->trail[s->trail_size++] = (Trail){mkLit(v,true)};
     }
     assert(solver_propagate(s) == INVALID_CLAUSE);
     assert(s->values[implied] == TRUE && s->vars[implied].reason == cr);

@@ -400,7 +400,6 @@ void local_search_copy_solution(Solver* s, LocalSearchState* ls) {
     for (Var v = 1; v <= ls->num_vars; v++) {
         Lit lit = mkLit(v, !ls->assignment[v]);
         s->trail[s->trail_size].lit = lit;
-        s->trail[s->trail_size].level = 0;
         s->trail_size++;
     }
     s->decision_level = 0;

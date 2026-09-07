@@ -1,0 +1,163 @@
+{
+  "baseline_revision": "9c887c7",
+  "platform": "macOS-26.6.1-arm64-arm-64bit-Mach-O",
+  "machine": "arm64",
+  "seed": 20261003,
+  "binaries": {
+    "baseline": {
+      "path": "/tmp/bsat-compact-trail-micro-baseline",
+      "sha256": "22280ea21f0f3b65d44a383fbdf946ad641e8166c2e1d67ef52d6132da299845"
+    },
+    "compact": {
+      "path": "/Users/msharpe/python/bsat/competition/c/bin/binary_watches_benchmark_release",
+      "sha256": "10f8363f0a02d762516987910a3d32e6a64de79e5cc77c5e24714dcd13a04bae"
+    }
+  },
+  "runs": [
+    {
+      "profile": "compact",
+      "repeat": 2,
+      "command": [
+        "/Users/msharpe/python/bsat/competition/c/bin/binary_watches_benchmark_release",
+        "tagged"
+      ],
+      "mode": "tagged",
+      "variables": 50000,
+      "repeats": 1000,
+      "cpu_seconds": 0.403638,
+      "propagations": 50000000,
+      "work": 49999000
+    },
+    {
+      "profile": "compact",
+      "repeat": 1,
+      "command": [
+        "/Users/msharpe/python/bsat/competition/c/bin/binary_watches_benchmark_release",
+        "tagged"
+      ],
+      "mode": "tagged",
+      "variables": 50000,
+      "repeats": 1000,
+      "cpu_seconds": 0.427439,
+      "propagations": 50000000,
+      "work": 49999000
+    },
+    {
+      "profile": "baseline",
+      "repeat": 4,
+      "command": [
+        "/tmp/bsat-compact-trail-micro-baseline",
+        "tagged"
+      ],
+      "mode": "tagged",
+      "variables": 50000,
+      "repeats": 1000,
+      "cpu_seconds": 0.456077,
+      "propagations": 50000000,
+      "work": 49999000
+    },
+    {
+      "profile": "compact",
+      "repeat": 3,
+      "command": [
+        "/Users/msharpe/python/bsat/competition/c/bin/binary_watches_benchmark_release",
+        "tagged"
+      ],
+      "mode": "tagged",
+      "variables": 50000,
+      "repeats": 1000,
+      "cpu_seconds": 0.429877,
+      "propagations": 50000000,
+      "work": 49999000
+    },
+    {
+      "profile": "baseline",
+      "repeat": 2,
+      "command": [
+        "/tmp/bsat-compact-trail-micro-baseline",
+        "tagged"
+      ],
+      "mode": "tagged",
+      "variables": 50000,
+      "repeats": 1000,
+      "cpu_seconds": 0.416273,
+      "propagations": 50000000,
+      "work": 49999000
+    },
+    {
+      "profile": "baseline",
+      "repeat": 3,
+      "command": [
+        "/tmp/bsat-compact-trail-micro-baseline",
+        "tagged"
+      ],
+      "mode": "tagged",
+      "variables": 50000,
+      "repeats": 1000,
+      "cpu_seconds": 0.465786,
+      "propagations": 50000000,
+      "work": 49999000
+    },
+    {
+      "profile": "baseline",
+      "repeat": 1,
+      "command": [
+        "/tmp/bsat-compact-trail-micro-baseline",
+        "tagged"
+      ],
+      "mode": "tagged",
+      "variables": 50000,
+      "repeats": 1000,
+      "cpu_seconds": 0.46134,
+      "propagations": 50000000,
+      "work": 49999000
+    },
+    {
+      "profile": "compact",
+      "repeat": 0,
+      "command": [
+        "/Users/msharpe/python/bsat/competition/c/bin/binary_watches_benchmark_release",
+        "tagged"
+      ],
+      "mode": "tagged",
+      "variables": 50000,
+      "repeats": 1000,
+      "cpu_seconds": 0.427682,
+      "propagations": 50000000,
+      "work": 49999000
+    },
+    {
+      "profile": "compact",
+      "repeat": 4,
+      "command": [
+        "/Users/msharpe/python/bsat/competition/c/bin/binary_watches_benchmark_release",
+        "tagged"
+      ],
+      "mode": "tagged",
+      "variables": 50000,
+      "repeats": 1000,
+      "cpu_seconds": 0.427208,
+      "propagations": 50000000,
+      "work": 49999000
+    },
+    {
+      "profile": "baseline",
+      "repeat": 0,
+      "command": [
+        "/tmp/bsat-compact-trail-micro-baseline",
+        "tagged"
+      ],
+      "mode": "tagged",
+      "variables": 50000,
+      "repeats": 1000,
+      "cpu_seconds": 0.465908,
+      "propagations": 50000000,
+      "work": 49999000
+    }
+  ],
+  "median_cpu_seconds": {
+    "baseline": 0.46134,
+    "compact": 0.427439
+  },
+  "compact_over_baseline": 0.9265162353145187
+}
