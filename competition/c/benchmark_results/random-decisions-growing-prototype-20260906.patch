@@ -1,0 +1,193 @@
+--- a/competition/c/include/solver.h
++++ b/competition/c/include/solver.h
+@@ -31,0 +32 @@
++    uint32_t random_decision_interval; // Focused random bursts (0 disables)
+@@ -214,0 +216 @@
++        uint64_t random_decisions, random_sequences;
+@@ -290,0 +293 @@
++    uint64_t random_until, next_random;
+--- a/competition/c/src/solver.c
++++ b/competition/c/src/solver.c
+@@ -146,0 +147 @@
++        .random_decision_interval = 0,
+@@ -769,0 +771,2 @@
++    printf("c Random decisions  : %llu\n", (unsigned long long)s->stats.random_decisions);
++    printf("c Random sequences  : %llu\n", (unsigned long long)s->stats.random_sequences);
+@@ -1221,0 +1225,28 @@
++static Var random_decision(Solver *s) {
++    if (!s->num_vars || s->stable_mode) return INVALID_VAR;
++    uint64_t conflicts = s->stats.conflicts;
++    uint64_t interval = s->opts.random_decision_interval;
++    if (!s->next_random) s->next_random = interval;
++    if (!s->decision_level && conflicts >= s->random_until && conflicts >= s->next_random &&
++        s->stats.random_sequences < UINT64_MAX) {
++        double scale = log10((double)s->stats.random_sequences + 10.0);
++        uint64_t length = (uint64_t)(10.0*scale);
++        uint64_t gap = (uint64_t)(interval*scale);
++        if (conflicts <= UINT64_MAX-MAX(gap, length)) {
++            s->random_until = conflicts+length;
++            s->next_random = conflicts+gap;
++            ++s->stats.random_sequences;
++        }
++    }
++    if (conflicts >= s->random_until) return INVALID_VAR;
++    /* Rejection sampling is bounded: sparse remaining assignments must not
++       turn diversification into an unbounded scan. Fall back to the heuristic. */
++    for (unsigned attempt = 0; attempt < 32; ++attempt) {
++        Var v = 1 + bsat_random(&s->random_state) % s->num_vars;
++        if (s->values[v] != UNDEF || (s->elim && s->elim->eliminated[v])) continue;
++        ++s->stats.random_decisions;
++        return v;
++    }
++    return INVALID_VAR;
++}
++
+@@ -1223 +1254,2 @@
+-    Var next = INVALID_VAR;
++    Var next = s->opts.random_decision_interval ? random_decision(s) : INVALID_VAR;
++    if (next != INVALID_VAR && !s->opts.vmtf) heap_remove(s, next);
+@@ -1226,2 +1258,2 @@
+-    if (s->opts.vmtf) next = solver_vmtf_pick(s);
+-    else while (s->order.size > 0) {
++    if (next == INVALID_VAR && s->opts.vmtf) next = solver_vmtf_pick(s);
++    else if (next == INVALID_VAR) while (s->order.size > 0) {
+--- a/competition/c/src/main.c
++++ b/competition/c/src/main.c
+@@ -58,0 +59 @@
++    printf("  --random-decision-interval <n>  Focused random bursts (0 disables)\n");
+@@ -147,0 +149 @@
++    {"random-decision-interval", required_argument, 0, 0},
+@@ -308,0 +311,2 @@
++                } else if (strcmp(long_options[option_index].name, "random-decision-interval") == 0) {
++                    opts.random_decision_interval = (uint32_t)atol(optarg);
+--- /dev/null
++++ b/competition/c/tests/test_random_decisions.c
+@@ -0,0 +1,128 @@
++#include "../include/solver.h"
++#include "../include/elim.h"
++#include <assert.h>
++#include <stdio.h>
++
++static Solver *create(bool queue, unsigned n) {
++    SolverOpts o = default_opts();o.vmtf = queue;o.random_phase = false;
++    o.random_decision_interval = 500;
++    Solver *s = solver_new_with_opts(&o);assert(s);
++    for (Var v = 1; v <= n; ++v) assert(solver_new_var(s) == v);
++    s->random_state = 123;
++    return s;
++}
++
++static void scheduling(bool queue) {
++    Solver *a = create(queue, 32), *b = create(queue, 32);
++    a->stats.conflicts = 499;
++    assert(solver_decide(a) && !a->stats.random_decisions && a->random_state == 123);
++    solver_backtrack(a, 0);
++    a->stats.conflicts = b->stats.conflicts = 500;
++    uint32_t choices = 0;
++    for (unsigned i = 0; i < 40; ++i) {
++        assert(solver_decide(a) && solver_decide(b));
++        assert(a->trail[0].lit == b->trail[0].lit && a->random_state == b->random_state);
++        choices |= 1u << (var(a->trail[0].lit)-1);
++        solver_backtrack(a, 0);solver_backtrack(b, 0);
++    }
++    assert((choices & (choices-1)) && a->stats.random_decisions == 40);
++    assert(a->stats.random_sequences == 1 && a->random_until == 510 && a->next_random == 1000);
++    a->stats.conflicts = 510;uint32_t state = a->random_state;
++    assert(solver_decide(a) && a->random_state == state);
++    a->stats.conflicts = 1000;
++    assert(solver_decide(a) && a->stats.random_sequences == 1);
++    solver_backtrack(a, 0);
++    assert(solver_decide(a) && a->stats.random_sequences == 2);
++    solver_backtrack(a, 0);a->stable_mode = true;a->stats.conflicts = 1500;
++    state = a->random_state;
++    assert(solver_decide(a) && a->random_state == state && a->stats.random_sequences == 2);
++    solver_backtrack(a, 0);a->stable_mode = false;a->stats.conflicts = 1600;
++    assert(solver_decide(a) && a->stats.random_sequences == 3);
++    solver_free(a);solver_free(b);
++}
++
++static void bounded_fallback(bool queue) {
++    enum { N = 8192 };
++    Solver *s = create(queue, N);s->stats.conflicts = 500;
++    bool sampled[N+1] = {false};uint32_t state = s->random_state;
++    Var eliminated = 1 + bsat_random(&state) % N;
++    sampled[eliminated] = true;
++    for (unsigned i = 1; i < 32; ++i) sampled[1 + bsat_random(&state) % N] = true;
++    Var available = 1;while (sampled[available]) ++available;
++    for (Var v = 1; v <= N; ++v) s->values[v] = TRUE;
++    s->values[available] = s->values[eliminated] = UNDEF;
++    elim_init(s);assert(s->elim);s->elim->eliminated[eliminated] = true;
++    assert(solver_decide(s) && var(s->trail[0].lit) == available);
++    assert(!s->stats.random_decisions && s->random_state == state && !s->error);
++    assert(!solver_decide(s) && !s->error);
++    solver_free(s);
++}
++
++static void heap_removals(void) {
++    Solver *s = create(false, 7);
++    double activity[] = {0, 100, 10, 90, 1, 2, 80, 70};
++    for (Var v = 1; v <= 7; ++v) s->vars[v].activity = activity[v];
++    /* Force removal below the low-activity parent: the final heap entry must
++       move upward. Subsequent selections exercise arbitrary removal positions. */
++    for (uint32_t seed = 1;; ++seed) {
++        uint32_t state = seed;
++        if (1 + bsat_random(&state) % 7 == 4) { s->random_state = seed;break; }
++    }
++    s->stats.conflicts = 500;
++    for (unsigned step = 0; step < 200; ++step) {
++        assert(solver_decide(s));
++        Var chosen = var(s->trail[0].lit);
++        if (!step) assert(chosen == 4 && s->order.heap[1] == 7);
++        assert(s->vars[chosen].heap_pos == UINT32_MAX && s->order.size == 6);
++        bool seen[8] = {false};
++        for (unsigned i = 0; i < s->order.size; ++i) {
++            Var v = s->order.heap[i];assert(v != chosen && !seen[v]);seen[v] = true;
++            assert(s->vars[v].heap_pos == i);
++            if (i) assert(s->vars[s->order.heap[(i-1)/2]].activity >= s->vars[v].activity);
++        }
++        solver_backtrack(s, 0);
++        assert(s->order.size == 7 && s->vars[chosen].heap_pos != UINT32_MAX);
++    }
++    solver_free(s);
++}
++
++static void empty_and_rebuild(void) {
++    Solver *s = create(false, 0);s->stats.conflicts = 500;
++    assert(!solver_decide(s) && !s->stats.random_sequences);
++    assert(solver_solve(s) == TRUE);
++    assert(solver_new_var(s) == 1 && !s->next_random && !s->random_until);
++    assert(s->opts.random_decision_interval == 500 && solver_solve(s) == TRUE);
++    solver_free(s);
++}
++
++static void short_intervals_and_limits(void) {
++    Solver *s = create(false, 3);s->opts.random_decision_interval = 1;
++    s->stats.conflicts = 1;
++    assert(solver_decide(s) && s->random_until == 11);
++    solver_backtrack(s, 0);s->stats.conflicts = 2;
++    assert(solver_decide(s) && s->random_until == 11 && s->stats.random_sequences == 1);
++    solver_backtrack(s, 0);s->stats.conflicts = 11;
++    assert(solver_decide(s) && s->stats.random_sequences == 2);
++    solver_backtrack(s, 0);s->random_until = 0;s->next_random = UINT64_MAX-1;
++    s->stats.conflicts = UINT64_MAX-1;
++    uint32_t state = s->random_state;
++    assert(solver_decide(s) && s->random_state == state && s->stats.random_sequences == 2);
++    solver_backtrack(s, 0);s->opts.random_decision_interval = 0;
++    s->stats.conflicts = 100;s->next_random = 1;
++    assert(solver_decide(s) && s->random_state == state);
++    solver_free(s);
++
++    s = create(false, 3);s->stats.random_sequences = 90;s->stats.conflicts = 10000;
++    assert(solver_decide(s) && s->stats.random_sequences == 91);
++    assert(s->random_until == 10020 && s->next_random == 11000);
++    solver_free(s);
++}
++
++int main(void) {
++    for (unsigned queue = 0; queue < 2; ++queue) {
++        scheduling(queue);bounded_fallback(queue);
++    }
++    empty_and_rebuild();short_intervals_and_limits();heap_removals();
++    puts("PASS: reproducible random bursts, mode boundaries, bounded fallback, eliminated variables and rebuilds");
++    return 0;
++}

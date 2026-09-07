@@ -114,6 +114,9 @@ random and target-phase choices after backtracking. See
 [DECISION_PHASES.md](DECISION_PHASES.md) for the regression and performance tradeoffs.
 An experiment suppressing phase updates during probes was rejected after
 targeted comparisons; see [PROBE_PHASE_EXPERIMENT.md](PROBE_PHASE_EXPERIMENT.md).
+Fixed and growing random-decision bursts also failed to increase verified solves;
+see [RANDOM_DECISION_EXPERIMENT.md](RANDOM_DECISION_EXPERIMENT.md) for the archived
+prototypes, tests, and comparisons.
 
 Opt-in `--iterative-minimize` follows both implicit binary and arena reasons using
 an iterative traversal with shared successful dependency checks. The
