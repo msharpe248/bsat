@@ -1,0 +1,237 @@
+{
+  "seed": 20260928,
+  "binaries": {
+    "baseline": {
+      "path": "/tmp/bsat-lock-micro-baseline",
+      "sha256": "a965a93e9c0c41c57a7b7bde26ac33a0a2709d5c3978bc59c4217c43c26755c6"
+    },
+    "constant": {
+      "path": "/Users/msharpe/python/bsat/competition/c/bin/clause_locks_benchmark_release",
+      "sha256": "0cee671560c35411fcb9d72778e24b60d00d58594466918f18b037bf3bf2ffb4"
+    }
+  },
+  "runs": [
+    {
+      "length": 1024,
+      "clauses": 10000,
+      "reductions": 100,
+      "cpu_seconds": 0.346482,
+      "solver": "baseline"
+    },
+    {
+      "length": 128,
+      "clauses": 10000,
+      "reductions": 100,
+      "cpu_seconds": 0.056602,
+      "solver": "baseline"
+    },
+    {
+      "length": 1024,
+      "clauses": 10000,
+      "reductions": 100,
+      "cpu_seconds": 0.009376,
+      "solver": "constant"
+    },
+    {
+      "length": 8,
+      "clauses": 10000,
+      "reductions": 100,
+      "cpu_seconds": 0.006161,
+      "solver": "constant"
+    },
+    {
+      "length": 8,
+      "clauses": 10000,
+      "reductions": 100,
+      "cpu_seconds": 0.008257,
+      "solver": "baseline"
+    },
+    {
+      "length": 128,
+      "clauses": 10000,
+      "reductions": 100,
+      "cpu_seconds": 0.007494,
+      "solver": "constant"
+    },
+    {
+      "length": 1024,
+      "clauses": 10000,
+      "reductions": 100,
+      "cpu_seconds": 0.355299,
+      "solver": "baseline"
+    },
+    {
+      "length": 8,
+      "clauses": 10000,
+      "reductions": 100,
+      "cpu_seconds": 0.0061,
+      "solver": "constant"
+    },
+    {
+      "length": 1024,
+      "clauses": 10000,
+      "reductions": 100,
+      "cpu_seconds": 0.00944,
+      "solver": "constant"
+    },
+    {
+      "length": 128,
+      "clauses": 10000,
+      "reductions": 100,
+      "cpu_seconds": 0.05659,
+      "solver": "baseline"
+    },
+    {
+      "length": 8,
+      "clauses": 10000,
+      "reductions": 100,
+      "cpu_seconds": 0.006105,
+      "solver": "constant"
+    },
+    {
+      "length": 1024,
+      "clauses": 10000,
+      "reductions": 100,
+      "cpu_seconds": 0.008679,
+      "solver": "constant"
+    },
+    {
+      "length": 8,
+      "clauses": 10000,
+      "reductions": 100,
+      "cpu_seconds": 0.008361,
+      "solver": "baseline"
+    },
+    {
+      "length": 8,
+      "clauses": 10000,
+      "reductions": 100,
+      "cpu_seconds": 0.009359,
+      "solver": "baseline"
+    },
+    {
+      "length": 128,
+      "clauses": 10000,
+      "reductions": 100,
+      "cpu_seconds": 0.051377,
+      "solver": "baseline"
+    },
+    {
+      "length": 128,
+      "clauses": 10000,
+      "reductions": 100,
+      "cpu_seconds": 0.007404,
+      "solver": "constant"
+    },
+    {
+      "length": 8,
+      "clauses": 10000,
+      "reductions": 100,
+      "cpu_seconds": 0.006145,
+      "solver": "constant"
+    },
+    {
+      "length": 1024,
+      "clauses": 10000,
+      "reductions": 100,
+      "cpu_seconds": 0.357469,
+      "solver": "baseline"
+    },
+    {
+      "length": 1024,
+      "clauses": 10000,
+      "reductions": 100,
+      "cpu_seconds": 0.009014,
+      "solver": "constant"
+    },
+    {
+      "length": 1024,
+      "clauses": 10000,
+      "reductions": 100,
+      "cpu_seconds": 0.35885,
+      "solver": "baseline"
+    },
+    {
+      "length": 1024,
+      "clauses": 10000,
+      "reductions": 100,
+      "cpu_seconds": 0.360833,
+      "solver": "baseline"
+    },
+    {
+      "length": 8,
+      "clauses": 10000,
+      "reductions": 100,
+      "cpu_seconds": 0.008274,
+      "solver": "baseline"
+    },
+    {
+      "length": 128,
+      "clauses": 10000,
+      "reductions": 100,
+      "cpu_seconds": 0.056198,
+      "solver": "baseline"
+    },
+    {
+      "length": 8,
+      "clauses": 10000,
+      "reductions": 100,
+      "cpu_seconds": 0.008373,
+      "solver": "baseline"
+    },
+    {
+      "length": 128,
+      "clauses": 10000,
+      "reductions": 100,
+      "cpu_seconds": 0.007393,
+      "solver": "constant"
+    },
+    {
+      "length": 1024,
+      "clauses": 10000,
+      "reductions": 100,
+      "cpu_seconds": 0.009513,
+      "solver": "constant"
+    },
+    {
+      "length": 128,
+      "clauses": 10000,
+      "reductions": 100,
+      "cpu_seconds": 0.007385,
+      "solver": "constant"
+    },
+    {
+      "length": 128,
+      "clauses": 10000,
+      "reductions": 100,
+      "cpu_seconds": 0.055121,
+      "solver": "baseline"
+    },
+    {
+      "length": 8,
+      "clauses": 10000,
+      "reductions": 100,
+      "cpu_seconds": 0.006117,
+      "solver": "constant"
+    },
+    {
+      "length": 128,
+      "clauses": 10000,
+      "reductions": 100,
+      "cpu_seconds": 0.007457,
+      "solver": "constant"
+    }
+  ],
+  "median_cpu": {
+    "baseline": {
+      "8": 0.008361,
+      "128": 0.056198,
+      "1024": 0.357469
+    },
+    "constant": {
+      "8": 0.006117,
+      "128": 0.007404,
+      "1024": 0.009376
+    }
+  }
+}

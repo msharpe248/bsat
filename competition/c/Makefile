@@ -186,3 +186,9 @@ binary-watches-benchmark: $(BINDIR)/binary_watches_benchmark_$(MODE)
 
 $(BINDIR)/binary_watches_benchmark_$(MODE): $(TESTDIR)/benchmark_binary_watches.c $(filter-out $(OBJDIR)/main.o,$(OBJECTS)) | dirs
 	$(CC) $(CFLAGS) -o $@ $^ -lm
+
+.PHONY: clause-locks-benchmark
+clause-locks-benchmark: $(BINDIR)/clause_locks_benchmark_$(MODE)
+
+$(BINDIR)/clause_locks_benchmark_$(MODE): $(TESTDIR)/benchmark_clause_locks.c $(filter-out $(OBJDIR)/main.o,$(OBJECTS)) | dirs
+	$(CC) $(CFLAGS) -o $@ $^ -lm

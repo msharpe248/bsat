@@ -1483,12 +1483,21 @@ static int compare_clauses(const void* a, const void* b) {
 }
 
 static bool clause_locked(Solver *s, CRef cr) {
+    uint32_t size = CLAUSE_SIZE(s->arena, cr);
     Lit *lits = CLAUSE_LITS(s->arena, cr);
-    for (uint32_t i = 0; i < CLAUSE_SIZE(s->arena, cr); ++i) {
+    bool locked = size && s->values[var(lits[0])] != UNDEF &&
+                  s->vars[var(lits[0])].reason == cr;
+#ifdef DEBUG
+    /* Propagation and explicit enqueueing place the implied literal first.
+       A locked clause cannot move it: it is true until the reason is cleared. */
+    bool scanned = false;
+    for (uint32_t i = 0; i < size; ++i) {
         Var v = var(lits[i]);
-        if (s->values[v] != UNDEF && s->vars[v].reason == cr) return true;
+        if (s->values[v] != UNDEF && s->vars[v].reason == cr) scanned = true;
     }
-    return false;
+    ASSERT(locked == scanned);
+#endif
+    return locked;
 }
 
 void solver_delete_clause(Solver *s, CRef cr) {
@@ -1653,17 +1662,7 @@ static void solver_on_the_fly_subsumption(Solver* s, const Lit* learnt, uint32_t
 
         // Check if learned clause subsumes this clause
         if (clause_subsumes(learnt, learnt_size, other_lits, other_size)) {
-            // SAFETY CHECK: Don't delete if this clause is a reason for any variable
-            // If we delete a reason clause, conflict analysis will fail when we backtrack
-            bool is_reason = false;
-            for (uint32_t j = 0; j < other_size && !is_reason; j++) {
-                Var v = var(other_lits[j]);
-                if (s->values[v] != UNDEF && s->vars[v].reason == cref) {
-                    is_reason = true;
-                }
-            }
-
-            if (!is_reason) {
+            if (!clause_locked(s, cref)) {
                 // Log deletion to DRAT proof file BEFORE deleting
                 solver_delete_clause(s, cref);
                 subsumed++;
