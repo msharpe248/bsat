@@ -1,0 +1,138 @@
+--- a/competition/c/include/solver.h
++++ b/competition/c/include/solver.h
+@@ -59,0 +60 @@
++    bool     prefer_saved_phase; // Protect known saved/target phases from random overrides
+@@ -142,0 +144 @@
++    bool     phase_saved;    // A polarity has actually been saved
+@@ -214,0 +217,2 @@
++        uint64_t protected_phase_decisions;
++        uint64_t random_phase_choices;
+--- a/competition/c/src/main.c
++++ b/competition/c/src/main.c
+@@ -63,0 +64 @@
++    printf("  --prefer-saved-phase     Protect saved/target phases from random overrides\n");
+@@ -152,0 +154 @@
++    {"prefer-saved-phase", no_argument, 0, 0},
+@@ -318,0 +321,2 @@
++                } else if (strcmp(long_options[option_index].name, "prefer-saved-phase") == 0) {
++                    opts.prefer_saved_phase = true;
+--- a/competition/c/src/solver.c
++++ b/competition/c/src/solver.c
+@@ -653,0 +654 @@
++        s->vars[v].phase_saved = true;
+@@ -768,0 +770,2 @@
++    printf("c Protected phase decisions: %llu\n", (unsigned long long)s->stats.protected_phase_decisions);
++    printf("c Random phase choices: %llu\n", (unsigned long long)s->stats.random_phase_choices);
+@@ -901,0 +905 @@
++                        s->vars[v].phase_saved = true;
+@@ -1020,0 +1025 @@
++                    s->vars[fv].phase_saved = true;
+@@ -1259,3 +1264,8 @@
+-    if (s->opts.alternating && s->stable_mode && s->rephase.best_phase && s->rephase.best_phase[next] != UNDEF)
+-        sign = s->rephase.best_phase[next] == FALSE;
+-    if (s->opts.random_phase && (bsat_random(&s->random_state) / 4294967296.0) < s->opts.random_phase_prob)
++    bool target = s->opts.alternating && s->stable_mode && s->rephase.best_phase &&
++                  s->rephase.best_phase[next] != UNDEF;
++    if (target) sign = s->rephase.best_phase[next] == FALSE;
++    bool known_phase = target || (s->opts.phase_saving && s->vars[next].phase_saved);
++    bool protect_phase = s->opts.prefer_saved_phase && known_phase;
++    if (s->opts.random_phase && protect_phase) s->stats.protected_phase_decisions++;
++    if (s->opts.random_phase && !protect_phase &&
++        (bsat_random(&s->random_state) / 4294967296.0) < s->opts.random_phase_prob) {
+@@ -1262,0 +1273,2 @@
++        s->stats.random_phase_choices++;
++    }
+@@ -1319 +1331 @@
+-        if (s->rephase.best_phase[v] != UNDEF)
++        if (s->rephase.best_phase[v] != UNDEF) {
+@@ -1320,0 +1333,2 @@
++            s->vars[v].phase_saved = true;
++        }
+--- a/competition/c/src/equiv.c
++++ b/competition/c/src/equiv.c
+@@ -148,0 +149 @@
++        fresh->vars[v].phase_saved = s->vars[v].phase_saved;
+--- a/competition/c/src/local_search.c
++++ b/competition/c/src/local_search.c
+@@ -392,0 +393 @@
++        s->vars[v].phase_saved = true;
+--- a/competition/c/tests/validate.py
++++ b/competition/c/tests/validate.py
+@@ -217,0 +218,6 @@
++    configs += [['--prefer-saved-phase'], ['--prefer-saved-phase', '--vmtf'],
++                ['--prefer-saved-phase', '--no-probing', '--binary-proof'],
++                ['--prefer-saved-phase', '--equiv', '--elim', '--bce'],
++                ['--prefer-saved-phase', '--alternating', '--inprocess', '--inprocess-interval', '1'],
++                ['--prefer-saved-phase', '--no-phase-saving', '--random-prob', '1'],
++                ['--prefer-saved-phase', '--local-search', '--ls-interval', '1', '--no-probing']]
+--- a/competition/c/tests/check_deadlines.py
++++ b/competition/c/tests/check_deadlines.py
+@@ -38,0 +39 @@
++                 (hard, ['--prefer-saved-phase', '--vmtf']),
+--- /dev/null
++++ b/competition/c/tests/test_saved_phase_policy.c
+@@ -0,0 +1,64 @@
++#include "../include/solver.h"
++#include "../include/dimacs.h"
++#include <assert.h>
++#include <stdio.h>
++
++static void decisions(bool queue, bool saving) {
++    SolverOpts o=default_opts();o.prefer_saved_phase=true;o.random_phase_prob=1;
++    o.vmtf=queue;o.phase_saving=saving;
++    Solver *s=solver_new_with_opts(&o);assert(s);
++    assert(solver_new_var(s)==1 && !s->vars[1].phase_saved);
++    s->random_state=2;assert(solver_decide(s) && s->values[1]==TRUE);
++    assert(s->vars[1].phase_saved==saving && s->stats.random_phase_choices==1);
++    solver_backtrack(s,0);s->random_state=1;
++    assert(solver_decide(s) && s->values[1]==(saving?TRUE:FALSE));
++    assert(s->stats.protected_phase_decisions==(saving?1:0));
++    assert(s->stats.random_phase_choices==(saving?1:2));
++    if (saving) assert(s->random_state==1); // Protected choices consume no RNG.
++    solver_free(s);
++}
++
++static void target_priority(bool saving) {
++    SolverOpts o=default_opts();o.prefer_saved_phase=true;o.random_phase_prob=1;
++    o.alternating=true;o.phase_saving=saving;
++    Solver *s=solver_new_with_opts(&o);assert(s);assert(solver_new_var(s)==1);
++    s->rephase.best_phase[1]=FALSE;s->stable_mode=true;s->random_state=2;
++    assert(!s->vars[1].phase_saved && solver_decide(s) && s->values[1]==FALSE);
++    assert(s->random_state==2 && s->stats.protected_phase_decisions==1);
++    assert(!s->stats.random_phase_choices);solver_free(s);
++}
++
++static void propagation(bool saving) {
++    SolverOpts o=default_opts();o.prefer_saved_phase=true;o.phase_saving=saving;
++    Solver *s=solver_new_with_opts(&o);assert(s);
++    assert(dimacs_parse_string(s,"p cnf 5 4\n-1 2 0\n-1 -2 3 0\n1 0\n-5 0\n")==DIMACS_OK);
++    Lit binary[]={mkLit(3,true),mkLit(4,false)};
++    CRef cr=arena_alloc(s->arena,binary,2,true);assert(cr!=INVALID_CLAUSE);
++    watch_add(s->watches,binary[0],arena_binary_watch_ref(cr),binary[1]);
++    watch_add(s->watches,binary[1],arena_binary_watch_ref(cr),binary[0]);
++    assert(solver_propagate(s)==INVALID_CLAUSE);
++    for (Var v=1;v<=5;++v) assert(s->vars[v].phase_saved==saving);
++    assert(s->values[4]==TRUE && s->vars[4].reason==cr);
++    assert(s->values[5]==FALSE && !s->vars[5].polarity);
++    solver_free(s);
++}
++
++static void rebuilds(void) {
++    SolverOpts o=default_opts();o.prefer_saved_phase=true;o.equiv=true;o.probing=false;
++    Solver *s=solver_new_with_opts(&o);assert(s);
++    assert(dimacs_parse_string(s,"p cnf 3 3\n-1 2 0\n1 -2 0\n2 3 0\n")==DIMACS_OK);
++    s->vars[3].phase_saved=true;s->vars[3].polarity=false;
++    assert(solver_substitute_equivalences(s)==1);
++    assert(s->vars[3].phase_saved && !s->vars[3].polarity);
++    assert(solver_solve(s)==TRUE && solver_check_model(s));
++    assert(solver_new_var(s)==4 && s->opts.prefer_saved_phase && !s->vars[3].phase_saved);
++    Lit a=mkLit(3,true);assert(solver_solve_with_assumptions(s,&a,1)==TRUE && solver_check_model(s));
++    solver_free(s);
++}
++
++int main(void) {
++    for (unsigned q=0;q<2;++q) for (unsigned saving=0;saving<2;++saving) decisions(q,saving);
++    for (unsigned saving=0;saving<2;++saving) { target_priority(saving);propagation(saving); }
++    rebuilds();puts("PASS: saved-phase priority, unknown phases, targets, all propagation paths and rebuilds");
++    return 0;
++}
