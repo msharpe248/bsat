@@ -180,3 +180,9 @@ parse-benchmark: $(BINDIR)/parse_benchmark_$(MODE)
 
 $(BINDIR)/parse_benchmark_$(MODE): $(TESTDIR)/parse_benchmark.c $(filter-out $(OBJDIR)/main.o,$(OBJECTS)) | dirs
 	$(CC) $(CFLAGS) -o $@ $< $(OBJDIR)/dimacs.o $(filter-out $(OBJDIR)/main.o $(OBJDIR)/dimacs.o,$(OBJECTS)) -lm
+
+.PHONY: binary-watches-benchmark
+binary-watches-benchmark: $(BINDIR)/binary_watches_benchmark_$(MODE)
+
+$(BINDIR)/binary_watches_benchmark_$(MODE): $(TESTDIR)/benchmark_binary_watches.c $(filter-out $(OBJDIR)/main.o,$(OBJECTS)) | dirs
+	$(CC) $(CFLAGS) -o $@ $^ -lm

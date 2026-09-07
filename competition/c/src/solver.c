@@ -857,7 +857,8 @@ CRef solver_propagate(Solver* s) {
             Watch w = watches[i];
 
             // Binary clause special case
-            if (is_binary_watch(w)) {
+            if (is_binary_watch(w) || is_arena_binary_watch(w)) {
+                CRef binary_reason = watch_clause(w);
                 Lit q = w.blocker;
                 Var v = var(q);
 
@@ -872,12 +873,16 @@ CRef solver_propagate(Solver* s) {
                     // Unit propagation via binary clause
                     s->values[v] = sign(q) ? FALSE : TRUE;
                     s->vars[v].level = s->decision_level;
-                    s->vars[v].reason = INVALID_CLAUSE;  // Binary clause marker
+                    s->vars[v].reason = binary_reason;
+                    if (binary_reason != INVALID_CLAUSE) {
+                        Lit *lits = CLAUSE_LITS(s->arena, binary_reason);
+                        lits[0] = q;lits[1] = neg(p);
+                    }
                     s->vars[v].trail_pos = s->trail_size;
 
                     // Store the other literal for conflict analysis
                     // Binary clause is (neg(p) | q), so neg(p) is the "reason" for q
-                    s->binary_reasons[v] = neg(p);
+                    s->binary_reasons[v] = binary_reason == INVALID_CLAUSE ? neg(p) : LIT_UNDEF;
 
                     s->trail[s->trail_size].lit = q;
                     s->trail[s->trail_size].level = s->decision_level;
@@ -910,7 +915,12 @@ CRef solver_propagate(Solver* s) {
                         watches[j++] = watches[i++];
                     }
                     ws->size = j;
-                    return BINARY_CONFLICT;  // Signal binary conflict
+                    if (binary_reason != INVALID_CLAUSE) {
+                        Lit *lits = CLAUSE_LITS(s->arena, binary_reason);
+                        lits[0] = q;lits[1] = neg(p);
+                        return binary_reason;
+                    }
+                    return BINARY_CONFLICT;  // Signal implicit binary conflict
                 }
 
                 watches[j++] = w;
@@ -1510,7 +1520,12 @@ void solver_collect_garbage(Solver *s) {
         uint32_t out = 0;
         for (uint32_t i = 0; i < wl->size; ++i) {
             Watch w = wl->watches[i];
-            if (!is_binary_watch(w)) { w.cref = map[w.cref]; if (w.cref == INVALID_CLAUSE) continue; }
+            if (!is_binary_watch(w)) {
+                bool binary = is_arena_binary_watch(w);
+                CRef cr = map[watch_clause(w)];
+                if (cr == INVALID_CLAUSE) continue;
+                w.cref = binary ? arena_binary_watch_ref(cr) : cr;
+            }
             wl->watches[out++] = w;
         }
         wl->size = out;
@@ -1721,8 +1736,9 @@ bool solver_simplify(Solver *s) {
                     if (val == FALSE) s->result = FALSE;
                     else if (val == UNDEF) { push_trail(s, candidate[0]); s->vars[var(candidate[0])].reason = fresh; }
                 } else {
-                    watch_add(s->watches, candidate[0], fresh, candidate[1]);
-                    watch_add(s->watches, candidate[1], fresh, candidate[0]);
+                    CRef watched = n == 2 ? arena_binary_watch_ref(fresh) : fresh;
+                    watch_add(s->watches, candidate[0], watched, candidate[1]);
+                    watch_add(s->watches, candidate[1], watched, candidate[0]);
                     /* Existing root assignments must be replayed for new watches. */
                     s->qhead = 0;
                 }
@@ -1893,8 +1909,9 @@ static lbool solve_internal(Solver *s, const Lit *assumps, uint32_t n_assumps) {
                 set_clause_lbd(s->arena,reason,lbd);
                 s->learnts[s->num_learnts++]=reason;
                 if (s->opts.subsumption) solver_on_the_fly_subsumption(s,learnt,n);
-                watch_add(s->watches,learnt[0],reason,learnt[1]);
-                watch_add(s->watches,learnt[1],reason,learnt[0]);
+                CRef watched = n == 2 ? arena_binary_watch_ref(reason) : reason;
+                watch_add(s->watches,learnt[0],watched,learnt[1]);
+                watch_add(s->watches,learnt[1],watched,learnt[0]);
             }
             ASSERT(n && s->values[var(learnt[0])]==UNDEF);
             push_trail(s,learnt[0]);s->vars[var(learnt[0])].reason=reason;

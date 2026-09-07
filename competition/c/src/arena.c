@@ -47,6 +47,7 @@ size_t estimate_arena_size(uint32_t num_clauses, uint32_t num_vars) {
 }
 
 Arena* arena_init(size_t initial_capacity) {
+    if (initial_capacity > MAX_CLAUSES) return NULL;
     Arena* arena = (Arena*)malloc(sizeof(Arena));
     if (!arena) return NULL;
 
@@ -120,6 +121,7 @@ static bool arena_grow(Arena* arena, size_t needed) {
 }
 
 bool arena_reserve(Arena* arena, size_t min_capacity) {
+    if (min_capacity > MAX_CLAUSES) return false;
     // Already have enough capacity
     if (arena->capacity >= min_capacity) {
         return true;
@@ -163,7 +165,8 @@ bool arena_reserve(Arena* arena, size_t min_capacity) {
 }
 
 CRef arena_alloc(Arena* arena, const Lit* lits, uint32_t size, bool learned) {
-    if (size >= (1u << 28) || arena->size + size + sizeof(ClauseHeader)/4 >= BINARY_CONFLICT) return INVALID_CLAUSE;
+    if (size >= (1u << 28) || arena->size > MAX_CLAUSES ||
+        (size_t)size + sizeof(ClauseHeader)/4 > MAX_CLAUSES - arena->size) return INVALID_CLAUSE;
     // Calculate space needed
     size_t header_words = (sizeof(ClauseHeader) + sizeof(uint32_t) - 1) / sizeof(uint32_t);
     size_t total_words = header_words + size;

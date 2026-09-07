@@ -59,6 +59,10 @@ LBD-based EMA restarts, bounded failed-literal probing, clause minimization,
 bounded subsumption, learned-clause reduction, and circular watch scanning.
 Binary propagation retains compact implicit watches; every original clause also
 has an arena record for preprocessing and bookkeeping.
+Learned binaries use tagged watches for direct binary propagation while retaining
+arena reasons and minimization behavior. See
+[TAGGED_BINARY_WATCHES.md](TAGGED_BINARY_WATCHES.md) for validation, a faster
+binary-chain microbenchmark, and the unchanged development solve count.
 
 Best-phase targets append only new literals while the saved trail prefix remains
 valid. Backtracking into that prefix triggers a full rebuild at the next record.

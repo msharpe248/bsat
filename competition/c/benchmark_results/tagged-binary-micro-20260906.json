@@ -1,0 +1,97 @@
+{
+  "platform": "macOS-26.6.1-arm64-arm-64bit-Mach-O",
+  "binary_sha256": "62f544cf5f47f86132d4dcdd5ad4acf9d7e98e4a31c4154a2f0d8546f6fc99f6",
+  "seed": 20260924,
+  "runs": [
+    {
+      "mode": "tagged",
+      "variables": 50000,
+      "repeats": 1000,
+      "cpu_seconds": 0.461032,
+      "propagations": 50000000,
+      "work": 49999000,
+      "repeat": 0
+    },
+    {
+      "mode": "tagged",
+      "variables": 50000,
+      "repeats": 1000,
+      "cpu_seconds": 0.465945,
+      "propagations": 50000000,
+      "work": 49999000,
+      "repeat": 2
+    },
+    {
+      "mode": "general",
+      "variables": 50000,
+      "repeats": 1000,
+      "cpu_seconds": 0.551485,
+      "propagations": 50000000,
+      "work": 49999000,
+      "repeat": 1
+    },
+    {
+      "mode": "general",
+      "variables": 50000,
+      "repeats": 1000,
+      "cpu_seconds": 0.551815,
+      "propagations": 50000000,
+      "work": 49999000,
+      "repeat": 3
+    },
+    {
+      "mode": "tagged",
+      "variables": 50000,
+      "repeats": 1000,
+      "cpu_seconds": 0.457087,
+      "propagations": 50000000,
+      "work": 49999000,
+      "repeat": 4
+    },
+    {
+      "mode": "tagged",
+      "variables": 50000,
+      "repeats": 1000,
+      "cpu_seconds": 0.422102,
+      "propagations": 50000000,
+      "work": 49999000,
+      "repeat": 1
+    },
+    {
+      "mode": "general",
+      "variables": 50000,
+      "repeats": 1000,
+      "cpu_seconds": 0.550881,
+      "propagations": 50000000,
+      "work": 49999000,
+      "repeat": 4
+    },
+    {
+      "mode": "general",
+      "variables": 50000,
+      "repeats": 1000,
+      "cpu_seconds": 0.548831,
+      "propagations": 50000000,
+      "work": 49999000,
+      "repeat": 2
+    },
+    {
+      "mode": "tagged",
+      "variables": 50000,
+      "repeats": 1000,
+      "cpu_seconds": 0.464062,
+      "propagations": 50000000,
+      "work": 49999000,
+      "repeat": 3
+    },
+    {
+      "mode": "general",
+      "variables": 50000,
+      "repeats": 1000,
+      "cpu_seconds": 0.551846,
+      "propagations": 50000000,
+      "work": 49999000,
+      "repeat": 0
+    }
+  ]
+}

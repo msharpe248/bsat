@@ -98,7 +98,7 @@ void watch_remove_clause(WatchManager* wm, Arena* arena, CRef cref) {
         // Remove from first literal's watch list
         WatchList* wl0 = watch_list(wm, lits[0]);
         for (uint32_t i = 0; i < wl0->size; i++) {
-            if (wl0->watches[i].cref == cref ||
+            if (watch_clause(wl0->watches[i]) == cref ||
                 (!clause_learned(arena, cref) && is_binary_watch(wl0->watches[i]) && wl0->watches[i].blocker == lits[1])) {
                 watchlist_remove(wl0, i);
                 break;
@@ -108,7 +108,7 @@ void watch_remove_clause(WatchManager* wm, Arena* arena, CRef cref) {
         // Remove from second literal's watch list
         WatchList* wl1 = watch_list(wm, lits[1]);
         for (uint32_t i = 0; i < wl1->size; i++) {
-            if (wl1->watches[i].cref == cref ||
+            if (watch_clause(wl1->watches[i]) == cref ||
                 (!clause_learned(arena, cref) && is_binary_watch(wl1->watches[i]) && wl1->watches[i].blocker == lits[0])) {
                 watchlist_remove(wl1, i);
                 break;
@@ -118,7 +118,7 @@ void watch_remove_clause(WatchManager* wm, Arena* arena, CRef cref) {
         // For larger clauses, only first two literals are watched
         WatchList* wl0 = watch_list(wm, lits[0]);
         for (uint32_t i = 0; i < wl0->size; i++) {
-            if (wl0->watches[i].cref == cref) {
+            if (watch_clause(wl0->watches[i]) == cref) {
                 watchlist_remove(wl0, i);
                 break;
             }
@@ -126,7 +126,7 @@ void watch_remove_clause(WatchManager* wm, Arena* arena, CRef cref) {
 
         WatchList* wl1 = watch_list(wm, lits[1]);
         for (uint32_t i = 0; i < wl1->size; i++) {
-            if (wl1->watches[i].cref == cref) {
+            if (watch_clause(wl1->watches[i]) == cref) {
                 watchlist_remove(wl1, i);
                 break;
             }
@@ -150,7 +150,7 @@ WatchStats watch_stats(const WatchManager* wm) {
         stats.total_watches += wl->size;
 
         for (uint32_t j = 0; j < wl->size; j++) {
-            if (is_binary_watch(wl->watches[j])) {
+            if (is_binary_watch(wl->watches[j]) || is_arena_binary_watch(wl->watches[j])) {
                 stats.binary_watches++;
             }
         }

@@ -125,6 +125,24 @@ static inline bool is_binary_watch(Watch w) {
     return w.cref == INVALID_CLAUSE;
 }
 
+/* Arena references occupy at most 30 bits (MAX_CLAUSES). Keep the exact reason
+   for learned binaries while dispatching them without inspecting the header. */
+#define ARENA_BINARY_TAG (1u << 31)
+_Static_assert(MAX_CLAUSES < ARENA_BINARY_TAG, "arena references must leave the binary tag free");
+
+static inline bool is_arena_binary_watch(Watch w) {
+    return w.cref != INVALID_CLAUSE && (w.cref & ARENA_BINARY_TAG) != 0;
+}
+
+static inline CRef watch_clause(Watch w) {
+    return is_arena_binary_watch(w) ? w.cref & ~ARENA_BINARY_TAG : w.cref;
+}
+
+static inline CRef arena_binary_watch_ref(CRef cr) {
+    ASSERT(cr < MAX_CLAUSES);
+    return cr | ARENA_BINARY_TAG;
+}
+
 // Create binary watch (cref = INVALID_CLAUSE, blocker = other literal)
 static inline Watch make_binary_watch(Lit other) {
     return (Watch){INVALID_CLAUSE, other};

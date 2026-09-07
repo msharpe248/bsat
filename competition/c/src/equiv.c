@@ -15,7 +15,7 @@ static bool tick(Solver *s) {
 
 static Lit binary_other_literal(const Solver *s, Watch w) {
     if (is_binary_watch(w)) return w.blocker;
-    return CLAUSE_SIZE(s->arena, w.cref) == 2 ? w.blocker : LIT_UNDEF;
+    return CLAUSE_SIZE(s->arena, watch_clause(w)) == 2 ? w.blocker : LIT_UNDEF;
 }
 
 /* Root-false literals can expose binary clauses inside larger arena records.
