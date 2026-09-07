@@ -1563,18 +1563,32 @@ void solver_delete_clause(Solver *s, CRef cr) {
 
 void solver_collect_garbage(Solver *s) {
     if (!s->arena->wasted || s->arena->wasted * 4 < s->arena->size) return;
+    if (solver_budget_exhausted_now(s)) return;
     Arena *old = s->arena;
     Arena *fresh = arena_init(MAX((size_t)1024, old->size - old->wasted + 1));
     if (!fresh) return;
     for (size_t at = 1; at < old->size;) {
-        uint32_t n = CLAUSE_SIZE(old, at);
+        if (solver_budget_exhausted(s)) { arena_free(fresh); return; }
+        uint32_t words = sizeof(ClauseHeader)/sizeof(uint32_t) + CLAUSE_SIZE(old, at);
+        ++s->work; // Visiting a dead header also consumes bounded work.
+        if (solver_budget_exhausted(s)) { arena_free(fresh); return; }
         if (!clause_deleted(old, at)) {
-            CRef cr = arena_alloc(fresh, CLAUSE_LITS(old, at), n, clause_learned(old, at));
-            if (cr == INVALID_CLAUSE) { arena_free(fresh); return; }
-            *CLAUSE_HEADER(fresh, cr) = *CLAUSE_HEADER(old, at);
+            // The fresh arena reserves the full live payload before copying.
+            if (words > fresh->capacity - fresh->size) { arena_free(fresh); return; }
+            for (uint32_t copied = 0; copied < words;) {
+                uint32_t chunk = MIN(words-copied, 1024u-(uint32_t)(s->work & 1023));
+                if (s->work_limit && chunk > s->work_limit-s->work)
+                    chunk = (uint32_t)(s->work_limit-s->work);
+                memcpy(fresh->memory+fresh->size+copied, old->memory+at+copied,
+                       chunk*sizeof(uint32_t));
+                copied += chunk;s->work += chunk;
+                if (solver_budget_exhausted(s)) { arena_free(fresh); return; }
+            }
+            fresh->size += words;
         }
-        at += sizeof(ClauseHeader)/4 + n;
+        at += words;
     }
+    if (solver_budget_exhausted_now(s)) { arena_free(fresh); return; }
     // All potentially failing copies are complete. Reuse old search cursors as
     // forwarding references; fresh headers retain the original cursor values.
     CRef next = 1;

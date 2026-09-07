@@ -325,3 +325,9 @@ flat.
 successful copying, removing the arena-sized temporary relocation map. Tests
 preserve headers, watches, reasons and occurrences; measured search counters and
 solved counts are unchanged. Collection CPU and peak RSS vary by workload.
+
+[Bounded GC copying](GC_COPY_BUDGET.md) checks deadlines before allocation and
+commit, charges header/copy work, and supports rollback at copy-chunk boundaries.
+The committed relocation phase remains synchronous. Tests reproduce the old
+ignored-budget behavior; measured aggregate CPU cost is about 0.9% on the fixed
+work development screen, with unchanged solved counts.
