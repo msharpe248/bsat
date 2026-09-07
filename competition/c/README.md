@@ -293,3 +293,8 @@ BVE now uses [linear signed-mark resolution](LINEAR_ELIMINATION.md) for costing
 and constructing resolvents, with interruption-safe scratch cleanup and staging.
 Long overlapping-clause measurements show substantial kernel speedups; measured
 competition solved counts are unchanged. BVE remains opt-in with `--elim`.
+
+[Reconstruction staging](ELIMINATION_STAGING.md) now charges copy work, checks
+deadlines while staging pure clauses, and transfers the completed buffer into
+the elimination stack. This removes a duplicate allocation/copy while preserving
+the public copying API used by BCE and equivalence.

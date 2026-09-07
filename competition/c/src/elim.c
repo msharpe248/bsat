@@ -128,22 +128,37 @@ int elim_cost(Solver *s, Var v) {
     }
     return (int)count;
 }
-bool elim_save(Solver *s, Var v, const Lit *lits, uint32_t size) {
+/* On success the stack owns the allocation; on failure the caller still does. */
+static bool save_owned(Solver *s, Var v, Lit *lits, uint32_t size) {
     elim_init(s);
     if (s->error) return false;
     ElimState *e = s->elim;
     if (e->stack_size == e->stack_capacity) {
+        if (e->stack_capacity > UINT32_MAX / 2) { s->error = true; return false; }
         uint32_t cap = e->stack_capacity ? e->stack_capacity * 2 : 32;
         ElimEntry *p = realloc(e->stack, cap * sizeof *p);
         if (!p) { s->error = true; return false; }
         e->stack = p; e->stack_capacity = cap;
     }
+    e->stack[e->stack_size++] = (ElimEntry){v, lits, size};
+    return true;
+}
+
+/* BCE and equivalence callers retain their input buffers: keep copy semantics. */
+bool elim_save(Solver *s, Var v, const Lit *lits, uint32_t size) {
+    if (s->error) return false;
     Lit *copy = malloc((size ? size : 1) * sizeof *copy);
     if (!copy) { s->error = true; return false; }
     if (size) memcpy(copy, lits, size * sizeof *copy);
-    e->stack[e->stack_size++] = (ElimEntry){v, copy, size};
-    return true;
+    if (save_owned(s, v, copy, size)) return true;
+    free(copy);
+    return false;
 }
+
+static bool staging_exhausted(Solver *s) {
+    return (s->work & 1023) ? solver_budget_exhausted(s) : solver_budget_exhausted_now(s);
+}
+
 bool elim_eliminate_var(Solver *s, Var v) {
     int cost = elim_cost(s, v);
     if (cost < 0) return false;
@@ -167,8 +182,18 @@ bool elim_eliminate_var(Solver *s, Var v) {
     uint32_t at = 0;
     for (uint32_t i = 0; i < count; ++i) {
         uint32_t z = CLAUSE_SIZE(s->arena, removed[i]);
-        memcpy(saved + at, CLAUSE_LITS(s->arena, removed[i]), z * sizeof *saved);
-        at += z; saved[at++] = 0;
+        const Lit *lits = CLAUSE_LITS(s->arena, removed[i]);
+        for (uint32_t j = 0; j < z;) {
+            if (solver_budget_exhausted(s)) goto done;
+            uint32_t chunk = MIN(z-j, 1024u-(uint32_t)(s->work & 1023));
+            if (s->work_limit && s->work_limit-s->work < chunk)
+                chunk = (uint32_t)(s->work_limit-s->work);
+            memcpy(saved+at, lits+j, chunk*sizeof *saved);
+            at += chunk; j += chunk; s->work += chunk;
+            if (staging_exhausted(s)) goto done;
+        }
+        saved[at++] = 0; ++s->work;
+        if (staging_exhausted(s)) goto done;
     }
     for (uint32_t i = 0; i < p->size; ++i) for (uint32_t j = 0; j < n->size; ++j) {
         CRef ca = p->clauses[i], cb = n->clauses[j];
@@ -185,7 +210,8 @@ bool elim_eliminate_var(Solver *s, Var v) {
         }
         res[nr] = r; sizes[nr++] = z;
     }
-    if (!elim_save(s, v, saved, saved_size)) goto done;
+    if (!save_owned(s, v, saved, saved_size)) goto done;
+    saved = NULL; // Ownership transferred; cleanup must not free the stack record.
     for (uint32_t i = 0; i < nr && !s->error && s->result != FALSE; ++i) {
         proof_add_clause(s, res[i], sizes[i]);
         uint32_t before = s->num_clauses;

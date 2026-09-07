@@ -1,0 +1,372 @@
+{
+  "schema": 1,
+  "platform": "macOS-26.6.1-arm64-arm-64bit-Mach-O",
+  "machine": "arm64",
+  "revision": "5ebdf1855b750221866d42ec74cdd3131dccdc8d",
+  "dirty": true,
+  "split": "development",
+  "seed": 1,
+  "timeout": 20.0,
+  "repeats": 3,
+  "solvers": {
+    "baseline": {
+      "command": [
+        "/private/tmp/bsat-staging-baseline-driver",
+        "{input}",
+        "10"
+      ],
+      "sha256": "521195ffbe7fb7c488a91ca056ffc3f678d4ae2a9f220d86f9e192b4a3db864d"
+    },
+    "owned": {
+      "command": [
+        "/Users/msharpe/python/bsat/competition/c/bin/elim_driver",
+        "{input}",
+        "10"
+      ],
+      "sha256": "28d82333b1f7a0bab9e5cbdf3beb2f2a79b03f0e269daea489651592509e8201"
+    }
+  },
+  "inputs": {
+    "/private/tmp/bsat-elim-staging-corpus/pure-10000.cnf": {
+      "sha256": "3cc0e06483dc84f942010cecaf35d6f279b324593735c09d87320304772cc8f6",
+      "family": "bsat-elim-staging-corpus"
+    },
+    "/private/tmp/bsat-elim-staging-corpus/pure-50000.cnf": {
+      "sha256": "80e2674c017e47a27e4a85f13bfe5712724cc9e5987ce3324ad3be92c9701e52",
+      "family": "bsat-elim-staging-corpus"
+    },
+    "/private/tmp/bsat-elim-staging-corpus/pure-100000.cnf": {
+      "sha256": "1018a8f4fd20a1b3f019ad80f0cd18b558e86b17b8db0d7564b4e97949c9dfab",
+      "family": "bsat-elim-staging-corpus"
+    }
+  },
+  "checker": null,
+  "runs": [
+    {
+      "solver": "owned",
+      "input": "/private/tmp/bsat-elim-staging-corpus/pure-10000.cnf",
+      "repeat": 1,
+      "status": "SAT",
+      "verified": true,
+      "seconds": 0.24084220780059695,
+      "cpu_seconds": 0.008815,
+      "peak_rss_bytes": 4816896,
+      "par2": 0.24084220780059695,
+      "stats": {
+        "Elimination CPU": "0.000021000",
+        "Elimination work": "100010",
+        "Eliminated": "10"
+      },
+      "diagnostic": ""
+    },
+    {
+      "solver": "baseline",
+      "input": "/private/tmp/bsat-elim-staging-corpus/pure-100000.cnf",
+      "repeat": 2,
+      "status": "SAT",
+      "verified": true,
+      "seconds": 0.23580670915544033,
+      "cpu_seconds": 0.073022,
+      "peak_rss_bytes": 26394624,
+      "par2": 0.23580670915544033,
+      "stats": {
+        "Elimination CPU": "0.000172000",
+        "Elimination work": "0",
+        "Eliminated": "10"
+      },
+      "diagnostic": ""
+    },
+    {
+      "solver": "owned",
+      "input": "/private/tmp/bsat-elim-staging-corpus/pure-50000.cnf",
+      "repeat": 1,
+      "status": "SAT",
+      "verified": true,
+      "seconds": 0.040274959057569504,
+      "cpu_seconds": 0.03666,
+      "peak_rss_bytes": 13975552,
+      "par2": 0.040274959057569504,
+      "stats": {
+        "Elimination CPU": "0.000062000",
+        "Elimination work": "500010",
+        "Eliminated": "10"
+      },
+      "diagnostic": ""
+    },
+    {
+      "solver": "owned",
+      "input": "/private/tmp/bsat-elim-staging-corpus/pure-50000.cnf",
+      "repeat": 2,
+      "status": "SAT",
+      "verified": true,
+      "seconds": 0.040374542120844126,
+      "cpu_seconds": 0.035697999999999994,
+      "peak_rss_bytes": 13975552,
+      "par2": 0.040374542120844126,
+      "stats": {
+        "Elimination CPU": "0.000050000",
+        "Elimination work": "500010",
+        "Eliminated": "10"
+      },
+      "diagnostic": ""
+    },
+    {
+      "solver": "owned",
+      "input": "/private/tmp/bsat-elim-staging-corpus/pure-10000.cnf",
+      "repeat": 0,
+      "status": "SAT",
+      "verified": true,
+      "seconds": 0.02002600021660328,
+      "cpu_seconds": 0.009044,
+      "peak_rss_bytes": 4800512,
+      "par2": 0.02002600021660328,
+      "stats": {
+        "Elimination CPU": "0.000017000",
+        "Elimination work": "100010",
+        "Eliminated": "10"
+      },
+      "diagnostic": ""
+    },
+    {
+      "solver": "baseline",
+      "input": "/private/tmp/bsat-elim-staging-corpus/pure-10000.cnf",
+      "repeat": 0,
+      "status": "SAT",
+      "verified": true,
+      "seconds": 0.02020812500268221,
+      "cpu_seconds": 0.008820999999999999,
+      "peak_rss_bytes": 4751360,
+      "par2": 0.02020812500268221,
+      "stats": {
+        "Elimination CPU": "0.000030000",
+        "Elimination work": "0",
+        "Eliminated": "10"
+      },
+      "diagnostic": ""
+    },
+    {
+      "solver": "owned",
+      "input": "/private/tmp/bsat-elim-staging-corpus/pure-50000.cnf",
+      "repeat": 0,
+      "status": "SAT",
+      "verified": true,
+      "seconds": 0.03804800007492304,
+      "cpu_seconds": 0.035595,
+      "peak_rss_bytes": 13991936,
+      "par2": 0.03804800007492304,
+      "stats": {
+        "Elimination CPU": "0.000058000",
+        "Elimination work": "500010",
+        "Eliminated": "10"
+      },
+      "diagnostic": ""
+    },
+    {
+      "solver": "owned",
+      "input": "/private/tmp/bsat-elim-staging-corpus/pure-100000.cnf",
+      "repeat": 2,
+      "status": "SAT",
+      "verified": true,
+      "seconds": 0.13171545835211873,
+      "cpu_seconds": 0.07956200000000001,
+      "peak_rss_bytes": 26509312,
+      "par2": 0.13171545835211873,
+      "stats": {
+        "Elimination CPU": "0.000099000",
+        "Elimination work": "1000010",
+        "Eliminated": "10"
+      },
+      "diagnostic": ""
+    },
+    {
+      "solver": "baseline",
+      "input": "/private/tmp/bsat-elim-staging-corpus/pure-100000.cnf",
+      "repeat": 0,
+      "status": "SAT",
+      "verified": true,
+      "seconds": 0.1297959997318685,
+      "cpu_seconds": 0.076803,
+      "peak_rss_bytes": 26525696,
+      "par2": 0.1297959997318685,
+      "stats": {
+        "Elimination CPU": "0.000169000",
+        "Elimination work": "0",
+        "Eliminated": "10"
+      },
+      "diagnostic": ""
+    },
+    {
+      "solver": "baseline",
+      "input": "/private/tmp/bsat-elim-staging-corpus/pure-50000.cnf",
+      "repeat": 0,
+      "status": "SAT",
+      "verified": true,
+      "seconds": 0.040161916986107826,
+      "cpu_seconds": 0.034448,
+      "peak_rss_bytes": 13959168,
+      "par2": 0.040161916986107826,
+      "stats": {
+        "Elimination CPU": "0.000093000",
+        "Elimination work": "0",
+        "Eliminated": "10"
+      },
+      "diagnostic": ""
+    },
+    {
+      "solver": "owned",
+      "input": "/private/tmp/bsat-elim-staging-corpus/pure-10000.cnf",
+      "repeat": 2,
+      "status": "SAT",
+      "verified": true,
+      "seconds": 0.019695083145052195,
+      "cpu_seconds": 0.009284,
+      "peak_rss_bytes": 4833280,
+      "par2": 0.019695083145052195,
+      "stats": {
+        "Elimination CPU": "0.000026000",
+        "Elimination work": "100010",
+        "Eliminated": "10"
+      },
+      "diagnostic": ""
+    },
+    {
+      "solver": "owned",
+      "input": "/private/tmp/bsat-elim-staging-corpus/pure-100000.cnf",
+      "repeat": 1,
+      "status": "SAT",
+      "verified": true,
+      "seconds": 0.1314550843089819,
+      "cpu_seconds": 0.07773,
+      "peak_rss_bytes": 26460160,
+      "par2": 0.1314550843089819,
+      "stats": {
+        "Elimination CPU": "0.000107000",
+        "Elimination work": "1000010",
+        "Eliminated": "10"
+      },
+      "diagnostic": ""
+    },
+    {
+      "solver": "owned",
+      "input": "/private/tmp/bsat-elim-staging-corpus/pure-100000.cnf",
+      "repeat": 0,
+      "status": "SAT",
+      "verified": true,
+      "seconds": 0.13063575001433492,
+      "cpu_seconds": 0.07729899999999999,
+      "peak_rss_bytes": 26492928,
+      "par2": 0.13063575001433492,
+      "stats": {
+        "Elimination CPU": "0.000099000",
+        "Elimination work": "1000010",
+        "Eliminated": "10"
+      },
+      "diagnostic": ""
+    },
+    {
+      "solver": "baseline",
+      "input": "/private/tmp/bsat-elim-staging-corpus/pure-50000.cnf",
+      "repeat": 1,
+      "status": "SAT",
+      "verified": true,
+      "seconds": 0.04029633430764079,
+      "cpu_seconds": 0.036285,
+      "peak_rss_bytes": 14008320,
+      "par2": 0.04029633430764079,
+      "stats": {
+        "Elimination CPU": "0.000091000",
+        "Elimination work": "0",
+        "Eliminated": "10"
+      },
+      "diagnostic": ""
+    },
+    {
+      "solver": "baseline",
+      "input": "/private/tmp/bsat-elim-staging-corpus/pure-10000.cnf",
+      "repeat": 1,
+      "status": "SAT",
+      "verified": true,
+      "seconds": 0.010249500162899494,
+      "cpu_seconds": 0.008709,
+      "peak_rss_bytes": 4784128,
+      "par2": 0.010249500162899494,
+      "stats": {
+        "Elimination CPU": "0.000032000",
+        "Elimination work": "0",
+        "Eliminated": "10"
+      },
+      "diagnostic": ""
+    },
+    {
+      "solver": "baseline",
+      "input": "/private/tmp/bsat-elim-staging-corpus/pure-50000.cnf",
+      "repeat": 2,
+      "status": "SAT",
+      "verified": true,
+      "seconds": 0.04016916686668992,
+      "cpu_seconds": 0.035241,
+      "peak_rss_bytes": 13959168,
+      "par2": 0.04016916686668992,
+      "stats": {
+        "Elimination CPU": "0.000090000",
+        "Elimination work": "0",
+        "Eliminated": "10"
+      },
+      "diagnostic": ""
+    },
+    {
+      "solver": "baseline",
+      "input": "/private/tmp/bsat-elim-staging-corpus/pure-10000.cnf",
+      "repeat": 2,
+      "status": "SAT",
+      "verified": true,
+      "seconds": 0.01020308444276452,
+      "cpu_seconds": 0.008778,
+      "peak_rss_bytes": 4800512,
+      "par2": 0.01020308444276452,
+      "stats": {
+        "Elimination CPU": "0.000037000",
+        "Elimination work": "0",
+        "Eliminated": "10"
+      },
+      "diagnostic": ""
+    },
+    {
+      "solver": "baseline",
+      "input": "/private/tmp/bsat-elim-staging-corpus/pure-100000.cnf",
+      "repeat": 1,
+      "status": "SAT",
+      "verified": true,
+      "seconds": 0.13037166697904468,
+      "cpu_seconds": 0.076583,
+      "peak_rss_bytes": 26476544,
+      "par2": 0.13037166697904468,
+      "stats": {
+        "Elimination CPU": "0.000162000",
+        "Elimination work": "0",
+        "Eliminated": "10"
+      },
+      "diagnostic": ""
+    }
+  ],
+  "manifest": {
+    "path": "/private/tmp/bsat-elim-staging-corpus/manifest.json",
+    "sha256": "09d748242179e6f5e7dba5f2d6a55698a6fecd5dcba50b7b8490aee15ad334f0"
+  },
+  "summary": {
+    "baseline": {
+      "verified_runs": 9,
+      "runs": 9,
+      "mean_par2": 0.07302916707057092,
+      "max_rss_bytes": 26525696,
+      "errors": 0
+    },
+    "owned": {
+      "verified_runs": 9,
+      "runs": 9,
+      "mean_par2": 0.08811856501011385,
+      "max_rss_bytes": 26509312,
+      "errors": 0
+    }
+  }
+}
