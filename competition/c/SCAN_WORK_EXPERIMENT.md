@@ -56,13 +56,13 @@ screen. After rejection, both restored release and ASan/UBSan builds pass all
 was run on the rejected candidate; its timing runs checked completed answers.
 The restored solver is unchanged, so the earlier validation remains applicable.
 The rebuilt release executable matches the preserved baseline hash. The archived
-patch applies cleanly to the restored source. Candidate timing hashes match the
+patch applies cleanly to the restored source with `--unidiff-zero`. Candidate timing hashes match the
 preserved rejected executable; baseline hashes match the restored executable.
 
 ## Reproduction
 
 Build `12b1430` and preserve its executable as `/tmp/bsat-scan-work-baseline`.
-Apply the archived patch, build the candidate, then run:
+Apply the archived patch with `git apply --unidiff-zero`, build the candidate, then run:
 
 ```sh
 make -C competition/c all test
