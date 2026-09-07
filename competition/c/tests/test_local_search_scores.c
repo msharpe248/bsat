@@ -33,7 +33,7 @@ static void verify(LocalSearchState *ls) {
 static unsigned prefixes(Solver *s, bool wide) {
     LocalSearchState *ls=local_search_init(s);assert(ls);
     unsigned checks=0;
-    for(unsigned noise=0;noise<3;++noise) for(unsigned seed=1;seed<=(wide?4:8);++seed)
+    for(unsigned noise=0;noise<3;++noise) for(unsigned seed=1;seed<=(wide?4:16);++seed)
     for(unsigned flips=0;flips<=(wide?16:32);++flips) {
         for(Var v=1;v<=s->num_vars;++v)
             s->vars[v].polarity=wide ? v==s->num_vars && (seed&1) : (seed>>(v-1))&1;

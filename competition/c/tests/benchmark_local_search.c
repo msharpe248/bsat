@@ -16,9 +16,10 @@ static bool number(const char *text, uint32_t *out) {
 }
 
 int main(int argc, char **argv) {
-    uint32_t flips,seed;
-    if (argc!=4 || !number(argv[2],&flips) || !number(argv[3],&seed)) {
-        fprintf(stderr,"usage: %s input.cnf max_flips seed\n",argv[0]);return 2;
+    uint32_t flips,seed,runs=1;
+    if ((argc!=4 && argc!=5) || !number(argv[2],&flips) || !number(argv[3],&seed) ||
+        (argc==5 && (!number(argv[4],&runs) || !runs))) {
+        fprintf(stderr,"usage: %s input.cnf max_flips seed [runs]\n",argv[0]);return 2;
     }
     SolverOpts o=default_opts();o.seed=seed;
     Solver *s=solver_new_with_opts(&o);if (!s) return 1;
@@ -26,7 +27,12 @@ int main(int argc, char **argv) {
     LocalSearchState *ls=local_search_init(s);
     if (!ls) { solver_free(s);return 1; }
     double start=(double)clock()/CLOCKS_PER_SEC;
-    bool found=local_search_run(s,ls,flips,0.5);
+    bool found=false;
+    uint64_t unsat_sum=0;
+    for (uint32_t i=0;i<runs;++i) {
+        found=local_search_run(s,ls,flips,0.5);
+        unsat_sum+=ls->num_unsat;
+    }
     double elapsed=(double)clock()/CLOCKS_PER_SEC-start;
     if (found) {
         local_search_copy_solution(s,ls);
@@ -34,6 +40,8 @@ int main(int argc, char **argv) {
     }
     printf("c Walk CPU time : %.6f\nc Walk flips : %llu\nc Walk unsatisfied : %u\n",
            elapsed,(unsigned long long)ls->flips,ls->num_unsat);
+    printf("c Walk runs : %u\nc Walk unsatisfied sum : %llu\n",
+           runs,(unsigned long long)unsat_sum);
     puts(found ? "s SATISFIABLE" : "s UNKNOWN");
     if (found) {
         printf("v");

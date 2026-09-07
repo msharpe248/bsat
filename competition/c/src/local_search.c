@@ -44,29 +44,27 @@ static bool init_assignment_from_phases(LocalSearchState* ls, Solver* s) {
 }
 
 /**
- * Count true literals in a clause.
- */
-static uint32_t count_true_lits(LocalSearchState* ls, uint32_t c) {
-    uint32_t count = 0;
-    for (uint32_t i = 0; i < ls->clause_sizes[c]; i++) {
-        if (lit_value(ls, ls->clause_lits[c][i])) {
-            count++;
-        }
-    }
-    return count;
-}
-
-/**
- * Initialize satisfaction counts and break scores.
+ * Initialize satisfaction counts and exact break-minus-make scores together.
  */
 static void init_clause_state(LocalSearchState* ls) {
     ls->num_unsat = 0;
-
-    // Initialize true literal counts
-    for (uint32_t c = 0; c < ls->num_clauses; c++) {
-        ls->num_true_lits[c] = count_true_lits(ls, c);
-        if (ls->num_true_lits[c] == 0) {
-            ls->num_unsat++;
+    memset(ls->break_count, 0, (ls->num_vars + 1) * sizeof(int32_t));
+    for (uint32_t c = 0; c < ls->num_clauses; ++c) {
+        Lit *lits = ls->clause_lits[c];
+        uint32_t size = ls->clause_sizes[c], count = 0;
+        Var sole = INVALID_VAR;
+        for (uint32_t i = 0; i < size; ++i) {
+            if (lit_value(ls, lits[i])) {
+                ++count;
+                sole = var(lits[i]);
+            }
+        }
+        ls->num_true_lits[c] = count;
+        if (!count) {
+            ++ls->num_unsat;
+            for (uint32_t i = 0; i < size; ++i) --ls->break_count[var(lits[i])];
+        } else if (count == 1) {
+            ++ls->break_count[sole];
         }
     }
 
@@ -78,48 +76,6 @@ static void init_clause_state(LocalSearchState* ls) {
     for (size_t i = 1; i <= ls->num_clauses; ++i) {
         size_t parent = i + (i & -i);
         if (parent <= ls->num_clauses) ls->unsat_tree[parent] += ls->unsat_tree[i];
-    }
-
-    // Initialize break counts
-    // break_count[v] = (clauses that become unsat if we flip v) - (clauses that become sat)
-    memset(ls->break_count, 0, (ls->num_vars + 1) * sizeof(int32_t));
-
-    for (Var v = 1; v <= ls->num_vars; v++) {
-        bool current_val = ls->assignment[v];
-
-        // Clauses where v appears positively
-        // If v is true, flipping makes these literals false
-        // If v is false, flipping makes these literals true
-        for (uint32_t i = 0; i < ls->pos_occ_count[v]; i++) {
-            uint32_t c = ls->pos_occs[v][i];
-            if (current_val) {
-                // v is true, lit is true. Flipping makes lit false.
-                if (ls->num_true_lits[c] == 1) {
-                    ls->break_count[v]++;  // Would break clause
-                }
-            } else {
-                // v is false, lit is false. Flipping makes lit true.
-                if (ls->num_true_lits[c] == 0) {
-                    ls->break_count[v]--;  // Would satisfy clause
-                }
-            }
-        }
-
-        // Clauses where v appears negatively
-        for (uint32_t i = 0; i < ls->neg_occ_count[v]; i++) {
-            uint32_t c = ls->neg_occs[v][i];
-            if (!current_val) {
-                // v is false, neg(v) is true. Flipping makes neg(v) false.
-                if (ls->num_true_lits[c] == 1) {
-                    ls->break_count[v]++;  // Would break clause
-                }
-            } else {
-                // v is true, neg(v) is false. Flipping makes neg(v) true.
-                if (ls->num_true_lits[c] == 0) {
-                    ls->break_count[v]--;  // Would satisfy clause
-                }
-            }
-        }
     }
 }
 

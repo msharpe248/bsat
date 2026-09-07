@@ -1,0 +1,526 @@
+{
+  "schema": 1,
+  "platform": "macOS-26.6.1-arm64-arm-64bit-Mach-O",
+  "machine": "arm64",
+  "revision": "f3e8f562dd162647764cac32910fc73ba07a9f8b",
+  "dirty": true,
+  "split": "development",
+  "seed": 1,
+  "timeout": 60.0,
+  "repeats": 3,
+  "solvers": {
+    "occurrence": {
+      "command": [
+        "/private/tmp/bsat-walk-init-old-driver",
+        "{input}",
+        "0",
+        "1",
+        "1000"
+      ],
+      "sha256": "8881fcbcae2a141d24efb03657f01f5145003ea5bb83445943b62fe7901f602c"
+    },
+    "clause": {
+      "command": [
+        "/Users/msharpe/python/bsat/competition/c/bin/local_search_benchmark_release",
+        "{input}",
+        "0",
+        "1",
+        "1000"
+      ],
+      "sha256": "f5903ed07b24f53e647b972de235bdefb47e0a57dab37ac2b9f0dac3b02410d2"
+    }
+  },
+  "inputs": {
+    "/Users/msharpe/python/bsat/dataset/sat_competition2025/battleship/ed6d842f96d10f3400bce251f9e95bfb.cnf": {
+      "sha256": "9d586fde48ebcc533f867c06569f008a9b3f5b71dca6a3c9e18db48e037a0b6f",
+      "family": "battleship"
+    },
+    "/Users/msharpe/python/bsat/dataset/sat_competition2025/belpyramid-puzzle/5831f35622f3e6c666f0cee6cac60e4c.cnf": {
+      "sha256": "e73caf0c3d62cfa5ce1b8c80c83c30df50c7e99275f1f43f69acdd043f050735",
+      "family": "belpyramid-puzzle"
+    },
+    "/private/tmp/bsat-walk-selection-corpus/vars1000.cnf": {
+      "sha256": "07818b54ea971db4641feb3c57411f87d6c62b89e1c96a7db352f336b1c46265",
+      "family": "bsat-walk-selection-corpus"
+    },
+    "/private/tmp/bsat-walk-selection-corpus/vars10000.cnf": {
+      "sha256": "446808f0a71820c8329b3c22934a5d3f89d4d8346beae47bced672a5893c33a9",
+      "family": "bsat-walk-selection-corpus"
+    }
+  },
+  "checker": null,
+  "runs": [
+    {
+      "solver": "clause",
+      "input": "/private/tmp/bsat-walk-selection-corpus/vars1000.cnf",
+      "repeat": 2,
+      "status": "UNKNOWN",
+      "verified": false,
+      "seconds": 0.019908249843865633,
+      "cpu_seconds": 0.018005,
+      "peak_rss_bytes": 2965504,
+      "par2": 120.0,
+      "stats": {
+        "Walk CPU time": "0.015922",
+        "Walk flips": "0",
+        "Walk unsatisfied": "516",
+        "Walk runs": "1000",
+        "Walk unsatisfied sum": "516000"
+      },
+      "diagnostic": ""
+    },
+    {
+      "solver": "occurrence",
+      "input": "/private/tmp/bsat-walk-selection-corpus/vars10000.cnf",
+      "repeat": 2,
+      "status": "UNKNOWN",
+      "verified": false,
+      "seconds": 0.5623469999991357,
+      "cpu_seconds": 0.393956,
+      "peak_rss_bytes": 10895360,
+      "par2": 120.0,
+      "stats": {
+        "Walk CPU time": "0.385431",
+        "Walk flips": "0",
+        "Walk unsatisfied": "5190",
+        "Walk runs": "1000",
+        "Walk unsatisfied sum": "5190000"
+      },
+      "diagnostic": ""
+    },
+    {
+      "solver": "clause",
+      "input": "/private/tmp/bsat-walk-selection-corpus/vars10000.cnf",
+      "repeat": 2,
+      "status": "UNKNOWN",
+      "verified": false,
+      "seconds": 0.23616270767524838,
+      "cpu_seconds": 0.23127699999999998,
+      "peak_rss_bytes": 10895360,
+      "par2": 120.0,
+      "stats": {
+        "Walk CPU time": "0.222675",
+        "Walk flips": "0",
+        "Walk unsatisfied": "5190",
+        "Walk runs": "1000",
+        "Walk unsatisfied sum": "5190000"
+      },
+      "diagnostic": ""
+    },
+    {
+      "solver": "clause",
+      "input": "/Users/msharpe/python/bsat/dataset/sat_competition2025/belpyramid-puzzle/5831f35622f3e6c666f0cee6cac60e4c.cnf",
+      "repeat": 2,
+      "status": "UNKNOWN",
+      "verified": false,
+      "seconds": 0.34748487500473857,
+      "cpu_seconds": 0.317135,
+      "peak_rss_bytes": 20594688,
+      "par2": 120.0,
+      "stats": {
+        "Walk CPU time": "0.305461",
+        "Walk flips": "0",
+        "Walk unsatisfied": "8424",
+        "Walk runs": "1000",
+        "Walk unsatisfied sum": "8424000"
+      },
+      "diagnostic": ""
+    },
+    {
+      "solver": "clause",
+      "input": "/private/tmp/bsat-walk-selection-corpus/vars10000.cnf",
+      "repeat": 0,
+      "status": "UNKNOWN",
+      "verified": false,
+      "seconds": 0.23825774993747473,
+      "cpu_seconds": 0.23246,
+      "peak_rss_bytes": 10764288,
+      "par2": 120.0,
+      "stats": {
+        "Walk CPU time": "0.223744",
+        "Walk flips": "0",
+        "Walk unsatisfied": "5190",
+        "Walk runs": "1000",
+        "Walk unsatisfied sum": "5190000"
+      },
+      "diagnostic": ""
+    },
+    {
+      "solver": "clause",
+      "input": "/Users/msharpe/python/bsat/dataset/sat_competition2025/battleship/ed6d842f96d10f3400bce251f9e95bfb.cnf",
+      "repeat": 1,
+      "status": "UNKNOWN",
+      "verified": false,
+      "seconds": 0.02002529101446271,
+      "cpu_seconds": 0.014712999999999999,
+      "peak_rss_bytes": 2621440,
+      "par2": 120.0,
+      "stats": {
+        "Walk CPU time": "0.012654",
+        "Walk flips": "0",
+        "Walk unsatisfied": "256",
+        "Walk runs": "1000",
+        "Walk unsatisfied sum": "256000"
+      },
+      "diagnostic": ""
+    },
+    {
+      "solver": "occurrence",
+      "input": "/Users/msharpe/python/bsat/dataset/sat_competition2025/belpyramid-puzzle/5831f35622f3e6c666f0cee6cac60e4c.cnf",
+      "repeat": 2,
+      "status": "UNKNOWN",
+      "verified": false,
+      "seconds": 0.5171274170279503,
+      "cpu_seconds": 0.46684,
+      "peak_rss_bytes": 20742144,
+      "par2": 120.0,
+      "stats": {
+        "Walk CPU time": "0.455180",
+        "Walk flips": "0",
+        "Walk unsatisfied": "8424",
+        "Walk runs": "1000",
+        "Walk unsatisfied sum": "8424000"
+      },
+      "diagnostic": ""
+    },
+    {
+      "solver": "occurrence",
+      "input": "/private/tmp/bsat-walk-selection-corpus/vars10000.cnf",
+      "repeat": 1,
+      "status": "UNKNOWN",
+      "verified": false,
+      "seconds": 0.403091958258301,
+      "cpu_seconds": 0.384497,
+      "peak_rss_bytes": 10895360,
+      "par2": 120.0,
+      "stats": {
+        "Walk CPU time": "0.376190",
+        "Walk flips": "0",
+        "Walk unsatisfied": "5190",
+        "Walk runs": "1000",
+        "Walk unsatisfied sum": "5190000"
+      },
+      "diagnostic": ""
+    },
+    {
+      "solver": "occurrence",
+      "input": "/private/tmp/bsat-walk-selection-corpus/vars10000.cnf",
+      "repeat": 0,
+      "status": "UNKNOWN",
+      "verified": false,
+      "seconds": 0.40453712502494454,
+      "cpu_seconds": 0.385752,
+      "peak_rss_bytes": 10895360,
+      "par2": 120.0,
+      "stats": {
+        "Walk CPU time": "0.377373",
+        "Walk flips": "0",
+        "Walk unsatisfied": "5190",
+        "Walk runs": "1000",
+        "Walk unsatisfied sum": "5190000"
+      },
+      "diagnostic": ""
+    },
+    {
+      "solver": "occurrence",
+      "input": "/private/tmp/bsat-walk-selection-corpus/vars1000.cnf",
+      "repeat": 0,
+      "status": "UNKNOWN",
+      "verified": false,
+      "seconds": 0.04002237506210804,
+      "cpu_seconds": 0.0254,
+      "peak_rss_bytes": 2916352,
+      "par2": 120.0,
+      "stats": {
+        "Walk CPU time": "0.023157",
+        "Walk flips": "0",
+        "Walk unsatisfied": "516",
+        "Walk runs": "1000",
+        "Walk unsatisfied sum": "516000"
+      },
+      "diagnostic": ""
+    },
+    {
+      "solver": "occurrence",
+      "input": "/Users/msharpe/python/bsat/dataset/sat_competition2025/battleship/ed6d842f96d10f3400bce251f9e95bfb.cnf",
+      "repeat": 0,
+      "status": "UNKNOWN",
+      "verified": false,
+      "seconds": 0.019923499785363674,
+      "cpu_seconds": 0.018625,
+      "peak_rss_bytes": 2621440,
+      "par2": 120.0,
+      "stats": {
+        "Walk CPU time": "0.016532",
+        "Walk flips": "0",
+        "Walk unsatisfied": "256",
+        "Walk runs": "1000",
+        "Walk unsatisfied sum": "256000"
+      },
+      "diagnostic": ""
+    },
+    {
+      "solver": "occurrence",
+      "input": "/private/tmp/bsat-walk-selection-corpus/vars1000.cnf",
+      "repeat": 1,
+      "status": "UNKNOWN",
+      "verified": false,
+      "seconds": 0.03999325027689338,
+      "cpu_seconds": 0.025818,
+      "peak_rss_bytes": 2932736,
+      "par2": 120.0,
+      "stats": {
+        "Walk CPU time": "0.023558",
+        "Walk flips": "0",
+        "Walk unsatisfied": "516",
+        "Walk runs": "1000",
+        "Walk unsatisfied sum": "516000"
+      },
+      "diagnostic": ""
+    },
+    {
+      "solver": "occurrence",
+      "input": "/Users/msharpe/python/bsat/dataset/sat_competition2025/battleship/ed6d842f96d10f3400bce251f9e95bfb.cnf",
+      "repeat": 1,
+      "status": "UNKNOWN",
+      "verified": false,
+      "seconds": 0.0402305000461638,
+      "cpu_seconds": 0.023056,
+      "peak_rss_bytes": 2605056,
+      "par2": 120.0,
+      "stats": {
+        "Walk CPU time": "0.020548",
+        "Walk flips": "0",
+        "Walk unsatisfied": "256",
+        "Walk runs": "1000",
+        "Walk unsatisfied sum": "256000"
+      },
+      "diagnostic": ""
+    },
+    {
+      "solver": "clause",
+      "input": "/private/tmp/bsat-walk-selection-corpus/vars1000.cnf",
+      "repeat": 1,
+      "status": "UNKNOWN",
+      "verified": false,
+      "seconds": 0.04009854234755039,
+      "cpu_seconds": 0.023408,
+      "peak_rss_bytes": 2883584,
+      "par2": 120.0,
+      "stats": {
+        "Walk CPU time": "0.020691",
+        "Walk flips": "0",
+        "Walk unsatisfied": "516",
+        "Walk runs": "1000",
+        "Walk unsatisfied sum": "516000"
+      },
+      "diagnostic": ""
+    },
+    {
+      "solver": "clause",
+      "input": "/Users/msharpe/python/bsat/dataset/sat_competition2025/belpyramid-puzzle/5831f35622f3e6c666f0cee6cac60e4c.cnf",
+      "repeat": 1,
+      "status": "UNKNOWN",
+      "verified": false,
+      "seconds": 0.4046228746883571,
+      "cpu_seconds": 0.38737,
+      "peak_rss_bytes": 20660224,
+      "par2": 120.0,
+      "stats": {
+        "Walk CPU time": "0.373452",
+        "Walk flips": "0",
+        "Walk unsatisfied": "8424",
+        "Walk runs": "1000",
+        "Walk unsatisfied sum": "8424000"
+      },
+      "diagnostic": ""
+    },
+    {
+      "solver": "clause",
+      "input": "/Users/msharpe/python/bsat/dataset/sat_competition2025/battleship/ed6d842f96d10f3400bce251f9e95bfb.cnf",
+      "repeat": 0,
+      "status": "UNKNOWN",
+      "verified": false,
+      "seconds": 0.02016075002029538,
+      "cpu_seconds": 0.017838,
+      "peak_rss_bytes": 2654208,
+      "par2": 120.0,
+      "stats": {
+        "Walk CPU time": "0.015317",
+        "Walk flips": "0",
+        "Walk unsatisfied": "256",
+        "Walk runs": "1000",
+        "Walk unsatisfied sum": "256000"
+      },
+      "diagnostic": ""
+    },
+    {
+      "solver": "clause",
+      "input": "/private/tmp/bsat-walk-selection-corpus/vars10000.cnf",
+      "repeat": 1,
+      "status": "UNKNOWN",
+      "verified": false,
+      "seconds": 0.29343412490561604,
+      "cpu_seconds": 0.285787,
+      "peak_rss_bytes": 10764288,
+      "par2": 120.0,
+      "stats": {
+        "Walk CPU time": "0.275574",
+        "Walk flips": "0",
+        "Walk unsatisfied": "5190",
+        "Walk runs": "1000",
+        "Walk unsatisfied sum": "5190000"
+      },
+      "diagnostic": ""
+    },
+    {
+      "solver": "clause",
+      "input": "/Users/msharpe/python/bsat/dataset/sat_competition2025/battleship/ed6d842f96d10f3400bce251f9e95bfb.cnf",
+      "repeat": 2,
+      "status": "UNKNOWN",
+      "verified": false,
+      "seconds": 0.02021637512370944,
+      "cpu_seconds": 0.018722999999999997,
+      "peak_rss_bytes": 2572288,
+      "par2": 120.0,
+      "stats": {
+        "Walk CPU time": "0.016248",
+        "Walk flips": "0",
+        "Walk unsatisfied": "256",
+        "Walk runs": "1000",
+        "Walk unsatisfied sum": "256000"
+      },
+      "diagnostic": ""
+    },
+    {
+      "solver": "clause",
+      "input": "/Users/msharpe/python/bsat/dataset/sat_competition2025/belpyramid-puzzle/5831f35622f3e6c666f0cee6cac60e4c.cnf",
+      "repeat": 0,
+      "status": "UNKNOWN",
+      "verified": false,
+      "seconds": 0.40527754090726376,
+      "cpu_seconds": 0.385428,
+      "peak_rss_bytes": 20594688,
+      "par2": 120.0,
+      "stats": {
+        "Walk CPU time": "0.371589",
+        "Walk flips": "0",
+        "Walk unsatisfied": "8424",
+        "Walk runs": "1000",
+        "Walk unsatisfied sum": "8424000"
+      },
+      "diagnostic": ""
+    },
+    {
+      "solver": "occurrence",
+      "input": "/Users/msharpe/python/bsat/dataset/sat_competition2025/belpyramid-puzzle/5831f35622f3e6c666f0cee6cac60e4c.cnf",
+      "repeat": 0,
+      "status": "UNKNOWN",
+      "verified": false,
+      "seconds": 0.6175884995609522,
+      "cpu_seconds": 0.582415,
+      "peak_rss_bytes": 20758528,
+      "par2": 120.0,
+      "stats": {
+        "Walk CPU time": "0.568664",
+        "Walk flips": "0",
+        "Walk unsatisfied": "8424",
+        "Walk runs": "1000",
+        "Walk unsatisfied sum": "8424000"
+      },
+      "diagnostic": ""
+    },
+    {
+      "solver": "occurrence",
+      "input": "/private/tmp/bsat-walk-selection-corpus/vars1000.cnf",
+      "repeat": 2,
+      "status": "UNKNOWN",
+      "verified": false,
+      "seconds": 0.07348562497645617,
+      "cpu_seconds": 0.032480999999999996,
+      "peak_rss_bytes": 2916352,
+      "par2": 120.0,
+      "stats": {
+        "Walk CPU time": "0.029605",
+        "Walk flips": "0",
+        "Walk unsatisfied": "516",
+        "Walk runs": "1000",
+        "Walk unsatisfied sum": "516000"
+      },
+      "diagnostic": ""
+    },
+    {
+      "solver": "occurrence",
+      "input": "/Users/msharpe/python/bsat/dataset/sat_competition2025/battleship/ed6d842f96d10f3400bce251f9e95bfb.cnf",
+      "repeat": 2,
+      "status": "UNKNOWN",
+      "verified": false,
+      "seconds": 0.04447770910337567,
+      "cpu_seconds": 0.023236,
+      "peak_rss_bytes": 2605056,
+      "par2": 120.0,
+      "stats": {
+        "Walk CPU time": "0.020818",
+        "Walk flips": "0",
+        "Walk unsatisfied": "256",
+        "Walk runs": "1000",
+        "Walk unsatisfied sum": "256000"
+      },
+      "diagnostic": ""
+    },
+    {
+      "solver": "clause",
+      "input": "/private/tmp/bsat-walk-selection-corpus/vars1000.cnf",
+      "repeat": 0,
+      "status": "UNKNOWN",
+      "verified": false,
+      "seconds": 0.03933041729032993,
+      "cpu_seconds": 0.02267,
+      "peak_rss_bytes": 2998272,
+      "par2": 120.0,
+      "stats": {
+        "Walk CPU time": "0.019912",
+        "Walk flips": "0",
+        "Walk unsatisfied": "516",
+        "Walk runs": "1000",
+        "Walk unsatisfied sum": "516000"
+      },
+      "diagnostic": ""
+    },
+    {
+      "solver": "occurrence",
+      "input": "/Users/msharpe/python/bsat/dataset/sat_competition2025/belpyramid-puzzle/5831f35622f3e6c666f0cee6cac60e4c.cnf",
+      "repeat": 1,
+      "status": "UNKNOWN",
+      "verified": false,
+      "seconds": 0.6216235407628119,
+      "cpu_seconds": 0.591086,
+      "peak_rss_bytes": 20709376,
+      "par2": 120.0,
+      "stats": {
+        "Walk CPU time": "0.577164",
+        "Walk flips": "0",
+        "Walk unsatisfied": "8424",
+        "Walk runs": "1000",
+        "Walk unsatisfied sum": "8424000"
+      },
+      "diagnostic": ""
+    }
+  ],
+  "summary": {
+    "occurrence": {
+      "verified_runs": 0,
+      "runs": 12,
+      "mean_par2": 120.0,
+      "max_rss_bytes": 20758528,
+      "errors": 0
+    },
+    "clause": {
+      "verified_runs": 0,
+      "runs": 12,
+      "mean_par2": 120.0,
+      "max_rss_bytes": 20660224,
+      "errors": 0
+    }
+  }
+}

@@ -1,0 +1,828 @@
+{
+  "schema": 1,
+  "platform": "macOS-26.6.1-arm64-arm-64bit-Mach-O",
+  "machine": "arm64",
+  "revision": "f3e8f562dd162647764cac32910fc73ba07a9f8b",
+  "dirty": true,
+  "split": "development",
+  "seed": 1,
+  "timeout": 10.0,
+  "repeats": 1,
+  "solvers": {
+    "occurrence-s1": {
+      "command": [
+        "/private/tmp/bsat-walk-init-old-driver",
+        "{input}",
+        "20000",
+        "1"
+      ],
+      "sha256": "8881fcbcae2a141d24efb03657f01f5145003ea5bb83445943b62fe7901f602c"
+    },
+    "clause-s1": {
+      "command": [
+        "/Users/msharpe/python/bsat/competition/c/bin/local_search_benchmark_release",
+        "{input}",
+        "20000",
+        "1"
+      ],
+      "sha256": "f5903ed07b24f53e647b972de235bdefb47e0a57dab37ac2b9f0dac3b02410d2"
+    },
+    "occurrence-s2": {
+      "command": [
+        "/private/tmp/bsat-walk-init-old-driver",
+        "{input}",
+        "20000",
+        "2"
+      ],
+      "sha256": "8881fcbcae2a141d24efb03657f01f5145003ea5bb83445943b62fe7901f602c"
+    },
+    "clause-s2": {
+      "command": [
+        "/Users/msharpe/python/bsat/competition/c/bin/local_search_benchmark_release",
+        "{input}",
+        "20000",
+        "2"
+      ],
+      "sha256": "f5903ed07b24f53e647b972de235bdefb47e0a57dab37ac2b9f0dac3b02410d2"
+    },
+    "occurrence-s3": {
+      "command": [
+        "/private/tmp/bsat-walk-init-old-driver",
+        "{input}",
+        "20000",
+        "3"
+      ],
+      "sha256": "8881fcbcae2a141d24efb03657f01f5145003ea5bb83445943b62fe7901f602c"
+    },
+    "clause-s3": {
+      "command": [
+        "/Users/msharpe/python/bsat/competition/c/bin/local_search_benchmark_release",
+        "{input}",
+        "20000",
+        "3"
+      ],
+      "sha256": "f5903ed07b24f53e647b972de235bdefb47e0a57dab37ac2b9f0dac3b02410d2"
+    }
+  },
+  "inputs": {
+    "/Users/msharpe/python/bsat/competition/c/tests/fixtures/local_search_scores/vars50/seed0.cnf": {
+      "sha256": "99026ebbeeba60653cc0927ee5b8fd21f92a09ed6aaf32cfe8a11aaab29c56a6",
+      "family": "vars50"
+    },
+    "/Users/msharpe/python/bsat/competition/c/tests/fixtures/local_search_scores/vars50/seed1.cnf": {
+      "sha256": "f1ee30e40217482b1076bcb2af61674782fece044e0dbe0a9fe4f6575e9972d3",
+      "family": "vars50"
+    },
+    "/Users/msharpe/python/bsat/competition/c/tests/fixtures/local_search_scores/vars100/seed0.cnf": {
+      "sha256": "a29bcffd1e7cfb56c1815a828a599f59f60b73f4c9388095f3aa28c5ca47964e",
+      "family": "vars100"
+    },
+    "/Users/msharpe/python/bsat/competition/c/tests/fixtures/local_search_scores/vars100/seed1.cnf": {
+      "sha256": "b48006e759efa572d3b5487ea3d3ca1dd316b6457d99d384b5752192656d651d",
+      "family": "vars100"
+    },
+    "/Users/msharpe/python/bsat/competition/c/tests/fixtures/local_search_scores/vars200/seed0.cnf": {
+      "sha256": "e73a9baad1ba0b14220fa0ce4d0420070419ac67629c532bf5e4930e72e2e441",
+      "family": "vars200"
+    },
+    "/Users/msharpe/python/bsat/competition/c/tests/fixtures/local_search_scores/vars200/seed1.cnf": {
+      "sha256": "51d3ae87166e320025777e222a85391def773822f5a47dc4bcabc766db540f32",
+      "family": "vars200"
+    }
+  },
+  "checker": null,
+  "runs": [
+    {
+      "solver": "clause-s3",
+      "input": "/Users/msharpe/python/bsat/competition/c/tests/fixtures/local_search_scores/vars50/seed0.cnf",
+      "repeat": 0,
+      "status": "SAT",
+      "verified": true,
+      "seconds": 0.00565049983561039,
+      "cpu_seconds": 0.0018869999999999998,
+      "peak_rss_bytes": 1540096,
+      "par2": 0.00565049983561039,
+      "stats": {
+        "Walk CPU time": "0.000044",
+        "Walk flips": "233",
+        "Walk unsatisfied": "0",
+        "Walk runs": "1",
+        "Walk unsatisfied sum": "0"
+      },
+      "diagnostic": ""
+    },
+    {
+      "solver": "clause-s2",
+      "input": "/Users/msharpe/python/bsat/competition/c/tests/fixtures/local_search_scores/vars50/seed0.cnf",
+      "repeat": 0,
+      "status": "SAT",
+      "verified": true,
+      "seconds": 0.005137541331350803,
+      "cpu_seconds": 0.001983,
+      "peak_rss_bytes": 1540096,
+      "par2": 0.005137541331350803,
+      "stats": {
+        "Walk CPU time": "0.000034",
+        "Walk flips": "150",
+        "Walk unsatisfied": "0",
+        "Walk runs": "1",
+        "Walk unsatisfied sum": "0"
+      },
+      "diagnostic": ""
+    },
+    {
+      "solver": "occurrence-s1",
+      "input": "/Users/msharpe/python/bsat/competition/c/tests/fixtures/local_search_scores/vars200/seed0.cnf",
+      "repeat": 0,
+      "status": "SAT",
+      "verified": true,
+      "seconds": 0.005286708008497953,
+      "cpu_seconds": 0.002201,
+      "peak_rss_bytes": 1785856,
+      "par2": 0.005286708008497953,
+      "stats": {
+        "Walk CPU time": "0.000162",
+        "Walk flips": "844",
+        "Walk unsatisfied": "0",
+        "Walk runs": "1",
+        "Walk unsatisfied sum": "0"
+      },
+      "diagnostic": ""
+    },
+    {
+      "solver": "clause-s3",
+      "input": "/Users/msharpe/python/bsat/competition/c/tests/fixtures/local_search_scores/vars100/seed0.cnf",
+      "repeat": 0,
+      "status": "SAT",
+      "verified": true,
+      "seconds": 0.005314833950251341,
+      "cpu_seconds": 0.002051,
+      "peak_rss_bytes": 1589248,
+      "par2": 0.005314833950251341,
+      "stats": {
+        "Walk CPU time": "0.000059",
+        "Walk flips": "277",
+        "Walk unsatisfied": "0",
+        "Walk runs": "1",
+        "Walk unsatisfied sum": "0"
+      },
+      "diagnostic": ""
+    },
+    {
+      "solver": "clause-s2",
+      "input": "/Users/msharpe/python/bsat/competition/c/tests/fixtures/local_search_scores/vars100/seed1.cnf",
+      "repeat": 0,
+      "status": "SAT",
+      "verified": true,
+      "seconds": 0.005578833166509867,
+      "cpu_seconds": 0.00224,
+      "peak_rss_bytes": 1622016,
+      "par2": 0.005578833166509867,
+      "stats": {
+        "Walk CPU time": "0.000046",
+        "Walk flips": "179",
+        "Walk unsatisfied": "0",
+        "Walk runs": "1",
+        "Walk unsatisfied sum": "0"
+      },
+      "diagnostic": ""
+    },
+    {
+      "solver": "occurrence-s3",
+      "input": "/Users/msharpe/python/bsat/competition/c/tests/fixtures/local_search_scores/vars200/seed1.cnf",
+      "repeat": 0,
+      "status": "SAT",
+      "verified": true,
+      "seconds": 0.01038824999704957,
+      "cpu_seconds": 0.004075,
+      "peak_rss_bytes": 1802240,
+      "par2": 0.01038824999704957,
+      "stats": {
+        "Walk CPU time": "0.001981",
+        "Walk flips": "14428",
+        "Walk unsatisfied": "0",
+        "Walk runs": "1",
+        "Walk unsatisfied sum": "0"
+      },
+      "diagnostic": ""
+    },
+    {
+      "solver": "clause-s2",
+      "input": "/Users/msharpe/python/bsat/competition/c/tests/fixtures/local_search_scores/vars50/seed1.cnf",
+      "repeat": 0,
+      "status": "SAT",
+      "verified": true,
+      "seconds": 0.005216625053435564,
+      "cpu_seconds": 0.0018830000000000001,
+      "peak_rss_bytes": 1540096,
+      "par2": 0.005216625053435564,
+      "stats": {
+        "Walk CPU time": "0.000015",
+        "Walk flips": "52",
+        "Walk unsatisfied": "0",
+        "Walk runs": "1",
+        "Walk unsatisfied sum": "0"
+      },
+      "diagnostic": ""
+    },
+    {
+      "solver": "occurrence-s2",
+      "input": "/Users/msharpe/python/bsat/competition/c/tests/fixtures/local_search_scores/vars50/seed1.cnf",
+      "repeat": 0,
+      "status": "SAT",
+      "verified": true,
+      "seconds": 0.005182875320315361,
+      "cpu_seconds": 0.001918,
+      "peak_rss_bytes": 1540096,
+      "par2": 0.005182875320315361,
+      "stats": {
+        "Walk CPU time": "0.000017",
+        "Walk flips": "52",
+        "Walk unsatisfied": "0",
+        "Walk runs": "1",
+        "Walk unsatisfied sum": "0"
+      },
+      "diagnostic": ""
+    },
+    {
+      "solver": "clause-s3",
+      "input": "/Users/msharpe/python/bsat/competition/c/tests/fixtures/local_search_scores/vars200/seed1.cnf",
+      "repeat": 0,
+      "status": "SAT",
+      "verified": true,
+      "seconds": 0.00940458383411169,
+      "cpu_seconds": 0.003939,
+      "peak_rss_bytes": 1769472,
+      "par2": 0.00940458383411169,
+      "stats": {
+        "Walk CPU time": "0.001948",
+        "Walk flips": "14428",
+        "Walk unsatisfied": "0",
+        "Walk runs": "1",
+        "Walk unsatisfied sum": "0"
+      },
+      "diagnostic": ""
+    },
+    {
+      "solver": "clause-s1",
+      "input": "/Users/msharpe/python/bsat/competition/c/tests/fixtures/local_search_scores/vars50/seed0.cnf",
+      "repeat": 0,
+      "status": "SAT",
+      "verified": true,
+      "seconds": 0.005056334193795919,
+      "cpu_seconds": 0.001863,
+      "peak_rss_bytes": 1540096,
+      "par2": 0.005056334193795919,
+      "stats": {
+        "Walk CPU time": "0.000024",
+        "Walk flips": "99",
+        "Walk unsatisfied": "0",
+        "Walk runs": "1",
+        "Walk unsatisfied sum": "0"
+      },
+      "diagnostic": ""
+    },
+    {
+      "solver": "clause-s1",
+      "input": "/Users/msharpe/python/bsat/competition/c/tests/fixtures/local_search_scores/vars50/seed1.cnf",
+      "repeat": 0,
+      "status": "SAT",
+      "verified": true,
+      "seconds": 0.005160499829798937,
+      "cpu_seconds": 0.0018989999999999999,
+      "peak_rss_bytes": 1540096,
+      "par2": 0.005160499829798937,
+      "stats": {
+        "Walk CPU time": "0.000014",
+        "Walk flips": "51",
+        "Walk unsatisfied": "0",
+        "Walk runs": "1",
+        "Walk unsatisfied sum": "0"
+      },
+      "diagnostic": ""
+    },
+    {
+      "solver": "clause-s2",
+      "input": "/Users/msharpe/python/bsat/competition/c/tests/fixtures/local_search_scores/vars100/seed0.cnf",
+      "repeat": 0,
+      "status": "SAT",
+      "verified": true,
+      "seconds": 0.0052086659707129,
+      "cpu_seconds": 0.0019979999999999998,
+      "peak_rss_bytes": 1589248,
+      "par2": 0.0052086659707129,
+      "stats": {
+        "Walk CPU time": "0.000086",
+        "Walk flips": "507",
+        "Walk unsatisfied": "0",
+        "Walk runs": "1",
+        "Walk unsatisfied sum": "0"
+      },
+      "diagnostic": ""
+    },
+    {
+      "solver": "occurrence-s1",
+      "input": "/Users/msharpe/python/bsat/competition/c/tests/fixtures/local_search_scores/vars50/seed1.cnf",
+      "repeat": 0,
+      "status": "SAT",
+      "verified": true,
+      "seconds": 0.005081250332295895,
+      "cpu_seconds": 0.001856,
+      "peak_rss_bytes": 1540096,
+      "par2": 0.005081250332295895,
+      "stats": {
+        "Walk CPU time": "0.000015",
+        "Walk flips": "51",
+        "Walk unsatisfied": "0",
+        "Walk runs": "1",
+        "Walk unsatisfied sum": "0"
+      },
+      "diagnostic": ""
+    },
+    {
+      "solver": "occurrence-s1",
+      "input": "/Users/msharpe/python/bsat/competition/c/tests/fixtures/local_search_scores/vars100/seed1.cnf",
+      "repeat": 0,
+      "status": "SAT",
+      "verified": true,
+      "seconds": 0.005060332827270031,
+      "cpu_seconds": 0.0019299999999999999,
+      "peak_rss_bytes": 1622016,
+      "par2": 0.005060332827270031,
+      "stats": {
+        "Walk CPU time": "0.000112",
+        "Walk flips": "496",
+        "Walk unsatisfied": "0",
+        "Walk runs": "1",
+        "Walk unsatisfied sum": "0"
+      },
+      "diagnostic": ""
+    },
+    {
+      "solver": "clause-s1",
+      "input": "/Users/msharpe/python/bsat/competition/c/tests/fixtures/local_search_scores/vars200/seed1.cnf",
+      "repeat": 0,
+      "status": "SAT",
+      "verified": true,
+      "seconds": 0.0052189999260008335,
+      "cpu_seconds": 0.0034070000000000003,
+      "peak_rss_bytes": 1785856,
+      "par2": 0.0052189999260008335,
+      "stats": {
+        "Walk CPU time": "0.001356",
+        "Walk flips": "8725",
+        "Walk unsatisfied": "0",
+        "Walk runs": "1",
+        "Walk unsatisfied sum": "0"
+      },
+      "diagnostic": ""
+    },
+    {
+      "solver": "clause-s3",
+      "input": "/Users/msharpe/python/bsat/competition/c/tests/fixtures/local_search_scores/vars200/seed0.cnf",
+      "repeat": 0,
+      "status": "SAT",
+      "verified": true,
+      "seconds": 0.00513070821762085,
+      "cpu_seconds": 0.0025249999999999995,
+      "peak_rss_bytes": 1785856,
+      "par2": 0.00513070821762085,
+      "stats": {
+        "Walk CPU time": "0.000529",
+        "Walk flips": "3263",
+        "Walk unsatisfied": "0",
+        "Walk runs": "1",
+        "Walk unsatisfied sum": "0"
+      },
+      "diagnostic": ""
+    },
+    {
+      "solver": "clause-s3",
+      "input": "/Users/msharpe/python/bsat/competition/c/tests/fixtures/local_search_scores/vars50/seed1.cnf",
+      "repeat": 0,
+      "status": "SAT",
+      "verified": true,
+      "seconds": 0.0050624157302081585,
+      "cpu_seconds": 0.001879,
+      "peak_rss_bytes": 1540096,
+      "par2": 0.0050624157302081585,
+      "stats": {
+        "Walk CPU time": "0.000009",
+        "Walk flips": "22",
+        "Walk unsatisfied": "0",
+        "Walk runs": "1",
+        "Walk unsatisfied sum": "0"
+      },
+      "diagnostic": ""
+    },
+    {
+      "solver": "occurrence-s3",
+      "input": "/Users/msharpe/python/bsat/competition/c/tests/fixtures/local_search_scores/vars50/seed1.cnf",
+      "repeat": 0,
+      "status": "SAT",
+      "verified": true,
+      "seconds": 0.005141500383615494,
+      "cpu_seconds": 0.001875,
+      "peak_rss_bytes": 1540096,
+      "par2": 0.005141500383615494,
+      "stats": {
+        "Walk CPU time": "0.000009",
+        "Walk flips": "22",
+        "Walk unsatisfied": "0",
+        "Walk runs": "1",
+        "Walk unsatisfied sum": "0"
+      },
+      "diagnostic": ""
+    },
+    {
+      "solver": "clause-s2",
+      "input": "/Users/msharpe/python/bsat/competition/c/tests/fixtures/local_search_scores/vars200/seed1.cnf",
+      "repeat": 0,
+      "status": "SAT",
+      "verified": true,
+      "seconds": 0.0050959172658622265,
+      "cpu_seconds": 0.0023229999999999995,
+      "peak_rss_bytes": 1769472,
+      "par2": 0.0050959172658622265,
+      "stats": {
+        "Walk CPU time": "0.000298",
+        "Walk flips": "1578",
+        "Walk unsatisfied": "0",
+        "Walk runs": "1",
+        "Walk unsatisfied sum": "0"
+      },
+      "diagnostic": ""
+    },
+    {
+      "solver": "occurrence-s2",
+      "input": "/Users/msharpe/python/bsat/competition/c/tests/fixtures/local_search_scores/vars100/seed1.cnf",
+      "repeat": 0,
+      "status": "SAT",
+      "verified": true,
+      "seconds": 0.005121834110468626,
+      "cpu_seconds": 0.002001,
+      "peak_rss_bytes": 1605632,
+      "par2": 0.005121834110468626,
+      "stats": {
+        "Walk CPU time": "0.000049",
+        "Walk flips": "179",
+        "Walk unsatisfied": "0",
+        "Walk runs": "1",
+        "Walk unsatisfied sum": "0"
+      },
+      "diagnostic": ""
+    },
+    {
+      "solver": "occurrence-s3",
+      "input": "/Users/msharpe/python/bsat/competition/c/tests/fixtures/local_search_scores/vars200/seed0.cnf",
+      "repeat": 0,
+      "status": "SAT",
+      "verified": true,
+      "seconds": 0.005273499991744757,
+      "cpu_seconds": 0.002448,
+      "peak_rss_bytes": 1753088,
+      "par2": 0.005273499991744757,
+      "stats": {
+        "Walk CPU time": "0.000556",
+        "Walk flips": "3263",
+        "Walk unsatisfied": "0",
+        "Walk runs": "1",
+        "Walk unsatisfied sum": "0"
+      },
+      "diagnostic": ""
+    },
+    {
+      "solver": "occurrence-s1",
+      "input": "/Users/msharpe/python/bsat/competition/c/tests/fixtures/local_search_scores/vars100/seed0.cnf",
+      "repeat": 0,
+      "status": "SAT",
+      "verified": true,
+      "seconds": 0.005020666867494583,
+      "cpu_seconds": 0.001784,
+      "peak_rss_bytes": 1638400,
+      "par2": 0.005020666867494583,
+      "stats": {
+        "Walk CPU time": "0.000074",
+        "Walk flips": "354",
+        "Walk unsatisfied": "0",
+        "Walk runs": "1",
+        "Walk unsatisfied sum": "0"
+      },
+      "diagnostic": ""
+    },
+    {
+      "solver": "occurrence-s3",
+      "input": "/Users/msharpe/python/bsat/competition/c/tests/fixtures/local_search_scores/vars50/seed0.cnf",
+      "repeat": 0,
+      "status": "SAT",
+      "verified": true,
+      "seconds": 0.004939625039696693,
+      "cpu_seconds": 0.00164,
+      "peak_rss_bytes": 1523712,
+      "par2": 0.004939625039696693,
+      "stats": {
+        "Walk CPU time": "0.000051",
+        "Walk flips": "233",
+        "Walk unsatisfied": "0",
+        "Walk runs": "1",
+        "Walk unsatisfied sum": "0"
+      },
+      "diagnostic": ""
+    },
+    {
+      "solver": "occurrence-s1",
+      "input": "/Users/msharpe/python/bsat/competition/c/tests/fixtures/local_search_scores/vars200/seed1.cnf",
+      "repeat": 0,
+      "status": "SAT",
+      "verified": true,
+      "seconds": 0.005305333063006401,
+      "cpu_seconds": 0.003308,
+      "peak_rss_bytes": 1802240,
+      "par2": 0.005305333063006401,
+      "stats": {
+        "Walk CPU time": "0.001349",
+        "Walk flips": "8725",
+        "Walk unsatisfied": "0",
+        "Walk runs": "1",
+        "Walk unsatisfied sum": "0"
+      },
+      "diagnostic": ""
+    },
+    {
+      "solver": "clause-s1",
+      "input": "/Users/msharpe/python/bsat/competition/c/tests/fixtures/local_search_scores/vars100/seed0.cnf",
+      "repeat": 0,
+      "status": "SAT",
+      "verified": true,
+      "seconds": 0.005001750309020281,
+      "cpu_seconds": 0.0017829999999999999,
+      "peak_rss_bytes": 1605632,
+      "par2": 0.005001750309020281,
+      "stats": {
+        "Walk CPU time": "0.000070",
+        "Walk flips": "354",
+        "Walk unsatisfied": "0",
+        "Walk runs": "1",
+        "Walk unsatisfied sum": "0"
+      },
+      "diagnostic": ""
+    },
+    {
+      "solver": "occurrence-s3",
+      "input": "/Users/msharpe/python/bsat/competition/c/tests/fixtures/local_search_scores/vars100/seed1.cnf",
+      "repeat": 0,
+      "status": "SAT",
+      "verified": true,
+      "seconds": 0.004988417029380798,
+      "cpu_seconds": 0.001774,
+      "peak_rss_bytes": 1622016,
+      "par2": 0.004988417029380798,
+      "stats": {
+        "Walk CPU time": "0.000183",
+        "Walk flips": "1044",
+        "Walk unsatisfied": "0",
+        "Walk runs": "1",
+        "Walk unsatisfied sum": "0"
+      },
+      "diagnostic": ""
+    },
+    {
+      "solver": "occurrence-s2",
+      "input": "/Users/msharpe/python/bsat/competition/c/tests/fixtures/local_search_scores/vars100/seed0.cnf",
+      "repeat": 0,
+      "status": "SAT",
+      "verified": true,
+      "seconds": 0.0052151246927678585,
+      "cpu_seconds": 0.002123,
+      "peak_rss_bytes": 1622016,
+      "par2": 0.0052151246927678585,
+      "stats": {
+        "Walk CPU time": "0.000089",
+        "Walk flips": "507",
+        "Walk unsatisfied": "0",
+        "Walk runs": "1",
+        "Walk unsatisfied sum": "0"
+      },
+      "diagnostic": ""
+    },
+    {
+      "solver": "clause-s2",
+      "input": "/Users/msharpe/python/bsat/competition/c/tests/fixtures/local_search_scores/vars200/seed0.cnf",
+      "repeat": 0,
+      "status": "SAT",
+      "verified": true,
+      "seconds": 0.005144665949046612,
+      "cpu_seconds": 0.002179,
+      "peak_rss_bytes": 1785856,
+      "par2": 0.005144665949046612,
+      "stats": {
+        "Walk CPU time": "0.000193",
+        "Walk flips": "866",
+        "Walk unsatisfied": "0",
+        "Walk runs": "1",
+        "Walk unsatisfied sum": "0"
+      },
+      "diagnostic": ""
+    },
+    {
+      "solver": "occurrence-s2",
+      "input": "/Users/msharpe/python/bsat/competition/c/tests/fixtures/local_search_scores/vars200/seed1.cnf",
+      "repeat": 0,
+      "status": "SAT",
+      "verified": true,
+      "seconds": 0.005612500011920929,
+      "cpu_seconds": 0.0023619999999999995,
+      "peak_rss_bytes": 1753088,
+      "par2": 0.005612500011920929,
+      "stats": {
+        "Walk CPU time": "0.000301",
+        "Walk flips": "1578",
+        "Walk unsatisfied": "0",
+        "Walk runs": "1",
+        "Walk unsatisfied sum": "0"
+      },
+      "diagnostic": ""
+    },
+    {
+      "solver": "occurrence-s2",
+      "input": "/Users/msharpe/python/bsat/competition/c/tests/fixtures/local_search_scores/vars200/seed0.cnf",
+      "repeat": 0,
+      "status": "SAT",
+      "verified": true,
+      "seconds": 0.005011457949876785,
+      "cpu_seconds": 0.002125,
+      "peak_rss_bytes": 1802240,
+      "par2": 0.005011457949876785,
+      "stats": {
+        "Walk CPU time": "0.000187",
+        "Walk flips": "866",
+        "Walk unsatisfied": "0",
+        "Walk runs": "1",
+        "Walk unsatisfied sum": "0"
+      },
+      "diagnostic": ""
+    },
+    {
+      "solver": "occurrence-s3",
+      "input": "/Users/msharpe/python/bsat/competition/c/tests/fixtures/local_search_scores/vars100/seed0.cnf",
+      "repeat": 0,
+      "status": "SAT",
+      "verified": true,
+      "seconds": 0.005176999606192112,
+      "cpu_seconds": 0.001961,
+      "peak_rss_bytes": 1622016,
+      "par2": 0.005176999606192112,
+      "stats": {
+        "Walk CPU time": "0.000062",
+        "Walk flips": "277",
+        "Walk unsatisfied": "0",
+        "Walk runs": "1",
+        "Walk unsatisfied sum": "0"
+      },
+      "diagnostic": ""
+    },
+    {
+      "solver": "clause-s3",
+      "input": "/Users/msharpe/python/bsat/competition/c/tests/fixtures/local_search_scores/vars100/seed1.cnf",
+      "repeat": 0,
+      "status": "SAT",
+      "verified": true,
+      "seconds": 0.005209499970078468,
+      "cpu_seconds": 0.00211,
+      "peak_rss_bytes": 1605632,
+      "par2": 0.005209499970078468,
+      "stats": {
+        "Walk CPU time": "0.000218",
+        "Walk flips": "1044",
+        "Walk unsatisfied": "0",
+        "Walk runs": "1",
+        "Walk unsatisfied sum": "0"
+      },
+      "diagnostic": ""
+    },
+    {
+      "solver": "clause-s1",
+      "input": "/Users/msharpe/python/bsat/competition/c/tests/fixtures/local_search_scores/vars100/seed1.cnf",
+      "repeat": 0,
+      "status": "SAT",
+      "verified": true,
+      "seconds": 0.005061458796262741,
+      "cpu_seconds": 0.002018,
+      "peak_rss_bytes": 1605632,
+      "par2": 0.005061458796262741,
+      "stats": {
+        "Walk CPU time": "0.000109",
+        "Walk flips": "496",
+        "Walk unsatisfied": "0",
+        "Walk runs": "1",
+        "Walk unsatisfied sum": "0"
+      },
+      "diagnostic": ""
+    },
+    {
+      "solver": "occurrence-s2",
+      "input": "/Users/msharpe/python/bsat/competition/c/tests/fixtures/local_search_scores/vars50/seed0.cnf",
+      "repeat": 0,
+      "status": "SAT",
+      "verified": true,
+      "seconds": 0.005115082953125238,
+      "cpu_seconds": 0.0018709999999999998,
+      "peak_rss_bytes": 1540096,
+      "par2": 0.005115082953125238,
+      "stats": {
+        "Walk CPU time": "0.000037",
+        "Walk flips": "150",
+        "Walk unsatisfied": "0",
+        "Walk runs": "1",
+        "Walk unsatisfied sum": "0"
+      },
+      "diagnostic": ""
+    },
+    {
+      "solver": "occurrence-s1",
+      "input": "/Users/msharpe/python/bsat/competition/c/tests/fixtures/local_search_scores/vars50/seed0.cnf",
+      "repeat": 0,
+      "status": "SAT",
+      "verified": true,
+      "seconds": 0.00517354067414999,
+      "cpu_seconds": 0.0019329999999999998,
+      "peak_rss_bytes": 1523712,
+      "par2": 0.00517354067414999,
+      "stats": {
+        "Walk CPU time": "0.000027",
+        "Walk flips": "99",
+        "Walk unsatisfied": "0",
+        "Walk runs": "1",
+        "Walk unsatisfied sum": "0"
+      },
+      "diagnostic": ""
+    },
+    {
+      "solver": "clause-s1",
+      "input": "/Users/msharpe/python/bsat/competition/c/tests/fixtures/local_search_scores/vars200/seed0.cnf",
+      "repeat": 0,
+      "status": "SAT",
+      "verified": true,
+      "seconds": 0.005159958265721798,
+      "cpu_seconds": 0.002183,
+      "peak_rss_bytes": 1785856,
+      "par2": 0.005159958265721798,
+      "stats": {
+        "Walk CPU time": "0.000157",
+        "Walk flips": "844",
+        "Walk unsatisfied": "0",
+        "Walk runs": "1",
+        "Walk unsatisfied sum": "0"
+      },
+      "diagnostic": ""
+    }
+  ],
+  "manifest": {
+    "path": "/Users/msharpe/python/bsat/competition/c/benchmark_results/walk-score-corpus-20260907.json",
+    "sha256": "b21a02d3723eded81d73e8bd83875dd3cdad6473c1dfb01f240714e6e45f8cea"
+  },
+  "summary": {
+    "occurrence-s1": {
+      "verified_runs": 6,
+      "runs": 6,
+      "mean_par2": 0.005154638628785809,
+      "max_rss_bytes": 1802240,
+      "errors": 0
+    },
+    "clause-s1": {
+      "verified_runs": 6,
+      "runs": 6,
+      "mean_par2": 0.005109833553433418,
+      "max_rss_bytes": 1785856,
+      "errors": 0
+    },
+    "occurrence-s2": {
+      "verified_runs": 6,
+      "runs": 6,
+      "mean_par2": 0.005209812506412466,
+      "max_rss_bytes": 1802240,
+      "errors": 0
+    },
+    "clause-s2": {
+      "verified_runs": 6,
+      "runs": 6,
+      "mean_par2": 0.005230374789486329,
+      "max_rss_bytes": 1785856,
+      "errors": 0
+    },
+    "occurrence-s3": {
+      "verified_runs": 6,
+      "runs": 6,
+      "mean_par2": 0.005984715341279904,
+      "max_rss_bytes": 1802240,
+      "errors": 0
+    },
+    "clause-s3": {
+      "verified_runs": 6,
+      "runs": 6,
+      "mean_par2": 0.005962090256313483,
+      "max_rss_bytes": 1785856,
+      "errors": 0
+    }
+  }
+}

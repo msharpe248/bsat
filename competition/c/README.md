@@ -118,6 +118,9 @@ Unsatisfied-clause selection uses an ordered prefix-count tree to preserve walk
 choices while avoiding a formula scan per flip. See
 [LOCAL_SEARCH_SELECTION.md](LOCAL_SEARCH_SELECTION.md) for tests, memory cost and
 standalone/full-solver measurements.
+Walk initialization computes flip scores during the clause scan; see
+[LOCAL_SEARCH_INITIALIZATION.md](LOCAL_SEARCH_INITIALIZATION.md) for validation
+and repeated-initialization measurements.
 
 Successful local-search model transfer resets assignment positions, reasons and
 the propagation cursor consistently. See
