@@ -1,0 +1,18 @@
+{
+  "schema": 1,
+  "revision": "d231d65",
+  "purpose": "Untimed post-screen diagnostic, stopped after one conflict; not an answer certificate.",
+  "source": "#include \"solver.h\"\n#include \"dimacs.h\"\n#include <assert.h>\n#include <stdio.h>\nint main(void) {\n    SolverOpts o=default_opts();o.equiv=true;o.probing=false;o.max_conflicts=1;\n    Solver *s=solver_new_with_opts(&o);assert(s);\n    assert(dimacs_parse_string(s,\"p cnf 6 4\\n-4 5 0\\n4 -5 0\\n1 6 2 0\\n1 6 -2 0\\n\")==DIMACS_OK);\n    lbool result=solver_solve(s);assert(!s->error && result==UNDEF);\n    assert(s->stats.equiv_variables==1 && s->num_learnts==1);\n    printf(\"{\\\"substituted\\\":%llu,\\\"levels_capacity\\\":%u,\\\"level_seen_present\\\":%s,\\\"learned_size\\\":%u,\\\"learned_lbd\\\":%u,\\\"max_lbd\\\":%llu}\\n\",(unsigned long long)s->stats.equiv_variables,s->levels_capacity,s->level_seen?\"true\":\"false\",CLAUSE_SIZE(s->arena,s->learnts[0]),clause_lbd(s->arena,s->learnts[0]),(unsigned long long)s->stats.max_lbd);\n    solver_free(s);return 0;\n}\n",
+  "source_sha256": "e5356238a08589acb1d30205d113f53c2f5a2b7b36c4fa176c5debf23f47d8b3",
+  "binary_sha256": "570eeea9502dc0ff8826d0e939b6cf159e6637be5979a19239f8d598ba752859",
+  "build": "cc -std=c11 -D_POSIX_C_SOURCE=200809L -O3 -Icompetition/c/include /tmp/bsat-equiv-lbd-repro.c [competition/c/build/release/*.o except main.o] -lm -o /tmp/bsat-equiv-lbd-repro",
+  "result": {
+    "substituted": 1,
+    "levels_capacity": 0,
+    "level_seen_present": false,
+    "learned_size": 2,
+    "learned_lbd": 0,
+    "max_lbd": 0
+  },
+  "finding": "Successful SCC substitution loses the preallocated level_seen scratch and levels_capacity. Subsequent calc_lbd returns zero, corrupting learned-clause quality classification."
+}

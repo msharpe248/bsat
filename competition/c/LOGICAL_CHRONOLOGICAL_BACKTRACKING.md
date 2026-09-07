@@ -130,3 +130,9 @@ from 191.7 MB to 198.8 MB; these are whole-run, time-dependent measurements.
 This development evidence supports keeping the option, not promoting it to the
 default or claiming competition parity. A new frozen held-out comparison and
 longer competition-scale budgets remain necessary.
+
+A subsequent [six-input held-out screen](CHRONOLOGICAL_HELDOUT.md) produced no
+verified BSAT solves with or without chronology, versus three for Kissat. It also
+motivated investigation of learned-clause quality state lost during equivalence
+rebuilding. The development gains above remain results for their pinned binaries
+and profiles; they do not establish general performance.

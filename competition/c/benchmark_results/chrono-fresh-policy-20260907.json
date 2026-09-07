@@ -1,0 +1,18 @@
+{
+  "schema": 1,
+  "revision": "d231d65",
+  "manifest": "chrono-fresh-corpus-20260907.json",
+  "manifest_sha256": "036e95006ed55cc1e1e5373a0fd4f916c1467a03e5fff1d4d3fb33fda0b08d22",
+  "purpose": "Frozen held-out generalization screen of logical-level chronological backtracking. No tuning during execution.",
+  "profiles": {
+    "baseline": "bin/bsat --congruence --equiv --equiv-budget 100000000 --alternating --vmtf --time 30 --proof {proof} {input}",
+    "chrono": "bin/bsat --chrono --congruence --equiv --equiv-budget 100000000 --alternating --vmtf --time 30 --proof {proof} {input}",
+    "kissat": "Pinned Kissat 8af8e56f174b778aef3aa45af9f739b2a5f492c2 {input} {proof}"
+  },
+  "seed": 20261306,
+  "repeats": 1,
+  "external_wall_seconds": 35,
+  "checker_seconds": 120,
+  "selection_limitations": "Six distinct families, smallest eligible inputs at least 9.5 MB, excluding recorded filenames and hashes. Size-biased small screen, not representative competition evaluation.",
+  "execution": "Serial jobs; external certificate checking outside timing; no concurrent builds, validation or profiling."
+}
