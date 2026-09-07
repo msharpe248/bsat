@@ -1,0 +1,228 @@
+diff --git a/competition/c/include/solver.h b/competition/c/include/solver.h
+index 6daf951..f063d08 100644
+--- a/competition/c/include/solver.h
++++ b/competition/c/include/solver.h
+@@ -40,6 +40,7 @@ typedef struct SolverOpts {
+     uint32_t restart_first;      // First restart interval (100)
+     double   restart_inc;        // Restart interval increment (1.5)
+     bool     glucose_restart;    // Use Glucose-style adaptive restarts
++    bool     block_restarts;    // Experimental deep-trail adaptive restart blocking
+     bool     reuse_trail;       // Experimental priority-based restart prefix reuse
+     bool     luby_restart;       // Use Luby restart sequence (vs geometric/glucose)
+     uint32_t luby_unit;          // Luby unit size (conflicts per Luby unit, default 512)
+@@ -262,6 +263,10 @@ typedef struct Solver {
+         uint64_t lbd_sum;            // Sum of all LBDs (for long-term average)
+         uint64_t lbd_count;          // Count of all LBDs
+
++        uint32_t *recent_trails;     // Optional 5000-conflict rolling trail window
++        uint32_t trail_count, trail_head;
++        uint64_t trail_sum, blocked;
++
+         uint32_t stuck_conflicts;    // Conflicts without progress
+     } restart;
+
+@@ -384,6 +389,7 @@ void solver_backtrack(Solver* s, Level level);
+ void solver_reduce_db(Solver* s);
+
+ // Check if should restart
++void solver_record_restart_trail(Solver* s);
+ bool solver_should_restart(Solver* s);
+ Level solver_restart_level(Solver* s);
+
+diff --git a/competition/c/src/main.c b/competition/c/src/main.c
+index c3b5dec..3934e2d 100644
+--- a/competition/c/src/main.c
++++ b/competition/c/src/main.c
+@@ -38,6 +38,7 @@ static void print_usage(const char* program) {
+     printf("  --var-inc <f>             Variable activity increment (default: 1.0)\n");
+     printf("\n");
+     printf("Restart parameters:\n");
++    printf("  --block-restarts         Postpone adaptive restarts on deep trails (experimental)\n");
+     printf("  --reuse-trail            Reuse high-priority restart prefixes (experimental)\n");
+     printf("  --restart-first <n>       First restart interval (default: 100)\n");
+     printf("  --restart-inc <f>         Restart multiplier (default: 1.5)\n");
+@@ -149,6 +150,7 @@ static struct option long_options[] = {
+     {"glucose-min-conflicts", required_argument, 0, 0},
+     {"glucose-window-size", required_argument, 0, 0},
+     {"glucose-k",       required_argument, 0, 0},
++    {"block-restarts", no_argument, 0, 0},
+     {"reuse-trail", no_argument, 0, 0},
+     {"vmtf", no_argument, 0, 0},
+     {"lrb",             no_argument,       0, 0},
+@@ -312,6 +314,8 @@ int main(int argc, char** argv) {
+                     opts.glucose_window_size = (uint32_t)atol(optarg);
+                 } else if (strcmp(long_options[option_index].name, "glucose-k") == 0) {
+                     opts.glucose_k = atof(optarg);
++                } else if (strcmp(long_options[option_index].name, "block-restarts") == 0) {
++                    opts.block_restarts = true;
+                 } else if (strcmp(long_options[option_index].name, "reuse-trail") == 0) {
+                     opts.reuse_trail = true;
+                 } else if (strcmp(long_options[option_index].name, "vmtf") == 0) {
+@@ -483,6 +487,7 @@ int main(int argc, char** argv) {
+     // Print statistics
+     if (opts.stats && !opts.quiet) {
+         printf("c\n");
++        printf("c Restart blocks: %llu\n", (unsigned long long)solver->restart.blocked);
+         printf("c CPU time:         %.3f s\n", solve_time);
+         solver_print_stats(solver);
+     }
+diff --git a/competition/c/src/solver.c b/competition/c/src/solver.c
+index 8446406..9abb9c9 100644
+--- a/competition/c/src/solver.c
++++ b/competition/c/src/solver.c
+@@ -436,6 +436,11 @@ Solver* solver_new_with_opts(const SolverOpts* opts) {
+         s->restart.recent_lbds = NULL;
+     }
+
++    if (opts->block_restarts) {
++        s->restart.recent_trails = calloc(5000, sizeof(uint32_t));
++        if (!s->restart.recent_trails) goto error;
++    }
++
+     // Set start time
+     s->stats.start_time = (double)clock() / CLOCKS_PER_SEC;
+
+@@ -491,6 +496,7 @@ void solver_free(Solver* s) {
+     free(s->analyze_stack);
+     free(s->minimize_touched);
+     free(s->binary_reasons);
++    free(s->restart.recent_trails);
+     free(s->restart.recent_lbds);  // Free Glucose sliding window buffer
+     free(s->rephase.best_phase);   // Free rephasing best phase array
+
+@@ -1446,6 +1452,30 @@ Level solver_restart_level(Solver *s) {
+     return retained;
+ }
+
++/* Sample before conflict analysis/backtracking. Only adaptive focused restarts
++   use this window; no allocation or scan occurs on the conflict path. */
++void solver_record_restart_trail(Solver *s) {
++    if (!s->opts.block_restarts || !s->restart.recent_trails ||
++        !s->opts.glucose_restart || s->opts.luby_restart ||
++        (s->opts.alternating && s->stable_mode) ||
++        s->opts.restart_first == UINT32_MAX) return;
++    uint32_t at = s->restart.trail_head;
++    if (s->restart.trail_count == 5000)
++        s->restart.trail_sum -= s->restart.recent_trails[at];
++    else ++s->restart.trail_count;
++    s->restart.recent_trails[at] = s->trail_size;
++    s->restart.trail_sum += s->trail_size;
++    s->restart.trail_head = (at + 1) % 5000;
++    // Exact 1.4 comparison; products fit uint64_t even at MAX_VARS.
++    if (s->stats.conflicts > 10000 && s->restart.trail_count == 5000 &&
++        s->restart.recent_lbds_count == s->opts.glucose_window_size &&
++        (uint64_t)s->trail_size * 5 * 5000 > s->restart.trail_sum * 7) {
++        ++s->restart.blocked;
++        s->restart.recent_lbds_count = s->restart.recent_lbds_head = 0;
++        s->recent_lbd_sum = 0;
++    }
++}
++
+ bool solver_should_restart(Solver* s) {
+     if (s->opts.restart_first == UINT32_MAX) return false;
+     if (s->opts.alternating && s->stats.conflicts >= s->mode_limit) {
+@@ -1461,7 +1491,9 @@ bool solver_should_restart(Solver* s) {
+         restart = s->restart.conflicts_since >= threshold;
+         if (restart) s->restart.luby_index++;
+     } else if (s->opts.glucose_restart) {
+-        if (s->restart.conflicts_since >= s->opts.glucose_min_conflicts) {
++        if (s->restart.conflicts_since >= s->opts.glucose_min_conflicts &&
++            (!s->opts.block_restarts ||
++             s->restart.recent_lbds_count == s->opts.glucose_window_size)) {
+             if (s->opts.glucose_use_ema)
+                 restart = s->lbd_samples && s->restart.fast_ma * s->opts.glucose_k > s->restart.slow_ma;
+             else if (s->restart.recent_lbds_count == s->opts.glucose_window_size)
+@@ -1928,6 +1960,7 @@ static lbool solve_internal(Solver *s, const Lit *assumps, uint32_t n_assumps) {
+         if (conflict != INVALID_CLAUSE) {
+             s->stats.conflicts++; s->restart.conflicts_since++;
+             if (!s->decision_level) { result=FALSE; break; }
++            solver_record_restart_trail(s);
+             uint32_t n; Level backtrack;
+             solver_analyze(s, conflict, learnt, &n, &backtrack);
+             s->stats.minimized_literals += solver_minimize_clause(s,learnt,&n);
+diff --git a/competition/c/tests/validate.py b/competition/c/tests/validate.py
+index c8786ca..af25322 100644
+--- a/competition/c/tests/validate.py
++++ b/competition/c/tests/validate.py
+@@ -225,6 +225,10 @@ def main():
+                 ['--reuse-trail', '--luby-restart', '--luby-unit', '1', '--no-probing'],
+                 ['--reuse-trail', '--equiv', '--elim', '--bce', '--inprocess', '--inprocess-interval', '1'],
+                 ['--reuse-trail', '--random-phase', '--local-search', '--ls-interval', '1']]
++    configs += [["--block-restarts"], ["--block-restarts", "--glucose-restart-avg", "--binary-proof"],
++                ["--block-restarts", "--vmtf", "--reuse-trail"],
++                ["--block-restarts", "--equiv", "--elim", "--bce"],
++                ["--block-restarts", "--alternating"], ["--block-restarts", "--luby-restart"]]
+     fixed = [
+         (5, [[1, 2], [1, -2], [-3, 4], [3, -4], [4, 5]], None),
+         (5, [[-4], [-1, 2, 4], [1, -2, 4]] +
+diff --git a/competition/c/tests/test_restart_blocking.c b/competition/c/tests/test_restart_blocking.c
+new file mode 100644
+index 0000000..1f06db5
+--- /dev/null
++++ b/competition/c/tests/test_restart_blocking.c
+@@ -0,0 +1,65 @@
++#include "../include/solver.h"
++#include <assert.h>
++#include <stdio.h>
++
++static Solver *fresh(void) {
++    SolverOpts o=default_opts();o.block_restarts=true;
++    Solver *s=solver_new_with_opts(&o);assert(s && s->restart.recent_trails);
++    s->restart.trail_count=5000;s->restart.trail_sum=500000;
++    for(unsigned i=0;i<5000;++i) s->restart.recent_trails[i]=100;
++    s->restart.recent_trails[0]=140;s->restart.recent_trails[4999]=60;
++    s->stats.conflicts=10001;s->lbd_samples=10001;
++    s->restart.recent_lbds_count=s->opts.glucose_window_size;
++    s->restart.conflicts_since=100;s->restart.fast_ma=20;s->restart.slow_ma=2;
++    s->restart.lbd_count=10001;s->restart.lbd_sum=20002;
++    s->recent_lbd_sum=20*s->opts.glucose_window_size;
++    return s;
++}
++int main(void) {
++    unsigned checks=0;
++    for(unsigned ema=0;ema<2;++ema) for(unsigned trail=139;trail<=141;++trail) {
++        Solver *s=fresh();s->opts.glucose_use_ema=ema;s->trail_size=trail;
++        solver_record_restart_trail(s);
++        assert(s->restart.blocked==(trail==141));
++        assert(solver_should_restart(s)==(trail!=141));
++        if(trail==141) {
++            assert(!s->restart.recent_lbds_count && !s->recent_lbd_sum);
++            assert(s->restart.conflicts_since==100);
++            s->restart.recent_lbds_count=s->opts.glucose_window_size-1;
++            assert(!solver_should_restart(s));
++            s->restart.recent_lbds_count=s->opts.glucose_window_size;
++            s->recent_lbd_sum=20*s->opts.glucose_window_size;
++            assert(solver_should_restart(s));
++        }
++        solver_free(s);++checks;
++    }
++    for(unsigned mode=0;mode<7;++mode) {
++        Solver *s=fresh();s->trail_size=1000;
++        if(mode==0) s->stats.conflicts=10000;
++        if(mode==1) s->opts.block_restarts=false;
++        if(mode==2) s->opts.luby_restart=true;
++        if(mode==3) s->opts.glucose_restart=false;
++        if(mode==4) {s->opts.alternating=true;s->stable_mode=true;}
++        if(mode==5) s->opts.restart_first=UINT32_MAX;
++        if(mode==6) s->restart.recent_lbds_count=49;
++        solver_record_restart_trail(s);assert(!s->restart.blocked);
++        if(mode>=1 && mode<=5) assert(s->restart.trail_head==0);
++        solver_free(s);++checks;
++    }
++    SolverOpts o=default_opts();o.block_restarts=true;
++    Solver *s=solver_new_with_opts(&o);assert(s);
++    uint32_t samples[15000];
++    for(unsigned i=0;i<15000;++i) {
++        samples[i]=(i*31u)%1009;s->trail_size=samples[i];s->stats.conflicts=i+1;
++        solver_record_restart_trail(s);
++        assert(s->restart.trail_count==MIN(i+1,5000));
++        if(i%499==0 || i==14999) {
++            uint64_t sum=0;
++            for(unsigned j=i+1-s->restart.trail_count;j<=i;++j) sum+=samples[j];
++            assert(sum==s->restart.trail_sum);++checks;
++        }
++    }
++    solver_free(s);
++    s=solver_new();assert(s && !s->restart.recent_trails);solver_free(s);
++    printf("PASS: %u restart blocking boundary/mode/rolling-window checks\n",checks);
++}

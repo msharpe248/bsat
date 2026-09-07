@@ -309,3 +309,8 @@ A [long-clause prefetch experiment](WATCH_PREFETCH_EXPERIMENT.md) preserved sear
 counters but measured 1.36% higher aggregate CPU time on 26 development inputs.
 The hint was rejected; 459 mixed-watch regression cases and the measured patch
 are retained.
+
+A [deep-trail restart-blocking experiment](RESTART_BLOCKING_EXPERIMENT.md) tested
+EMA and sliding-window variants against the existing defaults and pinned Kissat.
+It added no solves and repeatedly slowed battleship with EMA; the prototype was
+rejected, with its implementation, tests and measurements preserved.
