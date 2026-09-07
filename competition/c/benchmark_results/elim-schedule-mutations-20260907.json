@@ -1,0 +1,20 @@
+{
+  "schema": 1,
+  "base_revision": "d4538d2",
+  "candidate_elim_sha256": "17469a65b8ca803d5c217299d83c36c984e1160b38a90be0e0d39ad2961917a3",
+  "test_sha256": "24319017508bc7a7667fb91415ade7a52fe7559419ea840ff5c1aa8452233576",
+  "mutants": {
+    "sum-instead-of-product": {
+      "returncode": -6,
+      "stderr": "Assertion failed: (s->elim->stack[i].var==r->elim->stack[i].var), function main, file test_elim_schedule.c, line 106.\n"
+    },
+    "stale-removed-counts": {
+      "returncode": -6,
+      "stderr": "Assertion failed: (s->elim->stack[i].var==r->elim->stack[i].var), function main, file test_elim_schedule.c, line 106.\n"
+    },
+    "no-upward-repair": {
+      "returncode": -6,
+      "stderr": "Assertion failed: (s->elim->stack[i].var==r->elim->stack[i].var), function main, file test_elim_schedule.c, line 106.\n"
+    }
+  }
+}

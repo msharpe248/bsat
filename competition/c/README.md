@@ -396,3 +396,9 @@ partial-progress cutoff cases and an irreducible-clause benchmark are retained.
 A [shared blocker-dispatch experiment](BLOCKER_DISPATCH_EXPERIMENT.md) found no
 useful overall CPU gain and was rejected. The retained 10,368-case regression
 checks mixed binary/long-watch truth, conflict order, reasons and phase saving.
+
+A [dynamic BVE scheduling experiment](ELIMINATION_SCHEDULE.md) eliminated more
+variables on two larger inputs but added no solves and regressed on belpyramid,
+even with a larger budget. Numeric-order elimination remains in place. New
+statistics report eliminated variables, resolvents and removed clauses; retained
+tests check 512 complete BVE formulas and 1,539 cutoff/resume cases.

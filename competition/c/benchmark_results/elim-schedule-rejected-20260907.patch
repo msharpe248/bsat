@@ -1,0 +1,231 @@
+diff --git a/competition/c/src/elim.c b/competition/c/src/elim.c
+index d322cf8..e7c9ecc 100644
+--- a/competition/c/src/elim.c
++++ b/competition/c/src/elim.c
+@@ -259,0 +260,58 @@ done:
++/* Pass-local priorities use live occurrence counts. A failed pivot is queued
++   again only when eliminating a neighbor changes its counts. */
++typedef struct { uint32_t positive, negative, position; } ElimPriority;
++typedef struct { Var *heap; ElimPriority *priority; uint32_t size; } ElimQueue;
++
++static bool elim_before(const ElimQueue *q, Var a, Var b) {
++    const ElimPriority *x=&q->priority[a], *y=&q->priority[b];
++    uint64_t ca=(uint64_t)x->positive*x->negative;
++    uint64_t cb=(uint64_t)y->positive*y->negative;
++    return ca<cb || (ca==cb && a<b);
++}
++static void elim_up(ElimQueue *q,uint32_t at) {
++    Var v=q->heap[at];
++    while(at) {
++        uint32_t parent=(at-1)/2;Var other=q->heap[parent];
++        if(!elim_before(q,v,other))break;
++        q->heap[at]=other;q->priority[other].position=at;at=parent;
++    }
++    q->heap[at]=v;q->priority[v].position=at;
++}
++static void elim_down(ElimQueue *q,uint32_t at) {
++    Var v=q->heap[at];
++    while(2*at+1<q->size) {
++        uint32_t child=2*at+1;
++        if(child+1<q->size && elim_before(q,q->heap[child+1],q->heap[child]))++child;
++        Var other=q->heap[child];if(!elim_before(q,other,v))break;
++        q->heap[at]=other;q->priority[other].position=at;at=child;
++    }
++    q->heap[at]=v;q->priority[v].position=at;
++}
++static void elim_queue_update(Solver *s,ElimQueue *q,Var v) {
++    ElimPriority *p=&q->priority[v];uint32_t at=p->position;
++    if(at==UINT32_MAX) {
++        if(s->values[v]!=UNDEF || s->elim->eliminated[v] || (!p->positive && !p->negative))return;
++        at=q->size++;q->heap[at]=v;p->position=at;
++        elim_up(q,at);
++    } else if(at && elim_before(q,v,q->heap[(at-1)/2]))elim_up(q,at);
++    else elim_down(q,at);
++}
++static Var elim_queue_pop(ElimQueue *q) {
++    Var v=q->heap[0];q->priority[v].position=UINT32_MAX;
++    if(--q->size) {
++        q->heap[0]=q->heap[q->size];q->priority[q->heap[0]].position=0;
++        elim_down(q,0);
++    }
++    return v;
++}
++static bool elim_queue_clause(Solver *s,ElimQueue *q,CRef cr,bool added) {
++    const Lit *lits=CLAUSE_LITS(s->arena,cr);
++    for(uint32_t i=0;i<CLAUSE_SIZE(s->arena,cr);++i) {
++        ++s->work;if(solver_budget_exhausted(s))return false;
++        Lit l=lits[i];ElimPriority *p=&q->priority[var(l)];
++        uint32_t *count=sign(l)?&p->negative:&p->positive;
++        if(added)++*count;else {ASSERT(*count);--*count;}
++        elim_queue_update(s,q,var(l));
++    }
++    return true;
++}
+@@ -262,6 +320,5 @@ uint32_t elim_preprocess(Solver *s) {
+-    uint32_t count = 0;
+-    if (!s->elim || !s->elim->occs_complete) return 0;
+-    for (Var v = 1; v <= s->num_vars && !s->error && s->result != FALSE; ++v) {
+-        if (solver_budget_exhausted(s)) break;
+-        if (elim_eliminate_var(s, v)) count++;
+-        if (solver_propagate(s) != INVALID_CLAUSE) s->result = FALSE;
++    uint32_t count=0;
++    if(!s->elim || !s->elim->occs_complete || solver_budget_exhausted(s))return 0;
++    ElimQueue q={0};size_t capacity=(size_t)s->num_vars+1;
++    if(capacity>SIZE_MAX/sizeof *q.priority || capacity>SIZE_MAX/sizeof *q.heap) {
++        s->error=true;return 0;
+@@ -269 +326,27 @@ uint32_t elim_preprocess(Solver *s) {
+-    return count;
++    q.heap=malloc(capacity*sizeof *q.heap);q.priority=malloc(capacity*sizeof *q.priority);
++    if(!q.heap || !q.priority) {s->error=true;goto done;}
++    for(Var v=1;v<=s->num_vars;++v) {
++        ++s->work;if(solver_budget_exhausted(s))goto done;
++        q.priority[v]=(ElimPriority){s->elim->occs[mkLit(v,false)].size,
++                                    s->elim->occs[mkLit(v,true)].size,UINT32_MAX};
++        elim_queue_update(s,&q,v);
++    }
++    while(q.size && !s->error && s->result!=FALSE && !solver_budget_exhausted(s)) {
++        Var v=elim_queue_pop(&q);uint32_t before=s->num_clauses;
++        if(elim_eliminate_var(s,v)) {
++            ++count;
++            if(s->error || s->result==FALSE)break;
++            // Removed parents retain their arena storage throughout this pass.
++            // Resolvents contain only parent variables, with the pivot removed.
++            for(unsigned sign=0;sign<2;++sign) {
++                const OccList *o=&s->elim->occs[mkLit(v,sign)];
++                for(uint32_t i=0;i<o->size;++i)
++                    if(!elim_queue_clause(s,&q,o->clauses[i],false))goto done;
++            }
++            for(uint32_t i=before;i<s->num_clauses;++i)
++                if(!elim_queue_clause(s,&q,s->clauses[i],true))goto done;
++        }
++        if(solver_propagate(s)!=INVALID_CLAUSE)s->result=FALSE;
++    }
++done:
++    free(q.heap);free(q.priority);return count;
+diff --git a/competition/c/tests/test_elim_schedule.c b/competition/c/tests/test_elim_schedule.c
+new file mode 100644
+index 0000000..856e821
+--- /dev/null
++++ b/competition/c/tests/test_elim_schedule.c
+@@ -0,0 +1,121 @@
++/* Compare the incremental priority queue with a linear, fresh-count oracle. */
++#include "../include/solver.h"
++#include <assert.h>
++
++static uint32_t random_word(uint32_t *state) {
++    *state=*state*1664525u+1013904223u;return *state;
++}
++static Solver *formula(unsigned seed) {
++    Solver *s=solver_new();assert(s);s->opts.probing=false;
++    unsigned n=3+seed%5;uint32_t rng=seed+91991;
++    for(unsigned v=1;v<=n;++v)assert(solver_new_var(s)==v);
++    s->opts.elim_max_occ=1+seed%4;
++    for(unsigned i=0;i<8+seed%16;++i) {
++        Lit lits[4];unsigned used=0,z=2+random_word(&rng)%MIN(3u,n-1);
++        while(used<z) {
++            Var v=1+(random_word(&rng)>>8)%n;bool duplicate=false;
++            for(unsigned j=0;j<used;++j)if(var(lits[j])==v)duplicate=true;
++            if(!duplicate)lits[used++]=mkLit(v,(random_word(&rng)>>12)&1u);
++        }
++        assert(solver_add_clause(s,lits,z));
++    }
++    s->proof_file=tmpfile();assert(s->proof_file);s->opts.binary_proof=seed&1u;
++    return s;
++}
++static unsigned reference(Solver *s) {
++    bool pending[8];unsigned attempts[8]={0},retries=0;
++    for(Var v=1;v<=s->num_vars;++v)pending[v]=true;
++    elim_build_occs(s);assert(s->elim->occs_complete);
++    while(!s->error && s->result!=FALSE) {
++        unsigned positive[8]={0},negative[8]={0};
++        for(unsigned i=0;i<s->num_clauses;++i) {
++            CRef cr=s->clauses[i];if(clause_deleted(s->arena,cr))continue;
++            for(unsigned j=0;j<CLAUSE_SIZE(s->arena,cr);++j) {
++                Lit l=CLAUSE_LITS(s->arena,cr)[j];
++                if(sign(l))++negative[var(l)];else ++positive[var(l)];
++            }
++        }
++        Var next=0;uint64_t best=UINT64_MAX;
++        for(Var v=1;v<=s->num_vars;++v) {
++            if(!pending[v] || s->values[v]!=UNDEF || s->elim->eliminated[v] ||
++               (!positive[v] && !negative[v]))continue;
++            uint64_t cost=(uint64_t)positive[v]*negative[v];
++            if(cost<best) {best=cost;next=v;}
++        }
++        if(!next)break;pending[next]=false;
++        if(attempts[next]++)++retries;
++        bool affected[8]={false};
++        // Independent full-formula scan; no cached occurrence counts or heap.
++        for(unsigned i=0;i<s->num_clauses;++i) {
++            CRef cr=s->clauses[i];if(clause_deleted(s->arena,cr))continue;
++            Lit *lits=CLAUSE_LITS(s->arena,cr);unsigned z=CLAUSE_SIZE(s->arena,cr);bool parent=false;
++            for(unsigned j=0;j<z;++j)if(var(lits[j])==next)parent=true;
++            if(parent)for(unsigned j=0;j<z;++j)affected[var(lits[j])]=true;
++        }
++        if(elim_eliminate_var(s,next))for(Var v=1;v<=s->num_vars;++v)
++            if(affected[v])pending[v]=true;
++        if(solver_propagate(s)!=INVALID_CLAUSE)s->result=FALSE;
++    }
++    assert(!s->error);return retries;
++}
++static bool input_sat(const Solver *s,unsigned mask) {
++    bool satisfied=false;
++    for(size_t i=0;i<s->input_size;++i) {
++        Lit l=s->input[i];
++        if(l)satisfied|=((mask>>(var(l)-1))&1u)!=sign(l);
++        else {if(!satisfied)return false;satisfied=false;}
++    }
++    return true;
++}
++static bool truth(const Solver *s) {
++    for(unsigned mask=0;mask<(1u<<s->num_vars);++mask)if(input_sat(s,mask))return true;
++    return false;
++}
++static void equal_proof(FILE *a,FILE *b) {
++    assert(!fflush(a) && !fflush(b));rewind(a);rewind(b);
++    for(;;) {int x=fgetc(a),y=fgetc(b);assert(x==y);if(x==EOF)break;}
++    assert(!ferror(a) && !ferror(b));
++}
++static void residual_models(Solver *s,bool satisfiable) {
++    if(s->result==FALSE) {assert(!satisfiable);return;}
++    uint8_t values[8];memcpy(values,s->values,s->num_vars+1);bool found=false;
++    for(unsigned mask=0;mask<(1u<<s->num_vars);++mask) {
++        bool valid=true;
++        for(Var v=1;v<=s->num_vars;++v) {
++            lbool value=(mask&(1u<<(v-1)))?TRUE:FALSE;
++            if(values[v]!=UNDEF && values[v]!=value)valid=false;
++            s->values[v]=value;
++        }
++        for(unsigned i=0;i<s->num_clauses && valid;++i) {
++            CRef cr=s->clauses[i];if(clause_deleted(s->arena,cr))continue;bool sat=false;
++            for(unsigned j=0;j<CLAUSE_SIZE(s->arena,cr);++j) {
++                Lit l=CLAUSE_LITS(s->arena,cr)[j];sat|=lxor(s->values[var(l)],sign(l))==TRUE;
++            }
++            valid=sat;
++        }
++        if(valid) {found=true;elim_extend_model(s);assert(solver_check_model(s));}
++    }
++    assert(found==satisfiable);memcpy(s->values,values,s->num_vars+1);
++}
++int main(void) {
++    unsigned retries=0;
++    for(unsigned seed=0;seed<512;++seed) {
++        Solver *s=formula(seed),*r=formula(seed);bool sat=truth(s);
++        unsigned count=elim_preprocess(s);retries+=reference(r);assert(!s->error);
++        assert(count==s->elim->vars_eliminated && s->elim->stack_size==r->elim->stack_size);
++        for(unsigned i=0;i<s->elim->stack_size;++i)assert(s->elim->stack[i].var==r->elim->stack[i].var);
++        assert(s->elim->resolvents_added==r->elim->resolvents_added);
++        assert(s->elim->clauses_removed==r->elim->clauses_removed);
++        equal_proof(s->proof_file,r->proof_file);residual_models(s,sat);
++        solver_free(s);solver_free(r);
++    }
++    assert(retries);unsigned cutoffs=0;
++    for(unsigned seed=0;seed<3;++seed)for(unsigned limit=0;limit<=512;++limit) {
++        Solver *s=formula(seed+30);bool sat=truth(s);s->work=1;s->work_limit=1+limit;
++        elim_preprocess(s);assert(!s->error);
++        for(Var v=1;v<=s->num_vars;++v)assert(!s->seen[v]);
++        s->work_limit=0;lbool result=solver_solve(s);assert(result==(sat?TRUE:FALSE));
++        if(sat)assert(solver_check_model(s));solver_free(s);++cutoffs;
++    }
++    printf("PASS: 512 fresh-count scheduling/proof/model oracles, %u retries, %u cutoff/resume cases\n",retries,cutoffs);
++}

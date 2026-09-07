@@ -1,0 +1,92 @@
+{
+  "schema": 1,
+  "base_revision": "d4538d2",
+  "candidate_elim_sha256": "17469a65b8ca803d5c217299d83c36c984e1160b38a90be0e0d39ad2961917a3",
+  "candidate_solver_sha256": "f1a46f8089bd7a57054e3c089a7655f4fab8bc0bdd025ffe8903e388b28dec1b",
+  "test_sha256": "24319017508bc7a7667fb91415ade7a52fe7559419ea840ff5c1aa8452233576",
+  "baseline": {
+    "path": "/tmp/bsat-elim-schedule-baseline",
+    "sha256": "1c450ae61795f41e06117efec80b28bc463dcbd3bf5b67e4c168dc7f312d42ec",
+    "difference_from_base": "Only three elimination statistics output lines; numeric scheduler unchanged"
+  },
+  "builds": {
+    "release": {
+      "binary": "/Users/msharpe/python/bsat/competition/c/bin/bsat",
+      "sha256": "1fed9b7ed905b3e68df5f61019146cb327a8d2092298a47b85307d2783bcc1ae",
+      "unit_test_executables": 42,
+      "schedule_oracle_cases": 512,
+      "reference_retries": 89,
+      "cutoff_resume_cases": 1539,
+      "validation_command": [
+        "python3",
+        "competition/c/tests/validate.py",
+        "--solver",
+        "competition/c/bin/bsat",
+        "--checker",
+        "/tmp/bsat-drat-trim",
+        "--cases",
+        "30",
+        "--seed",
+        "20261202"
+      ],
+      "validation": "PASS: 3139 solves; truth-table answers, original models, text/binary RUP proofs checked (seed 20261202)",
+      "deadline_command": [
+        "python3",
+        "competition/c/tests/check_deadlines.py",
+        "--solver",
+        "competition/c/bin/bsat"
+      ],
+      "deadlines": "PASS: 42 short-deadline runs; maximum observed CPU overrun 0.000s",
+      "preserved_binary": "/tmp/bsat-elim-schedule-candidate"
+    },
+    "debug": {
+      "binary": "/Users/msharpe/python/bsat/competition/c/bin/bsat_debug",
+      "sha256": "f35a14950b8f339076c004250c1e65e86429fe98ec5885045e1cc95937c09c68",
+      "unit_test_executables": 42,
+      "schedule_oracle_cases": 512,
+      "reference_retries": 89,
+      "cutoff_resume_cases": 1539,
+      "validation_command": [
+        "python3",
+        "competition/c/tests/validate.py",
+        "--solver",
+        "competition/c/bin/bsat_debug",
+        "--checker",
+        "/tmp/bsat-drat-trim",
+        "--cases",
+        "30",
+        "--seed",
+        "20261202"
+      ],
+      "validation": "PASS: 3139 solves; truth-table answers, original models, text/binary RUP proofs checked (seed 20261202)",
+      "deadline_command": [
+        "python3",
+        "competition/c/tests/check_deadlines.py",
+        "--solver",
+        "competition/c/bin/bsat_debug"
+      ],
+      "deadlines": "PASS: 42 short-deadline runs; maximum observed CPU overrun 0.000s",
+      "preserved_binary": "/tmp/bsat-elim-schedule-candidate-debug"
+    }
+  },
+  "restored_builds": {
+    "release": {
+      "binary": "competition/c/bin/bsat",
+      "sha256": "1c450ae61795f41e06117efec80b28bc463dcbd3bf5b67e4c168dc7f312d42ec",
+      "unit_test_executables": 42,
+      "full_formula_cases": 512,
+      "cutoff_resume_cases": 1539,
+      "log_sha256": "817fb74a18bf57015f0b1b9de697221fac918c3831b842ab34cbc16519a40611"
+    },
+    "debug": {
+      "binary": "competition/c/bin/bsat_debug",
+      "sha256": "fad786c1c6e078ba485d8edfb08d74604c1b09b0ca1d56e7204dcaefc0d65627",
+      "unit_test_executables": 42,
+      "full_formula_cases": 512,
+      "cutoff_resume_cases": 1539,
+      "log_sha256": "8c1ffbfc2bba02fe2f141db354ed03705136bd0078a91643567d6075833b0b29"
+    }
+  },
+  "retained_test_sha256": "ca176f69b4a1bdf59758f1515bc824f5914264d15c0f52100206f3824da3895d",
+  "rejected_patch_sha256": "9ecc09de3346618cf4d4945ebb6bbfbd071ea4a39c0728ca99509dd694757292"
+}

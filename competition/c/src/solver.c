@@ -843,6 +843,9 @@ void solver_print_stats(const Solver* s) {
     printf("c Target literals copied: %llu\n", (unsigned long long)s->stats.target_copied);
     printf("c Target values cleared: %llu\n", (unsigned long long)s->stats.target_cleared);
     printf("c Blocked clauses   : %llu\n", (unsigned long long)s->stats.blocked_clauses);
+    printf("c Eliminated variables: %llu\n", (unsigned long long)(s->elim ? s->elim->vars_eliminated : 0));
+    printf("c Elimination resolvents: %llu\n", (unsigned long long)(s->elim ? s->elim->resolvents_added : 0));
+    printf("c Elimination removed: %llu\n", (unsigned long long)(s->elim ? s->elim->clauses_removed : 0));
     printf("c Subsumed clauses  : %llu\n", (unsigned long long)s->stats.subsumed_clauses);
     printf("c Minimized literals: %llu\n", (unsigned long long)s->stats.minimized_literals);
     printf("c Glue clauses      : %llu\n", (unsigned long long)s->stats.glue_clauses);
