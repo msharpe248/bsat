@@ -304,6 +304,30 @@ static void reduction_and_gc(void) {
     assert(solver_solve(s)==TRUE && solver_check_model(s));solver_free(s);
 }
 static void restart(void) {
+    /* The minimum applies after every restart, not just at startup. */
+    const unsigned minimums[] = {1, 10, 100};
+    for (unsigned i=0;i<sizeof minimums/sizeof *minimums;++i) {
+        SolverOpts opts=default_opts();opts.glucose_min_conflicts=minimums[i];
+        Solver *s=solver_new_with_opts(&opts);assert(s);
+        s->stats.conflicts=100000;s->lbd_samples=1;
+        s->restart.fast_ma=20;s->restart.slow_ma=10;
+        for (unsigned cycle=0;cycle<2;++cycle) {
+            s->restart.conflicts_since=minimums[i]-1;
+            assert(!solver_should_restart(s));
+            s->restart.conflicts_since=minimums[i];
+            assert(solver_should_restart(s));
+            assert(s->restart.conflicts_since==0);
+            assert(!solver_should_restart(s));
+        }
+        s->restart.conflicts_since=minimums[i];
+        s->restart.fast_ma=12.5; /* Equality is insufficient: 12.5 * .8 == 10. */
+        assert(!solver_should_restart(s));
+        s->restart.fast_ma=20;s->lbd_samples=0;
+        assert(!solver_should_restart(s));
+        s->lbd_samples=1;s->opts.restart_first=UINT32_MAX;
+        assert(!solver_should_restart(s));
+        solver_free(s);
+    }
     SolverOpts o=default_opts();o.luby_restart=true;o.luby_unit=2;
     Solver *s=solver_new_with_opts(&o);
     s->stats.conflicts=100;s->restart.conflicts_since=1;assert(!solver_should_restart(s));

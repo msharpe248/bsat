@@ -162,7 +162,7 @@ SolverOpts default_opts(void) {
         .glucose_use_ema = true,       // EMA alternative; both modes use the corrected threshold
         .glucose_fast_alpha = 0.8,     // Fast MA decay factor (tracks recent ~5 conflicts)
         .glucose_slow_alpha = 0.9999,  // Slow MA decay factor (long-term average)
-        .glucose_min_conflicts = 100,  // Minimum conflicts before enabling Glucose
+        .glucose_min_conflicts = 100,  // Minimum conflicts since the last restart
 
         // Glucose sliding window parameters (for --glucose-restart-avg)
         .glucose_window_size = 50,     // Sliding-window length
