@@ -352,3 +352,8 @@ keep-fraction, cutoff and relocation cases, with three mutation checks.
 routine instead of quadratic literal comparisons. Long overlapping-clause tests
 run up to 6.45 times faster in process CPU and complete more elimination within
 a fixed work budget. Larger-input solved counts are unchanged; BCE remains opt-in.
+
+[A local scan-work counter experiment](SCAN_WORK_EXPERIMENT.md) preserved all
+recorded search counters but measured about 1.3% more aggregate CPU on the fixed
+work screen, so the runtime change was rejected. Retained tests cover exact
+long-scan accounting and interruption replay at polling boundaries.

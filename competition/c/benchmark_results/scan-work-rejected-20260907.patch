@@ -1,0 +1,34 @@
+diff --git a/competition/c/src/solver.c b/competition/c/src/solver.c
+index 7f963f3..a3f71af 100644
+--- a/competition/c/src/solver.c
++++ b/competition/c/src/solver.c
+@@ -991,13 +991,17 @@ CRef solver_propagate(Solver* s) {
+             bool found = false;
+             uint32_t begin = s->opts.circular ? CLAUSE_HEADER(s->arena, cref)->search : 2;
+             if (begin < 2 || begin >= size) begin = 2;
++            uint64_t scan_work = s->work;
+             for (uint32_t offset = 0; offset < size - 2; offset++) {
+                 uint32_t k = begin + offset;
+                 if (k >= size) k = 2 + k - size;
+-                s->work++;
+-                if ((s->work & 1023)==0 && solver_budget_exhausted(s)) {
+-                    while (i<ws->size) watches[j++]=watches[i++];
+-                    ws->size=j; s->qhead--; return INVALID_CLAUSE;
++                ++scan_work;
++                if ((scan_work & 1023)==0) {
++                    s->work = scan_work;
++                    if (solver_budget_exhausted(s)) {
++                        while (i<ws->size) watches[j++]=watches[i++];
++                        ws->size=j; s->qhead--; return INVALID_CLAUSE;
++                    }
+                 }
+                 Lit lit = lits[k];
+                 Var v = var(lit);
+@@ -1014,6 +1018,7 @@ CRef solver_propagate(Solver* s) {
+                     break;
+                 }
+             }
++            s->work = scan_work;
+ 
+             if (found) {
+                 // Don't keep old watch
