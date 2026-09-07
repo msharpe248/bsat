@@ -192,3 +192,9 @@ clause-locks-benchmark: $(BINDIR)/clause_locks_benchmark_$(MODE)
 
 $(BINDIR)/clause_locks_benchmark_$(MODE): $(TESTDIR)/benchmark_clause_locks.c $(filter-out $(OBJDIR)/main.o,$(OBJECTS)) | dirs
 	$(CC) $(CFLAGS) -o $@ $^ -lm
+
+.PHONY: local-search-benchmark
+local-search-benchmark: $(BINDIR)/local_search_benchmark_$(MODE)
+
+$(BINDIR)/local_search_benchmark_$(MODE): $(TESTDIR)/benchmark_local_search.c $(filter-out $(OBJDIR)/main.o,$(OBJECTS)) | dirs
+	$(CC) $(CFLAGS) -o $@ $^ -lm

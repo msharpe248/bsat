@@ -29,7 +29,7 @@ typedef struct LocalSearchState {
     uint32_t  num_unsat;      // Number of unsatisfied clauses
 
     // Break counts (for focused random walk)
-    int32_t* break_count;    // break_count[v] = net unsatisfied clauses if we flip v
+    int32_t* break_count;    // Change in unsatisfied clauses on flipping v (break - make)
 
     // Clause data (copied from solver for fast access)
     Lit**    clause_lits;    // clause_lits[c] = array of literals in clause c

@@ -108,6 +108,13 @@ assignments fixed while allowing non-root decisions to change in their separate
 assignment. See [LOCAL_SEARCH_STATE.md](LOCAL_SEARCH_STATE.md) for tests and the
 comparison against forced root backtracking and plain CDCL.
 
+Local-search flip scores now maintain exact break-minus-make contributions for
+all affected variables. See [LOCAL_SEARCH_SCORES.md](LOCAL_SEARCH_SCORES.md) for
+the regression oracle and measured comparisons. Build the standalone walk driver
+with `make local-search-benchmark`, then run
+`./bin/local_search_benchmark_release input.cnf 20000 1` (flip budget and seed).
+It emits a checked SAT model or UNKNOWN; local search remains opt-in.
+
 Successful local-search model transfer resets assignment positions, reasons and
 the propagation cursor consistently. See
 [LOCAL_SEARCH_TRANSFER.md](LOCAL_SEARCH_TRANSFER.md) for its regression and

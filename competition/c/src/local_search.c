@@ -116,69 +116,44 @@ static void init_clause_state(LocalSearchState* ls) {
 /**
  * Update clause state after flipping variable v.
  */
+static void update_clause_after_flip(LocalSearchState *ls, uint32_t c, Var v,
+                                     bool became_true) {
+    uint32_t old = ls->num_true_lits[c];
+    ASSERT(became_true || old);
+    uint32_t now = became_true ? old + 1 : old - 1;
+    ls->num_true_lits[c] = now;
+    Lit *lits = ls->clause_lits[c];
+    uint32_t size = ls->clause_sizes[c];
+    if (!old) {
+        --ls->num_unsat;
+        /* Remove the make contribution for every literal; v is now the sole
+           satisfying variable and also acquires a break contribution. */
+        for (uint32_t i = 0; i < size; ++i) ++ls->break_count[var(lits[i])];
+        ++ls->break_count[v];
+    } else if (!now) {
+        ++ls->num_unsat;
+        for (uint32_t i = 0; i < size; ++i) --ls->break_count[var(lits[i])];
+        --ls->break_count[v];
+    } else if (old == 1 || now == 1) {
+        /* Only the other true literal changes its break contribution at
+           1<->2. Clauses with at least two truths before and after need no work. */
+        for (uint32_t i = 0; i < size; ++i) {
+            Var other = var(lits[i]);
+            if (other != v && lit_value(ls, lits[i])) {
+                ls->break_count[other] += now == 1 ? 1 : -1;
+                return;
+            }
+        }
+        ASSERT(false); /* Normalized clauses contain each variable once. */
+    }
+}
+
 static void update_after_flip(LocalSearchState* ls, Var v) {
     bool new_val = ls->assignment[v];
-
-    // Process positive occurrences
-    for (uint32_t i = 0; i < ls->pos_occ_count[v]; i++) {
-        uint32_t c = ls->pos_occs[v][i];
-        uint32_t old_true = ls->num_true_lits[c];
-
-        if (new_val) {
-            // Literal became true
-            ls->num_true_lits[c]++;
-            if (old_true == 0) {
-                ls->num_unsat--;
-            }
-        } else {
-            // Literal became false
-            ls->num_true_lits[c]--;
-            if (old_true == 1) {
-                ls->num_unsat++;
-            }
-        }
-    }
-
-    // Process negative occurrences
-    for (uint32_t i = 0; i < ls->neg_occ_count[v]; i++) {
-        uint32_t c = ls->neg_occs[v][i];
-        uint32_t old_true = ls->num_true_lits[c];
-
-        if (!new_val) {
-            // neg(v) literal became true
-            ls->num_true_lits[c]++;
-            if (old_true == 0) {
-                ls->num_unsat--;
-            }
-        } else {
-            // neg(v) literal became false
-            ls->num_true_lits[c]--;
-            if (old_true == 1) {
-                ls->num_unsat++;
-            }
-        }
-    }
-
-    // Update break counts for v and its neighbors
-    // This is simplified - a full implementation would update all affected variables
-    // For now, we just recalculate break_count for v
-    ls->break_count[v] = 0;
-    for (uint32_t i = 0; i < ls->pos_occ_count[v]; i++) {
-        uint32_t c = ls->pos_occs[v][i];
-        if (new_val && ls->num_true_lits[c] == 1) {
-            ls->break_count[v]++;
-        } else if (!new_val && ls->num_true_lits[c] == 0) {
-            ls->break_count[v]--;
-        }
-    }
-    for (uint32_t i = 0; i < ls->neg_occ_count[v]; i++) {
-        uint32_t c = ls->neg_occs[v][i];
-        if (!new_val && ls->num_true_lits[c] == 1) {
-            ls->break_count[v]++;
-        } else if (new_val && ls->num_true_lits[c] == 0) {
-            ls->break_count[v]--;
-        }
-    }
+    for (uint32_t i = 0; i < ls->pos_occ_count[v]; ++i)
+        update_clause_after_flip(ls, ls->pos_occs[v][i], v, new_val);
+    for (uint32_t i = 0; i < ls->neg_occ_count[v]; ++i)
+        update_clause_after_flip(ls, ls->neg_occs[v][i], v, !new_val);
 }
 
 /**

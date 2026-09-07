@@ -28,9 +28,13 @@ jobs:
           python3 competition/c/tests/test_select_corpus.py
           python3 competition/c/tests/test_benchmark_manifest.py
       - name: Unit and API regressions
-        run: make -C competition/c all test parse-benchmark MODE=${{ matrix.mode }}
+        run: make -C competition/c all test parse-benchmark local-search-benchmark MODE=${{ matrix.mode }}
       - name: Parse benchmark smoke test
         run: python3 competition/c/tests/benchmark_parse.py --parser current=competition/c/bin/parse_benchmark_${{ matrix.mode }} --repeats 1 --output "$RUNNER_TEMP/parse.json" competition/tests/fixtures/unit/trivial_sat.cnf
+      - name: Local-search benchmark smoke test
+        run: |
+          python3 competition/c/tests/benchmark.py --solver 'walk=competition/c/bin/local_search_benchmark_${{ matrix.mode }} {input} 20000 1' --repeats 1 --timeout 10 --output "$RUNNER_TEMP/walk.json" competition/c/tests/fixtures/local_search_scores/vars50/seed0.cnf
+          python3 -c 'import json,sys; assert json.load(open(sys.argv[1]))["summary"]["walk"]["verified_runs"] == 1' "$RUNNER_TEMP/walk.json"
       - name: Independent formula and certificate validation
         shell: bash
         run: |
