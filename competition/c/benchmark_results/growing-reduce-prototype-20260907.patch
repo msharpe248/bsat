@@ -1,0 +1,126 @@
+--- a/competition/c/include/solver.h
++++ b/competition/c/include/solver.h
+@@ -69,0 +70 @@
++    bool     growing_reduce;    // Grow reduction spacing with sqrt(pass count), capped at 32x
+@@ -202,0 +204,2 @@
++
++    uint64_t next_reduce;    // Conflict deadline for the growing reduction schedule
+--- a/competition/c/src/main.c
++++ b/competition/c/src/main.c
+@@ -74,0 +75 @@
++    printf("  --growing-reduce         Grow reduction intervals during longer searches\n");
+@@ -160,0 +162 @@
++    {"growing-reduce", no_argument, 0, 0},
+@@ -334,0 +337,2 @@
++                } else if (strcmp(long_options[option_index].name, "growing-reduce") == 0) {
++                    opts.growing_reduce = true;
+--- a/competition/c/src/solver.c
++++ b/competition/c/src/solver.c
+@@ -1562 +1562,9 @@
+-    s->stats.reduces++;
++    if (s->stats.reduces != UINT64_MAX) s->stats.reduces++;
++    if (s->opts.growing_reduce) {
++        /* Let longer searches keep a larger working set, with a bounded gap.
++           Schedule before allocating so an allocation failure cannot cause a
++           reduction retry on every subsequent conflict. */
++        double scale = sqrt((double)MIN(s->stats.reduces, UINT64_C(1024)));
++        uint64_t gap = (uint64_t)(s->opts.reduce_interval * scale);
++        s->next_reduce = s->stats.conflicts + MIN(gap, UINT64_MAX-s->stats.conflicts);
++    }
+@@ -1854,0 +1863 @@
++    s->next_reduce = s->opts.reduce_interval;
+@@ -1922 +1931,2 @@
+-            if (s->stats.conflicts % s->opts.reduce_interval==0) solver_reduce_db(s);
++            if (s->opts.growing_reduce ? s->stats.conflicts >= s->next_reduce :
++                s->stats.conflicts % s->opts.reduce_interval == 0) solver_reduce_db(s);
+--- a/competition/c/src/equiv.c
++++ b/competition/c/src/equiv.c
+@@ -201,0 +202 @@
++    fresh->next_reduce = s->next_reduce;
+--- a/competition/c/tests/check_deadlines.py
++++ b/competition/c/tests/check_deadlines.py
+@@ -38,0 +39 @@
++                 (hard, ['--growing-reduce', '--reduce-interval', '1']),
+--- a/competition/c/tests/validate.py
++++ b/competition/c/tests/validate.py
+@@ -211,0 +212,7 @@
++    configs += [['--growing-reduce', '--equiv', '--reduce-interval', '2', '--no-probing'],
++                ['--growing-reduce'],
++                ['--growing-reduce', '--reduce-interval', '1', '--no-probing'],
++                ['--growing-reduce', '--reduce-interval', '1', '--binary-proof', '--glue-lbd', '0'],
++                ['--growing-reduce', '--vmtf', '--reduce-interval', '1', '--protect-used', '--dynamic-lbd'],
++                ['--growing-reduce', '--reduce-interval', '2', '--inprocess', '--inprocess-interval', '1'],
++                ['--growing-reduce', '--equiv', '--elim', '--bce', '--reduce-interval', '1']]
+--- /dev/null
++++ b/competition/c/tests/test_reduction_schedule.c
+@@ -0,0 +1,70 @@
++#include "../include/solver.h"
++#include <assert.h>
++#include <math.h>
++#include <stdio.h>
++
++static void deadlines(void) {
++    SolverOpts o = default_opts();o.growing_reduce = true;
++    Solver *s = solver_new_with_opts(&o);assert(s);
++    assert(solver_solve(s) == TRUE && s->next_reduce == 2000);
++    const uint64_t next[] = {4000, 6828, 10292, 14292};
++    for (unsigned i = 0; i < 4; ++i) {
++        s->stats.conflicts = s->next_reduce;solver_reduce_db(s);
++        assert(s->stats.reduces == i+1 && s->next_reduce == next[i]);
++    }
++    s->stats.reduces = 1023;s->stats.conflicts = 100000;
++    solver_reduce_db(s);assert(s->next_reduce == 164000);
++    s->stats.reduces = UINT64_MAX;s->stats.conflicts = UINT64_MAX-1;
++    solver_reduce_db(s);assert(s->stats.reduces == UINT64_MAX && s->next_reduce == UINT64_MAX);
++    s->opts.reduce_interval = UINT32_MAX;s->stats.conflicts = 0;
++    solver_reduce_db(s);assert(s->next_reduce == UINT64_C(32)*UINT32_MAX);
++    /* Rebuilding clears the pass count and preserves the selected policy. */
++    assert(solver_solve(s) == TRUE);
++    assert(s->stats.reduces == 0 && s->next_reduce == UINT32_MAX && s->opts.growing_reduce);
++    solver_free(s);
++}
++
++static void search(bool growing, bool queue, bool equiv) {
++    SolverOpts o = default_opts();o.growing_reduce = growing;o.vmtf = queue;
++    o.equiv = equiv;o.probing = false;o.reduce_interval = 2;o.reduce_fraction = 0;o.glue_lbd = 0;
++    Solver *s = solver_new_with_opts(&o);assert(s);
++    const unsigned holes = 4;
++    for (unsigned i = 0; i < holes*(holes+1)+(equiv ? 2 : 0); ++i) assert(solver_new_var(s));
++    Lit lits[4];
++    for (unsigned p = 0; p <= holes; ++p) {
++        for (unsigned h = 0; h < holes; ++h) lits[h] = mkLit(p*holes+h+1, false);
++        assert(solver_add_clause(s, lits, holes));
++    }
++    for (unsigned h = 0; h < holes; ++h)
++        for (unsigned p = 0; p <= holes; ++p)
++            for (unsigned q = p+1; q <= holes; ++q) {
++                lits[0] = mkLit(p*holes+h+1, true);lits[1] = mkLit(q*holes+h+1, true);
++                assert(solver_add_clause(s, lits, 2));
++            }
++    if (equiv) {
++        lits[0] = mkLit(21, true);lits[1] = mkLit(22, false);
++        assert(solver_add_clause(s, lits, 2));
++        lits[0] = neg(lits[0]);lits[1] = neg(lits[1]);
++        assert(solver_add_clause(s, lits, 2));
++    }
++    assert(solver_solve(s) == FALSE && s->stats.reduces > 1);
++    if (equiv) assert(s->stats.equiv_variables);
++    uint64_t expected = 0, at = o.reduce_interval;
++    /* The terminal root conflict returns before scheduling another reduction. */
++    while (at < s->stats.conflicts) {
++        ++expected;
++        at += growing ? (uint64_t)(o.reduce_interval*sqrt((double)MIN(expected, UINT64_C(1024)))) : o.reduce_interval;
++    }
++    assert(s->stats.reduces == expected);
++    if (growing) assert(s->next_reduce == at);
++    solver_free(s);
++}
++
++int main(void) {
++    deadlines();
++    for (unsigned growing = 0; growing < 2; ++growing)
++        for (unsigned queue = 0; queue < 2; ++queue) search(growing, queue, false);
++    search(true, false, true);search(true, true, true);
++    puts("PASS: growing reduction deadlines, cap, overflow, rebuilds and actual search scheduling");
++    return 0;
++}

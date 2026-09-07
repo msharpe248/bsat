@@ -123,6 +123,10 @@ see [RANDOM_DECISION_EXPERIMENT.md](RANDOM_DECISION_EXPERIMENT.md) for the archi
 prototypes, tests, and comparisons.
 Retaining binary consequences from probing lost two development solves and was
 rejected; see [PROBE_BINARIES_EXPERIMENT.md](PROBE_BINARIES_EXPERIMENT.md).
+Growing reduction intervals improved multiplier-circuits but lost another solve,
+including at a longer limit. See
+[GROWING_REDUCTION_EXPERIMENT.md](GROWING_REDUCTION_EXPERIMENT.md) for both tested
+schedules, the integration regression, and the rejection decision.
 
 Opt-in `--iterative-minimize` follows both implicit binary and arena reasons using
 an iterative traversal with shared successful dependency checks. The
