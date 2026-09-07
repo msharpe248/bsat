@@ -158,17 +158,20 @@ static void circular_scan_order(void) {
     }
 }
 static void dynamic_clause_quality(void) {
+    for (unsigned initial_lbd = 4; initial_lbd <= 7; ++initial_lbd)
+    for (unsigned protect = 0; protect < 2; ++protect)
     for (unsigned enabled = 0; enabled < 2; ++enabled)
     for (unsigned learned = 0; learned < 2; ++learned) {
         Solver *s = formula("p cnf 4 3\n-1 -2 3 4 0\n-1 -2 3 -4 0\n-1 -3 0\n");
         s->opts.dynamic_lbd = enabled;
+        s->opts.protect_used = protect;
         /* Normal solve setup allocates independent decision-level marks. */
         s->levels_capacity = 5;
         s->level_seen = calloc(s->levels_capacity, sizeof *s->level_seen);
         assert(s->level_seen);
         CRef a = s->clauses[0], b = s->clauses[1];
-        set_clause_lbd(s->arena, a, 4);
-        set_clause_lbd(s->arena, b, 4);
+        set_clause_lbd(s->arena, a, initial_lbd);
+        set_clause_lbd(s->arena, b, initial_lbd);
         if (learned) {
             CLAUSE_HEADER(s->arena, a)->flags |= CLAUSE_LEARNED;
             CLAUSE_HEADER(s->arena, b)->flags |= CLAUSE_LEARNED;
@@ -191,7 +194,9 @@ static void dynamic_clause_quality(void) {
         Lit learnt[4];uint32_t size;Level backjump;
         solver_analyze(s, conflict, learnt, &size, &backjump);
         assert(size > 0 && learnt[0] == mkLit(2, true) && backjump == 1);
-        unsigned expected = enabled && learned ? 2 : 4;
+        assert(!!(CLAUSE_HEADER(s->arena, a)->flags & CLAUSE_FROZEN) == (protect && learned && (enabled || initial_lbd <= 6)));
+        assert(!!(CLAUSE_HEADER(s->arena, b)->flags & CLAUSE_FROZEN) == (protect && learned && (enabled || initial_lbd <= 6)));
+        unsigned expected = enabled && learned ? 2 : initial_lbd;
         assert(clause_lbd(s->arena, a) == expected && clause_lbd(s->arena, b) == expected);
         assert(s->stats.lbd_updates == (enabled && learned ? 2u : 0u));
         for (Var v = 1; v <= 4; ++v) assert(!s->seen[v]);
@@ -203,10 +208,43 @@ static void dynamic_clause_quality(void) {
             s->num_learnts = s->learnts_size = 2;
             s->opts.reduce_fraction = 0;
             solver_reduce_db(s);
+            assert(s->num_learnts == (enabled || (protect && initial_lbd <= 6) ? 2u : 0u));
+            solver_reduce_db(s);
             assert(s->num_learnts == (enabled ? 2u : 0u));
         }
         solver_free(s);
     }
+}
+static void used_clause_lifecycle(void) {
+    Solver *s = formula("p cnf 3 0\n");
+    s->opts.protect_used = true;s->opts.reduce_fraction = 0;
+    s->learnts = malloc(32 * sizeof *s->learnts);assert(s->learnts);
+    s->learnts_size = 32;
+    Lit lits[] = {mkLit(1, false), mkLit(2, false), mkLit(3, false)};
+    for (unsigned i = 0; i < 32; ++i) {
+        CRef cr = arena_alloc(s->arena, lits, 3, true);assert(cr != INVALID_CLAUSE);
+        s->learnts[s->num_learnts++] = cr;
+        set_clause_lbd(s->arena, cr, i == 0 ? 6 : 7);
+        CLAUSE_HEADER(s->arena, cr)->flags |= CLAUSE_FROZEN;
+        if (i >= 2) solver_delete_clause(s, cr);
+    }
+    solver_collect_garbage(s);assert(s->num_learnts == 2);
+    for (unsigned i = 0; i < 2; ++i)
+        assert(CLAUSE_HEADER(s->arena, s->learnts[i])->flags & CLAUSE_FROZEN);
+    solver_reduce_db(s);assert(s->num_learnts == 1);
+    CRef cr = s->learnts[0];assert(clause_lbd(s->arena, cr) == 6);
+    assert(!(CLAUSE_HEADER(s->arena, cr)->flags & CLAUSE_FROZEN));
+    // A lock retains its clause, but must not postpone consuming the reprieve.
+    CLAUSE_HEADER(s->arena, cr)->flags |= CLAUSE_FROZEN;
+    s->values[1] = TRUE;s->vars[1].reason = cr;s->vars[1].level = 1;
+    s->vars[1].trail_pos = 0;s->trail_lims[1] = 0;s->decision_level = 1;
+    s->trail[s->trail_size++] = (Trail){mkLit(1, false), 1};
+    solver_reduce_db(s);assert(s->num_learnts == 1);
+    assert(!(CLAUSE_HEADER(s->arena, s->learnts[0])->flags & CLAUSE_FROZEN));
+    solver_backtrack(s, 0);solver_reduce_db(s);assert(!s->num_learnts);
+    assert(solver_solve(s) == TRUE && solver_check_model(s));
+    assert(solver_new_var(s) == 4 && s->opts.protect_used && !s->num_learnts);
+    solver_free(s);
 }
 static void reduction_and_gc(void) {
     Solver *s=formula("p cnf 3 1\n1 2 3 0\n");
@@ -255,7 +293,7 @@ static void proof_export(void) {
     }
 }
 int main(void) {
-    parser();assumptions();api_fuzz();backtrack();assignment_growth();circular_scan_order();dynamic_clause_quality();reduction_and_gc();restart();proof_export();
+    parser();assumptions();api_fuzz();backtrack();assignment_growth();circular_scan_order();dynamic_clause_quality();used_clause_lifecycle();reduction_and_gc();restart();proof_export();
     puts("PASS: parser, 800 API solves, assumptions, backjump boundaries, reduction/GC, restart regressions");
     return 0;
 }

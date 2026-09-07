@@ -108,6 +108,12 @@ It supports proof logging and model reconstruction, and skips assumption calls.
 Measured runs showed no solved-count gain and increased memory use, so it remains
 experimental. See [EQUIVALENCE.md](EQUIVALENCE.md).
 
+Opt-in `--protect-used` grants one reduction reprieve to learned clauses with
+LBD at most six after use in conflict analysis. Reuse renews protection; otherwise
+it expires. The development sample gained one verified SAT solve, while fresh
+inputs showed no solved-count change. See [USED_CLAUSES.md](USED_CLAUSES.md) for
+tests, measurements and the limits of this experimental policy.
+
 Opt-in `--dynamic-lbd` lowers learned-clause quality scores when later conflict
 analysis uses fewer decision levels. This changes retention during reduction.
 The stress sample showed mixed timing improvements and regressions, with no

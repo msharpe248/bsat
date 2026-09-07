@@ -68,6 +68,7 @@ typedef struct SolverOpts {
     double   reduce_fraction;   // Fraction of learned clauses to keep (0.5)
     uint32_t reduce_interval;   // Conflicts between reductions (2000)
     bool     iterative_minimize; // Experimental binary-aware traversal (false)
+    bool     protect_used;      // One reduction reprieve for used LBD <= 6 clauses
     bool     dynamic_lbd;       // Re-evaluate learned-clause quality during analysis
     uint32_t minimize_budget;   // Reason inspections per clause, either mode (0 disables)
     bool     minimize;          // Enable clause minimization (true)

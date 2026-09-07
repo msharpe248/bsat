@@ -231,3 +231,22 @@ failed to show a repeatable aggregate speedup in the longer comparison. It was
 reverted. The retained regression checks every extracted variable, heap entry and
 inverse position across 128 configurations, including score ties and partial tree
 levels. Production solver behavior remains that of the target-saving milestone.
+
+## Use-sensitive learned-clause retention
+
+[Temporary protection](USED_CLAUSES.md) is an opt-in experiment that gives recently
+used learned clauses with LBD at most six one reduction reprieve. The new tests
+cover conflict/reason marking, the threshold, original clauses, dynamic LBD,
+expiry, garbage collection, lock aging and API rebuilds. One additional verified
+SAT solve repeats on the existing sample; sixteen fresh inputs show no solved-count
+change. Identical-binary timing controls expose substantial host variability, so
+default-mode timing differences are not treated as demonstrated improvements.
+
+The preceding heap milestone passed
+[Linux/macOS CI](https://github.com/msharpe248/bsat/actions/runs/34067708823).
+
+Final validation passed 4859 release and 4859 ASan/UBSan formula solves across
+43 configurations (seed 20260916), all thirteen C test executables in both modes,
+and twelve short-deadline runs per mode. The final release executable matches
+the final benchmark hashes. See the
+[validation record](benchmark_results/used-clauses-validation-20260906.json).

@@ -1,0 +1,69 @@
+{
+  "selection": "Seed 20260916, one not previously recorded input per family, shuffled families; hash-order choice within family. Same competition collection, not held-out families.",
+  "instances": [
+    {
+      "path": "/Users/msharpe/python/bsat/dataset/sat_competition2025/independent-set/87f093067622b91fa9dc0de149c8b92c.cnf",
+      "sha256": "f04d87abe42b9081bec4e0b021ce300699ad390e43c99fb9a1a01fe95adeb7ef"
+    },
+    {
+      "path": "/Users/msharpe/python/bsat/dataset/sat_competition2025/cril-misc/ad69e0a0880cd377e26260f7e4bc6d51.cnf",
+      "sha256": "cacb057bc03ed46092cb64f5de29b3c978957209f883c6954dd228c7672a367f"
+    },
+    {
+      "path": "/Users/msharpe/python/bsat/dataset/sat_competition2025/md5-equivalence-checking/619e9e0d70c78c97b0516afedf086fee.cnf",
+      "sha256": "554457e3e71dc279e8bcbf2d2e09e85d04051e65e628f8fd444ac2749a910da1"
+    },
+    {
+      "path": "/Users/msharpe/python/bsat/dataset/sat_competition2025/modcircuits/d9320e4dbba0f8bd699085f61a98ff5c.cnf",
+      "sha256": "003e999f43dbf04562f8e792c46c75f8bd6275df22168fa951648fa8d270721e"
+    },
+    {
+      "path": "/Users/msharpe/python/bsat/dataset/sat_competition2025/circuit-equivalence-checking/9dd565d002c343712eb5deda187e9034.cnf",
+      "sha256": "6fa702e2d004b43c7beae256a33a89e7cdb52db9d592f5630226991902b93795"
+    },
+    {
+      "path": "/Users/msharpe/python/bsat/dataset/sat_competition2025/unknown/967b58fea99a99b8da592d3e2fe7139b.cnf",
+      "sha256": "34b909ca599cc0dd36b99c10178ae60bd568a3fd677e27fa7343e18b12cf48e8"
+    },
+    {
+      "path": "/Users/msharpe/python/bsat/dataset/sat_competition2025/random-modularity/59fc779feee4390b57502814d424e0d6.cnf",
+      "sha256": "39e660f8aea0bfb9d6ff27104f6a0b84854bb9fc77436fff61bcf75a52f9b478"
+    },
+    {
+      "path": "/Users/msharpe/python/bsat/dataset/sat_competition2025/grs-fp-comm/fe851239cedd4197c5390cee55fee723.cnf",
+      "sha256": "a86fb6261fdb30937f8491018de013ea9c7ba0166faaee7e64b5ca0237905d18"
+    },
+    {
+      "path": "/Users/msharpe/python/bsat/dataset/sat_competition2025/equivalence-checking/28eeb2beac7005a9afa98e4d3aaca621.cnf",
+      "sha256": "758e21c6bdb82922f0eb1c12f5ff492d27d0c7bd3415f9bfe2111963ed5d1884"
+    },
+    {
+      "path": "/Users/msharpe/python/bsat/dataset/sat_competition2025/bitvector/65f7145996bbec02b90bd0fa64a20502.cnf",
+      "sha256": "43d633fb1b7622667b2a5a23bc05f8d431b5e79517de19ac859d1bb2da099b35"
+    },
+    {
+      "path": "/Users/msharpe/python/bsat/dataset/sat_competition2025/coloring-clique/292bedf65cee7cc38fe8b2725eb50868.cnf",
+      "sha256": "b38a0161e666b101d04db08a7d8791002a80eb809c3fea69bef30fdbef9b2009"
+    },
+    {
+      "path": "/Users/msharpe/python/bsat/dataset/sat_competition2025/software-verification/1a9512580b2d946ebd41de4e8c08c42d.cnf",
+      "sha256": "363376353c5365e521d8522f786eb3577a75cdc4a0c7f0d51a386fb7b0cef914"
+    },
+    {
+      "path": "/Users/msharpe/python/bsat/dataset/sat_competition2025/clique-coloring/8707ef793f0443b5804c56c2ffca322e.cnf",
+      "sha256": "4feea23dd7fa964b39f0e936e0bef2b6c6c5fe886977408d89c41ec7a9e39072"
+    },
+    {
+      "path": "/Users/msharpe/python/bsat/dataset/sat_competition2025/p-center/4761df10c93b58dc5985ca8a43c959cf.cnf",
+      "sha256": "86b4d6979b225cfb3cf553b6d5157ef18cd81880279995b10fe3c96e5d900b8e"
+    },
+    {
+      "path": "/Users/msharpe/python/bsat/dataset/sat_competition2025/algorithm-equivalence-checking/8e1f70e59050693ef128bee0092a7f5f.cnf",
+      "sha256": "bdc9f5dcf0ee90ec697c80785ece380bd6eb71bbb4105abdd65fa504009578d2"
+    },
+    {
+      "path": "/Users/msharpe/python/bsat/dataset/sat_competition2025/stedman-triples/85ba26d796de9ad740ce5a6813488fbc.cnf",
+      "sha256": "3e86157d0179bb4dd8e8ce4c81babda59207c90931eb19ac9420e4a5bac856b9"
+    }
+  ]
+}

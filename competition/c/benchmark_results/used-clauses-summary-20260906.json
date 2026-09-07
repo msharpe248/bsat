@@ -1,0 +1,2141 @@
+{
+  "screen": {
+    "summary": {
+      "baseline": {
+        "verified_runs": 3,
+        "runs": 28,
+        "mean_par2": 8.932233619038016,
+        "max_rss_bytes": 51773440,
+        "errors": 0
+      },
+      "protect": {
+        "verified_runs": 4,
+        "runs": 28,
+        "mean_par2": 8.601091822933606,
+        "max_rss_bytes": 52428800,
+        "errors": 0
+      },
+      "combined": {
+        "verified_runs": 3,
+        "runs": 28,
+        "mean_par2": 8.932209251498405,
+        "max_rss_bytes": 54788096,
+        "errors": 0
+      }
+    },
+    "instances": [
+      {
+        "input": "/Users/msharpe/python/bsat/dataset/sat_competition2025/battleship/d88c6afc13cdad0e2c8371a879692b39.cnf",
+        "solvers": {
+          "baseline": [
+            {
+              "repeat": 0,
+              "status": "UNKNOWN",
+              "verified": false,
+              "cpu_seconds": 2.0051889999999997
+            }
+          ],
+          "protect": [
+            {
+              "repeat": 0,
+              "status": "UNKNOWN",
+              "verified": false,
+              "cpu_seconds": 2.002803
+            }
+          ],
+          "combined": [
+            {
+              "repeat": 0,
+              "status": "UNKNOWN",
+              "verified": false,
+              "cpu_seconds": 2.002603
+            }
+          ]
+        }
+      },
+      {
+        "input": "/Users/msharpe/python/bsat/dataset/sat_competition2025/belpyramid-puzzle/5831f35622f3e6c666f0cee6cac60e4c.cnf",
+        "solvers": {
+          "baseline": [
+            {
+              "repeat": 0,
+              "status": "UNKNOWN",
+              "verified": false,
+              "cpu_seconds": 2.026862
+            }
+          ],
+          "protect": [
+            {
+              "repeat": 0,
+              "status": "UNKNOWN",
+              "verified": false,
+              "cpu_seconds": 2.026354
+            }
+          ],
+          "combined": [
+            {
+              "repeat": 0,
+              "status": "UNKNOWN",
+              "verified": false,
+              "cpu_seconds": 2.030787
+            }
+          ]
+        }
+      },
+      {
+        "input": "/Users/msharpe/python/bsat/dataset/sat_competition2025/coloring/c8d21db50338d9d5743802bcae77a466.cnf",
+        "solvers": {
+          "baseline": [
+            {
+              "repeat": 0,
+              "status": "UNKNOWN",
+              "verified": false,
+              "cpu_seconds": 2.00432
+            }
+          ],
+          "protect": [
+            {
+              "repeat": 0,
+              "status": "UNKNOWN",
+              "verified": false,
+              "cpu_seconds": 2.005742
+            }
+          ],
+          "combined": [
+            {
+              "repeat": 0,
+              "status": "UNKNOWN",
+              "verified": false,
+              "cpu_seconds": 2.004137
+            }
+          ]
+        }
+      },
+      {
+        "input": "/Users/msharpe/python/bsat/dataset/sat_competition2025/crafted-cec/0876c518e5653369e20fb1ee0bb8db40.cnf",
+        "solvers": {
+          "baseline": [
+            {
+              "repeat": 0,
+              "status": "UNKNOWN",
+              "verified": false,
+              "cpu_seconds": 2.03814
+            }
+          ],
+          "protect": [
+            {
+              "repeat": 0,
+              "status": "UNKNOWN",
+              "verified": false,
+              "cpu_seconds": 2.039226
+            }
+          ],
+          "combined": [
+            {
+              "repeat": 0,
+              "status": "UNKNOWN",
+              "verified": false,
+              "cpu_seconds": 2.039061
+            }
+          ]
+        }
+      },
+      {
+        "input": "/Users/msharpe/python/bsat/dataset/sat_competition2025/cryptography/99718c1729a8de3347a9946f1836421d.cnf",
+        "solvers": {
+          "baseline": [
+            {
+              "repeat": 0,
+              "status": "UNKNOWN",
+              "verified": false,
+              "cpu_seconds": 2.008731
+            }
+          ],
+          "protect": [
+            {
+              "repeat": 0,
+              "status": "UNKNOWN",
+              "verified": false,
+              "cpu_seconds": 2.004787
+            }
+          ],
+          "combined": [
+            {
+              "repeat": 0,
+              "status": "UNKNOWN",
+              "verified": false,
+              "cpu_seconds": 2.004992
+            }
+          ]
+        }
+      },
+      {
+        "input": "/Users/msharpe/python/bsat/dataset/sat_competition2025/discrete-logarithm/0ae917c2e0c1d39cbe411c29b2f5ff08.cnf",
+        "solvers": {
+          "baseline": [
+            {
+              "repeat": 0,
+              "status": "UNKNOWN",
+              "verified": false,
+              "cpu_seconds": 2.062801
+            }
+          ],
+          "protect": [
+            {
+              "repeat": 0,
+              "status": "UNKNOWN",
+              "verified": false,
+              "cpu_seconds": 2.0655930000000002
+            }
+          ],
+          "combined": [
+            {
+              "repeat": 0,
+              "status": "UNKNOWN",
+              "verified": false,
+              "cpu_seconds": 2.0625459999999998
+            }
+          ]
+        }
+      },
+      {
+        "input": "/Users/msharpe/python/bsat/dataset/sat_competition2025/ensemble-computation/67aa1a256f92020dccdf66b235de3986.cnf",
+        "solvers": {
+          "baseline": [
+            {
+              "repeat": 0,
+              "status": "UNKNOWN",
+              "verified": false,
+              "cpu_seconds": 2.0348859999999998
+            }
+          ],
+          "protect": [
+            {
+              "repeat": 0,
+              "status": "SAT",
+              "verified": true,
+              "cpu_seconds": 0.717
+            }
+          ],
+          "combined": [
+            {
+              "repeat": 0,
+              "status": "UNKNOWN",
+              "verified": false,
+              "cpu_seconds": 2.034282
+            }
+          ]
+        }
+      },
+      {
+        "input": "/Users/msharpe/python/bsat/dataset/sat_competition2025/fermat/e207ba2df64495327f715e08155a220f.cnf",
+        "solvers": {
+          "baseline": [
+            {
+              "repeat": 0,
+              "status": "UNKNOWN",
+              "verified": false,
+              "cpu_seconds": 2.036136
+            }
+          ],
+          "protect": [
+            {
+              "repeat": 0,
+              "status": "UNKNOWN",
+              "verified": false,
+              "cpu_seconds": 2.036163
+            }
+          ],
+          "combined": [
+            {
+              "repeat": 0,
+              "status": "UNKNOWN",
+              "verified": false,
+              "cpu_seconds": 2.0371070000000002
+            }
+          ]
+        }
+      },
+      {
+        "input": "/Users/msharpe/python/bsat/dataset/sat_competition2025/fpga-routing/1890f49a43a94b97828528b68c32b78e.cnf",
+        "solvers": {
+          "baseline": [
+            {
+              "repeat": 0,
+              "status": "UNKNOWN",
+              "verified": false,
+              "cpu_seconds": 2.004412
+            }
+          ],
+          "protect": [
+            {
+              "repeat": 0,
+              "status": "UNKNOWN",
+              "verified": false,
+              "cpu_seconds": 2.002462
+            }
+          ],
+          "combined": [
+            {
+              "repeat": 0,
+              "status": "UNKNOWN",
+              "verified": false,
+              "cpu_seconds": 2.002541
+            }
+          ]
+        }
+      },
+      {
+        "input": "/Users/msharpe/python/bsat/dataset/sat_competition2025/grandtour-puzzle/3f67f6767764855e516e5394be1145e5.cnf",
+        "solvers": {
+          "baseline": [
+            {
+              "repeat": 0,
+              "status": "UNKNOWN",
+              "verified": false,
+              "cpu_seconds": 2.0035659999999997
+            }
+          ],
+          "protect": [
+            {
+              "repeat": 0,
+              "status": "UNKNOWN",
+              "verified": false,
+              "cpu_seconds": 2.004749
+            }
+          ],
+          "combined": [
+            {
+              "repeat": 0,
+              "status": "UNKNOWN",
+              "verified": false,
+              "cpu_seconds": 2.003485
+            }
+          ]
+        }
+      },
+      {
+        "input": "/Users/msharpe/python/bsat/dataset/sat_competition2025/hamiltonian/6e139783cfbcfeec85b49750ad11a615.cnf",
+        "solvers": {
+          "baseline": [
+            {
+              "repeat": 0,
+              "status": "SAT",
+              "verified": true,
+              "cpu_seconds": 0.013012
+            }
+          ],
+          "protect": [
+            {
+              "repeat": 0,
+              "status": "SAT",
+              "verified": true,
+              "cpu_seconds": 0.013212
+            }
+          ],
+          "combined": [
+            {
+              "repeat": 0,
+              "status": "SAT",
+              "verified": true,
+              "cpu_seconds": 0.013291
+            }
+          ]
+        }
+      },
+      {
+        "input": "/Users/msharpe/python/bsat/dataset/sat_competition2025/hardware-model-checking/51482a5b06b055edfdca576d654ce191.cnf",
+        "solvers": {
+          "baseline": [
+            {
+              "repeat": 0,
+              "status": "UNKNOWN",
+              "verified": false,
+              "cpu_seconds": 2.066434
+            }
+          ],
+          "protect": [
+            {
+              "repeat": 0,
+              "status": "UNKNOWN",
+              "verified": false,
+              "cpu_seconds": 2.06494
+            }
+          ],
+          "combined": [
+            {
+              "repeat": 0,
+              "status": "UNKNOWN",
+              "verified": false,
+              "cpu_seconds": 2.0644880000000003
+            }
+          ]
+        }
+      },
+      {
+        "input": "/Users/msharpe/python/bsat/dataset/sat_competition2025/hgen/2d0c041c0fe72dc32527bfbf34f63e61.cnf",
+        "solvers": {
+          "baseline": [
+            {
+              "repeat": 0,
+              "status": "UNKNOWN",
+              "verified": false,
+              "cpu_seconds": 2.0026569999999997
+            }
+          ],
+          "protect": [
+            {
+              "repeat": 0,
+              "status": "UNKNOWN",
+              "verified": false,
+              "cpu_seconds": 2.004629
+            }
+          ],
+          "combined": [
+            {
+              "repeat": 0,
+              "status": "UNKNOWN",
+              "verified": false,
+              "cpu_seconds": 2.002638
+            }
+          ]
+        }
+      },
+      {
+        "input": "/Users/msharpe/python/bsat/dataset/sat_competition2025/influence-maximization/f32bb347996c351bc3e9a91c58e8601d.cnf",
+        "solvers": {
+          "baseline": [
+            {
+              "repeat": 0,
+              "status": "UNKNOWN",
+              "verified": false,
+              "cpu_seconds": 2.041344
+            }
+          ],
+          "protect": [
+            {
+              "repeat": 0,
+              "status": "UNKNOWN",
+              "verified": false,
+              "cpu_seconds": 2.052873
+            }
+          ],
+          "combined": [
+            {
+              "repeat": 0,
+              "status": "UNKNOWN",
+              "verified": false,
+              "cpu_seconds": 2.053815
+            }
+          ]
+        }
+      },
+      {
+        "input": "/Users/msharpe/python/bsat/dataset/sat_competition2025/maximum-constraint-partition/53c21f3e78f060883026b5a12ba691d8.cnf",
+        "solvers": {
+          "baseline": [
+            {
+              "repeat": 0,
+              "status": "UNKNOWN",
+              "verified": false,
+              "cpu_seconds": 2.061782
+            }
+          ],
+          "protect": [
+            {
+              "repeat": 0,
+              "status": "UNKNOWN",
+              "verified": false,
+              "cpu_seconds": 2.061419
+            }
+          ],
+          "combined": [
+            {
+              "repeat": 0,
+              "status": "UNKNOWN",
+              "verified": false,
+              "cpu_seconds": 2.062857
+            }
+          ]
+        }
+      },
+      {
+        "input": "/Users/msharpe/python/bsat/dataset/sat_competition2025/mechanical-master-key/dbb42e010bed2259e4e27bc43e4d86c6.cnf",
+        "solvers": {
+          "baseline": [
+            {
+              "repeat": 0,
+              "status": "UNKNOWN",
+              "verified": false,
+              "cpu_seconds": 2.0046559999999998
+            }
+          ],
+          "protect": [
+            {
+              "repeat": 0,
+              "status": "UNKNOWN",
+              "verified": false,
+              "cpu_seconds": 2.004648
+            }
+          ],
+          "combined": [
+            {
+              "repeat": 0,
+              "status": "UNKNOWN",
+              "verified": false,
+              "cpu_seconds": 2.004572
+            }
+          ]
+        }
+      },
+      {
+        "input": "/Users/msharpe/python/bsat/dataset/sat_competition2025/miter/c0e828fb967fc4f0935cf06c6a6b1055.cnf",
+        "solvers": {
+          "baseline": [
+            {
+              "repeat": 0,
+              "status": "UNKNOWN",
+              "verified": false,
+              "cpu_seconds": 2.005138
+            }
+          ],
+          "protect": [
+            {
+              "repeat": 0,
+              "status": "UNKNOWN",
+              "verified": false,
+              "cpu_seconds": 2.005248
+            }
+          ],
+          "combined": [
+            {
+              "repeat": 0,
+              "status": "UNKNOWN",
+              "verified": false,
+              "cpu_seconds": 2.005198
+            }
+          ]
+        }
+      },
+      {
+        "input": "/Users/msharpe/python/bsat/dataset/sat_competition2025/multiplier-circuits/90bec6dcf2399d7c7f73acba44a8641e.cnf",
+        "solvers": {
+          "baseline": [
+            {
+              "repeat": 0,
+              "status": "UNKNOWN",
+              "verified": false,
+              "cpu_seconds": 2.0310189999999997
+            }
+          ],
+          "protect": [
+            {
+              "repeat": 0,
+              "status": "UNKNOWN",
+              "verified": false,
+              "cpu_seconds": 2.030658
+            }
+          ],
+          "combined": [
+            {
+              "repeat": 0,
+              "status": "UNKNOWN",
+              "verified": false,
+              "cpu_seconds": 2.029939
+            }
+          ]
+        }
+      },
+      {
+        "input": "/Users/msharpe/python/bsat/dataset/sat_competition2025/multiplier-verification/fbdca334e6985cd2de8718b60695b5f6.cnf",
+        "solvers": {
+          "baseline": [
+            {
+              "repeat": 0,
+              "status": "UNSAT",
+              "verified": true,
+              "cpu_seconds": 0.042083999999999996
+            }
+          ],
+          "protect": [
+            {
+              "repeat": 0,
+              "status": "UNSAT",
+              "verified": true,
+              "cpu_seconds": 0.043014000000000004
+            }
+          ],
+          "combined": [
+            {
+              "repeat": 0,
+              "status": "UNSAT",
+              "verified": true,
+              "cpu_seconds": 0.042175
+            }
+          ]
+        }
+      },
+      {
+        "input": "/Users/msharpe/python/bsat/dataset/sat_competition2025/mutilated-chessboard/45742d067cc851edc1201d8a02586eac.cnf",
+        "solvers": {
+          "baseline": [
+            {
+              "repeat": 0,
+              "status": "UNKNOWN",
+              "verified": false,
+              "cpu_seconds": 2.003068
+            }
+          ],
+          "protect": [
+            {
+              "repeat": 0,
+              "status": "UNKNOWN",
+              "verified": false,
+              "cpu_seconds": 2.003159
+            }
+          ],
+          "combined": [
+            {
+              "repeat": 0,
+              "status": "UNKNOWN",
+              "verified": false,
+              "cpu_seconds": 2.003145
+            }
+          ]
+        }
+      },
+      {
+        "input": "/Users/msharpe/python/bsat/dataset/sat_competition2025/pigeon-hole/6f40bd5ac85e2a53b392d8f0369e7f1f.cnf",
+        "solvers": {
+          "baseline": [
+            {
+              "repeat": 0,
+              "status": "UNKNOWN",
+              "verified": false,
+              "cpu_seconds": 2.003444
+            }
+          ],
+          "protect": [
+            {
+              "repeat": 0,
+              "status": "UNKNOWN",
+              "verified": false,
+              "cpu_seconds": 2.0030609999999998
+            }
+          ],
+          "combined": [
+            {
+              "repeat": 0,
+              "status": "UNKNOWN",
+              "verified": false,
+              "cpu_seconds": 2.00324
+            }
+          ]
+        }
+      },
+      {
+        "input": "/Users/msharpe/python/bsat/dataset/sat_competition2025/relativized-pigeon-hole/cb950b9accfb53eb98f77b0f995ac0ae.cnf",
+        "solvers": {
+          "baseline": [
+            {
+              "repeat": 0,
+              "status": "UNKNOWN",
+              "verified": false,
+              "cpu_seconds": 2.005099
+            }
+          ],
+          "protect": [
+            {
+              "repeat": 0,
+              "status": "UNKNOWN",
+              "verified": false,
+              "cpu_seconds": 2.004765
+            }
+          ],
+          "combined": [
+            {
+              "repeat": 0,
+              "status": "UNKNOWN",
+              "verified": false,
+              "cpu_seconds": 2.004965
+            }
+          ]
+        }
+      },
+      {
+        "input": "/Users/msharpe/python/bsat/dataset/sat_competition2025/scheduling/69f6dd335626a9b71bfc6f2332f52b9d.cnf",
+        "solvers": {
+          "baseline": [
+            {
+              "repeat": 0,
+              "status": "SAT",
+              "verified": true,
+              "cpu_seconds": 0.0025589999999999996
+            }
+          ],
+          "protect": [
+            {
+              "repeat": 0,
+              "status": "SAT",
+              "verified": true,
+              "cpu_seconds": 0.002629
+            }
+          ],
+          "combined": [
+            {
+              "repeat": 0,
+              "status": "SAT",
+              "verified": true,
+              "cpu_seconds": 0.002597
+            }
+          ]
+        }
+      },
+      {
+        "input": "/Users/msharpe/python/bsat/dataset/sat_competition2025/scheduling/e707c7e87816dd02ae433d268bd327c6.cnf",
+        "solvers": {
+          "baseline": [
+            {
+              "repeat": 0,
+              "status": "UNKNOWN",
+              "verified": false,
+              "cpu_seconds": 2.036245
+            }
+          ],
+          "protect": [
+            {
+              "repeat": 0,
+              "status": "UNKNOWN",
+              "verified": false,
+              "cpu_seconds": 2.0376950000000003
+            }
+          ],
+          "combined": [
+            {
+              "repeat": 0,
+              "status": "UNKNOWN",
+              "verified": false,
+              "cpu_seconds": 2.0404109999999998
+            }
+          ]
+        }
+      },
+      {
+        "input": "/Users/msharpe/python/bsat/dataset/sat_competition2025/subset-cardinality/b628043a07c5576dd6cd21c9d73a69e0.cnf",
+        "solvers": {
+          "baseline": [
+            {
+              "repeat": 0,
+              "status": "UNKNOWN",
+              "verified": false,
+              "cpu_seconds": 2.002339
+            }
+          ],
+          "protect": [
+            {
+              "repeat": 0,
+              "status": "UNKNOWN",
+              "verified": false,
+              "cpu_seconds": 2.0025779999999997
+            }
+          ],
+          "combined": [
+            {
+              "repeat": 0,
+              "status": "UNKNOWN",
+              "verified": false,
+              "cpu_seconds": 2.00248
+            }
+          ]
+        }
+      },
+      {
+        "input": "/Users/msharpe/python/bsat/dataset/sat_competition2025/tseitin-formulas/42f1311ce504db8cc0cb590a568da20a.cnf",
+        "solvers": {
+          "baseline": [
+            {
+              "repeat": 0,
+              "status": "UNKNOWN",
+              "verified": false,
+              "cpu_seconds": 2.003579
+            }
+          ],
+          "protect": [
+            {
+              "repeat": 0,
+              "status": "UNKNOWN",
+              "verified": false,
+              "cpu_seconds": 2.002411
+            }
+          ],
+          "combined": [
+            {
+              "repeat": 0,
+              "status": "UNKNOWN",
+              "verified": false,
+              "cpu_seconds": 2.002489
+            }
+          ]
+        }
+      },
+      {
+        "input": "/Users/msharpe/python/bsat/dataset/sat_competition2025/unknown-cases/6f730dd121471749dc0b4baca2573bf7.cnf",
+        "solvers": {
+          "baseline": [
+            {
+              "repeat": 0,
+              "status": "UNKNOWN",
+              "verified": false,
+              "cpu_seconds": 2.028501
+            }
+          ],
+          "protect": [
+            {
+              "repeat": 0,
+              "status": "UNKNOWN",
+              "verified": false,
+              "cpu_seconds": 2.027948
+            }
+          ],
+          "combined": [
+            {
+              "repeat": 0,
+              "status": "UNKNOWN",
+              "verified": false,
+              "cpu_seconds": 2.029207
+            }
+          ]
+        }
+      },
+      {
+        "input": "/Users/msharpe/python/bsat/dataset/sat_competition2025/unknown-cases/fab2022deb130fe3ad1136a5c71b4109.cnf",
+        "solvers": {
+          "baseline": [
+            {
+              "repeat": 0,
+              "status": "UNKNOWN",
+              "verified": false,
+              "cpu_seconds": 2.003631
+            }
+          ],
+          "protect": [
+            {
+              "repeat": 0,
+              "status": "UNKNOWN",
+              "verified": false,
+              "cpu_seconds": 2.003568
+            }
+          ],
+          "combined": [
+            {
+              "repeat": 0,
+              "status": "UNKNOWN",
+              "verified": false,
+              "cpu_seconds": 2.003766
+            }
+          ]
+        }
+      }
+    ]
+  },
+  "confirm": {
+    "summary": {
+      "baseline": {
+        "verified_runs": 6,
+        "runs": 56,
+        "mean_par2": 10.717915142857237,
+        "max_rss_bytes": 63045632,
+        "errors": 0
+      },
+      "protect": {
+        "verified_runs": 8,
+        "runs": 56,
+        "mean_par2": 10.317048109365194,
+        "max_rss_bytes": 58195968,
+        "errors": 0
+      }
+    },
+    "instances": [
+      {
+        "input": "/Users/msharpe/python/bsat/dataset/sat_competition2025/battleship/d88c6afc13cdad0e2c8371a879692b39.cnf",
+        "solvers": {
+          "baseline": [
+            {
+              "repeat": 1,
+              "status": "UNKNOWN",
+              "verified": false,
+              "cpu_seconds": 3.007082
+            },
+            {
+              "repeat": 0,
+              "status": "UNKNOWN",
+              "verified": false,
+              "cpu_seconds": 3.008552
+            }
+          ],
+          "protect": [
+            {
+              "repeat": 0,
+              "status": "UNKNOWN",
+              "verified": false,
+              "cpu_seconds": 3.007061
+            },
+            {
+              "repeat": 1,
+              "status": "UNKNOWN",
+              "verified": false,
+              "cpu_seconds": 3.002475
+            }
+          ]
+        }
+      },
+      {
+        "input": "/Users/msharpe/python/bsat/dataset/sat_competition2025/belpyramid-puzzle/5831f35622f3e6c666f0cee6cac60e4c.cnf",
+        "solvers": {
+          "baseline": [
+            {
+              "repeat": 0,
+              "status": "UNKNOWN",
+              "verified": false,
+              "cpu_seconds": 3.02509
+            },
+            {
+              "repeat": 1,
+              "status": "UNKNOWN",
+              "verified": false,
+              "cpu_seconds": 3.030704
+            }
+          ],
+          "protect": [
+            {
+              "repeat": 1,
+              "status": "UNKNOWN",
+              "verified": false,
+              "cpu_seconds": 3.0301929999999997
+            },
+            {
+              "repeat": 0,
+              "status": "UNKNOWN",
+              "verified": false,
+              "cpu_seconds": 3.030271
+            }
+          ]
+        }
+      },
+      {
+        "input": "/Users/msharpe/python/bsat/dataset/sat_competition2025/coloring/c8d21db50338d9d5743802bcae77a466.cnf",
+        "solvers": {
+          "baseline": [
+            {
+              "repeat": 0,
+              "status": "UNKNOWN",
+              "verified": false,
+              "cpu_seconds": 3.0040519999999997
+            },
+            {
+              "repeat": 1,
+              "status": "UNKNOWN",
+              "verified": false,
+              "cpu_seconds": 3.00408
+            }
+          ],
+          "protect": [
+            {
+              "repeat": 1,
+              "status": "UNKNOWN",
+              "verified": false,
+              "cpu_seconds": 3.006198
+            },
+            {
+              "repeat": 0,
+              "status": "UNKNOWN",
+              "verified": false,
+              "cpu_seconds": 3.004056
+            }
+          ]
+        }
+      },
+      {
+        "input": "/Users/msharpe/python/bsat/dataset/sat_competition2025/crafted-cec/0876c518e5653369e20fb1ee0bb8db40.cnf",
+        "solvers": {
+          "baseline": [
+            {
+              "repeat": 1,
+              "status": "UNKNOWN",
+              "verified": false,
+              "cpu_seconds": 3.039577
+            },
+            {
+              "repeat": 0,
+              "status": "UNKNOWN",
+              "verified": false,
+              "cpu_seconds": 3.038517
+            }
+          ],
+          "protect": [
+            {
+              "repeat": 0,
+              "status": "UNKNOWN",
+              "verified": false,
+              "cpu_seconds": 3.0303709999999997
+            },
+            {
+              "repeat": 1,
+              "status": "UNKNOWN",
+              "verified": false,
+              "cpu_seconds": 3.038481
+            }
+          ]
+        }
+      },
+      {
+        "input": "/Users/msharpe/python/bsat/dataset/sat_competition2025/cryptography/99718c1729a8de3347a9946f1836421d.cnf",
+        "solvers": {
+          "baseline": [
+            {
+              "repeat": 1,
+              "status": "UNKNOWN",
+              "verified": false,
+              "cpu_seconds": 3.004982
+            },
+            {
+              "repeat": 0,
+              "status": "UNKNOWN",
+              "verified": false,
+              "cpu_seconds": 3.008558
+            }
+          ],
+          "protect": [
+            {
+              "repeat": 0,
+              "status": "UNKNOWN",
+              "verified": false,
+              "cpu_seconds": 3.0052
+            },
+            {
+              "repeat": 1,
+              "status": "UNKNOWN",
+              "verified": false,
+              "cpu_seconds": 3.004985
+            }
+          ]
+        }
+      },
+      {
+        "input": "/Users/msharpe/python/bsat/dataset/sat_competition2025/discrete-logarithm/0ae917c2e0c1d39cbe411c29b2f5ff08.cnf",
+        "solvers": {
+          "baseline": [
+            {
+              "repeat": 0,
+              "status": "UNKNOWN",
+              "verified": false,
+              "cpu_seconds": 3.064247
+            },
+            {
+              "repeat": 1,
+              "status": "UNKNOWN",
+              "verified": false,
+              "cpu_seconds": 3.064877
+            }
+          ],
+          "protect": [
+            {
+              "repeat": 0,
+              "status": "UNKNOWN",
+              "verified": false,
+              "cpu_seconds": 3.069372
+            },
+            {
+              "repeat": 1,
+              "status": "UNKNOWN",
+              "verified": false,
+              "cpu_seconds": 3.052688
+            }
+          ]
+        }
+      },
+      {
+        "input": "/Users/msharpe/python/bsat/dataset/sat_competition2025/ensemble-computation/67aa1a256f92020dccdf66b235de3986.cnf",
+        "solvers": {
+          "baseline": [
+            {
+              "repeat": 1,
+              "status": "UNKNOWN",
+              "verified": false,
+              "cpu_seconds": 3.0441719999999997
+            },
+            {
+              "repeat": 0,
+              "status": "UNKNOWN",
+              "verified": false,
+              "cpu_seconds": 3.033786
+            }
+          ],
+          "protect": [
+            {
+              "repeat": 0,
+              "status": "SAT",
+              "verified": true,
+              "cpu_seconds": 0.7714139999999999
+            },
+            {
+              "repeat": 1,
+              "status": "SAT",
+              "verified": true,
+              "cpu_seconds": 0.6944629999999999
+            }
+          ]
+        }
+      },
+      {
+        "input": "/Users/msharpe/python/bsat/dataset/sat_competition2025/fermat/e207ba2df64495327f715e08155a220f.cnf",
+        "solvers": {
+          "baseline": [
+            {
+              "repeat": 0,
+              "status": "UNKNOWN",
+              "verified": false,
+              "cpu_seconds": 3.042559
+            },
+            {
+              "repeat": 1,
+              "status": "UNKNOWN",
+              "verified": false,
+              "cpu_seconds": 3.035908
+            }
+          ],
+          "protect": [
+            {
+              "repeat": 1,
+              "status": "UNKNOWN",
+              "verified": false,
+              "cpu_seconds": 3.036294
+            },
+            {
+              "repeat": 0,
+              "status": "UNKNOWN",
+              "verified": false,
+              "cpu_seconds": 3.0367129999999998
+            }
+          ]
+        }
+      },
+      {
+        "input": "/Users/msharpe/python/bsat/dataset/sat_competition2025/fpga-routing/1890f49a43a94b97828528b68c32b78e.cnf",
+        "solvers": {
+          "baseline": [
+            {
+              "repeat": 0,
+              "status": "UNKNOWN",
+              "verified": false,
+              "cpu_seconds": 3.002497
+            },
+            {
+              "repeat": 1,
+              "status": "UNKNOWN",
+              "verified": false,
+              "cpu_seconds": 3.008175
+            }
+          ],
+          "protect": [
+            {
+              "repeat": 1,
+              "status": "UNKNOWN",
+              "verified": false,
+              "cpu_seconds": 3.0025209999999998
+            },
+            {
+              "repeat": 0,
+              "status": "UNKNOWN",
+              "verified": false,
+              "cpu_seconds": 3.002572
+            }
+          ]
+        }
+      },
+      {
+        "input": "/Users/msharpe/python/bsat/dataset/sat_competition2025/grandtour-puzzle/3f67f6767764855e516e5394be1145e5.cnf",
+        "solvers": {
+          "baseline": [
+            {
+              "repeat": 1,
+              "status": "UNKNOWN",
+              "verified": false,
+              "cpu_seconds": 3.007371
+            },
+            {
+              "repeat": 0,
+              "status": "UNKNOWN",
+              "verified": false,
+              "cpu_seconds": 3.003379
+            }
+          ],
+          "protect": [
+            {
+              "repeat": 0,
+              "status": "UNKNOWN",
+              "verified": false,
+              "cpu_seconds": 3.003672
+            },
+            {
+              "repeat": 1,
+              "status": "UNKNOWN",
+              "verified": false,
+              "cpu_seconds": 3.0034859999999997
+            }
+          ]
+        }
+      },
+      {
+        "input": "/Users/msharpe/python/bsat/dataset/sat_competition2025/hamiltonian/6e139783cfbcfeec85b49750ad11a615.cnf",
+        "solvers": {
+          "baseline": [
+            {
+              "repeat": 0,
+              "status": "SAT",
+              "verified": true,
+              "cpu_seconds": 0.013277999999999998
+            },
+            {
+              "repeat": 1,
+              "status": "SAT",
+              "verified": true,
+              "cpu_seconds": 0.01303
+            }
+          ],
+          "protect": [
+            {
+              "repeat": 0,
+              "status": "SAT",
+              "verified": true,
+              "cpu_seconds": 0.013005999999999998
+            },
+            {
+              "repeat": 1,
+              "status": "SAT",
+              "verified": true,
+              "cpu_seconds": 0.013273
+            }
+          ]
+        }
+      },
+      {
+        "input": "/Users/msharpe/python/bsat/dataset/sat_competition2025/hardware-model-checking/51482a5b06b055edfdca576d654ce191.cnf",
+        "solvers": {
+          "baseline": [
+            {
+              "repeat": 1,
+              "status": "UNKNOWN",
+              "verified": false,
+              "cpu_seconds": 3.065845
+            },
+            {
+              "repeat": 0,
+              "status": "UNKNOWN",
+              "verified": false,
+              "cpu_seconds": 3.064624
+            }
+          ],
+          "protect": [
+            {
+              "repeat": 0,
+              "status": "UNKNOWN",
+              "verified": false,
+              "cpu_seconds": 3.066093
+            },
+            {
+              "repeat": 1,
+              "status": "UNKNOWN",
+              "verified": false,
+              "cpu_seconds": 3.064513
+            }
+          ]
+        }
+      },
+      {
+        "input": "/Users/msharpe/python/bsat/dataset/sat_competition2025/hgen/2d0c041c0fe72dc32527bfbf34f63e61.cnf",
+        "solvers": {
+          "baseline": [
+            {
+              "repeat": 0,
+              "status": "UNKNOWN",
+              "verified": false,
+              "cpu_seconds": 3.0027329999999997
+            },
+            {
+              "repeat": 1,
+              "status": "UNKNOWN",
+              "verified": false,
+              "cpu_seconds": 3.002719
+            }
+          ],
+          "protect": [
+            {
+              "repeat": 1,
+              "status": "UNKNOWN",
+              "verified": false,
+              "cpu_seconds": 3.002743
+            },
+            {
+              "repeat": 0,
+              "status": "UNKNOWN",
+              "verified": false,
+              "cpu_seconds": 3.002337
+            }
+          ]
+        }
+      },
+      {
+        "input": "/Users/msharpe/python/bsat/dataset/sat_competition2025/influence-maximization/f32bb347996c351bc3e9a91c58e8601d.cnf",
+        "solvers": {
+          "baseline": [
+            {
+              "repeat": 1,
+              "status": "UNKNOWN",
+              "verified": false,
+              "cpu_seconds": 3.0429809999999997
+            },
+            {
+              "repeat": 0,
+              "status": "UNKNOWN",
+              "verified": false,
+              "cpu_seconds": 3.053895
+            }
+          ],
+          "protect": [
+            {
+              "repeat": 0,
+              "status": "UNKNOWN",
+              "verified": false,
+              "cpu_seconds": 3.041512
+            },
+            {
+              "repeat": 1,
+              "status": "UNKNOWN",
+              "verified": false,
+              "cpu_seconds": 3.053703
+            }
+          ]
+        }
+      },
+      {
+        "input": "/Users/msharpe/python/bsat/dataset/sat_competition2025/maximum-constraint-partition/53c21f3e78f060883026b5a12ba691d8.cnf",
+        "solvers": {
+          "baseline": [
+            {
+              "repeat": 0,
+              "status": "UNKNOWN",
+              "verified": false,
+              "cpu_seconds": 3.051391
+            },
+            {
+              "repeat": 1,
+              "status": "UNKNOWN",
+              "verified": false,
+              "cpu_seconds": 3.0679220000000003
+            }
+          ],
+          "protect": [
+            {
+              "repeat": 0,
+              "status": "UNKNOWN",
+              "verified": false,
+              "cpu_seconds": 3.063968
+            },
+            {
+              "repeat": 1,
+              "status": "UNKNOWN",
+              "verified": false,
+              "cpu_seconds": 3.063253
+            }
+          ]
+        }
+      },
+      {
+        "input": "/Users/msharpe/python/bsat/dataset/sat_competition2025/mechanical-master-key/dbb42e010bed2259e4e27bc43e4d86c6.cnf",
+        "solvers": {
+          "baseline": [
+            {
+              "repeat": 0,
+              "status": "UNKNOWN",
+              "verified": false,
+              "cpu_seconds": 3.0045319999999998
+            },
+            {
+              "repeat": 1,
+              "status": "UNKNOWN",
+              "verified": false,
+              "cpu_seconds": 3.0044479999999996
+            }
+          ],
+          "protect": [
+            {
+              "repeat": 1,
+              "status": "UNKNOWN",
+              "verified": false,
+              "cpu_seconds": 3.0046429999999997
+            },
+            {
+              "repeat": 0,
+              "status": "UNKNOWN",
+              "verified": false,
+              "cpu_seconds": 3.012806
+            }
+          ]
+        }
+      },
+      {
+        "input": "/Users/msharpe/python/bsat/dataset/sat_competition2025/miter/c0e828fb967fc4f0935cf06c6a6b1055.cnf",
+        "solvers": {
+          "baseline": [
+            {
+              "repeat": 1,
+              "status": "UNKNOWN",
+              "verified": false,
+              "cpu_seconds": 3.005109
+            },
+            {
+              "repeat": 0,
+              "status": "UNKNOWN",
+              "verified": false,
+              "cpu_seconds": 3.005132
+            }
+          ],
+          "protect": [
+            {
+              "repeat": 0,
+              "status": "UNKNOWN",
+              "verified": false,
+              "cpu_seconds": 3.005094
+            },
+            {
+              "repeat": 1,
+              "status": "UNKNOWN",
+              "verified": false,
+              "cpu_seconds": 3.005099
+            }
+          ]
+        }
+      },
+      {
+        "input": "/Users/msharpe/python/bsat/dataset/sat_competition2025/multiplier-circuits/90bec6dcf2399d7c7f73acba44a8641e.cnf",
+        "solvers": {
+          "baseline": [
+            {
+              "repeat": 1,
+              "status": "UNKNOWN",
+              "verified": false,
+              "cpu_seconds": 3.029825
+            },
+            {
+              "repeat": 0,
+              "status": "UNKNOWN",
+              "verified": false,
+              "cpu_seconds": 3.030605
+            }
+          ],
+          "protect": [
+            {
+              "repeat": 0,
+              "status": "UNKNOWN",
+              "verified": false,
+              "cpu_seconds": 3.035494
+            },
+            {
+              "repeat": 1,
+              "status": "UNKNOWN",
+              "verified": false,
+              "cpu_seconds": 3.030785
+            }
+          ]
+        }
+      },
+      {
+        "input": "/Users/msharpe/python/bsat/dataset/sat_competition2025/multiplier-verification/fbdca334e6985cd2de8718b60695b5f6.cnf",
+        "solvers": {
+          "baseline": [
+            {
+              "repeat": 0,
+              "status": "UNSAT",
+              "verified": true,
+              "cpu_seconds": 0.047796
+            },
+            {
+              "repeat": 1,
+              "status": "UNSAT",
+              "verified": true,
+              "cpu_seconds": 0.042631
+            }
+          ],
+          "protect": [
+            {
+              "repeat": 1,
+              "status": "UNSAT",
+              "verified": true,
+              "cpu_seconds": 0.04224599999999999
+            },
+            {
+              "repeat": 0,
+              "status": "UNSAT",
+              "verified": true,
+              "cpu_seconds": 0.042860999999999996
+            }
+          ]
+        }
+      },
+      {
+        "input": "/Users/msharpe/python/bsat/dataset/sat_competition2025/mutilated-chessboard/45742d067cc851edc1201d8a02586eac.cnf",
+        "solvers": {
+          "baseline": [
+            {
+              "repeat": 0,
+              "status": "UNKNOWN",
+              "verified": false,
+              "cpu_seconds": 3.0030900000000003
+            },
+            {
+              "repeat": 1,
+              "status": "UNKNOWN",
+              "verified": false,
+              "cpu_seconds": 3.0049159999999997
+            }
+          ],
+          "protect": [
+            {
+              "repeat": 1,
+              "status": "UNKNOWN",
+              "verified": false,
+              "cpu_seconds": 3.0031980000000003
+            },
+            {
+              "repeat": 0,
+              "status": "UNKNOWN",
+              "verified": false,
+              "cpu_seconds": 3.0030970000000003
+            }
+          ]
+        }
+      },
+      {
+        "input": "/Users/msharpe/python/bsat/dataset/sat_competition2025/pigeon-hole/6f40bd5ac85e2a53b392d8f0369e7f1f.cnf",
+        "solvers": {
+          "baseline": [
+            {
+              "repeat": 1,
+              "status": "UNKNOWN",
+              "verified": false,
+              "cpu_seconds": 3.003149
+            },
+            {
+              "repeat": 0,
+              "status": "UNKNOWN",
+              "verified": false,
+              "cpu_seconds": 3.002587
+            }
+          ],
+          "protect": [
+            {
+              "repeat": 0,
+              "status": "UNKNOWN",
+              "verified": false,
+              "cpu_seconds": 3.0031529999999997
+            },
+            {
+              "repeat": 1,
+              "status": "UNKNOWN",
+              "verified": false,
+              "cpu_seconds": 3.008598
+            }
+          ]
+        }
+      },
+      {
+        "input": "/Users/msharpe/python/bsat/dataset/sat_competition2025/relativized-pigeon-hole/cb950b9accfb53eb98f77b0f995ac0ae.cnf",
+        "solvers": {
+          "baseline": [
+            {
+              "repeat": 1,
+              "status": "UNKNOWN",
+              "verified": false,
+              "cpu_seconds": 3.004877
+            },
+            {
+              "repeat": 0,
+              "status": "UNKNOWN",
+              "verified": false,
+              "cpu_seconds": 3.006879
+            }
+          ],
+          "protect": [
+            {
+              "repeat": 1,
+              "status": "UNKNOWN",
+              "verified": false,
+              "cpu_seconds": 3.008484
+            },
+            {
+              "repeat": 0,
+              "status": "UNKNOWN",
+              "verified": false,
+              "cpu_seconds": 3.004187
+            }
+          ]
+        }
+      },
+      {
+        "input": "/Users/msharpe/python/bsat/dataset/sat_competition2025/scheduling/69f6dd335626a9b71bfc6f2332f52b9d.cnf",
+        "solvers": {
+          "baseline": [
+            {
+              "repeat": 1,
+              "status": "SAT",
+              "verified": true,
+              "cpu_seconds": 0.002765
+            },
+            {
+              "repeat": 0,
+              "status": "SAT",
+              "verified": true,
+              "cpu_seconds": 0.002308
+            }
+          ],
+          "protect": [
+            {
+              "repeat": 0,
+              "status": "SAT",
+              "verified": true,
+              "cpu_seconds": 0.0025069999999999997
+            },
+            {
+              "repeat": 1,
+              "status": "SAT",
+              "verified": true,
+              "cpu_seconds": 0.0025319999999999995
+            }
+          ]
+        }
+      },
+      {
+        "input": "/Users/msharpe/python/bsat/dataset/sat_competition2025/scheduling/e707c7e87816dd02ae433d268bd327c6.cnf",
+        "solvers": {
+          "baseline": [
+            {
+              "repeat": 1,
+              "status": "UNKNOWN",
+              "verified": false,
+              "cpu_seconds": 3.035575
+            },
+            {
+              "repeat": 0,
+              "status": "UNKNOWN",
+              "verified": false,
+              "cpu_seconds": 3.037544
+            }
+          ],
+          "protect": [
+            {
+              "repeat": 1,
+              "status": "UNKNOWN",
+              "verified": false,
+              "cpu_seconds": 3.0289289999999998
+            },
+            {
+              "repeat": 0,
+              "status": "UNKNOWN",
+              "verified": false,
+              "cpu_seconds": 3.03681
+            }
+          ]
+        }
+      },
+      {
+        "input": "/Users/msharpe/python/bsat/dataset/sat_competition2025/subset-cardinality/b628043a07c5576dd6cd21c9d73a69e0.cnf",
+        "solvers": {
+          "baseline": [
+            {
+              "repeat": 1,
+              "status": "UNKNOWN",
+              "verified": false,
+              "cpu_seconds": 3.004325
+            },
+            {
+              "repeat": 0,
+              "status": "UNKNOWN",
+              "verified": false,
+              "cpu_seconds": 3.0024290000000002
+            }
+          ],
+          "protect": [
+            {
+              "repeat": 0,
+              "status": "UNKNOWN",
+              "verified": false,
+              "cpu_seconds": 3.004725
+            },
+            {
+              "repeat": 1,
+              "status": "UNKNOWN",
+              "verified": false,
+              "cpu_seconds": 3.0025
+            }
+          ]
+        }
+      },
+      {
+        "input": "/Users/msharpe/python/bsat/dataset/sat_competition2025/tseitin-formulas/42f1311ce504db8cc0cb590a568da20a.cnf",
+        "solvers": {
+          "baseline": [
+            {
+              "repeat": 0,
+              "status": "UNKNOWN",
+              "verified": false,
+              "cpu_seconds": 3.002526
+            },
+            {
+              "repeat": 1,
+              "status": "UNKNOWN",
+              "verified": false,
+              "cpu_seconds": 3.0035220000000002
+            }
+          ],
+          "protect": [
+            {
+              "repeat": 0,
+              "status": "UNKNOWN",
+              "verified": false,
+              "cpu_seconds": 3.002954
+            },
+            {
+              "repeat": 1,
+              "status": "UNKNOWN",
+              "verified": false,
+              "cpu_seconds": 3.0026279999999996
+            }
+          ]
+        }
+      },
+      {
+        "input": "/Users/msharpe/python/bsat/dataset/sat_competition2025/unknown-cases/6f730dd121471749dc0b4baca2573bf7.cnf",
+        "solvers": {
+          "baseline": [
+            {
+              "repeat": 0,
+              "status": "UNKNOWN",
+              "verified": false,
+              "cpu_seconds": 3.0287200000000003
+            },
+            {
+              "repeat": 1,
+              "status": "UNKNOWN",
+              "verified": false,
+              "cpu_seconds": 3.029139
+            }
+          ],
+          "protect": [
+            {
+              "repeat": 1,
+              "status": "UNKNOWN",
+              "verified": false,
+              "cpu_seconds": 3.029537
+            },
+            {
+              "repeat": 0,
+              "status": "UNKNOWN",
+              "verified": false,
+              "cpu_seconds": 3.0316289999999997
+            }
+          ]
+        }
+      },
+      {
+        "input": "/Users/msharpe/python/bsat/dataset/sat_competition2025/unknown-cases/fab2022deb130fe3ad1136a5c71b4109.cnf",
+        "solvers": {
+          "baseline": [
+            {
+              "repeat": 0,
+              "status": "UNKNOWN",
+              "verified": false,
+              "cpu_seconds": 3.003009
+            },
+            {
+              "repeat": 1,
+              "status": "UNKNOWN",
+              "verified": false,
+              "cpu_seconds": 3.008873
+            }
+          ],
+          "protect": [
+            {
+              "repeat": 1,
+              "status": "UNKNOWN",
+              "verified": false,
+              "cpu_seconds": 3.0037789999999998
+            },
+            {
+              "repeat": 0,
+              "status": "UNKNOWN",
+              "verified": false,
+              "cpu_seconds": 3.003657
+            }
+          ]
+        }
+      }
+    ]
+  },
+  "fresh": {
+    "summary": {
+      "baseline": {
+        "verified_runs": 1,
+        "runs": 16,
+        "mean_par2": 11.251245328123332,
+        "max_rss_bytes": 2521464832,
+        "errors": 0
+      },
+      "protect": {
+        "verified_runs": 1,
+        "runs": 16,
+        "mean_par2": 11.251273236994166,
+        "max_rss_bytes": 2462482432,
+        "errors": 0
+      }
+    },
+    "instances": [
+      {
+        "input": "/Users/msharpe/python/bsat/dataset/sat_competition2025/algorithm-equivalence-checking/8e1f70e59050693ef128bee0092a7f5f.cnf",
+        "solvers": {
+          "baseline": [
+            {
+              "repeat": 0,
+              "status": "UNKNOWN",
+              "verified": false,
+              "cpu_seconds": 3.009823
+            }
+          ],
+          "protect": [
+            {
+              "repeat": 0,
+              "status": "UNKNOWN",
+              "verified": false,
+              "cpu_seconds": 3.0090939999999997
+            }
+          ]
+        }
+      },
+      {
+        "input": "/Users/msharpe/python/bsat/dataset/sat_competition2025/bitvector/65f7145996bbec02b90bd0fa64a20502.cnf",
+        "solvers": {
+          "baseline": [
+            {
+              "repeat": 0,
+              "status": "UNKNOWN",
+              "verified": false,
+              "cpu_seconds": 3.679574
+            }
+          ],
+          "protect": [
+            {
+              "repeat": 0,
+              "status": "UNKNOWN",
+              "verified": false,
+              "cpu_seconds": 3.555018
+            }
+          ]
+        }
+      },
+      {
+        "input": "/Users/msharpe/python/bsat/dataset/sat_competition2025/circuit-equivalence-checking/9dd565d002c343712eb5deda187e9034.cnf",
+        "solvers": {
+          "baseline": [
+            {
+              "repeat": 0,
+              "status": "UNKNOWN",
+              "verified": false,
+              "cpu_seconds": 3.009471
+            }
+          ],
+          "protect": [
+            {
+              "repeat": 0,
+              "status": "UNKNOWN",
+              "verified": false,
+              "cpu_seconds": 3.009509
+            }
+          ]
+        }
+      },
+      {
+        "input": "/Users/msharpe/python/bsat/dataset/sat_competition2025/clique-coloring/8707ef793f0443b5804c56c2ffca322e.cnf",
+        "solvers": {
+          "baseline": [
+            {
+              "repeat": 0,
+              "status": "UNKNOWN",
+              "verified": false,
+              "cpu_seconds": 3.014907
+            }
+          ],
+          "protect": [
+            {
+              "repeat": 0,
+              "status": "UNKNOWN",
+              "verified": false,
+              "cpu_seconds": 3.015699
+            }
+          ]
+        }
+      },
+      {
+        "input": "/Users/msharpe/python/bsat/dataset/sat_competition2025/coloring-clique/292bedf65cee7cc38fe8b2725eb50868.cnf",
+        "solvers": {
+          "baseline": [
+            {
+              "repeat": 0,
+              "status": "UNKNOWN",
+              "verified": false,
+              "cpu_seconds": 3.0063109999999997
+            }
+          ],
+          "protect": [
+            {
+              "repeat": 0,
+              "status": "UNKNOWN",
+              "verified": false,
+              "cpu_seconds": 3.007257
+            }
+          ]
+        }
+      },
+      {
+        "input": "/Users/msharpe/python/bsat/dataset/sat_competition2025/cril-misc/ad69e0a0880cd377e26260f7e4bc6d51.cnf",
+        "solvers": {
+          "baseline": [
+            {
+              "repeat": 0,
+              "status": "UNKNOWN",
+              "verified": false,
+              "cpu_seconds": 6.014755999999999
+            }
+          ],
+          "protect": [
+            {
+              "repeat": 0,
+              "status": "UNKNOWN",
+              "verified": false,
+              "cpu_seconds": 6.018073
+            }
+          ]
+        }
+      },
+      {
+        "input": "/Users/msharpe/python/bsat/dataset/sat_competition2025/equivalence-checking/28eeb2beac7005a9afa98e4d3aaca621.cnf",
+        "solvers": {
+          "baseline": [
+            {
+              "repeat": 0,
+              "status": "UNKNOWN",
+              "verified": false,
+              "cpu_seconds": 3.6666369999999997
+            }
+          ],
+          "protect": [
+            {
+              "repeat": 0,
+              "status": "UNKNOWN",
+              "verified": false,
+              "cpu_seconds": 3.663172
+            }
+          ]
+        }
+      },
+      {
+        "input": "/Users/msharpe/python/bsat/dataset/sat_competition2025/grs-fp-comm/fe851239cedd4197c5390cee55fee723.cnf",
+        "solvers": {
+          "baseline": [
+            {
+              "repeat": 0,
+              "status": "UNKNOWN",
+              "verified": false,
+              "cpu_seconds": 3.388876
+            }
+          ],
+          "protect": [
+            {
+              "repeat": 0,
+              "status": "UNKNOWN",
+              "verified": false,
+              "cpu_seconds": 3.4796829999999996
+            }
+          ]
+        }
+      },
+      {
+        "input": "/Users/msharpe/python/bsat/dataset/sat_competition2025/independent-set/87f093067622b91fa9dc0de149c8b92c.cnf",
+        "solvers": {
+          "baseline": [
+            {
+              "repeat": 0,
+              "status": "UNKNOWN",
+              "verified": false,
+              "cpu_seconds": 3.745655
+            }
+          ],
+          "protect": [
+            {
+              "repeat": 0,
+              "status": "UNKNOWN",
+              "verified": false,
+              "cpu_seconds": 3.789085
+            }
+          ]
+        }
+      },
+      {
+        "input": "/Users/msharpe/python/bsat/dataset/sat_competition2025/md5-equivalence-checking/619e9e0d70c78c97b0516afedf086fee.cnf",
+        "solvers": {
+          "baseline": [
+            {
+              "repeat": 0,
+              "status": "UNKNOWN",
+              "verified": false,
+              "cpu_seconds": 6.033718
+            }
+          ],
+          "protect": [
+            {
+              "repeat": 0,
+              "status": "UNKNOWN",
+              "verified": false,
+              "cpu_seconds": 6.018129
+            }
+          ]
+        }
+      },
+      {
+        "input": "/Users/msharpe/python/bsat/dataset/sat_competition2025/modcircuits/d9320e4dbba0f8bd699085f61a98ff5c.cnf",
+        "solvers": {
+          "baseline": [
+            {
+              "repeat": 0,
+              "status": "UNKNOWN",
+              "verified": false,
+              "cpu_seconds": 3.062279
+            }
+          ],
+          "protect": [
+            {
+              "repeat": 0,
+              "status": "UNKNOWN",
+              "verified": false,
+              "cpu_seconds": 3.077049
+            }
+          ]
+        }
+      },
+      {
+        "input": "/Users/msharpe/python/bsat/dataset/sat_competition2025/p-center/4761df10c93b58dc5985ca8a43c959cf.cnf",
+        "solvers": {
+          "baseline": [
+            {
+              "repeat": 0,
+              "status": "UNSAT",
+              "verified": true,
+              "cpu_seconds": 0.009153999999999999
+            }
+          ],
+          "protect": [
+            {
+              "repeat": 0,
+              "status": "UNSAT",
+              "verified": true,
+              "cpu_seconds": 0.010686000000000001
+            }
+          ]
+        }
+      },
+      {
+        "input": "/Users/msharpe/python/bsat/dataset/sat_competition2025/random-modularity/59fc779feee4390b57502814d424e0d6.cnf",
+        "solvers": {
+          "baseline": [
+            {
+              "repeat": 0,
+              "status": "UNKNOWN",
+              "verified": false,
+              "cpu_seconds": 3.005958
+            }
+          ],
+          "protect": [
+            {
+              "repeat": 0,
+              "status": "UNKNOWN",
+              "verified": false,
+              "cpu_seconds": 3.0051
+            }
+          ]
+        }
+      },
+      {
+        "input": "/Users/msharpe/python/bsat/dataset/sat_competition2025/software-verification/1a9512580b2d946ebd41de4e8c08c42d.cnf",
+        "solvers": {
+          "baseline": [
+            {
+              "repeat": 0,
+              "status": "UNKNOWN",
+              "verified": false,
+              "cpu_seconds": 6.006507
+            }
+          ],
+          "protect": [
+            {
+              "repeat": 0,
+              "status": "UNKNOWN",
+              "verified": false,
+              "cpu_seconds": 6.012570999999999
+            }
+          ]
+        }
+      },
+      {
+        "input": "/Users/msharpe/python/bsat/dataset/sat_competition2025/stedman-triples/85ba26d796de9ad740ce5a6813488fbc.cnf",
+        "solvers": {
+          "baseline": [
+            {
+              "repeat": 0,
+              "status": "UNKNOWN",
+              "verified": false,
+              "cpu_seconds": 3.0718739999999998
+            }
+          ],
+          "protect": [
+            {
+              "repeat": 0,
+              "status": "UNKNOWN",
+              "verified": false,
+              "cpu_seconds": 3.072628
+            }
+          ]
+        }
+      },
+      {
+        "input": "/Users/msharpe/python/bsat/dataset/sat_competition2025/unknown/967b58fea99a99b8da592d3e2fe7139b.cnf",
+        "solvers": {
+          "baseline": [
+            {
+              "repeat": 0,
+              "status": "UNKNOWN",
+              "verified": false,
+              "cpu_seconds": 3.012711
+            }
+          ],
+          "protect": [
+            {
+              "repeat": 0,
+              "status": "UNKNOWN",
+              "verified": false,
+              "cpu_seconds": 3.016187
+            }
+          ]
+        }
+      }
+    ]
+  }
+}

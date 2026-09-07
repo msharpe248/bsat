@@ -71,6 +71,7 @@ static void print_usage(const char* program) {
     printf("  --reduce-fraction <f>     Fraction of clauses to keep (default: 0.5)\n");
     printf("  --reduce-interval <n>     Conflicts between reductions (default: 2000)\n");
     printf("  --iterative-minimize     Experimental binary-aware minimization\n");
+    printf("  --protect-used           Temporarily retain used learned clauses with LBD <= 6\n");
     printf("  --dynamic-lbd            Refresh learned-clause LBD during analysis\n");
     printf("  --minimize-budget <n>     Reason checks per learned clause (10000)\n");
     printf("  --no-minimize             Disable clause minimization\n");
@@ -155,6 +156,7 @@ static struct option long_options[] = {
     {"reduce-fraction", required_argument, 0, 0},
     {"reduce-interval", required_argument, 0, 0},
     {"iterative-minimize", no_argument, 0, 0},
+    {"protect-used", no_argument, 0, 0},
     {"dynamic-lbd", no_argument, 0, 0},
     {"minimize-budget", required_argument, 0, 0},
     {"no-minimize",     no_argument,       0, 0},
@@ -326,6 +328,8 @@ int main(int argc, char** argv) {
                     opts.reduce_interval = (uint32_t)atol(optarg);
                 } else if (strcmp(long_options[option_index].name, "iterative-minimize") == 0) {
                     opts.iterative_minimize = true;
+                } else if (strcmp(long_options[option_index].name, "protect-used") == 0) {
+                    opts.protect_used = true;
                 } else if (strcmp(long_options[option_index].name, "dynamic-lbd") == 0) {
                     opts.dynamic_lbd = true;
                 } else if (strcmp(long_options[option_index].name, "minimize-budget") == 0) {

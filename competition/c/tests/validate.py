@@ -197,6 +197,10 @@ def main():
                 ['--time', '5', '--iterative-minimize', '--equiv', '--elim', '--bce'],
                 ['--time', '5', '--inprocess', '--inprocess-interval', '1',
                  '--reduce-interval', '1', '--dynamic-lbd', '--binary-proof']]
+    configs += [['--protect-used'],
+                ['--protect-used', '--binary-proof', '--reduce-interval', '1', '--max-lbd', '3'],
+                ['--protect-used', '--dynamic-lbd', '--equiv', '--elim', '--bce',
+                 '--inprocess', '--inprocess-interval', '1']]
     fixed = [
         (5, [[1, 2], [1, -2], [-3, 4], [3, -4], [4, 5]], None),
         (5, [[-4], [-1, 2, 4], [1, -2, 4]] +

@@ -136,6 +136,7 @@ SolverOpts default_opts(void) {
         .seed = 1,
         .equiv = false,
         .equiv_budget = 1000000,
+        .protect_used = false,
         .dynamic_lbd = false,
         .max_conflicts = 0,        // Unlimited
         .max_decisions = 0,        // Unlimited
@@ -1043,14 +1044,19 @@ static uint32_t calc_lbd(Solver* s, const Lit* lits, uint32_t size) {
 }
 
 static void improve_clause_lbd(Solver *s, CRef cr) {
-    if (!s->opts.dynamic_lbd || !clause_learned(s->arena, cr)) return;
-    uint32_t old = clause_lbd(s->arena, cr);
-    if (old <= s->opts.glue_lbd) return;
-    uint32_t current = calc_lbd(s, CLAUSE_LITS(s->arena, cr), CLAUSE_SIZE(s->arena, cr));
-    if (current < old) {
-        set_clause_lbd(s->arena, cr, current);
-        s->stats.lbd_updates++;
+    if ((!s->opts.dynamic_lbd && !s->opts.protect_used) || !clause_learned(s->arena, cr)) return;
+    if (s->opts.dynamic_lbd) {
+        uint32_t old = clause_lbd(s->arena, cr);
+        if (old > s->opts.glue_lbd) {
+            uint32_t current = calc_lbd(s, CLAUSE_LITS(s->arena, cr), CLAUSE_SIZE(s->arena, cr));
+            if (current < old) {
+                set_clause_lbd(s->arena, cr, current);
+                s->stats.lbd_updates++;
+            }
+        }
     }
+    if (s->opts.protect_used && clause_lbd(s->arena, cr) <= 6)
+        CLAUSE_HEADER(s->arena, cr)->flags |= CLAUSE_FROZEN;
 }
 
 void solver_analyze(Solver* s, CRef conflict, Lit* learnt, uint32_t* learnt_size, Level* bt_level) {
@@ -1534,6 +1540,11 @@ void solver_reduce_db(Solver* s) {
     for (uint32_t i = 0; i < s->num_learnts; ++i) {
         CRef cr = s->learnts[i];
         if (cr == INVALID_CLAUSE || clause_deleted(s->arena, cr)) continue;
+        if (s->opts.protect_used) {
+            bool used = (CLAUSE_HEADER(s->arena, cr)->flags & CLAUSE_FROZEN) != 0;
+            CLAUSE_HEADER(s->arena, cr)->flags &= ~CLAUSE_FROZEN;
+            if (used && clause_lbd(s->arena, cr) <= 6) continue;
+        }
         if (CLAUSE_SIZE(s->arena, cr) <= 2 || clause_lbd(s->arena, cr) <= s->opts.glue_lbd || clause_locked(s, cr)) continue;
         scores[n++] = (ClauseScore){cr, clause_lbd(s->arena, cr), clause_activity(s->arena, cr)};
     }
