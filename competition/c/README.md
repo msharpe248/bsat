@@ -64,6 +64,11 @@ solves. It is disabled by default. See
 [LOGICAL_CHRONOLOGICAL_BACKTRACKING.md](LOGICAL_CHRONOLOGICAL_BACKTRACKING.md)
 for the trail invariants, independent checks and measured limits.
 
+Successful equivalence rebuilding now preserves the scratch state used for
+learned-clause LBD scores. Earlier affected runs incorrectly scored all learned
+clauses as glue. See [EQUIV_LBD_STATE.md](EQUIV_LBD_STATE.md) for regression
+coverage and the mixed speed, solve-count and memory results after correction.
+
 Experimental `--congruence --equiv --equiv-budget 100000000` extracts AND,
 XOR and ITE gates, proves aliases with RUP, then substitutes equivalent
 variables. It improves a large hardware-model-checking development case but

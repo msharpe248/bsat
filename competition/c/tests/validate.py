@@ -283,6 +283,7 @@ def main():
     fixed += [(5, gate_pairs[0] + [[-4, -1], [4, 1], [2]], None),
               (5, gate_pairs[1] + [[-4, 1], [4, -1], [2]], None),
               (5, gate_pairs[2] + [[-4, 1], [4, -1], [-2, -1], [2, 1], [-3]], None)]
+    fixed += [(6, [[-3, 4], [3, -4], [5, 6, 2], [5, 6, -2]], None)]
     total = 0
     with tempfile.TemporaryDirectory(prefix='bsat-validation-') as tmp:
         directory = Path(tmp)

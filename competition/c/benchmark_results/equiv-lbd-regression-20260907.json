@@ -1,0 +1,43 @@
+{
+  "schema": 1,
+  "before_record": "equiv-lbd-reproduction-20260907.json",
+  "before": {
+    "substituted": 1,
+    "levels_capacity": 0,
+    "level_seen_present": false,
+    "learned_size": 2,
+    "learned_lbd": 0,
+    "max_lbd": 0
+  },
+  "after": {
+    "substituted": 1,
+    "levels_capacity": 8,
+    "level_seen_present": true,
+    "learned_size": 2,
+    "learned_lbd": 2,
+    "max_lbd": 2
+  },
+  "build_command": [
+    "cc",
+    "-std=c11",
+    "-D_POSIX_C_SOURCE=200809L",
+    "-O3",
+    "-Icompetition/c/include",
+    "/tmp/bsat-equiv-lbd-repro.c",
+    "competition/c/build/release/equiv.o",
+    "competition/c/build/release/elim.o",
+    "competition/c/build/release/solver.o",
+    "competition/c/build/release/minimize.o",
+    "competition/c/build/release/vmtf.o",
+    "competition/c/build/release/local_search.o",
+    "competition/c/build/release/watch.o",
+    "competition/c/build/release/congruence.o",
+    "competition/c/build/release/arena.o",
+    "competition/c/build/release/dimacs.o",
+    "-lm",
+    "-o",
+    "/tmp/bsat-equiv-lbd-after"
+  ],
+  "after_binary_sha256": "36b91490e41337aee65a4f970dcd4f6440e1640cb7714cbc627c06acb818a987",
+  "regression_failure_before_fix": "cc -std=c11 -D_POSIX_C_SOURCE=200809L -Wall -Wextra -pedantic -O3 -march=native -flto -Iinclude -o bin/tests/release/test_equiv tests/test_equiv.c build/release/arena.o build/release/congruence.o build/release/dimacs.o build/release/elim.o build/release/equiv.o build/release/local_search.o build/release/minimize.o build/release/solver.o build/release/vmtf.o build/release/watch.o -lm\nAssertion failed: (clause_lbd(s->arena,s->learnts[0])==2 && s->stats.max_lbd==2), function lbd_state, file test_equiv.c, line 96.\n"
+}

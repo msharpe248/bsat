@@ -1,0 +1,69 @@
+{
+  "schema": 1,
+  "source_sha256": "dab861e5d7c98b7b6cf3c56dd5a1084bae645e91ef13a530616b17cd435ae600",
+  "test_sha256": "411194174873987f6798d0f0603ad1674589274f097c3252e249f9b2363cdba8",
+  "mutations": [
+    {
+      "name": "omit_scratch_transfer",
+      "mode": "release",
+      "command": [
+        "cc",
+        "-std=c11",
+        "-D_POSIX_C_SOURCE=200809L",
+        "-O3",
+        "-march=native",
+        "-flto",
+        "-I/Users/msharpe/python/bsat/competition/c/include",
+        "/tmp/bsat-equiv-lbd-mutants/src/omit_scratch_transfer.c",
+        "/Users/msharpe/python/bsat/competition/c/tests/test_equiv.c",
+        "/Users/msharpe/python/bsat/competition/c/build/release/elim.o",
+        "/Users/msharpe/python/bsat/competition/c/build/release/solver.o",
+        "/Users/msharpe/python/bsat/competition/c/build/release/minimize.o",
+        "/Users/msharpe/python/bsat/competition/c/build/release/vmtf.o",
+        "/Users/msharpe/python/bsat/competition/c/build/release/local_search.o",
+        "/Users/msharpe/python/bsat/competition/c/build/release/watch.o",
+        "/Users/msharpe/python/bsat/competition/c/build/release/congruence.o",
+        "/Users/msharpe/python/bsat/competition/c/build/release/arena.o",
+        "/Users/msharpe/python/bsat/competition/c/build/release/dimacs.o",
+        "-lm",
+        "-o",
+        "/tmp/bsat-equiv-lbd-mutants/omit_scratch_transfer"
+      ],
+      "returncode": -6,
+      "diagnostic": "Assertion failed: (clause_lbd(s->arena,s->learnts[0])==2 && s->stats.max_lbd==2), function lbd_state, file test_equiv.c, line 96.\n",
+      "mutated_source_sha256": "1a3aba26fdccfd0c3c545e8aeea89b98fd03182e9111ef88320957ec7e84825e"
+    },
+    {
+      "name": "retain_old_ownership",
+      "mode": "debug",
+      "command": [
+        "cc",
+        "-std=c11",
+        "-D_POSIX_C_SOURCE=200809L",
+        "-O0",
+        "-g",
+        "-DDEBUG",
+        "-fsanitize=address,undefined",
+        "-fno-omit-frame-pointer",
+        "-I/Users/msharpe/python/bsat/competition/c/include",
+        "/tmp/bsat-equiv-lbd-mutants/src/retain_old_ownership.c",
+        "/Users/msharpe/python/bsat/competition/c/tests/test_equiv.c",
+        "/Users/msharpe/python/bsat/competition/c/build/debug/elim.o",
+        "/Users/msharpe/python/bsat/competition/c/build/debug/solver.o",
+        "/Users/msharpe/python/bsat/competition/c/build/debug/minimize.o",
+        "/Users/msharpe/python/bsat/competition/c/build/debug/vmtf.o",
+        "/Users/msharpe/python/bsat/competition/c/build/debug/local_search.o",
+        "/Users/msharpe/python/bsat/competition/c/build/debug/watch.o",
+        "/Users/msharpe/python/bsat/competition/c/build/debug/congruence.o",
+        "/Users/msharpe/python/bsat/competition/c/build/debug/arena.o",
+        "/Users/msharpe/python/bsat/competition/c/build/debug/dimacs.o",
+        "-lm",
+        "-o",
+        "/tmp/bsat-equiv-lbd-mutants/retain_old_ownership"
+      ],
+      "returncode": -6,
+      "diagnostic": "=================================================================\n==92015==ERROR: AddressSanitizer: heap-use-after-free on address 0x602000000353 at pc 0x0001048d1654 bp 0x00016b5a64e0 sp 0x00016b5a64d8\nREAD of size 1 at 0x602000000353 thread T0\n==92015==WARNING: external symbolizer didn't start up correctly!\n==92015==WARNING: Can't write to symbolizer at fd 4\n==92015==WARNING: external symbolizer didn't start up correctly!\n==92015==WARNING: Can't write to symbolizer at fd 5\n==92015==WARNING: external symbolizer didn't start up correctly!\n==92015==WARNING: Can't write to symbolizer at fd 6\n==92015==WARNING: external symbolizer didn't start up correctly!\n==92015==WARNING: Can't write to symbolizer at fd 7\n==92015==WARNING: external symbolizer didn't start up correctly!\n==92015==WARNING: Failed to use and restart external symbolizer!\n    #0 0x0001048d1650 in calc_lbd+0x6b8 (/private/tmp/bsat-equiv-lbd-mutants/retain_old_ownership:arm64+0x10007d650)\n    #1 0x0001048d9a38 in solve_internal+0x4170 (/private/tmp/bsat-equiv-lbd-mutants/retain_old_ownership:arm64+0x100085a38)\n    #2 0x0001048c8e40 in solver_solve_at+0x16f4 (/private/tmp/bsat-equiv-lbd-mutants/retain_old_ownership:arm64+0x100074e40)\n    #3 0x0001048c773c in solver_solve_with_assumptions+0x28 (/private/tmp/bsat-equiv-lbd-mutants/retain_old_ownership:arm64+0x10007373c)\n    #4 0x0001048ca74c in solver_solve+0x1c (/private/tmp/bsat-equiv-lbd-mutants/retain_old_ownership:arm64+0x10007674c)\n    #5 0x0001048615e0 in lbd_state+0x3b8 (/private/tmp/bsat-equiv-lbd-mutants/retain_old_ownership:arm64+0x10000d5e0)\n    #6 0x0001048611f0 in main+0x18 (/private/tmp/bsat-equiv-lbd-mutants/retain_old_ownership:arm64+0x10000d1f0)\n    #7 0x0001884004e0 in start+0x1b4c (/usr/lib/dyld:arm64e+0x204e0)\n\n0x602000000353 is located 3 bytes inside of 8-byte region [0x602000000350,0x602000000358)\nfreed by thread T0 here:\n    #0 0x00010515d258 in free+0x7c (/Library/Developer/CommandLineTools/usr/lib/clang/21/lib/darwin/libclang_rt.asan_osx_dynamic.dylib:arm64e+0x41258)\n    #1 0x0001048814e0 in solver_free+0x310 (/private/tmp/bsat-equiv-lbd-mutants/retain_old_ownership:arm64+0x10002d4e0)\n    #2 0x00010485db14 in solver_substitute_equivalences+0x9294 (/private/tmp/bsat-equiv-lbd-mutants/retain_old_ownership:arm64+0x100009b14)\n    #3 0x0001048d80a4 in solve_internal+0x27dc (/private/tmp/bsat-equiv-lbd-mutants/retain_old_ownership:arm64+0x1000840a4)\n    #4 0x0001048c8e40 in solver_solve_at+0x16f4 (/private/tmp/bsat-equiv-lbd-mutants/retain_old_ownership:arm64+0x100074e40)\n    #5 0x0001048c773c in solver_solve_with_assumptions+0x28 (/private/tmp/bsat-equiv-lbd-mutants/retain_old_ownership:arm64+0x10007373c)\n    #6 0x0001048ca74c in solver_solve+0x1c (/private/tmp/bsat-equiv-lbd-mutants/retain_old_ownership:arm64+0x10007674c)\n    #7 0x0001048615e0 in lbd_state+0x3b8 (/private/tmp/bsat-equiv-lbd-mutants/retain_old_ownership:arm64+0x10000d5e0)\n    #8 0x0001048611f0 in main+0x18 (/private/tmp/bsat-equiv-lbd-mutants/retain_old_ownership:arm64+0x10000d1f0)\n    #9 0x0001884004e0 in start+0x1b4c (/usr/lib/dyld:arm64e+0x204e0)\n\npreviously allocated by thread T0 here:\n    #0 0x00010515d450 in calloc+0x80 (/Library/Developer/CommandLineTools/usr/lib/clang/21/lib/darwin/libclang_rt.asan_osx_dynamic.dylib:arm64e+0x41450)\n    #1 0x0001048c847c in solver_solve_at+0xd30 (/private/tmp/bsat-equiv-lbd-mutants/retain_old_ownership:arm64+0x10007447c)\n    #2 0x0001048c773c in solver_solve_with_assumptions+0x28 (/private/tmp/bsat-equiv-lbd-mutants/retain_old_ownership:arm64+0x10007373c)\n    #3 0x0001048ca74c in solver_solve+0x1c (/private/tmp/bsat-equiv-lbd-mutants/retain_old_ownership:arm64+0x10007674c)\n    #4 0x0001048615e0 in lbd_state+0x3b8 (/private/tmp/bsat-equiv-lbd-mutants/retain_old_ownership:arm64+0x10000d5e0)\n    #5 0x0001048611f0 in main+0x18 (/private/tmp/bsat-equiv-lbd-mutants/retain_old_ownership:arm64+0x10000d1f0)\n    #6 0x0001884004e0 in start+0x1b4c (/usr/lib/dyld:arm64e+0x204e0)\n\nSUMMARY: AddressSanitizer: heap-use-after-free (/private/tmp/bsat-equiv-lbd-mutants/retain_old_ownership:arm64+0x10007d650) in calc_lbd+0x6b8\nShadow bytes around the buggy address:\n  0x602000000080: fa fa fd fa fa fa fd fa fa fa fd fa fa fa fd fd\n  0x602000000100: fa fa fd fa fa fa fd fa fa fa fd fa fa fa fd fa\n  0x602000000180: fa fa fd fd fa fa fd fa fa fa fd fa fa fa fd fa\n  0x602000000200: fa fa fd fa fa fa 00 07 fa fa 00 06 fa fa 00 04\n  0x602000000280: fa fa 00 00 fa fa fd fa fa fa fd fa fa fa fd fd\n=>0x602000000300: fa fa fd fa fa fa fd fa fa fa[fd]fa fa fa fd fd\n  0x602000000380: fa fa fd fa fa fa fd fd fa fa 07 fa fa fa fa fa\n  0x602000000400: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa\n  0x602000000480: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa\n  0x602000000500: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa\n  0x602000000580: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa\nShadow byte legend (one shadow byte represents 8 application bytes):\n  Addressable:           00\n  Partially addressable: 01 02 03 04 05 06 07 \n  Heap left redzone:       fa\n  Freed heap region:       fd\n  Stack left redzone:      f1\n  Stack mid redzone:       f2\n  Stack right redzone:     f3\n  Stack after return:      f5\n  Stack use after scope:   f8\n  Global redzone:          f9\n  Global init order:       f6\n  Poisoned by user:        f7\n  Container overflow:      fc\n  Array cookie:            ac\n  Intra object redzone:    bb\n  ASan internal:           fe\n  Left alloca redzone:     ca\n  Right alloca redzone:    cb\n==92015==ABORTING\n",
+      "mutated_source_sha256": "d6c18f6f81a1babbc0ec30f8d3797f790624bbee96255364f496d9eafa1f869f"
+    }
+  ]
+}

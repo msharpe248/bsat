@@ -203,6 +203,11 @@ uint32_t solver_substitute_equivalences(Solver *s) {
     fresh->stats.equiv_clauses += rewritten;
     fresh->work = s->work; fresh->work_limit = s->work_limit;
     fresh->random_state = s->random_state;
+    /* Solving allocates level marks before preprocessing. Keep that scratch
+       when replacing the solver, or every subsequent LBD is silently zero. */
+    free(fresh->level_seen);
+    fresh->level_seen = s->level_seen; fresh->levels_capacity = s->levels_capacity;
+    s->level_seen = NULL; s->levels_capacity = 0;
     fresh->input = s->input; fresh->input_size = s->input_size;
     fresh->input_capacity = s->input_capacity; fresh->input_clauses = s->input_clauses;
     s->input = NULL; s->input_size = s->input_capacity = 0;

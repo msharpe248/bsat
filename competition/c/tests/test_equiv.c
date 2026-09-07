@@ -82,7 +82,32 @@ static void budget_and_composition(void) {
     assert(solver_solve(s)==TRUE && solver_check_model(s));
     assert(s->stats.equiv_variables==1);solver_free(s);
 }
+static void lbd_state(void) {
+    for(unsigned mask=0;mask<8;++mask) {
+        SolverOpts o=default_opts();o.equiv=(mask&1)!=0;o.vmtf=(mask&2)!=0;
+        o.chrono=(mask&4)!=0;o.chrono_levels=0;o.probing=false;o.max_conflicts=1;
+        Solver *s=solver_new_with_opts(&o);assert(s);
+        /* Parents 5 and 6 precede child 2 in either decision order. Their
+           first conflict learns (5 or 6), with two distinct decision levels.
+           The independent 3/4 alias forces the SCC replacement path. */
+        assert(dimacs_parse_string(s,"p cnf 6 4\n-3 4 0\n3 -4 0\n5 6 2 0\n5 6 -2 0\n")==DIMACS_OK);
+        assert(solver_solve(s)==UNDEF && !s->error);
+        assert(s->stats.equiv_variables==(o.equiv?1u:0u) && s->num_learnts==1);
+        assert(clause_lbd(s->arena,s->learnts[0])==2 && s->stats.max_lbd==2);
+        assert(s->level_seen && s->levels_capacity>s->num_vars);
+        for(uint32_t i=0;i<s->levels_capacity;++i)assert(!s->level_seen[i]);
+        s->opts.max_conflicts=0;
+        assert(solver_solve(s)==TRUE && solver_check_model(s));
+        Lit assumptions[]={mkLit(5,1),mkLit(6,1)};
+        assert(solver_solve_with_assumptions(s,assumptions,2)==FALSE && !s->error);
+        assert(solver_solve(s)==TRUE && solver_check_model(s));
+        assert(s->level_seen && s->levels_capacity>s->num_vars);
+        solver_free(s);
+    }
+    puts("PASS: nonzero LBD and scratch ownership across SCC replacement, assumptions and repeated solves");
+}
 int main(void) {
+    lbd_state();
     signed_classes();contradiction();root_binaries();probing_fact();long_cycle();budget_and_composition();
     puts("PASS: signed SCCs, contradiction, 10000-node cycle, budget rollback, reconstruction and API reuse");
     return 0;
