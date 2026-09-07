@@ -1254,13 +1254,7 @@ bool solver_decide(Solver* s) {
     s->trail_lims[s->decision_level] = s->trail_size;
 
     Lit dec = mkLit(next, sign);
-    s->values[next] = sign ? FALSE : TRUE;
-    s->vars[next].level = s->decision_level;
-    s->vars[next].reason = INVALID_CLAUSE;
-    s->vars[next].trail_pos = s->trail_size;
-    s->trail[s->trail_size].lit = dec;
-    s->trail[s->trail_size].level = s->decision_level;
-    s->trail_size++;
+    push_trail(s, dec);
 
     s->stats.decisions++;
 

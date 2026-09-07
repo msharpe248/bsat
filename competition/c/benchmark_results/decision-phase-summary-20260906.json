@@ -1,0 +1,58 @@
+{
+  "summary": {
+    "old-heap": {
+      "verified_runs": 3,
+      "runs": 28,
+      "mean_par2": 17.8587680312755,
+      "max_rss_bytes": 74514432,
+      "errors": 0
+    },
+    "new-heap": {
+      "verified_runs": 3,
+      "runs": 28,
+      "mean_par2": 17.85875274254275,
+      "max_rss_bytes": 80232448,
+      "errors": 0
+    },
+    "old-vmtf": {
+      "verified_runs": 5,
+      "runs": 28,
+      "mean_par2": 16.627555379502674,
+      "max_rss_bytes": 86589440,
+      "errors": 0
+    },
+    "new-vmtf": {
+      "verified_runs": 5,
+      "runs": 28,
+      "mean_par2": 16.724691928563907,
+      "max_rss_bytes": 80314368,
+      "errors": 0
+    }
+  },
+  "changes": {
+    "heap": {
+      "gained": [],
+      "lost": []
+    },
+    "vmtf": {
+      "gained": [],
+      "lost": []
+    }
+  },
+  "policy_comparison": {
+    "random": {
+      "verified_runs": 4,
+      "runs": 6,
+      "mean_par2": 12.746398749800088,
+      "max_rss_bytes": 34750464,
+      "errors": 0
+    },
+    "saved": {
+      "verified_runs": 4,
+      "runs": 6,
+      "mean_par2": 13.344436909537762,
+      "max_rss_bytes": 55640064,
+      "errors": 0
+    }
+  }
+}

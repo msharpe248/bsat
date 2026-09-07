@@ -109,6 +109,10 @@ VMTF skips inactive numeric score updates during conflicts. Fixed-work timing
 shows a modest throughput improvement with matching search counters; see
 [VMTF_SCORES.md](VMTF_SCORES.md) for measurements and timing controls.
 
+Phase saving records decisions as well as propagated assignments, retaining
+random and target-phase choices after backtracking. See
+[DECISION_PHASES.md](DECISION_PHASES.md) for the regression and performance tradeoffs.
+
 Opt-in `--iterative-minimize` follows both implicit binary and arena reasons using
 an iterative traversal with shared successful dependency checks. The
 `--minimize-budget` option caps antecedent inspections per learned clause
