@@ -1,0 +1,118 @@
+--- a/competition/c/include/solver.h
++++ b/competition/c/include/solver.h
+@@ -30,0 +31 @@
++    bool     hybrid_order;     // Focused queue, stable heap (with alternating modes)
+--- a/competition/c/src/main.c
++++ b/competition/c/src/main.c
+@@ -57,0 +58 @@
++    printf("  --hybrid-order           Focused queue / stable heap; use with --alternating\n");
+@@ -146,0 +148 @@
++    {"hybrid-order", no_argument, 0, 0},
+@@ -306,0 +309,2 @@
++                } else if (strcmp(long_options[option_index].name, "hybrid-order") == 0) {
++                    opts.hybrid_order = true;
+--- a/competition/c/src/solver.c
++++ b/competition/c/src/solver.c
+@@ -315,0 +316,4 @@
++static bool queue_active(const Solver *s) {
++    return s->opts.vmtf || (s->opts.hybrid_order && !s->stable_mode);
++}
++
+@@ -318 +322 @@
+-    if (s->opts.vmtf) {
++    if (queue_active(s)) {
+@@ -365 +369 @@
+-    if (s->opts.vmtf) return;
++    if (queue_active(s)) return;
+@@ -381,0 +386 @@
++        (opts->vmtf && opts->hybrid_order) ||
+@@ -664 +669 @@
+-        if (s->opts.vmtf) solver_vmtf_unassign(s, v);
++        if (s->opts.vmtf || s->opts.hybrid_order) solver_vmtf_unassign(s, v);
+@@ -1215 +1220 @@
+-    if (s->opts.vmtf)
++    if (queue_active(s))
+@@ -1236 +1241 @@
+-    if (s->opts.vmtf) next = solver_vmtf_pick(s);
++    if (queue_active(s)) next = solver_vmtf_pick(s);
+--- a/competition/c/tests/validate.py
++++ b/competition/c/tests/validate.py
+@@ -211,0 +212,6 @@
++    configs += [['--hybrid-order'],
++                ['--hybrid-order', '--alternating', '--no-probing'],
++                ['--hybrid-order', '--alternating', '--lrb', '--binary-proof'],
++                ['--hybrid-order', '--alternating', '--equiv', '--elim', '--bce'],
++                ['--hybrid-order', '--alternating', '--inprocess', '--inprocess-interval', '1',
++                 '--reduce-interval', '1', '--dynamic-lbd', '--protect-used']]
+--- a/competition/c/tests/check_deadlines.py
++++ b/competition/c/tests/check_deadlines.py
+@@ -37,0 +38 @@
++                 (hard, ['--hybrid-order', '--alternating']),
+--- /dev/null
++++ b/competition/c/tests/test_hybrid_order.c
+@@ -0,0 +1,65 @@
++#include "../include/solver.h"
++#include "../include/dimacs.h"
++#include <assert.h>
++#include <stdio.h>
++
++static Solver *fixture(bool stable) {
++    SolverOpts o = default_opts();o.hybrid_order = true;
++    o.random_phase = false;o.phase_saving = false;
++    Solver *s = solver_new_with_opts(&o);assert(s);
++    assert(dimacs_parse_string(s, "p cnf 2 2\n-1 2 0\n-1 -2 0\n") == DIMACS_OK);
++    solver_vmtf_bump(s, 1);s->stable_mode = stable;
++    return s;
++}
++
++static void conflict_updates(bool stable) {
++    Solver *s = fixture(stable);
++    assert(solver_decide(s) && var(s->trail[0].lit) == 1);
++    CRef conflict = solver_propagate(s);assert(conflict == BINARY_CONFLICT);
++    uint64_t stamp = s->vmtf.stamp;
++    double activity = s->vars[1].activity;
++    Lit learned[2];uint32_t size;Level level;
++    solver_analyze(s, conflict, learned, &size, &level);
++    assert(size == 1 && learned[0] == mkLit(1, true));
++    if (stable) { assert(s->vmtf.stamp == stamp);assert(s->vars[1].activity > activity); }
++    else { assert(s->vmtf.stamp > stamp);assert(s->vars[1].activity == activity); }
++    solver_backtrack(s, 0);
++    assert(solver_solve(s) == TRUE && solver_check_model(s));
++    assert(solver_new_var(s) == 3 && s->opts.hybrid_order);
++    Lit a = mkLit(1, false);
++    assert(solver_solve_with_assumptions(s, &a, 1) == FALSE);
++    a = neg(a);
++    assert(solver_solve_with_assumptions(s, &a, 1) == TRUE && solver_check_model(s));
++    solver_free(s);
++}
++
++static void switching(void) {
++    SolverOpts o = default_opts();o.hybrid_order = true;o.alternating = true;
++    o.random_phase = false;
++    Solver *s = solver_new_with_opts(&o);assert(s);
++    for (Var v = 1; v <= 3; ++v) assert(solver_new_var(s) == v);
++    assert(solver_decide(s) && var(s->trail[0].lit) == 3);
++    assert(solver_vmtf_pick(s) == 2);
++    // Existing schedule enters stable mode at zero conflicts, before backtracking.
++    assert(solver_should_restart(s) && s->stable_mode && s->mode_limit == 1000);
++    solver_backtrack(s, 0);
++    assert(solver_vmtf_pick(s) == 3);
++    assert(solver_decide(s) && var(s->trail[0].lit) == 1);
++    s->stats.conflicts = s->mode_limit;
++    assert(solver_should_restart(s) && !s->stable_mode);
++    solver_backtrack(s, 0);
++    assert(solver_decide(s) && var(s->trail[0].lit) == 3);
++    solver_free(s);
++    o.vmtf = true;assert(!solver_new_with_opts(&o));
++    o.hybrid_order = false;s = solver_new_with_opts(&o);assert(s);
++    for (Var v = 1; v <= 3; ++v) assert(solver_new_var(s) == v);
++    s->stable_mode = true;
++    assert(solver_decide(s) && var(s->trail[0].lit) == 3);
++    solver_free(s);
++}
++
++int main(void) {
++    switching();conflict_updates(false);conflict_updates(true);
++    puts("PASS: hybrid branching, mode transitions, active conflict updates and API rebuilds");
++    return 0;
++}
