@@ -178,9 +178,39 @@ static void legacy_limits(void) {
         assert(!s->stats.minimize_budget_hits);clean(s);solver_free(s);
     }
 }
+static void signed_binary_strengthening(void) {
+    unsigned checks = 0;
+    for (unsigned iterative = 0; iterative < 2; ++iterative)
+    for (unsigned signs = 0; signs < 16; ++signs)
+    for (unsigned budget = 0; budget <= 4; ++budget) {
+        Solver *s = new_solver(5);s->opts.iterative_minimize = iterative;
+        Lit assigned[6];
+        for (Var v = 1; v <= 5; ++v) assigned[v] = mkLit(v, v <= 4 && (signs & (1u << (v-1))));
+        unsigned from[] = {1, 2, 2}, to[] = {2, 3, 4};
+        for (unsigned i = 0; i < 3; ++i) {
+            Lit edge[] = {neg(assigned[from[i]]), assigned[to[i]]};
+            assert(solver_add_clause(s, edge, 2));
+        }
+        Lit original[] = {assigned[5], neg(assigned[1]), neg(assigned[3]), neg(assigned[4])};
+        Lit source[4];for (unsigned i = 0; i < 4; ++i) source[i] = original[i];
+        assert(solver_add_clause(s, original, 4));decision(s, assigned[1]);
+        s->opts.minimize_budget = budget;unsigned n = 4;
+        unsigned removed = solver_minimize_clause(s, source, &n);
+        assert(n >= 2 && n <= 4 && removed == 4-n);
+        assert(source[0] == original[0] && source[1] == original[1]);
+        unsigned next = 0;
+        for (unsigned i = 0; i < n; ++i) {
+            while (next < 4 && original[next] != source[i]) ++next;
+            assert(next < 4);++next;
+        }
+        entailed(s, source, n);clean(s);solver_free(s);++checks;
+    }
+    assert(checks == 160);
+    puts("PASS: 160 signed binary graph/budget cases, independent entailment, stable subsequence and cleanup");
+}
 int main(void) {
     binary_and_cache();long_mixed_chain();failed_branch();cyclic_and_disabled();
-    legacy_limits();
+    legacy_limits();signed_binary_strengthening();
     puts("PASS: binary/arena minimization, shared dependencies, 2000-edge chains, failure rollback, budgets and scratch cleanup");
     return 0;
 }

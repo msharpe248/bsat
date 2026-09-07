@@ -368,3 +368,8 @@ values in one byte rather than four. The million-variable allocation case uses
 about 4.3% less peak RSS; fixed-work search counters and solved counts match.
 Measured aggregate CPU is about 0.7% higher, so this is retained as a memory
 improvement rather than a demonstrated search speedup.
+
+A [recursive binary minimization experiment](RECURSIVE_BINARY_MINIMIZATION_EXPERIMENT.md)
+was rejected after repeated battleship and Hamiltonian regressions without added
+solves. The default remains conservative; 160 signed graph/budget correctness
+cases are retained across both existing minimizers.
