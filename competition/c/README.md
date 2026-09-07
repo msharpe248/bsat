@@ -117,6 +117,8 @@ targeted comparisons; see [PROBE_PHASE_EXPERIMENT.md](PROBE_PHASE_EXPERIMENT.md)
 Fixed and growing random-decision bursts also failed to increase verified solves;
 see [RANDOM_DECISION_EXPERIMENT.md](RANDOM_DECISION_EXPERIMENT.md) for the archived
 prototypes, tests, and comparisons.
+Retaining binary consequences from probing lost two development solves and was
+rejected; see [PROBE_BINARIES_EXPERIMENT.md](PROBE_BINARIES_EXPERIMENT.md).
 
 Opt-in `--iterative-minimize` follows both implicit binary and arena reasons using
 an iterative traversal with shared successful dependency checks. The

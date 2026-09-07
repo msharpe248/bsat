@@ -1,0 +1,159 @@
+--- a/competition/c/include/solver.h
++++ b/competition/c/include/solver.h
+@@ -78,0 +79 @@
++    bool     probe_binaries;    // Retain bounded binary consequences of probing
+@@ -227,0 +229 @@
++        uint64_t probe_binaries;
+--- a/competition/c/src/main.c
++++ b/competition/c/src/main.c
+@@ -94,0 +95 @@
++    printf("  --probe-binaries          Retain binary consequences of probing\n");
+@@ -178,0 +180 @@
++    {"probe-binaries", no_argument, 0, 0},
+@@ -358,0 +361,2 @@
++                } else if (strcmp(long_options[option_index].name, "probe-binaries") == 0) {
++                    opts.probe_binaries = true;
+--- a/competition/c/src/solver.c
++++ b/competition/c/src/solver.c
+@@ -779,0 +780 @@
++    printf("c Probe binaries    : %llu\n", (unsigned long long)s->stats.probe_binaries);
+@@ -1671 +1672,29 @@
+-static bool rup_candidate(Solver *s, const Lit *lits, uint32_t size) {
++/* A successful single-assumption probe proves (~assumption | propagated).
++   Capture only long-clause implications; existing binaries already provide
++   cheap propagation. Store additions after backtracking, outside watch traversal. */
++static uint32_t probe_binary_candidates(Solver *s, Lit antecedent, Lit *out) {
++    uint32_t count = 0;
++    for (uint32_t i = s->trail_lims[1] + 1; i < s->trail_size && count < 64 &&
++         s->stats.probe_binaries + count < 4096; ++i) {
++        if (solver_budget_exhausted(s)) break;
++        s->work++;
++        Lit consequence = s->trail[i].lit;
++        CRef reason = s->vars[var(consequence)].reason;
++        if (reason == INVALID_CLAUSE || CLAUSE_SIZE(s->arena, reason) <= 2) continue;
++        WatchList *wl = watch_list(s->watches, antecedent);
++        bool duplicate = false;
++        for (uint32_t j = 0; j < wl->size; ++j) {
++            if (solver_budget_exhausted(s)) return count;
++            s->work++;
++            Watch w = wl->watches[j];
++            if (w.blocker == consequence && (is_binary_watch(w) ||
++                (!clause_deleted(s->arena, w.cref) && CLAUSE_SIZE(s->arena, w.cref) == 2))) {
++                duplicate = true; break;
++            }
++        }
++        if (!duplicate) out[count++] = consequence;
++    }
++    return count;
++}
++
++static bool rup_candidate(Solver *s, const Lit *lits, uint32_t size, bool binaries) {
+@@ -1680,0 +1710,6 @@
++    Lit consequences[64];
++    uint32_t count = 0;
++    if (binaries && !conflict && !s->interrupted && !s->error) {
++        ASSERT(size == 1);
++        count = probe_binary_candidates(s, lits[0], consequences);
++    }
+@@ -1681,0 +1717,11 @@
++    for (uint32_t i = 0; i < count && !solver_budget_exhausted(s); ++i) {
++        Lit pair[2] = {lits[0], consequences[i]};
++        proof_add_clause(s, pair, 2);
++        /* As with SCC-exposed binaries, retain an arena record with implicit
++           watches, without adding redundant clauses to the original input. */
++        s->internal_add = true;
++        solver_add_clause(s, pair, 2);
++        s->internal_add = false;
++        if (s->error || s->watches->failed) { s->error = true; break; }
++        s->stats.probe_binaries++;
++    }
+@@ -1704 +1750 @@
+-            if (rup_candidate(s, candidate, n-1)) {
++            if (rup_candidate(s, candidate, n-1, false)) {
+@@ -1786 +1832 @@
+-            if (rup_candidate(s, &implied, 1)) {
++            if (rup_candidate(s, &implied, 1, s->opts.probe_binaries)) {
+--- a/competition/c/tests/check_deadlines.py
++++ b/competition/c/tests/check_deadlines.py
+@@ -38,0 +39,2 @@
++                 (hard, ['--probe-binaries', '--preprocess-budget', '1000000000']),
++                 (hard, ['--probe-binaries', '--equiv', '--elim', '--bce']),
+--- a/competition/c/tests/validate.py
++++ b/competition/c/tests/validate.py
+@@ -211,0 +212,6 @@
++    configs += [['--probe-binaries'], ['--probe-binaries', '--binary-proof'],
++                ['--probe-binaries', '--equiv', '--elim', '--bce'],
++                ['--probe-binaries', '--preprocess-budget', '1'],
++                ['--probe-binaries', '--preprocess-budget', '64'],
++                ['--probe-binaries', '--vmtf', '--inprocess', '--inprocess-interval', '1'],
++                ['--probe-binaries', '--reduce-interval', '1', '--glue-lbd', '0']]
+@@ -212,0 +219,4 @@
++        (6, [[-1, 2], [-1, 3], [-2, -3, 4], [-5], [-2, 5, 6]], None),
++        (7, [[-1, 2], [-1, 3], [-2, -3, 4]] +
++         [[(-1 if bits & 1 else 1)*5, (-1 if bits & 2 else 1)*6,
++           (-1 if bits & 4 else 1)*7] for bits in range(8)], None),
+--- /dev/null
++++ b/competition/c/tests/test_probe_binaries.c
+@@ -0,0 +1,62 @@
++#include "../include/solver.h"
++#include <assert.h>
++#include <stdio.h>
++
++static void add(Solver *s, const int *xs, unsigned n) {
++    Lit lits[4];
++    for (unsigned i = 0; i < n; ++i) lits[i] = fromDimacs(xs[i]);
++    assert(solver_add_clause(s, lits, n));
++}
++
++static bool binary(Solver *s, int a, int b) {
++    WatchList *wl = watch_list(s->watches, fromDimacs(a));
++    for (unsigned i = 0; i < wl->size; ++i)
++        if (is_binary_watch(wl->watches[i]) && wl->watches[i].blocker == fromDimacs(b)) return true;
++    return false;
++}
++
++static Solver *formula(bool enabled, bool queue, uint64_t budget, bool root) {
++    SolverOpts o = default_opts();o.probe_binaries = enabled;o.vmtf = queue;
++    o.preprocess_budget = budget;
++    Solver *s = solver_new_with_opts(&o);assert(s);
++    for (unsigned i = 0; i < 6; ++i) assert(solver_new_var(s));
++    /* Assuming 1 implies 2 and 3, then the long clause implies 4.
++       The second long clause also uses a root assignment when requested. */
++    add(s, (int[]){-1, 2}, 2);add(s, (int[]){-1, 3}, 2);
++    add(s, (int[]){-2, -3, 4}, 3);
++    if (root) { add(s, (int[]){-5}, 1);add(s, (int[]){-2, 5, 6}, 3); }
++    return s;
++}
++
++int main(void) {
++    for (unsigned queue = 0; queue < 2; ++queue) {
++        Solver *s = formula(true, queue, 1000000, true);
++        size_t input = s->input_size;
++        assert(solver_solve(s) == TRUE && solver_check_model(s));
++        assert(s->stats.probe_binaries && binary(s, -1, 4) && binary(s, 4, -1));
++        assert(binary(s, -1, 6) && s->input_size == input);
++        for (unsigned i = 0; i < s->num_clauses; ++i)
++            assert(!clause_deleted(s->arena, s->clauses[i]));
++        Lit assumptions[] = {fromDimacs(1), fromDimacs(-4)};
++        assert(solver_solve_with_assumptions(s, assumptions, 2) == FALSE);
++        assert(solver_solve(s) == TRUE && solver_check_model(s));
++        assert(s->input_size == input && s->opts.probe_binaries);
++        solver_free(s);
++        s = formula(false, queue, 1000000, false);
++        assert(solver_solve(s) == TRUE && !s->stats.probe_binaries);solver_free(s);
++        for (unsigned budget = 0; budget < 100; ++budget) {
++            s = formula(true, queue, budget, false);
++            assert(solver_solve(s) == TRUE && solver_check_model(s));solver_free(s);
++        }
++        /* A direct binary implication should not be duplicated. */
++        s = formula(true, queue, 1000000, false);
++        add(s, (int[]){-1, 4}, 2);
++        assert(solver_solve(s) == TRUE);
++        WatchList *wl = watch_list(s->watches, fromDimacs(-1));unsigned count = 0;
++        for (unsigned i = 0; i < wl->size; ++i)
++            count += is_binary_watch(wl->watches[i]) && wl->watches[i].blocker == fromDimacs(4);
++        assert(count == 1);solver_free(s);
++    }
++    puts("PASS: binary probe consequences, root assumptions, budgets, duplicates and rebuilds");
++    return 0;
++}
