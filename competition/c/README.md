@@ -384,3 +384,8 @@ both cost and residual clause size.
 kept the generated strengthening results and reduced kernel CPU, but lost two
 competition solves. That replacement is also rejected. The retained suite now
 adds exact deletion-oracle comparisons and long-scan interruption/retry checks.
+
+A [rolling-omission trial setup experiment](ROLLING_OMISSION_EXPERIMENT.md)
+preserved proof traces and measured search counters, but showed mixed kernel
+results and no convincing CPU gain. The runtime change is rejected; 2,064 signed
+partial-progress cutoff cases and an irreducible-clause benchmark are retained.

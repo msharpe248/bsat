@@ -1,0 +1,16 @@
+{
+  "schema": 1,
+  "base_revision": "677aca0",
+  "test_sha256": "8b6263c6c86ebf3b88980c6d442d9269f9e7bd35b592ec112ba52111135f202c",
+  "candidate_source_sha256": "abe60f554dee8552ca26a92c62b0ee844ce78c38c5c1aebd19d794818ad2d031",
+  "mutants": {
+    "leave-pending-omission": {
+      "returncode": -6,
+      "stderr": "Assertion failed: (rup(s,lits,n)), function check, file test_vivify_prefix.c, line 76.\n"
+    },
+    "overwrite-retained-literal": {
+      "returncode": -6,
+      "stderr": "Assertion failed: (rup(s,lits,n)), function check, file test_vivify_prefix.c, line 76.\n"
+    }
+  }
+}

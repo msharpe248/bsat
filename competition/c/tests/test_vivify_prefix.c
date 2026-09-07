@@ -125,6 +125,21 @@ static void interrupted_scan(void) {
     }
     puts("PASS: 8 long-scan vivification cutoffs, temporary-trail rollback and retry");
 }
+/* One successful deletion followed by irreducible literals. Resource stops
+ * between failed trials must not install a clause with a pending omission. */
+static void partial_deletion(void) {
+    unsigned cases=0;
+    for(unsigned signs=0;signs<16;++signs)for(unsigned budget=0;budget<=128;++budget) {
+        Lit c[4];for(Var v=1;v<=4;++v)c[v-1]=mkLit(v,(signs>>(v-1))&1u);
+        Solver *s=fixture(c,4,budget);
+        Lit a[]={c[1],c[2],c[3],mkLit(6,false)};
+        Lit b[]={c[1],c[2],c[3],mkLit(6,true)};
+        assert(solver_add_clause(s,a,4) && solver_add_clause(s,b,4));
+        check(s,false);solver_free(s);++cases;
+    }
+    assert(cases==2064);
+    puts("PASS: 2064 signed partial-deletion and failed-trial cutoff cases");
+}
 static uint32_t state=20261112;
 static uint32_t next(void) { state=1664525u*state+1013904223u;return state; }
 int main(void) {
@@ -163,6 +178,7 @@ int main(void) {
         assert(n==((kind==0 || kind>=4)?2:kind==2?1:3));
         check(s,false);solver_free(s);++cases;
     }
+    partial_deletion();
     interrupted_scan();
     assert(cases==4704);
     puts("PASS: 4704 vivification truth-table/RUP, budget, signed implication, root, 512 exact deletion-oracle and subsequent solve cases");

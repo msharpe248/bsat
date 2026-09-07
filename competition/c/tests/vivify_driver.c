@@ -6,7 +6,9 @@
 #include <time.h>
 
 int main(int argc,char **argv) {
-    if(argc!=3)return 2;
+    if(argc!=3 && argc!=4)return 2;
+    bool unchanged=argc==4;
+    if(unchanged && strcmp(argv[3],"unchanged"))return 2;
     char *end;unsigned long runs=strtoul(argv[2],&end,10);
     if(!*argv[2]||*end||!runs||runs>10000)return 2;
     double cpu=0;uint64_t work=0,removed=0,remaining=0;
@@ -18,11 +20,16 @@ int main(int argc,char **argv) {
         s->opts.preprocess_budget=1000000000;
         s->learnts=malloc(100*sizeof *s->learnts);if(!s->learnts)return 2;
         s->learnts_size=100;
+        Lit originals[100][64];unsigned lengths[100];
         for(unsigned i=0;i<s->num_clauses && s->num_learnts<100;++i) {
             CRef cr=s->clauses[i];unsigned n=CLAUSE_SIZE(s->arena,cr);
             if(n<4 || n>64)continue;
             Lit lits[64];memcpy(lits,CLAUSE_LITS(s->arena,cr),n*sizeof *lits);
             CRef copy=arena_alloc(s->arena,lits,n,true);if(copy==INVALID_CLAUSE)return 2;
+            if(unchanged) {
+                lengths[s->num_learnts]=n;
+                memcpy(originals[s->num_learnts],lits,n*sizeof *lits);
+            }
             s->learnts[s->num_learnts++]=copy;
             watch_add(s->watches,lits[0],copy,lits[1]);watch_add(s->watches,lits[1],copy,lits[0]);
         }
@@ -42,7 +49,15 @@ int main(int argc,char **argv) {
             /* The original formula entails (1 or 2), so retaining both is an
                independent entailment check for this generated family. Report
                residual size rather than assuming equal strengthening power. */
-            if(!first || !second)return 2;
+            if(unchanged) {
+                if(n!=lengths[i])return 2;
+                for(unsigned j=0;j<n;++j) {
+                    Lit lit=CLAUSE_LITS(s->arena,cr)[j];bool found=false;
+                    for(unsigned k=0;k<n;++k)found |= lit==originals[i][k];
+                    if(!found)return 2;
+                    for(unsigned k=0;k<j;++k)if(lit==CLAUSE_LITS(s->arena,cr)[k])return 2;
+                }
+            } else if(!first || !second)return 2;
             remaining+=n;
         }
     }

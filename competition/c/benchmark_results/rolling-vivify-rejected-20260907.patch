@@ -1,0 +1,33 @@
+diff --git a/competition/c/src/solver.c b/competition/c/src/solver.c
+index 910721e..334bfb0 100644
+--- a/competition/c/src/solver.c
++++ b/competition/c/src/solver.c
+@@ -1791,4 +1791,6 @@ bool solver_simplify(Solver *s) {
+-        uint32_t old_n = n;
+-        for (uint32_t i = 0; i < n && !solver_budget_exhausted(s);) {
+-            Lit removed = candidate[i];
+-            memmove(candidate+i, candidate+i+1, (n-i-1)*sizeof *candidate);
++        uint32_t old_n = n, i = 0;
++        Lit removed = candidate[0];
++        memmove(candidate, candidate+1, (n-1)*sizeof *candidate);
++        /* While i < n, candidate holds the full clause minus literal i, which
++           is saved in removed. Every RUP call sees the original trial order. */
++        for (; i < n && !solver_budget_exhausted(s);) {
+@@ -1796,0 +1799,3 @@ bool solver_simplify(Solver *s) {
++                if (i == n) break;
++                removed = candidate[i];
++                memmove(candidate+i, candidate+i+1, (n-i-1)*sizeof *candidate);
+@@ -1798 +1803,3 @@ bool solver_simplify(Solver *s) {
+-                memmove(candidate+i+1, candidate+i, (n-i-1)*sizeof *candidate);
++                /* Retain this literal and omit the next one with one store,
++                   avoiding restoration and another shift of the same suffix. */
++                Lit next = i+1 < n ? candidate[i] : LIT_UNDEF;
+@@ -1799,0 +1807 @@ bool solver_simplify(Solver *s) {
++                removed = next;
+@@ -1801,0 +1810,6 @@ bool solver_simplify(Solver *s) {
++        /* Restore a pending omission if a budget/error stops between trials,
++           before installing any successful deletions made earlier. */
++        if (i < n) {
++            memmove(candidate+i+1, candidate+i, (n-i-1)*sizeof *candidate);
++            candidate[i] = removed;
++        }
