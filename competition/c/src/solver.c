@@ -176,6 +176,8 @@ SolverOpts default_opts(void) {
         .seed = 1,
         .equiv = false,
         .equiv_budget = 1000000,
+        .congruence = false,
+        .congruence_budget = 100000000,
         .protect_used = false,
         .dynamic_lbd = false,
         .max_conflicts = 0,        // Unlimited
@@ -815,6 +817,15 @@ void solver_print_stats(const Solver* s) {
     printf("c\n");
     printf("c ========== Statistics ==========\n");
     printf("c CPU time          : %.3f s\n", cpu_time);
+    if (s->opts.congruence) {
+        printf("c Congruence work: %llu\n", (unsigned long long)s->stats.congruence_work);
+        printf("c Congruence gates: %llu\n", (unsigned long long)s->stats.congruence_gates);
+        printf("c Congruence binary seeds: %llu\n", (unsigned long long)s->stats.congruence_seeds);
+        printf("c Congruence strengthened: %llu\n", (unsigned long long)s->stats.congruence_strengthened);
+        printf("c Congruence root units: %llu\n", (unsigned long long)s->stats.congruence_units);
+        printf("c Congruence merges: %llu\n", (unsigned long long)s->stats.congruence_merges);
+        printf("c Congruence clauses: %llu\n", (unsigned long long)s->stats.congruence_clauses);
+    }
     if (s->portfolio_attempts) {
         printf("c Portfolio attempts: %u\n", s->portfolio_attempts);
         printf("c Portfolio first conflicts: %llu\n", (unsigned long long)s->portfolio_first_conflicts);
@@ -1815,6 +1826,38 @@ static bool rup_candidate(Solver *s, const Lit *lits, uint32_t size) {
     return conflict && !s->interrupted && !s->error;
 }
 
+static void propagate_rup_root(Solver *s) {
+    if (s->result == FALSE || s->error || s->interrupted) return;
+    /* Root units must be closed at level zero before any temporary RUP trail.
+       This propagation is mandatory even after the optional work allowance,
+       while the CPU deadline remains active. */
+    uint64_t limit=s->work_limit;s->work_limit=0;
+    if (solver_propagate(s) != INVALID_CLAUSE) s->result=FALSE;
+    s->work_limit=limit;
+}
+
+bool solver_add_rup_clause(Solver *s, const Lit *lits, uint32_t size) {
+    if (!s || (size && !lits) || s->decision_level || s->has_solved || s->elim ||
+        s->result == FALSE || solver_budget_exhausted(s)) return false;
+    for (uint32_t i = 0; i < size; ++i)
+        if (!var(lits[i]) || var(lits[i]) > s->num_vars) return false;
+    propagate_rup_root(s);
+    if (s->result == FALSE || solver_budget_exhausted(s)) return false;
+    /* Certificate checks are not search probes. Preserve the caller's saved
+       phases while exploring their temporary assumptions and implications. */
+    bool save_phases=s->opts.phase_saving;s->opts.phase_saving=false;
+    bool implied=rup_candidate(s,lits,size);
+    s->opts.phase_saving=save_phases;
+    if (!implied || solver_budget_exhausted(s)) return false;
+    proof_add_clause(s,lits,size);
+    if (s->error) return false;
+    bool internal = s->internal_add;s->internal_add = true;
+    solver_add_clause(s,lits,size);s->internal_add = internal;
+    propagate_rup_root(s);
+    if (s->watches->failed) s->error = true;
+    return !s->error && !s->interrupted;
+}
+
 bool solver_simplify(Solver *s) {
     if (s->decision_level || !s->opts.inprocess || !s->opts.preprocess_budget ||
         s->stats.conflicts < s->last_vivify + s->opts.inprocess_interval) return true;
@@ -1995,6 +2038,15 @@ static lbool solve_internal(Solver *s, const Lit *assumps, uint32_t n_assumps) {
     if (s->error || s->interrupted) return UNDEF;
     s->work_limit = s->work + MIN(s->opts.preprocess_budget, UINT64_MAX-s->work);
     if (s->opts.preprocess_budget && s->opts.probing && failed_literal_probing(s) < 0) { s->work_limit=0; return FALSE; }
+    if (!n_assumps && s->opts.congruence && s->opts.congruence_budget) {
+        uint64_t remaining = s->work_limit > s->work ? s->work_limit-s->work : 0;
+        s->work_limit = s->work + MIN(s->opts.congruence_budget, UINT64_MAX-s->work);
+        solver_congruence(s);
+        s->work_limit = 0;
+        if (s->error || s->interrupted) return UNDEF;
+        if (s->result == FALSE || solver_propagate(s) != INVALID_CLAUSE) return FALSE;
+        s->work_limit = s->work + MIN(remaining, UINT64_MAX-s->work);
+    }
     if (!n_assumps && s->opts.equiv && s->opts.equiv_budget) {
         uint64_t remaining = s->work_limit > s->work ? s->work_limit-s->work : 0;
         s->work_limit = s->work + MIN(s->opts.equiv_budget, UINT64_MAX-s->work);

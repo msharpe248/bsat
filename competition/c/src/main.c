@@ -97,6 +97,8 @@ static void print_usage(const char* program) {
     printf("  --elim-grow <n>           Max clause growth for BVE (default: 0)\n");
     printf("  --equiv                  Enable binary SCC substitution\n");
     printf("  --equiv-budget <n>       SCC preprocessing work budget (1000000)\n");
+    printf("  --congruence             Experimental AND/XOR/ITE gate congruence\n");
+    printf("  --congruence-budget <n>   Gate work budget (100000000)\n");
     printf("  --no-probing              Disable failed literal probing\n");
     printf("\n");
     printf("Inprocessing:\n");
@@ -185,6 +187,8 @@ static struct option long_options[] = {
     {"elim-grow",       required_argument, 0, 0},
     {"equiv",           no_argument,       0, 0},
     {"equiv-budget",    required_argument, 0, 0},
+    {"congruence", no_argument, 0, 0},
+    {"congruence-budget", required_argument, 0, 0},
     {"no-probing",      no_argument,       0, 0},
     {"inprocess",       no_argument,       0, 0},
     {"inprocess-interval", required_argument, 0, 0},
@@ -225,7 +229,7 @@ int main(int argc, char** argv) {
             } else {
                 unsigned long long value=strtoull(optarg,&end,10);
                 valid=optarg[0]>='0' && optarg[0]<='9' && !errno && end!=optarg && !*end &&
-                    (!strcmp(name,"preprocess-budget") || !strcmp(name,"equiv-budget") || value<=UINT32_MAX);
+                    (!strcmp(name,"preprocess-budget") || !strcmp(name,"equiv-budget") || !strcmp(name,"congruence-budget") || value<=UINT32_MAX);
             }
             if (!valid) { fprintf(stderr,"Error: invalid numeric argument: %s\n",optarg);return 1; }
         }
@@ -267,6 +271,10 @@ int main(int argc, char** argv) {
                     opts.bce = true;
                 } else if (strcmp(long_options[option_index].name, "alternating") == 0) {
                     opts.alternating = true;
+                } else if (strcmp(long_options[option_index].name, "congruence") == 0) {
+                    opts.congruence = true;
+                } else if (strcmp(long_options[option_index].name, "congruence-budget") == 0) {
+                    opts.congruence_budget = strtoull(optarg,NULL,10);
                 } else if (strcmp(long_options[option_index].name, "portfolio") == 0) {
                     portfolio_seconds = atof(optarg);
                     if (portfolio_seconds <= 0) { fprintf(stderr,"Error: portfolio slice must be positive\n");return 1; }

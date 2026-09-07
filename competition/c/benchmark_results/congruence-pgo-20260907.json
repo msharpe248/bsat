@@ -1,0 +1,106 @@
+{
+  "directory": "/var/folders/ts/779j13fj7_x2z167570zvv4c0000gn/T/bsat-congruence-pgo-z83sf9uk",
+  "makefile_sha256": "5674cfc11061f531df8a830dc19ba05bf36163a651f48818c9d4d0c34343254a",
+  "runs": [
+    {
+      "command": [
+        "make",
+        "-j1",
+        "-f",
+        "/Users/msharpe/python/bsat/competition/c/Makefile",
+        "SRCDIR=/Users/msharpe/python/bsat/competition/c/src",
+        "INCDIR=/Users/msharpe/python/bsat/competition/c/include",
+        "OBJDIR=build/pgo",
+        "BINDIR=bin",
+        "pgo-generate"
+      ],
+      "returncode": 0,
+      "stdout": "rm -rf build/pgo bin pgo_data\nBuilding with profile instrumentation...\ncc -std=c11 -D_POSIX_C_SOURCE=200809L -Wall -Wextra -pedantic -O3 -march=native -flto -I/Users/msharpe/python/bsat/competition/c/include -O3 -march=native -fprofile-instr-generate -c -o build/pgo/arena.o /Users/msharpe/python/bsat/competition/c/src/arena.c\ncc -std=c11 -D_POSIX_C_SOURCE=200809L -Wall -Wextra -pedantic -O3 -march=native -flto -I/Users/msharpe/python/bsat/competition/c/include -O3 -march=native -fprofile-instr-generate -c -o build/pgo/dimacs.o /Users/msharpe/python/bsat/competition/c/src/dimacs.c\ncc -std=c11 -D_POSIX_C_SOURCE=200809L -Wall -Wextra -pedantic -O3 -march=native -flto -I/Users/msharpe/python/bsat/competition/c/include -O3 -march=native -fprofile-instr-generate -c -o build/pgo/congruence.o /Users/msharpe/python/bsat/competition/c/src/congruence.c\ncc -std=c11 -D_POSIX_C_SOURCE=200809L -Wall -Wextra -pedantic -O3 -march=native -flto -I/Users/msharpe/python/bsat/competition/c/include -O3 -march=native -fprofile-instr-generate -c -o build/pgo/elim.o /Users/msharpe/python/bsat/competition/c/src/elim.c\ncc -std=c11 -D_POSIX_C_SOURCE=200809L -Wall -Wextra -pedantic -O3 -march=native -flto -I/Users/msharpe/python/bsat/competition/c/include -O3 -march=native -fprofile-instr-generate -c -o build/pgo/equiv.o /Users/msharpe/python/bsat/competition/c/src/equiv.c\ncc -std=c11 -D_POSIX_C_SOURCE=200809L -Wall -Wextra -pedantic -O3 -march=native -flto -I/Users/msharpe/python/bsat/competition/c/include -O3 -march=native -fprofile-instr-generate -c -o build/pgo/local_search.o /Users/msharpe/python/bsat/competition/c/src/local_search.c\ncc -std=c11 -D_POSIX_C_SOURCE=200809L -Wall -Wextra -pedantic -O3 -march=native -flto -I/Users/msharpe/python/bsat/competition/c/include -O3 -march=native -fprofile-instr-generate -c -o build/pgo/minimize.o /Users/msharpe/python/bsat/competition/c/src/minimize.c\ncc -std=c11 -D_POSIX_C_SOURCE=200809L -Wall -Wextra -pedantic -O3 -march=native -flto -I/Users/msharpe/python/bsat/competition/c/include -O3 -march=native -fprofile-instr-generate -c -o build/pgo/main.o /Users/msharpe/python/bsat/competition/c/src/main.c\ncc -std=c11 -D_POSIX_C_SOURCE=200809L -Wall -Wextra -pedantic -O3 -march=native -flto -I/Users/msharpe/python/bsat/competition/c/include -O3 -march=native -fprofile-instr-generate -c -o build/pgo/solver.o /Users/msharpe/python/bsat/competition/c/src/solver.c\ncc -std=c11 -D_POSIX_C_SOURCE=200809L -Wall -Wextra -pedantic -O3 -march=native -flto -I/Users/msharpe/python/bsat/competition/c/include -O3 -march=native -fprofile-instr-generate -c -o build/pgo/vmtf.o /Users/msharpe/python/bsat/competition/c/src/vmtf.c\ncc -std=c11 -D_POSIX_C_SOURCE=200809L -Wall -Wextra -pedantic -O3 -march=native -flto -I/Users/msharpe/python/bsat/competition/c/include -O3 -march=native -fprofile-instr-generate -c -o build/pgo/watch.o /Users/msharpe/python/bsat/competition/c/src/watch.c\ncc -std=c11 -D_POSIX_C_SOURCE=200809L -Wall -Wextra -pedantic -O3 -march=native -flto -I/Users/msharpe/python/bsat/competition/c/include -O3 -march=native -fprofile-instr-generate -o bin/bsat_pgo_gen build/pgo/arena.o build/pgo/congruence.o build/pgo/dimacs.o build/pgo/elim.o build/pgo/equiv.o build/pgo/local_search.o build/pgo/main.o build/pgo/minimize.o build/pgo/solver.o build/pgo/vmtf.o build/pgo/watch.o -lm\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "/var/folders/ts/779j13fj7_x2z167570zvv4c0000gn/T/bsat-congruence-pgo-z83sf9uk/bin/bsat_pgo_gen",
+        "--congruence",
+        "--no-probing",
+        "--proof",
+        "/var/folders/ts/779j13fj7_x2z167570zvv4c0000gn/T/bsat-congruence-pgo-z83sf9uk/generate.drat",
+        "/var/folders/ts/779j13fj7_x2z167570zvv4c0000gn/T/bsat-congruence-pgo-z83sf9uk/training.cnf"
+      ],
+      "returncode": 20,
+      "stdout": "c BSAT Competition Solver v1.0\nc PID: 5007 (send SIGUSR1 for progress: kill -USR1 5007)\nc Reading from /var/folders/ts/779j13fj7_x2z167570zvv4c0000gn/T/bsat-congruence-pgo-z83sf9uk/training.cnf\nc Variables: 5\nc Clauses:   8\nc\ns UNSATISFIABLE\nc\nc CPU time:         0.000 s\nc\nc ========== Statistics ==========\nc CPU time          : 0.000 s\nc Congruence work: 231\nc Congruence gates: 2\nc Congruence binary seeds: 1\nc Congruence strengthened: 0\nc Congruence root units: 4\nc Congruence merges: 0\nc Congruence clauses: 1\nc Decisions         : 0\nc Propagations      : 5\nc Conflicts         : 0\nc Restarts          : 0\nc Reused levels     : 0\nc Local search calls: 0\nc Local search wins : 0\nc Local search flips: 0\nc Learned clauses   : 0\nc Learned literals  : 0\nc Deleted clauses   : 0\nc Binary minimize checks: 0\nc Binary minimize removed: 0\nc Minimize inspections: 0\nc Minimize binary steps: 0\nc Minimize cache hits : 0\nc Minimize budget hits: 0\nc Equivalence work  : 0\nc Substituted vars  : 0\nc Rewritten clauses : 0\nc SCC contradictions: 0\nc Derived binaries  : 0\nc LBD improvements  : 0\nc Deadline clock reads: 0\nc Target literals copied: 0\nc Target values cleared: 0\nc Blocked clauses   : 0\nc Eliminated variables: 0\nc Elimination resolvents: 0\nc Elimination removed: 0\nc Subsumed clauses  : 0\nc Minimized literals: 0\nc Glue clauses      : 0\nc Max LBD           : 0\nc Propagations/sec  : 166667\nc Literal inspections : 231\nc Garbage collections : 0\nc Reductions          : 0\nc Mode                : focused\nc Memory used       : 0.00 MB\nc Memory allocated  : 0.00 MB\nc Memory peak       : 0.00 MB\nc Memory wasted     : 0.00 MB\nc Arena growths     : 0\nc\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "/tmp/bsat-drat-trim",
+        "/var/folders/ts/779j13fj7_x2z167570zvv4c0000gn/T/bsat-congruence-pgo-z83sf9uk/training.cnf",
+        "/var/folders/ts/779j13fj7_x2z167570zvv4c0000gn/T/bsat-congruence-pgo-z83sf9uk/generate.drat"
+      ],
+      "returncode": 0,
+      "stdout": "\nc parsing input formula with 5 variables and 8 clauses\n\nc WARNING: detected and deleted duplicate literal -4 at position 1 of proof line 9\n\nc finished parsing\n\nc detected empty clause; start verification via backward checking\n\nc 8 of 8 clauses in core                            \n\nc 2 of 3 lemmas in core using 9 resolution steps\n\nc 0 RAT lemmas in core; 0 redundant literals in core lemmas\n\ns VERIFIED\n\nc verification time: 0.020 seconds\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "xcrun",
+        "llvm-profdata",
+        "merge",
+        "-output=pgo_data/default.profdata",
+        "pgo_data/training.profraw"
+      ],
+      "returncode": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "make",
+        "-j1",
+        "-f",
+        "/Users/msharpe/python/bsat/competition/c/Makefile",
+        "SRCDIR=/Users/msharpe/python/bsat/competition/c/src",
+        "INCDIR=/Users/msharpe/python/bsat/competition/c/include",
+        "OBJDIR=build/pgo",
+        "BINDIR=bin",
+        "pgo-use"
+      ],
+      "returncode": 0,
+      "stdout": "Building with profile optimization...\ncc -std=c11 -D_POSIX_C_SOURCE=200809L -Wall -Wextra -pedantic -O3 -march=native -flto -I/Users/msharpe/python/bsat/competition/c/include -O3 -march=native -flto -fprofile-instr-use=pgo_data/default.profdata -c -o build/pgo/arena.o /Users/msharpe/python/bsat/competition/c/src/arena.c\ncc -std=c11 -D_POSIX_C_SOURCE=200809L -Wall -Wextra -pedantic -O3 -march=native -flto -I/Users/msharpe/python/bsat/competition/c/include -O3 -march=native -flto -fprofile-instr-use=pgo_data/default.profdata -c -o build/pgo/dimacs.o /Users/msharpe/python/bsat/competition/c/src/dimacs.c\ncc -std=c11 -D_POSIX_C_SOURCE=200809L -Wall -Wextra -pedantic -O3 -march=native -flto -I/Users/msharpe/python/bsat/competition/c/include -O3 -march=native -flto -fprofile-instr-use=pgo_data/default.profdata -c -o build/pgo/congruence.o /Users/msharpe/python/bsat/competition/c/src/congruence.c\ncc -std=c11 -D_POSIX_C_SOURCE=200809L -Wall -Wextra -pedantic -O3 -march=native -flto -I/Users/msharpe/python/bsat/competition/c/include -O3 -march=native -flto -fprofile-instr-use=pgo_data/default.profdata -c -o build/pgo/elim.o /Users/msharpe/python/bsat/competition/c/src/elim.c\ncc -std=c11 -D_POSIX_C_SOURCE=200809L -Wall -Wextra -pedantic -O3 -march=native -flto -I/Users/msharpe/python/bsat/competition/c/include -O3 -march=native -flto -fprofile-instr-use=pgo_data/default.profdata -c -o build/pgo/equiv.o /Users/msharpe/python/bsat/competition/c/src/equiv.c\ncc -std=c11 -D_POSIX_C_SOURCE=200809L -Wall -Wextra -pedantic -O3 -march=native -flto -I/Users/msharpe/python/bsat/competition/c/include -O3 -march=native -flto -fprofile-instr-use=pgo_data/default.profdata -c -o build/pgo/local_search.o /Users/msharpe/python/bsat/competition/c/src/local_search.c\ncc -std=c11 -D_POSIX_C_SOURCE=200809L -Wall -Wextra -pedantic -O3 -march=native -flto -I/Users/msharpe/python/bsat/competition/c/include -O3 -march=native -flto -fprofile-instr-use=pgo_data/default.profdata -c -o build/pgo/minimize.o /Users/msharpe/python/bsat/competition/c/src/minimize.c\ncc -std=c11 -D_POSIX_C_SOURCE=200809L -Wall -Wextra -pedantic -O3 -march=native -flto -I/Users/msharpe/python/bsat/competition/c/include -O3 -march=native -flto -fprofile-instr-use=pgo_data/default.profdata -c -o build/pgo/main.o /Users/msharpe/python/bsat/competition/c/src/main.c\ncc -std=c11 -D_POSIX_C_SOURCE=200809L -Wall -Wextra -pedantic -O3 -march=native -flto -I/Users/msharpe/python/bsat/competition/c/include -O3 -march=native -flto -fprofile-instr-use=pgo_data/default.profdata -c -o build/pgo/solver.o /Users/msharpe/python/bsat/competition/c/src/solver.c\ncc -std=c11 -D_POSIX_C_SOURCE=200809L -Wall -Wextra -pedantic -O3 -march=native -flto -I/Users/msharpe/python/bsat/competition/c/include -O3 -march=native -flto -fprofile-instr-use=pgo_data/default.profdata -c -o build/pgo/vmtf.o /Users/msharpe/python/bsat/competition/c/src/vmtf.c\ncc -std=c11 -D_POSIX_C_SOURCE=200809L -Wall -Wextra -pedantic -O3 -march=native -flto -I/Users/msharpe/python/bsat/competition/c/include -O3 -march=native -flto -fprofile-instr-use=pgo_data/default.profdata -c -o build/pgo/watch.o /Users/msharpe/python/bsat/competition/c/src/watch.c\ncc -std=c11 -D_POSIX_C_SOURCE=200809L -Wall -Wextra -pedantic -O3 -march=native -flto -I/Users/msharpe/python/bsat/competition/c/include -O3 -march=native -flto -fprofile-instr-use=pgo_data/default.profdata -o bin/bsat build/pgo/arena.o build/pgo/congruence.o build/pgo/dimacs.o build/pgo/elim.o build/pgo/equiv.o build/pgo/local_search.o build/pgo/main.o build/pgo/minimize.o build/pgo/solver.o build/pgo/vmtf.o build/pgo/watch.o -lm\nPGO build complete: bin/bsat\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "/var/folders/ts/779j13fj7_x2z167570zvv4c0000gn/T/bsat-congruence-pgo-z83sf9uk/bin/bsat",
+        "--congruence",
+        "--no-probing",
+        "--proof",
+        "/var/folders/ts/779j13fj7_x2z167570zvv4c0000gn/T/bsat-congruence-pgo-z83sf9uk/use.drat",
+        "/var/folders/ts/779j13fj7_x2z167570zvv4c0000gn/T/bsat-congruence-pgo-z83sf9uk/training.cnf"
+      ],
+      "returncode": 20,
+      "stdout": "c BSAT Competition Solver v1.0\nc PID: 5329 (send SIGUSR1 for progress: kill -USR1 5329)\nc Reading from /var/folders/ts/779j13fj7_x2z167570zvv4c0000gn/T/bsat-congruence-pgo-z83sf9uk/training.cnf\nc Variables: 5\nc Clauses:   8\nc\ns UNSATISFIABLE\nc\nc CPU time:         0.000 s\nc\nc ========== Statistics ==========\nc CPU time          : 0.000 s\nc Congruence work: 231\nc Congruence gates: 2\nc Congruence binary seeds: 1\nc Congruence strengthened: 0\nc Congruence root units: 4\nc Congruence merges: 0\nc Congruence clauses: 1\nc Decisions         : 0\nc Propagations      : 5\nc Conflicts         : 0\nc Restarts          : 0\nc Reused levels     : 0\nc Local search calls: 0\nc Local search wins : 0\nc Local search flips: 0\nc Learned clauses   : 0\nc Learned literals  : 0\nc Deleted clauses   : 0\nc Binary minimize checks: 0\nc Binary minimize removed: 0\nc Minimize inspections: 0\nc Minimize binary steps: 0\nc Minimize cache hits : 0\nc Minimize budget hits: 0\nc Equivalence work  : 0\nc Substituted vars  : 0\nc Rewritten clauses : 0\nc SCC contradictions: 0\nc Derived binaries  : 0\nc LBD improvements  : 0\nc Deadline clock reads: 0\nc Target literals copied: 0\nc Target values cleared: 0\nc Blocked clauses   : 0\nc Eliminated variables: 0\nc Elimination resolvents: 0\nc Elimination removed: 0\nc Subsumed clauses  : 0\nc Minimized literals: 0\nc Glue clauses      : 0\nc Max LBD           : 0\nc Propagations/sec  : 108696\nc Literal inspections : 231\nc Garbage collections : 0\nc Reductions          : 0\nc Mode                : focused\nc Memory used       : 0.00 MB\nc Memory allocated  : 0.00 MB\nc Memory peak       : 0.00 MB\nc Memory wasted     : 0.00 MB\nc Arena growths     : 0\nc\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "/tmp/bsat-drat-trim",
+        "/var/folders/ts/779j13fj7_x2z167570zvv4c0000gn/T/bsat-congruence-pgo-z83sf9uk/training.cnf",
+        "/var/folders/ts/779j13fj7_x2z167570zvv4c0000gn/T/bsat-congruence-pgo-z83sf9uk/use.drat"
+      ],
+      "returncode": 0,
+      "stdout": "\nc parsing input formula with 5 variables and 8 clauses\n\nc WARNING: detected and deleted duplicate literal -4 at position 1 of proof line 9\n\nc finished parsing\n\nc detected empty clause; start verification via backward checking\n\nc 8 of 8 clauses in core                            \n\nc 2 of 3 lemmas in core using 9 resolution steps\n\nc 0 RAT lemmas in core; 0 redundant literals in core lemmas\n\ns VERIFIED\n\nc verification time: 0.018 seconds\n",
+      "stderr": ""
+    }
+  ],
+  "generate": {
+    "binary": "/var/folders/ts/779j13fj7_x2z167570zvv4c0000gn/T/bsat-congruence-pgo-z83sf9uk/bin/bsat_pgo_gen",
+    "sha256": "a4d1128e39cfc7c0aa96a87e23979a7a82a45068b138b31a08ed5d51e083bca6",
+    "proof_sha256": "944d05c5e56d0a2560b52589daa00df387596e14a8491339da52b1841be4565c"
+  },
+  "use": {
+    "binary": "/var/folders/ts/779j13fj7_x2z167570zvv4c0000gn/T/bsat-congruence-pgo-z83sf9uk/bin/bsat",
+    "sha256": "69d6b36e93b87302064434fd5940c9b7085e1e70192d4151c138d18fdfafa848",
+    "proof_sha256": "944d05c5e56d0a2560b52589daa00df387596e14a8491339da52b1841be4565c"
+  }
+}

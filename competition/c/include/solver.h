@@ -26,6 +26,8 @@ typedef struct SolverOpts {
     double   max_time;           // Time limit in seconds (0 = unlimited)
     bool     equiv;              // Opt-in binary SCC substitution
     uint64_t equiv_budget;       // Independent preprocessing work budget
+    bool     congruence;         // Experimental AND/XOR/ITE gate congruence
+    uint64_t congruence_budget;  // Independent gate extraction/derivation budget
 
     // Branching heuristic
     bool     vmtf;              // Experimental move-to-front variable queue
@@ -235,6 +237,9 @@ typedef struct Solver {
         uint64_t equiv_clauses;
         uint64_t equiv_conflicts;
         uint64_t equiv_binaries;
+        uint64_t congruence_work, congruence_gates, congruence_merges, congruence_clauses;
+        uint64_t congruence_seeds;
+        uint64_t congruence_strengthened, congruence_units;
         uint64_t lbd_updates;
         uint64_t clock_checks;      // Actual CPU deadline clock reads
         uint64_t target_copied, target_cleared;
@@ -340,6 +345,10 @@ lbool solver_solve(Solver* s);
    No assumptions; a proof stream requires opts.proof_path so it can be reset.
    Ordinary stats describe the final attempt; options are restored on return. */
 lbool solver_solve_portfolio(Solver* s, double focused_seconds);
+
+/* Root-only preprocessing helpers. Derived clauses never enter immutable input. */
+bool solver_add_rup_clause(Solver* s, const Lit* lits, uint32_t size);
+uint32_t solver_congruence(Solver* s);
 
 // Solve with assumptions
 lbool solver_solve_with_assumptions(Solver* s, const Lit* assumps, uint32_t n_assumps);

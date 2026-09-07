@@ -37,7 +37,7 @@ checker, tries option combinations, and minimizes failing formulas.
 
 Exit codes: 10 SAT, 20 UNSAT, 0 UNKNOWN/resource limit, 1 input/internal/I/O error.
 Every returned SAT model is checked against the retained original input. Proof
-logging covers search, minimization, probing, equivalence substitution, BVE, BCE
+logging covers search, minimization, probing, gate congruence, equivalence substitution, BVE, BCE
 deletion and vivification;
 UNSAT certificates end with an empty clause. Text and binary DRAT are supported.
 The search algorithm is the same with proof logging enabled or disabled.
@@ -56,6 +56,12 @@ one line. Duplicates and tautologies are normalized. Numeric overflow and
 unfinished clauses are errors. Empty formulas are SAT; empty clauses are UNSAT.
 
 ## Search controls
+
+Experimental `--congruence --equiv --equiv-budget 100000000` extracts AND,
+XOR and ITE gates, proves aliases with RUP, then substitutes equivalent
+variables. It improves a large hardware-model-checking development case but
+adds preprocessing and memory costs. It is disabled by default. See
+[GATE_CONGRUENCE.md](GATE_CONGRUENCE.md) for checks, measurements and limitations.
 
 Experimental `--portfolio 2` gives focused search two CPU seconds, then starts
 fresh alternating search if that slice expires. `--time`, conflict and decision

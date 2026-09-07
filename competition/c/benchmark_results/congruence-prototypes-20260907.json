@@ -1,0 +1,76 @@
+{
+  "schema": 1,
+  "warning": "Development snapshots, not retained implementations. Initial snapshot has a known root-propagation defect. All initial diagnostic benchmark runs were UNKNOWN. Use current source for validation and deployment.",
+  "snapshots": [
+    {
+      "stage": "initial",
+      "base_revision": "2cee3bc",
+      "patch": "congruence-initial-prototype-20260907.patch",
+      "patch_sha256": "176884db10a34e7eb3c19977abcb0c706fc9661754ccdfc37f5d9b10de23b959",
+      "source_sha256": {
+        "src/solver.c": "f154a278e132d46ebf2d8a75db07d4f40c02c72d9a9c6e99d86b4537c8827c71",
+        "src/main.c": "6554b0f4145a009b70417741f39356cc5d05da73ca6bd2feb36700fca2cc5e31",
+        "src/congruence.c": "e140922d52f45207e4c1d677afcee7e5450a35da0a2aa89dbd6a06a27f1124ea",
+        "include/solver.h": "205c01dd1a1de5651b7e75f8ad30e2b5d7ecca9c977f289284e61bb00993f489",
+        "tests/test_congruence.c": "f735382a67040f6bb3d46c962efcd903c023f94e0d773a449799a472e4a4b725"
+      },
+      "apply_check": "git apply --check --unidiff-zero against baseline files: PASS"
+    },
+    {
+      "stage": "seeded",
+      "base_revision": "2cee3bc",
+      "patch": "congruence-seeded-prototype-20260907.patch",
+      "patch_sha256": "6259904b8a2fe0428cf72bfccab1669b444d35512575ab66b32065ee55f40a23",
+      "source_sha256": {
+        "src/solver.c": "972686a47de1cf59ede355eb27136c50c1e86fb0c608640a4fe0556685b7049f",
+        "src/main.c": "6554b0f4145a009b70417741f39356cc5d05da73ca6bd2feb36700fca2cc5e31",
+        "src/congruence.c": "3786cc4fbd1f62039ba009b678cf0db05ff11c7bcffaee477e51e5bbd2d78421",
+        "include/solver.h": "2a7e6f8760466610925b7402e4ac34b00e895dc631aa4680442132c9f9e6a3af",
+        "tests/test_congruence.c": "cd52eb133b164fdd931247f8894f30617bbe65664f74d1c80a2fc616e3ca84c5"
+      },
+      "apply_check": "git apply --check --unidiff-zero against baseline files: PASS"
+    },
+    {
+      "stage": "alternatives",
+      "base_revision": "2cee3bc",
+      "patch": "congruence-alternatives-prototype-20260907.patch",
+      "patch_sha256": "7b416a82423f2598964423f5062315b17752712d276cf7be0086e33f79f1df39",
+      "source_sha256": {
+        "src/solver.c": "972686a47de1cf59ede355eb27136c50c1e86fb0c608640a4fe0556685b7049f",
+        "src/main.c": "6554b0f4145a009b70417741f39356cc5d05da73ca6bd2feb36700fca2cc5e31",
+        "src/congruence.c": "643e69b37a017c67bc33ee7c13c2bf1ee67bfd771310a91583dac1a18a014a8c",
+        "include/solver.h": "2a7e6f8760466610925b7402e4ac34b00e895dc631aa4680442132c9f9e6a3af",
+        "tests/test_congruence.c": "4c4bb7b7a77859fa5fc8a1c9c3d57ba36f5b4aae5cd539bac0c317a213d027ba"
+      },
+      "apply_check": "git apply --check --unidiff-zero against baseline files: PASS"
+    },
+    {
+      "stage": "strengthened",
+      "base_revision": "2cee3bc",
+      "patch": "congruence-strengthened-prototype-20260907.patch",
+      "patch_sha256": "ffd7876c8fc2afe2eb8eca3ee9ea83254681b60135c2fd6e3a115a3bc883454c",
+      "source_sha256": {
+        "src/solver.c": "429a9a673f5f320ab1e17f13e9b3dee642f41582cf4fd8b5099b880e1db5770f",
+        "src/main.c": "6554b0f4145a009b70417741f39356cc5d05da73ca6bd2feb36700fca2cc5e31",
+        "src/congruence.c": "2877f52df54219eb81b488cffd836e4fde3a80493ccd4d9fdd06312ea61cf922",
+        "include/solver.h": "57e942732becbbe3b358fc03e951c34533725c5eb8543c7b15c24c97fe870053",
+        "tests/test_congruence.c": "ab98146185790899ea5a22e9e9a34f4a3cc6f16cf10d4c797e5a1b1ae3e31660"
+      },
+      "apply_check": "git apply --check --unidiff-zero against baseline files: PASS"
+    },
+    {
+      "stage": "phases",
+      "base_revision": "2cee3bc",
+      "patch": "congruence-phases-prototype-20260907.patch",
+      "patch_sha256": "eaf6db1d91a273c1d4e87ebdfd3481e89d663f8261e9b707df624322690767ab",
+      "source_sha256": {
+        "src/solver.c": "9bb35808aef9a7b64eb2d8afc39ea321ab012e8eeaa9020ef36feb972b6adc20",
+        "src/main.c": "6554b0f4145a009b70417741f39356cc5d05da73ca6bd2feb36700fca2cc5e31",
+        "src/congruence.c": "2877f52df54219eb81b488cffd836e4fde3a80493ccd4d9fdd06312ea61cf922",
+        "include/solver.h": "57e942732becbbe3b358fc03e951c34533725c5eb8543c7b15c24c97fe870053",
+        "tests/test_congruence.c": "c30293f14e0e0131a1f5f5b3327e0dd885480ef435eb84af130cc225ab1b75d1"
+      },
+      "apply_check": "git apply --check --unidiff-zero against baseline files: PASS"
+    }
+  ]
+}

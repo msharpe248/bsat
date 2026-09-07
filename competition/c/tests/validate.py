@@ -237,6 +237,10 @@ def main():
                 ['--portfolio', '0.000000000001', '--binary-proof'],
                 ['--portfolio', '0.000000000001', '--elim', '--bce', '--equiv'],
                 ['--portfolio', '2']]
+    configs += [['--congruence', '--no-probing'],
+                ['--congruence', '--binary-proof'],
+                ['--congruence', '--equiv', '--no-probing'],
+                ['--congruence', '--portfolio', '0.000000000001', '--bce', '--elim']]
     fixed = [
         (5, [[1, 2], [1, -2], [-3, 4], [3, -4], [4, 5]], None),
         (5, [[-4], [-1, 2, 4], [1, -2, 4]] +
@@ -258,6 +262,21 @@ def main():
         (0, [], 'p cnf 0 0\n'),
         (3, [[1, 1], [2, -2, 3], [-1, -1]], None),
     ]
+    # Complete duplicate gate definitions, with SAT and contradictory-output
+    # variants. The existing truth-table and certificate oracles are independent
+    # of gate extraction and of the C solver's internal RUP checks.
+    gate_pairs = [
+        [[-4, 1], [-4, 2], [4, -1, -2], [-5, 2], [-5, 1], [5, -2, -1]],
+        [[1, 2, -4], [-1, -2, -4], [1, -2, 4], [-1, 2, 4],
+         [2, 1, -5], [-2, -1, -5], [2, -1, 5], [-2, 1, 5]],
+        [[-3, -1, 4], [-3, 1, -4], [3, -2, 4], [3, 2, -4],
+         [3, -2, 5], [3, 2, -5], [-3, -1, 5], [-3, 1, -5]],
+    ]
+    for clauses in gate_pairs:
+        fixed += [(5, clauses, None), (5, clauses + [[4, 5], [-4, -5]], None)]
+    fixed += [(5, gate_pairs[0] + [[-4, -1], [4, 1], [2]], None),
+              (5, gate_pairs[1] + [[-4, 1], [4, -1], [2]], None),
+              (5, gate_pairs[2] + [[-4, 1], [4, -1], [-2, -1], [2, 1], [-3]], None)]
     total = 0
     with tempfile.TemporaryDirectory(prefix='bsat-validation-') as tmp:
         directory = Path(tmp)

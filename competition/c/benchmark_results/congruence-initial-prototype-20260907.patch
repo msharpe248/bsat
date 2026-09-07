@@ -1,0 +1,500 @@
+--- a/competition/c/src/solver.c
++++ b/competition/c/src/solver.c
+@@ -178,0 +179,2 @@
++        .congruence = false,
++        .congruence_budget = 100000000,
+@@ -817,0 +820,6 @@
++    if (s->opts.congruence) {
++        printf("c Congruence work: %llu\n", (unsigned long long)s->stats.congruence_work);
++        printf("c Congruence gates: %llu\n", (unsigned long long)s->stats.congruence_gates);
++        printf("c Congruence merges: %llu\n", (unsigned long long)s->stats.congruence_merges);
++        printf("c Congruence clauses: %llu\n", (unsigned long long)s->stats.congruence_clauses);
++    }
+@@ -1817,0 +1826,14 @@
++bool solver_add_rup_clause(Solver *s, const Lit *lits, uint32_t size) {
++    if (!s || (size && !lits) || s->decision_level || s->has_solved || s->elim ||
++        solver_budget_exhausted(s)) return false;
++    for (uint32_t i = 0; i < size; ++i)
++        if (!var(lits[i]) || var(lits[i]) > s->num_vars) return false;
++    if (!rup_candidate(s,lits,size) || solver_budget_exhausted(s)) return false;
++    proof_add_clause(s,lits,size);
++    if (s->error) return false;
++    bool internal = s->internal_add;s->internal_add = true;
++    solver_add_clause(s,lits,size);s->internal_add = internal;
++    if (s->watches->failed) s->error = true;
++    return !s->error;
++}
++
+@@ -1997,0 +2020,9 @@
++    if (!n_assumps && s->opts.congruence && s->opts.congruence_budget) {
++        uint64_t remaining = s->work_limit > s->work ? s->work_limit-s->work : 0;
++        s->work_limit = s->work + MIN(s->opts.congruence_budget, UINT64_MAX-s->work);
++        solver_congruence(s);
++        s->work_limit = 0;
++        if (s->error || s->interrupted) return UNDEF;
++        if (s->result == FALSE || solver_propagate(s) != INVALID_CLAUSE) return FALSE;
++        s->work_limit = s->work + MIN(remaining, UINT64_MAX-s->work);
++    }
+--- a/competition/c/src/main.c
++++ b/competition/c/src/main.c
+@@ -99,0 +100,2 @@
++    printf("  --congruence             Experimental AND/XOR/ITE gate congruence\n");
++    printf("  --congruence-budget <n>   Gate work budget (100000000)\n");
+@@ -187,0 +190,2 @@
++    {"congruence", no_argument, 0, 0},
++    {"congruence-budget", required_argument, 0, 0},
+@@ -228 +232 @@
+-                    (!strcmp(name,"preprocess-budget") || !strcmp(name,"equiv-budget") || value<=UINT32_MAX);
++                    (!strcmp(name,"preprocess-budget") || !strcmp(name,"equiv-budget") || !strcmp(name,"congruence-budget") || value<=UINT32_MAX);
+@@ -269,0 +274,4 @@
++                } else if (strcmp(long_options[option_index].name, "congruence") == 0) {
++                    opts.congruence = true;
++                } else if (strcmp(long_options[option_index].name, "congruence-budget") == 0) {
++                    opts.congruence_budget = strtoull(optarg,NULL,10);
+--- /dev/null
++++ b/competition/c/src/congruence.c
+@@ -0,0 +1,317 @@
++/* Bounded congruence on complete two-input AND/XOR and ITE definitions.
++ * Every learned clause is independently checked by root RUP before mutation.
++ * Hashes only select candidates: exact keys and complete CNF patterns matter.
++ */
++#include "../include/solver.h"
++#include <stdlib.h>
++#include <string.h>
++
++enum { AND_GATE, XOR_GATE, ITE_GATE, DEAD_GATE };
++typedef struct { Var v[3]; unsigned mask; } Cell;
++typedef struct { Var out, condition; Lit yes, no; } Branch;
++typedef struct { Lit out, a, b, c; unsigned kind; } Gate;
++typedef struct {
++    Solver *s;
++    Cell *cells;size_t cell_cap;
++    Branch *branches;size_t branch_cap;
++    Gate *gates;uint32_t count, capacity;
++    Lit *parent;
++    uint32_t *table;size_t table_cap;
++    uint32_t changes;
++} Closure;
++
++static bool tick(Closure *c) {
++    Solver *s = c->s;
++    if (solver_budget_exhausted(s)) return false;
++    ++s->work;
++    return true;
++}
++
++static uint64_t mix(uint64_t x) {
++    x ^= x >> 30;x *= UINT64_C(0xbf58476d1ce4e5b9);
++    x ^= x >> 27;x *= UINT64_C(0x94d049bb133111eb);
++    return x ^ (x >> 31);
++}
++
++static size_t capacity_for(uint64_t n) {
++    size_t cap = 16;
++    while (cap < n) { if (cap > SIZE_MAX/2) return 0;cap *= 2; }
++    return cap;
++}
++
++static Cell *cell(Closure *c, const Var v[3], bool insert) {
++    size_t at = mix(v[0] ^ ((uint64_t)v[1]<<21) ^ ((uint64_t)v[2]<<42)) & (c->cell_cap-1);
++    for (;;) {
++        if (!tick(c)) return NULL;
++        Cell *p = c->cells+at;
++        if (!p->v[0]) {
++            if (!insert) return NULL;
++            memcpy(p->v,v,sizeof p->v);return p;
++        }
++        if (!memcmp(p->v,v,sizeof p->v)) return p;
++        at = (at+1) & (c->cell_cap-1);
++    }
++}
++
++static bool binary(Closure *c, Lit a, Lit b) {
++    if (var(a) == var(b)) return false;
++    if (var(a) > var(b)) { Lit t=a;a=b;b=t; }
++    Var v[] = {var(a),var(b),0};
++    Cell *p = cell(c,v,false);
++    return p && (p->mask & (1u << (sign(a) | (sign(b)<<1))));
++}
++
++static bool gate(Closure *c, Lit out, Lit a, Lit b, Lit condition, unsigned kind) {
++    if (!tick(c)) return false;
++    if (c->count == c->capacity) {
++        uint64_t cap = c->capacity ? 2*(uint64_t)c->capacity : 128;
++        if (cap > UINT32_MAX || cap > SIZE_MAX/sizeof *c->gates) { c->s->error=true;return false; }
++        Gate *p = realloc(c->gates,(size_t)cap*sizeof *p);
++        if (!p) { c->s->error=true;return false; }
++        c->gates=p;c->capacity=(uint32_t)cap;
++    }
++    c->gates[c->count++] = (Gate){out,a,b,condition,kind};
++    ++c->s->stats.congruence_gates;
++    return true;
++}
++
++static bool branch(Closure *c, Var out, Lit condition, Lit input) {
++    size_t at = mix(out ^ ((uint64_t)var(condition)<<32)) & (c->branch_cap-1);
++    for (;;) {
++        if (!tick(c)) return false;
++        Branch *p = c->branches+at;
++        if (!p->out) { p->out=out;p->condition=var(condition); }
++        if (p->out == out && p->condition == var(condition)) {
++            /* Any complete pair is sufficient. Other conditional definitions
++               can be recovered in later experiments without assuming uniqueness. */
++            Lit *slot = sign(condition) ? &p->no : &p->yes;
++            if (!*slot) *slot=input;
++            return true;
++        }
++        at = (at+1) & (c->branch_cap-1);
++    }
++}
++
++static bool extract(Closure *c) {
++    Solver *s=c->s;
++    c->cell_cap=capacity_for(2*(uint64_t)s->num_clauses+1);
++    c->branch_cap=capacity_for(4*(uint64_t)s->num_clauses+1);
++    if (!c->cell_cap || !c->branch_cap || c->cell_cap > SIZE_MAX/sizeof *c->cells ||
++        c->branch_cap > SIZE_MAX/sizeof *c->branches) { s->error=true;return false; }
++    /* Avoid allocating a full index when its later scan cannot fit the budget. */
++    if (s->work_limit && s->work_limit-s->work < c->cell_cap+c->branch_cap) return false;
++    c->cells=calloc(c->cell_cap,sizeof *c->cells);
++    c->branches=calloc(c->branch_cap,sizeof *c->branches);
++    if (!c->cells || !c->branches) { s->error=true;return false; }
++    for (uint32_t i=0;i<s->num_clauses;++i) {
++        if (!tick(c)) return false;
++        CRef cr=s->clauses[i];
++        if (cr == INVALID_CLAUSE || clause_deleted(s->arena,cr)) continue;
++        const Lit *lits=CLAUSE_LITS(s->arena,cr);Lit open[3];unsigned n=0;bool satisfied=false;
++        for (uint32_t j=0;j<CLAUSE_SIZE(s->arena,cr);++j) {
++            if (!tick(c)) return false;
++            lbool value=lxor(s->values[var(lits[j])],sign(lits[j]));
++            if (value == TRUE) { satisfied=true;break; }
++            if (value == UNDEF) { if (n == 3) { ++n;break; }open[n++]=lits[j]; }
++        }
++        if (satisfied || n<2 || n>3) continue;
++        for (unsigned j=1;j<n;++j) for (unsigned k=j;k && var(open[k])<var(open[k-1]);--k) {
++            Lit t=open[k];open[k]=open[k-1];open[k-1]=t;
++        }
++        Var v[3]={0};unsigned mask=0;
++        for (unsigned j=0;j<n;++j) { v[j]=var(open[j]);mask |= sign(open[j])<<j; }
++        Cell *p=cell(c,v,true);if (!p) return false;p->mask |= 1u<<mask;
++    }
++    for (size_t i=0;i<c->cell_cap;++i) {
++        if (!tick(c)) return false;
++        Cell *p=c->cells+i;if (!p->v[2]) continue;
++        for (unsigned m=0;m<8;++m) if (p->mask & (1u<<m)) {
++            Lit lits[3];for (unsigned j=0;j<3;++j) lits[j]=mkLit(p->v[j],(m>>j)&1);
++            for (unsigned j=0;j<3;++j) {
++                Lit a=neg(lits[(j+1)%3]),b=neg(lits[(j+2)%3]);
++                if (binary(c,neg(lits[j]),a) && binary(c,neg(lits[j]),b) &&
++                    !gate(c,lits[j],a,b,0,AND_GATE)) return false;
++                /* Two clauses differing only in the other two signs encode
++                   a conditional equivalence. Join its opposite condition. */
++                unsigned u=(j+1)%3,v=(j+2)%3,other=m^(1u<<u)^(1u<<v);
++                if (m >= other || !(p->mask & (1u<<other))) continue;
++                bool inverted=1^((m>>u)&1)^((m>>v)&1);
++                if (!branch(c,p->v[u],neg(lits[j]),mkLit(p->v[v],inverted)) ||
++                    !branch(c,p->v[v],neg(lits[j]),mkLit(p->v[u],inverted))) return false;
++            }
++        }
++        for (unsigned parity=0;parity<2;++parity) {
++            unsigned complete=parity ? 0x69u : 0x96u;
++            if ((p->mask & complete) != complete) continue;
++            for (unsigned j=0;j<3;++j)
++                if (!gate(c,mkLit(p->v[j],parity),mkLit(p->v[(j+1)%3],false),
++                          mkLit(p->v[(j+2)%3],false),0,XOR_GATE)) return false;
++        }
++    }
++    for (size_t i=0;i<c->branch_cap;++i) {
++        if (!tick(c)) return false;
++        Branch *p=c->branches+i;
++        if (p->out && p->yes && p->no &&
++            !gate(c,mkLit(p->out,false),p->yes,p->no,mkLit(p->condition,false),ITE_GATE)) return false;
++    }
++    free(c->cells);c->cells=NULL;free(c->branches);c->branches=NULL;
++    return true;
++}
++
++static Lit representative(Closure *c, Lit lit) {
++    Lit root=lit;
++    while (c->parent[var(root)] != mkLit(var(root),false)) {
++        if (!tick(c)) return 0;
++        root=c->parent[var(root)] ^ sign(root);
++    }
++    while (var(lit) != var(root)) {
++        if (!tick(c)) return 0;
++        Lit next=c->parent[var(lit)] ^ sign(lit);
++        c->parent[var(lit)]=root ^ sign(lit);lit=next;
++    }
++    return root;
++}
++
++static bool lemma(Closure *c, const Lit *lits, unsigned n) {
++    if (!tick(c)) return false;
++    bool ok=solver_add_rup_clause(c->s,lits,n);
++    if (ok) ++c->s->stats.congruence_clauses;
++    return ok;
++}
++
++/* XOR/ITE equivalences may not themselves be RUP. Split on one input, prove
++ * both conditional clauses by RUP, then prove the unconditioned consequence.
++ * A budget cutoff can retain valid partial lemmas; it cannot commit an alias. */
++static bool consequence(Closure *c, const Lit *lits, unsigned n, Lit split) {
++    if (lemma(c,lits,n)) return true;
++    if (!split || solver_budget_exhausted(c->s)) return false;
++    Lit conditional[3];memcpy(conditional,lits,n*sizeof *lits);
++    conditional[n]=split;if (!lemma(c,conditional,n+1)) return false;
++    conditional[n]=neg(split);if (!lemma(c,conditional,n+1)) return false;
++    return lemma(c,lits,n);
++}
++
++static bool merge(Closure *c, Lit a, Lit b, Lit split) {
++    a=representative(c,a);b=representative(c,b);
++    if (!a || !b) return false;
++    if (a == b) return true;
++    Lit forward[]={neg(a),b},reverse[]={neg(b),a};
++    if (!consequence(c,forward,2,split) || !consequence(c,reverse,2,split)) return false;
++    if (var(a) != var(b)) {
++        if (var(a)>var(b)) c->parent[var(a)]=b^sign(a);
++        else c->parent[var(b)]=a^sign(b);
++    }
++    ++c->changes;++c->s->stats.congruence_merges;
++    return true;
++}
++
++static lbool value(Closure *c, Lit l) { return lxor(c->s->values[var(l)],sign(l)); }
++
++static bool constant(Closure *c, Gate *g, bool truth, Lit split) {
++    Lit unit=truth ? g->out : neg(g->out);
++    if (value(c,unit) == TRUE) { g->kind=DEAD_GATE;return true; }
++    if (!consequence(c,&unit,1,split)) return false;
++    g->kind=DEAD_GATE;++c->changes;return true;
++}
++
++static bool simplify(Closure *c, Gate *g) {
++    g->out=representative(c,g->out);g->a=representative(c,g->a);g->b=representative(c,g->b);
++    if (!g->out || !g->a || !g->b) return false;
++    Lit split=g->a;
++    lbool a=value(c,g->a),b=value(c,g->b);
++    if (g->kind == ITE_GATE) {
++        g->c=representative(c,g->c);if (!g->c) return false;split=g->c;
++        if (sign(g->c)) { Lit t=g->a;g->a=g->b;g->b=t;g->c=neg(g->c);a=value(c,g->a);b=value(c,g->b); }
++        lbool condition=value(c,g->c);
++        if (condition != UNDEF) {
++            if (merge(c,g->out,condition == TRUE ? g->a : g->b,split)) g->kind=DEAD_GATE;
++            return !solver_budget_exhausted(c->s);
++        }
++        if (g->a == g->b) {
++            if (merge(c,g->out,g->a,split)) g->kind=DEAD_GATE;
++            return !solver_budget_exhausted(c->s);
++        }
++        if (g->a == g->c) a=TRUE;else if (g->a == neg(g->c)) a=FALSE;
++        if (g->b == g->c) b=FALSE;else if (g->b == neg(g->c)) b=TRUE;
++        if (a != UNDEF) {
++            if (a == TRUE) { g->out=neg(g->out);g->a=neg(g->c);g->b=neg(g->b); }
++            else g->a=neg(g->c);
++            g->kind=AND_GATE;g->c=0;
++        } else if (b != UNDEF) {
++            if (b == TRUE) { g->out=neg(g->out);g->a=neg(g->a);g->b=g->c; }
++            else g->b=g->c;
++            g->kind=AND_GATE;g->c=0;
++        } else if (g->a == neg(g->b)) {
++            g->out=neg(g->out);g->b=g->c;g->c=0;g->kind=XOR_GATE;
++        } else {
++            bool invert=sign(g->a);g->out ^= invert;g->a ^= invert;g->b ^= invert;
++            return true;
++        }
++        a=value(c,g->a);b=value(c,g->b);
++    }
++    if (g->kind == AND_GATE) {
++        if (a == FALSE || b == FALSE || g->a == neg(g->b)) return constant(c,g,false,split);
++        if (a == TRUE && b == TRUE) return constant(c,g,true,split);
++        Lit equal=a == TRUE ? g->b : b == TRUE ? g->a : g->a == g->b ? g->a : 0;
++        if (equal) {
++            if (merge(c,g->out,equal,split)) g->kind=DEAD_GATE;
++            return !solver_budget_exhausted(c->s);
++        }
++    } else {
++        if (g->a == g->b || g->a == neg(g->b)) return constant(c,g,g->a != g->b,split);
++        if (a != UNDEF && b != UNDEF) return constant(c,g,a != b,split);
++        if (a != UNDEF || b != UNDEF) {
++            Lit equal=a != UNDEF ? (g->b ^ (a == TRUE)) : (g->a ^ (b == TRUE));
++            if (merge(c,g->out,equal,split)) g->kind=DEAD_GATE;
++            return !solver_budget_exhausted(c->s);
++        }
++        g->out ^= sign(g->a)^sign(g->b);g->a &= ~1u;g->b &= ~1u;
++    }
++    if (g->a>g->b) { Lit t=g->a;g->a=g->b;g->b=t; }
++    return true;
++}
++
++uint32_t solver_congruence(Solver *s) {
++    if (!s || s->decision_level || s->has_solved || s->elim || s->num_learnts ||
++        s->stats.decisions || s->result == FALSE || !s->num_clauses || solver_budget_exhausted(s)) return 0;
++    Closure c={.s=s};
++    uint64_t start_work=s->work;
++    if (!extract(&c) || !c.count) goto done;
++    if ((uint64_t)s->num_vars+1 > SIZE_MAX/sizeof *c.parent) { s->error=true;goto done; }
++    c.parent=malloc(((size_t)s->num_vars+1)*sizeof *c.parent);
++    c.table_cap=capacity_for(2*(uint64_t)c.count+1);
++    if (!c.table_cap || c.table_cap>SIZE_MAX/sizeof *c.table) { s->error=true;goto done; }
++    c.table=calloc(c.table_cap,sizeof *c.table);
++    if (!c.parent || !c.table) { s->error=true;goto done; }
++    for (Var v=1;v<=s->num_vars;++v) { if (!tick(&c)) goto done;c.parent[v]=mkLit(v,false); }
++    for (;;) {
++        uint32_t before=c.changes;
++        for (size_t i=0;i<c.table_cap;++i) { if (!tick(&c)) goto done;c.table[i]=0; }
++        for (uint32_t i=0;i<c.count;++i) {
++            if (!tick(&c) || s->result == FALSE) goto done;
++            Gate *g=c.gates+i;if (g->kind == DEAD_GATE) continue;
++            if (!simplify(&c,g)) {
++                if (solver_budget_exhausted(s)) goto done;
++                continue;
++            }
++            if (g->kind == DEAD_GATE || s->result == FALSE) continue;
++            size_t at=mix(g->a ^ ((uint64_t)g->b<<20) ^ ((uint64_t)g->c<<40) ^ g->kind) & (c.table_cap-1);
++            for (;;) {
++                if (!tick(&c)) goto done;
++                if (!c.table[at]) { c.table[at]=i+1;break; }
++                Gate *h=c.gates+c.table[at]-1;
++                if (h->kind == g->kind && h->a == g->a && h->b == g->b && h->c == g->c) {
++                    Lit split=g->kind == ITE_GATE ? g->c : g->a;
++                    if (merge(&c,g->out,h->out,split)) g->kind=DEAD_GATE;
++                    break;
++                }
++                at=(at+1) & (c.table_cap-1);
++            }
++        }
++        if (c.changes == before) break;
++    }
++ done:
++    s->stats.congruence_work += s->work-start_work;
++    free(c.cells);free(c.branches);free(c.gates);free(c.parent);free(c.table);
++    return c.changes;
++}
+--- a/competition/c/include/solver.h
++++ b/competition/c/include/solver.h
+@@ -28,0 +29,2 @@
++    bool     congruence;         // Experimental AND/XOR/ITE gate congruence
++    uint64_t congruence_budget;  // Independent gate extraction/derivation budget
+@@ -237,0 +240 @@
++        uint64_t congruence_work, congruence_gates, congruence_merges, congruence_clauses;
+@@ -343,0 +347,4 @@
++/* Root-only preprocessing helpers. Derived clauses never enter immutable input. */
++bool solver_add_rup_clause(Solver* s, const Lit* lits, uint32_t size);
++uint32_t solver_congruence(Solver* s);
++
+--- /dev/null
++++ b/competition/c/tests/test_congruence.c
+@@ -0,0 +1,112 @@
++#include "../include/solver.h"
++#include <assert.h>
++#include <stdio.h>
++#include <string.h>
++
++static void add(Solver *s,const Lit *l,unsigned n) { solver_add_clause(s,l,n);assert(!s->error); }
++static void definition(Solver *s,unsigned kind,Lit out,Lit a,Lit b,Lit c,unsigned omit) {
++    Lit clauses[4][3];unsigned sizes[4]={3,3,3,3},count=4;
++    if (!kind) {
++        Lit d[3][3]={{neg(out),a,0},{neg(out),b,0},{out,neg(a),neg(b)}};
++        memcpy(clauses,d,sizeof d);sizes[0]=sizes[1]=2;count=3;
++    } else if (kind==1) {
++        Lit d[4][3]={{a,b,neg(out)},{neg(a),neg(b),neg(out)},{a,neg(b),out},{neg(a),b,out}};
++        memcpy(clauses,d,sizeof d);
++    } else {
++        Lit d[4][3]={{neg(c),neg(a),out},{neg(c),a,neg(out)},{c,neg(b),out},{c,b,neg(out)}};
++        memcpy(clauses,d,sizeof d);
++    }
++    for (unsigned i=0;i<count;++i) if (i!=omit) add(s,clauses[i],sizes[i]);
++}
++static bool lit_value(Lit l,unsigned bits) { return ((bits>>(var(l)-1))&1) != sign(l); }
++static bool input_value(Solver *s,unsigned bits) {
++    bool sat=false;
++    for (size_t i=0;i<s->input_size;++i) {
++        if (!s->input[i]) { if (!sat) return false;sat=false; }
++        else sat |= lit_value(s->input[i],bits);
++    }
++    return true;
++}
++static bool verify(Solver *s,uint32_t original,size_t input_size) {
++    assert(!s->error && !s->decision_level && s->input_size==input_size);
++    bool sat=false;
++    for (unsigned bits=0;bits<(1u<<s->num_vars);++bits) if (input_value(s,bits)) {
++        sat=true;
++        for (uint32_t i=original;i<s->num_clauses;++i) {
++            CRef cr=s->clauses[i];bool valid=false;
++            for (uint32_t j=0;j<CLAUSE_SIZE(s->arena,cr);++j) valid |= lit_value(CLAUSE_LITS(s->arena,cr)[j],bits);
++            assert(valid); // Every emitted lemma is entailed by the original CNF.
++        }
++    }
++    return sat;
++}
++
++static void signed_gates(void) {
++    unsigned tested=0,merges=0;
++    for (unsigned kind=0;kind<3;++kind) for (unsigned signs=0;signs<32;++signs)
++    for (unsigned variant=0;variant<4;++variant) {
++        Solver *s=solver_new();assert(s);
++        for (unsigned i=0;i<5;++i) assert(solver_new_var(s));
++        /* Rotate variable numbering, invert literals, and exchange operands. */
++        unsigned shift=signs%5;Lit v[5];
++        for (unsigned i=0;i<5;++i) v[i]=mkLit(1+(i+shift)%5,(signs>>i)&1);
++        definition(s,kind,v[3],v[0],v[1],v[2],99);
++        definition(s,kind,v[4],variant&1 ? v[1] : v[0],variant&1 ? v[0] : v[1],
++                   (variant&1) && kind==2 ? neg(v[2]) : v[2],variant==3 ? 0 : 99);
++        if (variant==2) { Lit x[]={v[3],v[4]},y[]={neg(v[3]),neg(v[4])};add(s,x,2);add(s,y,2); }
++        uint32_t original=s->num_clauses;size_t input_size=s->input_size;
++        solver_congruence(s);
++        bool sat=verify(s,original,input_size);merges += s->stats.congruence_merges>0;
++        if (variant<2) assert(s->stats.congruence_merges>0);
++        s->work_limit=0;
++        assert(solver_solve(s)==(sat ? TRUE : FALSE));
++        if (sat) assert(solver_check_model(s));
++        solver_free(s);++tested;
++    }
++    printf("PASS: %u signed AND/XOR/ITE cases; %u with proved aliases; every added clause truth-table checked\n",tested,merges);
++}
++
++static Solver *cascade(bool contradictory) {
++    Solver *s=solver_new();assert(s);
++    for (unsigned i=0;i<9;++i) assert(solver_new_var(s));
++    definition(s,0,mkLit(4,0),mkLit(1,0),mkLit(2,0),0,99);
++    definition(s,0,mkLit(5,0),mkLit(2,0),mkLit(1,0),0,99);
++    definition(s,1,mkLit(6,0),mkLit(4,0),mkLit(3,0),0,99);
++    definition(s,1,mkLit(7,0),mkLit(5,0),mkLit(3,0),0,99);
++    definition(s,2,mkLit(8,0),mkLit(6,0),mkLit(1,0),mkLit(2,0),99);
++    definition(s,2,mkLit(9,0),mkLit(7,0),mkLit(1,0),mkLit(2,0),99);
++    if (contradictory) { Lit a[]={mkLit(8,0),mkLit(9,0)},b[]={mkLit(8,1),mkLit(9,1)};add(s,a,2);add(s,b,2); }
++    return s;
++}
++
++static void cutoffs(void) {
++    Solver *s=cascade(false);uint32_t original=s->num_clauses;size_t input_size=s->input_size;
++    solver_congruence(s);uint64_t work=s->work;
++    assert(verify(s,original,input_size) && s->stats.congruence_merges>=3);
++    solver_free(s);
++    for (unsigned i=0;i<65;++i) {
++        s=cascade(false);original=s->num_clauses;input_size=s->input_size;
++        s->work=1;s->work_limit=1+work*i/64;
++        solver_congruence(s);assert(verify(s,original,input_size));
++        assert(s->decision_level==0);
++        s->work_limit=0;assert(solver_solve(s)==TRUE && !s->error && solver_check_model(s));solver_free(s);
++    }
++    s=cascade(true);solver_congruence(s);assert(solver_solve(s)==FALSE && !s->error);solver_free(s);
++    printf("PASS: 65 congruence budget cutoffs and subsequent complete solves (full work %llu)\n",(unsigned long long)work);
++}
++
++static void rup_guard(void) {
++    Solver *s=solver_new();assert(s);assert(solver_new_var(s));assert(solver_new_var(s));
++    Lit clause[]={mkLit(1,0),mkLit(2,0)};add(s,clause,2);
++    uint32_t clauses=s->num_clauses;size_t input=s->input_size;
++    assert(!solver_add_rup_clause(s,clause,1)); // x is not entailed by (x or y).
++    assert(s->num_clauses==clauses && s->input_size==input && !s->trail_size && !s->decision_level);
++    s->work=1;s->work_limit=1;
++    assert(!solver_add_rup_clause(s,clause,2) && s->num_clauses==clauses);
++    s->work_limit=0;assert(solver_add_rup_clause(s,clause,2));
++    assert(s->num_clauses==clauses+1 && s->input_size==input);
++    solver_free(s);
++    puts("PASS: RUP rejection and exhausted-budget paths leave input and core unchanged");
++}
++
++int main(void) { signed_gates();cutoffs();rup_guard();return 0; }

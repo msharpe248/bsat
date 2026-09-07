@@ -1,0 +1,126 @@
+{
+  "schema": 1,
+  "platform": "macOS-26.6.1-arm64-arm-64bit-Mach-O",
+  "machine": "arm64",
+  "revision": "2cee3bc202c261c7a2da61e398d93267393ed9da",
+  "dirty": true,
+  "split": "development",
+  "seed": 20261218,
+  "timeout": 10.0,
+  "repeats": 1,
+  "solvers": {
+    "no_ands": {
+      "command": [
+        "/private/tmp/kissat-8af8e56f174b778aef3aa45af9f739b2a5f492c2/build/kissat",
+        "--congruenceands=0",
+        "{input}",
+        "{proof}"
+      ],
+      "sha256": "5cad8e92487416008cf8ec4573c2ab2a02b7c1927ab06e8c8cacb317908cff1f"
+    },
+    "no_xors": {
+      "command": [
+        "/private/tmp/kissat-8af8e56f174b778aef3aa45af9f739b2a5f492c2/build/kissat",
+        "--congruencexors=0",
+        "{input}",
+        "{proof}"
+      ],
+      "sha256": "5cad8e92487416008cf8ec4573c2ab2a02b7c1927ab06e8c8cacb317908cff1f"
+    },
+    "no_ites": {
+      "command": [
+        "/private/tmp/kissat-8af8e56f174b778aef3aa45af9f739b2a5f492c2/build/kissat",
+        "--congruenceites=0",
+        "{input}",
+        "{proof}"
+      ],
+      "sha256": "5cad8e92487416008cf8ec4573c2ab2a02b7c1927ab06e8c8cacb317908cff1f"
+    }
+  },
+  "inputs": {
+    "/Users/msharpe/python/bsat/dataset/sat_competition2025/hardware-model-checking/7bdf3e5401cc263951003b569bcd689c.cnf": {
+      "sha256": "7aada02dc300ce6db773dbab34f115969174896a161b6d28ce37f5743e8fff4f",
+      "family": "hardware-model-checking"
+    }
+  },
+  "checker": {
+    "path": "/tmp/bsat-drat-trim",
+    "sha256": "9bfc20a5fa9eb2a0ffadd2b0cfc7cdd4a20f6aa9c8d7de5b6c771160b847f630"
+  },
+  "runs": [
+    {
+      "solver": "no_ites",
+      "input": "/Users/msharpe/python/bsat/dataset/sat_competition2025/hardware-model-checking/7bdf3e5401cc263951003b569bcd689c.cnf",
+      "repeat": 0,
+      "status": "UNKNOWN",
+      "verified": false,
+      "seconds": 10.006092042196542,
+      "cpu_seconds": 10.001305,
+      "peak_rss_bytes": 280772608,
+      "par2": 20.0,
+      "stats": {
+        "Sun Sep 6 12": "02:44 CDT 2026 Darwin Michaels-Mini 25.6.0 arm64",
+        "opened and writing proof to DRAT file": "",
+        "opened and reading DIMACS file": ""
+      },
+      "diagnostic": ""
+    },
+    {
+      "solver": "no_ands",
+      "input": "/Users/msharpe/python/bsat/dataset/sat_competition2025/hardware-model-checking/7bdf3e5401cc263951003b569bcd689c.cnf",
+      "repeat": 0,
+      "status": "UNKNOWN",
+      "verified": false,
+      "seconds": 10.00821058312431,
+      "cpu_seconds": 9.869577,
+      "peak_rss_bytes": 255016960,
+      "par2": 20.0,
+      "stats": {
+        "Sun Sep 6 12": "02:44 CDT 2026 Darwin Michaels-Mini 25.6.0 arm64",
+        "opened and writing proof to DRAT file": "",
+        "opened and reading DIMACS file": ""
+      },
+      "diagnostic": ""
+    },
+    {
+      "solver": "no_xors",
+      "input": "/Users/msharpe/python/bsat/dataset/sat_competition2025/hardware-model-checking/7bdf3e5401cc263951003b569bcd689c.cnf",
+      "repeat": 0,
+      "status": "UNKNOWN",
+      "verified": false,
+      "seconds": 10.00838795909658,
+      "cpu_seconds": 9.848087,
+      "peak_rss_bytes": 164298752,
+      "par2": 20.0,
+      "stats": {
+        "Sun Sep 6 12": "02:44 CDT 2026 Darwin Michaels-Mini 25.6.0 arm64",
+        "opened and writing proof to DRAT file": "",
+        "opened and reading DIMACS file": ""
+      },
+      "diagnostic": ""
+    }
+  ],
+  "summary": {
+    "no_ands": {
+      "verified_runs": 0,
+      "runs": 1,
+      "mean_par2": 20.0,
+      "max_rss_bytes": 255016960,
+      "errors": 0
+    },
+    "no_xors": {
+      "verified_runs": 0,
+      "runs": 1,
+      "mean_par2": 20.0,
+      "max_rss_bytes": 164298752,
+      "errors": 0
+    },
+    "no_ites": {
+      "verified_runs": 0,
+      "runs": 1,
+      "mean_par2": 20.0,
+      "max_rss_bytes": 280772608,
+      "errors": 0
+    }
+  }
+}

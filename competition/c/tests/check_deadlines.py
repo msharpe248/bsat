@@ -48,6 +48,8 @@ def main():
         modes += [(hard, ['--portfolio', '0.000000000001']),
                   (hard, ['--portfolio', '0.002', '--binary-proof']),
                   (empty, ['--portfolio', '0.000000000001', '--no-probing'])]
+        modes += [(hard, ['--congruence', '--equiv', '--binary-proof']),
+                  (empty, ['--congruence', '--no-probing'])]
         for limit in (0.001, 0.01, 0.05):
             for inp, options in modes:
                 cmd = [solver, '--time', str(limit), '--proof', str(root/'proof.drat'), *options, str(inp)]
