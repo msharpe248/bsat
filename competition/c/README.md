@@ -379,3 +379,8 @@ reduced long-clause kernel CPU but weakened clauses and repeatedly regressed
 battleship without new solves. The existing vivifier is retained, together with
 4,688 independent truth-table/RUP regression cases and a diagnostic that reports
 both cost and residual clause size.
+
+[Reusing assumptions during full deletion vivification](VIVIFICATION_REUSE_EXPERIMENT.md)
+kept the generated strengthening results and reduced kernel CPU, but lost two
+competition solves. That replacement is also rejected. The retained suite now
+adds exact deletion-oracle comparisons and long-scan interruption/retry checks.

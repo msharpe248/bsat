@@ -1,0 +1,57 @@
+diff --git a/competition/c/src/solver.c b/competition/c/src/solver.c
+index 910721e..1182da7 100644
+--- a/competition/c/src/solver.c
++++ b/competition/c/src/solver.c
+@@ -1775,0 +1776,40 @@ static bool rup_candidate(Solver *s, const Lit *lits, uint32_t size) {
++/* Keep the negated retained prefix at level one. Each deletion trial adds the
++   remaining suffix at level two and rolls it back, preserving the prefix's
++   propagated closure. The assumptions are the same as a fresh RUP trial; only
++   their propagation is shared. No interrupted trial can justify a deletion. */
++static uint32_t vivify_delete(Solver *s, Lit *lits, uint32_t size) {
++    bool prefix_conflict = false;
++    s->decision_level = 1;
++    s->trail_lims[1] = s->trail_size;
++    for (uint32_t i = 0; i < size && !solver_budget_exhausted(s);) {
++        bool conflict = prefix_conflict;
++        if (!conflict) {
++            s->decision_level = 2;
++            s->trail_lims[2] = s->trail_size;
++            for (uint32_t j = i + 1; j < size; ++j) {
++                lbool val = lxor(s->values[var(lits[j])], sign(lits[j]));
++                if (val == TRUE) { conflict = true; break; }
++                if (val == UNDEF) push_trail(s, neg(lits[j]));
++            }
++            if (!conflict) conflict = solver_propagate(s) != INVALID_CLAUSE;
++            solver_backtrack(s, 1);
++        }
++        if (conflict && !s->interrupted && !s->error) {
++            memmove(lits + i, lits + i + 1, (size - i - 1) * sizeof *lits);
++            proof_add_clause(s, lits, --size);
++            continue;
++        }
++        if (solver_budget_exhausted(s)) break;
++        /* The failed deletion retains this literal in all later trials. */
++        Lit retained = lits[i++];
++        lbool val = lxor(s->values[var(retained)], sign(retained));
++        if (val == TRUE) prefix_conflict = true;
++        else if (val == UNDEF) {
++            push_trail(s, neg(retained));
++            prefix_conflict = solver_propagate(s) != INVALID_CLAUSE;
++        }
++    }
++    solver_backtrack(s, 0);
++    return size;
++}
++
+@@ -1792,10 +1832 @@ bool solver_simplify(Solver *s) {
+-        for (uint32_t i = 0; i < n && !solver_budget_exhausted(s);) {
+-            Lit removed = candidate[i];
+-            memmove(candidate+i, candidate+i+1, (n-i-1)*sizeof *candidate);
+-            if (rup_candidate(s, candidate, n-1)) {
+-                --n; proof_add_clause(s, candidate, n);
+-            } else {
+-                memmove(candidate+i+1, candidate+i, (n-i-1)*sizeof *candidate);
+-                candidate[i++] = removed;
+-            }
+-        }
++        n = vivify_delete(s, candidate, n);

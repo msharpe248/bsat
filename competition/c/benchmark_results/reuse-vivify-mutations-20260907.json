@@ -1,0 +1,16 @@
+{
+  "schema": 1,
+  "base_revision": "cc77803",
+  "test_sha256": "0bf8375e5f18cf8be6e12f36765bdc7212a17af9a901253af1c09ed02501eb25",
+  "candidate_source_sha256": "31f27e547b4caad5425561e58f81d6fbb5f485eb14668757a421ed6ae96c59ec",
+  "mutants": {
+    "assume-omitted-literal": {
+      "returncode": -6,
+      "stderr": "Assertion failed: (rup(s,lits,n)), function check, file test_vivify_prefix.c, line 76.\n"
+    },
+    "leak-trial-suffix": {
+      "returncode": -6,
+      "stderr": "Assertion failed: (rup(s,lits,n)), function check, file test_vivify_prefix.c, line 76.\n"
+    }
+  }
+}
