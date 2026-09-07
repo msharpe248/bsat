@@ -50,7 +50,7 @@ typedef struct OccList {
 
 typedef struct ElimEntry {
     Var      var;         // The eliminated variable
-    Lit*     clause;      // Zero-delimited copies of removed clauses
+    Lit*     clause;      // Zero-delimited reconstruction clauses
     uint32_t clause_size; // Number of words in the reconstruction record
 } ElimEntry;
 

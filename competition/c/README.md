@@ -298,3 +298,9 @@ competition solved counts are unchanged. BVE remains opt-in with `--elim`.
 deadlines while staging pure clauses, and transfers the completed buffer into
 the elimination stack. This removes a duplicate allocation/copy while preserving
 the public copying API used by BCE and equivalence.
+
+[Compact reconstruction records](COMPACT_ELIMINATION_RECORDS.md) store a default
+pivot and the cheaper parent polarity. Pure-variable records need only two
+words, and overlapping-clause examples use roughly half the previous payload.
+Independent model/proof checks pass; competition solved counts are unchanged,
+and BVE remains opt-in.

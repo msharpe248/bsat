@@ -33,9 +33,9 @@ static void cutoffs(void) {
         Solver *s=pure(65);uint64_t start=s->work;
         s->work_limit=start+budget;
         bool ok=elim_eliminate_var(s,1);
-        if(budget<=66) {assert(!ok);unchanged(s);assert(s->work==s->work_limit);}
+        if(budget<=2) {assert(!ok);unchanged(s);assert(s->work==s->work_limit);}
         else {
-            assert(ok && s->work-start==66 && s->elim->stack_size==1);
+            assert(ok && s->work-start==2 && s->elim->stack_size==1);
             for(Var v=1;v<=s->num_vars;++v) s->values[v]=FALSE;
             elim_extend_model(s);assert(s->values[1]==TRUE && solver_check_model(s));
         }
@@ -61,8 +61,8 @@ static void stack_growth(void) {
     assert(s->elim->stack_size==48 && s->elim->stack_capacity>=48);
     for(unsigned i=0;i<48;++i) {
         ElimEntry *e=&s->elim->stack[i];
-        assert(e->var==2*i+1 && e->clause_size==3);
-        assert(e->clause[0]==mkLit(e->var,false) && e->clause[1]==mkLit(e->var+1,false) && !e->clause[2]);
+        assert(e->var==2*i+1 && e->clause_size==2);
+        assert(e->clause[0]==mkLit(e->var,false) && !e->clause[1]);
         for(unsigned j=0;j<i;++j) assert(e->clause!=s->elim->stack[j].clause);
     }
     for(Var v=1;v<=96;++v) s->values[v]=FALSE;

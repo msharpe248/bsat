@@ -1,5 +1,5 @@
-/* Bounded resolution elimination. All removed clauses are retained for model
- * reconstruction; resolvents are staged before arena mutations invalidate pointers. */
+/* Bounded resolution elimination. A default pivot and one polarity of removed
+ * clauses reconstruct models; resolvents are staged before arena mutations. */
 #include "../include/solver.h"
 #include <stdio.h>
 #include <string.h>
@@ -173,16 +173,30 @@ bool elim_eliminate_var(Solver *s, Var v) {
     if (!removed || !res || !sizes) { s->error = true; goto done; }
     if (p->size) memcpy(removed, p->clauses, p->size * sizeof *removed);
     if (n->size) memcpy(removed + p->size, n->clauses, n->size * sizeof *removed);
-    uint64_t words = 0;
-    for (uint32_t i = 0; i < count; ++i) words += (uint64_t)CLAUSE_SIZE(s->arena, removed[i]) + 1;
+    uint64_t positive_words = 0, negative_words = 0;
+    for (uint32_t i = 0; i < p->size; ++i)
+        positive_words += (uint64_t)CLAUSE_SIZE(s->arena, p->clauses[i]) + 1;
+    for (uint32_t i = 0; i < n->size; ++i)
+        negative_words += (uint64_t)CLAUSE_SIZE(s->arena, n->clauses[i]) + 1;
+    bool save_negative = negative_words < positive_words;
+    OccList *kept = save_negative ? n : p;
+    uint64_t words = 2 + (save_negative ? negative_words : positive_words);
     if (words > UINT32_MAX || words > SIZE_MAX / sizeof *saved) goto done;
     saved_size = (uint32_t)words;
     saved = malloc(saved_size * sizeof *saved);
     if (!saved) { s->error = true; goto done; }
+    // Default satisfies the omitted polarity. A saved clause can override it;
+    // all resolvents then guarantee satisfaction of every omitted parent.
+    Lit defaults[] = {mkLit(v, !save_negative), 0};
     uint32_t at = 0;
-    for (uint32_t i = 0; i < count; ++i) {
-        uint32_t z = CLAUSE_SIZE(s->arena, removed[i]);
-        const Lit *lits = CLAUSE_LITS(s->arena, removed[i]);
+    for (unsigned i = 0; i < 2; ++i) {
+        if (solver_budget_exhausted(s)) goto done;
+        saved[at++] = defaults[i]; ++s->work;
+        if (staging_exhausted(s)) goto done;
+    }
+    for (uint32_t i = 0; i < kept->size; ++i) {
+        uint32_t z = CLAUSE_SIZE(s->arena, kept->clauses[i]);
+        const Lit *lits = CLAUSE_LITS(s->arena, kept->clauses[i]);
         for (uint32_t j = 0; j < z;) {
             if (solver_budget_exhausted(s)) goto done;
             uint32_t chunk = MIN(z-j, 1024u-(uint32_t)(s->work & 1023));
@@ -210,6 +224,8 @@ bool elim_eliminate_var(Solver *s, Var v) {
         }
         res[nr] = r; sizes[nr++] = z;
     }
+    // Pure elimination may stage only two words: still check time before commit.
+    if (solver_budget_exhausted_now(s)) goto done;
     if (!save_owned(s, v, saved, saved_size)) goto done;
     saved = NULL; // Ownership transferred; cleanup must not free the stack record.
     for (uint32_t i = 0; i < nr && !s->error && s->result != FALSE; ++i) {

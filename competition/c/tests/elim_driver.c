@@ -21,6 +21,9 @@ int main(int argc,char **argv) {
         cpu+=(double)clock()/CLOCKS_PER_SEC-start;work+=s->work-before;eliminated+=ok;
         if(!ok || s->error) {solver_free(s);return 2;}
     }
+    uint64_t words=0;
+    for(uint32_t i=0;i<s->elim->stack_size;++i) words+=s->elim->stack[i].clause_size;
+    printf("c Reconstruction words: %llu\n",(unsigned long long)words);
     elim_extend_model(s);
     bool valid=solver_check_model(s);
     printf("c Elimination CPU: %.9f\nc Elimination work: %llu\nc Eliminated: %llu\n",
