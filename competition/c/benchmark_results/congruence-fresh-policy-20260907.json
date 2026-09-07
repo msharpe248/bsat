@@ -1,0 +1,18 @@
+{
+  "schema": 1,
+  "revision": "65ac319",
+  "manifest": "congruence-fresh-corpus-20260907.json",
+  "manifest_sha256": "e24c9bb62eb0aea5d54991bd2e4f5ac820a8a85e6b1da50c624fed03a4e2fdc6",
+  "purpose": "Held-out generalization screen after gate-congruence implementation; no changes or tuning from these outcomes before completion.",
+  "profiles": {
+    "equiv_vmtf": "bin/bsat --equiv --equiv-budget 100000000 --alternating --vmtf --time 30 --proof {proof} {input}",
+    "congruence_vmtf": "bin/bsat --congruence --equiv --equiv-budget 100000000 --alternating --vmtf --time 30 --proof {proof} {input}",
+    "kissat": "pinned Kissat 8af8e56f174b778aef3aa45af9f739b2a5f492c2 {input} {proof}"
+  },
+  "repeats": 1,
+  "seed": 20261229,
+  "external_wall_seconds": 35,
+  "check_timeout_seconds": 120,
+  "selection_limitations": "Smallest eligible files at least 8 MB, one per family; excludes recorded filenames and hashes. Size-biased screen, not representative full competition evaluation.",
+  "execution": "Serial solver jobs, certificate verification outside timing; no concurrent builds or validation."
+}

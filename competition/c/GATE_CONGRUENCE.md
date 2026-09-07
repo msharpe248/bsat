@@ -31,7 +31,10 @@ difference is not sufficient evidence of a speedup. Peak RSS increased on KTF
 from 63.9 MB to 114.8 MB and on belpyramid from 48.8 MB to 55.1 MB. These are
 whole-run measurements, including time-dependent search allocation. They
 reinforce the decision to retain congruence as opt-in. See
-`congruence-guard-20260907.json`. Broader held-out evaluation remains outstanding.
+`congruence-guard-20260907.json`. A subsequent six-input
+[held-out screen](GATE_CONGRUENCE_HELDOUT.md) increased verified solves from 1/6
+to 2/6, versus 3/6 for Kissat, with substantial memory costs on some unsolved
+families. Longer, more representative competition evaluation remains outstanding.
 
 ```
 bin/bsat --congruence --equiv --equiv-budget 100000000 \

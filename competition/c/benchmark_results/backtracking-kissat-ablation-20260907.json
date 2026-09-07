@@ -1,0 +1,190 @@
+{
+  "schema": 1,
+  "platform": "macOS-26.6.1-arm64-arm-64bit-Mach-O",
+  "machine": "arm64",
+  "revision": "65ac3190bd882bc8bdf88f7a9f6ae14d335596ba",
+  "dirty": true,
+  "split": "development",
+  "seed": 20261230,
+  "timeout": 15.0,
+  "repeats": 2,
+  "solvers": {
+    "kissat": {
+      "command": [
+        "/private/tmp/kissat-8af8e56f174b778aef3aa45af9f739b2a5f492c2/build/kissat",
+        "{input}",
+        "{proof}"
+      ],
+      "sha256": "5cad8e92487416008cf8ec4573c2ab2a02b7c1927ab06e8c8cacb317908cff1f"
+    },
+    "kissat_no_chrono": {
+      "command": [
+        "/private/tmp/kissat-8af8e56f174b778aef3aa45af9f739b2a5f492c2/build/kissat",
+        "--chrono=0",
+        "{input}",
+        "{proof}"
+      ],
+      "sha256": "5cad8e92487416008cf8ec4573c2ab2a02b7c1927ab06e8c8cacb317908cff1f"
+    }
+  },
+  "inputs": {
+    "/Users/msharpe/python/bsat/dataset/sat_competition2025/hardware-model-checking/7bdf3e5401cc263951003b569bcd689c.cnf": {
+      "sha256": "7aada02dc300ce6db773dbab34f115969174896a161b6d28ce37f5743e8fff4f",
+      "family": "hardware-model-checking"
+    }
+  },
+  "checker": {
+    "path": "/tmp/bsat-drat-trim",
+    "sha256": "9bfc20a5fa9eb2a0ffadd2b0cfc7cdd4a20f6aa9c8d7de5b6c771160b847f630"
+  },
+  "runs": [
+    {
+      "solver": "kissat_no_chrono",
+      "input": "/Users/msharpe/python/bsat/dataset/sat_competition2025/hardware-model-checking/7bdf3e5401cc263951003b569bcd689c.cnf",
+      "repeat": 1,
+      "status": "UNSAT",
+      "verified": true,
+      "seconds": 6.915166458114982,
+      "cpu_seconds": 6.059054,
+      "peak_rss_bytes": 106414080,
+      "par2": 6.915166458114982,
+      "stats": {
+        "Sun Sep 6 12": "02:44 CDT 2026 Darwin Michaels-Mini 25.6.0 arm64",
+        "opened and writing proof to DRAT file": "",
+        "opened and reading DIMACS file": "",
+        "conflicts": "10674             1761.68 per second",
+        "congruent": "50855               32 %  variables",
+        "decisions": "12923600             1210.76 per conflict",
+        "factored": "889                1 %  variables",
+        "iterations": "2468                2 %  variables",
+        "propagations": "163850324         27042452    per second",
+        "reductions": "6             1779    interval",
+        "reordered": "1            10674    interval",
+        "rephased": "4             2668    interval",
+        "restarts": "99              108    interval",
+        "substituted": "53572               33 %  variables",
+        "switched": "3             3558    interval",
+        "vivified": "499                1 %  checks",
+        "walks": "1            10674    interval",
+        "maximum-resident-set-size": "108968017920 bytes     103920 MB",
+        "process-time": "6s               6.06 seconds"
+      },
+      "diagnostic": ""
+    },
+    {
+      "solver": "kissat",
+      "input": "/Users/msharpe/python/bsat/dataset/sat_competition2025/hardware-model-checking/7bdf3e5401cc263951003b569bcd689c.cnf",
+      "repeat": 0,
+      "status": "UNSAT",
+      "verified": true,
+      "seconds": 1.0573922912590206,
+      "cpu_seconds": 0.986736,
+      "peak_rss_bytes": 99778560,
+      "par2": 1.0573922912590206,
+      "stats": {
+        "Sun Sep 6 12": "02:44 CDT 2026 Darwin Michaels-Mini 25.6.0 arm64",
+        "opened and writing proof to DRAT file": "",
+        "opened and reading DIMACS file": "",
+        "chronological": "4688               56 %  conflicts",
+        "conflicts": "8399             8512.45 per second",
+        "congruent": "50855               32 %  variables",
+        "decisions": "886431              105.54 per conflict",
+        "factored": "180                0 %  variables",
+        "iterations": "3029                2 %  variables",
+        "propagations": "12436821         12604805    per second",
+        "reductions": "5             1680    interval",
+        "rephased": "4             2100    interval",
+        "restarts": "277               30    interval",
+        "substituted": "55755               35 %  variables",
+        "switched": "3             2800    interval",
+        "vivified": "1819               14 %  checks",
+        "walks": "1             8399    interval",
+        "maximum-resident-set-size": "102173245440 bytes      97440 MB",
+        "process-time": "1s               0.98 seconds"
+      },
+      "diagnostic": ""
+    },
+    {
+      "solver": "kissat_no_chrono",
+      "input": "/Users/msharpe/python/bsat/dataset/sat_competition2025/hardware-model-checking/7bdf3e5401cc263951003b569bcd689c.cnf",
+      "repeat": 0,
+      "status": "UNSAT",
+      "verified": true,
+      "seconds": 6.733521291986108,
+      "cpu_seconds": 6.089951999999999,
+      "peak_rss_bytes": 105758720,
+      "par2": 6.733521291986108,
+      "stats": {
+        "Sun Sep 6 12": "02:44 CDT 2026 Darwin Michaels-Mini 25.6.0 arm64",
+        "opened and writing proof to DRAT file": "",
+        "opened and reading DIMACS file": "",
+        "conflicts": "10674             1752.74 per second",
+        "congruent": "50855               32 %  variables",
+        "decisions": "12923600             1210.76 per conflict",
+        "factored": "889                1 %  variables",
+        "iterations": "2468                2 %  variables",
+        "propagations": "163850324         26905230    per second",
+        "reductions": "6             1779    interval",
+        "reordered": "1            10674    interval",
+        "rephased": "4             2668    interval",
+        "restarts": "99              108    interval",
+        "substituted": "53572               33 %  variables",
+        "switched": "3             3558    interval",
+        "vivified": "499                1 %  checks",
+        "walks": "1            10674    interval",
+        "maximum-resident-set-size": "108296929280 bytes     103280 MB",
+        "process-time": "6s               6.09 seconds"
+      },
+      "diagnostic": ""
+    },
+    {
+      "solver": "kissat",
+      "input": "/Users/msharpe/python/bsat/dataset/sat_competition2025/hardware-model-checking/7bdf3e5401cc263951003b569bcd689c.cnf",
+      "repeat": 1,
+      "status": "UNSAT",
+      "verified": true,
+      "seconds": 1.5933727910742164,
+      "cpu_seconds": 1.010038,
+      "peak_rss_bytes": 108445696,
+      "par2": 1.5933727910742164,
+      "stats": {
+        "Sun Sep 6 12": "02:44 CDT 2026 Darwin Michaels-Mini 25.6.0 arm64",
+        "opened and writing proof to DRAT file": "",
+        "opened and reading DIMACS file": "",
+        "chronological": "4688               56 %  conflicts",
+        "conflicts": "8399             8315.94 per second",
+        "congruent": "50855               32 %  variables",
+        "decisions": "886431              105.54 per conflict",
+        "factored": "180                0 %  variables",
+        "iterations": "3029                2 %  variables",
+        "propagations": "12436821         12313830    per second",
+        "reductions": "5             1680    interval",
+        "rephased": "4             2100    interval",
+        "restarts": "277               30    interval",
+        "substituted": "55755               35 %  variables",
+        "switched": "3             2800    interval",
+        "vivified": "1819               14 %  checks",
+        "walks": "1             8399    interval",
+        "maximum-resident-set-size": "111048392704 bytes     105904 MB",
+        "process-time": "1s               1.01 seconds"
+      },
+      "diagnostic": ""
+    }
+  ],
+  "summary": {
+    "kissat": {
+      "verified_runs": 2,
+      "runs": 2,
+      "mean_par2": 1.3253825411666185,
+      "max_rss_bytes": 108445696,
+      "errors": 0
+    },
+    "kissat_no_chrono": {
+      "verified_runs": 2,
+      "runs": 2,
+      "mean_par2": 6.824343875050545,
+      "max_rss_bytes": 106414080,
+      "errors": 0
+    }
+  }
+}

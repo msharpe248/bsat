@@ -1,0 +1,22 @@
+{
+  "schema": 1,
+  "revision": "65ac319",
+  "purpose": "Untimed diagnostic after a one-conflict development solve, not an answer certificate or performance benchmark. Tests whether unused variables explain excessive search decisions.",
+  "input": "dataset/sat_competition2025/hardware-model-checking/7bdf3e5401cc263951003b569bcd689c.cnf",
+  "input_sha256": "7aada02dc300ce6db773dbab34f115969174896a161b6d28ce37f5743e8fff4f",
+  "source": "#include \"solver.h\"\n#include \"dimacs.h\"\n#include \"elim.h\"\n#include <assert.h>\n#include <stdlib.h>\n#include <stdio.h>\nint main(int argc,char **argv) {\n    assert(argc==2);SolverOpts o=default_opts();o.congruence=true;o.equiv=true;\n    o.equiv_budget=100000000;o.alternating=true;o.vmtf=true;o.max_conflicts=1;\n    Solver *s=solver_new_with_opts(&o);assert(s);\n    assert(dimacs_parse_file(s,argv[1])==DIMACS_OK);\n    lbool result=solver_solve(s);assert(!s->error);\n    unsigned char *present=calloc((size_t)s->num_vars+1,1),*open=calloc((size_t)s->num_vars+1,1);\n    assert(present && open);\n    for (uint32_t i=0;i<s->num_clauses;++i) {\n        CRef cr=s->clauses[i];if(cr==INVALID_CLAUSE || clause_deleted(s->arena,cr))continue;\n        const Lit *l=CLAUSE_LITS(s->arena,cr);uint32_t n=CLAUSE_SIZE(s->arena,cr);bool sat=false;\n        for(uint32_t j=0;j<n;++j){present[var(l[j])]=1;if(lxor(s->values[var(l[j])],sign(l[j]))==TRUE)sat=true;}\n        if(!sat)for(uint32_t j=0;j<n;++j)open[var(l[j])]=1;\n    }\n    unsigned root=0,eliminated=0,absent=0,satisfied_only=0,active=0;\n    for(Var v=1;v<=s->num_vars;++v){\n        if(s->values[v]!=UNDEF){++root;continue;}\n        if(elim_is_eliminated(s,v)){++eliminated;continue;}\n        if(!present[v])++absent;else if(!open[v])++satisfied_only;else ++active;\n    }\n    printf(\"{\\\"result\\\":%d,\\\"variables\\\":%u,\\\"root_assigned\\\":%u,\\\"eliminated_unassigned\\\":%u,\\\"absent_unassigned\\\":%u,\\\"satisfied_only_unassigned\\\":%u,\\\"active_unassigned\\\":%u,\\\"decisions\\\":%llu,\\\"conflicts\\\":%llu}\\n\",result,s->num_vars,root,eliminated,absent,satisfied_only,active,(unsigned long long)s->stats.decisions,(unsigned long long)s->stats.conflicts);\n    free(present);free(open);solver_free(s);return 0;\n}\n",
+  "source_sha256": "33e2ea3c2f2205f0287fcc072218687db8c2a0e9805183b908b0145da548c9bf",
+  "binary_sha256": "439b412cef7f01bc4bc8f9c45f71f8729d7a3445f308333a3a95dd6253f578aa",
+  "result": {
+    "result": 0,
+    "variables": 160903,
+    "root_assigned": 38613,
+    "eliminated_unassigned": 50852,
+    "absent_unassigned": 0,
+    "satisfied_only_unassigned": 2319,
+    "active_unassigned": 69119,
+    "decisions": 14293,
+    "conflicts": 1
+  },
+  "interpretation": "No unassigned, non-eliminated variables absent from live original core clauses. Most remaining variables occur in currently unsatisfied clauses. Does not establish why the search makes many decisions."
+}
