@@ -1,0 +1,422 @@
+{
+  "development": {
+    "rows": [
+      {
+        "input": "/Users/msharpe/python/bsat/dataset/sat_competition2025/battleship/d88c6afc13cdad0e2c8371a879692b39.cnf",
+        "cpu_medians": {
+          "baseline": 0.9501915,
+          "control": 0.9677355,
+          "candidate": 0.9457704999999998
+        },
+        "candidate_ratio": 0.9953472536851781,
+        "control_ratio": 1.0184636465386188
+      },
+      {
+        "input": "/Users/msharpe/python/bsat/dataset/sat_competition2025/belpyramid-puzzle/5831f35622f3e6c666f0cee6cac60e4c.cnf",
+        "cpu_medians": {
+          "baseline": 3.590443,
+          "control": 3.414424,
+          "candidate": 3.6372565
+        },
+        "candidate_ratio": 1.013038363232615,
+        "control_ratio": 0.9509756874012483
+      },
+      {
+        "input": "/Users/msharpe/python/bsat/dataset/sat_competition2025/coloring/c8d21db50338d9d5743802bcae77a466.cnf",
+        "cpu_medians": {
+          "baseline": 0.3227235,
+          "control": 0.35102649999999996,
+          "candidate": 0.323457
+        },
+        "candidate_ratio": 1.0022728434712687,
+        "control_ratio": 1.0877004618504693
+      },
+      {
+        "input": "/Users/msharpe/python/bsat/dataset/sat_competition2025/cryptography/99718c1729a8de3347a9946f1836421d.cnf",
+        "cpu_medians": {
+          "baseline": 1.0170404999999998,
+          "control": 1.006497,
+          "candidate": 0.9861789999999999
+        },
+        "candidate_ratio": 0.9696555840204988,
+        "control_ratio": 0.9896331562017443
+      },
+      {
+        "input": "/Users/msharpe/python/bsat/dataset/sat_competition2025/discrete-logarithm/0ae917c2e0c1d39cbe411c29b2f5ff08.cnf",
+        "cpu_medians": {
+          "baseline": 2.362717,
+          "control": 2.334887,
+          "candidate": 2.0539354999999997
+        },
+        "candidate_ratio": 0.869310840020197,
+        "control_ratio": 0.9882211877258259
+      },
+      {
+        "input": "/Users/msharpe/python/bsat/dataset/sat_competition2025/ensemble-computation/67aa1a256f92020dccdf66b235de3986.cnf",
+        "cpu_medians": {
+          "baseline": 3.9166505,
+          "control": 3.9023605000000003,
+          "candidate": 3.6995690000000003
+        },
+        "candidate_ratio": 0.9445747073934732,
+        "control_ratio": 0.9963514743018302
+      },
+      {
+        "input": "/Users/msharpe/python/bsat/dataset/sat_competition2025/fermat/e207ba2df64495327f715e08155a220f.cnf",
+        "cpu_medians": {
+          "baseline": 1.826216,
+          "control": 1.82481,
+          "candidate": 1.699523
+        },
+        "candidate_ratio": 0.9306254024715586,
+        "control_ratio": 0.9992301020251712
+      },
+      {
+        "input": "/Users/msharpe/python/bsat/dataset/sat_competition2025/hardware-model-checking/51482a5b06b055edfdca576d654ce191.cnf",
+        "cpu_medians": {
+          "baseline": 5.1875725,
+          "control": 5.2478375,
+          "candidate": 5.13016
+        },
+        "candidate_ratio": 0.9889326847962125,
+        "control_ratio": 1.0116171870369042
+      },
+      {
+        "input": "/Users/msharpe/python/bsat/dataset/sat_competition2025/hgen/2d0c041c0fe72dc32527bfbf34f63e61.cnf",
+        "cpu_medians": {
+          "baseline": 0.679599,
+          "control": 0.6852745,
+          "candidate": 0.65913
+        },
+        "candidate_ratio": 0.9698807679234372,
+        "control_ratio": 1.008351248309665
+      },
+      {
+        "input": "/Users/msharpe/python/bsat/dataset/sat_competition2025/multiplier-circuits/90bec6dcf2399d7c7f73acba44a8641e.cnf",
+        "cpu_medians": {
+          "baseline": 2.4709325,
+          "control": 2.4801005,
+          "candidate": 2.417466
+        },
+        "candidate_ratio": 0.9783618127973954,
+        "control_ratio": 1.003710340124629
+      },
+      {
+        "input": "/Users/msharpe/python/bsat/dataset/sat_competition2025/pigeon-hole/6f40bd5ac85e2a53b392d8f0369e7f1f.cnf",
+        "cpu_medians": {
+          "baseline": 0.926414,
+          "control": 0.9161529999999999,
+          "candidate": 0.8726505
+        },
+        "candidate_ratio": 0.9419660108763469,
+        "control_ratio": 0.9889239584030465
+      },
+      {
+        "input": "/Users/msharpe/python/bsat/dataset/sat_competition2025/tseitin-formulas/42f1311ce504db8cc0cb590a568da20a.cnf",
+        "cpu_medians": {
+          "baseline": 0.2613335,
+          "control": 0.285535,
+          "candidate": 0.2762605
+        },
+        "candidate_ratio": 1.05711858602131,
+        "control_ratio": 1.092607721551198
+      }
+    ],
+    "compared_statistics": [
+      "Arena growths",
+      "Blocked clauses",
+      "Clauses",
+      "Conflicts",
+      "Deadline clock reads",
+      "Decisions",
+      "Deleted clauses",
+      "Derived binaries",
+      "Equivalence work",
+      "Garbage collections",
+      "Glue clauses",
+      "LBD improvements",
+      "Learned clauses",
+      "Learned literals",
+      "Literal inspections",
+      "Max LBD",
+      "Memory allocated",
+      "Memory peak",
+      "Memory used",
+      "Memory wasted",
+      "Minimize binary steps",
+      "Minimize budget hits",
+      "Minimize cache hits",
+      "Minimize inspections",
+      "Minimized literals",
+      "Mode",
+      "Propagations",
+      "Reductions",
+      "Restarts",
+      "Rewritten clauses",
+      "SCC contradictions",
+      "Substituted vars",
+      "Subsumed clauses",
+      "Target literals copied",
+      "Target values cleared",
+      "Variables"
+    ],
+    "mismatches": [],
+    "candidate_geomean": 0.9706838790147206,
+    "control_geomean": 1.0105889096762795
+  },
+  "additional": {
+    "rows": [
+      {
+        "input": "/Users/msharpe/python/bsat/dataset/sat_competition2025/fpga-routing/1890f49a43a94b97828528b68c32b78e.cnf",
+        "cpu_medians": {
+          "baseline": 0.7146435,
+          "control": 0.6799759999999999,
+          "candidate": 0.6580785
+        },
+        "candidate_ratio": 0.9208486469127615,
+        "control_ratio": 0.9514897987598011
+      },
+      {
+        "input": "/Users/msharpe/python/bsat/dataset/sat_competition2025/grandtour-puzzle/3f67f6767764855e516e5394be1145e5.cnf",
+        "cpu_medians": {
+          "baseline": 0.8911469999999999,
+          "control": 1.017178,
+          "candidate": 0.9408
+        },
+        "candidate_ratio": 1.0557180801820576,
+        "control_ratio": 1.1414256009390145
+      },
+      {
+        "input": "/Users/msharpe/python/bsat/dataset/sat_competition2025/influence-maximization/f32bb347996c351bc3e9a91c58e8601d.cnf",
+        "cpu_medians": {
+          "baseline": 5.4073855,
+          "control": 5.373319,
+          "candidate": 5.253927
+        },
+        "candidate_ratio": 0.9716205733806106,
+        "control_ratio": 0.9937000052983092
+      },
+      {
+        "input": "/Users/msharpe/python/bsat/dataset/sat_competition2025/maximum-constraint-partition/53c21f3e78f060883026b5a12ba691d8.cnf",
+        "cpu_medians": {
+          "baseline": 0.914389,
+          "control": 0.9578059999999999,
+          "candidate": 0.9132345
+        },
+        "candidate_ratio": 0.9987374082584107,
+        "control_ratio": 1.0474819797700978
+      },
+      {
+        "input": "/Users/msharpe/python/bsat/dataset/sat_competition2025/mechanical-master-key/dbb42e010bed2259e4e27bc43e4d86c6.cnf",
+        "cpu_medians": {
+          "baseline": 2.167891,
+          "control": 2.228218,
+          "candidate": 2.1449575000000003
+        },
+        "candidate_ratio": 0.989421285479759,
+        "control_ratio": 1.0278275060877138
+      },
+      {
+        "input": "/Users/msharpe/python/bsat/dataset/sat_competition2025/miter/c0e828fb967fc4f0935cf06c6a6b1055.cnf",
+        "cpu_medians": {
+          "baseline": 2.6886115,
+          "control": 2.6162004999999997,
+          "candidate": 2.5085604999999997
+        },
+        "candidate_ratio": 0.9330319757986603,
+        "control_ratio": 0.973067510869458
+      }
+    ],
+    "compared_statistics": [
+      "Arena growths",
+      "Blocked clauses",
+      "Clauses",
+      "Conflicts",
+      "Deadline clock reads",
+      "Decisions",
+      "Deleted clauses",
+      "Derived binaries",
+      "Equivalence work",
+      "Garbage collections",
+      "Glue clauses",
+      "LBD improvements",
+      "Learned clauses",
+      "Learned literals",
+      "Literal inspections",
+      "Max LBD",
+      "Memory allocated",
+      "Memory peak",
+      "Memory used",
+      "Memory wasted",
+      "Minimize binary steps",
+      "Minimize budget hits",
+      "Minimize cache hits",
+      "Minimize inspections",
+      "Minimized literals",
+      "Mode",
+      "Propagations",
+      "Reductions",
+      "Restarts",
+      "Rewritten clauses",
+      "SCC contradictions",
+      "Substituted vars",
+      "Subsumed clauses",
+      "Target literals copied",
+      "Target values cleared",
+      "Variables"
+    ],
+    "mismatches": [],
+    "candidate_geomean": 0.9772229735035093,
+    "control_geomean": 1.0206718434825863
+  },
+  "default": {
+    "rows": [
+      {
+        "input": "/Users/msharpe/python/bsat/dataset/sat_competition2025/discrete-logarithm/0ae917c2e0c1d39cbe411c29b2f5ff08.cnf",
+        "cpu_medians": {
+          "baseline": 2.6213955,
+          "control": 2.7614295,
+          "candidate": 2.5736660000000002
+        },
+        "candidate_ratio": 0.9817923316035295,
+        "control_ratio": 1.053419638509336
+      },
+      {
+        "input": "/Users/msharpe/python/bsat/dataset/sat_competition2025/hardware-model-checking/51482a5b06b055edfdca576d654ce191.cnf",
+        "cpu_medians": {
+          "baseline": 5.8774025000000005,
+          "control": 6.1769865,
+          "candidate": 6.244676500000001
+        },
+        "candidate_ratio": 1.0624891693226728,
+        "control_ratio": 1.0509721769097828
+      },
+      {
+        "input": "/Users/msharpe/python/bsat/dataset/sat_competition2025/hgen/2d0c041c0fe72dc32527bfbf34f63e61.cnf",
+        "cpu_medians": {
+          "baseline": 0.6124350000000001,
+          "control": 0.5960175,
+          "candidate": 0.5210824999999999
+        },
+        "candidate_ratio": 0.8508372317062216,
+        "control_ratio": 0.9731930735506624
+      },
+      {
+        "input": "/Users/msharpe/python/bsat/dataset/sat_competition2025/multiplier-circuits/90bec6dcf2399d7c7f73acba44a8641e.cnf",
+        "cpu_medians": {
+          "baseline": 7.4480555,
+          "control": 7.203672,
+          "candidate": 7.937278000000001
+        },
+        "candidate_ratio": 1.0656845937842436,
+        "control_ratio": 0.9671882815588579
+      }
+    ],
+    "compared_statistics": [
+      "Arena growths",
+      "Blocked clauses",
+      "Clauses",
+      "Conflicts",
+      "Deadline clock reads",
+      "Decisions",
+      "Deleted clauses",
+      "Derived binaries",
+      "Equivalence work",
+      "Garbage collections",
+      "Glue clauses",
+      "LBD improvements",
+      "Learned clauses",
+      "Learned literals",
+      "Literal inspections",
+      "Max LBD",
+      "Memory allocated",
+      "Memory peak",
+      "Memory used",
+      "Memory wasted",
+      "Minimize binary steps",
+      "Minimize budget hits",
+      "Minimize cache hits",
+      "Minimize inspections",
+      "Minimized literals",
+      "Mode",
+      "Propagations",
+      "Reductions",
+      "Restarts",
+      "Rewritten clauses",
+      "SCC contradictions",
+      "Substituted vars",
+      "Subsumed clauses",
+      "Target literals copied",
+      "Target values cleared",
+      "Variables"
+    ],
+    "mismatches": [],
+    "candidate_geomean": 0.9861769106004963,
+    "control_geomean": 1.010358887747097
+  },
+  "default_repeat": {
+    "rows": [
+      {
+        "input": "/Users/msharpe/python/bsat/dataset/sat_competition2025/hardware-model-checking/51482a5b06b055edfdca576d654ce191.cnf",
+        "cpu_medians": {
+          "baseline": 6.361492,
+          "control": 6.4415119999999995,
+          "candidate": 6.45326
+        },
+        "candidate_ratio": 1.014425546711369,
+        "control_ratio": 1.0125788101281898
+      },
+      {
+        "input": "/Users/msharpe/python/bsat/dataset/sat_competition2025/multiplier-circuits/90bec6dcf2399d7c7f73acba44a8641e.cnf",
+        "cpu_medians": {
+          "baseline": 8.225275,
+          "control": 7.095921,
+          "candidate": 8.214781
+        },
+        "candidate_ratio": 0.9987241763953182,
+        "control_ratio": 0.8626971134703703
+      }
+    ],
+    "compared_statistics": [
+      "Arena growths",
+      "Blocked clauses",
+      "Clauses",
+      "Conflicts",
+      "Deadline clock reads",
+      "Decisions",
+      "Deleted clauses",
+      "Derived binaries",
+      "Equivalence work",
+      "Garbage collections",
+      "Glue clauses",
+      "LBD improvements",
+      "Learned clauses",
+      "Learned literals",
+      "Literal inspections",
+      "Max LBD",
+      "Memory allocated",
+      "Memory peak",
+      "Memory used",
+      "Memory wasted",
+      "Minimize binary steps",
+      "Minimize budget hits",
+      "Minimize cache hits",
+      "Minimize inspections",
+      "Minimized literals",
+      "Mode",
+      "Propagations",
+      "Reductions",
+      "Restarts",
+      "Rewritten clauses",
+      "SCC contradictions",
+      "Substituted vars",
+      "Subsumed clauses",
+      "Target literals copied",
+      "Target values cleared",
+      "Variables"
+    ],
+    "mismatches": [],
+    "candidate_geomean": 1.0065442457506188,
+    "control_geomean": 0.9346383346829144
+  }
+}

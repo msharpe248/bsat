@@ -8,9 +8,10 @@ lazily in ascending identifier order, so initial selection prefers higher IDs.
 Timestamp renumbering preserves order on overflow. The default remains VSIDS.
 
 Queue storage is allocated only when enabled, with a 16-byte node per variable
-at allocated capacity. The existing activity heap is still maintained. This
-first implementation isolates the branching policy; it does not claim to remove
-heap overhead. `--vmtf` takes precedence over heap selection with `--lrb` or
+at allocated capacity. Heap storage and initial insertion remain, but numeric
+score maintenance during VMTF search is now skipped; see
+[VMTF_SCORES.md](VMTF_SCORES.md) for the measured overhead reduction.
+`--vmtf` takes precedence over heap selection with `--lrb` or
 `--alternating`, including stable mode. Phase saving, random phase selection,
 target phases, restart scheduling, and clause reduction retain their policies.
 Repeated API solves rebuild the queue along with the rest of the solver.

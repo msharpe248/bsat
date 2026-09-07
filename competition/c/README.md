@@ -105,6 +105,10 @@ experimental. See [ORDERED_VMTF.md](ORDERED_VMTF.md) for the latest measurements
 [VMTF.md](VMTF.md) for the initial implementation, validation, and
 comparison with the existing phase policy and Kissat.
 
+VMTF skips inactive numeric score updates during conflicts. Fixed-work timing
+shows a modest throughput improvement with matching search counters; see
+[VMTF_SCORES.md](VMTF_SCORES.md) for measurements and timing controls.
+
 Opt-in `--iterative-minimize` follows both implicit binary and arena reasons using
 an iterative traversal with shared successful dependency checks. The
 `--minimize-budget` option caps antecedent inspections per learned clause

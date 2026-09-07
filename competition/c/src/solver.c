@@ -314,6 +314,12 @@ static Var heap_extract_max(Solver* s) {
 }
 
 static void bump_var_activity(Solver* s, Var v, double inc) {
+    /* Queue decisions do not consume numeric activity scores. */
+    if (s->opts.vmtf) {
+        ASSERT(s->vmtf.pending < s->num_vars);
+        s->analyze_stack[s->vmtf.pending++] = v;
+        return;
+    }
     if (s->opts.lrb) {
         // Hybrid VSIDS+LRB: Use VSIDS-style additive bumps with LRB-inspired
         // weighting based on recency of conflict participation
@@ -353,13 +359,10 @@ static void bump_var_activity(Solver* s, Var v, double inc) {
     if (s->vars[v].heap_pos != UINT32_MAX) {
         heap_percolate_up(s, s->vars[v].heap_pos);
     }
-    if (s->opts.vmtf) {
-        ASSERT(s->vmtf.pending < s->num_vars);
-        s->analyze_stack[s->vmtf.pending++] = v;
-    }
 }
 
 static void decay_var_inc(Solver* s) {
+    if (s->opts.vmtf) return;
     // Apply decay for both VSIDS and hybrid LRB
     s->order.var_inc /= s->order.var_decay;
 }

@@ -107,6 +107,44 @@ static void integration(void) {
     solver_free(s);
 }
 
+static Solver *pigeonhole(bool weighted) {
+    SolverOpts o = default_opts();o.vmtf = true;o.lrb = weighted;
+    o.max_conflicts = 200;o.probing = false;
+    if (weighted) { o.var_inc = 1e99;o.var_decay = 0.01; }
+    Solver *s = solver_new_with_opts(&o);assert(s);
+    enum { H = 6, P = 7 };
+    for (Var v = 1; v <= H*P; ++v) assert(solver_new_var(s) == v);
+    for (unsigned p = 0; p < P; ++p) {
+        Lit clause[H];
+        for (unsigned h = 0; h < H; ++h) clause[h] = mkLit(p*H+h+1, false);
+        assert(solver_add_clause(s, clause, H));
+    }
+    for (unsigned h = 0; h < H; ++h)
+        for (unsigned p = 0; p < P; ++p)
+            for (unsigned q = p+1; q < P; ++q) {
+                Lit clause[2] = {mkLit(p*H+h+1, true), mkLit(q*H+h+1, true)};
+                assert(solver_add_clause(s, clause, 2));
+            }
+    return s;
+}
+
+static void score_independence(void) {
+    Solver *a = pigeonhole(false), *b = pigeonhole(true);
+    assert(solver_solve(a) == solver_solve(b));
+    assert(!a->error && !b->error && a->stats.conflicts > 0);
+    assert(a->stats.conflicts == b->stats.conflicts);
+    assert(a->stats.decisions == b->stats.decisions);
+    assert(a->stats.propagations == b->stats.propagations);
+    assert(a->stats.learned_literals == b->stats.learned_literals);
+    assert(a->trail_size == b->trail_size);
+    for (unsigned i = 0; i < a->trail_size; ++i) assert(a->trail[i].lit == b->trail[i].lit);
+    assert(a->vmtf.search == b->vmtf.search);
+    for (Var v = a->vmtf.head, w = b->vmtf.head; v || w;) {
+        assert(v == w);v = a->vmtf.nodes[v].next;w = b->vmtf.nodes[w].next;
+    }
+    solver_free(a);solver_free(b);
+}
+
 static void allocation_growth(void) {
     SolverOpts o = default_opts();o.vmtf = true;
     Solver *s = solver_new_with_opts(&o);assert(s);
@@ -139,7 +177,7 @@ static void deadline_polls(void) {
 }
 
 int main(void) {
-    randomized_queue();ordered_batch();integration();allocation_growth();deadline_polls();
+    randomized_queue();ordered_batch();integration();score_independence();allocation_growth();deadline_polls();
     puts("PASS: VMTF order, assignment cursor, growth, stamp rollover, conflict use and API rebuild");
     return 0;
 }
