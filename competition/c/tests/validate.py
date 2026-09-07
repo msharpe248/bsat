@@ -241,6 +241,12 @@ def main():
                 ['--congruence', '--binary-proof'],
                 ['--congruence', '--equiv', '--no-probing'],
                 ['--congruence', '--portfolio', '0.000000000001', '--bce', '--elim']]
+    configs += [['--chrono'],
+                ['--chrono', '--chrono-levels', '0', '--reuse-trail', '--luby-restart', '--luby-unit', '1'],
+                ['--chrono', '--chrono-levels', '0', '--no-probing'],
+                ['--chrono', '--chrono-levels', '0', '--alternating', '--vmtf', '--binary-proof'],
+                ['--chrono', '--chrono-levels', '0', '--congruence', '--equiv'],
+                ['--chrono', '--chrono-levels', '0', '--portfolio', '0.000000000001', '--bce', '--elim']]
     fixed = [
         (5, [[1, 2], [1, -2], [-3, 4], [3, -4], [4, 5]], None),
         (5, [[-4], [-1, 2, 4], [1, -2, 4]] +

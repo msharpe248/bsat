@@ -41,7 +41,9 @@ and rejection decision.
 The archived experiment adds `--chrono` and `--chrono-levels N` (default 100). For a
 non-unit learned clause, if ordinary backjumping would discard more than N
 levels below the previous decision level, search instead keeps the prefix up to
-the previous level. These options are not retained in the current solver. In the prototype, the
+the previous level. This ordered-trail implementation is not retained; the
+subsequent [logical-level design](LOGICAL_CHRONOLOGICAL_BACKTRACKING.md) uses the
+same option names with different trail handling. In this archived prototype, the
 option is disabled by default; setting the threshold alone does not enable it.
 
 To reproduce, apply `benchmark_results/chrono-ordered-prototype-20260907.patch`

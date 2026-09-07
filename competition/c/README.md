@@ -57,6 +57,13 @@ unfinished clauses are errors. Empty formulas are SAT; empty clauses are UNSAT.
 
 ## Search controls
 
+Experimental `--chrono` keeps lower-level implications when backtracking past
+higher-level decisions. With congruence and alternating VMTF it substantially
+reduced decisions on hardware model checking and recovered development SAT
+solves. It is disabled by default. See
+[LOGICAL_CHRONOLOGICAL_BACKTRACKING.md](LOGICAL_CHRONOLOGICAL_BACKTRACKING.md)
+for the trail invariants, independent checks and measured limits.
+
 Experimental `--congruence --equiv --equiv-budget 100000000` extracts AND,
 XOR and ITE gates, proves aliases with RUP, then substitutes equivalent
 variables. It improves a large hardware-model-checking development case but

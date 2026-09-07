@@ -39,6 +39,8 @@ static void print_usage(const char* program) {
     printf("\n");
     printf("Restart parameters:\n");
     printf("  --reuse-trail            Reuse high-priority restart prefixes (experimental)\n");
+    printf("  --chrono                 Experimental chronological backtracking\n");
+    printf("  --chrono-levels <n>      Maximum ordinary jump before chronological backtracking (100)\n");
     printf("  --restart-first <n>       First restart interval (default: 100)\n");
     printf("  --restart-inc <f>         Restart multiplier (default: 1.5)\n");
     printf("  --glucose-restart         Use Glucose adaptive restarts (EMA mode)\n");
@@ -153,6 +155,8 @@ static struct option long_options[] = {
     {"glucose-window-size", required_argument, 0, 0},
     {"glucose-k",       required_argument, 0, 0},
     {"reuse-trail", no_argument, 0, 0},
+    {"chrono", no_argument, 0, 0},
+    {"chrono-levels", required_argument, 0, 0},
     {"vmtf", no_argument, 0, 0},
     {"lrb",             no_argument,       0, 0},
     {"vsids",           no_argument,       0, 0},
@@ -328,6 +332,10 @@ int main(int argc, char** argv) {
                     opts.glucose_k = atof(optarg);
                 } else if (strcmp(long_options[option_index].name, "reuse-trail") == 0) {
                     opts.reuse_trail = true;
+                } else if (strcmp(long_options[option_index].name, "chrono") == 0) {
+                    opts.chrono = true;
+                } else if (strcmp(long_options[option_index].name, "chrono-levels") == 0) {
+                    opts.chrono_levels = (uint32_t)strtoul(optarg,NULL,10);
                 } else if (strcmp(long_options[option_index].name, "vmtf") == 0) {
                     opts.vmtf = true;
                 } else if (strcmp(long_options[option_index].name, "lrb") == 0) {

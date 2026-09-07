@@ -69,3 +69,7 @@ belpyramid. It was archived and removed from the active solver. The next
 experiment needs to address actual implication levels and retention during trail
 compaction; changing the backtrack target and replaying retained watches was
 insufficient.
+
+The [logical-level implementation](LOGICAL_CHRONOLOGICAL_BACKTRACKING.md) now
+addresses those invariants and has a repeated hardware speedup, with independent
+model/proof checks. Its broader results and opt-in status are documented there.

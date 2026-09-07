@@ -43,6 +43,8 @@ typedef struct SolverOpts {
     double   restart_inc;        // Restart interval increment (1.5)
     bool     glucose_restart;    // Use Glucose-style adaptive restarts
     bool     reuse_trail;       // Experimental priority-based restart prefix reuse
+    bool     chrono;            // Experimental chronological backtracking
+    uint32_t chrono_levels;     // Maximum ordinary jump before keeping the prefix
     bool     luby_restart;       // Use Luby restart sequence (vs geometric/glucose)
     uint32_t luby_unit;          // Luby unit size (conflicts per Luby unit, default 512)
     uint32_t restart_postpone;   // Min trail growth to postpone restart (10%)
@@ -240,6 +242,7 @@ typedef struct Solver {
         uint64_t congruence_work, congruence_gates, congruence_merges, congruence_clauses;
         uint64_t congruence_seeds;
         uint64_t congruence_strengthened, congruence_units;
+        uint64_t chronological, chrono_retained, chrono_rewatched, chrono_lower_conflicts;
         uint64_t lbd_updates;
         uint64_t clock_checks;      // Actual CPU deadline clock reads
         uint64_t target_copied, target_cleared;
@@ -349,6 +352,9 @@ lbool solver_solve_portfolio(Solver* s, double focused_seconds);
 /* Root-only preprocessing helpers. Derived clauses never enter immutable input. */
 bool solver_add_rup_clause(Solver* s, const Lit* lits, uint32_t size);
 uint32_t solver_congruence(Solver* s);
+/* Internal conflict preparation for chronological search.
+   False means a root conflict or a resource/error stop; inspect solver flags. */
+bool solver_normalize_conflict(Solver* s, CRef conflict);
 
 // Solve with assumptions
 lbool solver_solve_with_assumptions(Solver* s, const Lit* assumps, uint32_t n_assumps);

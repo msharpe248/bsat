@@ -178,6 +178,8 @@ SolverOpts default_opts(void) {
         .equiv_budget = 1000000,
         .congruence = false,
         .congruence_budget = 100000000,
+        .chrono = false,
+        .chrono_levels = 100,
         .protect_used = false,
         .dynamic_lbd = false,
         .max_conflicts = 0,        // Unlimited
@@ -709,6 +711,28 @@ void solver_backtrack(Solver* s, Level level) {
     if (level >= s->decision_level) return;
     uint32_t pos = s->trail_lims[level + 1];
     if (pos < s->rephase.best_trail_size) s->rephase.best_prefix_valid = false;
+    if (s->opts.chrono) {
+        uint32_t kept=pos;
+        for (uint32_t i=pos;i<s->trail_size;++i) {
+            Lit lit=s->trail[i].lit;Var v=var(lit);
+            if (s->vars[v].level<=level) {
+                s->vars[v].trail_pos=kept;s->trail[kept++].lit=lit;
+                ++s->stats.chrono_retained;
+            } else {
+                s->values[v]=UNDEF;
+                if (s->opts.vmtf) solver_vmtf_unassign(s,v);
+                s->vars[v].level=INVALID_LEVEL;s->vars[v].reason=INVALID_CLAUSE;
+                s->binary_reasons[v]=LIT_UNDEF;
+                if (s->vars[v].heap_pos==UINT32_MAX) heap_insert(s,v);
+            }
+        }
+        s->trail_size=kept;
+        /* Revisit retained late implications: their watches may have changed
+           while assignments from higher levels were still present. */
+        if (s->qhead>pos) s->qhead=pos;
+        s->decision_level=level;
+        return;
+    }
     for (uint32_t i = s->trail_size; i > pos;) {
         Var v = var(s->trail[--i].lit);
         s->values[v] = UNDEF;
@@ -817,6 +841,12 @@ void solver_print_stats(const Solver* s) {
     printf("c\n");
     printf("c ========== Statistics ==========\n");
     printf("c CPU time          : %.3f s\n", cpu_time);
+    if (s->opts.chrono) {
+        printf("c Chronological backtracks: %llu\n", (unsigned long long)s->stats.chronological);
+        printf("c Chronological retained assignments: %llu\n", (unsigned long long)s->stats.chrono_retained);
+        printf("c Chronological repaired watches: %llu\n", (unsigned long long)s->stats.chrono_rewatched);
+        printf("c Lower-level conflicts: %llu\n", (unsigned long long)s->stats.chrono_lower_conflicts);
+    }
     if (s->opts.congruence) {
         printf("c Congruence work: %llu\n", (unsigned long long)s->stats.congruence_work);
         printf("c Congruence gates: %llu\n", (unsigned long long)s->stats.congruence_gates);
@@ -949,7 +979,7 @@ CRef solver_propagate(Solver* s) {
                 if (s->values[v] == UNDEF) {
                     // Unit propagation via binary clause
                     s->values[v] = sign(q) ? FALSE : TRUE;
-                    s->vars[v].level = s->decision_level;
+                    s->vars[v].level = s->opts.chrono ? s->vars[var(p)].level : s->decision_level;
                     s->vars[v].reason = binary_reason;
                     if (binary_reason != INVALID_CLAUSE) {
                         Lit *lits = CLAUSE_LITS(s->arena, binary_reason);
@@ -1042,6 +1072,7 @@ CRef solver_propagate(Solver* s) {
 
             // Look for another literal to watch
             bool found = false;
+            Level reason_level=s->opts.chrono ? s->vars[var(p)].level : s->decision_level;
             uint32_t begin = s->opts.circular ? CLAUSE_HEADER(s->arena, cref)->search : 2;
             if (begin < 2 || begin >= size) begin = 2;
             for (uint32_t offset = 0; offset < size - 2; offset++) {
@@ -1066,6 +1097,7 @@ CRef solver_propagate(Solver* s) {
                     found = true;
                     break;
                 }
+                if (s->opts.chrono) reason_level=MAX(reason_level,s->vars[v].level);
             }
 
             if (found) {
@@ -1082,7 +1114,7 @@ CRef solver_propagate(Solver* s) {
             if (s->values[fv] == UNDEF) {
                 // Unit clause - propagate
                 s->values[fv] = sign(first) ? FALSE : TRUE;
-                s->vars[fv].level = s->decision_level;
+                s->vars[fv].level = reason_level;
                 s->vars[fv].reason = cref;
                 s->vars[fv].trail_pos = s->trail_size;
 
@@ -1221,7 +1253,8 @@ void solver_analyze(Solver* s, CRef conflict, Lit* learnt, uint32_t* learnt_size
         ASSERT(index < s->trail_size);
 
         // Pick next literal from trail
-        while (!s->seen[var(s->trail[index].lit)]) {
+        while (!s->seen[var(s->trail[index].lit)] ||
+               (s->opts.chrono && s->vars[var(s->trail[index].lit)].level!=s->decision_level)) {
             ASSERT(index > 0);
             index--;
         }
@@ -2032,6 +2065,39 @@ bool solver_check_model(const Solver *s) {
     return true;
 }
 
+bool solver_normalize_conflict(Solver *s, CRef conflict) {
+    Lit *lits=conflict==BINARY_CONFLICT ? s->binary_conflict_lits : CLAUSE_LITS(s->arena,conflict);
+    uint32_t size=conflict==BINARY_CONFLICT ? 2 : CLAUSE_SIZE(s->arena,conflict);
+    Level highest=0,second_level=0;uint32_t first=0,second=1;
+    for (uint32_t i=0;i<size;++i) {
+        Level level=s->vars[var(lits[i])].level;
+        if (!i || level>highest) {
+            second=first;second_level=highest;first=i;highest=level;
+        } else if (i==1 || level>second_level) { second=i;second_level=level; }
+        ++s->work;
+        if ((s->work & 1023)==0 && solver_budget_exhausted(s)) return false;
+    }
+    if (solver_budget_exhausted(s)) return false;
+    /* With out-of-order levels, a low-level trigger can conflict with higher
+       non-watched literals. Keep the two highest levels watched before any
+       backtracking so later assignments cannot hide a unit or conflict. */
+    if (size>2 && highest && (first>1 || second>1)) {
+        watch_remove_clause(s->watches,s->arena,conflict);
+        Lit tmp=lits[0];lits[0]=lits[first];lits[first]=tmp;
+        if (!second) second=first;
+        tmp=lits[1];lits[1]=lits[second];lits[second]=tmp;
+        watch_add(s->watches,lits[0],conflict,lits[1]);
+        watch_add(s->watches,lits[1],conflict,lits[0]);
+        if (s->watches->failed) { s->error=true;return false; }
+        ++s->stats.chrono_rewatched;
+    }
+    if (highest<s->decision_level) {
+        ++s->stats.chrono_lower_conflicts;
+        solver_backtrack(s,highest);
+    }
+    return highest>0;
+}
+
 static lbool solve_internal(Solver *s, const Lit *assumps, uint32_t n_assumps) {
     if (s->result == FALSE) return FALSE;
     if (solver_propagate(s) != INVALID_CLAUSE) return FALSE;
@@ -2072,6 +2138,10 @@ static lbool solve_internal(Solver *s, const Lit *assumps, uint32_t n_assumps) {
         if (s->error || s->interrupted) break;
         if (conflict != INVALID_CLAUSE) {
             s->stats.conflicts++; s->restart.conflicts_since++;
+            if (s->opts.chrono && !solver_normalize_conflict(s,conflict)) {
+                if (!solver_budget_exhausted(s)) result=FALSE;
+                break;
+            }
             if (!s->decision_level) { result=FALSE; break; }
             uint32_t n; Level backtrack;
             solver_analyze(s, conflict, learnt, &n, &backtrack);
@@ -2087,6 +2157,12 @@ static lbool solve_internal(Solver *s, const Lit *assumps, uint32_t n_assumps) {
                 backtrack=s->vars[var(learnt[i])].level;
                 Lit tmp=learnt[1];learnt[1]=learnt[i];learnt[i]=tmp;
             }
+            Level assertion_level=backtrack;
+            if (s->opts.chrono && s->decision_level-1-backtrack>s->opts.chrono_levels) {
+                backtrack=s->decision_level-1;
+                ++s->stats.chronological;
+            }
+            /* The assertion keeps its logical level, including zero for units. */
             solver_backtrack(s,backtrack);
             proof_add_clause(s,learnt,n);
             CRef reason=INVALID_CLAUSE;
@@ -2108,6 +2184,7 @@ static lbool solve_internal(Solver *s, const Lit *assumps, uint32_t n_assumps) {
             }
             ASSERT(n && s->values[var(learnt[0])]==UNDEF);
             push_trail(s,learnt[0]);s->vars[var(learnt[0])].reason=reason;
+            if (s->opts.chrono) s->vars[var(learnt[0])].level=assertion_level;
             s->stats.learned_clauses++;s->stats.learned_literals+=n;
             s->stats.max_lbd=MAX(s->stats.max_lbd,lbd);
             if (lbd<=s->opts.glue_lbd) s->stats.glue_clauses++;
@@ -2118,6 +2195,7 @@ static lbool solve_internal(Solver *s, const Lit *assumps, uint32_t n_assumps) {
                 Level level = n_assumps ? 0 : solver_restart_level(s);
                 solver_backtrack(s,level);
                 s->stats.restarts++;s->stats.reused_levels += level;
+                if (s->qhead<s->trail_size) continue;
             }
             if (!s->decision_level) {
                 if (!solver_simplify(s)) { result=FALSE;break; }
