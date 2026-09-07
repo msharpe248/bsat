@@ -1,0 +1,32 @@
+{
+  "subsets": {
+    "reused": {
+      "default": {
+        "verified": 4,
+        "runs": 28,
+        "mean_par2": 25.9653372812484
+      },
+      "no-random": {
+        "verified": 4,
+        "runs": 28,
+        "mean_par2": 25.92534839289562
+      }
+    },
+    "additional": {
+      "default": {
+        "verified": 3,
+        "runs": 16,
+        "mean_par2": 24.897766614623833
+      },
+      "no-random": {
+        "verified": 3,
+        "runs": 16,
+        "mean_par2": 24.616622611953062
+      }
+    }
+  },
+  "solve_changes": {
+    "gained": [],
+    "lost": []
+  }
+}

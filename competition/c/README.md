@@ -54,6 +54,15 @@ unfinished clauses are errors. Empty formulas are SAT; empty clauses are UNSAT.
 
 ## Search controls
 
+Random phase overrides are disabled by default. Enable the previous random-phase
+policy with `--random-phase`; `--random-prob` sets its probability (default 0.01)
+but does not enable it on its own. `--no-random-phase` explicitly disables it.
+Include `--random-phase` when reproducing earlier VMTF or binary-minimization
+profiles that used the former default.
+The 44-input comparison preserved all seven verified solves and improved several
+substantial solved cases, while slowing one very short case. See
+[NO_RANDOM_PHASE_EVALUATION.md](NO_RANDOM_PHASE_EVALUATION.md) for the tradeoffs.
+
 Defaults use VSIDS, phase saving, deterministic random diversification,
 LBD-based EMA restarts, bounded failed-literal probing, clause minimization,
 bounded subsumption, learned-clause reduction, and circular watch scanning.

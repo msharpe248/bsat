@@ -215,6 +215,11 @@ def main():
                 ['--binary-minimize', '--iterative-minimize'],
                 ['--binary-minimize', '--minimize-budget', '1'],
                 ['--binary-minimize', '--minimize-budget', '0']]
+    configs += [['--random-phase'],
+                ['--random-phase', '--vmtf', '--binary-proof'],
+                ['--random-phase', '--equiv', '--elim', '--bce'],
+                ['--random-phase', '--inprocess', '--inprocess-interval', '1',
+                 '--local-search', '--ls-interval', '1', '--no-probing']]
     fixed = [
         (5, [[1, 2], [1, -2], [-3, 4], [3, -4], [4, 5]], None),
         (5, [[-4], [-1, 2, 4], [1, -2, 4]] +

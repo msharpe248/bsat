@@ -36,6 +36,7 @@ def main():
                  (hard, ['--equiv', '--elim', '--bce', '--dynamic-lbd', '--binary-proof']),
                  (empty, ['--no-probing']),
                  (hard, ['--binary-minimize', '--vmtf']),
+                 (hard, ['--random-phase', '--vmtf']),
                  (hard, ['--vmtf']),
                  (empty, ['--vmtf', '--no-probing'])]
         for limit in (0.001, 0.01, 0.05):

@@ -102,9 +102,9 @@ This directory contains comprehensive documentation for all major techniques use
 **Impact**: Prevents catastrophic performance on some instances
 
 **Key concepts**:
-- 1% probability of random phase (default)
-- Prevents infinite loops and stuck states
-- Essential for completeness on some instances
+- Current C policy: opt-in random phases, with 1% probability when enabled
+- Changes search trajectories and can help or hurt time to solution
+- A performance heuristic, not a requirement for checking SAT models or UNSAT proofs
 
 **Implementation**: `competition/c/src/solver.c:1143-1160`
 

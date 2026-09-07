@@ -1,0 +1,26 @@
+{
+  "pairs": [
+    [
+      "old-no-random",
+      "new-default"
+    ],
+    [
+      "old-random",
+      "new-random"
+    ],
+    [
+      "old-vmtf",
+      "new-vmtf"
+    ]
+  ],
+  "inputs": 6,
+  "excluded_counters": [
+    "CPU time",
+    "Conflicts/sec",
+    "Deadline clock reads",
+    "Decisions/sec",
+    "PID",
+    "Propagations/sec"
+  ],
+  "differences": []
+}

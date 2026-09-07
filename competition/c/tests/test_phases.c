@@ -2,8 +2,21 @@
 #include <assert.h>
 #include <stdio.h>
 
+static void default_policy(void) {
+    Solver *s = solver_new();assert(s && !s->opts.random_phase);
+    assert(solver_new_var(s) == 1);
+    s->random_state = 2;
+    assert(solver_decide(s) && s->values[1] == FALSE);
+    assert(s->random_state == 2); // Default decisions do not draw random phases.
+    solver_backtrack(s, 0);
+    s->opts.random_phase = true;s->opts.random_phase_prob = 1;
+    assert(solver_decide(s) && s->values[1] == TRUE);
+    assert(s->random_state != 2);
+    solver_free(s);
+}
+
 static void random_decisions(bool queue) {
-    SolverOpts o = default_opts();o.vmtf = queue;o.random_phase_prob = 1;
+    SolverOpts o = default_opts();o.vmtf = queue;o.random_phase = true;o.random_phase_prob = 1;
     Solver *s = solver_new_with_opts(&o);assert(s);
     assert(solver_new_var(s) == 1 && !s->vars[1].polarity);
     /* Seed 2 draws a positive phase, overriding the initial negative phase. */
@@ -38,6 +51,7 @@ static void target_decisions(bool queue, bool saving) {
 }
 
 int main(void) {
+    default_policy();
     for (unsigned queue = 0; queue < 2; ++queue) {
         random_decisions(queue);
         target_decisions(queue, true);

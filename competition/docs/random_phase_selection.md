@@ -6,13 +6,22 @@
 
 ---
 
+## Scope of this historical report
+
+The measurements below describe the October 2025 Python experiment. They do not
+establish the behavior or performance of the current C solver. The C solver uses
+an opt-in fixed seeded probability, with no automatic stuck-state adaptation. Current
+comparisons are recorded in [the C phase-policy evaluation](../c/NO_RANDOM_PHASE_EVALUATION.md).
+A conflict-limit timeout in these examples is not evidence of an infinite loop
+or a requirement to randomize for correctness.
+
 ## Overview
 
 **Random phase selection** is a diversification technique in CDCL SAT solvers that occasionally chooses a random polarity (True/False) instead of using the saved phase. This helps the solver escape local minima where phase saving might get stuck trying the same polarities repeatedly.
 
 **Purpose**: Provide diversification to complement phase saving, preventing catastrophic regressions while maintaining the benefits of phase saving.
 
-**Prevalence**: Used in modern solvers (CaDiCaL, Kissat) with typical frequencies of 2-10%.
+**Comparison with other solvers**: Phase selection and diversification policies differ across solvers; this report does not establish a common default frequency for CaDiCaL or Kissat.
 
 ---
 

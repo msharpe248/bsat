@@ -65,7 +65,7 @@ static void integration(void) {
         "p cnf 8 36\n2 6 7 0\n4 -3 5 0\n-2 -8 -5 0\n-3 -6 2 0\n-1 5 -6 0\n-5 2 7 0\n6 -3 0\n-6 -2 0\n2 6 8 0\n-3 7 8 0\n6 -7 0\n8 1 -4 0\n1 -3 0\n8 -6 -2 0\n-7 -6 2 0\n2 -7 3 0\n2 -8 -4 0\n-7 4 0\n8 -6 0\n4 8 5 0\n-2 1 7 0\n8 3 -4 0\n3 -2 8 0\n-1 -5 -2 0\n-7 4 0\n-1 4 3 0\n-5 4 8 0\n-7 4 1 0\n-1 3 7 0\n-1 8 -5 0\n8 -4 5 0\n-3 -6 0\n2 -1 0\n5 4 -6 0\n2 -3 0\n-4 7 -1 0\n"
     };
     for (unsigned i=0;i<2;++i) {
-        SolverOpts o=default_opts();o.binary_minimize=true;o.probing=false;
+        SolverOpts o=default_opts();o.binary_minimize=true;o.probing=false;o.random_phase=true;
         Solver *s=solver_new_with_opts(&o);assert(s);
         assert(dimacs_parse_string(s,inputs[i])==DIMACS_OK);
         assert(solver_solve(s)==(i?FALSE:TRUE));

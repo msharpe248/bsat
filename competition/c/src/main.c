@@ -61,8 +61,9 @@ static void print_usage(const char* program) {
     printf("\n");
     printf("Phase saving:\n");
     printf("  --no-phase-saving         Disable phase saving\n");
-    printf("  --random-phase            Enable random phase selection\n");
-    printf("  --random-prob <f>         Random phase probability (default: 0.01)\n");
+    printf("  --random-phase            Enable random phase selection (default: off)\n");
+    printf("  --no-random-phase         Disable random phase selection\n");
+    printf("  --random-prob <f>         Probability when random phases are enabled (0.01)\n");
     printf("  --no-rephase              Disable target phase rephasing\n");
     printf("  --rephase-interval <n>    Conflicts between rephases (default: 1000)\n");
     printf("\n");

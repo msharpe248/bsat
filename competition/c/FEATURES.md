@@ -93,14 +93,14 @@ This document provides a comprehensive overview of all CDCL optimizations implem
 
 **Impact**: Up to 58% fewer conflicts on some instances.
 
-### 7. **Random Phase Selection** - DEFAULT: ON (1%)
+### 7. **Random Phase Selection** - DEFAULT: OFF
 - **Purpose**: Escape local minima and prevent stuck states
-- **Probability**: 1% random phase by default
-- **Adaptive**: Increases randomness when solver is stuck
+- **Probability**: 1% when explicitly enabled
+- **Policy**: Fixed, reproducible probability; no stuck-state adaptation in the C implementation
 
 **Configuration:**
 ```bash
---random-phase           # Enable random phase (default: on)
+--random-phase           # Enable random phase (default: off)
 --random-prob <f>        # Random phase probability (default: 0.01)
 ```
 
@@ -348,7 +348,7 @@ kill -USR1 <pid>         # Get progress update
 ### Phase Management
 ```bash
 --no-phase-saving        # Disable phase saving (default: ON)
---random-phase           # Enable random phase (default: ON)
+--random-phase           # Enable random phase (default: OFF)
 --random-prob <f>        # Random probability (default: 0.01)
 --no-rephase             # Disable rephasing (default: ON)
 --rephase-interval <n>   # Rephase interval (default: 1000)

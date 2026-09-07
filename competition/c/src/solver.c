@@ -170,7 +170,7 @@ SolverOpts default_opts(void) {
 
         .phase_saving = true,
         .phase_reset_period = 10000,
-        .random_phase = true,          // Controlled, reproducible diversification
+        .random_phase = false,         // Opt-in reproducible diversification
         .random_phase_prob = 0.01,     // 1% random decisions
         .adaptive_random = true,
         .rephase = true,               // Kissat-style target phase rephasing
