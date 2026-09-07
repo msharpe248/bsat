@@ -1,0 +1,34 @@
+diff --git a/competition/c/src/solver.c b/competition/c/src/solver.c
+index 247e0e8..2724489 100644
+--- a/competition/c/src/solver.c
++++ b/competition/c/src/solver.c
+@@ -914,0 +915,12 @@ CRef solver_propagate(Solver* s) {
++            // Every watch carries a literal whose truth satisfies the clause.
++            // Discharge satisfied watches before selecting their representation.
++            Lit blocker = w.blocker;
++            Var bv = var(blocker);
++            if (s->values[bv] == (sign(blocker) ? FALSE : TRUE)) {
++                watches[j++] = w;
++                i++;
++                if (!is_binary_watch(w) && !is_arena_binary_watch(w))
++                    s->watches->skipped++;
++                continue;
++            }
++
+@@ -956 +968,2 @@ CRef solver_propagate(Solver* s) {
+-                } else if (s->values[v] == (sign(q) ? TRUE : FALSE)) {
++                } else {
++                    // The shared blocker check ruled out a true literal.
+@@ -988,12 +1000,0 @@ CRef solver_propagate(Solver* s) {
+-            Lit blocker = w.blocker;
+-
+-            // Check blocker first
+-            Var bv = var(blocker);
+-            if (s->values[bv] == (sign(blocker) ? FALSE : TRUE)) {
+-                // Blocker is satisfied - keep watching
+-                watches[j++] = w;
+-                i++;
+-                s->watches->skipped++;
+-                continue;
+-            }
+-

@@ -1,0 +1,258 @@
+Analysis of sampling bsat-search-profile (pid 68171) every 10 milliseconds
+Process:         bsat-search-profile [68171]
+Path:            /private/tmp/bsat-search-profile
+Load Address:    0x102c58000
+Identifier:      bsat-search-profile
+Version:         0
+Code Type:       ARM64
+Platform:        macOS
+Parent Process:  python3.13 [68118]
+Target Type:     live task
+
+Date/Time:       2026-09-07 12:36:02.933 -0500
+Launch Time:     2026-09-07 12:36:01.895 -0500
+OS Version:      macOS 26.6.1 (25G76)
+Report Version:  7
+Analysis Tool:   /usr/bin/sample
+
+Physical footprint:         53.7M
+Physical footprint (peak):  53.7M
+Idle exit:                  untracked
+----
+
+Call graph:
+    453 Thread_31918092   DispatchQueue_1: com.apple.main-thread  (serial)
+      453 start  (in dyld) + 6992  [0x1884004e4]
+        233 main  (in bsat-search-profile) + 4824  [0x102c5c310]  main.c:448
+        + 24 solver_propagate  (in bsat-search-profile) + 1328  [0x102c5ff40]  solver.c:1039
+        + 17 solver_propagate  (in bsat-search-profile) + 156,528,...  [0x102c5faac,0x102c5fc20,...]  solver.c:0
+        + 15 solver_propagate  (in bsat-search-profile) + 1516,1524,...  [0x102c5fffc,0x102c60004,...]  solver.c:881
+        + 13 solver_propagate  (in bsat-search-profile) + 504,516  [0x102c5fc08,0x102c5fc14]  solver.c:1001
+        + 13 solver_propagate  (in bsat-search-profile) + 204,148,...  [0x102c5fadc,0x102c5faa4,...]  solver.c:907
+        + 13 solver_propagate  (in bsat-search-profile) + 576  [0x102c5fc50]  solver.c:956
+        + 12 solver_propagate  (in bsat-search-profile) + 552  [0x102c5fc38]  solver.c:917
+        + 10 solver_propagate  (in bsat-search-profile) + 1060  [0x102c5fe34]  solver.c:1030
+        + ! 10 clock  (in libsystem_c.dylib) + 52  [0x18867e8cc]
+        + !   10 getrusage  (in libsystem_kernel.dylib) + 8,4  [0x18878f804,0x18878f800]
+        + 9 solver_propagate  (in bsat-search-profile) + 540  [0x102c5fc2c]  solver.c:1006
+        + 9 solver_propagate  (in bsat-search-profile) + 1192,1200  [0x102c5feb8,0x102c5fec0]  solver.c:1026
+        + 9 solver_propagate  (in bsat-search-profile) + 468  [0x102c5fbe4]  solver.c:913
+        + 8 solver_propagate  (in bsat-search-profile) + 884  [0x102c5fd84]  solver.c:1029
+        + 8 solver_propagate  (in bsat-search-profile) + 704  [0x102c5fcd0]  solver.c:931
+        + 8 solver_propagate  (in bsat-search-profile) + 176  [0x102c5fac0]  solver.c:994
+        + 8 solver_propagate  (in bsat-search-profile) + 1504  [0x102c5fff0]  watch.c:0
+        + 6 solver_propagate  (in bsat-search-profile) + 384  [0x102c5fb90]  solver.c:908
+        + ! 6 clock  (in libsystem_c.dylib) + 52  [0x18867e8cc]
+        + !   6 getrusage  (in libsystem_kernel.dylib) + 8  [0x18878f804]
+        + 6 solver_propagate  (in bsat-search-profile) + 224  [0x102c5faf0]  solver.c:908
+        + 6 solver_propagate  (in bsat-search-profile) + 564  [0x102c5fc44]  solver.c:928
+        + 5 solver_propagate  (in bsat-search-profile) + 1172  [0x102c5fea4]  solver.c:1037
+        + 5 solver_propagate  (in bsat-search-profile) + 484  [0x102c5fbf4]  solver.c:992
+        + 4 solver_propagate  (in bsat-search-profile) + 668  [0x102c5fcac]  solver.c:930
+        + 4 solver_propagate  (in bsat-search-profile) + 476  [0x102c5fbec]  solver.c:991
+        + 2 solver_propagate  (in bsat-search-profile) + 592  [0x102c5fc60]  solver.c:1009
+        + 2 solver_propagate  (in bsat-search-profile) + 864  [0x102c5fd70]  solver.c:1028
+        + 2 solver_propagate  (in bsat-search-profile) + 1356,1368  [0x102c5ff5c,0x102c5ff68]  solver.c:1044
+        + 2 solver_propagate  (in bsat-search-profile) + 1236  [0x102c5fee4]  solver.c:1061
+        + 2 solver_propagate  (in bsat-search-profile) + 60  [0x102c5fa4c]  solver.c:882
+        + 2 solver_propagate  (in bsat-search-profile) + 136  [0x102c5fa98]  solver.c:898
+        + 2 solver_propagate  (in bsat-search-profile) + 768  [0x102c5fd10]  solver.c:953
+        + 2 solver_propagate  (in bsat-search-profile) + 788  [0x102c5fd24]  solver.c:981
+        + 1 solver_propagate  (in bsat-search-profile) + 648  [0x102c5fc98]  solver.c:1024
+        + 1 solver_propagate  (in bsat-search-profile) + 1352  [0x102c5ff58]  solver.c:1042
+        + 1 solver_propagate  (in bsat-search-profile) + 1304  [0x102c5ff28]  solver.c:1071
+        + 1 solver_propagate  (in bsat-search-profile) + 80  [0x102c5fa60]  solver.c:882
+        + ! 1 budget_exhausted  (in bsat-search-profile) + 204  [0x102c5e2ac]  solver.c:155
+        + !   1 clock  (in libsystem_c.dylib) + 52  [0x18867e8cc]
+        + !     1 getrusage  (in libsystem_kernel.dylib) + 8  [0x18878f804]
+        + 1 solver_propagate  (in bsat-search-profile) + 728  [0x102c5fce8]  solver.c:935
+        64 main  (in bsat-search-profile) + 5828  [0x102c5c6fc]  main.c:448
+        + 28 solver_reduce_db  (in bsat-search-profile) + 464  [0x102c61d30]  solver.c:1699
+        + ! 18 proof_clause  (in bsat-search-profile) + 384,428,...  [0x102c5e00c,0x102c5e038,...]  solver.c:127
+        + ! 10 proof_clause  (in bsat-search-profile) + 752  [0x102c5e17c]  solver.c:127
+        + !   9 fwrite  (in libsystem_c.dylib) + 300  [0x18867943c]
+        + !   | 9 __sfvwrite  (in libsystem_c.dylib) + 228  [0x18865dcc0]
+        + !   |   9 __sflush  (in libsystem_c.dylib) + 232  [0x188669304]
+        + !   |     9 _swrite  (in libsystem_c.dylib) + 108  [0x18866b264]
+        + !   |       9 __swrite  (in libsystem_c.dylib) + 24  [0x188689ba4]
+        + !   |         9 __write_nocancel  (in libsystem_kernel.dylib) + 8  [0x18878bbe4]
+        + !   1 fwrite  (in libsystem_c.dylib) + 356  [0x188679474]
+        + !     1 funlockfile  (in libsystem_c.dylib) + 40  [0x1886693b4]
+        + !       1 pthread_mutex_unlock  (in libsystem_pthread.dylib) + 12  [0x1887c6950]
+        + 8 solver_reduce_db  (in bsat-search-profile) + 1044  [0x102c61f74]  solver.c:1709
+        + ! 7 budget_exhausted  (in bsat-search-profile) + 204  [0x102c5e2ac]  solver.c:155
+        + ! : 7 clock  (in libsystem_c.dylib) + 52  [0x18867e8cc]
+        + ! :   7 getrusage  (in libsystem_kernel.dylib) + 8  [0x18878f804]
+        + ! 1 budget_exhausted  (in bsat-search-profile) + 128  [0x102c5e260]  solver.c:154
+        + 8 solver_reduce_db  (in bsat-search-profile) + 1492,1768,...  [0x102c62134,0x102c62248,...]  solver.c:1709
+        + 6 solver_reduce_db  (in bsat-search-profile) + 1012  [0x102c61f54]  solver.c:1709
+        + ! 4 budget_exhausted  (in bsat-search-profile) + 204  [0x102c5e2ac]  solver.c:155
+        + ! : 4 clock  (in libsystem_c.dylib) + 52  [0x18867e8cc]
+        + ! :   4 getrusage  (in libsystem_kernel.dylib) + 8  [0x18878f804]
+        + ! 2 budget_exhausted  (in bsat-search-profile) + 4  [0x102c5e1e4]  solver.c:146
+        + 6 solver_reduce_db  (in bsat-search-profile) + 1176  [0x102c61ff8]  solver.c:1709
+        + ! 6 _platform_memmove  (in libsystem_platform.dylib) + 424,428,...  [0x1887d5508,0x1887d550c,...]
+        + 3 solver_reduce_db  (in bsat-search-profile) + 476  [0x102c61d3c]  solver.c:1699
+        + ! 3 watch_remove_clause  (in bsat-search-profile) + 436  [0x102c648dc]  watch.c:129
+        + 3 solver_reduce_db  (in bsat-search-profile) + 1200  [0x102c62010]  solver.c:1709
+        + ! 2 budget_exhausted  (in bsat-search-profile) + 204  [0x102c5e2ac]  solver.c:155
+        + ! : 2 clock  (in libsystem_c.dylib) + 52  [0x18867e8cc]
+        + ! :   2 getrusage  (in libsystem_kernel.dylib) + 8  [0x18878f804]
+        + ! 1 budget_exhausted  (in bsat-search-profile) + 300  [0x102c5e30c]  solver.c:0
+        + 2 solver_reduce_db  (in bsat-search-profile) + 328  [0x102c61ca8]  solver.c:1695
+        +   2 _qsort  (in libsystem_c.dylib) + 1932  [0x188686b10]
+        +     1 _qsort  (in libsystem_c.dylib) + 1932  [0x188686b10]
+        +     : 1 _qsort  (in libsystem_c.dylib) + 1868  [0x188686ad0]
+        +     :   1 _qsort  (in libsystem_c.dylib) + 1868  [0x188686ad0]
+        +     :     1 _qsort  (in libsystem_c.dylib) + 1868  [0x188686ad0]
+        +     :       1 _isort  (in libsystem_c.dylib) + 356  [0x188665da8]
+        +     1 _qsort  (in libsystem_c.dylib) + 836  [0x1886866c8]
+        55 main  (in bsat-search-profile) + 4904  [0x102c5c360]  main.c:448
+        + 13 solver_analyze  (in bsat-search-profile) + 600  [0x102c60414]  solver.c:1231
+        + ! 10 bump_var_activity  (in bsat-search-profile) + 756,672,...  [0x102c60c1c,0x102c60bc8,...]  solver.c:401
+        + ! 2 bump_var_activity  (in bsat-search-profile) + 772  [0x102c60c2c]  solver.c:403
+        + ! 1 bump_var_activity  (in bsat-search-profile) + 60  [0x102c60964]  solver.c:364
+        + 11 solver_analyze  (in bsat-search-profile) + 524  [0x102c603c8]  solver.c:1224
+        + 10 solver_analyze  (in bsat-search-profile) + 560,552,...  [0x102c603ec,0x102c603e4,...]  solver.c:1229
+        + 7 solver_analyze  (in bsat-search-profile) + 208  [0x102c6028c]  solver.c:1181
+        + ! 4 bump_var_activity  (in bsat-search-profile) + 672,720,...  [0x102c60bc8,0x102c60bf8,...]  solver.c:401
+        + ! 2 bump_var_activity  (in bsat-search-profile) + 264  [0x102c60a30]  solver.c:388
+        + ! 1 bump_var_activity  (in bsat-search-profile) + 8  [0x102c60930]  solver.c:359
+        + 6 solver_analyze  (in bsat-search-profile) + 344  [0x102c60314]  solver.c:1266
+        + 3 solver_analyze  (in bsat-search-profile) + 400  [0x102c6034c]  solver.c:1204
+        + 1 solver_analyze  (in bsat-search-profile) + 440  [0x102c60374]  solver.c:1212
+        + 1 solver_analyze  (in bsat-search-profile) + 532  [0x102c603d0]  solver.c:1225
+        + 1 solver_analyze  (in bsat-search-profile) + 612  [0x102c60420]  solver.c:1233
+        + 1 solver_analyze  (in bsat-search-profile) + 668  [0x102c60458]  solver.c:1243
+        + 1 solver_analyze  (in bsat-search-profile) + 736  [0x102c6049c]  solver.c:1251
+        +   1 bump_var_activity  (in bsat-search-profile) + 756  [0x102c60c1c]  solver.c:401
+        32 main  (in bsat-search-profile) + 5440  [0x102c5c578]  main.c:448
+        + 18 proof_clause  (in bsat-search-profile) + 448,496,...  [0x102c5e04c,0x102c5e07c,...]  solver.c:127
+        + 13 proof_clause  (in bsat-search-profile) + 752  [0x102c5e17c]  solver.c:127
+        + ! 12 fwrite  (in libsystem_c.dylib) + 300  [0x18867943c]
+        + ! : 12 __sfvwrite  (in libsystem_c.dylib) + 228  [0x18865dcc0]
+        + ! :   12 __sflush  (in libsystem_c.dylib) + 232  [0x188669304]
+        + ! :     12 _swrite  (in libsystem_c.dylib) + 108  [0x18866b264]
+        + ! :       12 __swrite  (in libsystem_c.dylib) + 24  [0x188689ba4]
+        + ! :         12 __write_nocancel  (in libsystem_kernel.dylib) + 8  [0x18878bbe4]
+        + ! 1 fwrite  (in libsystem_c.dylib) + 164  [0x1886793b4]
+        + !   1 flockfile  (in libsystem_c.dylib) + 44  [0x18866920c]
+        + !     1 __error  (in libsystem_kernel.dylib) + 4  [0x18878861c]
+        + 1 proof_clause  (in bsat-search-profile) + 776  [0x102c5e194]  solver.c:129
+        +   1 ferror  (in libsystem_c.dylib) + 24  [0x1886848f0]
+        +     1 flockfile  (in libsystem_c.dylib) + 40  [0x188669208]
+        +       1 _pthread_mutex_firstfit_lock_slow  (in libsystem_pthread.dylib) + 156  [0x1887c68a4]
+        24 main  (in bsat-search-profile) + 4920  [0x102c5c370]  main.c:448
+        + 13 solver_minimize_clause  (in bsat-search-profile) + 1508  [0x102c5d7cc]  minimize.c:274
+        + ! 4 lit_redundant  (in bsat-search-profile) + 452  [0x102c5da64]  minimize.c:111
+        + ! : 2 lit_redundant  (in bsat-search-profile) + 24  [0x102c5d8b8]  minimize.c:25
+        + ! : 1 lit_redundant  (in bsat-search-profile) + 452  [0x102c5da64]  minimize.c:111
+        + ! : | 1 lit_redundant  (in bsat-search-profile) + 452  [0x102c5da64]  minimize.c:111
+        + ! : |   1 lit_redundant  (in bsat-search-profile) + 64  [0x102c5d8e0]  minimize.c:31
+        + ! : 1 lit_redundant  (in bsat-search-profile) + 84  [0x102c5d8f4]  minimize.c:38
+        + ! 2 lit_redundant  (in bsat-search-profile) + 316,320  [0x102c5d9dc,0x102c5d9e0]  minimize.c:77
+        + ! 2 lit_redundant  (in bsat-search-profile) + 424  [0x102c5da48]  minimize.c:99
+        + ! 1 lit_redundant  (in bsat-search-profile) + 200  [0x102c5d968]  minimize.c:126
+        + ! 1 lit_redundant  (in bsat-search-profile) + 24  [0x102c5d8b8]  minimize.c:25
+        + ! 1 lit_redundant  (in bsat-search-profile) + 328  [0x102c5d9e8]  minimize.c:81
+        + ! 1 lit_redundant  (in bsat-search-profile) + 352  [0x102c5da00]  minimize.c:83
+        + ! 1 lit_redundant  (in bsat-search-profile) + 400  [0x102c5da30]  minimize.c:87
+        + 11 solver_minimize_clause  (in bsat-search-profile) + 1404,1428,...  [0x102c5d764,0x102c5d77c,...]  minimize.c:274
+        21 main  (in bsat-search-profile) + 5356  [0x102c5c524]  main.c:448
+        + 19 solver_decide  (in bsat-search-profile) + 172  [0x102c61248]  solver.c:1292
+        + ! 18 heap_extract_max  (in bsat-search-profile) + 300,292,...  [0x102c61538,0x102c61530,...]  solver.c:353
+        + ! 1 heap_extract_max  (in bsat-search-profile) + 0  [0x102c6140c]  solver.c:350
+        + 1 solver_decide  (in bsat-search-profile) + 156  [0x102c61238]  solver.c:1291
+        + 1 solver_decide  (in bsat-search-profile) + 184  [0x102c61254]  solver.c:1299
+        12 main  (in bsat-search-profile) + 5420  [0x102c5c564]  main.c:448
+        + 9 solver_backtrack  (in bsat-search-profile) + 296,84,...  [0x102c5f560,0x102c5f48c,...]  solver.c:717
+        + 1 solver_backtrack  (in bsat-search-profile) + 120  [0x102c5f4b0]  solver.c:712
+        + 1 solver_backtrack  (in bsat-search-profile) + 132  [0x102c5f4bc]  solver.c:713
+        + 1 solver_backtrack  (in bsat-search-profile) + 320  [0x102c5f578]  solver.c:719
+        6 main  (in bsat-search-profile) + 4948  [0x102c5c38c]  main.c:448
+        + 2 calc_lbd  (in bsat-search-profile) + 560,620  [0x102c6304c,0x102c63088]  solver.c:0
+        + 1 calc_lbd  (in bsat-search-profile) + 240  [0x102c62f0c]  solver.c:1101
+        + 1 calc_lbd  (in bsat-search-profile) + 480  [0x102c62ffc]  solver.c:1104
+        + 1 calc_lbd  (in bsat-search-profile) + 488  [0x102c63004]  solver.c:1105
+        + 1 calc_lbd  (in bsat-search-profile) + 1080  [0x102c63254]  solver.c:1112
+        3 main  (in bsat-search-profile) + 5516  [0x102c5c5c4]  main.c:448
+        + 2 arena_alloc  (in bsat-search-profile) + 196  [0x102c58734]  arena.c:176
+        + ! 2 _realloc  (in libsystem_malloc.dylib) + 452  [0x1885f7f14]
+        + !   2 _malloc_zone_realloc  (in libsystem_malloc.dylib) + 148  [0x1885f76f8]
+        + !     2 xzm_realloc  (in libsystem_malloc.dylib) + 860  [0x1885e7ee0]
+        + !       2 mach_vm_copy  (in libsystem_kernel.dylib) + 116  [0x18878fbf8]
+        + !         2 mach_msg2_internal  (in libsystem_kernel.dylib) + 76  [0x18879a5a4]
+        + !           2 mach_msg2_trap  (in libsystem_kernel.dylib) + 8  [0x188787c34]
+        + 1 arena_alloc  (in bsat-search-profile) + 396  [0x102c587fc]  arena.c:194
+        +   1 _platform_memmove  (in libsystem_platform.dylib) + 180  [0x1887d5414]
+        1 main  (in bsat-search-profile) + 5592  [0x102c5c610]  main.c:448
+        + 1 solver_on_the_fly_subsumption  (in bsat-search-profile) + 196  [0x102c63424]  solver.c:1773
+        1 solver_analyze  (in bsat-search-profile) + 1416  [0x102c60744]  solver.c:1280
+        1 watch_add  (in bsat-search-profile) + 136  [0x102c64714]  watch.c:87
+
+Total number in stack (recursive counted multiple, when >=5):
+        6       clock  (in libsystem_c.dylib) + 52  [0x18867e8cc]
+        6       getrusage  (in libsystem_kernel.dylib) + 0  [0x18878f7fc]
+
+Sort by top of stack, same collapsed (when >= 5):
+        solver_propagate  (in bsat-search-profile)        216
+        proof_clause  (in bsat-search-profile)        36
+        solver_analyze  (in bsat-search-profile)        35
+        getrusage  (in libsystem_kernel.dylib)        30
+        __write_nocancel  (in libsystem_kernel.dylib)        21
+        bump_var_activity  (in bsat-search-profile)        21
+        heap_extract_max  (in bsat-search-profile)        19
+        lit_redundant  (in bsat-search-profile)        13
+        solver_backtrack  (in bsat-search-profile)        12
+        solver_minimize_clause  (in bsat-search-profile)        11
+        solver_reduce_db  (in bsat-search-profile)        8
+        _platform_memmove  (in libsystem_platform.dylib)        7
+        calc_lbd  (in bsat-search-profile)        6
+
+Binary Images:
+       0x102c58000 -        0x102c670e7 +bsat-search-profile (0) <D35EBE22-D3F6-3F78-98E3-00017919D349> /tmp/bsat-search-profile
+       0x188358000 -        0x1883aab4b  libobjc.A.dylib (951.7) <40277974-D20C-3EC8-B25C-43AE30D8CC60> /usr/lib/libobjc.A.dylib
+       0x1883ab000 -        0x1883dfd58  libdyld.dylib (1387) <634959D0-592E-349C-B549-B91F2FF09858> /usr/lib/system/libdyld.dylib
+       0x1883e0000 -        0x1884934ff  dyld (1.0.0 - 1387) <DF42DD9D-AD11-33A7-8849-9AD5DF30A274> /usr/lib/dyld
+       0x188494000 -        0x188497228  libsystem_blocks.dylib (96) <A712B95E-BCEE-3F12-9F9B-58E6C2060E53> /usr/lib/system/libsystem_blocks.dylib
+       0x188498000 -        0x1884ec55f  libxpc.dylib (3102.160.5) <40BBE226-77D4-332E-9DA8-F0B5BACFB86D> /usr/lib/system/libxpc.dylib
+       0x1884ed000 -        0x18850d9ff  libsystem_trace.dylib (1861.160.4) <E043667E-AD01-3228-837F-A381F32F2B30> /usr/lib/system/libsystem_trace.dylib
+       0x18850e000 -        0x1885bc5f7  libcorecrypto.dylib (1922.160.10) <D54389FC-4078-370D-A863-9FEF16E00DFD> /usr/lib/system/libcorecrypto.dylib
+       0x1885bd000 -        0x18860d257  libsystem_malloc.dylib (812.160.5) <971CDCFE-4D20-300E-A1D6-EC8672FDD258> /usr/lib/system/libsystem_malloc.dylib
+       0x18860e000 -        0x18865523f  libdispatch.dylib (1542.160.2) <243E06A0-7BFF-3C3F-8A9B-D7732729B361> /usr/lib/system/libdispatch.dylib
+       0x188656000 -        0x188658ffb  libsystem_featureflags.dylib (103) <5E7CDBD5-44AB-34C0-A0F5-FC72F6116CDC> /usr/lib/system/libsystem_featureflags.dylib
+       0x188659000 -        0x1886da1e7  libsystem_c.dylib (1752.160.4) <FDC4E366-5C14-3A1E-BC35-D933D28CDCF3> /usr/lib/system/libsystem_c.dylib
+       0x1886db000 -        0x18876bae7  libc++.1.dylib (2100.43) <C6DC2145-7B94-3E01-ADE5-96A6C2D078BC> /usr/lib/libc++.1.dylib
+       0x18876c000 -        0x18878675f  libc++abi.dylib (2100.43) <DDE77B06-5E25-380B-85B7-BA1A27D09021> /usr/lib/libc++abi.dylib
+       0x188787000 -        0x1887c42e7  libsystem_kernel.dylib (12377.161.13) <7CFB3A10-ADB2-32C4-99B5-922A111B3224> /usr/lib/system/libsystem_kernel.dylib
+       0x1887c5000 -        0x1887d1b3b  libsystem_pthread.dylib (539.100.4) <12342372-0084-37A5-9EA6-2E4DC940C685> /usr/lib/system/libsystem_pthread.dylib
+       0x1887d2000 -        0x1887da963  libsystem_platform.dylib (375.120.2) <4C6BD0FE-25F2-38D8-BE5C-24DAC1DEDCFB> /usr/lib/system/libsystem_platform.dylib
+       0x1887db000 -        0x18880a6eb  libsystem_info.dylib (600) <7402662E-F235-3F48-BB65-F64C8CF0F2BB> /usr/lib/system/libsystem_info.dylib
+       0x18c7a8000 -        0x18c7b1e5f  libsystem_darwin.dylib (1752.160.4) <A095E4FE-0EE1-34DF-B00A-7D349FBC55E0> /usr/lib/system/libsystem_darwin.dylib
+       0x18cc13000 -        0x18cc251b6  libsystem_notify.dylib (348.160.3) <F9B1BAFF-4D09-3A1F-839B-189C21EB5FBB> /usr/lib/system/libsystem_notify.dylib
+       0x18eee4000 -        0x18eefef7b  libsystem_networkextension.dylib (2226.160.6) <01D14A9E-16DC-372C-8AA8-CC7AD39E797F> /usr/lib/system/libsystem_networkextension.dylib
+       0x18ef81000 -        0x18ef98fdf  libsystem_asl.dylib (406) <FF57F6FA-F3A1-343D-815D-57B769D31445> /usr/lib/system/libsystem_asl.dylib
+       0x190b3a000 -        0x190b42387  libsystem_symptoms.dylib (2169.160.3) <CE07A0DF-31B6-3528-B7CE-91CAD89AA519> /usr/lib/system/libsystem_symptoms.dylib
+       0x194ddf000 -        0x194e175b7  libsystem_containermanager.dylib (725.160.3) <2E14025A-52C2-361D-8A8F-5DD45825A2C9> /usr/lib/system/libsystem_containermanager.dylib
+       0x1961f1000 -        0x1961f55d7  libsystem_configuration.dylib (1405.160.3) <A14ED142-2F56-33A6-A23C-EEB8417DC90E> /usr/lib/system/libsystem_configuration.dylib
+       0x1961f6000 -        0x1961fc99f  libsystem_sandbox.dylib (2680.160.6) <6592D3CE-38C6-3C08-9EA5-75D64F37993F> /usr/lib/system/libsystem_sandbox.dylib
+       0x197851000 -        0x1978541fb  libquarantine.dylib (196.160.2) <78C5B827-8152-358D-90E9-B02F02A68B17> /usr/lib/system/libquarantine.dylib
+       0x197ff0000 -        0x197ff6d03  libsystem_coreservices.dylib (191.5.1) <F335DA14-69E8-336E-85A3-11EE239255F0> /usr/lib/system/libsystem_coreservices.dylib
+       0x19857f000 -        0x1985bca77  libsystem_m.dylib (3312.100.1) <3739A40F-2C17-3503-92D6-098141E56E89> /usr/lib/system/libsystem_m.dylib
+       0x1985be000 -        0x1985c1527  libmacho.dylib (1387) <3E43AF47-AD89-3BB4-82B9-A9533F4334DF> /usr/lib/system/libmacho.dylib
+       0x1985db000 -        0x1985e83a7  libcommonCrypto.dylib (600035) <72D94140-1281-3886-971B-37C810403C03> /usr/lib/system/libcommonCrypto.dylib
+       0x1985e9000 -        0x1985f2ca3  libunwind.dylib (2100.2) <B21A1015-83D4-31D8-BA41-88688962D9A6> /usr/lib/system/libunwind.dylib
+       0x1985fb000 -        0x198605bef  libcopyfile.dylib (240.160.2.0.1) <58F425CF-7D4F-34FD-9620-706A2A7F8BDC> /usr/lib/system/libcopyfile.dylib
+       0x198606000 -        0x198609987  libcompiler_rt.dylib (103.3) <D60A9B54-A909-3FD5-93B9-3F38BE0A2BE8> /usr/lib/system/libcompiler_rt.dylib
+       0x19860a000 -        0x19860e78b  libsystem_collections.dylib (1752.160.4) <BDA28F78-F479-3C22-B9C7-4ABCB6801592> /usr/lib/system/libsystem_collections.dylib
+       0x19860f000 -        0x1986124cf  libsystem_secinit.dylib (168.100.7) <C85AF062-AA9B-35BB-904C-C055B2C21602> /usr/lib/system/libsystem_secinit.dylib
+       0x198613000 -        0x198615bf7  libremovefile.dylib (85.100.6) <DA9C2B48-7A9C-32EA-888D-6C7AEB5250E6> /usr/lib/system/libremovefile.dylib
+       0x198616000 -        0x198616f27  libkeymgr.dylib (31) <18EFA1CE-C535-3EAC-BC2C-7955593B7382> /usr/lib/system/libkeymgr.dylib
+       0x198617000 -        0x19861fe37  libsystem_dnssd.dylib (2881.160.4) <2C4C3043-008E-3BD8-BC29-AB9AD235DBA9> /usr/lib/system/libsystem_dnssd.dylib
+       0x198620000 -        0x19862509b  libcache.dylib (95) <EA7C2E0B-52BF-3D45-9A33-38F54A535452> /usr/lib/system/libcache.dylib
+       0x198626000 -        0x198627ce3  libSystem.B.dylib (1356) <4CC4CAD6-45A6-361E-9343-DE636A0B5C02> /usr/lib/libSystem.B.dylib
+       0x28c5cf000 -        0x28c5d6349  libRosetta.dylib (367.9) <F41D814B-FE1F-311A-A778-5F0699628188> /usr/lib/libRosetta.dylib
+       0x28e1e2000 -        0x28e1e5a4b  libsystem_darwindirectory.dylib (122) <6C03D78B-BFAB-3C7A-B713-50881791EE08> /usr/lib/system/libsystem_darwindirectory.dylib
+       0x28e1e6000 -        0x28e1f039b  libsystem_eligibility.dylib (319.160.17) <A279E124-8499-3FFC-A788-655070028F97> /usr/lib/system/libsystem_eligibility.dylib
+       0x28e1f1000 -        0x28e1f888b  libsystem_sanitizers.dylib (26.1) <C92FAEE5-DAED-3340-96B3-0C42B005ADF9> /usr/lib/system/libsystem_sanitizers.dylib
+       0x28e1f9000 -        0x28e1f9bb7  libsystem_trial.dylib (474.2.18.2) <2FF186A6-F448-38CD-9A30-8B5B1AEFCA10> /usr/lib/system/libsystem_trial.dylib

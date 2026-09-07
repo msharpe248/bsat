@@ -392,3 +392,7 @@ A [rolling-omission trial setup experiment](ROLLING_OMISSION_EXPERIMENT.md)
 preserved proof traces and measured search counters, but showed mixed kernel
 results and no convincing CPU gain. The runtime change is rejected; 2,064 signed
 partial-progress cutoff cases and an irreducible-clause benchmark are retained.
+
+A [shared blocker-dispatch experiment](BLOCKER_DISPATCH_EXPERIMENT.md) found no
+useful overall CPU gain and was rejected. The retained 10,368-case regression
+checks mixed binary/long-watch truth, conflict order, reasons and phase saving.

@@ -1,0 +1,54 @@
+{
+  "schema": 1,
+  "base_revision": "c2ee11f69ddbdf7cc43065ebde93914a6f89ca57",
+  "purpose": "Diagnostic sampling, not a performance timing comparison",
+  "binary": "/tmp/bsat-search-profile",
+  "binary_sha256": "4ab32df9f2a164479ad622015e16add84a0e6cdc3125c50af28944397ef71ea8",
+  "compiler_options": [
+    "-std=c11",
+    "-D_POSIX_C_SOURCE=200809L",
+    "-O3",
+    "-march=native",
+    "-flto",
+    "-g"
+  ],
+  "sampler": [
+    "/usr/bin/sample",
+    "{pid}",
+    "5",
+    "10",
+    "-file",
+    "{report}"
+  ],
+  "delay_after_launch_seconds": 1,
+  "families": {
+    "hardware-verification": {
+      "input": "/Users/msharpe/python/bsat/dataset/sat_competition2025/hardware-verification/d672bdbca3b1fb26d585e78add79537e.cnf",
+      "input_sha256": "7b715a14a0044105a7593f2eb8fafe039ac7888ae48993dc8303cd6f546d84e3",
+      "sample_count": 453,
+      "propagate_top_samples": 216,
+      "raw_report": "blocker-dispatch-profile-hardware-verification-20260907.txt",
+      "raw_report_sha256": "9d1ce812be43f02a03ec0bb623b822fec9596b55ad0b9d048f73501c8acdc9ce",
+      "solver_options": [
+        "--time",
+        "10",
+        "--proof",
+        "/tmp/bsat-search-profile-hardware-verification.drat"
+      ]
+    },
+    "hamiltonian-cycle": {
+      "input": "/Users/msharpe/python/bsat/dataset/sat_competition2025/hamiltonian-cycle/334aa882de28856fc8c75885285d2a3c.cnf",
+      "input_sha256": "bea38a58bbae66f071a82e4140a23df3bc37b41904085e66e5fd53f78aaa2892",
+      "sample_count": 453,
+      "propagate_top_samples": 272,
+      "raw_report": "blocker-dispatch-profile-hamiltonian-cycle-20260907.txt",
+      "raw_report_sha256": "3930d74cec81de89c5579fda4c189ab1311314d367dc9f771191293d00da0b65",
+      "solver_options": [
+        "--time",
+        "10",
+        "--proof",
+        "/tmp/bsat-search-profile-hamiltonian-cycle.drat"
+      ]
+    }
+  }
+}

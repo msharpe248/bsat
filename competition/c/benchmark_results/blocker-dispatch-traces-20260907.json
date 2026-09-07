@@ -1,0 +1,873 @@
+{
+  "schema": 1,
+  "base_revision": "c2ee11f",
+  "purpose": "Untimed deterministic trace comparison; incomplete proofs are not certificates",
+  "common_options": [
+    "--conflicts",
+    "1000"
+  ],
+  "solvers": {
+    "baseline": {
+      "path": "/tmp/bsat-blocker-dispatch-baseline",
+      "sha256": "48a3471e730cf354e8f72d20947b0db8053b1b01e5bbaa044a3ea5bc926ebbbc"
+    },
+    "shared": {
+      "path": "/Users/msharpe/python/bsat/competition/c/bin/bsat",
+      "sha256": "576ff5e2ab9aba41f3af822526b7c2a459794753e5fd0b2edf7c3a0695d8b3c7"
+    }
+  },
+  "cases": [
+    {
+      "input": "/Users/msharpe/python/bsat/dataset/sat_competition2025/battleship/ed6d842f96d10f3400bce251f9e95bfb.cnf",
+      "input_sha256": "9d586fde48ebcc533f867c06569f008a9b3f5b71dca6a3c9e18db48e037a0b6f",
+      "binary_proof": false,
+      "runs": {
+        "baseline": {
+          "returncode": 0,
+          "status": [
+            "s UNKNOWN"
+          ],
+          "stats": {
+            "Decisions": "3082",
+            "Propagations": "35614",
+            "Conflicts": "1000",
+            "Restarts": "6",
+            "Reused levels": "0",
+            "Learned clauses": "1000",
+            "Learned literals": "117436",
+            "Deleted clauses": "0",
+            "Minimize inspections": "39768",
+            "Minimize binary steps": "0",
+            "Minimize cache hits": "0",
+            "Minimize budget hits": "0",
+            "Target literals copied": "3679",
+            "Target values cleared": "3976",
+            "Subsumed clauses": "0",
+            "Minimized literals": "158",
+            "Glue clauses": "0",
+            "Max LBD": "191",
+            "Literal inspections": "908941",
+            "Garbage collections": "0",
+            "Reductions": "0"
+          },
+          "proof_bytes": 451791,
+          "proof_sha256": "ae1e9c905ff44c55bfb854084e1e9a276720f079f66a79d1aa5e661183ac8901",
+          "model_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        "shared": {
+          "returncode": 0,
+          "status": [
+            "s UNKNOWN"
+          ],
+          "stats": {
+            "Decisions": "3082",
+            "Propagations": "35614",
+            "Conflicts": "1000",
+            "Restarts": "6",
+            "Reused levels": "0",
+            "Learned clauses": "1000",
+            "Learned literals": "117436",
+            "Deleted clauses": "0",
+            "Minimize inspections": "39768",
+            "Minimize binary steps": "0",
+            "Minimize cache hits": "0",
+            "Minimize budget hits": "0",
+            "Target literals copied": "3679",
+            "Target values cleared": "3976",
+            "Subsumed clauses": "0",
+            "Minimized literals": "158",
+            "Glue clauses": "0",
+            "Max LBD": "191",
+            "Literal inspections": "908941",
+            "Garbage collections": "0",
+            "Reductions": "0"
+          },
+          "proof_bytes": 451791,
+          "proof_sha256": "ae1e9c905ff44c55bfb854084e1e9a276720f079f66a79d1aa5e661183ac8901",
+          "model_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        }
+      }
+    },
+    {
+      "input": "/Users/msharpe/python/bsat/dataset/sat_competition2025/battleship/ed6d842f96d10f3400bce251f9e95bfb.cnf",
+      "input_sha256": "9d586fde48ebcc533f867c06569f008a9b3f5b71dca6a3c9e18db48e037a0b6f",
+      "binary_proof": true,
+      "runs": {
+        "baseline": {
+          "returncode": 0,
+          "status": [
+            "s UNKNOWN"
+          ],
+          "stats": {
+            "Decisions": "3082",
+            "Propagations": "35614",
+            "Conflicts": "1000",
+            "Restarts": "6",
+            "Reused levels": "0",
+            "Learned clauses": "1000",
+            "Learned literals": "117436",
+            "Deleted clauses": "0",
+            "Minimize inspections": "39768",
+            "Minimize binary steps": "0",
+            "Minimize cache hits": "0",
+            "Minimize budget hits": "0",
+            "Target literals copied": "3679",
+            "Target values cleared": "3976",
+            "Subsumed clauses": "0",
+            "Minimized literals": "158",
+            "Glue clauses": "0",
+            "Max LBD": "191",
+            "Literal inspections": "908941",
+            "Garbage collections": "0",
+            "Reductions": "0"
+          },
+          "proof_bytes": 225072,
+          "proof_sha256": "592bf0b2f2bcea48973d6625864fe45b2a639ffabb26474b88866ac7895f621d",
+          "model_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        "shared": {
+          "returncode": 0,
+          "status": [
+            "s UNKNOWN"
+          ],
+          "stats": {
+            "Decisions": "3082",
+            "Propagations": "35614",
+            "Conflicts": "1000",
+            "Restarts": "6",
+            "Reused levels": "0",
+            "Learned clauses": "1000",
+            "Learned literals": "117436",
+            "Deleted clauses": "0",
+            "Minimize inspections": "39768",
+            "Minimize binary steps": "0",
+            "Minimize cache hits": "0",
+            "Minimize budget hits": "0",
+            "Target literals copied": "3679",
+            "Target values cleared": "3976",
+            "Subsumed clauses": "0",
+            "Minimized literals": "158",
+            "Glue clauses": "0",
+            "Max LBD": "191",
+            "Literal inspections": "908941",
+            "Garbage collections": "0",
+            "Reductions": "0"
+          },
+          "proof_bytes": 225072,
+          "proof_sha256": "592bf0b2f2bcea48973d6625864fe45b2a639ffabb26474b88866ac7895f621d",
+          "model_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        }
+      }
+    },
+    {
+      "input": "/Users/msharpe/python/bsat/dataset/sat_competition2025/belpyramid-puzzle/5831f35622f3e6c666f0cee6cac60e4c.cnf",
+      "input_sha256": "e73caf0c3d62cfa5ce1b8c80c83c30df50c7e99275f1f43f69acdd043f050735",
+      "binary_proof": false,
+      "runs": {
+        "baseline": {
+          "returncode": 0,
+          "status": [
+            "s UNKNOWN"
+          ],
+          "stats": {
+            "Decisions": "458636",
+            "Propagations": "6742302",
+            "Conflicts": "1000",
+            "Restarts": "9",
+            "Reused levels": "0",
+            "Learned clauses": "1000",
+            "Learned literals": "4917",
+            "Deleted clauses": "0",
+            "Minimize inspections": "3216",
+            "Minimize binary steps": "0",
+            "Minimize cache hits": "0",
+            "Minimize budget hits": "0",
+            "Target literals copied": "4657462",
+            "Target values cleared": "9142670",
+            "Subsumed clauses": "0",
+            "Minimized literals": "21",
+            "Glue clauses": "230",
+            "Max LBD": "10",
+            "Literal inspections": "16297220",
+            "Garbage collections": "0",
+            "Reductions": "0"
+          },
+          "proof_bytes": 28447,
+          "proof_sha256": "ee033f8d772e4c1266f320cb606c851c4cb1b3cfd677b4f8fb895cb6f3a09c71",
+          "model_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        "shared": {
+          "returncode": 0,
+          "status": [
+            "s UNKNOWN"
+          ],
+          "stats": {
+            "Decisions": "458636",
+            "Propagations": "6742302",
+            "Conflicts": "1000",
+            "Restarts": "9",
+            "Reused levels": "0",
+            "Learned clauses": "1000",
+            "Learned literals": "4917",
+            "Deleted clauses": "0",
+            "Minimize inspections": "3216",
+            "Minimize binary steps": "0",
+            "Minimize cache hits": "0",
+            "Minimize budget hits": "0",
+            "Target literals copied": "4657462",
+            "Target values cleared": "9142670",
+            "Subsumed clauses": "0",
+            "Minimized literals": "21",
+            "Glue clauses": "230",
+            "Max LBD": "10",
+            "Literal inspections": "16297220",
+            "Garbage collections": "0",
+            "Reductions": "0"
+          },
+          "proof_bytes": 28447,
+          "proof_sha256": "ee033f8d772e4c1266f320cb606c851c4cb1b3cfd677b4f8fb895cb6f3a09c71",
+          "model_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        }
+      }
+    },
+    {
+      "input": "/Users/msharpe/python/bsat/dataset/sat_competition2025/belpyramid-puzzle/5831f35622f3e6c666f0cee6cac60e4c.cnf",
+      "input_sha256": "e73caf0c3d62cfa5ce1b8c80c83c30df50c7e99275f1f43f69acdd043f050735",
+      "binary_proof": true,
+      "runs": {
+        "baseline": {
+          "returncode": 0,
+          "status": [
+            "s UNKNOWN"
+          ],
+          "stats": {
+            "Decisions": "458636",
+            "Propagations": "6742302",
+            "Conflicts": "1000",
+            "Restarts": "9",
+            "Reused levels": "0",
+            "Learned clauses": "1000",
+            "Learned literals": "4917",
+            "Deleted clauses": "0",
+            "Minimize inspections": "3216",
+            "Minimize binary steps": "0",
+            "Minimize cache hits": "0",
+            "Minimize budget hits": "0",
+            "Target literals copied": "4657462",
+            "Target values cleared": "9142670",
+            "Subsumed clauses": "0",
+            "Minimized literals": "21",
+            "Glue clauses": "230",
+            "Max LBD": "10",
+            "Literal inspections": "16297220",
+            "Garbage collections": "0",
+            "Reductions": "0"
+          },
+          "proof_bytes": 13757,
+          "proof_sha256": "11bb86789b420be5a7f51574e370570fcde4caaedf4659bb44007bcaf31b23a5",
+          "model_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        "shared": {
+          "returncode": 0,
+          "status": [
+            "s UNKNOWN"
+          ],
+          "stats": {
+            "Decisions": "458636",
+            "Propagations": "6742302",
+            "Conflicts": "1000",
+            "Restarts": "9",
+            "Reused levels": "0",
+            "Learned clauses": "1000",
+            "Learned literals": "4917",
+            "Deleted clauses": "0",
+            "Minimize inspections": "3216",
+            "Minimize binary steps": "0",
+            "Minimize cache hits": "0",
+            "Minimize budget hits": "0",
+            "Target literals copied": "4657462",
+            "Target values cleared": "9142670",
+            "Subsumed clauses": "0",
+            "Minimized literals": "21",
+            "Glue clauses": "230",
+            "Max LBD": "10",
+            "Literal inspections": "16297220",
+            "Garbage collections": "0",
+            "Reductions": "0"
+          },
+          "proof_bytes": 13757,
+          "proof_sha256": "11bb86789b420be5a7f51574e370570fcde4caaedf4659bb44007bcaf31b23a5",
+          "model_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        }
+      }
+    },
+    {
+      "input": "/Users/msharpe/python/bsat/dataset/sat_competition2025/hamiltonian/a497d784c61c330f012dcd80d44dcd43.cnf",
+      "input_sha256": "92e5fa675073ba9aad91afa4b81129fed5757ea37872fc2dbc3bd4ba0d720a4c",
+      "binary_proof": false,
+      "runs": {
+        "baseline": {
+          "returncode": 0,
+          "status": [
+            "s UNKNOWN"
+          ],
+          "stats": {
+            "Decisions": "1732",
+            "Propagations": "77445",
+            "Conflicts": "1000",
+            "Restarts": "9",
+            "Reused levels": "0",
+            "Learned clauses": "1000",
+            "Learned literals": "26581",
+            "Deleted clauses": "0",
+            "Minimize inspections": "9720",
+            "Minimize binary steps": "0",
+            "Minimize cache hits": "2",
+            "Minimize budget hits": "0",
+            "Target literals copied": "2006",
+            "Target values cleared": "3311",
+            "Subsumed clauses": "3",
+            "Minimized literals": "726",
+            "Glue clauses": "5",
+            "Max LBD": "33",
+            "Literal inspections": "773506",
+            "Garbage collections": "0",
+            "Reductions": "0"
+          },
+          "proof_bytes": 102430,
+          "proof_sha256": "59f544bdb8f2a575dc6fd1d64c0d817b696c19a9eb9a991d4fbdc1bf3e25770a",
+          "model_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        "shared": {
+          "returncode": 0,
+          "status": [
+            "s UNKNOWN"
+          ],
+          "stats": {
+            "Decisions": "1732",
+            "Propagations": "77445",
+            "Conflicts": "1000",
+            "Restarts": "9",
+            "Reused levels": "0",
+            "Learned clauses": "1000",
+            "Learned literals": "26581",
+            "Deleted clauses": "0",
+            "Minimize inspections": "9720",
+            "Minimize binary steps": "0",
+            "Minimize cache hits": "2",
+            "Minimize budget hits": "0",
+            "Target literals copied": "2006",
+            "Target values cleared": "3311",
+            "Subsumed clauses": "3",
+            "Minimized literals": "726",
+            "Glue clauses": "5",
+            "Max LBD": "33",
+            "Literal inspections": "773506",
+            "Garbage collections": "0",
+            "Reductions": "0"
+          },
+          "proof_bytes": 102430,
+          "proof_sha256": "59f544bdb8f2a575dc6fd1d64c0d817b696c19a9eb9a991d4fbdc1bf3e25770a",
+          "model_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        }
+      }
+    },
+    {
+      "input": "/Users/msharpe/python/bsat/dataset/sat_competition2025/hamiltonian/a497d784c61c330f012dcd80d44dcd43.cnf",
+      "input_sha256": "92e5fa675073ba9aad91afa4b81129fed5757ea37872fc2dbc3bd4ba0d720a4c",
+      "binary_proof": true,
+      "runs": {
+        "baseline": {
+          "returncode": 0,
+          "status": [
+            "s UNKNOWN"
+          ],
+          "stats": {
+            "Decisions": "1732",
+            "Propagations": "77445",
+            "Conflicts": "1000",
+            "Restarts": "9",
+            "Reused levels": "0",
+            "Learned clauses": "1000",
+            "Learned literals": "26581",
+            "Deleted clauses": "0",
+            "Minimize inspections": "9720",
+            "Minimize binary steps": "0",
+            "Minimize cache hits": "2",
+            "Minimize budget hits": "0",
+            "Target literals copied": "2006",
+            "Target values cleared": "3311",
+            "Subsumed clauses": "3",
+            "Minimized literals": "726",
+            "Glue clauses": "5",
+            "Max LBD": "33",
+            "Literal inspections": "773506",
+            "Garbage collections": "0",
+            "Reductions": "0"
+          },
+          "proof_bytes": 51702,
+          "proof_sha256": "a27b217f44a71b080e3f7ce160409ba58b167c0bd73b4e688a871ebb84360fd2",
+          "model_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        "shared": {
+          "returncode": 0,
+          "status": [
+            "s UNKNOWN"
+          ],
+          "stats": {
+            "Decisions": "1732",
+            "Propagations": "77445",
+            "Conflicts": "1000",
+            "Restarts": "9",
+            "Reused levels": "0",
+            "Learned clauses": "1000",
+            "Learned literals": "26581",
+            "Deleted clauses": "0",
+            "Minimize inspections": "9720",
+            "Minimize binary steps": "0",
+            "Minimize cache hits": "2",
+            "Minimize budget hits": "0",
+            "Target literals copied": "2006",
+            "Target values cleared": "3311",
+            "Subsumed clauses": "3",
+            "Minimized literals": "726",
+            "Glue clauses": "5",
+            "Max LBD": "33",
+            "Literal inspections": "773506",
+            "Garbage collections": "0",
+            "Reductions": "0"
+          },
+          "proof_bytes": 51702,
+          "proof_sha256": "a27b217f44a71b080e3f7ce160409ba58b167c0bd73b4e688a871ebb84360fd2",
+          "model_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        }
+      }
+    },
+    {
+      "input": "/Users/msharpe/python/bsat/dataset/sat_competition2025/hardware-verification/d672bdbca3b1fb26d585e78add79537e.cnf",
+      "input_sha256": "7b715a14a0044105a7593f2eb8fafe039ac7888ae48993dc8303cd6f546d84e3",
+      "binary_proof": false,
+      "runs": {
+        "baseline": {
+          "returncode": 0,
+          "status": [
+            "s UNKNOWN"
+          ],
+          "stats": {
+            "Decisions": "26952",
+            "Propagations": "1023372",
+            "Conflicts": "1000",
+            "Restarts": "9",
+            "Reused levels": "0",
+            "Learned clauses": "1000",
+            "Learned literals": "55163",
+            "Deleted clauses": "0",
+            "Minimize inspections": "12905",
+            "Minimize binary steps": "0",
+            "Minimize cache hits": "0",
+            "Minimize budget hits": "0",
+            "Target literals copied": "194554",
+            "Target values cleared": "247954",
+            "Subsumed clauses": "2",
+            "Minimized literals": "252",
+            "Glue clauses": "24",
+            "Max LBD": "77",
+            "Literal inspections": "5406943",
+            "Garbage collections": "0",
+            "Reductions": "0"
+          },
+          "proof_bytes": 268594,
+          "proof_sha256": "9229fac7c8e641e0295cfc59f5ec7b44ef185d76855a4a7bea193948541d038e",
+          "model_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        "shared": {
+          "returncode": 0,
+          "status": [
+            "s UNKNOWN"
+          ],
+          "stats": {
+            "Decisions": "26952",
+            "Propagations": "1023372",
+            "Conflicts": "1000",
+            "Restarts": "9",
+            "Reused levels": "0",
+            "Learned clauses": "1000",
+            "Learned literals": "55163",
+            "Deleted clauses": "0",
+            "Minimize inspections": "12905",
+            "Minimize binary steps": "0",
+            "Minimize cache hits": "0",
+            "Minimize budget hits": "0",
+            "Target literals copied": "194554",
+            "Target values cleared": "247954",
+            "Subsumed clauses": "2",
+            "Minimized literals": "252",
+            "Glue clauses": "24",
+            "Max LBD": "77",
+            "Literal inspections": "5406943",
+            "Garbage collections": "0",
+            "Reductions": "0"
+          },
+          "proof_bytes": 268594,
+          "proof_sha256": "9229fac7c8e641e0295cfc59f5ec7b44ef185d76855a4a7bea193948541d038e",
+          "model_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        }
+      }
+    },
+    {
+      "input": "/Users/msharpe/python/bsat/dataset/sat_competition2025/hardware-verification/d672bdbca3b1fb26d585e78add79537e.cnf",
+      "input_sha256": "7b715a14a0044105a7593f2eb8fafe039ac7888ae48993dc8303cd6f546d84e3",
+      "binary_proof": true,
+      "runs": {
+        "baseline": {
+          "returncode": 0,
+          "status": [
+            "s UNKNOWN"
+          ],
+          "stats": {
+            "Decisions": "26952",
+            "Propagations": "1023372",
+            "Conflicts": "1000",
+            "Restarts": "9",
+            "Reused levels": "0",
+            "Learned clauses": "1000",
+            "Learned literals": "55163",
+            "Deleted clauses": "0",
+            "Minimize inspections": "12905",
+            "Minimize binary steps": "0",
+            "Minimize cache hits": "0",
+            "Minimize budget hits": "0",
+            "Target literals copied": "194554",
+            "Target values cleared": "247954",
+            "Subsumed clauses": "2",
+            "Minimized literals": "252",
+            "Glue clauses": "24",
+            "Max LBD": "77",
+            "Literal inspections": "5406943",
+            "Garbage collections": "0",
+            "Reductions": "0"
+          },
+          "proof_bytes": 120589,
+          "proof_sha256": "dab3cc649c6aa8276ee90d17c6369ff8e46f72da1d226380bada56e3cfa93aba",
+          "model_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        "shared": {
+          "returncode": 0,
+          "status": [
+            "s UNKNOWN"
+          ],
+          "stats": {
+            "Decisions": "26952",
+            "Propagations": "1023372",
+            "Conflicts": "1000",
+            "Restarts": "9",
+            "Reused levels": "0",
+            "Learned clauses": "1000",
+            "Learned literals": "55163",
+            "Deleted clauses": "0",
+            "Minimize inspections": "12905",
+            "Minimize binary steps": "0",
+            "Minimize cache hits": "0",
+            "Minimize budget hits": "0",
+            "Target literals copied": "194554",
+            "Target values cleared": "247954",
+            "Subsumed clauses": "2",
+            "Minimized literals": "252",
+            "Glue clauses": "24",
+            "Max LBD": "77",
+            "Literal inspections": "5406943",
+            "Garbage collections": "0",
+            "Reductions": "0"
+          },
+          "proof_bytes": 120589,
+          "proof_sha256": "dab3cc649c6aa8276ee90d17c6369ff8e46f72da1d226380bada56e3cfa93aba",
+          "model_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        }
+      }
+    },
+    {
+      "input": "/Users/msharpe/python/bsat/dataset/sat_competition2025/ktf/86173292a2c6a506acf27a81db853bb5.cnf",
+      "input_sha256": "a8aea7e4da078513ac5af84fc390d3ab27f8bd26ee7eced9fac2589d18504d1f",
+      "binary_proof": false,
+      "runs": {
+        "baseline": {
+          "returncode": 0,
+          "status": [
+            "s UNKNOWN"
+          ],
+          "stats": {
+            "Decisions": "7946",
+            "Propagations": "5190429",
+            "Conflicts": "1000",
+            "Restarts": "9",
+            "Reused levels": "0",
+            "Learned clauses": "1000",
+            "Learned literals": "48342",
+            "Deleted clauses": "0",
+            "Minimize inspections": "91348",
+            "Minimize binary steps": "0",
+            "Minimize cache hits": "0",
+            "Minimize budget hits": "0",
+            "Target literals copied": "101299",
+            "Target values cleared": "120496",
+            "Subsumed clauses": "2",
+            "Minimized literals": "396",
+            "Glue clauses": "48",
+            "Max LBD": "65",
+            "Literal inspections": "31521353",
+            "Garbage collections": "0",
+            "Reductions": "0"
+          },
+          "proof_bytes": 297668,
+          "proof_sha256": "f7919ba8327d572845c096fe5945ceaf9d74e6989e05042d84c17112609d5ca1",
+          "model_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        "shared": {
+          "returncode": 0,
+          "status": [
+            "s UNKNOWN"
+          ],
+          "stats": {
+            "Decisions": "7946",
+            "Propagations": "5190429",
+            "Conflicts": "1000",
+            "Restarts": "9",
+            "Reused levels": "0",
+            "Learned clauses": "1000",
+            "Learned literals": "48342",
+            "Deleted clauses": "0",
+            "Minimize inspections": "91348",
+            "Minimize binary steps": "0",
+            "Minimize cache hits": "0",
+            "Minimize budget hits": "0",
+            "Target literals copied": "101299",
+            "Target values cleared": "120496",
+            "Subsumed clauses": "2",
+            "Minimized literals": "396",
+            "Glue clauses": "48",
+            "Max LBD": "65",
+            "Literal inspections": "31521353",
+            "Garbage collections": "0",
+            "Reductions": "0"
+          },
+          "proof_bytes": 297668,
+          "proof_sha256": "f7919ba8327d572845c096fe5945ceaf9d74e6989e05042d84c17112609d5ca1",
+          "model_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        }
+      }
+    },
+    {
+      "input": "/Users/msharpe/python/bsat/dataset/sat_competition2025/ktf/86173292a2c6a506acf27a81db853bb5.cnf",
+      "input_sha256": "a8aea7e4da078513ac5af84fc390d3ab27f8bd26ee7eced9fac2589d18504d1f",
+      "binary_proof": true,
+      "runs": {
+        "baseline": {
+          "returncode": 0,
+          "status": [
+            "s UNKNOWN"
+          ],
+          "stats": {
+            "Decisions": "7946",
+            "Propagations": "5190429",
+            "Conflicts": "1000",
+            "Restarts": "9",
+            "Reused levels": "0",
+            "Learned clauses": "1000",
+            "Learned literals": "48342",
+            "Deleted clauses": "0",
+            "Minimize inspections": "91348",
+            "Minimize binary steps": "0",
+            "Minimize cache hits": "0",
+            "Minimize budget hits": "0",
+            "Target literals copied": "101299",
+            "Target values cleared": "120496",
+            "Subsumed clauses": "2",
+            "Minimized literals": "396",
+            "Glue clauses": "48",
+            "Max LBD": "65",
+            "Literal inspections": "31521353",
+            "Garbage collections": "0",
+            "Reductions": "0"
+          },
+          "proof_bytes": 133216,
+          "proof_sha256": "6487c5ab50c0ac6fcf4cbf352183d22daba2a7a63936adbe30aef381940dac4f",
+          "model_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        "shared": {
+          "returncode": 0,
+          "status": [
+            "s UNKNOWN"
+          ],
+          "stats": {
+            "Decisions": "7946",
+            "Propagations": "5190429",
+            "Conflicts": "1000",
+            "Restarts": "9",
+            "Reused levels": "0",
+            "Learned clauses": "1000",
+            "Learned literals": "48342",
+            "Deleted clauses": "0",
+            "Minimize inspections": "91348",
+            "Minimize binary steps": "0",
+            "Minimize cache hits": "0",
+            "Minimize budget hits": "0",
+            "Target literals copied": "101299",
+            "Target values cleared": "120496",
+            "Subsumed clauses": "2",
+            "Minimized literals": "396",
+            "Glue clauses": "48",
+            "Max LBD": "65",
+            "Literal inspections": "31521353",
+            "Garbage collections": "0",
+            "Reductions": "0"
+          },
+          "proof_bytes": 133216,
+          "proof_sha256": "6487c5ab50c0ac6fcf4cbf352183d22daba2a7a63936adbe30aef381940dac4f",
+          "model_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        }
+      }
+    },
+    {
+      "input": "/Users/msharpe/python/bsat/dataset/sat_competition2025/hamiltonian-cycle/334aa882de28856fc8c75885285d2a3c.cnf",
+      "input_sha256": "bea38a58bbae66f071a82e4140a23df3bc37b41904085e66e5fd53f78aaa2892",
+      "binary_proof": false,
+      "runs": {
+        "baseline": {
+          "returncode": 0,
+          "status": [
+            "s UNKNOWN"
+          ],
+          "stats": {
+            "Decisions": "53686",
+            "Propagations": "368787",
+            "Conflicts": "1000",
+            "Restarts": "9",
+            "Reused levels": "0",
+            "Learned clauses": "1000",
+            "Learned literals": "9568",
+            "Deleted clauses": "0",
+            "Minimize inspections": "36289",
+            "Minimize binary steps": "0",
+            "Minimize cache hits": "25",
+            "Minimize budget hits": "0",
+            "Target literals copied": "281750",
+            "Target values cleared": "1706295",
+            "Subsumed clauses": "34",
+            "Minimized literals": "353",
+            "Glue clauses": "142",
+            "Max LBD": "39",
+            "Literal inspections": "2186828",
+            "Garbage collections": "0",
+            "Reductions": "0"
+          },
+          "proof_bytes": 58349,
+          "proof_sha256": "c5c91740110275b5ac2f25a35cfd2477db7e391b2323e1e0edfc5afd0a9dc869",
+          "model_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        "shared": {
+          "returncode": 0,
+          "status": [
+            "s UNKNOWN"
+          ],
+          "stats": {
+            "Decisions": "53686",
+            "Propagations": "368787",
+            "Conflicts": "1000",
+            "Restarts": "9",
+            "Reused levels": "0",
+            "Learned clauses": "1000",
+            "Learned literals": "9568",
+            "Deleted clauses": "0",
+            "Minimize inspections": "36289",
+            "Minimize binary steps": "0",
+            "Minimize cache hits": "25",
+            "Minimize budget hits": "0",
+            "Target literals copied": "281750",
+            "Target values cleared": "1706295",
+            "Subsumed clauses": "34",
+            "Minimized literals": "353",
+            "Glue clauses": "142",
+            "Max LBD": "39",
+            "Literal inspections": "2186828",
+            "Garbage collections": "0",
+            "Reductions": "0"
+          },
+          "proof_bytes": 58349,
+          "proof_sha256": "c5c91740110275b5ac2f25a35cfd2477db7e391b2323e1e0edfc5afd0a9dc869",
+          "model_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        }
+      }
+    },
+    {
+      "input": "/Users/msharpe/python/bsat/dataset/sat_competition2025/hamiltonian-cycle/334aa882de28856fc8c75885285d2a3c.cnf",
+      "input_sha256": "bea38a58bbae66f071a82e4140a23df3bc37b41904085e66e5fd53f78aaa2892",
+      "binary_proof": true,
+      "runs": {
+        "baseline": {
+          "returncode": 0,
+          "status": [
+            "s UNKNOWN"
+          ],
+          "stats": {
+            "Decisions": "53686",
+            "Propagations": "368787",
+            "Conflicts": "1000",
+            "Restarts": "9",
+            "Reused levels": "0",
+            "Learned clauses": "1000",
+            "Learned literals": "9568",
+            "Deleted clauses": "0",
+            "Minimize inspections": "36289",
+            "Minimize binary steps": "0",
+            "Minimize cache hits": "25",
+            "Minimize budget hits": "0",
+            "Target literals copied": "281750",
+            "Target values cleared": "1706295",
+            "Subsumed clauses": "34",
+            "Minimized literals": "353",
+            "Glue clauses": "142",
+            "Max LBD": "39",
+            "Literal inspections": "2186828",
+            "Garbage collections": "0",
+            "Reductions": "0"
+          },
+          "proof_bytes": 25582,
+          "proof_sha256": "519752861af48dc84f48b8902e0d1ddd8b5d922323473b66f70676b5c176a60d",
+          "model_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        "shared": {
+          "returncode": 0,
+          "status": [
+            "s UNKNOWN"
+          ],
+          "stats": {
+            "Decisions": "53686",
+            "Propagations": "368787",
+            "Conflicts": "1000",
+            "Restarts": "9",
+            "Reused levels": "0",
+            "Learned clauses": "1000",
+            "Learned literals": "9568",
+            "Deleted clauses": "0",
+            "Minimize inspections": "36289",
+            "Minimize binary steps": "0",
+            "Minimize cache hits": "25",
+            "Minimize budget hits": "0",
+            "Target literals copied": "281750",
+            "Target values cleared": "1706295",
+            "Subsumed clauses": "34",
+            "Minimized literals": "353",
+            "Glue clauses": "142",
+            "Max LBD": "39",
+            "Literal inspections": "2186828",
+            "Garbage collections": "0",
+            "Reductions": "0"
+          },
+          "proof_bytes": 25582,
+          "proof_sha256": "519752861af48dc84f48b8902e0d1ddd8b5d922323473b66f70676b5c176a60d",
+          "model_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        }
+      }
+    }
+  ]
+}

@@ -1,0 +1,334 @@
+Analysis of sampling bsat-search-profile (pid 68176) every 10 milliseconds
+Process:         bsat-search-profile [68176]
+Path:            /private/tmp/bsat-search-profile
+Load Address:    0x100474000
+Identifier:      bsat-search-profile
+Version:         0
+Code Type:       ARM64
+Platform:        macOS
+Parent Process:  python3.13 [68118]
+Target Type:     live task
+
+Date/Time:       2026-09-07 12:36:13.327 -0500
+Launch Time:     2026-09-07 12:36:12.298 -0500
+OS Version:      macOS 26.6.1 (25G76)
+Report Version:  7
+Analysis Tool:   /usr/bin/sample
+
+Physical footprint:         52.0M
+Physical footprint (peak):  52.0M
+Idle exit:                  untracked
+----
+
+Call graph:
+    453 Thread_31918223   DispatchQueue_1: com.apple.main-thread  (serial)
+      453 start  (in dyld) + 6992  [0x1884004e4]
+        278 main  (in bsat-search-profile) + 4824  [0x100478310]  main.c:448
+        + 30 solver_propagate  (in bsat-search-profile) + 176  [0x10047bac0]  solver.c:994
+        + 23 solver_propagate  (in bsat-search-profile) + 540  [0x10047bc2c]  solver.c:1006
+        + 22 solver_propagate  (in bsat-search-profile) + 1516,1524  [0x10047bffc,0x10047c004]  solver.c:881
+        + 20 solver_propagate  (in bsat-search-profile) + 552  [0x10047bc38]  solver.c:917
+        + 19 solver_propagate  (in bsat-search-profile) + 504  [0x10047bc08]  solver.c:1001
+        + 18 solver_propagate  (in bsat-search-profile) + 1328  [0x10047bf40]  solver.c:1039
+        + 16 solver_propagate  (in bsat-search-profile) + 1192  [0x10047beb8]  solver.c:1026
+        + 15 solver_propagate  (in bsat-search-profile) + 592  [0x10047bc60]  solver.c:1009
+        + 15 solver_propagate  (in bsat-search-profile) + 204  [0x10047badc]  solver.c:907
+        + 10 solver_propagate  (in bsat-search-profile) + 528,808,...  [0x10047bc20,0x10047bd38,...]  solver.c:0
+        + 10 solver_propagate  (in bsat-search-profile) + 224  [0x10047baf0]  solver.c:908
+        + 9 solver_propagate  (in bsat-search-profile) + 468  [0x10047bbe4]  solver.c:913
+        + 9 solver_propagate  (in bsat-search-profile) + 576  [0x10047bc50]  solver.c:956
+        + 8 solver_propagate  (in bsat-search-profile) + 476  [0x10047bbec]  solver.c:991
+        + 7 solver_propagate  (in bsat-search-profile) + 668  [0x10047bcac]  solver.c:930
+        + 6 solver_propagate  (in bsat-search-profile) + 628  [0x10047bc84]  solver.c:1017
+        + 6 solver_propagate  (in bsat-search-profile) + 648  [0x10047bc98]  solver.c:1024
+        + 5 solver_propagate  (in bsat-search-profile) + 884  [0x10047bd84]  solver.c:1029
+        + 4 solver_propagate  (in bsat-search-profile) + 864  [0x10047bd70]  solver.c:1028
+        + 4 solver_propagate  (in bsat-search-profile) + 1504  [0x10047bff0]  watch.c:0
+        + 3 solver_propagate  (in bsat-search-profile) + 384  [0x10047bb90]  solver.c:908
+        + ! 3 clock  (in libsystem_c.dylib) + 52  [0x18867e8cc]
+        + !   3 getrusage  (in libsystem_kernel.dylib) + 8  [0x18878f804]
+        + 2 solver_propagate  (in bsat-search-profile) + 608  [0x10047bc70]  solver.c:1016
+        + 2 solver_propagate  (in bsat-search-profile) + 1060  [0x10047be34]  solver.c:1030
+        + ! 2 clock  (in libsystem_c.dylib) + 52  [0x18867e8cc]
+        + !   2 getrusage  (in libsystem_kernel.dylib) + 8  [0x18878f804]
+        + 2 solver_propagate  (in bsat-search-profile) + 1364,1368  [0x10047bf64,0x10047bf68]  solver.c:1044
+        + 2 solver_propagate  (in bsat-search-profile) + 704  [0x10047bcd0]  solver.c:931
+        + 1 solver_propagate  (in bsat-search-profile) + 896  [0x10047bd90]  solver.c:1030
+        + 1 solver_propagate  (in bsat-search-profile) + 1172  [0x10047bea4]  solver.c:1037
+        + 1 solver_propagate  (in bsat-search-profile) + 1236  [0x10047bee4]  solver.c:1061
+        + 1 solver_propagate  (in bsat-search-profile) + 1284  [0x10047bf14]  solver.c:1068
+        + 1 solver_propagate  (in bsat-search-profile) + 1304  [0x10047bf28]  solver.c:1071
+        + 1 solver_propagate  (in bsat-search-profile) + 1916  [0x10047c18c]  solver.c:1077
+        + 1 solver_propagate  (in bsat-search-profile) + 80  [0x10047ba60]  solver.c:882
+        + ! 1 budget_exhausted  (in bsat-search-profile) + 204  [0x10047a2ac]  solver.c:155
+        + !   1 clock  (in libsystem_c.dylib) + 52  [0x18867e8cc]
+        + !     1 getrusage  (in libsystem_kernel.dylib) + 8  [0x18878f804]
+        + 1 solver_propagate  (in bsat-search-profile) + 60  [0x10047ba4c]  solver.c:882
+        + 1 solver_propagate  (in bsat-search-profile) + 88  [0x10047ba68]  solver.c:883
+        + 1 solver_propagate  (in bsat-search-profile) + 136  [0x10047ba98]  solver.c:898
+        + 1 solver_propagate  (in bsat-search-profile) + 564  [0x10047bc44]  solver.c:928
+        81 main  (in bsat-search-profile) + 4904  [0x100478360]  main.c:448
+        + 48 solver_analyze  (in bsat-search-profile) + 600  [0x10047c414]  solver.c:1231
+        + ! 41 bump_var_activity  (in bsat-search-profile) + 756,720,...  [0x10047cc1c,0x10047cbf8,...]  solver.c:401
+        + ! 2 bump_var_activity  (in bsat-search-profile) + 8  [0x10047c930]  solver.c:359
+        + ! 2 bump_var_activity  (in bsat-search-profile) + 60  [0x10047c964]  solver.c:364
+        + ! 2 bump_var_activity  (in bsat-search-profile) + 264  [0x10047ca30]  solver.c:388
+        + ! 1 bump_var_activity  (in bsat-search-profile) + 772  [0x10047cc2c]  solver.c:403
+        + 7 solver_analyze  (in bsat-search-profile) + 524  [0x10047c3c8]  solver.c:1224
+        + 4 solver_analyze  (in bsat-search-profile) + 560  [0x10047c3ec]  solver.c:1229
+        + 4 solver_analyze  (in bsat-search-profile) + 344  [0x10047c314]  solver.c:1266
+        + 3 solver_analyze  (in bsat-search-profile) + 532  [0x10047c3d0]  solver.c:1225
+        + 2 solver_analyze  (in bsat-search-profile) + 400  [0x10047c34c]  solver.c:1204
+        + 2 solver_analyze  (in bsat-search-profile) + 428  [0x10047c368]  solver.c:1210
+        + 2 solver_analyze  (in bsat-search-profile) + 660  [0x10047c450]  solver.c:1238
+        + 1 solver_analyze  (in bsat-search-profile) + 180  [0x10047c270]  solver.c:1179
+        + 1 solver_analyze  (in bsat-search-profile) + 320  [0x10047c2fc]  solver.c:1199
+        + 1 solver_analyze  (in bsat-search-profile) + 392  [0x10047c344]  solver.c:1203
+        + 1 solver_analyze  (in bsat-search-profile) + 440  [0x10047c374]  solver.c:1212
+        + 1 solver_analyze  (in bsat-search-profile) + 452  [0x10047c380]  solver.c:1217
+        + 1 solver_analyze  (in bsat-search-profile) + 472  [0x10047c394]  solver.c:1219
+        + ! 1 improve_clause_lbd  (in bsat-search-profile) + 184  [0x10047cd0c]  solver.c:1122
+        + 1 solver_analyze  (in bsat-search-profile) + 648  [0x10047c444]  solver.c:1237
+        + 1 solver_analyze  (in bsat-search-profile) + 668  [0x10047c458]  solver.c:1243
+        + 1 solver_analyze  (in bsat-search-profile) + 736  [0x10047c49c]  solver.c:1251
+        +   1 bump_var_activity  (in bsat-search-profile) + 756  [0x10047cc1c]  solver.c:401
+        40 main  (in bsat-search-profile) + 5356  [0x100478524]  main.c:448
+        + 39 solver_decide  (in bsat-search-profile) + 172  [0x10047d248]  solver.c:1292
+        + ! 39 heap_extract_max  (in bsat-search-profile) + 300,292,...  [0x10047d538,0x10047d530,...]  solver.c:353
+        + 1 solver_decide  (in bsat-search-profile) + 184  [0x10047d254]  solver.c:1299
+        16 main  (in bsat-search-profile) + 4920  [0x100478370]  main.c:448
+        + 13 solver_minimize_clause  (in bsat-search-profile) + 1508  [0x1004797cc]  minimize.c:274
+        + ! 12 lit_redundant  (in bsat-search-profile) + 452  [0x100479a64]  minimize.c:111
+        + ! : 10 lit_redundant  (in bsat-search-profile) + 452  [0x100479a64]  minimize.c:111
+        + ! : | 8 lit_redundant  (in bsat-search-profile) + 452  [0x100479a64]  minimize.c:111
+        + ! : | + 8 lit_redundant  (in bsat-search-profile) + 452  [0x100479a64]  minimize.c:111
+        + ! : | +   8 lit_redundant  (in bsat-search-profile) + 452  [0x100479a64]  minimize.c:111
+        + ! : | +     8 lit_redundant  (in bsat-search-profile) + 452  [0x100479a64]  minimize.c:111
+        + ! : | +       8 lit_redundant  (in bsat-search-profile) + 452  [0x100479a64]  minimize.c:111
+        + ! : | +         8 lit_redundant  (in bsat-search-profile) + 452  [0x100479a64]  minimize.c:111
+        + ! : | +           7 lit_redundant  (in bsat-search-profile) + 452  [0x100479a64]  minimize.c:111
+        + ! : | +           ! 7 lit_redundant  (in bsat-search-profile) + 452  [0x100479a64]  minimize.c:111
+        + ! : | +           !   6 lit_redundant  (in bsat-search-profile) + 452  [0x100479a64]  minimize.c:111
+        + ! : | +           !   : 5 lit_redundant  (in bsat-search-profile) + 452  [0x100479a64]  minimize.c:111
+        + ! : | +           !   : | 5 lit_redundant  (in bsat-search-profile) + 452  [0x100479a64]  minimize.c:111
+        + ! : | +           !   : |   4 lit_redundant  (in bsat-search-profile) + 452  [0x100479a64]  minimize.c:111
+        + ! : | +           !   : |   + 4 lit_redundant  (in bsat-search-profile) + 452  [0x100479a64]  minimize.c:111
+        + ! : | +           !   : |   +   4 lit_redundant  (in bsat-search-profile) + 452  [0x100479a64]  minimize.c:111
+        + ! : | +           !   : |   +     4 lit_redundant  (in bsat-search-profile) + 452  [0x100479a64]  minimize.c:111
+        + ! : | +           !   : |   +       4 lit_redundant  (in bsat-search-profile) + 452  [0x100479a64]  minimize.c:111
+        + ! : | +           !   : |   +         4 lit_redundant  (in bsat-search-profile) + 452  [0x100479a64]  minimize.c:111
+        + ! : | +           !   : |   +           4 lit_redundant  (in bsat-search-profile) + 452  [0x100479a64]  minimize.c:111
+        + ! : | +           !   : |   +             4 lit_redundant  (in bsat-search-profile) + 452  [0x100479a64]  minimize.c:111
+        + ! : | +           !   : |   +               4 lit_redundant  (in bsat-search-profile) + 452  [0x100479a64]  minimize.c:111
+        + ! : | +           !   : |   +                 4 lit_redundant  (in bsat-search-profile) + 452  [0x100479a64]  minimize.c:111
+        + ! : | +           !   : |   +                   4 lit_redundant  (in bsat-search-profile) + 452  [0x100479a64]  minimize.c:111
+        + ! : | +           !   : |   +                     4 lit_redundant  (in bsat-search-profile) + 452  [0x100479a64]  minimize.c:111
+        + ! : | +           !   : |   +                       4 lit_redundant  (in bsat-search-profile) + 452  [0x100479a64]  minimize.c:111
+        + ! : | +           !   : |   +                         4 lit_redundant  (in bsat-search-profile) + 452  [0x100479a64]  minimize.c:111
+        + ! : | +           !   : |   +                           4 lit_redundant  (in bsat-search-profile) + 452  [0x100479a64]  minimize.c:111
+        + ! : | +           !   : |   +                             4 lit_redundant  (in bsat-search-profile) + 452  [0x100479a64]  minimize.c:111
+        + ! : | +           !   : |   +                               4 lit_redundant  (in bsat-search-profile) + 452  [0x100479a64]  minimize.c:111
+        + ! : | +           !   : |   +                                 4 lit_redundant  (in bsat-search-profile) + 452  [0x100479a64]  minimize.c:111
+        + ! : | +           !   : |   +                                   4 lit_redundant  (in bsat-search-profile) + 452  [0x100479a64]  minimize.c:111
+        + ! : | +           !   : |   +                                     4 lit_redundant  (in bsat-search-profile) + 452  [0x100479a64]  minimize.c:111
+        + ! : | +           !   : |   +                                       4 lit_redundant  (in bsat-search-profile) + 452  [0x100479a64]  minimize.c:111
+        + ! : | +           !   : |   +                                         4 lit_redundant  (in bsat-search-profile) + 452  [0x100479a64]  minimize.c:111
+        + ! : | +           !   : |   +                                           4 lit_redundant  (in bsat-search-profile) + 452  [0x100479a64]  minimize.c:111
+        + ! : | +           !   : |   +                                             4 lit_redundant  (in bsat-search-profile) + 452  [0x100479a64]  minimize.c:111
+        + ! : | +           !   : |   +                                               4 lit_redundant  (in bsat-search-profile) + 452  [0x100479a64]  minimize.c:111
+        + ! : | +           !   : |   +                                                 4 lit_redundant  (in bsat-search-profile) + 452  [0x100479a64]  minimize.c:111
+        + ! : | +           !   : |   +                                                   4 lit_redundant  (in bsat-search-profile) + 452  [0x100479a64]  minimize.c:111
+        + ! : | +           !   : |   +                                                     4 lit_redundant  (in bsat-search-profile) + 452  [0x100479a64]  minimize.c:111
+        + ! : | +           !   : |   +                                                       4 lit_redundant  (in bsat-search-profile) + 452  [0x100479a64]  minimize.c:111
+        + ! : | +           !   : |   +                                                         4 lit_redundant  (in bsat-search-profile) + 452  [0x100479a64]  minimize.c:111
+        + ! : | +           !   : |   +                                                           4 lit_redundant  (in bsat-search-profile) + 452  [0x100479a64]  minimize.c:111
+        + ! : | +           !   : |   +                                                             4 lit_redundant  (in bsat-search-profile) + 452  [0x100479a64]  minimize.c:111
+        + ! : | +           !   : |   +                                                               4 lit_redundant  (in bsat-search-profile) + 452  [0x100479a64]  minimize.c:111
+        + ! : | +           !   : |   +                                                                 4 lit_redundant  (in bsat-search-profile) + 452  [0x100479a64]  minimize.c:111
+        + ! : | +           !   : |   +                                                                   4 lit_redundant  (in bsat-search-profile) + 452  [0x100479a64]  minimize.c:111
+        + ! : | +           !   : |   +                                                                     4 lit_redundant  (in bsat-search-profile) + 452  [0x100479a64]  minimize.c:111
+        + ! : | +           !   : |   +                                                                       4 lit_redundant  (in bsat-search-profile) + 452  [0x100479a64]  minimize.c:111
+        + ! : | +           !   : |   +                                                                         4 lit_redundant  (in bsat-search-profile) + 452  [0x100479a64]  minimize.c:111
+        + ! : | +           !   : |   +                                                                           4 lit_redundant  (in bsat-search-profile) + 452  [0x100479a64]  minimize.c:111
+        + ! : | +           !   : |   +                                                                             4 lit_redundant  (in bsat-search-profile) + 452  [0x100479a64]  minimize.c:111
+        + ! : | +           !   : |   +                                                                               4 lit_redundant  (in bsat-search-profile) + 452  [0x100479a64]  minimize.c:111
+        + ! : | +           !   : |   +                                                                                 4 lit_redundant  (in bsat-search-profile) + 452  [0x100479a64]  minimize.c:111
+        + ! : | +           !   : |   +                                                                                   4 lit_redundant  (in bsat-search-profile) + 452  [0x100479a64]  minimize.c:111
+        + ! : | +           !   : |   +                                                                                     4 lit_redundant  (in bsat-search-profile) + 452  [0x100479a64]  minimize.c:111
+        + ! : | +           !   : |   +                                                                                       4 lit_redundant  (in bsat-search-profile) + 452  [0x100479a64]  minimize.c:111
+        + ! : | +           !   : |   +                                                                                         4 lit_redundant  (in bsat-search-profile) + 452  [0x100479a64]  minimize.c:111
+        + ! : | +           !   : |   +                                                                                           4 lit_redundant  (in bsat-search-profile) + 452  [0x100479a64]  minimize.c:111
+        + ! : | +           !   : |   +                                                                                             4 lit_redundant  (in bsat-search-profile) + 452  [0x100479a64]  minimize.c:111
+        + ! : | +           !   : |   +                                                                                               4 lit_redundant  (in bsat-search-profile) + 452  [0x100479a64]  minimize.c:111
+        + ! : | +           !   : |   +                                                                                                 4 lit_redundant  (in bsat-search-profile) + 452  [0x100479a64]  minimize.c:111
+        + ! : | +           !   : |   +                                                                                                   4 lit_redundant  (in bsat-search-profile) + 452  [0x100479a64]  minimize.c:111
+        + ! : | +           !   : |   +                                                                                                     4 lit_redundant  (in bsat-search-profile) + 452  [0x100479a64]  minimize.c:111
+        + ! : | +           !   : |   +                                                                                                       4 lit_redundant  (in bsat-search-profile) + 452  [0x100479a64]  minimize.c:111
+        + ! : | +           !   : |   +                                                                                                         4 lit_redundant  (in bsat-search-profile) + 452  [0x100479a64]  minimize.c:111
+        + ! : | +           !   : |   +                                                                                                           4 lit_redundant  (in bsat-search-profile) + 452  [0x100479a64]  minimize.c:111
+        + ! : | +           !   : |   +                                                                                                             4 lit_redundant  (in bsat-search-profile) + 452  [0x100479a64]  minimize.c:111
+        + ! : | +           !   : |   +                                                                                                               4 lit_redundant  (in bsat-search-profile) + 452  [0x100479a64]  minimize.c:111
+        + ! : | +           !   : |   +                                                                                                                 4 lit_redundant  (in bsat-search-profile) + 452  [0x100479a64]  minimize.c:111
+        + ! : | +           !   : |   +                                                                                                                   4 lit_redundant  (in bsat-search-profile) + 452  [0x100479a64]  minimize.c:111
+        + ! : | +           !   : |   +                                                                                                                     4 lit_redundant  (in bsat-search-profile) + 452  [0x100479a64]  minimize.c:111
+        + ! : | +           !   : |   +                                                                                                                       4 lit_redundant  (in bsat-search-profile) + 452  [0x100479a64]  minimize.c:111
+        + ! : | +           !   : |   +                                                                                                                         4 lit_redundant  (in bsat-search-profile) + 452  [0x100479a64]  minimize.c:111
+        + ! : | +           !   : |   +                                                                                                                           4 lit_redundant  (in bsat-search-profile) + 452  [0x100479a64]  minimize.c:111
+        + ! : | +           !   : |   +                                                                                                                             4 lit_redundant  (in bsat-search-profile) + 452  [0x100479a64]  minimize.c:111
+        + ! : | +           !   : |   +                                                                                                                               4 lit_redundant  (in bsat-search-profile) + 452  [0x100479a64]  minimize.c:111
+        + ! : | +           !   : |   +                                                                                                                                 4 lit_redundant  (in bsat-search-profile) + 452  [0x100479a64]  minimize.c:111
+        + ! : | +           !   : |   +                                                                                                                                   4 lit_redundant  (in bsat-search-profile) + 452  [0x100479a64]  minimize.c:111
+        + ! : | +           !   : |   +                                                                                                                                     3 lit_redundant  (in bsat-search-profile) + 452  [0x100479a64]  minimize.c:111
+        + ! : | +           !   : |   +                                                                                                                                     ! 3 lit_redundant  (in bsat-search-profile) + 452  [0x100479a64]  minimize.c:111
+        + ! : | +           !   : |   +                                                                                                                                     !   3 lit_redundant  (in bsat-search-profile) + 452  [0x100479a64]  minimize.c:111
+        + ! : | +           !   : |   +                                                                                                                                     !     2 lit_redundant  (in bsat-search-profile) + 452  [0x100479a64]  minimize.c:111
+        + ! : | +           !   : |   +                                                                                                                                     !     : 2 lit_redundant  (in bsat-search-profile) + 452  [0x100479a64]  minimize.c:111
+        + ! : | +           !   : |   +                                                                                                                                     !     :   2 lit_redundant  (in bsat-search-profile) + 452  [0x100479a64]  minimize.c:111
+        + ! : | +           !   : |   +                                                                                                                                     !     :     2 lit_redundant  (in bsat-search-profile) + 452  [0x100479a64]  minimize.c:111
+        + ! : | +           !   : |   +                                                                                                                                     !     :       1 lit_redundant  (in bsat-search-profile) + 452  [0x100479a64]  minimize.c:111
+        + ! : | +           !   : |   +                                                                                                                                     !     :       | 1 lit_redundant  (in bsat-search-profile) + 452  [0x100479a64]  minimize.c:111
+        + ! : | +           !   : |   +                                                                                                                                     !     :       |   1 lit_redundant  (in bsat-search-profile) + 452  [0x100479a64]  minimize.c:111
+        + ! : | +           !   : |   +                                                                                                                                     !     :       |     1 lit_redundant  (in bsat-search-profile) + 452  [0x100479a64]  minimize.c:111
+        + ! : | +           !   : |   +                                                                                                                                     !     :       |       1 lit_redundant  (in bsat-search-profile) + 452  [0x100479a64]  minimize.c:111
+        + ! : | +           !   : |   +                                                                                                                                     !     :       |         1 lit_redundant  (in bsat-search-profile) + 452  [0x100479a64]  minimize.c:111
+        + ! : | +           !   : |   +                                                                                                                                     !     :       |           1 lit_redundant  (in bsat-search-profile) + 452  [0x100479a64]  minimize.c:111
+        + ! : | +           !   : |   +                                                                                                                                     !     :       |             1 lit_redundant  (in bsat-search-profile) + 452  [0x100479a64]  minimize.c:111
+        + ! : | +           !   : |   +                                                                                                                                     !     :       |               1 lit_redundant  (in bsat-search-profile) + 452  [0x100479a64]  minimize.c:111
+        + ! : | +           !   : |   +                                                                                                                                     !     :       |                 1 lit_redundant  (in bsat-search-profile) + 452  [0x100479a64]  minimize.c:111
+        + ! : | +           !   : |   +                                                                                                                                     !     :       |                   1 lit_redundant  (in bsat-search-profile) + 452  [0x100479a64]  minimize.c:111
+        + ! : | +           !   : |   +                                                                                                                                     !     :       |                     1 lit_redundant  (in bsat-search-profile) + 452  [0x100479a64]  minimize.c:111
+        + ! : | +           !   : |   +                                                                                                                                     !     :       |                       1 lit_redundant  (in bsat-search-profile) + 452  [0x100479a64]  minimize.c:111
+        + ! : | +           !   : |   +                                                                                                                                     !     :       |                         1 lit_redundant  (in bsat-search-profile) + 452  [0x100479a64]  minimize.c:111
+        + ! : | +           !   : |   +                                                                                                                                     !     :       |                           1 lit_redundant  (in bsat-search-profile) + 452  [0x100479a64]  minimize.c:111
+        + ! : | +           !   : |   +                                                                                                                                     !     :       |                             1 lit_redundant  (in bsat-search-profile) + 452  [0x100479a64]  minimize.c:111
+        + ! : | +           !   : |   +                                                                                                                                     !     :       |                               1 lit_redundant  (in bsat-search-profile) + 452  [0x100479a64]  minimize.c:111
+        + ! : | +           !   : |   +                                                                                                                                     !     :       |                                 1 lit_redundant  (in bsat-search-profile) + 452  [0x100479a64]  minimize.c:111
+        + ! : | +           !   : |   +                                                                                                                                     !     :       |                                   1 lit_redundant  (in bsat-search-profile) + 452  [0x100479a64]  minimize.c:111
+        + ! : | +           !   : |   +                                                                                                                                     !     :       |                                     1 lit_redundant  (in bsat-search-profile) + 452  [0x100479a64]  minimize.c:111
+        + ! : | +           !   : |   +                                                                                                                                     !     :       |                                       1 lit_redundant  (in bsat-search-profile) + 176  [0x100479950]  minimize.c:0
+        + ! : | +           !   : |   +                                                                                                                                     !     :       1 lit_redundant  (in bsat-search-profile) + 400  [0x100479a30]  minimize.c:87
+        + ! : | +           !   : |   +                                                                                                                                     !     1 lit_redundant  (in bsat-search-profile) + 452  [0x100479a64]  minimize.c:111
+        + ! : | +           !   : |   +                                                                                                                                     1 lit_redundant  (in bsat-search-profile) + 452  [0x100479a64]  minimize.c:111
+        + ! : | +           !   : |   1 lit_redundant  (in bsat-search-profile) + 452  [0x100479a64]  minimize.c:111
+        + ! : | +           !   : 1 lit_redundant  (in bsat-search-profile) + 400  [0x100479a30]  minimize.c:87
+        + ! : | +           !   1 lit_redundant  (in bsat-search-profile) + 400  [0x100479a30]  minimize.c:87
+        + ! : | +           1 lit_redundant  (in bsat-search-profile) + 64  [0x1004798e0]  minimize.c:31
+        + ! : | 1 lit_redundant  (in bsat-search-profile) + 84  [0x1004798f4]  minimize.c:38
+        + ! : | 1 lit_redundant  (in bsat-search-profile) + 328  [0x1004799e8]  minimize.c:81
+        + ! : 1 lit_redundant  (in bsat-search-profile) + 200  [0x100479968]  minimize.c:126
+        + ! : 1 lit_redundant  (in bsat-search-profile) + 72  [0x1004798e8]  minimize.c:32
+        + ! 1 lit_redundant  (in bsat-search-profile) + 200  [0x100479968]  minimize.c:126
+        + 3 solver_minimize_clause  (in bsat-search-profile) + 1460,1548  [0x10047979c,0x1004797f4]  minimize.c:274
+        15 main  (in bsat-search-profile) + 5828  [0x1004786fc]  main.c:448
+        + 4 solver_reduce_db  (in bsat-search-profile) + 328  [0x10047dca8]  solver.c:1695
+        + ! 4 _qsort  (in libsystem_c.dylib) + 1932  [0x188686b10]
+        + !   2 _qsort  (in libsystem_c.dylib) + 1932  [0x188686b10]
+        + !   : 1 _qsort  (in libsystem_c.dylib) + 1868  [0x188686ad0]
+        + !   : | 1 _qsort  (in libsystem_c.dylib) + 928  [0x188686724]
+        + !   : 1 _qsort  (in libsystem_c.dylib) + 1156  [0x188686808]
+        + !   1 _qsort  (in libsystem_c.dylib) + 1868  [0x188686ad0]
+        + !   : 1 _qsort  (in libsystem_c.dylib) + 1868  [0x188686ad0]
+        + !   :   1 _qsort  (in libsystem_c.dylib) + 1156  [0x188686808]
+        + !   1 _qsort  (in libsystem_c.dylib) + 1388  [0x1886868f0]
+        + 4 solver_reduce_db  (in bsat-search-profile) + 464  [0x10047dd30]  solver.c:1699
+        + ! 2 proof_clause  (in bsat-search-profile) + 752  [0x10047a17c]  solver.c:127
+        + ! : 1 fwrite  (in libsystem_c.dylib) + 164  [0x1886793b4]
+        + ! : | 1 flockfile  (in libsystem_c.dylib) + 40  [0x188669208]
+        + ! : |   1 _pthread_mutex_lock_init_slow  (in libsystem_pthread.dylib) + 24  [0x1887c651c]
+        + ! : 1 fwrite  (in libsystem_c.dylib) + 356  [0x188679474]
+        + ! :   1 funlockfile  (in libsystem_c.dylib) + 40  [0x1886693b4]
+        + ! :     1 _pthread_mutex_unlock_init_slow  (in libsystem_pthread.dylib) + 20  [0x1887c6a28]
+        + ! 2 proof_clause  (in bsat-search-profile) + 332,404  [0x100479fd8,0x10047a020]  solver.c:127
+        + 2 solver_reduce_db  (in bsat-search-profile) + 1012  [0x10047df54]  solver.c:1709
+        + ! 2 budget_exhausted  (in bsat-search-profile) + 204  [0x10047a2ac]  solver.c:155
+        + !   2 clock  (in libsystem_c.dylib) + 52  [0x18867e8cc]
+        + !     2 getrusage  (in libsystem_kernel.dylib) + 8  [0x18878f804]
+        + 1 solver_reduce_db  (in bsat-search-profile) + 476  [0x10047dd3c]  solver.c:1699
+        + ! 1 watch_remove_clause  (in bsat-search-profile) + 476  [0x100480904]  watch.c:130
+        + 1 solver_reduce_db  (in bsat-search-profile) + 656  [0x10047ddf0]  solver.c:1706
+        + 1 solver_reduce_db  (in bsat-search-profile) + 1044  [0x10047df74]  solver.c:1709
+        + ! 1 budget_exhausted  (in bsat-search-profile) + 300  [0x10047a30c]  solver.c:0
+        + 1 solver_reduce_db  (in bsat-search-profile) + 1176  [0x10047dff8]  solver.c:1709
+        + ! 1 _platform_memmove  (in libsystem_platform.dylib) + 452  [0x1887d5524]
+        + 1 solver_reduce_db  (in bsat-search-profile) + 1492  [0x10047e134]  solver.c:1709
+        10 main  (in bsat-search-profile) + 5420  [0x100478564]  main.c:448
+        + 5 solver_backtrack  (in bsat-search-profile) + 296,192,...  [0x10047b560,0x10047b4f8,...]  solver.c:717
+        + 4 solver_backtrack  (in bsat-search-profile) + 96  [0x10047b498]  solver.c:710
+        + 1 solver_backtrack  (in bsat-search-profile) + 120  [0x10047b4b0]  solver.c:712
+        6 main  (in bsat-search-profile) + 5592  [0x100478610]  main.c:448
+        + 6 solver_on_the_fly_subsumption  (in bsat-search-profile) + 204,168,...  [0x10047f42c,0x10047f408,...]  solver.c:1773
+        2 main  (in bsat-search-profile) + 4812  [0x100478304]  main.c:448
+        + 2 budget_exhausted  (in bsat-search-profile) + 204  [0x10047a2ac]  solver.c:155
+        +   2 clock  (in libsystem_c.dylib) + 52  [0x18867e8cc]
+        +     2 getrusage  (in libsystem_kernel.dylib) + 8  [0x18878f804]
+        2 main  (in bsat-search-profile) + 5172  [0x10047846c]  main.c:448
+        + 1 solver_backtrack  (in bsat-search-profile) + 96  [0x10047b498]  solver.c:710
+        + 1 solver_backtrack  (in bsat-search-profile) + 216  [0x10047b510]  solver.c:717
+        1 main  (in bsat-search-profile) + 4948  [0x10047838c]  main.c:448
+        + 1 calc_lbd  (in bsat-search-profile) + 840  [0x10047f164]  solver.c:1112
+        1 main  (in bsat-search-profile) + 5440  [0x100478578]  main.c:448
+        + 1 proof_clause  (in bsat-search-profile) + 404  [0x10047a020]  solver.c:127
+        1 main  (in bsat-search-profile) + 4416  [0x100478178]  main.c:448
+
+Total number in stack (recursive counted multiple, when >=5):
+        107       lit_redundant  (in bsat-search-profile) + 452  [0x100479a64]  minimize.c:111
+        5       clock  (in libsystem_c.dylib) + 52  [0x18867e8cc]
+        5       getrusage  (in libsystem_kernel.dylib) + 0  [0x18878f7fc]
+
+Sort by top of stack, same collapsed (when >= 5):
+        solver_propagate  (in bsat-search-profile)        272
+        bump_var_activity  (in bsat-search-profile)        49
+        heap_extract_max  (in bsat-search-profile)        39
+        solver_analyze  (in bsat-search-profile)        31
+        lit_redundant  (in bsat-search-profile)        13
+        solver_backtrack  (in bsat-search-profile)        12
+        getrusage  (in libsystem_kernel.dylib)        10
+        solver_on_the_fly_subsumption  (in bsat-search-profile)        6
+
+Binary Images:
+       0x100474000 -        0x1004830e7 +bsat-search-profile (0) <D35EBE22-D3F6-3F78-98E3-00017919D349> /tmp/bsat-search-profile
+       0x188358000 -        0x1883aab4b  libobjc.A.dylib (951.7) <40277974-D20C-3EC8-B25C-43AE30D8CC60> /usr/lib/libobjc.A.dylib
+       0x1883ab000 -        0x1883dfd58  libdyld.dylib (1387) <634959D0-592E-349C-B549-B91F2FF09858> /usr/lib/system/libdyld.dylib
+       0x1883e0000 -        0x1884934ff  dyld (1.0.0 - 1387) <DF42DD9D-AD11-33A7-8849-9AD5DF30A274> /usr/lib/dyld
+       0x188494000 -        0x188497228  libsystem_blocks.dylib (96) <A712B95E-BCEE-3F12-9F9B-58E6C2060E53> /usr/lib/system/libsystem_blocks.dylib
+       0x188498000 -        0x1884ec55f  libxpc.dylib (3102.160.5) <40BBE226-77D4-332E-9DA8-F0B5BACFB86D> /usr/lib/system/libxpc.dylib
+       0x1884ed000 -        0x18850d9ff  libsystem_trace.dylib (1861.160.4) <E043667E-AD01-3228-837F-A381F32F2B30> /usr/lib/system/libsystem_trace.dylib
+       0x18850e000 -        0x1885bc5f7  libcorecrypto.dylib (1922.160.10) <D54389FC-4078-370D-A863-9FEF16E00DFD> /usr/lib/system/libcorecrypto.dylib
+       0x1885bd000 -        0x18860d257  libsystem_malloc.dylib (812.160.5) <971CDCFE-4D20-300E-A1D6-EC8672FDD258> /usr/lib/system/libsystem_malloc.dylib
+       0x18860e000 -        0x18865523f  libdispatch.dylib (1542.160.2) <243E06A0-7BFF-3C3F-8A9B-D7732729B361> /usr/lib/system/libdispatch.dylib
+       0x188656000 -        0x188658ffb  libsystem_featureflags.dylib (103) <5E7CDBD5-44AB-34C0-A0F5-FC72F6116CDC> /usr/lib/system/libsystem_featureflags.dylib
+       0x188659000 -        0x1886da1e7  libsystem_c.dylib (1752.160.4) <FDC4E366-5C14-3A1E-BC35-D933D28CDCF3> /usr/lib/system/libsystem_c.dylib
+       0x1886db000 -        0x18876bae7  libc++.1.dylib (2100.43) <C6DC2145-7B94-3E01-ADE5-96A6C2D078BC> /usr/lib/libc++.1.dylib
+       0x18876c000 -        0x18878675f  libc++abi.dylib (2100.43) <DDE77B06-5E25-380B-85B7-BA1A27D09021> /usr/lib/libc++abi.dylib
+       0x188787000 -        0x1887c42e7  libsystem_kernel.dylib (12377.161.13) <7CFB3A10-ADB2-32C4-99B5-922A111B3224> /usr/lib/system/libsystem_kernel.dylib
+       0x1887c5000 -        0x1887d1b3b  libsystem_pthread.dylib (539.100.4) <12342372-0084-37A5-9EA6-2E4DC940C685> /usr/lib/system/libsystem_pthread.dylib
+       0x1887d2000 -        0x1887da963  libsystem_platform.dylib (375.120.2) <4C6BD0FE-25F2-38D8-BE5C-24DAC1DEDCFB> /usr/lib/system/libsystem_platform.dylib
+       0x1887db000 -        0x18880a6eb  libsystem_info.dylib (600) <7402662E-F235-3F48-BB65-F64C8CF0F2BB> /usr/lib/system/libsystem_info.dylib
+       0x18c7a8000 -        0x18c7b1e5f  libsystem_darwin.dylib (1752.160.4) <A095E4FE-0EE1-34DF-B00A-7D349FBC55E0> /usr/lib/system/libsystem_darwin.dylib
+       0x18cc13000 -        0x18cc251b6  libsystem_notify.dylib (348.160.3) <F9B1BAFF-4D09-3A1F-839B-189C21EB5FBB> /usr/lib/system/libsystem_notify.dylib
+       0x18eee4000 -        0x18eefef7b  libsystem_networkextension.dylib (2226.160.6) <01D14A9E-16DC-372C-8AA8-CC7AD39E797F> /usr/lib/system/libsystem_networkextension.dylib
+       0x18ef81000 -        0x18ef98fdf  libsystem_asl.dylib (406) <FF57F6FA-F3A1-343D-815D-57B769D31445> /usr/lib/system/libsystem_asl.dylib
+       0x190b3a000 -        0x190b42387  libsystem_symptoms.dylib (2169.160.3) <CE07A0DF-31B6-3528-B7CE-91CAD89AA519> /usr/lib/system/libsystem_symptoms.dylib
+       0x194ddf000 -        0x194e175b7  libsystem_containermanager.dylib (725.160.3) <2E14025A-52C2-361D-8A8F-5DD45825A2C9> /usr/lib/system/libsystem_containermanager.dylib
+       0x1961f1000 -        0x1961f55d7  libsystem_configuration.dylib (1405.160.3) <A14ED142-2F56-33A6-A23C-EEB8417DC90E> /usr/lib/system/libsystem_configuration.dylib
+       0x1961f6000 -        0x1961fc99f  libsystem_sandbox.dylib (2680.160.6) <6592D3CE-38C6-3C08-9EA5-75D64F37993F> /usr/lib/system/libsystem_sandbox.dylib
+       0x197851000 -        0x1978541fb  libquarantine.dylib (196.160.2) <78C5B827-8152-358D-90E9-B02F02A68B17> /usr/lib/system/libquarantine.dylib
+       0x197ff0000 -        0x197ff6d03  libsystem_coreservices.dylib (191.5.1) <F335DA14-69E8-336E-85A3-11EE239255F0> /usr/lib/system/libsystem_coreservices.dylib
+       0x19857f000 -        0x1985bca77  libsystem_m.dylib (3312.100.1) <3739A40F-2C17-3503-92D6-098141E56E89> /usr/lib/system/libsystem_m.dylib
+       0x1985be000 -        0x1985c1527  libmacho.dylib (1387) <3E43AF47-AD89-3BB4-82B9-A9533F4334DF> /usr/lib/system/libmacho.dylib
+       0x1985db000 -        0x1985e83a7  libcommonCrypto.dylib (600035) <72D94140-1281-3886-971B-37C810403C03> /usr/lib/system/libcommonCrypto.dylib
+       0x1985e9000 -        0x1985f2ca3  libunwind.dylib (2100.2) <B21A1015-83D4-31D8-BA41-88688962D9A6> /usr/lib/system/libunwind.dylib
+       0x1985fb000 -        0x198605bef  libcopyfile.dylib (240.160.2.0.1) <58F425CF-7D4F-34FD-9620-706A2A7F8BDC> /usr/lib/system/libcopyfile.dylib
+       0x198606000 -        0x198609987  libcompiler_rt.dylib (103.3) <D60A9B54-A909-3FD5-93B9-3F38BE0A2BE8> /usr/lib/system/libcompiler_rt.dylib
+       0x19860a000 -        0x19860e78b  libsystem_collections.dylib (1752.160.4) <BDA28F78-F479-3C22-B9C7-4ABCB6801592> /usr/lib/system/libsystem_collections.dylib
+       0x19860f000 -        0x1986124cf  libsystem_secinit.dylib (168.100.7) <C85AF062-AA9B-35BB-904C-C055B2C21602> /usr/lib/system/libsystem_secinit.dylib
+       0x198613000 -        0x198615bf7  libremovefile.dylib (85.100.6) <DA9C2B48-7A9C-32EA-888D-6C7AEB5250E6> /usr/lib/system/libremovefile.dylib
+       0x198616000 -        0x198616f27  libkeymgr.dylib (31) <18EFA1CE-C535-3EAC-BC2C-7955593B7382> /usr/lib/system/libkeymgr.dylib
+       0x198617000 -        0x19861fe37  libsystem_dnssd.dylib (2881.160.4) <2C4C3043-008E-3BD8-BC29-AB9AD235DBA9> /usr/lib/system/libsystem_dnssd.dylib
+       0x198620000 -        0x19862509b  libcache.dylib (95) <EA7C2E0B-52BF-3D45-9A33-38F54A535452> /usr/lib/system/libcache.dylib
+       0x198626000 -        0x198627ce3  libSystem.B.dylib (1356) <4CC4CAD6-45A6-361E-9343-DE636A0B5C02> /usr/lib/libSystem.B.dylib
+       0x28c5cf000 -        0x28c5d6349  libRosetta.dylib (367.9) <F41D814B-FE1F-311A-A778-5F0699628188> /usr/lib/libRosetta.dylib
+       0x28e1e2000 -        0x28e1e5a4b  libsystem_darwindirectory.dylib (122) <6C03D78B-BFAB-3C7A-B713-50881791EE08> /usr/lib/system/libsystem_darwindirectory.dylib
+       0x28e1e6000 -        0x28e1f039b  libsystem_eligibility.dylib (319.160.17) <A279E124-8499-3FFC-A788-655070028F97> /usr/lib/system/libsystem_eligibility.dylib
+       0x28e1f1000 -        0x28e1f888b  libsystem_sanitizers.dylib (26.1) <C92FAEE5-DAED-3340-96B3-0C42B005ADF9> /usr/lib/system/libsystem_sanitizers.dylib
+       0x28e1f9000 -        0x28e1f9bb7  libsystem_trial.dylib (474.2.18.2) <2FF186A6-F448-38CD-9A30-8B5B1AEFCA10> /usr/lib/system/libsystem_trial.dylib
