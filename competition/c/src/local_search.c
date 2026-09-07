@@ -70,6 +70,16 @@ static void init_clause_state(LocalSearchState* ls) {
         }
     }
 
+    /* Linear-time Fenwick construction. A rank query preserves the old scan's
+       clause order and consumes exactly the same random draw. */
+    ls->unsat_tree[0] = 0;
+    for (size_t i = 1; i <= ls->num_clauses; ++i)
+        ls->unsat_tree[i] = !ls->num_true_lits[i - 1];
+    for (size_t i = 1; i <= ls->num_clauses; ++i) {
+        size_t parent = i + (i & -i);
+        if (parent <= ls->num_clauses) ls->unsat_tree[parent] += ls->unsat_tree[i];
+    }
+
     // Initialize break counts
     // break_count[v] = (clauses that become unsat if we flip v) - (clauses that become sat)
     memset(ls->break_count, 0, (ls->num_vars + 1) * sizeof(int32_t));
@@ -113,6 +123,15 @@ static void init_clause_state(LocalSearchState* ls) {
     }
 }
 
+/* Change membership without reordering unsatisfied clauses. Indices use the
+   allocation size type; allocation bounds also leave room for parent steps. */
+static void update_unsat_tree(LocalSearchState *ls, uint32_t c, bool added) {
+    for (size_t i = (size_t)c + 1; i <= ls->num_clauses; i += i & -i) {
+        if (added) ++ls->unsat_tree[i];
+        else --ls->unsat_tree[i];
+    }
+}
+
 /**
  * Update clause state after flipping variable v.
  */
@@ -126,12 +145,14 @@ static void update_clause_after_flip(LocalSearchState *ls, uint32_t c, Var v,
     uint32_t size = ls->clause_sizes[c];
     if (!old) {
         --ls->num_unsat;
+        update_unsat_tree(ls, c, false);
         /* Remove the make contribution for every literal; v is now the sole
            satisfying variable and also acquires a break contribution. */
         for (uint32_t i = 0; i < size; ++i) ++ls->break_count[var(lits[i])];
         ++ls->break_count[v];
     } else if (!now) {
         ++ls->num_unsat;
+        update_unsat_tree(ls, c, true);
         for (uint32_t i = 0; i < size; ++i) --ls->break_count[var(lits[i])];
         --ls->break_count[v];
     } else if (old == 1 || now == 1) {
@@ -160,19 +181,19 @@ static void update_after_flip(LocalSearchState* ls, Var v) {
  * Pick a random unsatisfied clause.
  */
 static uint32_t pick_unsat_clause(LocalSearchState* ls) {
-    // Count unsatisfied clauses and pick random one
+    ASSERT(ls->num_unsat);
     uint32_t target = bsat_random(&ls->random_state) % ls->num_unsat;
-    uint32_t count = 0;
-    for (uint32_t c = 0; c < ls->num_clauses; c++) {
-        if (ls->num_true_lits[c] == 0) {
-            if (count == target) {
-                return c;
-            }
-            count++;
+    size_t index = 0, step = 1;
+    while (step <= ls->num_clauses / 2) step <<= 1;
+    for (; step; step >>= 1) {
+        size_t next = index + step;
+        if (next <= ls->num_clauses && ls->unsat_tree[next] <= target) {
+            target -= ls->unsat_tree[next];
+            index = next;
         }
     }
-    // Shouldn't reach here
-    return 0;
+    ASSERT(index < ls->num_clauses && !ls->num_true_lits[index]);
+    return (uint32_t)index;
 }
 
 /**
@@ -240,6 +261,10 @@ LocalSearchState* local_search_init(Solver* s) {
     // Allocate clause tracking
     ls->num_true_lits = (uint32_t*)calloc(ls->num_clauses, sizeof(uint32_t));
     if (!ls->num_true_lits) goto error;
+
+    if ((uint64_t)ls->num_clauses + 1 > SIZE_MAX / sizeof(uint32_t)) goto error;
+    ls->unsat_tree = (uint32_t*)calloc((size_t)ls->num_clauses + 1, sizeof(uint32_t));
+    if (!ls->unsat_tree) goto error;
 
     // Allocate break counts
     ls->break_count = (int32_t*)calloc(ls->num_vars + 1, sizeof(int32_t));
@@ -325,6 +350,7 @@ void local_search_free(LocalSearchState* ls) {
 
     free(ls->assignment);
     free(ls->num_true_lits);
+    free(ls->unsat_tree);
     free(ls->break_count);
 
     if (ls->clause_lits) {

@@ -1,0 +1,268 @@
+{
+  "schema": 1,
+  "platform": "macOS-26.6.1-arm64-arm-64bit-Mach-O",
+  "machine": "arm64",
+  "revision": "fcb82cf4803793652b687aed7acb4620e320ae3f",
+  "dirty": true,
+  "split": "development",
+  "seed": 1,
+  "timeout": 60.0,
+  "repeats": 3,
+  "solvers": {
+    "scan": {
+      "command": [
+        "/private/tmp/bsat-walk-tree-old-driver",
+        "{input}",
+        "100000",
+        "1"
+      ],
+      "sha256": "05dce6819bb734577b72dbce1f1b396413b78e2c2c6a70a672e655aabf4f369e"
+    },
+    "tree": {
+      "command": [
+        "/Users/msharpe/python/bsat/competition/c/bin/local_search_benchmark_release",
+        "{input}",
+        "100000",
+        "1"
+      ],
+      "sha256": "a2fd4d50b68ceba9136cc45c61f2da100513717cadf2dd878c38a8c4b81e7f8b"
+    }
+  },
+  "inputs": {
+    "/private/tmp/bsat-walk-selection-corpus/vars1000.cnf": {
+      "sha256": "07818b54ea971db4641feb3c57411f87d6c62b89e1c96a7db352f336b1c46265",
+      "family": "bsat-walk-selection-corpus"
+    },
+    "/private/tmp/bsat-walk-selection-corpus/vars10000.cnf": {
+      "sha256": "446808f0a71820c8329b3c22934a5d3f89d4d8346beae47bced672a5893c33a9",
+      "family": "bsat-walk-selection-corpus"
+    }
+  },
+  "checker": null,
+  "runs": [
+    {
+      "solver": "tree",
+      "input": "/private/tmp/bsat-walk-selection-corpus/vars1000.cnf",
+      "repeat": 1,
+      "status": "UNKNOWN",
+      "verified": false,
+      "seconds": 0.24017495941370726,
+      "cpu_seconds": 0.020371,
+      "peak_rss_bytes": 2899968,
+      "par2": 120.0,
+      "stats": {
+        "Walk CPU time": "0.017366",
+        "Walk flips": "100000",
+        "Walk unsatisfied": "10"
+      },
+      "diagnostic": ""
+    },
+    {
+      "solver": "tree",
+      "input": "/private/tmp/bsat-walk-selection-corpus/vars10000.cnf",
+      "repeat": 2,
+      "status": "UNKNOWN",
+      "verified": false,
+      "seconds": 0.07711766706779599,
+      "cpu_seconds": 0.04145,
+      "peak_rss_bytes": 10829824,
+      "par2": 120.0,
+      "stats": {
+        "Walk CPU time": "0.032697",
+        "Walk flips": "100000",
+        "Walk unsatisfied": "223"
+      },
+      "diagnostic": ""
+    },
+    {
+      "solver": "scan",
+      "input": "/private/tmp/bsat-walk-selection-corpus/vars1000.cnf",
+      "repeat": 0,
+      "status": "UNKNOWN",
+      "verified": false,
+      "seconds": 0.07713545905426145,
+      "cpu_seconds": 0.068519,
+      "peak_rss_bytes": 2932736,
+      "par2": 120.0,
+      "stats": {
+        "Walk CPU time": "0.066135",
+        "Walk flips": "100000",
+        "Walk unsatisfied": "10"
+      },
+      "diagnostic": ""
+    },
+    {
+      "solver": "tree",
+      "input": "/private/tmp/bsat-walk-selection-corpus/vars1000.cnf",
+      "repeat": 2,
+      "status": "UNKNOWN",
+      "verified": false,
+      "seconds": 0.019873166922479868,
+      "cpu_seconds": 0.01609,
+      "peak_rss_bytes": 2867200,
+      "par2": 120.0,
+      "stats": {
+        "Walk CPU time": "0.013917",
+        "Walk flips": "100000",
+        "Walk unsatisfied": "10"
+      },
+      "diagnostic": ""
+    },
+    {
+      "solver": "scan",
+      "input": "/private/tmp/bsat-walk-selection-corpus/vars10000.cnf",
+      "repeat": 2,
+      "status": "UNKNOWN",
+      "verified": false,
+      "seconds": 0.7850775416009128,
+      "cpu_seconds": 0.755115,
+      "peak_rss_bytes": 10633216,
+      "par2": 120.0,
+      "stats": {
+        "Walk CPU time": "0.746850",
+        "Walk flips": "100000",
+        "Walk unsatisfied": "223"
+      },
+      "diagnostic": ""
+    },
+    {
+      "solver": "tree",
+      "input": "/private/tmp/bsat-walk-selection-corpus/vars1000.cnf",
+      "repeat": 0,
+      "status": "UNKNOWN",
+      "verified": false,
+      "seconds": 0.02347962511703372,
+      "cpu_seconds": 0.016697,
+      "peak_rss_bytes": 2916352,
+      "par2": 120.0,
+      "stats": {
+        "Walk CPU time": "0.014294",
+        "Walk flips": "100000",
+        "Walk unsatisfied": "10"
+      },
+      "diagnostic": ""
+    },
+    {
+      "solver": "scan",
+      "input": "/private/tmp/bsat-walk-selection-corpus/vars10000.cnf",
+      "repeat": 0,
+      "status": "UNKNOWN",
+      "verified": false,
+      "seconds": 0.784447958227247,
+      "cpu_seconds": 0.759274,
+      "peak_rss_bytes": 10633216,
+      "par2": 120.0,
+      "stats": {
+        "Walk CPU time": "0.751043",
+        "Walk flips": "100000",
+        "Walk unsatisfied": "223"
+      },
+      "diagnostic": ""
+    },
+    {
+      "solver": "tree",
+      "input": "/private/tmp/bsat-walk-selection-corpus/vars10000.cnf",
+      "repeat": 1,
+      "status": "UNKNOWN",
+      "verified": false,
+      "seconds": 0.07682383293285966,
+      "cpu_seconds": 0.038641,
+      "peak_rss_bytes": 11157504,
+      "par2": 120.0,
+      "stats": {
+        "Walk CPU time": "0.030279",
+        "Walk flips": "100000",
+        "Walk unsatisfied": "223"
+      },
+      "diagnostic": ""
+    },
+    {
+      "solver": "scan",
+      "input": "/private/tmp/bsat-walk-selection-corpus/vars10000.cnf",
+      "repeat": 1,
+      "status": "UNKNOWN",
+      "verified": false,
+      "seconds": 0.789552291855216,
+      "cpu_seconds": 0.766579,
+      "peak_rss_bytes": 10600448,
+      "par2": 120.0,
+      "stats": {
+        "Walk CPU time": "0.758573",
+        "Walk flips": "100000",
+        "Walk unsatisfied": "223"
+      },
+      "diagnostic": ""
+    },
+    {
+      "solver": "scan",
+      "input": "/private/tmp/bsat-walk-selection-corpus/vars1000.cnf",
+      "repeat": 1,
+      "status": "UNKNOWN",
+      "verified": false,
+      "seconds": 0.0770857916213572,
+      "cpu_seconds": 0.06807099999999999,
+      "peak_rss_bytes": 2867200,
+      "par2": 120.0,
+      "stats": {
+        "Walk CPU time": "0.065766",
+        "Walk flips": "100000",
+        "Walk unsatisfied": "10"
+      },
+      "diagnostic": ""
+    },
+    {
+      "solver": "tree",
+      "input": "/private/tmp/bsat-walk-selection-corpus/vars10000.cnf",
+      "repeat": 0,
+      "status": "UNKNOWN",
+      "verified": false,
+      "seconds": 0.07546066679060459,
+      "cpu_seconds": 0.039172,
+      "peak_rss_bytes": 10813440,
+      "par2": 120.0,
+      "stats": {
+        "Walk CPU time": "0.030755",
+        "Walk flips": "100000",
+        "Walk unsatisfied": "223"
+      },
+      "diagnostic": ""
+    },
+    {
+      "solver": "scan",
+      "input": "/private/tmp/bsat-walk-selection-corpus/vars1000.cnf",
+      "repeat": 2,
+      "status": "UNKNOWN",
+      "verified": false,
+      "seconds": 0.07503779092803597,
+      "cpu_seconds": 0.068108,
+      "peak_rss_bytes": 2850816,
+      "par2": 120.0,
+      "stats": {
+        "Walk CPU time": "0.065691",
+        "Walk flips": "100000",
+        "Walk unsatisfied": "10"
+      },
+      "diagnostic": ""
+    }
+  ],
+  "manifest": {
+    "path": "/private/tmp/bsat-walk-selection-corpus/manifest.json",
+    "sha256": "a8d12868d5b60e3e5ea707d723d822ad758c5171ab4245122ed87e231465a15d"
+  },
+  "summary": {
+    "scan": {
+      "verified_runs": 0,
+      "runs": 6,
+      "mean_par2": 120.0,
+      "max_rss_bytes": 10633216,
+      "errors": 0
+    },
+    "tree": {
+      "verified_runs": 0,
+      "runs": 6,
+      "mean_par2": 120.0,
+      "max_rss_bytes": 11157504,
+      "errors": 0
+    }
+  }
+}

@@ -26,6 +26,7 @@ typedef struct LocalSearchState {
 
     // Clause satisfaction tracking
     uint32_t* num_true_lits;  // num_true_lits[c] = count of true literals in clause c
+    uint32_t* unsat_tree;     // 1-indexed Fenwick counts, in original clause order
     uint32_t  num_unsat;      // Number of unsatisfied clauses
 
     // Break counts (for focused random walk)

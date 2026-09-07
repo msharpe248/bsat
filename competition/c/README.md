@@ -114,6 +114,10 @@ the regression oracle and measured comparisons. Build the standalone walk driver
 with `make local-search-benchmark`, then run
 `./bin/local_search_benchmark_release input.cnf 20000 1` (flip budget and seed).
 It emits a checked SAT model or UNKNOWN; local search remains opt-in.
+Unsatisfied-clause selection uses an ordered prefix-count tree to preserve walk
+choices while avoiding a formula scan per flip. See
+[LOCAL_SEARCH_SELECTION.md](LOCAL_SEARCH_SELECTION.md) for tests, memory cost and
+standalone/full-solver measurements.
 
 Successful local-search model transfer resets assignment positions, reasons and
 the propagation cursor consistently. See
