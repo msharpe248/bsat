@@ -98,6 +98,12 @@ with focused LBD restarts; it is experimental and does not implement every
 Kissat scheduling or branching technique. `--lrb` is the existing recency-weighted
 activity heuristic, not a complete MapleSAT LRB implementation.
 
+Opt-in `--vmtf` selects variables from a conflict-recency queue. It overrides heap
+selection in both focused and stable modes, while retaining heap bookkeeping.
+It has not demonstrated a solved-count gain on the development sample and stays
+experimental. See [VMTF.md](VMTF.md) for the implementation, validation, and
+comparison with the existing phase policy and Kissat.
+
 Opt-in `--iterative-minimize` follows both implicit binary and arena reasons using
 an iterative traversal with shared successful dependency checks. The
 `--minimize-budget` option caps antecedent inspections per learned clause

@@ -28,6 +28,7 @@ typedef struct SolverOpts {
     uint64_t equiv_budget;       // Independent preprocessing work budget
 
     // Branching heuristic
+    bool     vmtf;              // Experimental move-to-front variable queue
     bool     lrb;                // Use LRB/CHB instead of VSIDS (false)
     double   var_decay;          // Variable activity decay for VSIDS (0.95)
     double   var_inc;            // Variable activity increment (1.0)
@@ -153,6 +154,11 @@ typedef struct Trail {
  * Main Solver Structure
  *********************************************************************/
 
+typedef struct VmtfNode {
+    Var prev, next;
+    uint64_t stamp;
+} VmtfNode;
+
 typedef struct Solver {
     // Problem size
     uint32_t num_vars;
@@ -187,6 +193,13 @@ typedef struct Solver {
         double   var_inc;     // Activity increment
         double   var_decay;   // Activity decay factor
     } order;
+
+    struct {
+        VmtfNode *nodes;
+        Var head, tail, search;
+        uint32_t count, capacity;
+        uint64_t stamp;
+    } vmtf;
 
     // Conflict analysis
     uint8_t* seen;            // Seen flags for conflict analysis
@@ -332,6 +345,9 @@ void solver_print_stats(const Solver* s);
  *********************************************************************/
 
 bool solver_budget_exhausted(Solver* s);
+Var solver_vmtf_pick(Solver *s);
+void solver_vmtf_bump(Solver *s, Var v);
+void solver_vmtf_unassign(Solver *s, Var v);
 void solver_maybe_save_best_phases(Solver* s);
 uint32_t solver_substitute_equivalences(Solver* s);
 bool solver_check_model(const Solver* s);

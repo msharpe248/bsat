@@ -34,7 +34,9 @@ def main():
         empty = root/'empty.cnf';empty.write_text('p cnf 100000 0\n')
         modes = [(hard, []), (hard, ['--iterative-minimize']),
                  (hard, ['--equiv', '--elim', '--bce', '--dynamic-lbd', '--binary-proof']),
-                 (empty, ['--no-probing'])]
+                 (empty, ['--no-probing']),
+                 (hard, ['--vmtf']),
+                 (empty, ['--vmtf', '--no-probing'])]
         for limit in (0.001, 0.01, 0.05):
             for inp, options in modes:
                 cmd = [solver, '--time', str(limit), '--proof', str(root/'proof.drat'), *options, str(inp)]

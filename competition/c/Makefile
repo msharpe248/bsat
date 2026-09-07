@@ -106,6 +106,7 @@ pgo-generate: clean dirs
 	$(CC) $(CFLAGS) -O3 -march=native -fprofile-instr-generate -c -o $(OBJDIR)/minimize.o $(SRCDIR)/minimize.c
 	$(CC) $(CFLAGS) -O3 -march=native -fprofile-instr-generate -c -o $(OBJDIR)/main.o $(SRCDIR)/main.c
 	$(CC) $(CFLAGS) -O3 -march=native -fprofile-instr-generate -c -o $(OBJDIR)/solver.o $(SRCDIR)/solver.c
+	$(CC) $(CFLAGS) -O3 -march=native -fprofile-instr-generate -c -o $(OBJDIR)/vmtf.o $(SRCDIR)/vmtf.c
 	$(CC) $(CFLAGS) -O3 -march=native -fprofile-instr-generate -c -o $(OBJDIR)/watch.o $(SRCDIR)/watch.c
 	$(CC) $(CFLAGS) -O3 -march=native -fprofile-instr-generate -o $(BINDIR)/bsat_pgo_gen $(OBJECTS) -lm
 
@@ -137,6 +138,7 @@ pgo-use: dirs
 	$(CC) $(CFLAGS) -O3 -march=native -flto -fprofile-instr-use=pgo_data/default.profdata -c -o $(OBJDIR)/minimize.o $(SRCDIR)/minimize.c
 	$(CC) $(CFLAGS) -O3 -march=native -flto -fprofile-instr-use=pgo_data/default.profdata -c -o $(OBJDIR)/main.o $(SRCDIR)/main.c
 	$(CC) $(CFLAGS) -O3 -march=native -flto -fprofile-instr-use=pgo_data/default.profdata -c -o $(OBJDIR)/solver.o $(SRCDIR)/solver.c
+	$(CC) $(CFLAGS) -O3 -march=native -flto -fprofile-instr-use=pgo_data/default.profdata -c -o $(OBJDIR)/vmtf.o $(SRCDIR)/vmtf.c
 	$(CC) $(CFLAGS) -O3 -march=native -flto -fprofile-instr-use=pgo_data/default.profdata -c -o $(OBJDIR)/watch.o $(SRCDIR)/watch.c
 	$(CC) $(CFLAGS) -O3 -march=native -flto -fprofile-instr-use=pgo_data/default.profdata -o $(TARGET) $(OBJECTS) -lm
 	@echo "PGO build complete: $(TARGET)"

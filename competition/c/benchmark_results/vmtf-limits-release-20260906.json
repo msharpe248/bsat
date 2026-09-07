@@ -1,0 +1,194 @@
+{
+  "solver": "/Users/msharpe/python/bsat/competition/c/bin/bsat",
+  "runs": [
+    {
+      "input": "pigeonhole.cnf",
+      "options": [],
+      "limit": 0.001,
+      "solving_cpu": 0.001,
+      "wall_seconds": 0.0045584579929709435,
+      "status": "UNKNOWN"
+    },
+    {
+      "input": "pigeonhole.cnf",
+      "options": [
+        "--iterative-minimize"
+      ],
+      "limit": 0.001,
+      "solving_cpu": 0.001,
+      "wall_seconds": 0.004149291897192597,
+      "status": "UNKNOWN"
+    },
+    {
+      "input": "pigeonhole.cnf",
+      "options": [
+        "--equiv",
+        "--elim",
+        "--bce",
+        "--dynamic-lbd",
+        "--binary-proof"
+      ],
+      "limit": 0.001,
+      "solving_cpu": 0.001,
+      "wall_seconds": 0.0037324170116335154,
+      "status": "UNKNOWN"
+    },
+    {
+      "input": "empty.cnf",
+      "options": [
+        "--no-probing"
+      ],
+      "limit": 0.001,
+      "solving_cpu": 0.001,
+      "wall_seconds": 0.005963000003248453,
+      "status": "UNKNOWN"
+    },
+    {
+      "input": "pigeonhole.cnf",
+      "options": [
+        "--vmtf"
+      ],
+      "limit": 0.001,
+      "solving_cpu": 0.001,
+      "wall_seconds": 0.004097958095371723,
+      "status": "UNKNOWN"
+    },
+    {
+      "input": "empty.cnf",
+      "options": [
+        "--vmtf",
+        "--no-probing"
+      ],
+      "limit": 0.001,
+      "solving_cpu": 0.001,
+      "wall_seconds": 0.006085541099309921,
+      "status": "UNKNOWN"
+    },
+    {
+      "input": "pigeonhole.cnf",
+      "options": [],
+      "limit": 0.01,
+      "solving_cpu": 0.01,
+      "wall_seconds": 0.012867625104263425,
+      "status": "UNKNOWN"
+    },
+    {
+      "input": "pigeonhole.cnf",
+      "options": [
+        "--iterative-minimize"
+      ],
+      "limit": 0.01,
+      "solving_cpu": 0.01,
+      "wall_seconds": 0.013078958028927445,
+      "status": "UNKNOWN"
+    },
+    {
+      "input": "pigeonhole.cnf",
+      "options": [
+        "--equiv",
+        "--elim",
+        "--bce",
+        "--dynamic-lbd",
+        "--binary-proof"
+      ],
+      "limit": 0.01,
+      "solving_cpu": 0.01,
+      "wall_seconds": 0.013121000025421381,
+      "status": "UNKNOWN"
+    },
+    {
+      "input": "empty.cnf",
+      "options": [
+        "--no-probing"
+      ],
+      "limit": 0.01,
+      "solving_cpu": 0.01,
+      "wall_seconds": 0.015563792083412409,
+      "status": "UNKNOWN"
+    },
+    {
+      "input": "pigeonhole.cnf",
+      "options": [
+        "--vmtf"
+      ],
+      "limit": 0.01,
+      "solving_cpu": 0.01,
+      "wall_seconds": 0.013428666861727834,
+      "status": "UNKNOWN"
+    },
+    {
+      "input": "empty.cnf",
+      "options": [
+        "--vmtf",
+        "--no-probing"
+      ],
+      "limit": 0.01,
+      "solving_cpu": 0.01,
+      "wall_seconds": 0.015371459070593119,
+      "status": "UNKNOWN"
+    },
+    {
+      "input": "pigeonhole.cnf",
+      "options": [],
+      "limit": 0.05,
+      "solving_cpu": 0.05,
+      "wall_seconds": 0.05363349989056587,
+      "status": "UNKNOWN"
+    },
+    {
+      "input": "pigeonhole.cnf",
+      "options": [
+        "--iterative-minimize"
+      ],
+      "limit": 0.05,
+      "solving_cpu": 0.05,
+      "wall_seconds": 0.05353670800104737,
+      "status": "UNKNOWN"
+    },
+    {
+      "input": "pigeonhole.cnf",
+      "options": [
+        "--equiv",
+        "--elim",
+        "--bce",
+        "--dynamic-lbd",
+        "--binary-proof"
+      ],
+      "limit": 0.05,
+      "solving_cpu": 0.05,
+      "wall_seconds": 0.05331791704520583,
+      "status": "UNKNOWN"
+    },
+    {
+      "input": "empty.cnf",
+      "options": [
+        "--no-probing"
+      ],
+      "limit": 0.05,
+      "solving_cpu": 0.033,
+      "wall_seconds": 0.04559991601854563,
+      "status": "SATISFIABLE"
+    },
+    {
+      "input": "pigeonhole.cnf",
+      "options": [
+        "--vmtf"
+      ],
+      "limit": 0.05,
+      "solving_cpu": 0.051,
+      "wall_seconds": 0.05521404091268778,
+      "status": "UNKNOWN"
+    },
+    {
+      "input": "empty.cnf",
+      "options": [
+        "--vmtf",
+        "--no-probing"
+      ],
+      "limit": 0.05,
+      "solving_cpu": 0.034,
+      "wall_seconds": 0.046478292206302285,
+      "status": "SATISFIABLE"
+    }
+  ]
+}

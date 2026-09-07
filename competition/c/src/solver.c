@@ -143,6 +143,7 @@ SolverOpts default_opts(void) {
         .max_time = 0.0,          // Unlimited
 
         // Branching heuristic
+        .vmtf = false,
         .lrb = false,             // Use VSIDS by default
         .var_decay = 0.95,
         .var_inc = 1.0,
@@ -352,6 +353,7 @@ static void bump_var_activity(Solver* s, Var v, double inc) {
     if (s->vars[v].heap_pos != UINT32_MAX) {
         heap_percolate_up(s, s->vars[v].heap_pos);
     }
+    if (s->opts.vmtf) solver_vmtf_bump(s, v);
 }
 
 static void decay_var_inc(Solver* s) {
@@ -469,6 +471,7 @@ void solver_free(Solver* s) {
     free(s->clauses);
     free(s->learnts);
     free(s->order.heap);
+    free(s->vmtf.nodes);
     free(s->seen);
     free(s->analyze_stack);
     free(s->minimize_touched);
@@ -652,6 +655,7 @@ void solver_backtrack(Solver* s, Level level) {
     for (uint32_t i = s->trail_size; i > pos;) {
         Var v = var(s->trail[--i].lit);
         s->values[v] = UNDEF;
+        if (s->opts.vmtf) solver_vmtf_unassign(s, v);
         s->vars[v].level = INVALID_LEVEL;
         s->vars[v].reason = INVALID_CLAUSE;
         s->binary_reasons[v] = LIT_UNDEF;
@@ -1207,8 +1211,9 @@ void solver_analyze(Solver* s, CRef conflict, Lit* learnt, uint32_t* learnt_size
 bool solver_decide(Solver* s) {
     Var next = INVALID_VAR;
 
-    // Pick unassigned variable with highest activity
-    while (s->order.size > 0) {
+    // Queue mode retains the score heap for bookkeeping and API reuse.
+    if (s->opts.vmtf) next = solver_vmtf_pick(s);
+    else while (s->order.size > 0) {
         next = heap_extract_max(s);
         // Skip assigned variables
         if (s->values[next] != UNDEF) {
@@ -1917,7 +1922,11 @@ static lbool solve_internal(Solver *s, const Lit *assumps, uint32_t n_assumps) {
                 s->decision_level++;s->trail_lims[s->decision_level]=s->trail_size;
                 if (value==UNDEF) { push_trail(s,a);assumption=true;break; }
             }
-            if (!assumption && !solver_decide(s)) { result=TRUE;break; }
+            if (!assumption && !solver_decide(s)) {
+                /* An interrupted queue scan is not an exhausted decision set. */
+                if (!s->error && !s->interrupted) result=TRUE;
+                break;
+            }
             solver_maybe_save_best_phases(s);
         }
         if ((s->opts.max_conflicts && s->stats.conflicts>=s->opts.max_conflicts) ||
