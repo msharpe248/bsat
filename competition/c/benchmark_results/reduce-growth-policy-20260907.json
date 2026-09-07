@@ -1,0 +1,61 @@
+{
+  "schema": 1,
+  "base_revision": "0f4d82e",
+  "purpose": "Frozen before timing; four reused development inputs, one repetition per fixed/growing profile; corrected LBD state in both",
+  "command": [
+    "python3",
+    "/Users/msharpe/python/bsat/competition/c/tests/benchmark.py",
+    "--checker",
+    "/tmp/bsat-drat-trim",
+    "--solver",
+    "fixed=/tmp/bsat-reduce-growth-candidate --chrono --congruence --equiv --equiv-budget 100000000 --alternating --vmtf --time 30 --proof {proof} {input}",
+    "--solver",
+    "growing=/tmp/bsat-reduce-growth-candidate --chrono --congruence --equiv --equiv-budget 100000000 --alternating --vmtf --reduce-increment 1000 --time 30 --proof {proof} {input}",
+    "--timeout",
+    "35",
+    "--check-timeout",
+    "120",
+    "--repeats",
+    "1",
+    "--seed",
+    "20261312",
+    "--split",
+    "development",
+    "--output",
+    "/Users/msharpe/python/bsat/competition/c/benchmark_results/reduce-growth-initial-20260907.json",
+    "/Users/msharpe/python/bsat/dataset/sat_competition2025/hardware-model-checking/546f8e069aa450002a30c9c47538fe95.cnf",
+    "/Users/msharpe/python/bsat/dataset/sat_competition2025/random-circuits/849950561ddce887c78fef773dccfa80.cnf",
+    "/Users/msharpe/python/bsat/dataset/sat_competition2025/hardware-model-checking/7bdf3e5401cc263951003b569bcd689c.cnf",
+    "/Users/msharpe/python/bsat/dataset/sat_competition2025/belpyramid-puzzle/5831f35622f3e6c666f0cee6cac60e4c.cnf"
+  ],
+  "binary": {
+    "path": "/tmp/bsat-reduce-growth-candidate",
+    "sha256": "4964e44a182fa6774635e5f930bd908556d9cc3c0bd90d2b52752e361c7a2c3d"
+  },
+  "checker": {
+    "path": "/tmp/bsat-drat-trim",
+    "sha256": "9bfc20a5fa9eb2a0ffadd2b0cfc7cdd4a20f6aa9c8d7de5b6c771160b847f630"
+  },
+  "inputs": [
+    {
+      "path": "/Users/msharpe/python/bsat/dataset/sat_competition2025/hardware-model-checking/546f8e069aa450002a30c9c47538fe95.cnf",
+      "bytes": 9701065,
+      "sha256": "2d3166f230aeb1d6de65b4d8edf4bde8ec88dbf6c913a41e2048ac1d26e3f6c4"
+    },
+    {
+      "path": "/Users/msharpe/python/bsat/dataset/sat_competition2025/random-circuits/849950561ddce887c78fef773dccfa80.cnf",
+      "bytes": 8318128,
+      "sha256": "1e966f7c7accf8109eaae14b942639da31cb34d786b0bd2d4a2a499ed6121bb9"
+    },
+    {
+      "path": "/Users/msharpe/python/bsat/dataset/sat_competition2025/hardware-model-checking/7bdf3e5401cc263951003b569bcd689c.cnf",
+      "bytes": 8194517,
+      "sha256": "7aada02dc300ce6db773dbab34f115969174896a161b6d28ce37f5743e8fff4f"
+    },
+    {
+      "path": "/Users/msharpe/python/bsat/dataset/sat_competition2025/belpyramid-puzzle/5831f35622f3e6c666f0cee6cac60e4c.cnf",
+      "bytes": 1112287,
+      "sha256": "e73caf0c3d62cfa5ce1b8c80c83c30df50c7e99275f1f43f69acdd043f050735"
+    }
+  ]
+}

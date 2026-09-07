@@ -57,6 +57,11 @@ unfinished clauses are errors. Empty formulas are SAT; empty clauses are UNSAT.
 
 ## Search controls
 
+Experimental `--reduce-increment 1000` grows the gap between learned-clause
+reductions, starting at `--reduce-interval` (2,000 by default). Zero increment
+keeps the existing fixed schedule. See [REDUCTION_GROWTH.md](REDUCTION_GROWTH.md)
+for correctness checks and the measured speed/memory tradeoff.
+
 Experimental `--chrono` keeps lower-level implications when backtracking past
 higher-level decisions. With congruence and alternating VMTF it substantially
 reduced decisions on hardware model checking and recovered development SAT

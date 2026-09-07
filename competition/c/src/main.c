@@ -76,6 +76,7 @@ static void print_usage(const char* program) {
     printf("  --glue-lbd <n>            LBD threshold for glue clauses (default: 2)\n");
     printf("  --reduce-fraction <f>     Fraction of clauses to keep (default: 0.5)\n");
     printf("  --reduce-interval <n>     Conflicts between reductions (default: 2000)\n");
+    printf("  --reduce-increment <n>    Grow interval after each reduction (default: 0)\n");
     printf("  --binary-minimize        Binary-resolution minimization (experimental)\n");
     printf("  --iterative-minimize     Experimental binary-aware minimization\n");
     printf("  --protect-used           Temporarily retain used learned clauses with LBD <= 6\n");
@@ -170,6 +171,7 @@ static struct option long_options[] = {
     {"glue-lbd",        required_argument, 0, 0},
     {"reduce-fraction", required_argument, 0, 0},
     {"reduce-interval", required_argument, 0, 0},
+    {"reduce-increment", required_argument, 0, 0},
     {"binary-minimize", no_argument, 0, 0},
     {"iterative-minimize", no_argument, 0, 0},
     {"protect-used", no_argument, 0, 0},
@@ -362,6 +364,8 @@ int main(int argc, char** argv) {
                     opts.reduce_fraction = atof(optarg);
                 } else if (strcmp(long_options[option_index].name, "reduce-interval") == 0) {
                     opts.reduce_interval = (uint32_t)atol(optarg);
+                } else if (strcmp(long_options[option_index].name, "reduce-increment") == 0) {
+                    opts.reduce_increment = (uint32_t)strtoul(optarg, NULL, 10);
                 } else if (strcmp(long_options[option_index].name, "binary-minimize") == 0) {
                     opts.binary_minimize = true;
                 } else if (strcmp(long_options[option_index].name, "iterative-minimize") == 0) {

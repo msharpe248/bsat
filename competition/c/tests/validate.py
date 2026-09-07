@@ -152,6 +152,7 @@ def check_cli(solver, directory):
     inp = directory/'cli.cnf'
     inp.write_text('p cnf 1 1\n1 0\n')
     for options in (['--reduce-interval', '0'], ['--glucose-window-size', '0'],
+                    ['--reduce-increment', '-1'], ['--reduce-increment', '4294967296'],
                     ['--seed', '-1'], ['--time', 'nan'], ['--time', 'junk'],
                     ['--minimize-budget', '-1'], ['--minimize-budget', '4294967296'],
                     ['--equiv-budget', '-1'], ['--equiv-budget', '18446744073709551616'],
@@ -247,6 +248,11 @@ def main():
                 ['--chrono', '--chrono-levels', '0', '--alternating', '--vmtf', '--binary-proof'],
                 ['--chrono', '--chrono-levels', '0', '--congruence', '--equiv'],
                 ['--chrono', '--chrono-levels', '0', '--portfolio', '0.000000000001', '--bce', '--elim']]
+    configs += [['--reduce-increment', '0'],
+                ['--reduce-interval', '1', '--reduce-increment', '1', '--no-probing'],
+                ['--reduce-interval', '1', '--reduce-increment', '2', '--chrono', '--equiv', '--congruence'],
+                ['--reduce-interval', '1', '--reduce-increment', '1', '--vmtf', '--binary-proof', '--dynamic-lbd', '--protect-used'],
+                ['--reduce-increment', '4294967295', '--portfolio', '0.000000000001']]
     fixed = [
         (5, [[1, 2], [1, -2], [-3, 4], [3, -4], [4, 5]], None),
         (5, [[-4], [-1, 2, 4], [1, -2, 4]] +

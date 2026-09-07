@@ -224,6 +224,7 @@ SolverOpts default_opts(void) {
         .glue_lbd = 2,
         .reduce_fraction = 0.5,
         .reduce_interval = 2000,
+        .reduce_increment = 0,
         .iterative_minimize = false, // Opt-in pending representative speed gains
         .minimize_budget = 10000, // Reason inspections per learned clause, either mode
         .minimize = true,         // MiniSat-style clause minimization
@@ -1730,6 +1731,16 @@ void solver_collect_garbage(Solver *s) {
     arena_free(old); s->garbage_collections++;
 }
 
+bool solver_should_reduce(Solver* s) {
+    if (!s->opts.reduce_increment)
+        return s->stats.conflicts % s->opts.reduce_interval == 0;
+    if (s->stats.conflicts < s->reduce_limit || s->reduce_limit == UINT64_MAX)
+        return false;
+    s->reduce_span += MIN((uint64_t)s->opts.reduce_increment, UINT64_MAX-s->reduce_span);
+    s->reduce_limit = s->stats.conflicts + MIN(s->reduce_span, UINT64_MAX-s->stats.conflicts);
+    return true;
+}
+
 void solver_reduce_db(Solver* s) {
     s->stats.reduces++;
     ClauseScore *scores = malloc((s->num_learnts ? s->num_learnts : 1) * sizeof *scores);
@@ -2131,6 +2142,10 @@ static lbool solve_internal(Solver *s, const Lit *assumps, uint32_t n_assumps) {
     Lit *learnt = malloc((s->num_vars+1)*sizeof *learnt);
     if (!learnt) { s->error=true; return UNDEF; }
     lbool result=UNDEF;
+    /* Initialize after preprocessing, which may replace the solver. Each API
+       solve starts a fresh schedule, just like its rebuilt search state. */
+    s->reduce_span = s->opts.reduce_interval;
+    s->reduce_limit = s->stats.conflicts + MIN(s->reduce_span, UINT64_MAX-s->stats.conflicts);
     for (;;) {
         if (print_stats_requested) { print_stats_requested=0; print_progress_stats(s); }
         if (solver_budget_exhausted(s)) break;
@@ -2189,7 +2204,7 @@ static lbool solve_internal(Solver *s, const Lit *assumps, uint32_t n_assumps) {
             s->stats.max_lbd=MAX(s->stats.max_lbd,lbd);
             if (lbd<=s->opts.glue_lbd) s->stats.glue_clauses++;
             decay_var_inc(s);
-            if (s->stats.conflicts % s->opts.reduce_interval==0) solver_reduce_db(s);
+            if (solver_should_reduce(s)) solver_reduce_db(s);
         } else {
             if (solver_should_restart(s)) {
                 Level level = n_assumps ? 0 : solver_restart_level(s);

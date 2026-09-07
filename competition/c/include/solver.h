@@ -73,6 +73,7 @@ typedef struct SolverOpts {
     uint32_t glue_lbd;          // LBD threshold for glue clauses (2)
     double   reduce_fraction;   // Fraction of learned clauses to keep (0.5)
     uint32_t reduce_interval;   // Conflicts between reductions (2000)
+    uint32_t reduce_increment;  // Add to interval after each reduction (0: fixed)
     bool     binary_minimize; // Bounded binary-resolution pass on short low-LBD clauses
     bool     iterative_minimize; // Experimental binary-aware traversal (false)
     bool     protect_used;      // One reduction reprieve for used LBD <= 6 clauses
@@ -312,6 +313,7 @@ typedef struct Solver {
     uint64_t clock_work, clock_minimize;
     uint64_t work, work_limit, last_vivify, mode_limit;
     uint64_t garbage_collections, lbd_samples, recent_lbd_sum;
+    uint64_t reduce_limit, reduce_span;
     uint32_t subsume_cursor, vivify_cursor;
     bool stable_mode;
     /* Portfolio diagnostics: ordinary stats describe the final attempt. */
@@ -405,6 +407,7 @@ void solver_backtrack(Solver* s, Level level);
 
 // Reduce learned clause database
 void solver_reduce_db(Solver* s);
+bool solver_should_reduce(Solver* s);
 
 // Check if should restart
 bool solver_should_restart(Solver* s);

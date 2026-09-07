@@ -52,6 +52,8 @@ def main():
                   (empty, ['--congruence', '--no-probing'])]
         modes += [(hard, ['--chrono', '--chrono-levels', '0', '--binary-proof']),
                   (empty, ['--chrono', '--chrono-levels', '0', '--no-probing'])]
+        modes += [(hard, ['--reduce-interval', '1', '--reduce-increment', '1', '--no-probing']),
+                  (hard, ['--reduce-interval', '1', '--reduce-increment', '1', '--chrono', '--vmtf', '--binary-proof'])]
         for limit in (0.001, 0.01, 0.05):
             for inp, options in modes:
                 cmd = [solver, '--time', str(limit), '--proof', str(root/'proof.drat'), *options, str(inp)]
