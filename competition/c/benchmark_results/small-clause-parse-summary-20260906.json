@@ -1,0 +1,87 @@
+{
+  "instances": [
+    {
+      "input": "/Users/msharpe/python/bsat/dataset/sat_competition2025/independent-set/87f093067622b91fa9dc0de149c8b92c.cnf",
+      "bytes": 36671545,
+      "baseline": 0.22685450000000001,
+      "control": 0.23081000000000002,
+      "small": 0.197801,
+      "ratio": 0.8719289236052183,
+      "control_ratio": 1.0174362862539645
+    },
+    {
+      "input": "/Users/msharpe/python/bsat/dataset/sat_competition2025/modcircuits/d9320e4dbba0f8bd699085f61a98ff5c.cnf",
+      "bytes": 3320353,
+      "baseline": 0.024392999999999998,
+      "control": 0.0248885,
+      "small": 0.023404,
+      "ratio": 0.9594555815192884,
+      "control_ratio": 1.0203132046078793
+    },
+    {
+      "input": "/Users/msharpe/python/bsat/dataset/sat_competition2025/grs-fp-comm/fe851239cedd4197c5390cee55fee723.cnf",
+      "bytes": 20449359,
+      "baseline": 0.142509,
+      "control": 0.1438205,
+      "small": 0.1297565,
+      "ratio": 0.9105144236504361,
+      "control_ratio": 1.0092029275344012
+    },
+    {
+      "input": "/Users/msharpe/python/bsat/dataset/sat_competition2025/equivalence-checking/28eeb2beac7005a9afa98e4d3aaca621.cnf",
+      "bytes": 31120473,
+      "baseline": 0.231384,
+      "control": 0.2305225,
+      "small": 0.21106799999999998,
+      "ratio": 0.9121979047816615,
+      "control_ratio": 0.9962767520658299
+    },
+    {
+      "input": "/Users/msharpe/python/bsat/dataset/sat_competition2025/bitvector/65f7145996bbec02b90bd0fa64a20502.cnf",
+      "bytes": 29699055,
+      "baseline": 0.2150645,
+      "control": 0.21502300000000002,
+      "small": 0.2009095,
+      "ratio": 0.9341825359368934,
+      "control_ratio": 0.999807034633796
+    },
+    {
+      "input": "/Users/msharpe/python/bsat/dataset/sat_competition2025/stedman-triples/85ba26d796de9ad740ce5a6813488fbc.cnf",
+      "bytes": 3007664,
+      "baseline": 0.021263,
+      "control": 0.021766,
+      "small": 0.020312,
+      "ratio": 0.9552744203546065,
+      "control_ratio": 1.0236561162582891
+    },
+    {
+      "input": "/Users/msharpe/python/bsat/dataset/sat_competition2025/cril-misc/ad69e0a0880cd377e26260f7e4bc6d51.cnf",
+      "bytes": 333351613,
+      "baseline": 2.187532,
+      "control": 2.152721,
+      "small": 2.015066,
+      "ratio": 0.9211595533231056,
+      "control_ratio": 0.9840866327898289
+    },
+    {
+      "input": "/Users/msharpe/python/bsat/dataset/sat_competition2025/md5-equivalence-checking/619e9e0d70c78c97b0516afedf086fee.cnf",
+      "bytes": 327761283,
+      "baseline": 2.3029825,
+      "control": 2.3036965,
+      "small": 2.12121,
+      "ratio": 0.92107082880569,
+      "control_ratio": 1.0003100327510086
+    },
+    {
+      "input": "/Users/msharpe/python/bsat/dataset/sat_competition2025/software-verification/1a9512580b2d946ebd41de4e8c08c42d.cnf",
+      "bytes": 460577617,
+      "baseline": 2.5756215,
+      "control": 2.5698885000000002,
+      "small": 2.394867,
+      "ratio": 0.9298210160149696,
+      "control_ratio": 0.9977741294673927
+    }
+  ],
+  "geomean_ratio": 0.9236268624140493,
+  "control_geomean_ratio": 1.0053536414891364
+}

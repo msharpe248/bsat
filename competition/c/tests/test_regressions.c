@@ -246,6 +246,44 @@ static void used_clause_lifecycle(void) {
     assert(solver_new_var(s) == 4 && s->opts.protect_used && !s->num_learnts);
     solver_free(s);
 }
+static void clause_normalization_boundaries(void) {
+    const unsigned sizes[] = {0, 1, 2, 15, 16, 17, 32, 65};
+    for (unsigned test = 0; test < sizeof sizes / sizeof *sizes; ++test) {
+        unsigned n = sizes[test];
+        for (unsigned kind = 0; kind < 3; ++kind) {
+            Solver *s = solver_new();assert(s);
+            for (Var v = 1; v <= 65; ++v) assert(solver_new_var(s) == v);
+            Lit input[65], original[65];
+            for (unsigned i = 0; i < n; ++i)
+                input[i] = mkLit(kind ? 1 : n-i, kind == 2 && i == n-1);
+            memcpy(original, input, n * sizeof *input);
+            bool added = solver_add_clause(s, input, n);
+            assert(!memcmp(input, original, n * sizeof *input));
+            assert(s->input_clauses == 1 && s->input_size == n+1);
+            assert(!memcmp(s->input, original, n * sizeof *input));
+            assert(s->input[n] == 0);
+            if (!n) {
+                assert(!added && solver_solve(s) == FALSE);
+            } else {
+                assert(added);
+                bool tautology = kind == 2 && n > 1;
+                assert(s->num_clauses == (tautology ? 0u : 1u));
+                if (!tautology) {
+                    CRef cr = s->clauses[0];
+                    assert(CLAUSE_SIZE(s->arena, cr) == (kind ? 1u : n));
+                    if (!kind)
+                        for (unsigned i = 0; i < n; ++i)
+                            assert(CLAUSE_LITS(s->arena, cr)[i] == mkLit(i+1, false));
+                }
+                assert(solver_solve(s) == TRUE && solver_check_model(s));
+                assert(solver_new_var(s) == 66);
+                assert(s->input_size == n+1 && !memcmp(s->input, original, n*sizeof *input));
+                assert(solver_solve(s) == TRUE && solver_check_model(s));
+            }
+            solver_free(s);
+        }
+    }
+}
 static void reduction_and_gc(void) {
     Solver *s=formula("p cnf 3 1\n1 2 3 0\n");
     s->opts.reduce_fraction=0;s->opts.glue_lbd=2;
@@ -293,7 +331,7 @@ static void proof_export(void) {
     }
 }
 int main(void) {
-    parser();assumptions();api_fuzz();backtrack();assignment_growth();circular_scan_order();dynamic_clause_quality();used_clause_lifecycle();reduction_and_gc();restart();proof_export();
+    parser();assumptions();api_fuzz();backtrack();assignment_growth();circular_scan_order();dynamic_clause_quality();used_clause_lifecycle();clause_normalization_boundaries();reduction_and_gc();restart();proof_export();
     puts("PASS: parser, 800 API solves, assumptions, backjump boundaries, reduction/GC, restart regressions");
     return 0;
 }

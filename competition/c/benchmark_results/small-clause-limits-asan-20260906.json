@@ -1,0 +1,131 @@
+{
+  "solver": "/Users/msharpe/python/bsat/competition/c/bin/bsat_debug",
+  "runs": [
+    {
+      "input": "pigeonhole.cnf",
+      "options": [],
+      "limit": 0.001,
+      "solving_cpu": 0.001,
+      "wall_seconds": 0.062394124921411276,
+      "status": "UNKNOWN"
+    },
+    {
+      "input": "pigeonhole.cnf",
+      "options": [
+        "--iterative-minimize"
+      ],
+      "limit": 0.001,
+      "solving_cpu": 0.001,
+      "wall_seconds": 0.06742033315822482,
+      "status": "UNKNOWN"
+    },
+    {
+      "input": "pigeonhole.cnf",
+      "options": [
+        "--equiv",
+        "--elim",
+        "--bce",
+        "--dynamic-lbd",
+        "--binary-proof"
+      ],
+      "limit": 0.001,
+      "solving_cpu": 0.001,
+      "wall_seconds": 0.06474425015039742,
+      "status": "UNKNOWN"
+    },
+    {
+      "input": "empty.cnf",
+      "options": [
+        "--no-probing"
+      ],
+      "limit": 0.001,
+      "solving_cpu": 0.001,
+      "wall_seconds": 0.09079004218801856,
+      "status": "UNKNOWN"
+    },
+    {
+      "input": "pigeonhole.cnf",
+      "options": [],
+      "limit": 0.01,
+      "solving_cpu": 0.01,
+      "wall_seconds": 0.071128916926682,
+      "status": "UNKNOWN"
+    },
+    {
+      "input": "pigeonhole.cnf",
+      "options": [
+        "--iterative-minimize"
+      ],
+      "limit": 0.01,
+      "solving_cpu": 0.01,
+      "wall_seconds": 0.07246874994598329,
+      "status": "UNKNOWN"
+    },
+    {
+      "input": "pigeonhole.cnf",
+      "options": [
+        "--equiv",
+        "--elim",
+        "--bce",
+        "--dynamic-lbd",
+        "--binary-proof"
+      ],
+      "limit": 0.01,
+      "solving_cpu": 0.01,
+      "wall_seconds": 0.07297612493857741,
+      "status": "UNKNOWN"
+    },
+    {
+      "input": "empty.cnf",
+      "options": [
+        "--no-probing"
+      ],
+      "limit": 0.01,
+      "solving_cpu": 0.01,
+      "wall_seconds": 0.09229366690851748,
+      "status": "UNKNOWN"
+    },
+    {
+      "input": "pigeonhole.cnf",
+      "options": [],
+      "limit": 0.05,
+      "solving_cpu": 0.05,
+      "wall_seconds": 0.11301437485963106,
+      "status": "UNKNOWN"
+    },
+    {
+      "input": "pigeonhole.cnf",
+      "options": [
+        "--iterative-minimize"
+      ],
+      "limit": 0.05,
+      "solving_cpu": 0.05,
+      "wall_seconds": 0.11000570910982788,
+      "status": "UNKNOWN"
+    },
+    {
+      "input": "pigeonhole.cnf",
+      "options": [
+        "--equiv",
+        "--elim",
+        "--bce",
+        "--dynamic-lbd",
+        "--binary-proof"
+      ],
+      "limit": 0.05,
+      "solving_cpu": 0.05,
+      "wall_seconds": 0.11566958297044039,
+      "status": "UNKNOWN"
+    },
+    {
+      "input": "empty.cnf",
+      "options": [
+        "--no-probing"
+      ],
+      "limit": 0.05,
+      "solving_cpu": 0.05,
+      "wall_seconds": 0.13410958298482,
+      "status": "UNKNOWN"
+    }
+  ]
+}

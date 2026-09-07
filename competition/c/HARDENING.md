@@ -270,3 +270,19 @@ Final validation passed 4859 release and 4859 ASan/UBSan formula solves across
 and twelve short-deadline runs per mode. CLI malformed-NUL checks and parser-driver
 smoke tests also passed. Final executable hashes match the measured binaries. See
 the [validation record](benchmark_results/buffered-input-validation-20260906.json).
+
+## Short-clause insertion
+
+[Small normalization buffers](CLAUSE_NORMALIZATION.md) remove temporary heap
+allocation for clauses of at most sixteen literals without changing sorting or
+logical normalization. Boundary regressions check immutability, original snapshots,
+duplicates, tautologies, empty clauses and API rebuilds. Parsing CPU improves by
+7.6% in the measured sample; search counters and solved counts are unchanged.
+
+The preceding parser milestone passed
+[Linux/macOS CI](https://github.com/msharpe248/bsat/actions/runs/34071894212).
+
+Final validation passed 4859 release and 4859 ASan/UBSan formula solves across
+43 configurations (seed 20260918), all fourteen C test executables in both modes,
+and twelve short-deadline runs per mode. Final executable hashes match the measured
+binaries. See the [validation record](benchmark_results/small-clause-validation-20260906.json).

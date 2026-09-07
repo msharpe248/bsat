@@ -65,6 +65,11 @@ valid. Backtracking into that prefix triggers a full rebuild at the next record.
 This preserves target choices and removes quadratic copying on uninterrupted
 descents. See [TARGET_SAVING.md](TARGET_SAVING.md) for tests and measurements.
 
+Clause normalization uses a fixed 16-literal temporary buffer for short clauses
+and heap storage for longer ones. Caller arrays and original-input snapshots
+remain unchanged. See [CLAUSE_NORMALIZATION.md](CLAUSE_NORMALIZATION.md) for tests
+and the incremental loading-speed measurement.
+
 Truth assignments use a dense byte array, separate from variable metadata, to
 reduce cache traffic during propagation. Search order is preserved. See
 [VALUES.md](VALUES.md) for before/after measurements and validation.

@@ -690,29 +690,30 @@ bool solver_add_clause(Solver* s, const Lit* lits, uint32_t size) {
         s->input_clauses++;
     }
     if (s->result == FALSE) return false;
-    Lit *tmp = size ? malloc(size * sizeof *tmp) : NULL;
+    Lit small[16];
+    Lit *tmp = size <= 16 ? small : malloc(size * sizeof *tmp);
     if (size && !tmp) { s->error = true; return false; }
     if (size) { memcpy(tmp, lits, size * sizeof *tmp); qsort(tmp, size, sizeof *tmp, compare_lits); }
     uint32_t n = 0;
     for (uint32_t i = 0; i < size; ++i) {
         Lit lit = tmp[i];
         if (n && lit == tmp[n-1]) continue;
-        if (n && lit == neg(tmp[n-1])) { free(tmp); return true; }
+        if (n && lit == neg(tmp[n-1])) { if (tmp != small) free(tmp); return true; }
         tmp[n++] = lit;
     }
     /* Keep all normalized input clauses, including units and binaries, in
        the arena. Binary propagation still uses compact implicit watches. */
     CRef cr = arena_alloc(s->arena, tmp, n, false);
-    if (cr == INVALID_CLAUSE) { free(tmp); s->error = true; return false; }
+    if (cr == INVALID_CLAUSE) { if (tmp != small) free(tmp); s->error = true; return false; }
     if (s->num_clauses == s->clauses_capacity) {
         uint32_t cap = s->clauses_capacity ? s->clauses_capacity * 2 : 64;
         CRef *p = realloc(s->clauses, cap * sizeof *p);
-        if (!p) { free(tmp); s->error = true; return false; }
+        if (!p) { if (tmp != small) free(tmp); s->error = true; return false; }
         s->clauses = p; s->clauses_capacity = cap;
     }
     s->clauses[s->num_clauses++] = cr;
     s->num_original = s->num_clauses;
-    if (!n) { s->result = FALSE; free(tmp); return false; }
+    if (!n) { s->result = FALSE; if (tmp != small) free(tmp); return false; }
     Lit *cl = CLAUSE_LITS(s->arena, cr);
     uint32_t alive = 0;
     for (uint32_t i = 0; i < n; ++i) {
@@ -732,7 +733,7 @@ bool solver_add_clause(Solver* s, const Lit* lits, uint32_t size) {
         push_trail(s, cl[0]);
         s->vars[var(cl[0])].reason = cr;
     }
-    free(tmp);
+    if (tmp != small) free(tmp);
     return s->result != FALSE;
 }
 
