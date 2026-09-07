@@ -350,6 +350,8 @@ void solver_print_stats(const Solver* s);
  *********************************************************************/
 
 bool solver_budget_exhausted(Solver* s);
+/* Fresh CPU reading for callers that already throttle expensive checkpoints. */
+bool solver_budget_exhausted_now(Solver* s);
 Var solver_vmtf_pick(Solver *s);
 void solver_vmtf_bump(Solver *s, Var v);
 void solver_vmtf_bump_batch(Solver *s, Var *vars, uint32_t count);

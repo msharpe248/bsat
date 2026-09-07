@@ -121,6 +121,9 @@ standalone/full-solver measurements.
 Walk initialization computes flip scores during the clause scan; see
 [LOCAL_SEARCH_INITIALIZATION.md](LOCAL_SEARCH_INITIALIZATION.md) for validation
 and repeated-initialization measurements.
+Local-search deadline checkpoints take a fresh CPU reading every 256 flips. See
+[LOCAL_SEARCH_BUDGETS.md](LOCAL_SEARCH_BUDGETS.md) for the cached-deadline regression
+and preliminary flip-budget comparisons.
 
 Successful local-search model transfer resets assignment positions, reasons and
 the propagation cursor consistently. See

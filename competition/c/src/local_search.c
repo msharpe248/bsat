@@ -350,7 +350,8 @@ bool local_search_run(Solver* s, LocalSearchState* ls, uint32_t max_flips, doubl
 
     // Main WalkSAT loop
     for (uint32_t flip = 0; flip < max_flips && ls->num_unsat > 0; flip++) {
-        if ((flip & 255) == 0 && solver_budget_exhausted(s)) return false;
+        /* This loop already throttles polls; do not throttle the clock again. */
+        if ((flip & 255) == 0 && solver_budget_exhausted_now(s)) return false;
         // Pick a random unsatisfied clause
         uint32_t c = pick_unsat_clause(ls);
 

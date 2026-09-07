@@ -110,18 +110,26 @@ static void check_cpu_deadline(Solver *s) {
         s->interrupted = true;
 }
 
-bool solver_budget_exhausted(Solver *s) {
+static bool budget_exhausted(Solver *s, bool force_clock) {
     if (s->watches->failed) s->error = true;
     if (s->error || s->interrupted) return true;
     /* Avoid a system clock read at every cheap decision/preprocessing poll.
        Long inner loops already poll every 1024 inspections: either work counter
        reaching that interval must force a read, without a second throttle. */
     if (s->opts.max_time > 0 &&
-        (!s->clock_initialized || ++s->clock_polls >= 128 ||
+        (force_clock || !s->clock_initialized || ++s->clock_polls >= 128 ||
          s->work - s->clock_work >= 1024 ||
          s->stats.minimize_inspections - s->clock_minimize >= 1024))
         check_cpu_deadline(s);
     return s->interrupted || (s->work_limit && s->work >= s->work_limit);
+}
+
+bool solver_budget_exhausted(Solver *s) {
+    return budget_exhausted(s, false);
+}
+
+bool solver_budget_exhausted_now(Solver *s) {
+    return budget_exhausted(s, true);
 }
 
 /*********************************************************************
