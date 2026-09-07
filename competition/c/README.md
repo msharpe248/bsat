@@ -288,3 +288,8 @@ The follow-up [relative-quality reason reward](QUALITY_REASON_BUMP_EXPERIMENT.md
 compared reason LBD with the final minimized learned clause. It lost both
 battleship solves in the repeated reference screen and was also rejected; the
 implementation, tests and pinned-Kissat comparison are preserved.
+
+BVE now uses [linear signed-mark resolution](LINEAR_ELIMINATION.md) for costing
+and constructing resolvents, with interruption-safe scratch cleanup and staging.
+Long overlapping-clause measurements show substantial kernel speedups; measured
+competition solved counts are unchanged. BVE remains opt-in with `--elim`.

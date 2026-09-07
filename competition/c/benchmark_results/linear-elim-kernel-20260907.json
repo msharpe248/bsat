@@ -1,0 +1,372 @@
+{
+  "schema": 1,
+  "platform": "macOS-26.6.1-arm64-arm-64bit-Mach-O",
+  "machine": "arm64",
+  "revision": "cc6b398ea117c63337e6ea4dd7e059a95a92876e",
+  "dirty": true,
+  "split": "development",
+  "seed": 1,
+  "timeout": 20.0,
+  "repeats": 3,
+  "solvers": {
+    "quadratic": {
+      "command": [
+        "/private/tmp/bsat-linear-elim-baseline-driver",
+        "{input}",
+        "10"
+      ],
+      "sha256": "581a176c89406c378635342d95540287eeda3261316fb73f84141e42dad67dbf"
+    },
+    "linear": {
+      "command": [
+        "/Users/msharpe/python/bsat/competition/c/bin/elim_driver",
+        "{input}",
+        "10"
+      ],
+      "sha256": "521195ffbe7fb7c488a91ca056ffc3f678d4ae2a9f220d86f9e192b4a3db864d"
+    }
+  },
+  "inputs": {
+    "/private/tmp/bsat-linear-elim-corpus/overlap-1000.cnf": {
+      "sha256": "67a0d418e8ad89516dc7b9aff18a089816ed2f425103a05710de2bf719d0d591",
+      "family": "bsat-linear-elim-corpus"
+    },
+    "/private/tmp/bsat-linear-elim-corpus/overlap-5000.cnf": {
+      "sha256": "bb9f770943464ba1be847e9f10e5ec0d376a3c0dd73d268eb3a5cbddee66a8da",
+      "family": "bsat-linear-elim-corpus"
+    },
+    "/private/tmp/bsat-linear-elim-corpus/overlap-10000.cnf": {
+      "sha256": "dbcea59bee95c96f38e47f72071151b4799c21e529dac0bab3f4a7dd7cb083bc",
+      "family": "bsat-linear-elim-corpus"
+    }
+  },
+  "checker": null,
+  "runs": [
+    {
+      "solver": "linear",
+      "input": "/private/tmp/bsat-linear-elim-corpus/overlap-1000.cnf",
+      "repeat": 1,
+      "status": "SAT",
+      "verified": true,
+      "seconds": 0.241028584074229,
+      "cpu_seconds": 0.003208,
+      "peak_rss_bytes": 2392064,
+      "par2": 0.241028584074229,
+      "stats": {
+        "Elimination CPU": "0.000138000",
+        "Elimination work": "59980",
+        "Eliminated": "10"
+      },
+      "diagnostic": ""
+    },
+    {
+      "solver": "quadratic",
+      "input": "/private/tmp/bsat-linear-elim-corpus/overlap-10000.cnf",
+      "repeat": 2,
+      "status": "SAT",
+      "verified": true,
+      "seconds": 0.895719958934933,
+      "cpu_seconds": 0.7395649999999999,
+      "peak_rss_bytes": 7864320,
+      "par2": 0.895719958934933,
+      "stats": {
+        "Elimination CPU": "0.727030000",
+        "Elimination work": "1000000000",
+        "Eliminated": "10"
+      },
+      "diagnostic": ""
+    },
+    {
+      "solver": "linear",
+      "input": "/private/tmp/bsat-linear-elim-corpus/overlap-5000.cnf",
+      "repeat": 1,
+      "status": "SAT",
+      "verified": true,
+      "seconds": 0.02289412496611476,
+      "cpu_seconds": 0.007162999999999999,
+      "peak_rss_bytes": 3833856,
+      "par2": 0.02289412496611476,
+      "stats": {
+        "Elimination CPU": "0.000655000",
+        "Elimination work": "299980",
+        "Eliminated": "10"
+      },
+      "diagnostic": ""
+    },
+    {
+      "solver": "linear",
+      "input": "/private/tmp/bsat-linear-elim-corpus/overlap-5000.cnf",
+      "repeat": 2,
+      "status": "SAT",
+      "verified": true,
+      "seconds": 0.010265250224620104,
+      "cpu_seconds": 0.007585,
+      "peak_rss_bytes": 3833856,
+      "par2": 0.010265250224620104,
+      "stats": {
+        "Elimination CPU": "0.000651000",
+        "Elimination work": "299980",
+        "Eliminated": "10"
+      },
+      "diagnostic": ""
+    },
+    {
+      "solver": "linear",
+      "input": "/private/tmp/bsat-linear-elim-corpus/overlap-1000.cnf",
+      "repeat": 0,
+      "status": "SAT",
+      "verified": true,
+      "seconds": 0.005295250099152327,
+      "cpu_seconds": 0.003191,
+      "peak_rss_bytes": 2326528,
+      "par2": 0.005295250099152327,
+      "stats": {
+        "Elimination CPU": "0.000141000",
+        "Elimination work": "59980",
+        "Eliminated": "10"
+      },
+      "diagnostic": ""
+    },
+    {
+      "solver": "quadratic",
+      "input": "/private/tmp/bsat-linear-elim-corpus/overlap-1000.cnf",
+      "repeat": 0,
+      "status": "SAT",
+      "verified": true,
+      "seconds": 0.025396208744496107,
+      "cpu_seconds": 0.010693999999999999,
+      "peak_rss_bytes": 2310144,
+      "par2": 0.025396208744496107,
+      "stats": {
+        "Elimination CPU": "0.007766000",
+        "Elimination work": "10000000",
+        "Eliminated": "10"
+      },
+      "diagnostic": ""
+    },
+    {
+      "solver": "linear",
+      "input": "/private/tmp/bsat-linear-elim-corpus/overlap-5000.cnf",
+      "repeat": 0,
+      "status": "SAT",
+      "verified": true,
+      "seconds": 0.010480792261660099,
+      "cpu_seconds": 0.007525,
+      "peak_rss_bytes": 3833856,
+      "par2": 0.010480792261660099,
+      "stats": {
+        "Elimination CPU": "0.000654000",
+        "Elimination work": "299980",
+        "Eliminated": "10"
+      },
+      "diagnostic": ""
+    },
+    {
+      "solver": "linear",
+      "input": "/private/tmp/bsat-linear-elim-corpus/overlap-10000.cnf",
+      "repeat": 2,
+      "status": "SAT",
+      "verified": true,
+      "seconds": 0.023547207936644554,
+      "cpu_seconds": 0.012721999999999999,
+      "peak_rss_bytes": 5308416,
+      "par2": 0.023547207936644554,
+      "stats": {
+        "Elimination CPU": "0.001293000",
+        "Elimination work": "599980",
+        "Eliminated": "10"
+      },
+      "diagnostic": ""
+    },
+    {
+      "solver": "quadratic",
+      "input": "/private/tmp/bsat-linear-elim-corpus/overlap-10000.cnf",
+      "repeat": 0,
+      "status": "SAT",
+      "verified": true,
+      "seconds": 0.7747523747384548,
+      "cpu_seconds": 0.744999,
+      "peak_rss_bytes": 5292032,
+      "par2": 0.7747523747384548,
+      "stats": {
+        "Elimination CPU": "0.733252000",
+        "Elimination work": "1000000000",
+        "Eliminated": "10"
+      },
+      "diagnostic": ""
+    },
+    {
+      "solver": "quadratic",
+      "input": "/private/tmp/bsat-linear-elim-corpus/overlap-5000.cnf",
+      "repeat": 0,
+      "status": "SAT",
+      "verified": true,
+      "seconds": 0.2374235838651657,
+      "cpu_seconds": 0.19089,
+      "peak_rss_bytes": 3817472,
+      "par2": 0.2374235838651657,
+      "stats": {
+        "Elimination CPU": "0.183910000",
+        "Elimination work": "250000000",
+        "Eliminated": "10"
+      },
+      "diagnostic": ""
+    },
+    {
+      "solver": "linear",
+      "input": "/private/tmp/bsat-linear-elim-corpus/overlap-1000.cnf",
+      "repeat": 2,
+      "status": "SAT",
+      "verified": true,
+      "seconds": 0.005264875013381243,
+      "cpu_seconds": 0.0032109999999999994,
+      "peak_rss_bytes": 2375680,
+      "par2": 0.005264875013381243,
+      "stats": {
+        "Elimination CPU": "0.000147000",
+        "Elimination work": "59980",
+        "Eliminated": "10"
+      },
+      "diagnostic": ""
+    },
+    {
+      "solver": "linear",
+      "input": "/private/tmp/bsat-linear-elim-corpus/overlap-10000.cnf",
+      "repeat": 1,
+      "status": "SAT",
+      "verified": true,
+      "seconds": 0.02032212493941188,
+      "cpu_seconds": 0.013219999999999999,
+      "peak_rss_bytes": 5177344,
+      "par2": 0.02032212493941188,
+      "stats": {
+        "Elimination CPU": "0.001385000",
+        "Elimination work": "599980",
+        "Eliminated": "10"
+      },
+      "diagnostic": ""
+    },
+    {
+      "solver": "linear",
+      "input": "/private/tmp/bsat-linear-elim-corpus/overlap-10000.cnf",
+      "repeat": 0,
+      "status": "SAT",
+      "verified": true,
+      "seconds": 0.020225790794938803,
+      "cpu_seconds": 0.01279,
+      "peak_rss_bytes": 5160960,
+      "par2": 0.020225790794938803,
+      "stats": {
+        "Elimination CPU": "0.001311000",
+        "Elimination work": "599980",
+        "Eliminated": "10"
+      },
+      "diagnostic": ""
+    },
+    {
+      "solver": "quadratic",
+      "input": "/private/tmp/bsat-linear-elim-corpus/overlap-5000.cnf",
+      "repeat": 1,
+      "status": "SAT",
+      "verified": true,
+      "seconds": 0.23578879097476602,
+      "cpu_seconds": 0.193261,
+      "peak_rss_bytes": 3866624,
+      "par2": 0.23578879097476602,
+      "stats": {
+        "Elimination CPU": "0.186087000",
+        "Elimination work": "250000000",
+        "Eliminated": "10"
+      },
+      "diagnostic": ""
+    },
+    {
+      "solver": "quadratic",
+      "input": "/private/tmp/bsat-linear-elim-corpus/overlap-1000.cnf",
+      "repeat": 1,
+      "status": "SAT",
+      "verified": true,
+      "seconds": 0.020164750050753355,
+      "cpu_seconds": 0.010910999999999999,
+      "peak_rss_bytes": 2392064,
+      "par2": 0.020164750050753355,
+      "stats": {
+        "Elimination CPU": "0.007932000",
+        "Elimination work": "10000000",
+        "Eliminated": "10"
+      },
+      "diagnostic": ""
+    },
+    {
+      "solver": "quadratic",
+      "input": "/private/tmp/bsat-linear-elim-corpus/overlap-5000.cnf",
+      "repeat": 2,
+      "status": "SAT",
+      "verified": true,
+      "seconds": 0.23873358266428113,
+      "cpu_seconds": 0.19205899999999998,
+      "peak_rss_bytes": 4997120,
+      "par2": 0.23873358266428113,
+      "stats": {
+        "Elimination CPU": "0.184941000",
+        "Elimination work": "250000000",
+        "Eliminated": "10"
+      },
+      "diagnostic": ""
+    },
+    {
+      "solver": "quadratic",
+      "input": "/private/tmp/bsat-linear-elim-corpus/overlap-1000.cnf",
+      "repeat": 2,
+      "status": "SAT",
+      "verified": true,
+      "seconds": 0.020377791952341795,
+      "cpu_seconds": 0.01093,
+      "peak_rss_bytes": 2392064,
+      "par2": 0.020377791952341795,
+      "stats": {
+        "Elimination CPU": "0.007829000",
+        "Elimination work": "10000000",
+        "Eliminated": "10"
+      },
+      "diagnostic": ""
+    },
+    {
+      "solver": "quadratic",
+      "input": "/private/tmp/bsat-linear-elim-corpus/overlap-10000.cnf",
+      "repeat": 1,
+      "status": "SAT",
+      "verified": true,
+      "seconds": 0.7859869999811053,
+      "cpu_seconds": 0.735684,
+      "peak_rss_bytes": 7831552,
+      "par2": 0.7859869999811053,
+      "stats": {
+        "Elimination CPU": "0.723358000",
+        "Elimination work": "1000000000",
+        "Eliminated": "10"
+      },
+      "diagnostic": ""
+    }
+  ],
+  "manifest": {
+    "path": "/private/tmp/bsat-linear-elim-corpus/manifest.json",
+    "sha256": "f474c37869a540b1541362fbcad7589ccc30ce5e9b174c06445fd92b00aae9e1"
+  },
+  "summary": {
+    "quadratic": {
+      "verified_runs": 9,
+      "runs": 9,
+      "mean_par2": 0.3593715602118108,
+      "max_rss_bytes": 7864320,
+      "errors": 0
+    },
+    "linear": {
+      "verified_runs": 9,
+      "runs": 9,
+      "mean_par2": 0.039924888923350305,
+      "max_rss_bytes": 5308416,
+      "errors": 0
+    }
+  }
+}

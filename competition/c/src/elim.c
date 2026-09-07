@@ -3,6 +3,7 @@
 #include "../include/solver.h"
 #include <stdio.h>
 #include <string.h>
+#include <limits.h>
 
 void elim_init(Solver *s) {
     if (s->elim) return;
@@ -68,22 +69,64 @@ static void clean_occ(Solver *s, OccList *o) {
         if (!clause_deleted(s->arena, o->clauses[i])) o->clauses[n++] = o->clauses[i];
     o->size = n;
 }
+enum { PAIR_STOP = -1, PAIR_TAUTOLOGY, PAIR_OK };
+
+/* Root preprocessing owns the otherwise idle minimizer scratch. Charge literal
+   visits and mandatory mark cleanup; never leave marks across a pair or abort. */
+static int resolve_pair(Solver *s, const Lit *a, uint32_t na,
+                        const Lit *b, uint32_t nb, Var pivot, Lit *out, uint32_t *size) {
+    if (solver_budget_exhausted(s)) return PAIR_STOP;
+    uint32_t touched = 0, count = 0;
+    int status = PAIR_OK;
+    for (unsigned part = 0; part < 2 && status == PAIR_OK; ++part) {
+        const Lit *lits = part ? b : a;
+        uint32_t n = part ? nb : na;
+        for (uint32_t i = 0; i < n; ++i) {
+            ++s->work;
+            if ((s->work_limit && s->work >= s->work_limit) ||
+                (!(s->work & 1023) && solver_budget_exhausted(s))) {
+                status = PAIR_STOP; break;
+            }
+            Lit l = lits[i];Var v = var(l);
+            if (v == pivot) continue;
+            uint8_t mark = 1 + sign(l);
+            if (s->seen[v]) {
+                if (s->seen[v] != mark) { status = PAIR_TAUTOLOGY; break; }
+                continue;
+            }
+            s->seen[v] = mark;
+            s->minimize_touched[touched++] = v;
+            if (out) out[count] = l;
+            ++count;
+        }
+    }
+    for (uint32_t i = 0; i < touched; ++i) {
+        s->seen[s->minimize_touched[i]] = 0;
+        ++s->work;
+    }
+    if (solver_budget_exhausted(s)) status = PAIR_STOP;
+    if (size) *size = count;
+    return status;
+}
+
 int elim_cost(Solver *s, Var v) {
     if (!s->elim || s->values[v] != UNDEF || s->elim->eliminated[v]) return -1;
+    if (solver_budget_exhausted(s)) return -1;
     OccList *p = &s->elim->occs[mkLit(v, false)], *n = &s->elim->occs[mkLit(v, true)];
     clean_occ(s, p); clean_occ(s, n);
     if (!p->size && !n->size) return -1;
     if (p->size > s->opts.elim_max_occ || n->size > s->opts.elim_max_occ) return -1;
-    int count = 0;
+    uint64_t count = 0;
     for (uint32_t i = 0; i < p->size; ++i) for (uint32_t j = 0; j < n->size; ++j) {
         CRef a = p->clauses[i], b = n->clauses[j];
         uint32_t na = CLAUSE_SIZE(s->arena, a), nb = CLAUSE_SIZE(s->arena, b);
-        s->work += (uint64_t)na * nb;
-        if (solver_budget_exhausted(s)) return -1;
-        if (!elim_is_tautology(CLAUSE_LITS(s->arena, a), na, CLAUSE_LITS(s->arena, b), nb, v)) count++;
-        if ((uint32_t)count > p->size + n->size + s->opts.elim_grow) return -1;
+        int result = resolve_pair(s, CLAUSE_LITS(s->arena,a), na,
+                                  CLAUSE_LITS(s->arena,b), nb, v, NULL, NULL);
+        if (result == PAIR_STOP) return -1;
+        if (result == PAIR_OK) ++count;
+        if (count > INT_MAX || count > (uint64_t)p->size + n->size + s->opts.elim_grow) return -1;
     }
-    return count;
+    return (int)count;
 }
 bool elim_save(Solver *s, Var v, const Lit *lits, uint32_t size) {
     elim_init(s);
@@ -111,10 +154,14 @@ bool elim_eliminate_var(Solver *s, Var v) {
     uint32_t *sizes = calloc((size_t)cost + 1, sizeof *sizes);
     Lit *saved = NULL;
     uint32_t saved_size = 0, nr = 0;
+    bool eliminated = false;
     if (!removed || !res || !sizes) { s->error = true; goto done; }
     if (p->size) memcpy(removed, p->clauses, p->size * sizeof *removed);
     if (n->size) memcpy(removed + p->size, n->clauses, n->size * sizeof *removed);
-    for (uint32_t i = 0; i < count; ++i) saved_size += CLAUSE_SIZE(s->arena, removed[i]) + 1;
+    uint64_t words = 0;
+    for (uint32_t i = 0; i < count; ++i) words += (uint64_t)CLAUSE_SIZE(s->arena, removed[i]) + 1;
+    if (words > UINT32_MAX || words > SIZE_MAX / sizeof *saved) goto done;
+    saved_size = (uint32_t)words;
     saved = malloc(saved_size * sizeof *saved);
     if (!saved) { s->error = true; goto done; }
     uint32_t at = 0;
@@ -127,15 +174,14 @@ bool elim_eliminate_var(Solver *s, Var v) {
         CRef ca = p->clauses[i], cb = n->clauses[j];
         uint32_t na = CLAUSE_SIZE(s->arena, ca), nb = CLAUSE_SIZE(s->arena, cb);
         Lit *a = CLAUSE_LITS(s->arena, ca), *b = CLAUSE_LITS(s->arena, cb);
-        if (elim_is_tautology(a, na, b, nb, v)) continue;
-        Lit *r = malloc((na + nb) * sizeof *r);
+        Lit *r = malloc(((size_t)na + nb) * sizeof *r);
         if (!r) { s->error = true; goto done; }
         uint32_t z = 0;
-        for (uint32_t k = 0; k < na; ++k) if (var(a[k]) != v) r[z++] = a[k];
-        for (uint32_t k = 0; k < nb; ++k) if (var(b[k]) != v) {
-            bool duplicate = false;
-            for (uint32_t t = 0; t < z; ++t) if (r[t] == b[k]) duplicate = true;
-            if (!duplicate) r[z++] = b[k];
+        int result = resolve_pair(s, a, na, b, nb, v, r, &z);
+        if (result != PAIR_OK) {
+            free(r);
+            if (result == PAIR_STOP) goto done;
+            continue;
         }
         res[nr] = r; sizes[nr++] = z;
     }
@@ -157,11 +203,12 @@ bool elim_eliminate_var(Solver *s, Var v) {
         for (uint32_t i = 0; i < count; ++i) solver_delete_clause(s, removed[i]);
         s->elim->eliminated[v] = true;
         s->elim->vars_eliminated++; s->elim->clauses_removed += count;
+        eliminated = true;
     }
 done:
     for (uint32_t i = 0; i < nr; ++i) free(res[i]);
     free(res); free(sizes); free(removed); free(saved);
-    return !s->error;
+    return eliminated;
 }
 uint32_t elim_preprocess(Solver *s) {
     elim_build_occs(s);

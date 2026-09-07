@@ -198,3 +198,12 @@ local-search-benchmark: $(BINDIR)/local_search_benchmark_$(MODE)
 
 $(BINDIR)/local_search_benchmark_$(MODE): $(TESTDIR)/benchmark_local_search.c $(filter-out $(OBJDIR)/main.o,$(OBJECTS)) | dirs
 	$(CC) $(CFLAGS) -o $@ $^ -lm
+
+# Isolated BVE resolution benchmark (not part of normal solver builds).
+ELIM_DRIVER = $(BINDIR)/elim_driver$(if $(filter release,$(MODE)),,_$(MODE))
+elim-driver: dirs $(ELIM_DRIVER)
+
+$(ELIM_DRIVER): $(TESTDIR)/elim_driver.c $(filter-out $(OBJDIR)/main.o,$(OBJECTS))
+	$(CC) $(CFLAGS) -o $@ $^ -lm
+
+.PHONY: elim-driver
