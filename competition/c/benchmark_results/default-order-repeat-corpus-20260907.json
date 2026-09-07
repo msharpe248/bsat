@@ -1,0 +1,20 @@
+{
+  "schema": 1,
+  "policy": "repeat battleship difference with p-center certificate control",
+  "source_manifest": {
+    "path": "/Users/msharpe/python/bsat/competition/c/benchmark_results/default-order-corpus-20260907.json",
+    "sha256": "30dc6f3e8bb0872df4c1bb2008b4e4c346531e8085d7ad69b99614f10a6bcd3d"
+  },
+  "inputs": {
+    "/Users/msharpe/python/bsat/dataset/sat_competition2025/battleship/ed6d842f96d10f3400bce251f9e95bfb.cnf": {
+      "sha256": "9d586fde48ebcc533f867c06569f008a9b3f5b71dca6a3c9e18db48e037a0b6f",
+      "family": "battleship",
+      "bytes": 73563
+    },
+    "/Users/msharpe/python/bsat/dataset/sat_competition2025/p-center/2412325e3c099453b99c87864477363c.cnf": {
+      "sha256": "4edf6b303edeea81a0c564726b9dbb17740316ba44bdf0b4749e958f7804b1a8",
+      "family": "p-center",
+      "bytes": 156467
+    }
+  }
+}

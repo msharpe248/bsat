@@ -88,6 +88,32 @@ def worker(config):
                     diagnostic=diagnostic or (tmp/'err').read_text(errors='replace')[-2000:])
 
 
+def verified_manifest(path):
+    """Validate all selected bytes before launching any timed solver process."""
+    path = path.resolve()
+    raw = path.read_bytes()
+    manifest = json.loads(raw)
+    entries = manifest.get('inputs') if isinstance(manifest, dict) else None
+    if not isinstance(entries, dict) or not entries:
+        raise ValueError('manifest must contain a nonempty inputs object')
+    inputs = {}
+    for name, metadata in entries.items():
+        candidate = Path(name)
+        if not candidate.is_absolute():
+            candidate = path.parent/candidate
+        candidate = candidate.resolve()
+        expected = metadata.get('sha256') if isinstance(metadata, dict) else None
+        if not isinstance(expected, str) or len(expected) != 64 or any(c not in '0123456789abcdef' for c in expected.lower()):
+            raise ValueError(f'manifest input lacks a valid SHA256: {name}')
+        if str(candidate) in inputs:
+            raise ValueError(f'duplicate resolved manifest input: {name}')
+        actual = digest(candidate)
+        if actual != expected.lower():
+            raise ValueError(f'manifest input hash mismatch: {name}')
+        inputs[str(candidate)] = dict(sha256=actual, family=candidate.parent.name)
+    return inputs, dict(path=str(path), sha256=hashlib.sha256(raw).hexdigest())
+
+
 def main():
     if len(sys.argv) == 2 and sys.argv[1] == '--worker':
         print(json.dumps(worker(json.load(sys.stdin))))
@@ -101,7 +127,8 @@ def main():
     p.add_argument('--seed', type=int, default=1)
     p.add_argument('--split', choices=('development','heldout'), default='development')
     p.add_argument('--output', type=Path, default=Path('benchmark.json'))
-    p.add_argument('inputs', nargs='+', type=Path)
+    p.add_argument('--manifest', type=Path, help='Hash-verified input manifest, instead of positional inputs')
+    p.add_argument('inputs', nargs='*', type=Path)
     args = p.parse_args()
     if args.timeout <= 0 or args.check_timeout <= 0 or args.repeats < 1:
         p.error('timeouts and repeats must be positive')
@@ -117,10 +144,20 @@ def main():
             p.error(f'missing executable or duplicate solver name: {name}')
         command[0] = str(Path(binary).resolve())
         solvers[name] = dict(command=command, sha256=digest(binary))
-    paths = sorted({p.resolve() for entry in args.inputs for p in (entry.rglob('*.cnf') if entry.is_dir() else [entry])})
-    if not paths:
-        p.error('no CNF files found')
-    inputs = {str(p):dict(sha256=digest(p), family=p.parent.name) for p in paths}
+    if args.manifest and args.inputs:
+        p.error('use either --manifest or positional inputs')
+    manifest_info = None
+    if args.manifest:
+        try:
+            inputs, manifest_info = verified_manifest(args.manifest)
+        except (ValueError, OSError) as error:
+            p.error(str(error))
+        paths = sorted(Path(name) for name in inputs)
+    else:
+        paths = sorted({p.resolve() for entry in args.inputs for p in (entry.rglob('*.cnf') if entry.is_dir() else [entry])})
+        if not paths:
+            p.error('no CNF files found')
+        inputs = {str(p):dict(sha256=digest(p), family=p.parent.name) for p in paths}
     try:
         revision = subprocess.check_output(['git','rev-parse','HEAD'],text=True).strip()
         dirty = bool(subprocess.check_output(['git','status','--porcelain'],text=True).strip())
@@ -130,6 +167,8 @@ def main():
                   revision=revision, dirty=dirty, split=args.split, seed=args.seed,
                   timeout=args.timeout, repeats=args.repeats, solvers=solvers, inputs=inputs,
                   checker=dict(path=checker, sha256=digest(checker)) if checker else None, runs=[])
+    if manifest_info:
+        report['manifest'] = manifest_info
     jobs = [(name, str(path), repeat) for name in solvers for path in paths for repeat in range(args.repeats)]
     random.Random(args.seed).shuffle(jobs)
     args.output.parent.mkdir(parents=True, exist_ok=True)

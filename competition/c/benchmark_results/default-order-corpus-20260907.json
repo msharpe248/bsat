@@ -1,0 +1,688 @@
+{
+  "schema": 1,
+  "policy": "smallest eligible file first; one per family; path breaks size ties",
+  "exclusions": "CNF filenames and SHA256 strings appearing in JSON history; duplicate selected content",
+  "dataset": "/Users/msharpe/python/bsat/dataset/sat_competition2025",
+  "requested_families": 16,
+  "max_bytes": 2000000,
+  "history": [
+    {
+      "path": "/Users/msharpe/python/bsat/competition/c/benchmark_results/binary-minimize-additional-20260907.json",
+      "sha256": "b35810092986caa90ba087a6f591184e0c55b1dc5231d29e12888751e56c1824"
+    },
+    {
+      "path": "/Users/msharpe/python/bsat/competition/c/benchmark_results/binary-minimize-broad-20260907.json",
+      "sha256": "80ff37a2fca670ad22833134cda5650898fb8320914894a61ec2f767783eea4a"
+    },
+    {
+      "path": "/Users/msharpe/python/bsat/competition/c/benchmark_results/binary-minimize-disabled-20260907.json",
+      "sha256": "abc99f5852290184eb84e82c5c5027978bc2c174e2ab6ae1dcdaf3c38ac8fbba"
+    },
+    {
+      "path": "/Users/msharpe/python/bsat/competition/c/benchmark_results/binary-minimize-targeted-20260907.json",
+      "sha256": "cf74d99d7a870dae8faee8c5a3345e8cb594085247bc30fe95e7995dffc92482"
+    },
+    {
+      "path": "/Users/msharpe/python/bsat/competition/c/benchmark_results/blocker-refresh-rejected-20260906.json",
+      "sha256": "8cdaebf08bb2e0933ef07ad3df4d6e8775f3b89a71124481cdda1be9c63d2c1d"
+    },
+    {
+      "path": "/Users/msharpe/python/bsat/competition/c/benchmark_results/bounded-minimization-circuit-20260906.json",
+      "sha256": "f2dc309d3c0c6353e75d4760c597ac7d28bcb88ca4263fb53eb32f5c09bcac4c"
+    },
+    {
+      "path": "/Users/msharpe/python/bsat/competition/c/benchmark_results/bounded-minimization-deadline-20260906.json",
+      "sha256": "efc6a115020ec8a026b935d66c22b6f9ca414f71b016d5b3da5d4ecaa654465f"
+    },
+    {
+      "path": "/Users/msharpe/python/bsat/competition/c/benchmark_results/bounded-minimization-deadline-short-20260906.json",
+      "sha256": "fa5a48887474f24b483e60546b7fd20d50e11263a30c791f64e211152b190157"
+    },
+    {
+      "path": "/Users/msharpe/python/bsat/competition/c/benchmark_results/bounded-minimization-work-20260906.json",
+      "sha256": "60bf06b0b2fc4ccf34c0ba92607a32c35c0af838bc5351e507efb7e4782d1838"
+    },
+    {
+      "path": "/Users/msharpe/python/bsat/competition/c/benchmark_results/buffered-input-build-20260906.json",
+      "sha256": "1c89e4633ca73bf6df87891c6991cd5cd99c176660b0cf795fec2c9b85d50a72"
+    },
+    {
+      "path": "/Users/msharpe/python/bsat/competition/c/benchmark_results/buffered-input-corpus-20260906.json",
+      "sha256": "441c207c7c406804fc95e9aec25ea5fae95edacb7308dc56eb7c9a7c6d686a99"
+    },
+    {
+      "path": "/Users/msharpe/python/bsat/competition/c/benchmark_results/buffered-input-final-corpus-20260906.json",
+      "sha256": "6cbf6e6a5a2f0f247487bd82c197f1e55de4c951f08c946b524c9fd575aca834"
+    },
+    {
+      "path": "/Users/msharpe/python/bsat/competition/c/benchmark_results/buffered-input-final-large-corpus-20260906.json",
+      "sha256": "4d9550f7885056bbc598fc8d51000e7af10b7803acac4bacd0dd4a497a539d33"
+    },
+    {
+      "path": "/Users/msharpe/python/bsat/competition/c/benchmark_results/buffered-input-final-summary-20260906.json",
+      "sha256": "9c5563077aeba1d92e4899d9f53ea0c74cebb67beadd4a1b069d2cb1c6d5cfa8"
+    },
+    {
+      "path": "/Users/msharpe/python/bsat/competition/c/benchmark_results/buffered-input-large-corpus-20260906.json",
+      "sha256": "94aca8fda016855d5ab973494b22419cb625276cc90f0797d4f2c15073d0a2c7"
+    },
+    {
+      "path": "/Users/msharpe/python/bsat/competition/c/benchmark_results/buffered-input-limits-asan-20260906.json",
+      "sha256": "5975feca8d9d3ec467e5ad4c89c130246bd8db89ee571ae4c99ac49858c29b75"
+    },
+    {
+      "path": "/Users/msharpe/python/bsat/competition/c/benchmark_results/buffered-input-limits-release-20260906.json",
+      "sha256": "e2b257c37a1ec8a9e91cc7fa878f56719219dafaff88efbb34528c74f36b5635"
+    },
+    {
+      "path": "/Users/msharpe/python/bsat/competition/c/benchmark_results/buffered-input-loading-20260906.json",
+      "sha256": "b47e34af152a693fae3e919ca4bd922ea0309db225cafbfc88e1a55322db5497"
+    },
+    {
+      "path": "/Users/msharpe/python/bsat/competition/c/benchmark_results/buffered-input-nul-20260906.json",
+      "sha256": "027cd6b90cc7100f5386a86e3f8faabbe3e2451369485312e8d0d4faa6ca7118"
+    },
+    {
+      "path": "/Users/msharpe/python/bsat/competition/c/benchmark_results/buffered-input-search-20260906.json",
+      "sha256": "5a9f136a4b0cfba23186f193d3b07e4625049a6828daf127819af2da8f1c5def"
+    },
+    {
+      "path": "/Users/msharpe/python/bsat/competition/c/benchmark_results/buffered-input-smoke-20260906.json",
+      "sha256": "c9f39a79cfc9f254b5062051708a0643083ce5b4cd7979dc5e652d0a9563e32b"
+    },
+    {
+      "path": "/Users/msharpe/python/bsat/competition/c/benchmark_results/buffered-input-validation-20260906.json",
+      "sha256": "7946108a0351a40869e5a24b10832e32450239ef694eb04d4659c741821e188e"
+    },
+    {
+      "path": "/Users/msharpe/python/bsat/competition/c/benchmark_results/circular-ranges-rejected-20260906.json",
+      "sha256": "3422150322c6d37a7ca9727a08d56e53c0ac3093d5902f0e9f42cd17623e1181"
+    },
+    {
+      "path": "/Users/msharpe/python/bsat/competition/c/benchmark_results/clause-activity-competition-20260906.json",
+      "sha256": "bc10a3ae72910c689893478e0b836f96826747d7b16cb2b3176c8e02493450a0"
+    },
+    {
+      "path": "/Users/msharpe/python/bsat/competition/c/benchmark_results/clause-activity-experimental-validation-20260906.json",
+      "sha256": "02c6a895b0d2b230c3561781788db9e6048d7d50b55b343a9e0cbae3df4aad57"
+    },
+    {
+      "path": "/Users/msharpe/python/bsat/competition/c/benchmark_results/clause-activity-final-validation-20260906.json",
+      "sha256": "9670eaa33e17396a021806547623d9f84180a0f99ea6de73f20083ea53a9ea4f"
+    },
+    {
+      "path": "/Users/msharpe/python/bsat/competition/c/benchmark_results/clause-activity-fresh-20260906.json",
+      "sha256": "6b9e37bcd2779807dddbf21ca25cfb8d7a7c966497d004f945682e29dfe78a71"
+    },
+    {
+      "path": "/Users/msharpe/python/bsat/competition/c/benchmark_results/clause-activity-fresh-manifest-20260906.json",
+      "sha256": "b8394e793350b1d909a6872b1bcb041bb9a3287f9e71b8cb8071abc78fc89a12"
+    },
+    {
+      "path": "/Users/msharpe/python/bsat/competition/c/benchmark_results/clause-activity-stress-20260906.json",
+      "sha256": "45e6ad94ddb6ea90e3e38eea02350a72c8c5618954dc7888ca51d14df48d6161"
+    },
+    {
+      "path": "/Users/msharpe/python/bsat/competition/c/benchmark_results/clause-locks-broad-20260907.json",
+      "sha256": "6f7a402a1b90891a3ba83cd4b7d559ac7433386a0614a2f377d4286a9e9fdffc"
+    },
+    {
+      "path": "/Users/msharpe/python/bsat/competition/c/benchmark_results/clause-locks-micro-20260907.json",
+      "sha256": "87de1c3d7d7195843271045fbaf40fb274770bdb61b6bc3912d4923c1d918468"
+    },
+    {
+      "path": "/Users/msharpe/python/bsat/competition/c/benchmark_results/clause-locks-summary-20260907.json",
+      "sha256": "11d4070d73cfc7eb69d3e4e9104b9bac1fcf24a09db8309cb43afb2e4628ff23"
+    },
+    {
+      "path": "/Users/msharpe/python/bsat/competition/c/benchmark_results/clause-locks-targeted-20260907.json",
+      "sha256": "652625ed3f8a0a34b426e605695dc9b0fa582f4b8558a51f250bfb0f0e1dc2a7"
+    },
+    {
+      "path": "/Users/msharpe/python/bsat/competition/c/benchmark_results/deadline-limits-asan-20260906.json",
+      "sha256": "63d28cb2bc13e9630869cf75a5a5daf3a3c9f1628d6399bce4b4894f37ad4172"
+    },
+    {
+      "path": "/Users/msharpe/python/bsat/competition/c/benchmark_results/deadline-limits-release-20260906.json",
+      "sha256": "b794300c4668f2a56705001345e651cb43c2d5e64b0fe8fd798f90a5975a1713"
+    },
+    {
+      "path": "/Users/msharpe/python/bsat/competition/c/benchmark_results/deadline-long-20260906.json",
+      "sha256": "c61c86d546c8027520e16a021c4a47a9f109f014c1f7c0b808335ca16637c7e9"
+    },
+    {
+      "path": "/Users/msharpe/python/bsat/competition/c/benchmark_results/deadline-screen-20260906.json",
+      "sha256": "f75e68771fda9c6e9045c1db4099cf0f308dd8708e8bd78e00ea35c0593b297c"
+    },
+    {
+      "path": "/Users/msharpe/python/bsat/competition/c/benchmark_results/deadline-summary-20260906.json",
+      "sha256": "2143cffc819eb225351688dd115afe5a7018067b136cae8216e498184f82a3e9"
+    },
+    {
+      "path": "/Users/msharpe/python/bsat/competition/c/benchmark_results/deadline-unlimited-20260906.json",
+      "sha256": "e7fc125ccda349366e857d02926060a7618e7ce34d09dd83a952fe9709df3298"
+    },
+    {
+      "path": "/Users/msharpe/python/bsat/competition/c/benchmark_results/deadline-validation-20260906.json",
+      "sha256": "93856e11288a8186d6e5f5c5b5176c75f7cc4882f2b6d538f78292ce43024f11"
+    },
+    {
+      "path": "/Users/msharpe/python/bsat/competition/c/benchmark_results/decision-phase-limits-asan-20260906.json",
+      "sha256": "7675cf4f3b190ffcecf848862490b2779863e98462ca7870915959a3dba340bb"
+    },
+    {
+      "path": "/Users/msharpe/python/bsat/competition/c/benchmark_results/decision-phase-limits-release-20260906.json",
+      "sha256": "25230dd2979a861c11b6472e1185519eefc308e8176b9f3b56945f02ce47129c"
+    },
+    {
+      "path": "/Users/msharpe/python/bsat/competition/c/benchmark_results/decision-phase-policy-20260906.json",
+      "sha256": "f7eae7fc94414caacd3c32ee9830e8571c76cdda53ac89d5bb486066790709a5"
+    },
+    {
+      "path": "/Users/msharpe/python/bsat/competition/c/benchmark_results/decision-phase-screen-20260906.json",
+      "sha256": "d533976248827d91967501f7c76809121184bd4ac436a7d952635de391f86ea7"
+    },
+    {
+      "path": "/Users/msharpe/python/bsat/competition/c/benchmark_results/decision-phase-summary-20260906.json",
+      "sha256": "a9af4666e3ed609b5024547d0681bf0f40b90aa13fb85b71c23ea5b7d3aa6536"
+    },
+    {
+      "path": "/Users/msharpe/python/bsat/competition/c/benchmark_results/dense-activity-long-20260906.json",
+      "sha256": "81dfc10d606d19d117b7f58265951c780a3aac64c8be60f7998bc2b8547037a7"
+    },
+    {
+      "path": "/Users/msharpe/python/bsat/competition/c/benchmark_results/dense-activity-screen-20260906.json",
+      "sha256": "eb07e0a31122579f3f2fbbbdddd9130e0be60c42df94eb86dcebe289ba20ebdd"
+    },
+    {
+      "path": "/Users/msharpe/python/bsat/competition/c/benchmark_results/dense-activity-summary-20260906.json",
+      "sha256": "163006694ca857c305e53caaa53464eeb0cb7a9dceaa7acc57e2a78b75cc54a9"
+    },
+    {
+      "path": "/Users/msharpe/python/bsat/competition/c/benchmark_results/dense-activity-validation-20260906.json",
+      "sha256": "b66b957bb1861627b37544c491c43c2b5fc4d1bbd9dc2ef2a19f1f2ef8880160"
+    },
+    {
+      "path": "/Users/msharpe/python/bsat/competition/c/benchmark_results/dynamic-lbd-competition-screen-20260906.json",
+      "sha256": "4f0e8a63c83f32b8c3d4f4a304612a66f747c9d442791963c519f80e17525dec"
+    },
+    {
+      "path": "/Users/msharpe/python/bsat/competition/c/benchmark_results/dynamic-lbd-stress-comparison-20260906.json",
+      "sha256": "feff88c0a75b91e487cb51c89924e5f1979f9a2f12308003a4d7994daf2589e4"
+    },
+    {
+      "path": "/Users/msharpe/python/bsat/competition/c/benchmark_results/dynamic-lbd-stress-manifest-20260906.json",
+      "sha256": "8db84bab4dbd2520a9ece712fa7d62803f1afde39d5c0d639c6c9eaf74fbd7b9"
+    },
+    {
+      "path": "/Users/msharpe/python/bsat/competition/c/benchmark_results/dynamic-lbd-summary-20260906.json",
+      "sha256": "910a5f92a15a01a2f7922c1e946374ab2c41ec85daa82e2039c9b69ca0e65784"
+    },
+    {
+      "path": "/Users/msharpe/python/bsat/competition/c/benchmark_results/dynamic-lbd-validation-20260906.json",
+      "sha256": "e729a3ea98c75b75ce7466d4660b428bb3cc2931f68ef7ee6695bf26cadc209c"
+    },
+    {
+      "path": "/Users/msharpe/python/bsat/competition/c/benchmark_results/equivalence-comparison-20260906.json",
+      "sha256": "123996fce9cbaaa9f536def023f31a674cec4221d0977a8d7fabaf94349894f6"
+    },
+    {
+      "path": "/Users/msharpe/python/bsat/competition/c/benchmark_results/equivalence-long-20260906.json",
+      "sha256": "cf833e5de1688db2f24478fb4110d472f192ccb656f70ff02697be5cd8d1252c"
+    },
+    {
+      "path": "/Users/msharpe/python/bsat/competition/c/benchmark_results/equivalence-validation-20260906.json",
+      "sha256": "0f1583c257d41496465fa22ed0ed4bcdd6dd9c91bee883a3d98221e0696aa7fd"
+    },
+    {
+      "path": "/Users/msharpe/python/bsat/competition/c/benchmark_results/growing-reduce-1000-targeted-20260907.json",
+      "sha256": "1cfa923d9f5779f0a991239ca7dc7e84c8cb9a268c4d77bec4128fd4477541d1"
+    },
+    {
+      "path": "/Users/msharpe/python/bsat/competition/c/benchmark_results/growing-reduce-2000-broad-20260907.json",
+      "sha256": "83f8b7da24764cfa56bfe456c4234fd3baa4090a35ec56b795ee6e8fb3a452a6"
+    },
+    {
+      "path": "/Users/msharpe/python/bsat/competition/c/benchmark_results/growing-reduce-2000-targeted-20260907.json",
+      "sha256": "2cb9993419cdbc07bd312860bf5e27659a062e34d5939eaed04cfae8b3e36678"
+    },
+    {
+      "path": "/Users/msharpe/python/bsat/competition/c/benchmark_results/growing-reduce-boundary-20260907.json",
+      "sha256": "6d962d02fc1ea0b874b430ab5150afddbb8b65dbe64e27a636028fba0ef0b6f5"
+    },
+    {
+      "path": "/Users/msharpe/python/bsat/competition/c/benchmark_results/growing-reduce-validation-20260907.json",
+      "sha256": "c5f0b6166098e621810c74b5594684de3d19c1be7c12ccab55c56641ea964551"
+    },
+    {
+      "path": "/Users/msharpe/python/bsat/competition/c/benchmark_results/hardening-20260906.json",
+      "sha256": "d0a08100d2d2fac84b48ab25a9d1270e86206559b769902f3160e6aa486a25a3"
+    },
+    {
+      "path": "/Users/msharpe/python/bsat/competition/c/benchmark_results/heap-bottomup-final-validation-20260906.json",
+      "sha256": "f3d30bca67f4acd86674a897d8b1166734490b0ed6b9a9588f9bf4d1c2fb8e54"
+    },
+    {
+      "path": "/Users/msharpe/python/bsat/competition/c/benchmark_results/heap-bottomup-long-20260906.json",
+      "sha256": "da2675ed57536055bcb72fbfe5f7bd7aff24417d295972a857d0b800dc3124fb"
+    },
+    {
+      "path": "/Users/msharpe/python/bsat/competition/c/benchmark_results/heap-bottomup-long-summary-20260906.json",
+      "sha256": "857f1a680661465e83f8539b4e35ef0d50565bed0a7e73f95e3222c4a0d37773"
+    },
+    {
+      "path": "/Users/msharpe/python/bsat/competition/c/benchmark_results/heap-bottomup-screen-20260906.json",
+      "sha256": "6fbaa493cb2c1217189449fc8ca54062fd7f89e13ae7c22e5a0acb02f6205852"
+    },
+    {
+      "path": "/Users/msharpe/python/bsat/competition/c/benchmark_results/heap-bottomup-screen-summary-20260906.json",
+      "sha256": "b2b19986ea3a42b114dab92c7fd6623a305a3e1a3462566b3c59c35a51be71bb"
+    },
+    {
+      "path": "/Users/msharpe/python/bsat/competition/c/benchmark_results/hybrid-order-targeted-20260907.json",
+      "sha256": "46ee541786d7506337bea35c76d70df9fb75073355b9f9b3b7767a35d2c2604a"
+    },
+    {
+      "path": "/Users/msharpe/python/bsat/competition/c/benchmark_results/minimization-corpus-20260906.json",
+      "sha256": "4d85b0a99def57a6a062a88b4aeccb1e096bd1237f1b7ff2d4c238107a9d60b1"
+    },
+    {
+      "path": "/Users/msharpe/python/bsat/competition/c/benchmark_results/minimization-final-modes-20260906.json",
+      "sha256": "5b00ac4e4c3411278e085b7612e4c40db16b943dc9e8902a725d1c176e954761"
+    },
+    {
+      "path": "/Users/msharpe/python/bsat/competition/c/benchmark_results/minimization-limits-circuit-20260906.json",
+      "sha256": "04cf5809a31ff6e500685a875178d918847c8c5339fb29c3152efba465c5392e"
+    },
+    {
+      "path": "/Users/msharpe/python/bsat/competition/c/benchmark_results/minimization-limits-deadline-20260906.json",
+      "sha256": "38bf37a6fe0a5d33da40813fdd95aafef8763ddb0a7835ce933b2f033256ea66"
+    },
+    {
+      "path": "/Users/msharpe/python/bsat/competition/c/benchmark_results/minimization-limits-summary-20260906.json",
+      "sha256": "2904114efe8820ae5a02596d9bdc930f43582034af9132f876e85af8174e8993"
+    },
+    {
+      "path": "/Users/msharpe/python/bsat/competition/c/benchmark_results/minimization-limits-work-20260906.json",
+      "sha256": "4f6cfd8a48488fae124cc9669e871298df3d31ede76739b10b9ddb9df19c500a"
+    },
+    {
+      "path": "/Users/msharpe/python/bsat/competition/c/benchmark_results/minimization-screen-20260906.json",
+      "sha256": "c9d39c6db985b498e36ef081e832424bdf80034257556e302e036958dd09d0ce"
+    },
+    {
+      "path": "/Users/msharpe/python/bsat/competition/c/benchmark_results/minimization-work-20260906.json",
+      "sha256": "f225b0dd38d3fa0291d8535245262e6d88e94a4b4cdc56f375843bf468b89fbb"
+    },
+    {
+      "path": "/Users/msharpe/python/bsat/competition/c/benchmark_results/phase-screen-20260906.json",
+      "sha256": "78c55d55a19efda81274c0869440f66b19fa11db5985059d72b0310af20ec0d8"
+    },
+    {
+      "path": "/Users/msharpe/python/bsat/competition/c/benchmark_results/probe-binaries-broad-20260906.json",
+      "sha256": "317dfdfd4b3ee1dab9cc60b87d6b137357a1c629423e4c0792fe660422fbcc2a"
+    },
+    {
+      "path": "/Users/msharpe/python/bsat/competition/c/benchmark_results/probe-binaries-targeted-20260906.json",
+      "sha256": "89b17dac8a7c8871178ec8f9f3fa1b70b966cebee8a92b3b96f4bc97bf615c65"
+    },
+    {
+      "path": "/Users/msharpe/python/bsat/competition/c/benchmark_results/probe-binaries-validation-20260906.json",
+      "sha256": "cc1e5cf03051f4518e145a7e8431ab8f7d84cf1165014c091c951ffeed0ed9e3"
+    },
+    {
+      "path": "/Users/msharpe/python/bsat/competition/c/benchmark_results/probe-phase-positive-20260906.json",
+      "sha256": "b77260f10ca7c20a014ae3924b71bb93371f2d2273a083656c41ee7c5f0225c1"
+    },
+    {
+      "path": "/Users/msharpe/python/bsat/competition/c/benchmark_results/probe-phase-targeted-20260906.json",
+      "sha256": "e759fde39281049e305d3e9f9ec05f2b76b08ec2d9d8a1c6c549f604b8b6028f"
+    },
+    {
+      "path": "/Users/msharpe/python/bsat/competition/c/benchmark_results/propagation-experiments-summary-20260906.json",
+      "sha256": "e0db3a4ad80b6c97f953166a9414c6616504831e7de15aaf1e9bc1155aa85ee3"
+    },
+    {
+      "path": "/Users/msharpe/python/bsat/competition/c/benchmark_results/random-decisions-fixed-20260906.json",
+      "sha256": "96fc90e4efac6982ed4ec6ed622e797cb8961472257f656ff0cd54b9ca83a0ef"
+    },
+    {
+      "path": "/Users/msharpe/python/bsat/competition/c/benchmark_results/random-decisions-growing-broad-20260906.json",
+      "sha256": "bbdcf98bce64694f9771ea79ab3ef6a159ce1ec64d8ffb108e036f6b08af76fc"
+    },
+    {
+      "path": "/Users/msharpe/python/bsat/competition/c/benchmark_results/random-decisions-growing-targeted-20260906.json",
+      "sha256": "2251f735725f5499eb6dd26da21b48f1ea72d49aba17cba691ffaff331272b10"
+    },
+    {
+      "path": "/Users/msharpe/python/bsat/competition/c/benchmark_results/search-ablation-20260906.json",
+      "sha256": "7c6350f04b92d356bfd018009dafbb2641bf551368f5d3aced0b6ed22b5c1fc2"
+    },
+    {
+      "path": "/Users/msharpe/python/bsat/competition/c/benchmark_results/small-clause-limits-asan-20260906.json",
+      "sha256": "b144338fd9cdbd7ac76ec13c82651d4f39790ddc6608daccbb23a02dd4d6b26e"
+    },
+    {
+      "path": "/Users/msharpe/python/bsat/competition/c/benchmark_results/small-clause-limits-release-20260906.json",
+      "sha256": "ce2efcc8133b39104d1da1e2685b112a3c1269d7e11793f11d28604f49018c85"
+    },
+    {
+      "path": "/Users/msharpe/python/bsat/competition/c/benchmark_results/small-clause-parse-20260906.json",
+      "sha256": "241899ae4b49c33e9a479668e640e876746329c3ddcd30df23c927a006474d93"
+    },
+    {
+      "path": "/Users/msharpe/python/bsat/competition/c/benchmark_results/small-clause-parse-summary-20260906.json",
+      "sha256": "d007db0062ea95d16f7698d7985b0b9c580bbd50e716ca8fd351bdb3f26ae8a5"
+    },
+    {
+      "path": "/Users/msharpe/python/bsat/competition/c/benchmark_results/small-clause-search-20260906.json",
+      "sha256": "3fb29fbac019d25db93bd107151363ccdf9db06ca49a563fd1d2910d4ef59d26"
+    },
+    {
+      "path": "/Users/msharpe/python/bsat/competition/c/benchmark_results/small-clause-search-summary-20260906.json",
+      "sha256": "5e3b29b213e824eb6cca11d005f59c8079bcee78bb522a5196e48e2edf568316"
+    },
+    {
+      "path": "/Users/msharpe/python/bsat/competition/c/benchmark_results/small-clause-validation-20260906.json",
+      "sha256": "418704ac7f4bf6d89b6cec325eda6f6242aa9ab91f298b98b7949642259e38e3"
+    },
+    {
+      "path": "/Users/msharpe/python/bsat/competition/c/benchmark_results/tagged-binary-broad-20260906.json",
+      "sha256": "6830610b0424bcba898d7dadadc8320db5142dc8cd283d159130450c50c587f8"
+    },
+    {
+      "path": "/Users/msharpe/python/bsat/competition/c/benchmark_results/tagged-binary-heap-20260906.json",
+      "sha256": "d6cef1ca2c0650a2fba851c2d0787090aca80d05ec9aa34f7a532cde41a35f57"
+    },
+    {
+      "path": "/Users/msharpe/python/bsat/competition/c/benchmark_results/tagged-binary-micro-20260906.json",
+      "sha256": "104d5da1263b3d3bf369811539002cab0fc7e45ce15a0fe6eb9b27575c410d45"
+    },
+    {
+      "path": "/Users/msharpe/python/bsat/competition/c/benchmark_results/tagged-binary-targeted-20260906.json",
+      "sha256": "3f32a525291ed16287b06113b33f855a4e506e296e1c0605aff3e181e65faa76"
+    },
+    {
+      "path": "/Users/msharpe/python/bsat/competition/c/benchmark_results/tagged-binary-validation-20260906.json",
+      "sha256": "4f80f6f6395fb5d581bd8b53ba5a31df0bf1a1f88a290e41ebde15f358ea06d0"
+    },
+    {
+      "path": "/Users/msharpe/python/bsat/competition/c/benchmark_results/target-competition-20260906.json",
+      "sha256": "8fbbbbc4d7777b4d9151d005a2111cb9c884ad238b3f6642a7d31a14b0374208"
+    },
+    {
+      "path": "/Users/msharpe/python/bsat/competition/c/benchmark_results/target-corpus-20260906.json",
+      "sha256": "008a2b3283f5bb47c2e4291e896141d2aaaff2a8523c2a7cb434246af412e396"
+    },
+    {
+      "path": "/Users/msharpe/python/bsat/competition/c/benchmark_results/target-limits-asan-20260906.json",
+      "sha256": "08d9fdcf5672aa3b8bc9ea26ca7cfe13756ba30878a3f2ea9d966b2c0c99e231"
+    },
+    {
+      "path": "/Users/msharpe/python/bsat/competition/c/benchmark_results/target-limits-release-20260906.json",
+      "sha256": "8b5aaf1f63d62cf4d4712f1d515cf4336864be4a3a7fcf2d048008462fdfa3f2"
+    },
+    {
+      "path": "/Users/msharpe/python/bsat/competition/c/benchmark_results/target-stress-20260906.json",
+      "sha256": "f930057c7b137693c33f6566210e25f9c3c1e785feec30cae3284c817e47064e"
+    },
+    {
+      "path": "/Users/msharpe/python/bsat/competition/c/benchmark_results/target-summary-20260906.json",
+      "sha256": "bcfe500087801fd85bc60779a6dcf13665c36c3ed624977aebefb169c5f476c4"
+    },
+    {
+      "path": "/Users/msharpe/python/bsat/competition/c/benchmark_results/target-validation-20260906.json",
+      "sha256": "a1325135ca563a0daae40246024528382b91ea6673059f42e7fbb85950e5e7ba"
+    },
+    {
+      "path": "/Users/msharpe/python/bsat/competition/c/benchmark_results/used-clauses-aa-20260906.json",
+      "sha256": "7e8f7265c38a54f91a083bf85345a0a872d72b54d0cf9afb0229035365f0f6f5"
+    },
+    {
+      "path": "/Users/msharpe/python/bsat/competition/c/benchmark_results/used-clauses-aa-summary-20260906.json",
+      "sha256": "2f356950e22f6c254f3360953bbc56f67b1beb4b65216e5aa4f13c7513424f42"
+    },
+    {
+      "path": "/Users/msharpe/python/bsat/competition/c/benchmark_results/used-clauses-confirm-20260906.json",
+      "sha256": "816771d461371b639ecaf595c980b88c38d5647711badb4aaac991c165a2016b"
+    },
+    {
+      "path": "/Users/msharpe/python/bsat/competition/c/benchmark_results/used-clauses-default-20260906.json",
+      "sha256": "91c3d8fb91abbbc3a93fdb412bd7b7955b5b0d373300236d0dd10e8728984e87"
+    },
+    {
+      "path": "/Users/msharpe/python/bsat/competition/c/benchmark_results/used-clauses-default-summary-20260906.json",
+      "sha256": "e76dd7254542beb4f939386933dfe0d23d53325bbcf2b1275e48e7809a1a47a4"
+    },
+    {
+      "path": "/Users/msharpe/python/bsat/competition/c/benchmark_results/used-clauses-equivalence-20260906.json",
+      "sha256": "03e0e45cd5adb15d8f976327ff30d01a330bd89c0928c64cb9ffe3d00ac0d788"
+    },
+    {
+      "path": "/Users/msharpe/python/bsat/competition/c/benchmark_results/used-clauses-equivalence-summary-20260906.json",
+      "sha256": "47c83c3985074334690d512dbc4e4e38311ccbbf0a46ef7662135710b5342287"
+    },
+    {
+      "path": "/Users/msharpe/python/bsat/competition/c/benchmark_results/used-clauses-final-default-20260906.json",
+      "sha256": "6f532d1517adcfdd582d4d0b0a9a5d2db3343f4fdd9589eccdf82ebc66044efa"
+    },
+    {
+      "path": "/Users/msharpe/python/bsat/competition/c/benchmark_results/used-clauses-final-default-summary-20260906.json",
+      "sha256": "1b9a1d10ca417ce4c4d32a0c77b41d12382ec406f020d44b062f19f1ceaaa7b9"
+    },
+    {
+      "path": "/Users/msharpe/python/bsat/competition/c/benchmark_results/used-clauses-final-ensemble-20260906.json",
+      "sha256": "8f1d6411d28f3d93b1557ffc02fabf06ee5448fd189899d790b5fd1a92767c0c"
+    },
+    {
+      "path": "/Users/msharpe/python/bsat/competition/c/benchmark_results/used-clauses-fresh-20260906.json",
+      "sha256": "ea394181ec33e7ba6ebcb41b3e2b3675bd94fc4a4d67840bdd0548f7f5fe8d65"
+    },
+    {
+      "path": "/Users/msharpe/python/bsat/competition/c/benchmark_results/used-clauses-fresh-corpus-20260906.json",
+      "sha256": "f51356ee53069824df409e937386831c0c60c6b7ba8307d8bd9baa0e821b2bd3"
+    },
+    {
+      "path": "/Users/msharpe/python/bsat/competition/c/benchmark_results/used-clauses-limits-asan-20260906.json",
+      "sha256": "87a5da84839dca5a30fa14f560e0f8b3bcc2366503018dc52945f3364657a1db"
+    },
+    {
+      "path": "/Users/msharpe/python/bsat/competition/c/benchmark_results/used-clauses-limits-release-20260906.json",
+      "sha256": "37c271061e21af2b9b6008737fbd20d60d94afae4fb042cf27d1ed3fdf166175"
+    },
+    {
+      "path": "/Users/msharpe/python/bsat/competition/c/benchmark_results/used-clauses-long-default-20260906.json",
+      "sha256": "6e97f2c31eb55757dd083cfed8fe1bf81f2d713f27afeb36a8c51fe0a5357324"
+    },
+    {
+      "path": "/Users/msharpe/python/bsat/competition/c/benchmark_results/used-clauses-long-default-summary-20260906.json",
+      "sha256": "f5b6841ab2a87f5ea97bb68b2ed77f9d40a2e66219c7992f624b21cb38e4962d"
+    },
+    {
+      "path": "/Users/msharpe/python/bsat/competition/c/benchmark_results/used-clauses-reproduction-20260906.json",
+      "sha256": "a226e93a6b73bf7dd6186411b873df54949cde68ad4a93231b82b00fa82f7c4c"
+    },
+    {
+      "path": "/Users/msharpe/python/bsat/competition/c/benchmark_results/used-clauses-screen-20260906.json",
+      "sha256": "2e87cb144a5cd8fb8405eb8615eed0020b13461a4c2aee26b390f1110726a16c"
+    },
+    {
+      "path": "/Users/msharpe/python/bsat/competition/c/benchmark_results/used-clauses-summary-20260906.json",
+      "sha256": "28004811c1b2783ae1c580d9d654d192fa4ecfe09ef4e4767803f86636b32909"
+    },
+    {
+      "path": "/Users/msharpe/python/bsat/competition/c/benchmark_results/used-clauses-validation-20260906.json",
+      "sha256": "23152c8daa219c91b0f72e53ac896b8013c12d49c49f9f0129406ff6c1ad3360"
+    },
+    {
+      "path": "/Users/msharpe/python/bsat/competition/c/benchmark_results/values-large-corpus-20260906.json",
+      "sha256": "cab824365da1f3c9f57e002487cb16428ead64f83bf2acf7bf06fed0a561bad2"
+    },
+    {
+      "path": "/Users/msharpe/python/bsat/competition/c/benchmark_results/values-large-screen-20260906.json",
+      "sha256": "9e3e8d7f567ccb5933c295ff44b29eb8d223877c84cc63f9bebbff2126d23c42"
+    },
+    {
+      "path": "/Users/msharpe/python/bsat/competition/c/benchmark_results/values-large-work-20260906.json",
+      "sha256": "00c9a89e332235635864d583462b4127e5ac172692b38da94e15cbef98eea0e0"
+    },
+    {
+      "path": "/Users/msharpe/python/bsat/competition/c/benchmark_results/values-limit-diagnostic-20260906.json",
+      "sha256": "cac9ce06ee72934f9f1c2ad8d87c954a2360c1d608861c36575da1cd75191ea3"
+    },
+    {
+      "path": "/Users/msharpe/python/bsat/competition/c/benchmark_results/values-summary-20260906.json",
+      "sha256": "1a2c71f2b2249fb8fff457a1e09e3bafb976071574c89848f2c9a9d3c4ca5b5a"
+    },
+    {
+      "path": "/Users/msharpe/python/bsat/competition/c/benchmark_results/values-work-20260906.json",
+      "sha256": "07890bb69669a0b29be8b04bbeb04643540cdb592cfdec5fcb9ed980a888f785"
+    },
+    {
+      "path": "/Users/msharpe/python/bsat/competition/c/benchmark_results/vmtf-initial-errors-20260906.json",
+      "sha256": "c3fb1359f231f0d646b4176b1bd2b2a5e23066d0331fb161356d136a8b2dd304"
+    },
+    {
+      "path": "/Users/msharpe/python/bsat/competition/c/benchmark_results/vmtf-limits-asan-20260906.json",
+      "sha256": "62b8f353d208deebc742368ab7e938e0b0be4c38ff855b7828ce3576f9abd2c3"
+    },
+    {
+      "path": "/Users/msharpe/python/bsat/competition/c/benchmark_results/vmtf-limits-release-20260906.json",
+      "sha256": "f9b3243b4eb9a2e23b280716a2f3b8207608520be2fbe0cfb490ef7208ee8b6f"
+    },
+    {
+      "path": "/Users/msharpe/python/bsat/competition/c/benchmark_results/vmtf-ordered-broad-20260906.json",
+      "sha256": "d1bdb8e599b0da414c84d068bb2b21ecbd433d36f27b6446088217a61399c794"
+    },
+    {
+      "path": "/Users/msharpe/python/bsat/competition/c/benchmark_results/vmtf-ordered-fresh-20260906.json",
+      "sha256": "369ddd09ec2fa3f927b871b1a1544c60ac6aa1e6490466795ada0ee099353999"
+    },
+    {
+      "path": "/Users/msharpe/python/bsat/competition/c/benchmark_results/vmtf-ordered-gap-20260906.json",
+      "sha256": "86786a88e8ad41b11bea3c4d01e513e8fbf7a0acd9ad4f178a0d13c8841d2cc3"
+    },
+    {
+      "path": "/Users/msharpe/python/bsat/competition/c/benchmark_results/vmtf-ordered-limits-asan-20260906.json",
+      "sha256": "74afb50e2d0d2cdf33c26c45f4ad1cb01589428aa4d1928ff80d6700b1d9c650"
+    },
+    {
+      "path": "/Users/msharpe/python/bsat/competition/c/benchmark_results/vmtf-ordered-limits-release-20260906.json",
+      "sha256": "3ee9040988c3542c8ec89a9a21ec6948f6fa32c1a49ad338941b85aa05084d73"
+    },
+    {
+      "path": "/Users/msharpe/python/bsat/competition/c/benchmark_results/vmtf-score-additional-20260906.json",
+      "sha256": "5bb21fdeb4a8a45e4bb3b68dacee058eba807af4fccaab423329dbbe09e95735"
+    },
+    {
+      "path": "/Users/msharpe/python/bsat/competition/c/benchmark_results/vmtf-score-default-20260906.json",
+      "sha256": "b082e78cf71cbcf169fac46da59503acacb2efb59bee942b307eba8ac802ff52"
+    },
+    {
+      "path": "/Users/msharpe/python/bsat/competition/c/benchmark_results/vmtf-score-default-repeat-20260906.json",
+      "sha256": "88e70d4095b5fb4e99dfd3dcf067a124d0f32c80083ce248b4330285c9861af0"
+    },
+    {
+      "path": "/Users/msharpe/python/bsat/competition/c/benchmark_results/vmtf-score-development-20260906.json",
+      "sha256": "b97f6ac6040d178cbf5ed2182468aa4fbf09ce70dc3aa71cc0e92ba50e7b4c28"
+    },
+    {
+      "path": "/Users/msharpe/python/bsat/competition/c/benchmark_results/vmtf-score-limits-asan-20260906.json",
+      "sha256": "3a47a5d9af7d8706396fe6464b19e6a9b2e2d2148cf210bbe61b718e859c4c3d"
+    },
+    {
+      "path": "/Users/msharpe/python/bsat/competition/c/benchmark_results/vmtf-score-limits-release-20260906.json",
+      "sha256": "25071298992b0b321fbde3e36257d448f87d47b393bfb84f4d6940a172c9cede"
+    },
+    {
+      "path": "/Users/msharpe/python/bsat/competition/c/benchmark_results/vmtf-score-summary-20260906.json",
+      "sha256": "72b4cdbcc039bb34464d7763fee878fb26eb8d5b0f27af9beef5cce4d2efe241"
+    },
+    {
+      "path": "/Users/msharpe/python/bsat/competition/c/benchmark_results/vmtf-screen-20260906.json",
+      "sha256": "c6568cfebe52fcd516ff8bfca1163ba3871cc4a627cf15bab906a88825eb5f75"
+    }
+  ],
+  "inputs": {
+    "/Users/msharpe/python/bsat/dataset/sat_competition2025/hamiltonian/a497d784c61c330f012dcd80d44dcd43.cnf": {
+      "sha256": "92e5fa675073ba9aad91afa4b81129fed5757ea37872fc2dbc3bd4ba0d720a4c",
+      "family": "hamiltonian",
+      "bytes": 32558
+    },
+    "/Users/msharpe/python/bsat/dataset/sat_competition2025/tseitin-formulas/b5431f41e3264c64508c30da215c69c6.cnf": {
+      "sha256": "f9dcbbbcb2abc290439c21978d04cdc44efffbed9b4e5cdee96dd63856a5a156",
+      "family": "tseitin-formulas",
+      "bytes": 51267
+    },
+    "/Users/msharpe/python/bsat/dataset/sat_competition2025/unknown-cases/c21096fa2f550785c33dc862d83bc941.cnf": {
+      "sha256": "8e35ce4c0f71d6e0dd1b130f637ac9b742b3aab9abd4f1dd236ec1be211b7834",
+      "family": "unknown-cases",
+      "bytes": 61613
+    },
+    "/Users/msharpe/python/bsat/dataset/sat_competition2025/battleship/ed6d842f96d10f3400bce251f9e95bfb.cnf": {
+      "sha256": "9d586fde48ebcc533f867c06569f008a9b3f5b71dca6a3c9e18db48e037a0b6f",
+      "family": "battleship",
+      "bytes": 73563
+    },
+    "/Users/msharpe/python/bsat/dataset/sat_competition2025/coloring/b1c8eaa002ac2fa1c8bfd1002738e78e.cnf": {
+      "sha256": "cd7270bcf08084d7f7a994ea9f4698a94c2b796d9fee9f74ba66eb5cf92337ed",
+      "family": "coloring",
+      "bytes": 92225
+    },
+    "/Users/msharpe/python/bsat/dataset/sat_competition2025/mechanical-master-key/96977e8e00a3728097861502a449e343.cnf": {
+      "sha256": "59a2b4f7463a447066b617723b8aa274573ed8e028d86373f054d515af6abb7d",
+      "family": "mechanical-master-key",
+      "bytes": 115043
+    },
+    "/Users/msharpe/python/bsat/dataset/sat_competition2025/multiplier-equivalence-checking/8e81131a0c4fbd01e90bb6e20d00c547.cnf": {
+      "sha256": "6fc26ddf6ca6e8abfacc55bfc8f9df3c32b65b5ad25a426c4f76d8a7d1dca408",
+      "family": "multiplier-equivalence-checking",
+      "bytes": 126625
+    },
+    "/Users/msharpe/python/bsat/dataset/sat_competition2025/hidoku/6147e666b75f603a4c4490d21ab654cd.cnf": {
+      "sha256": "48a53fcd6429e09965b58a71e609440c140682bc233226179bbefea4afab09b7",
+      "family": "hidoku",
+      "bytes": 133428
+    },
+    "/Users/msharpe/python/bsat/dataset/sat_competition2025/cryptography-simon/d35dfc38e1681b48ebceb4113d205a23.cnf": {
+      "sha256": "e58609bec6d88719e2e84598e0aa5da72cf830083fc68f70400821f1eeb38809",
+      "family": "cryptography-simon",
+      "bytes": 138872
+    },
+    "/Users/msharpe/python/bsat/dataset/sat_competition2025/coloring-mycielski-graph/482295be38dc1d63a16f3cf649ef7ef6.cnf": {
+      "sha256": "037437a45e05435c08e62d0df2f872099cda4b928d048406694b595c45a90ff1",
+      "family": "coloring-mycielski-graph",
+      "bytes": 149976
+    },
+    "/Users/msharpe/python/bsat/dataset/sat_competition2025/clustered-random/6d35bab4302bc221fa2c9234547b848b.cnf": {
+      "sha256": "b2204a649dc3e6d87980e72a325cb3bcb5cf7e32b947be1bda8a6e957983c235",
+      "family": "clustered-random",
+      "bytes": 150664
+    },
+    "/Users/msharpe/python/bsat/dataset/sat_competition2025/ramsey-numbers/1b84df53843ecd90ec8c3c7a01cada6c.cnf": {
+      "sha256": "d4a999db60e61564eebc46338d1cc9b1ad94b9ade22913049f87338cab731af3",
+      "family": "ramsey-numbers",
+      "bytes": 151575
+    },
+    "/Users/msharpe/python/bsat/dataset/sat_competition2025/p-center/2412325e3c099453b99c87864477363c.cnf": {
+      "sha256": "4edf6b303edeea81a0c564726b9dbb17740316ba44bdf0b4749e958f7804b1a8",
+      "family": "p-center",
+      "bytes": 156467
+    },
+    "/Users/msharpe/python/bsat/dataset/sat_competition2025/fixed-shape-random/474e9594ec7885cb1bebf66073eb2de2.cnf": {
+      "sha256": "41bc669f76fc69c1d9902f2da2eaffee5ce4310081032dc8ae70066148fbd6a1",
+      "family": "fixed-shape-random",
+      "bytes": 156850
+    },
+    "/Users/msharpe/python/bsat/dataset/sat_competition2025/argumentation/ac51df6b340190cd1182c06ff2955afa.cnf": {
+      "sha256": "53759ee4ecbba6d140f954e162e638cf24fdfe2c26f2e5f01172364c99bf775f",
+      "family": "argumentation",
+      "bytes": 161935
+    },
+    "/Users/msharpe/python/bsat/dataset/sat_competition2025/minimal-disagreement-parity/0c9bcbc815cf0f109b7aeef3fbffc42d.cnf": {
+      "sha256": "f38752653caf4ba545a1bbb07f8e9ccbc4a99091377ab6762ccfe10e67bc9f4b",
+      "family": "minimal-disagreement-parity",
+      "bytes": 162107
+    }
+  }
+}

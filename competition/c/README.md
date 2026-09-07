@@ -208,3 +208,10 @@ verified solved counts and PAR-2. Certificate checking is outside solver timing;
 unverified results receive the timeout penalty. Keep development and held-out
 families separate and avoid other workloads during timing. Synthetic cases and
 millisecond process runs establish smoke-test coverage, not industrial speedups.
+
+For an additional-instance screen, `tests/select_corpus.py` can exclude filenames
+and content hashes already recorded in a JSON results directory and select one
+small input per family. Pass its output to `tests/benchmark.py --manifest FILE`;
+the runner verifies input hashes before starting and records the manifest hash.
+See [DEFAULT_BRANCHING.md](DEFAULT_BRANCHING.md) for commands, tests, sampling
+limitations, and the additional-input comparison supporting the heap default.
