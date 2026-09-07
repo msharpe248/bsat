@@ -8,22 +8,24 @@ Complete reference for all data structures and types in the BSAT C solver.
 
 ```c
 typedef uint32_t Var;      // Variable (1-indexed, 0 is invalid)
-typedef int32_t  Lit;      // Literal (positive = var, negative = -var)
+typedef uint32_t Lit;      // Literal: 2 * variable + sign
 typedef uint32_t CRef;     // Clause reference (offset into arena)
-typedef uint8_t  Level;    // Decision level (0-255)
-typedef int8_t   lbool;    // 3-valued logic (-1=FALSE, 0=UNDEF, 1=TRUE)
+typedef uint32_t Level;    // Decision level
+typedef enum { UNDEF = 0, FALSE = 1, TRUE = 2 } lbool;
 ```
 
 **Constants:**
 ```c
 #define INVALID_VAR  0
 #define INVALID_LIT  0
-#define INVALID_CREF UINT32_MAX
-
-#define TRUE   1
-#define FALSE  -1
-#define UNDEF  0
+#define INVALID_CLAUSE UINT32_MAX
+#define INVALID_LEVEL UINT32_MAX
 ```
+
+`Solver.values` and `Solver.rephase.best_phase` store these three truth codes in
+`uint8_t` arrays. Target storage is optional when rephasing is disabled; its
+entries preserve UNDEF independently of saved boolean polarities. See
+[compact target phases](../COMPACT_TARGET_PHASES.md) for layout and validation.
 
 ### Literal Encoding
 
@@ -31,20 +33,20 @@ Literals use a compact integer encoding:
 - Positive literal (variable x): `2*x`
 - Negative literal (¬x): `2*x + 1`
 
-**Helper macros:**
+**Inline helpers:**
 ```c
 var(lit)      // Extract variable from literal
 sign(lit)     // Get sign (0=positive, 1=negative)
-lit_make(v,s) // Create literal from variable and sign
-lit_neg(lit)  // Negate a literal
+mkLit(v,s) // Create literal from variable and sign
+neg(lit)  // Negate a literal
 ```
 
 **Example:**
 ```c
 Var x = 5;
-Lit pos = lit_make(x, 0);  // x5 → literal 10
-Lit neg = lit_make(x, 1);  // ¬x5 → literal 11
-Lit flipped = lit_neg(pos); // 10 → 11
+Lit positive = mkLit(x, false); // x5 → literal 10
+Lit negative = mkLit(x, true);  // ¬x5 → literal 11
+Lit flipped = neg(positive);   // 10 → 11
 ```
 
 ---

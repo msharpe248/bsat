@@ -362,3 +362,9 @@ long-scan accounting and interruption replay at polling boundaries.
 delaying or refreshing the historical target policy on the tested screen.
 Retained checks cover partial-target application and rapid/disabled rephasing
 with independent model and proof validation.
+
+[Compact target phases](COMPACT_TARGET_PHASES.md) store the three target truth
+values in one byte rather than four. The million-variable allocation case uses
+about 4.3% less peak RSS; fixed-work search counters and solved counts match.
+Measured aggregate CPU is about 0.7% higher, so this is retained as a memory
+improvement rather than a demonstrated search speedup.

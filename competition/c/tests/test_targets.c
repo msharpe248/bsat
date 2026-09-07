@@ -24,7 +24,8 @@ static void compare_reference(Solver *s, lbool *reference, uint32_t *best) {
     }
     solver_maybe_save_best_phases(s);
     assert(s->rephase.best_trail_size == *best);
-    assert(!memcmp(reference, s->rephase.best_phase, (s->num_vars+1) * sizeof *reference));
+    for (Var v = 0; v <= s->num_vars; ++v)
+        assert(reference[v] == s->rephase.best_phase[v]);
 }
 
 static void branching(void) {
@@ -91,8 +92,26 @@ static void linear_extension(void) {
     solver_free(s);
 }
 
+static void compact_growth(void) {
+    for (unsigned enabled = 0; enabled < 2; ++enabled) {
+        SolverOpts o = default_opts();o.rephase = enabled;
+        Solver *s = solver_new_with_opts(&o);assert(s);
+        assert(sizeof *s->rephase.best_phase == 1);
+        for (Var v = 1; v <= 20000; ++v) {
+            assert(solver_new_var(s) == v);
+            if (enabled) {
+                assert(s->rephase.best_phase[v] == UNDEF);
+                s->rephase.best_phase[v] = v % 3;
+            } else assert(!s->rephase.best_phase);
+        }
+        if (enabled) for (Var v = 1; v <= s->num_vars; ++v)
+            assert(s->rephase.best_phase[v] == v % 3);
+        solver_free(s);
+    }
+}
+
 int main(void) {
-    branching();growth();linear_extension();
+    branching();growth();linear_extension();compact_growth();
     puts("PASS: exact target phases across extensions, changed branches, restarts and API rebuilds");
     return 0;
 }

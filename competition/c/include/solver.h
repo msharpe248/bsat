@@ -275,7 +275,7 @@ typedef struct Solver {
 
     // Rephasing state (Kissat-style target phases)
     struct {
-        lbool*   best_phase;      // Best assignment seen (polarity for each var)
+        uint8_t* best_phase;      // UNDEF/FALSE/TRUE target value for each variable
         uint32_t best_trail_size; // Trail size when best assignment was saved
         bool best_prefix_valid;  // Saved target is still a prefix of the current trail
         uint32_t conflicts_since; // Conflicts since last rephase

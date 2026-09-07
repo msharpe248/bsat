@@ -577,10 +577,10 @@ static bool grow_var_arrays(Solver* s, uint32_t new_capacity) {
 
     // Grow best phase array (for rephasing)
     if (s->opts.rephase) {
-        lbool* new_best_phase = (lbool*)realloc(s->rephase.best_phase, alloc_size * sizeof(lbool));
+        uint8_t* new_best_phase = realloc(s->rephase.best_phase, alloc_size * sizeof *new_best_phase);
         if (!new_best_phase) return false;
         s->rephase.best_phase = new_best_phase;
-        // Initialize new entries to false (negative phase)
+        // New variables have no known target phase.
         for (uint32_t i = s->var_capacity + 1; i <= new_capacity; i++) {
             s->rephase.best_phase[i] = UNDEF;
         }
@@ -1308,7 +1308,7 @@ void solver_maybe_save_best_phases(Solver* s) {
     if (s->trail_size > s->rephase.best_trail_size) {
         uint32_t first = s->rephase.best_prefix_valid ? s->rephase.best_trail_size : 0;
         if (!s->rephase.best_prefix_valid) {
-            memset(s->rephase.best_phase, 0, (s->num_vars+1)*sizeof(lbool));
+            memset(s->rephase.best_phase, 0, (s->num_vars+1)*sizeof *s->rephase.best_phase);
             s->stats.target_cleared += (uint64_t)s->num_vars + 1;
         }
         // Save the partial target assignment
