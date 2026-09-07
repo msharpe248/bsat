@@ -278,3 +278,8 @@ An [LBD generation-mark experiment](LBD_GENERATION_EXPERIMENT.md) removed the
 per-clause mark-clearing scan, but repeated competition-input measurements did
 not justify its extra storage. The tested patch and results are preserved; the
 production LBD implementation is unchanged.
+
+A [glue-reason activity reward](GLUE_REASON_BUMP_EXPERIMENT.md) improved one
+Hamiltonian search but added no solve in the targeted or longer multiplier
+comparisons. The fixed-threshold prototype was rejected; its tested patch and
+measurements are preserved.

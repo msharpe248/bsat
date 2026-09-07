@@ -1,0 +1,160 @@
+diff --git a/competition/c/include/solver.h b/competition/c/include/solver.h
+index 6daf951..cc11142 100644
+--- a/competition/c/include/solver.h
++++ b/competition/c/include/solver.h
+@@ -69,6 +69,7 @@ typedef struct SolverOpts {
+     uint32_t glue_lbd;          // LBD threshold for glue clauses (2)
+     double   reduce_fraction;   // Fraction of learned clauses to keep (0.5)
+     uint32_t reduce_interval;   // Conflicts between reductions (2000)
++    bool     glue_bump;       // Extra VSIDS reward for current-level glue reasons
+     bool     binary_minimize; // Bounded binary-resolution pass on short low-LBD clauses
+     bool     iterative_minimize; // Experimental binary-aware traversal (false)
+     bool     protect_used;      // One reduction reprieve for used LBD <= 6 clauses
+@@ -226,6 +227,7 @@ typedef struct Solver {
+         uint64_t subsumed_clauses;   // Clauses removed by on-the-fly subsumption
+         uint64_t minimized_literals; // Literals removed by clause minimization
+         uint64_t minimize_inspections;
++        uint64_t glue_bumps;
+         uint64_t binary_minimize_checks;
+         uint64_t binary_minimize_removed;
+         uint64_t minimize_binary_steps;
+diff --git a/competition/c/src/main.c b/competition/c/src/main.c
+index c3b5dec..5dc4708 100644
+--- a/competition/c/src/main.c
++++ b/competition/c/src/main.c
+@@ -74,6 +74,7 @@ static void print_usage(const char* program) {
+     printf("  --glue-lbd <n>            LBD threshold for glue clauses (default: 2)\n");
+     printf("  --reduce-fraction <f>     Fraction of clauses to keep (default: 0.5)\n");
+     printf("  --reduce-interval <n>     Conflicts between reductions (default: 2000)\n");
++    printf("  --glue-bump               Extra VSIDS reward for glue-clause reasons\n");
+     printf("  --binary-minimize        Binary-resolution minimization (experimental)\n");
+     printf("  --iterative-minimize     Experimental binary-aware minimization\n");
+     printf("  --protect-used           Temporarily retain used learned clauses with LBD <= 6\n");
+@@ -163,6 +164,7 @@ static struct option long_options[] = {
+     {"glue-lbd",        required_argument, 0, 0},
+     {"reduce-fraction", required_argument, 0, 0},
+     {"reduce-interval", required_argument, 0, 0},
++    {"glue-bump", no_argument, 0, 0},
+     {"binary-minimize", no_argument, 0, 0},
+     {"iterative-minimize", no_argument, 0, 0},
+     {"protect-used", no_argument, 0, 0},
+@@ -340,6 +342,8 @@ int main(int argc, char** argv) {
+                     opts.reduce_fraction = atof(optarg);
+                 } else if (strcmp(long_options[option_index].name, "reduce-interval") == 0) {
+                     opts.reduce_interval = (uint32_t)atol(optarg);
++                } else if (strcmp(long_options[option_index].name, "glue-bump") == 0) {
++                    opts.glue_bump = true;
+                 } else if (strcmp(long_options[option_index].name, "binary-minimize") == 0) {
+                     opts.binary_minimize = true;
+                 } else if (strcmp(long_options[option_index].name, "iterative-minimize") == 0) {
+diff --git a/competition/c/src/solver.c b/competition/c/src/solver.c
+index 8446406..e3d231b 100644
+--- a/competition/c/src/solver.c
++++ b/competition/c/src/solver.c
+@@ -352,15 +352,20 @@ static void bump_var_activity(Solver* s, Var v, double inc) {
+             s->order.var_inc *= 1e-100;
+         }
+     } else {
+-        // Standard VSIDS: add increment to activity
+-        s->vars[v].activity += inc;
+-
+-        // Rescale if needed
+-        if (s->vars[v].activity > 1e100) {
+-            for (Var i = 1; i <= s->num_vars; i++) {
+-                s->vars[i].activity *= 1e-100;
++        CRef reason = s->vars[v].reason;
++        bool bonus = s->opts.glue_bump && s->vars[v].level == s->decision_level &&
++            reason != INVALID_CLAUSE && reason != BINARY_CONFLICT &&
++            clause_learned(s->arena, reason) &&
++            clause_lbd(s->arena, reason) <= s->opts.glue_lbd;
++        if (bonus) s->stats.glue_bumps++;
++        // Separate increments keep rescaling safe even for very large increments.
++        for (unsigned i = 0; i < 1u + bonus; ++i) {
++            s->vars[v].activity += i ? s->order.var_inc : inc;
++            if (s->vars[v].activity > 1e100) {
++                for (Var j = 1; j <= s->num_vars; ++j)
++                    s->vars[j].activity *= 1e-100;
++                s->order.var_inc *= 1e-100;
+             }
+-            s->order.var_inc *= 1e-100;
+         }
+     }
+
+@@ -786,6 +791,7 @@ void solver_print_stats(const Solver* s) {
+     printf("c Learned clauses   : %llu\n", (unsigned long long)s->stats.learned_clauses);
+     printf("c Learned literals  : %llu\n", (unsigned long long)s->stats.learned_literals);
+     printf("c Deleted clauses   : %llu\n", (unsigned long long)s->stats.deleted_clauses);
++    printf("c Glue reason bumps : %llu\n", (unsigned long long)s->stats.glue_bumps);
+     printf("c Binary minimize checks: %llu\n", (unsigned long long)s->stats.binary_minimize_checks);
+     printf("c Binary minimize removed: %llu\n", (unsigned long long)s->stats.binary_minimize_removed);
+     printf("c Minimize inspections: %llu\n", (unsigned long long)s->stats.minimize_inspections);
+diff --git a/competition/c/tests/validate.py b/competition/c/tests/validate.py
+index c8786ca..d924905 100644
+--- a/competition/c/tests/validate.py
++++ b/competition/c/tests/validate.py
+@@ -225,6 +225,9 @@ def main():
+                 ['--reuse-trail', '--luby-restart', '--luby-unit', '1', '--no-probing'],
+                 ['--reuse-trail', '--equiv', '--elim', '--bce', '--inprocess', '--inprocess-interval', '1'],
+                 ['--reuse-trail', '--random-phase', '--local-search', '--ls-interval', '1']]
++    configs += [['--glue-bump'],
++                ['--glue-bump', '--dynamic-lbd', '--binary-proof', '--reduce-interval', '1'],
++                ['--glue-bump', '--iterative-minimize', '--binary-minimize', '--reuse-trail']]
+     fixed = [
+         (5, [[1, 2], [1, -2], [-3, 4], [3, -4], [4, 5]], None),
+         (5, [[-4], [-1, 2, 4], [1, -2, 4]] +
+diff --git a/competition/c/tests/test_glue_bump.c b/competition/c/tests/test_glue_bump.c
+new file mode 100644
+index 0000000..ddb1aed
+--- /dev/null
++++ b/competition/c/tests/test_glue_bump.c
+@@ -0,0 +1,50 @@
++#include "../include/solver.h"
++#include "../include/dimacs.h"
++#include <assert.h>
++#include <math.h>
++#include <stdio.h>
++
++int main(void) {
++    unsigned checks=0;
++    for(unsigned enabled=0;enabled<2;++enabled)
++    for(unsigned learned=0;learned<2;++learned)
++    for(unsigned glue=0;glue<4;++glue)
++    for(unsigned lbd=1;lbd<=4;++lbd)
++    for(unsigned vmtf=0;vmtf<2;++vmtf)
++    for(unsigned lrb=0;lrb<2;++lrb)
++    for(unsigned large=0;large<2;++large) {
++        SolverOpts o=default_opts();o.glue_bump=enabled;o.glue_lbd=glue;o.vmtf=vmtf;o.lrb=lrb;
++        o.var_inc=large?9e99:1.0;
++        Solver *s=solver_new_with_opts(&o);assert(s);
++        assert(dimacs_parse_string(s,"p cnf 5 4\n-1 -2 3 4 0\n-1 -2 3 -4 0\n-1 -5 -3 0\n5 0\n")==DIMACS_OK);
++        // A lower-level glue reason participates too, but must receive no bonus.
++        CLAUSE_HEADER(s->arena,s->clauses[2])->flags|=CLAUSE_LEARNED;
++        set_clause_lbd(s->arena,s->clauses[2],1);
++        assert(solver_propagate(s)==INVALID_CLAUSE);
++        CRef reason=s->clauses[0],conflict=INVALID_CLAUSE;
++        set_clause_lbd(s->arena,reason,lbd);
++        if(learned) CLAUSE_HEADER(s->arena,reason)->flags|=CLAUSE_LEARNED;
++        for(Var v=1;v<=2;++v) {
++            s->trail_lims[++s->decision_level]=s->trail_size;
++            s->values[v]=TRUE;s->vars[v].level=s->decision_level;
++            s->vars[v].reason=INVALID_CLAUSE;s->vars[v].trail_pos=s->trail_size;
++            s->trail[s->trail_size++]=(Trail){mkLit(v,false)};
++            conflict=solver_propagate(s);
++        }
++        assert(conflict==s->clauses[1] && s->vars[4].reason==reason);
++        assert(s->vars[3].reason==s->clauses[2] && s->vars[3].level==1);
++        Lit learnt[6];uint32_t size;Level backjump;
++        solver_analyze(s,conflict,learnt,&size,&backjump);
++        bool bonus=enabled && learned && lbd<=o.glue_lbd && !vmtf && !lrb;
++        assert(s->stats.glue_bumps==(unsigned)bonus);
++        assert(size==3 && learnt[0]==mkLit(2,true) && learnt[1]==mkLit(1,true) && learnt[2]==mkLit(3,false) && backjump==1);
++        for(Var v=1;v<=4;++v) {
++            assert(!s->seen[v]);assert(isfinite(s->vars[v].activity));
++            if(!vmtf && !lrb)
++                assert(fabs(s->vars[v].activity/s->order.var_inc-(v==4 && bonus?2.0:1.0))<1e-12);
++        }
++        assert(isfinite(s->order.var_inc));
++        solver_free(s);++checks;
++    }
++    printf("PASS: %u glue-reason reward, option, rescaling and conflict-analysis cases\n",checks);
++}
