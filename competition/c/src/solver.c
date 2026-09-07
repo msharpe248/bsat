@@ -422,6 +422,7 @@ Solver* solver_new_with_opts(const SolverOpts* opts) {
     // Initialize restart state
     s->restart.threshold = opts->restart_first;
     s->restart.luby_index = 0;
+    s->mode_limit = 1000; // Give alternating search an initial focused interval.
 
     // Initialize Glucose sliding window (if using avg mode or as default)
     // Always allocate if glucose_restart is enabled (may switch modes at runtime)

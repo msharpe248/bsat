@@ -1,0 +1,47 @@
+{
+  "schema": 1,
+  "policy": "five remaining fresh larger inputs plus four established targeted regression inputs; exclude the three inputs already tested twice in this experiment",
+  "inputs": {
+    "/Users/msharpe/python/bsat/dataset/sat_competition2025/grs-fp-comm/56913ff910c49dd5010653720970d944.cnf": {
+      "sha256": "7f3e57a9bf962129671128877b8e013f97009124f67d04e4fefc3ea097b41a8e",
+      "family": "grs-fp-comm",
+      "bytes": 5015324
+    },
+    "/Users/msharpe/python/bsat/dataset/sat_competition2025/scheduling/3a1f1b4b9a521737cc760017fe9d8b43.cnf": {
+      "sha256": "181b73ff4a56dca6860e6e5feee38835d4d6d23208337fbc1303e4b93467a87f",
+      "family": "scheduling",
+      "bytes": 5039346
+    },
+    "/Users/msharpe/python/bsat/dataset/sat_competition2025/oddball-weighing/fdefca5f5236d5a8361dbdff0d017eeb.cnf": {
+      "sha256": "18e5798af169c4967c731763a3095229a3f5b99d66f70ff3f82bec7cb6de5f64",
+      "family": "oddball-weighing",
+      "bytes": 5132271
+    },
+    "/Users/msharpe/python/bsat/dataset/sat_competition2025/unknown-cases/4e3195a382f5af213444736fcc8b364f.cnf": {
+      "sha256": "f1d044b3fec9b1906e0f23f1c3c16500af307c60f76d573cae3de8e1967b0024",
+      "family": "unknown-cases",
+      "bytes": 5613993
+    },
+    "/Users/msharpe/python/bsat/dataset/sat_competition2025/hamiltonian-cycle/334aa882de28856fc8c75885285d2a3c.cnf": {
+      "sha256": "bea38a58bbae66f071a82e4140a23df3bc37b41904085e66e5fd53f78aaa2892",
+      "family": "hamiltonian-cycle",
+      "bytes": 5723473
+    },
+    "/Users/msharpe/python/bsat/dataset/sat_competition2025/battleship/ed6d842f96d10f3400bce251f9e95bfb.cnf": {
+      "sha256": "9d586fde48ebcc533f867c06569f008a9b3f5b71dca6a3c9e18db48e037a0b6f",
+      "family": "battleship"
+    },
+    "/Users/msharpe/python/bsat/dataset/sat_competition2025/belpyramid-puzzle/5831f35622f3e6c666f0cee6cac60e4c.cnf": {
+      "sha256": "e73caf0c3d62cfa5ce1b8c80c83c30df50c7e99275f1f43f69acdd043f050735",
+      "family": "belpyramid-puzzle"
+    },
+    "/Users/msharpe/python/bsat/dataset/sat_competition2025/hamiltonian/a497d784c61c330f012dcd80d44dcd43.cnf": {
+      "sha256": "92e5fa675073ba9aad91afa4b81129fed5757ea37872fc2dbc3bd4ba0d720a4c",
+      "family": "hamiltonian"
+    },
+    "/Users/msharpe/python/bsat/dataset/sat_competition2025/multiplier-circuits/90bec6dcf2399d7c7f73acba44a8641e.cnf": {
+      "sha256": "c20ea0635d0d4859123436fd529bf13d1a1e4a6c44969bc6eff68975f04c29a0",
+      "family": "multiplier-circuits"
+    }
+  }
+}

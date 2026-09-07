@@ -149,7 +149,10 @@ a CPU-time check. See [DEADLINE_CHECKS.md](DEADLINE_CHECKS.md) for responsivenes
 tests, measured speedups and the limits of this polling scheme.
 BVE, BCE, vivification, local search, and alternating modes remain opt-in.
 Alternating mode combines stable Luby intervals and partial target assignments
-with focused LBD restarts; it is experimental and does not implement every
+with focused LBD restarts, starting with 1,000 focused conflicts.
+[Initial focused interval measurements](FOCUSED_START_EXPERIMENT.md) show repeated
+gains on `ktf` and belpyramid, a small absolute Hamiltonian slowdown, and unchanged
+solved counts. Alternating mode is experimental and does not implement every
 Kissat scheduling or branching technique. `--lrb` is the existing recency-weighted
 activity heuristic, not a complete MapleSAT LRB implementation.
 
