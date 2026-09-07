@@ -342,3 +342,8 @@ unrecorded inputs with roughly 240,000–373,000 clauses and a 30-second wall li
 verifies 1/8 answers versus Kissat 3/8, identifying two further search targets.
 A five-repeat check confirms BSAT's fast result on the shared multiplier case;
 this does not establish overall parity.
+
+[Retention cutoff evaluation](RETENTION_CUTOFF_EVALUATION.md) found no solved-case
+gain on the larger hardware-verification target after repeated 30-CPU-second
+runs. Defaults remain unchanged. A new C regression covers 51,840 ranking,
+keep-fraction, cutoff and relocation cases, with three mutation checks.

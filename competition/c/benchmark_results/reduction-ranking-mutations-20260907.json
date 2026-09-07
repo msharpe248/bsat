@@ -1,0 +1,44 @@
+{
+  "schema": 1,
+  "baseline_revision": "7263acb",
+  "test": "competition/c/tests/test_reduction_ranking.c",
+  "mutations": [
+    {
+      "mutation": "reverse_activity_rank",
+      "changes": [
+        {
+          "before": "if (ca->activity > cb->activity) return -1;",
+          "after": "if (ca->activity > cb->activity) return 1;"
+        },
+        {
+          "before": "if (ca->activity < cb->activity) return 1;",
+          "after": "if (ca->activity < cb->activity) return -1;"
+        }
+      ],
+      "returncode": -6,
+      "assertion": "Assertion failed: (actual == expected), function check, file test_reduction_ranking.c, line 56."
+    },
+    {
+      "mutation": "include_protected_in_quota",
+      "changes": [
+        {
+          "before": "(n * s->opts.reduce_fraction)",
+          "after": "(s->num_learnts * s->opts.reduce_fraction)"
+        }
+      ],
+      "returncode": -6,
+      "assertion": "Assertion failed: (s->garbage_collections == 1 && s->num_learnts == count), function check, file test_reduction_ranking.c, line 44."
+    },
+    {
+      "mutation": "delete_at_cutoff",
+      "changes": [
+        {
+          "before": "scores[i].lbd > s->opts.max_lbd",
+          "after": "scores[i].lbd >= s->opts.max_lbd"
+        }
+      ],
+      "returncode": -6,
+      "assertion": "Assertion failed: (s->garbage_collections == 1 && s->num_learnts == count), function check, file test_reduction_ranking.c, line 44."
+    }
+  ]
+}
