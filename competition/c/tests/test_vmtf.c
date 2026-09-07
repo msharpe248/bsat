@@ -57,6 +57,30 @@ static void randomized_queue(void) {
     solver_free(s);
 }
 
+static void ordered_batch(void) {
+    SolverOpts o = default_opts();o.vmtf = true;
+    Solver *s = solver_new_with_opts(&o);assert(s);
+    enum { N = 257 };
+    Var order[N], batch[N], expected[N];uint32_t rng = 20260920;
+    for (Var v = 1; v <= N; ++v) { assert(solver_new_var(s) == v);order[N-v] = v; }
+    compare(s, order, N);
+    for (unsigned round = 0; round < 100; ++round) {
+        bool chosen[N+1] = {false};unsigned count = 0, out = 0;
+        for (Var v = 1; v <= N; ++v) {
+            rng ^= rng << 13;rng ^= rng >> 17;rng ^= rng << 5;
+            if (rng & 1) { chosen[v] = true;batch[count++] = v; }
+        }
+        for (unsigned i = 0; i < N; ++i) if (chosen[order[i]]) expected[out++] = order[i];
+        for (unsigned i = 0; i < N; ++i) if (!chosen[order[i]]) expected[out++] = order[i];
+        if (round == 50) s->vmtf.stamp = UINT64_MAX;
+        solver_vmtf_bump_batch(s, batch, count);
+        for (unsigned i = 0; i < N; ++i) order[i] = expected[i];
+        compare(s, order, N);
+    }
+    solver_vmtf_bump_batch(s, NULL, 0);compare(s, order, N);
+    solver_free(s);
+}
+
 static void integration(void) {
     SolverOpts o = default_opts();o.vmtf = true;o.random_phase = false;o.phase_saving = false;
     Solver *s = solver_new_with_opts(&o);assert(s);
@@ -115,7 +139,7 @@ static void deadline_polls(void) {
 }
 
 int main(void) {
-    randomized_queue();integration();allocation_growth();deadline_polls();
+    randomized_queue();ordered_batch();integration();allocation_growth();deadline_polls();
     puts("PASS: VMTF order, assignment cursor, growth, stamp rollover, conflict use and API rebuild");
     return 0;
 }

@@ -197,7 +197,7 @@ typedef struct Solver {
     struct {
         VmtfNode *nodes;
         Var head, tail, search;
-        uint32_t count, capacity;
+        uint32_t count, capacity, pending;
         uint64_t stamp;
     } vmtf;
 
@@ -347,6 +347,7 @@ void solver_print_stats(const Solver* s);
 bool solver_budget_exhausted(Solver* s);
 Var solver_vmtf_pick(Solver *s);
 void solver_vmtf_bump(Solver *s, Var v);
+void solver_vmtf_bump_batch(Solver *s, Var *vars, uint32_t count);
 void solver_vmtf_unassign(Solver *s, Var v);
 void solver_maybe_save_best_phases(Solver* s);
 uint32_t solver_substitute_equivalences(Solver* s);

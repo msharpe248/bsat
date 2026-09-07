@@ -353,7 +353,10 @@ static void bump_var_activity(Solver* s, Var v, double inc) {
     if (s->vars[v].heap_pos != UINT32_MAX) {
         heap_percolate_up(s, s->vars[v].heap_pos);
     }
-    if (s->opts.vmtf) solver_vmtf_bump(s, v);
+    if (s->opts.vmtf) {
+        ASSERT(s->vmtf.pending < s->num_vars);
+        s->analyze_stack[s->vmtf.pending++] = v;
+    }
 }
 
 static void decay_var_inc(Solver* s) {
@@ -1065,6 +1068,7 @@ static void improve_clause_lbd(Solver *s, CRef cr) {
 }
 
 void solver_analyze(Solver* s, CRef conflict, Lit* learnt, uint32_t* learnt_size, Level* bt_level) {
+    s->vmtf.pending = 0;
     uint32_t index = s->trail_size - 1;
     uint32_t pathC = 0;
     Lit p = LIT_UNDEF;
@@ -1194,6 +1198,10 @@ void solver_analyze(Solver* s, CRef conflict, Lit* learnt, uint32_t* learnt_size
 
         if (index > 0) index--;
     }
+
+    if (s->opts.vmtf)
+        solver_vmtf_bump_batch(s, s->analyze_stack, s->vmtf.pending);
+    s->vmtf.pending = 0;
 
     // First literal is the asserting literal
     learnt[0] = neg(p);

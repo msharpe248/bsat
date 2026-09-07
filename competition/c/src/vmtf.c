@@ -49,6 +49,39 @@ void solver_vmtf_bump(Solver *s, Var v) {
     if (synchronize(s)) front(s, v);
 }
 
+static void sift(const VmtfNode *nodes, Var *vars, uint32_t size, uint32_t at) {
+    Var v = vars[at];
+    while (at < size/2) {
+        uint32_t child = 2*at+1;
+        if (child+1 < size && nodes[vars[child+1]].stamp > nodes[vars[child]].stamp)
+            ++child;
+        if (nodes[v].stamp >= nodes[vars[child]].stamp) break;
+        vars[at] = vars[child];at = child;
+    }
+    vars[at] = v;
+}
+
+void solver_vmtf_bump_batch(Solver *s, Var *vars, uint32_t count) {
+    if (!count || !synchronize(s)) return;
+    for (uint32_t i = 0; i < count; ++i)
+        if (!vars[i] || vars[i] > s->num_vars) { s->error = true;return; }
+    /* Sort by old age before moving anything, preserving the relative order
+       of the conflict's variables. Reuse analysis scratch without allocating. */
+    for (uint32_t i = count/2; i; --i) {
+        if (!(i & 127) && solver_budget_exhausted(s)) return;
+        sift(s->vmtf.nodes, vars, count, i-1);
+    }
+    for (uint32_t size = count; size > 1; --size) {
+        if (!(size & 127) && solver_budget_exhausted(s)) return;
+        Var tmp = vars[0];vars[0] = vars[size-1];vars[size-1] = tmp;
+        sift(s->vmtf.nodes, vars, size-1, 0);
+    }
+    for (uint32_t i = 0; i < count; ++i) {
+        if (!(i & 127) && solver_budget_exhausted(s)) return;
+        front(s, vars[i]);
+    }
+}
+
 void solver_vmtf_unassign(Solver *s, Var v) {
     if (!v || v > s->vmtf.count) return;
     Var search = s->vmtf.search;

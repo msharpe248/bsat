@@ -1,7 +1,7 @@
 # Experimental conflict-recency branching
 
-`--vmtf` enables a variable-move-to-front queue. Conflict analysis moves each
-bumped variable to the front; selection scans from the most recent available
+`--vmtf` enables a variable-move-to-front queue. Conflict analysis moves its
+bumped variables to the front in their previous relative order; selection scans from the most recent available
 variable, skipping assigned and eliminated variables. Backtracking restores the
 search cursor using monotonically increasing timestamps. New variables are added
 lazily in ascending identifier order, so initial selection prefers higher IDs.
@@ -25,9 +25,10 @@ bumping, random-decision, or phase machinery. The comparison executable was buil
 from that pinned Kissat revision.
 In particular, Kissat's [bump implementation](https://github.com/arminbiere/kissat/blob/8af8e56f174b778aef3aa45af9f739b2a5f492c2/src/bump.c)
 sorts analyzed variables by their previous queue timestamps before moving them.
-BSAT currently moves them immediately in conflict-analysis traversal order.
-A subsequent experiment should isolate that ordering difference before drawing
-conclusions about the effectiveness of Kissat-style VMTF.
+The initial BSAT implementation moved them immediately in conflict-analysis
+traversal order. The subsequent [ordered-bump experiment](ORDERED_VMTF.md)
+isolates that difference and implements order-preserving batches. Results below
+describe the initial traversal-order implementation.
 
 Before implementing the queue, a serial screen compared BSAT at
 `c2d01be8596610ea71440e511e79f8b754a3114b`, the same executable with
