@@ -74,7 +74,8 @@ void local_search_free(LocalSearchState* ls);
 bool local_search_run(Solver* s, LocalSearchState* ls, uint32_t max_flips, double noise);
 
 /**
- * Copy local search solution back to solver.
+ * Copy a complete local search solution into a root-level, fully processed trail.
+ * Assignment positions and both reason representations are reset.
  * Should only be called after local_search_run returns true.
  */
 void local_search_copy_solution(Solver* s, LocalSearchState* ls);

@@ -386,21 +386,21 @@ bool local_search_run(Solver* s, LocalSearchState* ls, uint32_t max_flips, doubl
 }
 
 void local_search_copy_solution(Solver* s, LocalSearchState* ls) {
-    // Copy solution to solver's variable values
+    ASSERT(ls->num_vars == s->num_vars);
+    /* A successful walk supplies a complete model. Install one coherent root
+       assignment, including metadata left over from earlier CDCL assignments. */
     for (Var v = 1; v <= ls->num_vars; v++) {
         s->values[v] = ls->assignment[v] ? TRUE : FALSE;
         s->vars[v].polarity = ls->assignment[v];
         s->vars[v].level = 0;
         s->vars[v].reason = INVALID_CLAUSE;
+        s->binary_reasons[v] = LIT_UNDEF;
+        s->vars[v].trail_pos = v - 1;
+        s->trail[v - 1].lit = mkLit(v, !ls->assignment[v]);
     }
-
-    // Update trail to reflect full assignment
-    s->trail_size = 0;
-    s->rephase.best_prefix_valid = false;
-    for (Var v = 1; v <= ls->num_vars; v++) {
-        Lit lit = mkLit(v, !ls->assignment[v]);
-        s->trail[s->trail_size].lit = lit;
-        s->trail_size++;
-    }
+    s->trail_size = ls->num_vars;
+    /* Every clause is satisfied; there are no pending implications to scan. */
+    s->qhead = s->trail_size;
     s->decision_level = 0;
+    s->rephase.best_prefix_valid = false;
 }

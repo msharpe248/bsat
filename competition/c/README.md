@@ -103,6 +103,11 @@ reduce cache traffic during propagation. Search order is preserved. See
 ./bin/bsat --no-circular --subsume-budget 0 input.cnf
 ```
 
+Successful local-search model transfer resets assignment positions, reasons and
+the propagation cursor consistently. See
+[LOCAL_SEARCH_TRANSFER.md](LOCAL_SEARCH_TRANSFER.md) for its regression and
+focused model/proof validation command.
+
 Use `--help` for the exact CLI names, including the time-limit option. Preprocessing
 has a deterministic literal-work budget; zero disables it. The time limit is CPU
 time for solving, including preprocessing, checked within long operations.
