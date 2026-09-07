@@ -1,0 +1,32 @@
+{
+  "seed": 20260917,
+  "configurations": 43,
+  "random_cases": 100,
+  "fixed_cases": 13,
+  "validation": {
+    "release": "PASS: 4859 solves; truth-table answers, original models, text/binary RUP proofs checked (seed 20260917)",
+    "asan_ubsan": "PASS: 4859 solves; truth-table answers, original models, text/binary RUP proofs checked (seed 20260917)"
+  },
+  "unit_executables_passed": {
+    "release": 14,
+    "asan_ubsan": 14
+  },
+  "short_deadline_runs_passed": {
+    "release": 12,
+    "asan_ubsan": 12
+  },
+  "binary_sha256": {
+    "bsat": "9cfc6c27f48fcd2b416820bab8c26d4eb5f1f9e3bb12a08ad85bada479459603",
+    "bsat_debug": "9c021c4ecb7cfb58a5d1319e0f8dc19b36313bdc86b5b0a40e9ec7ab164d4fd5",
+    "parse_benchmark_release": "0318a0a48b8f4156313615cbc3fddb869ef5d885694e1454e8a5160521338479",
+    "parse_benchmark_debug": "dd9594edb2b77d2aa9ffa3e99e7ca8939673d89d09a29b3bec31da42ffed1efa"
+  },
+  "checker_sha256": "9bfc20a5fa9eb2a0ffadd2b0cfc7cdd4a20f6aa9c8d7de5b6c771160b847f630",
+  "final_binaries_match_benchmarks": true,
+  "clean_release_build_unit_executables": 14,
+  "driver_smoke_passed": [
+    "release",
+    "debug"
+  ],
+  "embedded_nul_cli_checks_per_build": 2
+}

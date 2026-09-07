@@ -160,6 +160,10 @@ def check_cli(solver, directory):
         result = subprocess.run([solver, *options, str(inp)], capture_output=True, text=True, timeout=5)
         assert result.returncode == 1, (options, result.returncode, result.stderr)
     assert inp.read_text() == 'p cnf 1 1\n1 0\n'
+    for malformed in ('p cnf 1 1\n1\0x 0\n', 'p cnf\0x 1 1\n1 0\n'):
+        inp.write_text(malformed)
+        result = subprocess.run([solver, str(inp)], capture_output=True, text=True, timeout=5)
+        assert result.returncode == 1 and not any(line.startswith('s ') for line in result.stdout.splitlines()), result
     inp.write_text('p cnf 4 2\n1 2 0\n3 4 0\n')
     result = subprocess.run([solver, '--no-probing', '--decisions', '1', str(inp)], capture_output=True, text=True, timeout=5)
     assert result.returncode == 0 and 's UNKNOWN' in result.stdout, result

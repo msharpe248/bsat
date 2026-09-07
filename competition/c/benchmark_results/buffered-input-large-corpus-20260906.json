@@ -1,0 +1,17 @@
+{
+  "selection": "The three >300 MB files in the previous fresh-input manifest, selected before large-file timing.",
+  "instances": [
+    {
+      "path": "/Users/msharpe/python/bsat/dataset/sat_competition2025/cril-misc/ad69e0a0880cd377e26260f7e4bc6d51.cnf",
+      "sha256": "cacb057bc03ed46092cb64f5de29b3c978957209f883c6954dd228c7672a367f"
+    },
+    {
+      "path": "/Users/msharpe/python/bsat/dataset/sat_competition2025/md5-equivalence-checking/619e9e0d70c78c97b0516afedf086fee.cnf",
+      "sha256": "554457e3e71dc279e8bcbf2d2e09e85d04051e65e628f8fd444ac2749a910da1"
+    },
+    {
+      "path": "/Users/msharpe/python/bsat/dataset/sat_competition2025/software-verification/1a9512580b2d946ebd41de4e8c08c42d.cnf",
+      "sha256": "363376353c5365e521d8522f786eb3577a75cdc4a0c7f0d51a386fb7b0cef914"
+    }
+  ]
+}

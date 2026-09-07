@@ -250,3 +250,23 @@ Final validation passed 4859 release and 4859 ASan/UBSan formula solves across
 and twelve short-deadline runs per mode. The final release executable matches
 the final benchmark hashes. See the
 [validation record](benchmark_results/used-clauses-validation-20260906.json).
+
+## Buffered DIMACS loading
+
+[Buffered input](BUFFERED_INPUT.md) removes per-byte stdio calls while preserving
+valid-input token rules. It also rejects embedded NULs that previously truncated
+tokens silently, and reports header read failures as file errors. Tests exercise
+refill boundaries, token limits, malformed bytes and I/O errors. The retained suite
+now has fourteen C executables. A clean parallel build also verifies the corrected
+object-directory dependency. Parse-only measurements show about 69–71% less CPU;
+loading-focused CLI measurements show about 68% less CPU with matching search
+counters. The search sample has no solved-count gain.
+
+The preceding retention milestone passed
+[Linux/macOS CI](https://github.com/msharpe248/bsat/actions/runs/34069161528).
+
+Final validation passed 4859 release and 4859 ASan/UBSan formula solves across
+43 configurations (seed 20260917), all fourteen C test executables in both modes,
+and twelve short-deadline runs per mode. CLI malformed-NUL checks and parser-driver
+smoke tests also passed. Final executable hashes match the measured binaries. See
+the [validation record](benchmark_results/buffered-input-validation-20260906.json).

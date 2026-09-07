@@ -59,7 +59,7 @@ $(TARGET): $(OBJECTS)
 	$(CC) $(CFLAGS) -o $@ $^ -lm
 
 # Object files
-$(OBJDIR)/%.o: $(SRCDIR)/%.c
+$(OBJDIR)/%.o: $(SRCDIR)/%.c | dirs
 	$(CC) $(CFLAGS) -MMD -MP -c -o $@ $<
 
 # Test binaries (match only test_* files to avoid conflict with main solver)
@@ -171,3 +171,10 @@ help:
 
 check: all test
 	python3 tests/validate.py --solver $(TARGET)
+
+# Parse-only driver for loading benchmarks (does not run SAT search).
+.PHONY: parse-benchmark
+parse-benchmark: $(BINDIR)/parse_benchmark_$(MODE)
+
+$(BINDIR)/parse_benchmark_$(MODE): $(TESTDIR)/parse_benchmark.c $(filter-out $(OBJDIR)/main.o,$(OBJECTS)) | dirs
+	$(CC) $(CFLAGS) -o $@ $< $(OBJDIR)/dimacs.o $(filter-out $(OBJDIR)/main.o $(OBJDIR)/dimacs.o,$(OBJECTS)) -lm

@@ -24,7 +24,9 @@ jobs:
           curl -Lf https://raw.githubusercontent.com/marijnheule/drat-trim/2e3b2dc0ecf938addbd779d42877b6ed69d9a985/drat-trim.c -o "$RUNNER_TEMP/drat-trim.c"
           cc -O2 "$RUNNER_TEMP/drat-trim.c" -o "$RUNNER_TEMP/drat-trim"
       - name: Unit and API regressions
-        run: make -C competition/c all test MODE=${{ matrix.mode }}
+        run: make -C competition/c all test parse-benchmark MODE=${{ matrix.mode }}
+      - name: Parse benchmark smoke test
+        run: python3 competition/c/tests/benchmark_parse.py --parser current=competition/c/bin/parse_benchmark_${{ matrix.mode }} --repeats 1 --output "$RUNNER_TEMP/parse.json" competition/tests/fixtures/unit/trivial_sat.cnf
       - name: Independent formula and certificate validation
         shell: bash
         run: |

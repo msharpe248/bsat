@@ -42,6 +42,11 @@ deletion and vivification;
 UNSAT certificates end with an empty clause. Text and binary DRAT are supported.
 The search algorithm is the same with proof logging enabled or disabled.
 
+DIMACS input uses a fixed 64 KiB reader to reduce per-byte stdio overhead.
+Embedded NULs in tokens are rejected and stream failures report file errors.
+See [BUFFERED_INPUT.md](BUFFERED_INPUT.md) for boundary tests and parse-only
+and end-to-end measurements.
+
 DIMACS requires one `p cnf` header, in-range variables, an exact clause count and
 zero-terminated clauses. Clauses may span lines, and multiple clauses may share
 one line. Duplicates and tautologies are normalized. Numeric overflow and

@@ -1,0 +1,14 @@
+{
+  "baseline": {
+    "returncode": 10,
+    "status": [
+      "s SATISFIABLE"
+    ],
+    "stderr": ""
+  },
+  "buffered": {
+    "returncode": 1,
+    "status": [],
+    "stderr": "Error parsing DIMACS file: Invalid DIMACS format\n"
+  }
+}

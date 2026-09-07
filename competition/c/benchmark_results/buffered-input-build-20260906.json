@@ -1,0 +1,19 @@
+{
+  "baseline_revision": "4ade636d27c64ad16289f2151b41c922a2184865",
+  "compiler": "Apple clang version 21.0.0 (clang-2100.1.1.101)\nTarget: arm64-apple-darwin25.6.0\nThread model: posix\nInstalledDir: /Library/Developer/CommandLineTools/usr/bin",
+  "build_commands": [
+    "make -j4 all test parse-benchmark",
+    "make MODE=debug parse-benchmark"
+  ],
+  "clean_release_unit_executables": 14,
+  "clean_build_hash_matches": {
+    "bsat": true,
+    "parse_benchmark_release": true
+  },
+  "binary_sha256": {
+    "bsat": "9cfc6c27f48fcd2b416820bab8c26d4eb5f1f9e3bb12a08ad85bada479459603",
+    "bsat_debug": "9c021c4ecb7cfb58a5d1319e0f8dc19b36313bdc86b5b0a40e9ec7ab164d4fd5",
+    "parse_benchmark_release": "0318a0a48b8f4156313615cbc3fddb869ef5d885694e1454e8a5160521338479",
+    "parse_benchmark_debug": "dd9594edb2b77d2aa9ffa3e99e7ca8939673d89d09a29b3bec31da42ffed1efa"
+  }
+}

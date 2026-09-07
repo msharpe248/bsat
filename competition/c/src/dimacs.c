@@ -11,21 +11,38 @@
 #include <sys/stat.h>
 #include <unistd.h>
 
+/* Keep stream access outside the per-byte tokenizer loop. */
+#define INPUT_BUFFER_SIZE 65536
+struct InputReader {
+    FILE *file;
+    size_t at, size;
+    unsigned char bytes[INPUT_BUFFER_SIZE];
+};
+
+static int input_byte(struct InputReader *reader) {
+    if (reader->at == reader->size) {
+        reader->size = fread(reader->bytes, 1, sizeof reader->bytes, reader->file);
+        reader->at = 0;
+        if (!reader->size) return EOF;
+    }
+    return reader->bytes[reader->at++];
+}
+
 /* DIMACS clauses are terminated by zero, never by a physical line. */
-static int token(FILE *f, char *buf, size_t cap) {
+static int token(struct InputReader *reader, char *buf, size_t cap, bool comments) {
     int c;
     do {
-        c = fgetc(f);
-        if (c == 'c') {
-            while (c != '\n' && c != EOF) c = fgetc(f);
+        c = input_byte(reader);
+        if (comments && c == 'c') {
+            while (c != '\n' && c != EOF) c = input_byte(reader);
         }
     } while (c != EOF && isspace((unsigned char)c));
-    if (c == EOF) return ferror(f) ? -1 : 0;
+    if (c == EOF) return ferror(reader->file) ? -1 : 0;
     size_t n = 0;
     do {
-        if (n + 1 >= cap) return -1;
+        if (!c || n + 1 >= cap) return -1;
         buf[n++] = (char)c;
-        c = fgetc(f);
+        c = input_byte(reader);
     } while (c != EOF && !isspace((unsigned char)c));
     buf[n] = 0;
     return 1;
@@ -40,23 +57,25 @@ static bool integer(const char *buf, long long *v) {
 
 DimacsError dimacs_parse_stream(Solver *s, FILE *file) {
     if (!s || !file) return DIMACS_ERROR_FILE;
+    struct InputReader reader;
+    reader.file = file;reader.at = reader.size = 0;
     char buf[64];
     Lit *clause = NULL;
     uint32_t size = 0, capacity = 0, count = 0;
     long long nvars = 0, nclauses = 0;
     DimacsError result = DIMACS_ERROR_FORMAT;
-    if (token(file, buf, sizeof buf) != 1 || strcmp(buf, "p")) goto done;
+    if (token(&reader, buf, sizeof buf, true) != 1 || strcmp(buf, "p")) goto done;
     /* Read cnf without comment skipping: it is the format token. */
-    if (fscanf(file, " %63s", buf) != 1 || strcmp(buf, "cnf")) goto done;
-    if (token(file, buf, sizeof buf) != 1 || !integer(buf, &nvars) ||
+    if (token(&reader, buf, sizeof buf, false) != 1 || strcmp(buf, "cnf")) goto done;
+    if (token(&reader, buf, sizeof buf, true) != 1 || !integer(buf, &nvars) ||
         nvars < 0 || nvars > MAX_VARS) goto done;
-    if (token(file, buf, sizeof buf) != 1 || !integer(buf, &nclauses) ||
+    if (token(&reader, buf, sizeof buf, true) != 1 || !integer(buf, &nclauses) ||
         nclauses < 0 || nclauses > MAX_CLAUSES) goto done;
     while (s->num_vars < (uint32_t)nvars) {
         if (!solver_new_var(s)) { result = DIMACS_ERROR_MEMORY; goto done; }
     }
     for (;;) {
-        int status = token(file, buf, sizeof buf);
+        int status = token(&reader, buf, sizeof buf, true);
         if (!status) break;
         long long value;
         if (status < 0 || !integer(buf, &value)) goto done;
@@ -80,6 +99,7 @@ DimacsError dimacs_parse_stream(Solver *s, FILE *file) {
     if (ferror(file)) result = DIMACS_ERROR_FILE;
     else if (!size && count == (uint32_t)nclauses) result = DIMACS_OK;
 done:
+    if (ferror(file)) result = DIMACS_ERROR_FILE;
     free(clause);
     return result;
 }

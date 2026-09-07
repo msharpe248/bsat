@@ -1,0 +1,62 @@
+{
+  "revision": "4ade636d27c64ad16289f2151b41c922a2184865",
+  "dirty": true,
+  "platform": "macOS-26.6.1-arm64-arm-64bit-Mach-O",
+  "machine": "arm64",
+  "seed": 20260917,
+  "repeats": 1,
+  "timeout": 60,
+  "parsers": {
+    "release": {
+      "path": "/Users/msharpe/python/bsat/competition/c/bin/parse_benchmark_release",
+      "sha256": "0318a0a48b8f4156313615cbc3fddb869ef5d885694e1454e8a5160521338479"
+    },
+    "debug": {
+      "path": "/Users/msharpe/python/bsat/competition/c/bin/parse_benchmark_debug",
+      "sha256": "dd9594edb2b77d2aa9ffa3e99e7ca8939673d89d09a29b3bec31da42ffed1efa"
+    }
+  },
+  "inputs": [
+    {
+      "path": "/Users/msharpe/python/bsat/competition/tests/fixtures/unit/trivial_sat.cnf",
+      "bytes": 107,
+      "sha256": "ca37a09c168a2b450d09a9729b1df24def5c759dc2a52536311af5732b952c10"
+    }
+  ],
+  "runs": [
+    {
+      "parser": "debug",
+      "input": "/Users/msharpe/python/bsat/competition/tests/fixtures/unit/trivial_sat.cnf",
+      "repeat": 0,
+      "status": 0,
+      "parse_cpu_seconds": 0.000157,
+      "variables": 1,
+      "clauses": 1,
+      "input_words": 2,
+      "fingerprint": "08395407b4f1363f",
+      "peak_rss_bytes": 17399808
+    },
+    {
+      "parser": "release",
+      "input": "/Users/msharpe/python/bsat/competition/tests/fixtures/unit/trivial_sat.cnf",
+      "repeat": 0,
+      "status": 0,
+      "parse_cpu_seconds": 5e-05,
+      "variables": 1,
+      "clauses": 1,
+      "input_words": 2,
+      "fingerprint": "08395407b4f1363f",
+      "peak_rss_bytes": 1474560
+    }
+  ],
+  "summary": {
+    "release": {
+      "runs": 1,
+      "median_parse_cpu": 5e-05
+    },
+    "debug": {
+      "runs": 1,
+      "median_parse_cpu": 0.000157
+    }
+  }
+}

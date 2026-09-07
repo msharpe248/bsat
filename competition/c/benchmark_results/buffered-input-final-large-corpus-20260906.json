@@ -1,0 +1,272 @@
+{
+  "revision": "4ade636d27c64ad16289f2151b41c922a2184865",
+  "dirty": true,
+  "platform": "macOS-26.6.1-arm64-arm-64bit-Mach-O",
+  "machine": "arm64",
+  "seed": 20260917,
+  "repeats": 2,
+  "timeout": 60,
+  "parsers": {
+    "baseline": {
+      "path": "/private/tmp/bsat-parser-baseline-tree/competition/c/bin/parse_benchmark_release",
+      "sha256": "a77025612f701004eaa851b410ce36d4dada992a7ea72e3abe8d08c8eca5c10a"
+    },
+    "control": {
+      "path": "/private/tmp/bsat-parser-baseline-tree/competition/c/bin/parse_benchmark_release",
+      "sha256": "a77025612f701004eaa851b410ce36d4dada992a7ea72e3abe8d08c8eca5c10a"
+    },
+    "buffered": {
+      "path": "/Users/msharpe/python/bsat/competition/c/bin/parse_benchmark_release",
+      "sha256": "0318a0a48b8f4156313615cbc3fddb869ef5d885694e1454e8a5160521338479"
+    }
+  },
+  "inputs": [
+    {
+      "path": "/Users/msharpe/python/bsat/dataset/sat_competition2025/cril-misc/ad69e0a0880cd377e26260f7e4bc6d51.cnf",
+      "bytes": 333351613,
+      "sha256": "cacb057bc03ed46092cb64f5de29b3c978957209f883c6954dd228c7672a367f"
+    },
+    {
+      "path": "/Users/msharpe/python/bsat/dataset/sat_competition2025/md5-equivalence-checking/619e9e0d70c78c97b0516afedf086fee.cnf",
+      "bytes": 327761283,
+      "sha256": "554457e3e71dc279e8bcbf2d2e09e85d04051e65e628f8fd444ac2749a910da1"
+    },
+    {
+      "path": "/Users/msharpe/python/bsat/dataset/sat_competition2025/software-verification/1a9512580b2d946ebd41de4e8c08c42d.cnf",
+      "bytes": 460577617,
+      "sha256": "363376353c5365e521d8522f786eb3577a75cdc4a0c7f0d51a386fb7b0cef914"
+    }
+  ],
+  "runs": [
+    {
+      "parser": "control",
+      "input": "/Users/msharpe/python/bsat/dataset/sat_competition2025/software-verification/1a9512580b2d946ebd41de4e8c08c42d.cnf",
+      "repeat": 1,
+      "status": 0,
+      "parse_cpu_seconds": 9.802036,
+      "variables": 1735931,
+      "clauses": 18657713,
+      "input_words": 72432342,
+      "fingerprint": "2f20ac3a3b6ef88a",
+      "peak_rss_bytes": 1965899776
+    },
+    {
+      "parser": "control",
+      "input": "/Users/msharpe/python/bsat/dataset/sat_competition2025/cril-misc/ad69e0a0880cd377e26260f7e4bc6d51.cnf",
+      "repeat": 0,
+      "status": 0,
+      "parse_cpu_seconds": 7.424224,
+      "variables": 4158552,
+      "clauses": 14480272,
+      "input_words": 51973045,
+      "fingerprint": "27cc74d73f2e2f3f",
+      "peak_rss_bytes": 2129002496
+    },
+    {
+      "parser": "buffered",
+      "input": "/Users/msharpe/python/bsat/dataset/sat_competition2025/cril-misc/ad69e0a0880cd377e26260f7e4bc6d51.cnf",
+      "repeat": 0,
+      "status": 0,
+      "parse_cpu_seconds": 2.165361,
+      "variables": 4158552,
+      "clauses": 14480272,
+      "input_words": 51973045,
+      "fingerprint": "27cc74d73f2e2f3f",
+      "peak_rss_bytes": 2127101952
+    },
+    {
+      "parser": "buffered",
+      "input": "/Users/msharpe/python/bsat/dataset/sat_competition2025/software-verification/1a9512580b2d946ebd41de4e8c08c42d.cnf",
+      "repeat": 1,
+      "status": 0,
+      "parse_cpu_seconds": 2.583189,
+      "variables": 1735931,
+      "clauses": 18657713,
+      "input_words": 72432342,
+      "fingerprint": "2f20ac3a3b6ef88a",
+      "peak_rss_bytes": 1961328640
+    },
+    {
+      "parser": "control",
+      "input": "/Users/msharpe/python/bsat/dataset/sat_competition2025/cril-misc/ad69e0a0880cd377e26260f7e4bc6d51.cnf",
+      "repeat": 1,
+      "status": 0,
+      "parse_cpu_seconds": 7.442548,
+      "variables": 4158552,
+      "clauses": 14480272,
+      "input_words": 51973045,
+      "fingerprint": "27cc74d73f2e2f3f",
+      "peak_rss_bytes": 2127020032
+    },
+    {
+      "parser": "baseline",
+      "input": "/Users/msharpe/python/bsat/dataset/sat_competition2025/cril-misc/ad69e0a0880cd377e26260f7e4bc6d51.cnf",
+      "repeat": 1,
+      "status": 0,
+      "parse_cpu_seconds": 7.370949,
+      "variables": 4158552,
+      "clauses": 14480272,
+      "input_words": 51973045,
+      "fingerprint": "27cc74d73f2e2f3f",
+      "peak_rss_bytes": 2126938112
+    },
+    {
+      "parser": "buffered",
+      "input": "/Users/msharpe/python/bsat/dataset/sat_competition2025/software-verification/1a9512580b2d946ebd41de4e8c08c42d.cnf",
+      "repeat": 0,
+      "status": 0,
+      "parse_cpu_seconds": 2.576788,
+      "variables": 1735931,
+      "clauses": 18657713,
+      "input_words": 72432342,
+      "fingerprint": "2f20ac3a3b6ef88a",
+      "peak_rss_bytes": 1966981120
+    },
+    {
+      "parser": "buffered",
+      "input": "/Users/msharpe/python/bsat/dataset/sat_competition2025/cril-misc/ad69e0a0880cd377e26260f7e4bc6d51.cnf",
+      "repeat": 1,
+      "status": 0,
+      "parse_cpu_seconds": 2.176543,
+      "variables": 4158552,
+      "clauses": 14480272,
+      "input_words": 51973045,
+      "fingerprint": "27cc74d73f2e2f3f",
+      "peak_rss_bytes": 2127085568
+    },
+    {
+      "parser": "control",
+      "input": "/Users/msharpe/python/bsat/dataset/sat_competition2025/software-verification/1a9512580b2d946ebd41de4e8c08c42d.cnf",
+      "repeat": 0,
+      "status": 0,
+      "parse_cpu_seconds": 9.825276,
+      "variables": 1735931,
+      "clauses": 18657713,
+      "input_words": 72432342,
+      "fingerprint": "2f20ac3a3b6ef88a",
+      "peak_rss_bytes": 1961492480
+    },
+    {
+      "parser": "buffered",
+      "input": "/Users/msharpe/python/bsat/dataset/sat_competition2025/md5-equivalence-checking/619e9e0d70c78c97b0516afedf086fee.cnf",
+      "repeat": 0,
+      "status": 0,
+      "parse_cpu_seconds": 2.295568,
+      "variables": 5838180,
+      "clauses": 15700117,
+      "input_words": 51509588,
+      "fingerprint": "49e30cdae36eb8eb",
+      "peak_rss_bytes": 2920103936
+    },
+    {
+      "parser": "baseline",
+      "input": "/Users/msharpe/python/bsat/dataset/sat_competition2025/software-verification/1a9512580b2d946ebd41de4e8c08c42d.cnf",
+      "repeat": 1,
+      "status": 0,
+      "parse_cpu_seconds": 9.769743,
+      "variables": 1735931,
+      "clauses": 18657713,
+      "input_words": 72432342,
+      "fingerprint": "2f20ac3a3b6ef88a",
+      "peak_rss_bytes": 1961558016
+    },
+    {
+      "parser": "baseline",
+      "input": "/Users/msharpe/python/bsat/dataset/sat_competition2025/md5-equivalence-checking/619e9e0d70c78c97b0516afedf086fee.cnf",
+      "repeat": 0,
+      "status": 0,
+      "parse_cpu_seconds": 7.525488,
+      "variables": 5838180,
+      "clauses": 15700117,
+      "input_words": 51509588,
+      "fingerprint": "49e30cdae36eb8eb",
+      "peak_rss_bytes": 2922741760
+    },
+    {
+      "parser": "baseline",
+      "input": "/Users/msharpe/python/bsat/dataset/sat_competition2025/cril-misc/ad69e0a0880cd377e26260f7e4bc6d51.cnf",
+      "repeat": 0,
+      "status": 0,
+      "parse_cpu_seconds": 7.467228,
+      "variables": 4158552,
+      "clauses": 14480272,
+      "input_words": 51973045,
+      "fingerprint": "27cc74d73f2e2f3f",
+      "peak_rss_bytes": 2128986112
+    },
+    {
+      "parser": "baseline",
+      "input": "/Users/msharpe/python/bsat/dataset/sat_competition2025/md5-equivalence-checking/619e9e0d70c78c97b0516afedf086fee.cnf",
+      "repeat": 1,
+      "status": 0,
+      "parse_cpu_seconds": 7.49128,
+      "variables": 5838180,
+      "clauses": 15700117,
+      "input_words": 51509588,
+      "fingerprint": "49e30cdae36eb8eb",
+      "peak_rss_bytes": 2919628800
+    },
+    {
+      "parser": "buffered",
+      "input": "/Users/msharpe/python/bsat/dataset/sat_competition2025/md5-equivalence-checking/619e9e0d70c78c97b0516afedf086fee.cnf",
+      "repeat": 1,
+      "status": 0,
+      "parse_cpu_seconds": 2.294401,
+      "variables": 5838180,
+      "clauses": 15700117,
+      "input_words": 51509588,
+      "fingerprint": "49e30cdae36eb8eb",
+      "peak_rss_bytes": 2923937792
+    },
+    {
+      "parser": "control",
+      "input": "/Users/msharpe/python/bsat/dataset/sat_competition2025/md5-equivalence-checking/619e9e0d70c78c97b0516afedf086fee.cnf",
+      "repeat": 0,
+      "status": 0,
+      "parse_cpu_seconds": 7.44442,
+      "variables": 5838180,
+      "clauses": 15700117,
+      "input_words": 51509588,
+      "fingerprint": "49e30cdae36eb8eb",
+      "peak_rss_bytes": 2919202816
+    },
+    {
+      "parser": "control",
+      "input": "/Users/msharpe/python/bsat/dataset/sat_competition2025/md5-equivalence-checking/619e9e0d70c78c97b0516afedf086fee.cnf",
+      "repeat": 1,
+      "status": 0,
+      "parse_cpu_seconds": 7.501414,
+      "variables": 5838180,
+      "clauses": 15700117,
+      "input_words": 51509588,
+      "fingerprint": "49e30cdae36eb8eb",
+      "peak_rss_bytes": 2923855872
+    },
+    {
+      "parser": "baseline",
+      "input": "/Users/msharpe/python/bsat/dataset/sat_competition2025/software-verification/1a9512580b2d946ebd41de4e8c08c42d.cnf",
+      "repeat": 0,
+      "status": 0,
+      "parse_cpu_seconds": 9.832881,
+      "variables": 1735931,
+      "clauses": 18657713,
+      "input_words": 72432342,
+      "fingerprint": "2f20ac3a3b6ef88a",
+      "peak_rss_bytes": 1961525248
+    }
+  ],
+  "summary": {
+    "baseline": {
+      "runs": 6,
+      "median_parse_cpu": 7.5083839999999995
+    },
+    "control": {
+      "runs": 6,
+      "median_parse_cpu": 7.472917
+    },
+    "buffered": {
+      "runs": 6,
+      "median_parse_cpu": 2.2949845
+    }
+  }
+}

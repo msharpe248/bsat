@@ -1,0 +1,29 @@
+{
+  "selection": "Six previously recorded competition files, 3-37 MB, selected before parse timing; excludes the three >300 MB inputs.",
+  "instances": [
+    {
+      "path": "/Users/msharpe/python/bsat/dataset/sat_competition2025/independent-set/87f093067622b91fa9dc0de149c8b92c.cnf",
+      "sha256": "f04d87abe42b9081bec4e0b021ce300699ad390e43c99fb9a1a01fe95adeb7ef"
+    },
+    {
+      "path": "/Users/msharpe/python/bsat/dataset/sat_competition2025/modcircuits/d9320e4dbba0f8bd699085f61a98ff5c.cnf",
+      "sha256": "003e999f43dbf04562f8e792c46c75f8bd6275df22168fa951648fa8d270721e"
+    },
+    {
+      "path": "/Users/msharpe/python/bsat/dataset/sat_competition2025/grs-fp-comm/fe851239cedd4197c5390cee55fee723.cnf",
+      "sha256": "a86fb6261fdb30937f8491018de013ea9c7ba0166faaee7e64b5ca0237905d18"
+    },
+    {
+      "path": "/Users/msharpe/python/bsat/dataset/sat_competition2025/equivalence-checking/28eeb2beac7005a9afa98e4d3aaca621.cnf",
+      "sha256": "758e21c6bdb82922f0eb1c12f5ff492d27d0c7bd3415f9bfe2111963ed5d1884"
+    },
+    {
+      "path": "/Users/msharpe/python/bsat/dataset/sat_competition2025/bitvector/65f7145996bbec02b90bd0fa64a20502.cnf",
+      "sha256": "43d633fb1b7622667b2a5a23bc05f8d431b5e79517de19ac859d1bb2da099b35"
+    },
+    {
+      "path": "/Users/msharpe/python/bsat/dataset/sat_competition2025/stedman-triples/85ba26d796de9ad740ce5a6813488fbc.cnf",
+      "sha256": "3e86157d0179bb4dd8e8ce4c81babda59207c90931eb19ac9420e4a5bac856b9"
+    }
+  ]
+}
