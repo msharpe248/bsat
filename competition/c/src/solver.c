@@ -780,6 +780,8 @@ void solver_print_stats(const Solver* s) {
     printf("c Reused levels     : %llu\n", (unsigned long long)s->stats.reused_levels);
     printf("c Local search calls: %u\n", s->local_search.calls);
     printf("c Local search wins : %u\n", s->local_search.successes);
+    printf("c Local search flips: %llu\n",
+           (unsigned long long)(s->local_search.state ? s->local_search.state->flips : 0));
     printf("c Learned clauses   : %llu\n", (unsigned long long)s->stats.learned_clauses);
     printf("c Learned literals  : %llu\n", (unsigned long long)s->stats.learned_literals);
     printf("c Deleted clauses   : %llu\n", (unsigned long long)s->stats.deleted_clauses);
