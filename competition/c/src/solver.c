@@ -1851,9 +1851,9 @@ static uint32_t solver_eliminate_blocked_clauses(Solver *s) {
                 CRef other = o->clauses[k];
                 if (clause_deleted(s->arena, other)) continue;
                 uint32_t n = CLAUSE_SIZE(s->arena, other);
-                s->work += (uint64_t)size*n;
-                if (solver_budget_exhausted(s) ||
-                    !elim_is_tautology(lits,size,CLAUSE_LITS(s->arena,other),n,var(pivot))) { blocked = false; break; }
+                if (!elim_bounded_tautology(s,lits,size,CLAUSE_LITS(s->arena,other),n,var(pivot))) {
+                    blocked = false; break;
+                }
             }
             if (blocked) {
                 Lit *saved = malloc((size+1)*sizeof *saved);

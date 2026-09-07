@@ -347,3 +347,8 @@ this does not establish overall parity.
 gain on the larger hardware-verification target after repeated 30-CPU-second
 runs. Defaults remain unchanged. A new C regression covers 51,840 ranking,
 keep-fraction, cutoff and relocation cases, with three mutation checks.
+
+[Linear blocked-clause checks](LINEAR_BCE.md) reuse the bounded resolution-pair
+routine instead of quadratic literal comparisons. Long overlapping-clause tests
+run up to 6.45 times faster in process CPU and complete more elimination within
+a fixed work budget. Larger-input solved counts are unchanged; BCE remains opt-in.

@@ -129,6 +129,11 @@ bool elim_is_tautology(const Lit* c1, uint32_t s1,
                        const Lit* c2, uint32_t s2,
                        Var pivot);
 
+// Bounded linear check for canonical clauses; false also means budget exhausted.
+// Owns the root-preprocessing minimizer scratch and always clears its marks.
+bool elim_bounded_tautology(struct Solver* s, const Lit* c1, uint32_t s1,
+                           const Lit* c2, uint32_t s2, Var pivot);
+
 // Eliminate a single variable
 // Returns true on success, false if elimination not possible
 bool elim_eliminate_var(struct Solver* s, Var v);

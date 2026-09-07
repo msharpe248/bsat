@@ -109,6 +109,11 @@ static int resolve_pair(Solver *s, const Lit *a, uint32_t na,
     return status;
 }
 
+bool elim_bounded_tautology(Solver *s, const Lit *a, uint32_t na,
+                           const Lit *b, uint32_t nb, Var pivot) {
+    return resolve_pair(s, a, na, b, nb, pivot, NULL, NULL) == PAIR_TAUTOLOGY;
+}
+
 int elim_cost(Solver *s, Var v) {
     if (!s->elim || s->values[v] != UNDEF || s->elim->eliminated[v]) return -1;
     if (solver_budget_exhausted(s)) return -1;

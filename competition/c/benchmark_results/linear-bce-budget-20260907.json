@@ -1,0 +1,36 @@
+{
+  "schema": 1,
+  "input_sha256": "67a0d418e8ad89516dc7b9aff18a089816ed2f425103a05710de2bf719d0d591",
+  "runs": [
+    {
+      "profile": "quadratic",
+      "command": [
+        "/tmp/bsat-linear-bce-baseline",
+        "--bce",
+        "--no-probing",
+        "--preprocess-budget",
+        "10000",
+        "/tmp/bsat-linear-bce-corpus/overlap-1000.cnf"
+      ],
+      "executable_sha256": "e847f6714a2ac36da3aeaa3c4a097a16971c4ca23ad12c2e187b7ad3c2b0a698",
+      "returncode": 10,
+      "original_model_verified": true,
+      "blocked_clauses": 0
+    },
+    {
+      "profile": "linear",
+      "command": [
+        "competition/c/bin/bsat",
+        "--bce",
+        "--no-probing",
+        "--preprocess-budget",
+        "10000",
+        "/tmp/bsat-linear-bce-corpus/overlap-1000.cnf"
+      ],
+      "executable_sha256": "d731a31cf2de5cdf4b009f733b19c488eda92cceea91915a5d0dfde56619d35f",
+      "returncode": 10,
+      "original_model_verified": true,
+      "blocked_clauses": 2
+    }
+  ]
+}
