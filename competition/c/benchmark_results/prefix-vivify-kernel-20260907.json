@@ -1,0 +1,393 @@
+{
+  "schema": 1,
+  "platform": "macOS-26.6.1-arm64-arm-64bit-Mach-O",
+  "machine": "arm64",
+  "revision": "d5bd74a3271eefad9adba26c4771f78532b37cc3",
+  "dirty": true,
+  "split": "development",
+  "seed": 20261115,
+  "timeout": 30.0,
+  "repeats": 3,
+  "solvers": {
+    "baseline": {
+      "command": [
+        "/private/tmp/bsat-prefix-vivify-driver-baseline",
+        "{input}",
+        "100"
+      ],
+      "sha256": "8b2e8bd5cb9e72e6ab5707991d90f6d2aeeb7f51c8d6b9089eb1dbb4c0e9b39a"
+    },
+    "prefix": {
+      "command": [
+        "/private/tmp/bsat-prefix-vivify-driver-candidate",
+        "{input}",
+        "100"
+      ],
+      "sha256": "30ef060fcf902205d27d600a1fc30c07baba3626f5c123d0d2c798e711307d85"
+    }
+  },
+  "inputs": {
+    "/private/tmp/bsat-prefix-vivify-corpus/prefix-8.cnf": {
+      "sha256": "4d712ecbc4065c2c203fe3a48b07572bad1471d2aeed8c1f7ed94c89cf603a23",
+      "family": "bsat-prefix-vivify-corpus"
+    },
+    "/private/tmp/bsat-prefix-vivify-corpus/prefix-32.cnf": {
+      "sha256": "7a8377dc64f85a82f15e8c08044ea1e50e54f99c7368f100e318942003b6c08c",
+      "family": "bsat-prefix-vivify-corpus"
+    },
+    "/private/tmp/bsat-prefix-vivify-corpus/prefix-64.cnf": {
+      "sha256": "c32478dcc9de22b3b7aa5d9e64377d3bc4f99339c20674752691759e695efd14",
+      "family": "bsat-prefix-vivify-corpus"
+    }
+  },
+  "checker": {
+    "path": "/tmp/bsat-drat-trim",
+    "sha256": "9bfc20a5fa9eb2a0ffadd2b0cfc7cdd4a20f6aa9c8d7de5b6c771160b847f630"
+  },
+  "runs": [
+    {
+      "solver": "baseline",
+      "input": "/private/tmp/bsat-prefix-vivify-corpus/prefix-64.cnf",
+      "repeat": 1,
+      "status": "SAT",
+      "verified": true,
+      "seconds": 0.13109670905396342,
+      "cpu_seconds": 0.11566699999999999,
+      "peak_rss_bytes": 3522560,
+      "par2": 0.13109670905396342,
+      "stats": {
+        "Vivification CPU": "0.086288000",
+        "Vivification work": "2501000",
+        "Removed literals": "620000",
+        "Remaining literals": "20000"
+      },
+      "diagnostic": ""
+    },
+    {
+      "solver": "prefix",
+      "input": "/private/tmp/bsat-prefix-vivify-corpus/prefix-8.cnf",
+      "repeat": 1,
+      "status": "SAT",
+      "verified": true,
+      "seconds": 0.02021095808595419,
+      "cpu_seconds": 0.015522,
+      "peak_rss_bytes": 2326528,
+      "par2": 0.02021095808595419,
+      "stats": {
+        "Vivification CPU": "0.008725000",
+        "Vivification work": "3545600",
+        "Removed literals": "50200",
+        "Remaining literals": "29800"
+      },
+      "diagnostic": ""
+    },
+    {
+      "solver": "baseline",
+      "input": "/private/tmp/bsat-prefix-vivify-corpus/prefix-8.cnf",
+      "repeat": 1,
+      "status": "SAT",
+      "verified": true,
+      "seconds": 0.02006412483751774,
+      "cpu_seconds": 0.014190999999999999,
+      "peak_rss_bytes": 2408448,
+      "par2": 0.02006412483751774,
+      "stats": {
+        "Vivification CPU": "0.007137000",
+        "Vivification work": "1353000",
+        "Removed literals": "60000",
+        "Remaining literals": "20000"
+      },
+      "diagnostic": ""
+    },
+    {
+      "solver": "baseline",
+      "input": "/private/tmp/bsat-prefix-vivify-corpus/prefix-32.cnf",
+      "repeat": 1,
+      "status": "SAT",
+      "verified": true,
+      "seconds": 0.07715341728180647,
+      "cpu_seconds": 0.045526,
+      "peak_rss_bytes": 2932736,
+      "par2": 0.07715341728180647,
+      "stats": {
+        "Vivification CPU": "0.028621000",
+        "Vivification work": "1845000",
+        "Removed literals": "300000",
+        "Remaining literals": "20000"
+      },
+      "diagnostic": ""
+    },
+    {
+      "solver": "baseline",
+      "input": "/private/tmp/bsat-prefix-vivify-corpus/prefix-64.cnf",
+      "repeat": 0,
+      "status": "SAT",
+      "verified": true,
+      "seconds": 0.13219499960541725,
+      "cpu_seconds": 0.116481,
+      "peak_rss_bytes": 3555328,
+      "par2": 0.13219499960541725,
+      "stats": {
+        "Vivification CPU": "0.087520000",
+        "Vivification work": "2501000",
+        "Removed literals": "620000",
+        "Remaining literals": "20000"
+      },
+      "diagnostic": ""
+    },
+    {
+      "solver": "baseline",
+      "input": "/private/tmp/bsat-prefix-vivify-corpus/prefix-8.cnf",
+      "repeat": 0,
+      "status": "SAT",
+      "verified": true,
+      "seconds": 0.018717292230576277,
+      "cpu_seconds": 0.0136,
+      "peak_rss_bytes": 2473984,
+      "par2": 0.018717292230576277,
+      "stats": {
+        "Vivification CPU": "0.006658000",
+        "Vivification work": "1353000",
+        "Removed literals": "60000",
+        "Remaining literals": "20000"
+      },
+      "diagnostic": ""
+    },
+    {
+      "solver": "baseline",
+      "input": "/private/tmp/bsat-prefix-vivify-corpus/prefix-8.cnf",
+      "repeat": 2,
+      "status": "SAT",
+      "verified": true,
+      "seconds": 0.020100874826312065,
+      "cpu_seconds": 0.014029999999999999,
+      "peak_rss_bytes": 2375680,
+      "par2": 0.020100874826312065,
+      "stats": {
+        "Vivification CPU": "0.006940000",
+        "Vivification work": "1353000",
+        "Removed literals": "60000",
+        "Remaining literals": "20000"
+      },
+      "diagnostic": ""
+    },
+    {
+      "solver": "prefix",
+      "input": "/private/tmp/bsat-prefix-vivify-corpus/prefix-64.cnf",
+      "repeat": 1,
+      "status": "SAT",
+      "verified": true,
+      "seconds": 0.04021495766937733,
+      "cpu_seconds": 0.037729,
+      "peak_rss_bytes": 3407872,
+      "par2": 0.04021495766937733,
+      "stats": {
+        "Vivification CPU": "0.009365000",
+        "Vivification work": "3545600",
+        "Removed literals": "610200",
+        "Remaining literals": "29800"
+      },
+      "diagnostic": ""
+    },
+    {
+      "solver": "baseline",
+      "input": "/private/tmp/bsat-prefix-vivify-corpus/prefix-64.cnf",
+      "repeat": 2,
+      "status": "SAT",
+      "verified": true,
+      "seconds": 0.12796391686424613,
+      "cpu_seconds": 0.11400799999999998,
+      "peak_rss_bytes": 3555328,
+      "par2": 0.12796391686424613,
+      "stats": {
+        "Vivification CPU": "0.084586000",
+        "Vivification work": "2501000",
+        "Removed literals": "620000",
+        "Remaining literals": "20000"
+      },
+      "diagnostic": ""
+    },
+    {
+      "solver": "baseline",
+      "input": "/private/tmp/bsat-prefix-vivify-corpus/prefix-32.cnf",
+      "repeat": 2,
+      "status": "SAT",
+      "verified": true,
+      "seconds": 0.07565945899114013,
+      "cpu_seconds": 0.045739999999999996,
+      "peak_rss_bytes": 2899968,
+      "par2": 0.07565945899114013,
+      "stats": {
+        "Vivification CPU": "0.029148000",
+        "Vivification work": "1845000",
+        "Removed literals": "300000",
+        "Remaining literals": "20000"
+      },
+      "diagnostic": ""
+    },
+    {
+      "solver": "prefix",
+      "input": "/private/tmp/bsat-prefix-vivify-corpus/prefix-8.cnf",
+      "repeat": 2,
+      "status": "SAT",
+      "verified": true,
+      "seconds": 0.02006412483751774,
+      "cpu_seconds": 0.015595,
+      "peak_rss_bytes": 2359296,
+      "par2": 0.02006412483751774,
+      "stats": {
+        "Vivification CPU": "0.008739000",
+        "Vivification work": "3545600",
+        "Removed literals": "50200",
+        "Remaining literals": "29800"
+      },
+      "diagnostic": ""
+    },
+    {
+      "solver": "prefix",
+      "input": "/private/tmp/bsat-prefix-vivify-corpus/prefix-32.cnf",
+      "repeat": 1,
+      "status": "SAT",
+      "verified": true,
+      "seconds": 0.03980712499469519,
+      "cpu_seconds": 0.024915999999999997,
+      "peak_rss_bytes": 2867200,
+      "par2": 0.03980712499469519,
+      "stats": {
+        "Vivification CPU": "0.008823000",
+        "Vivification work": "3545600",
+        "Removed literals": "290200",
+        "Remaining literals": "29800"
+      },
+      "diagnostic": ""
+    },
+    {
+      "solver": "prefix",
+      "input": "/private/tmp/bsat-prefix-vivify-corpus/prefix-64.cnf",
+      "repeat": 2,
+      "status": "SAT",
+      "verified": true,
+      "seconds": 0.07697800034657121,
+      "cpu_seconds": 0.039313,
+      "peak_rss_bytes": 3571712,
+      "par2": 0.07697800034657121,
+      "stats": {
+        "Vivification CPU": "0.009987000",
+        "Vivification work": "3545600",
+        "Removed literals": "610200",
+        "Remaining literals": "29800"
+      },
+      "diagnostic": ""
+    },
+    {
+      "solver": "prefix",
+      "input": "/private/tmp/bsat-prefix-vivify-corpus/prefix-64.cnf",
+      "repeat": 0,
+      "status": "SAT",
+      "verified": true,
+      "seconds": 0.04011770896613598,
+      "cpu_seconds": 0.038124,
+      "peak_rss_bytes": 3407872,
+      "par2": 0.04011770896613598,
+      "stats": {
+        "Vivification CPU": "0.009267000",
+        "Vivification work": "3545600",
+        "Removed literals": "610200",
+        "Remaining literals": "29800"
+      },
+      "diagnostic": ""
+    },
+    {
+      "solver": "prefix",
+      "input": "/private/tmp/bsat-prefix-vivify-corpus/prefix-32.cnf",
+      "repeat": 2,
+      "status": "SAT",
+      "verified": true,
+      "seconds": 0.04011912504211068,
+      "cpu_seconds": 0.025737,
+      "peak_rss_bytes": 2981888,
+      "par2": 0.04011912504211068,
+      "stats": {
+        "Vivification CPU": "0.009072000",
+        "Vivification work": "3545600",
+        "Removed literals": "290200",
+        "Remaining literals": "29800"
+      },
+      "diagnostic": ""
+    },
+    {
+      "solver": "prefix",
+      "input": "/private/tmp/bsat-prefix-vivify-corpus/prefix-8.cnf",
+      "repeat": 0,
+      "status": "SAT",
+      "verified": true,
+      "seconds": 0.020141332875937223,
+      "cpu_seconds": 0.01566,
+      "peak_rss_bytes": 2359296,
+      "par2": 0.020141332875937223,
+      "stats": {
+        "Vivification CPU": "0.008702000",
+        "Vivification work": "3545600",
+        "Removed literals": "50200",
+        "Remaining literals": "29800"
+      },
+      "diagnostic": ""
+    },
+    {
+      "solver": "baseline",
+      "input": "/private/tmp/bsat-prefix-vivify-corpus/prefix-32.cnf",
+      "repeat": 0,
+      "status": "SAT",
+      "verified": true,
+      "seconds": 0.07632662495598197,
+      "cpu_seconds": 0.045836999999999996,
+      "peak_rss_bytes": 2916352,
+      "par2": 0.07632662495598197,
+      "stats": {
+        "Vivification CPU": "0.028946000",
+        "Vivification work": "1845000",
+        "Removed literals": "300000",
+        "Remaining literals": "20000"
+      },
+      "diagnostic": ""
+    },
+    {
+      "solver": "prefix",
+      "input": "/private/tmp/bsat-prefix-vivify-corpus/prefix-32.cnf",
+      "repeat": 0,
+      "status": "SAT",
+      "verified": true,
+      "seconds": 0.037157374899834394,
+      "cpu_seconds": 0.025959999999999997,
+      "peak_rss_bytes": 2981888,
+      "par2": 0.037157374899834394,
+      "stats": {
+        "Vivification CPU": "0.009241000",
+        "Vivification work": "3545600",
+        "Removed literals": "290200",
+        "Remaining literals": "29800"
+      },
+      "diagnostic": ""
+    }
+  ],
+  "manifest": {
+    "path": "/private/tmp/bsat-prefix-vivify-corpus/manifest.json",
+    "sha256": "63b91e898ee6ab862cc1666ab66b607bd3f6557be52f6d55929f39da46c58674"
+  },
+  "summary": {
+    "baseline": {
+      "verified_runs": 9,
+      "runs": 9,
+      "mean_par2": 0.07547526873855127,
+      "max_rss_bytes": 3555328,
+      "errors": 0
+    },
+    "prefix": {
+      "verified_runs": 9,
+      "runs": 9,
+      "mean_par2": 0.03720118974645933,
+      "max_rss_bytes": 3571712,
+      "errors": 0
+    }
+  }
+}

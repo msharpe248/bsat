@@ -1,0 +1,16 @@
+{
+  "schema": 1,
+  "base_revision": "d5bd74a",
+  "test_sha256": "dd57559d0127d812f9cb7d1632827b0d7cc2d260265381249035bc508ec666b9",
+  "candidate_source_sha256": "b21520927f09201a5c0504d73e69a4077f987eb4030a64141455d71c5072e4bd",
+  "mutants": {
+    "discard-unvisited-suffix": {
+      "returncode": -6,
+      "stderr": "Assertion failed: (rup(s,lits,n)), function check, file test_vivify_prefix.c, line 65.\n"
+    },
+    "skip-unassigned": {
+      "returncode": -6,
+      "stderr": "Assertion failed: (rup(s,lits,n)), function check, file test_vivify_prefix.c, line 65.\n"
+    }
+  }
+}

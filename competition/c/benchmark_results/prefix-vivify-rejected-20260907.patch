@@ -1,0 +1,59 @@
+diff --git a/competition/c/src/solver.c b/competition/c/src/solver.c
+index 910721e..fba374a 100644
+--- a/competition/c/src/solver.c
++++ b/competition/c/src/solver.c
+@@ -1775,0 +1776,40 @@ static bool rup_candidate(Solver *s, const Lit *lits, uint32_t size) {
++/* Negate a prefix once, preserving its propagated closure between literals.
++   An implied-false literal is redundant in the remaining clause; an implied-
++   true literal or conflict proves the retained prefix. On resource exhaustion,
++   keep the unvisited suffix: only established implications may remove literals.
++   The old clause stays live until the strengthened clause is logged as RUP. */
++static uint32_t vivify_prefix(Solver *s, Lit *lits, uint32_t size) {
++    uint32_t out = 0;
++    s->decision_level = 1;
++    s->trail_lims[1] = s->trail_size;
++    for (uint32_t i = 0; i < size; ++i) {
++        if (solver_budget_exhausted(s)) {
++            memmove(lits + out, lits + i, (size - i) * sizeof *lits);
++            out += size - i;
++            break;
++        }
++        Lit lit = lits[i];
++        lbool val = lxor(s->values[var(lit)], sign(lit));
++        if (val == FALSE) continue;
++        lits[out++] = lit;
++        if (val == TRUE) break;
++        push_trail(s, neg(lit));
++        CRef conflict = solver_propagate(s);
++        if (conflict != INVALID_CLAUSE && !s->interrupted && !s->error) break;
++        if (!solver_budget_exhausted(s)) {
++            /* Watch movement can place an implied-true literal after unrelated
++               literals. Use it now rather than adding unnecessary assumptions.
++               Candidates have at most 64 literals, bounding this suffix scan. */
++            for (uint32_t j = i + 1; j < size; ++j) {
++                Lit implied = lits[j];
++                if (lxor(s->values[var(implied)], sign(implied)) != TRUE) continue;
++                lits[out++] = implied;
++                goto done;
++            }
++        }
++    }
++done:
++    solver_backtrack(s, 0);
++    return out;
++}
++
+@@ -1792,10 +1832 @@ bool solver_simplify(Solver *s) {
+-        for (uint32_t i = 0; i < n && !solver_budget_exhausted(s);) {
+-            Lit removed = candidate[i];
+-            memmove(candidate+i, candidate+i+1, (n-i-1)*sizeof *candidate);
+-            if (rup_candidate(s, candidate, n-1)) {
+-                --n; proof_add_clause(s, candidate, n);
+-            } else {
+-                memmove(candidate+i+1, candidate+i, (n-i-1)*sizeof *candidate);
+-                candidate[i++] = removed;
+-            }
+-        }
++        n = vivify_prefix(s, candidate, n);
+@@ -1802,0 +1834 @@ bool solver_simplify(Solver *s) {
++            proof_add_clause(s, candidate, n);

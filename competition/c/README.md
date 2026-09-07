@@ -373,3 +373,9 @@ A [recursive binary minimization experiment](RECURSIVE_BINARY_MINIMIZATION_EXPER
 was rejected after repeated battleship and Hamiltonian regressions without added
 solves. The default remains conservative; 160 signed graph/budget correctness
 cases are retained across both existing minimizers.
+
+An [incremental prefix vivification experiment](PREFIX_VIVIFICATION_EXPERIMENT.md)
+reduced long-clause kernel CPU but weakened clauses and repeatedly regressed
+battleship without new solves. The existing vivifier is retained, together with
+4,688 independent truth-table/RUP regression cases and a diagnostic that reports
+both cost and residual clause size.
