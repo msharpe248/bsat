@@ -283,3 +283,8 @@ A [glue-reason activity reward](GLUE_REASON_BUMP_EXPERIMENT.md) improved one
 Hamiltonian search but added no solve in the targeted or longer multiplier
 comparisons. The fixed-threshold prototype was rejected; its tested patch and
 measurements are preserved.
+
+The follow-up [relative-quality reason reward](QUALITY_REASON_BUMP_EXPERIMENT.md)
+compared reason LBD with the final minimized learned clause. It lost both
+battleship solves in the repeated reference screen and was also rejected; the
+implementation, tests and pinned-Kissat comparison are preserved.

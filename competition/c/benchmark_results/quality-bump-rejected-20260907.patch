@@ -1,0 +1,278 @@
+diff --git a/competition/c/include/solver.h b/competition/c/include/solver.h
+index 6daf951..2e01bb4 100644
+--- a/competition/c/include/solver.h
++++ b/competition/c/include/solver.h
+@@ -69,6 +69,7 @@ typedef struct SolverOpts {
+     uint32_t glue_lbd;          // LBD threshold for glue clauses (2)
+     double   reduce_fraction;   // Fraction of learned clauses to keep (0.5)
+     uint32_t reduce_interval;   // Conflicts between reductions (2000)
++    bool     quality_bump;    // Reward reasons better than the final learned clause
+     bool     binary_minimize; // Bounded binary-resolution pass on short low-LBD clauses
+     bool     iterative_minimize; // Experimental binary-aware traversal (false)
+     bool     protect_used;      // One reduction reprieve for used LBD <= 6 clauses
+@@ -208,6 +209,8 @@ typedef struct Solver {
+     uint8_t* seen;            // Seen flags for conflict analysis
+     Var*     minimize_touched; // Unique scratch marks to clear after minimization
+     Lit*     analyze_stack;   // Temporary stack for analysis
++    Var *quality_candidates;
++    uint32_t quality_count, quality_capacity;
+     uint32_t analyze_toclear; // Number of seen variables to clear
+     Lit      binary_conflict_lits[2]; // Literals from binary clause conflict
+     Lit*     binary_reasons;  // binary_reasons[v] = other literal if propagated by binary, LIT_UNDEF otherwise
+@@ -226,6 +229,7 @@ typedef struct Solver {
+         uint64_t subsumed_clauses;   // Clauses removed by on-the-fly subsumption
+         uint64_t minimized_literals; // Literals removed by clause minimization
+         uint64_t minimize_inspections;
++        uint64_t quality_bumps;
+         uint64_t binary_minimize_checks;
+         uint64_t binary_minimize_removed;
+         uint64_t minimize_binary_steps;
+@@ -372,6 +376,7 @@ uint32_t solver_minimize_binary(Solver *s, Lit *learnt, uint32_t *size, uint32_t
+ uint32_t solver_minimize_clause(Solver* s, Lit* learnt, uint32_t* size);
+
+ // Analyze conflict and learn clause
++void solver_bump_quality(Solver *s, uint32_t lbd);
+ void solver_analyze(Solver* s, CRef conflict, Lit* learnt, uint32_t* learnt_size, Level* bt_level);
+
+ // Make a decision
+diff --git a/competition/c/src/main.c b/competition/c/src/main.c
+index c3b5dec..799eee6 100644
+--- a/competition/c/src/main.c
++++ b/competition/c/src/main.c
+@@ -74,6 +74,7 @@ static void print_usage(const char* program) {
+     printf("  --glue-lbd <n>            LBD threshold for glue clauses (default: 2)\n");
+     printf("  --reduce-fraction <f>     Fraction of clauses to keep (default: 0.5)\n");
+     printf("  --reduce-interval <n>     Conflicts between reductions (default: 2000)\n");
++    printf("  --quality-bump            Reward reasons better than the learned clause\n");
+     printf("  --binary-minimize        Binary-resolution minimization (experimental)\n");
+     printf("  --iterative-minimize     Experimental binary-aware minimization\n");
+     printf("  --protect-used           Temporarily retain used learned clauses with LBD <= 6\n");
+@@ -163,6 +164,7 @@ static struct option long_options[] = {
+     {"glue-lbd",        required_argument, 0, 0},
+     {"reduce-fraction", required_argument, 0, 0},
+     {"reduce-interval", required_argument, 0, 0},
++    {"quality-bump", no_argument, 0, 0},
+     {"binary-minimize", no_argument, 0, 0},
+     {"iterative-minimize", no_argument, 0, 0},
+     {"protect-used", no_argument, 0, 0},
+@@ -340,6 +342,8 @@ int main(int argc, char** argv) {
+                     opts.reduce_fraction = atof(optarg);
+                 } else if (strcmp(long_options[option_index].name, "reduce-interval") == 0) {
+                     opts.reduce_interval = (uint32_t)atol(optarg);
++                } else if (strcmp(long_options[option_index].name, "quality-bump") == 0) {
++                    opts.quality_bump = true;
+                 } else if (strcmp(long_options[option_index].name, "binary-minimize") == 0) {
+                     opts.binary_minimize = true;
+                 } else if (strcmp(long_options[option_index].name, "iterative-minimize") == 0) {
+diff --git a/competition/c/src/solver.c b/competition/c/src/solver.c
+index 8446406..fd92492 100644
+--- a/competition/c/src/solver.c
++++ b/competition/c/src/solver.c
+@@ -370,6 +370,33 @@ static void bump_var_activity(Solver* s, Var v, double inc) {
+     }
+ }
+
++// Analysis visits each candidate once. Keep this list separate from minimizer scratch.
++static void collect_quality_candidate(Solver *s, Var v) {
++    if (!s->opts.quality_bump || s->opts.vmtf || s->opts.lrb || s->error) return;
++    CRef reason = s->vars[v].reason;
++    if (s->vars[v].level != s->decision_level || reason == INVALID_CLAUSE ||
++        reason == BINARY_CONFLICT || !clause_learned(s->arena, reason)) return;
++    ASSERT(s->quality_count < s->quality_capacity);
++    s->quality_candidates[s->quality_count++] = v;
++}
++
++// Apply after both minimizers and final LBD calculation, before backtracking.
++void solver_bump_quality(Solver *s, uint32_t lbd) {
++    uint32_t count = s->quality_count;
++    s->quality_count = 0;
++    if (!s->opts.quality_bump || s->opts.vmtf || s->opts.lrb) return;
++    for (uint32_t i = 0; i < count; ++i) {
++        if (!(i & 1023) && solver_budget_exhausted_now(s)) break;
++        Var v = s->quality_candidates[i];
++        CRef reason = s->vars[v].reason;
++        if (reason == INVALID_CLAUSE || reason == BINARY_CONFLICT ||
++            clause_deleted(s->arena, reason) || !clause_learned(s->arena, reason) ||
++            s->vars[v].level != s->decision_level || clause_lbd(s->arena, reason) >= lbd) continue;
++        bump_var_activity(s, v, s->order.var_inc);
++        s->stats.quality_bumps++;
++    }
++}
++
+ static void decay_var_inc(Solver* s) {
+     if (s->opts.vmtf) return;
+     // Apply decay for both VSIDS and hybrid LRB
+@@ -490,6 +517,7 @@ void solver_free(Solver* s) {
+     free(s->seen);
+     free(s->analyze_stack);
+     free(s->minimize_touched);
++    free(s->quality_candidates);
+     free(s->binary_reasons);
+     free(s->restart.recent_lbds);  // Free Glucose sliding window buffer
+     free(s->rephase.best_phase);   // Free rephasing best phase array
+@@ -786,6 +814,7 @@ void solver_print_stats(const Solver* s) {
+     printf("c Learned clauses   : %llu\n", (unsigned long long)s->stats.learned_clauses);
+     printf("c Learned literals  : %llu\n", (unsigned long long)s->stats.learned_literals);
+     printf("c Deleted clauses   : %llu\n", (unsigned long long)s->stats.deleted_clauses);
++    printf("c Quality reason bumps: %llu\n", (unsigned long long)s->stats.quality_bumps);
+     printf("c Binary minimize checks: %llu\n", (unsigned long long)s->stats.binary_minimize_checks);
+     printf("c Binary minimize removed: %llu\n", (unsigned long long)s->stats.binary_minimize_removed);
+     printf("c Minimize inspections: %llu\n", (unsigned long long)s->stats.minimize_inspections);
+@@ -1094,6 +1123,13 @@ static void improve_clause_lbd(Solver *s, CRef cr) {
+ }
+
+ void solver_analyze(Solver* s, CRef conflict, Lit* learnt, uint32_t* learnt_size, Level* bt_level) {
++    s->quality_count = 0;
++    if (s->opts.quality_bump && !s->opts.vmtf && !s->opts.lrb &&
++        s->quality_capacity < s->num_vars) {
++        Var *p = realloc(s->quality_candidates, (size_t)s->num_vars * sizeof *p);
++        if (!p) s->error = true;
++        else { s->quality_candidates = p; s->quality_capacity = s->num_vars; }
++    }
+     s->vmtf.pending = 0;
+     uint32_t index = s->trail_size - 1;
+     uint32_t pathC = 0;
+@@ -1114,6 +1150,7 @@ void solver_analyze(Solver* s, CRef conflict, Lit* learnt, uint32_t* learnt_size
+             if (!s->seen[v] && s->vars[v].level > 0) {
+                 s->seen[v] = 1;
+                 bump_var_activity(s, v, s->order.var_inc);
++                collect_quality_candidate(s, v);
+
+                 if (s->vars[v].level >= s->decision_level) {
+                     pathC++;
+@@ -1138,6 +1175,7 @@ void solver_analyze(Solver* s, CRef conflict, Lit* learnt, uint32_t* learnt_size
+             if (!s->seen[v] && s->vars[v].level > 0) {
+                 s->seen[v] = 1;
+                 bump_var_activity(s, v, s->order.var_inc);
++                collect_quality_candidate(s, v);
+
+                 if (s->vars[v].level >= s->decision_level) {
+                     pathC++;
+@@ -1188,6 +1226,7 @@ void solver_analyze(Solver* s, CRef conflict, Lit* learnt, uint32_t* learnt_size
+                     if (!s->seen[qv] && s->vars[qv].level > 0) {
+                         s->seen[qv] = 1;
+                         bump_var_activity(s, qv, s->order.var_inc);
++                        collect_quality_candidate(s, qv);
+
+                         if (s->vars[qv].level >= s->decision_level) {
+                             pathC++;
+@@ -1208,6 +1247,7 @@ void solver_analyze(Solver* s, CRef conflict, Lit* learnt, uint32_t* learnt_size
+                 if (!s->seen[qv] && s->vars[qv].level > 0) {
+                     s->seen[qv] = 1;
+                     bump_var_activity(s, qv, s->order.var_inc);
++                    collect_quality_candidate(s, qv);
+
+                     if (s->vars[qv].level >= s->decision_level) {
+                         pathC++;
+@@ -1930,11 +1970,16 @@ static lbool solve_internal(Solver *s, const Lit *assumps, uint32_t n_assumps) {
+             if (!s->decision_level) { result=FALSE; break; }
+             uint32_t n; Level backtrack;
+             solver_analyze(s, conflict, learnt, &n, &backtrack);
++            if (s->error) break;
+             s->stats.minimized_literals += solver_minimize_clause(s,learnt,&n);
+             uint32_t lbd=calc_lbd(s,learnt,n);
+             uint32_t binary_removed = solver_minimize_binary(s,learnt,&n,lbd);
+             s->stats.minimized_literals += binary_removed;
+             if (binary_removed) lbd = calc_lbd(s,learnt,n);
++            if (s->opts.quality_bump) {
++                solver_bump_quality(s,lbd);
++                if (s->error || s->interrupted) break;
++            }
+             record_lbd(s,lbd);
+             /* Put the highest remaining decision level in watch position 1. */
+             backtrack=0;
+diff --git a/competition/c/tests/validate.py b/competition/c/tests/validate.py
+index c8786ca..b0458e6 100644
+--- a/competition/c/tests/validate.py
++++ b/competition/c/tests/validate.py
+@@ -225,6 +225,9 @@ def main():
+                 ['--reuse-trail', '--luby-restart', '--luby-unit', '1', '--no-probing'],
+                 ['--reuse-trail', '--equiv', '--elim', '--bce', '--inprocess', '--inprocess-interval', '1'],
+                 ['--reuse-trail', '--random-phase', '--local-search', '--ls-interval', '1']]
++    configs += [['--quality-bump'],
++                ['--quality-bump', '--dynamic-lbd', '--binary-proof', '--reduce-interval', '1'],
++                ['--quality-bump', '--iterative-minimize', '--binary-minimize', '--reuse-trail']]
+     fixed = [
+         (5, [[1, 2], [1, -2], [-3, 4], [3, -4], [4, 5]], None),
+         (5, [[-4], [-1, 2, 4], [1, -2, 4]] +
+diff --git a/competition/c/tests/test_quality_bump.c b/competition/c/tests/test_quality_bump.c
+new file mode 100644
+index 0000000..ea23c32
+--- /dev/null
++++ b/competition/c/tests/test_quality_bump.c
+@@ -0,0 +1,75 @@
++#include "../include/solver.h"
++#include "../include/dimacs.h"
++#include <assert.h>
++#include <math.h>
++#include <stdio.h>
++#include <time.h>
++
++int main(void) {
++    unsigned checks=0;
++    for(unsigned enabled=0;enabled<2;++enabled)
++    for(unsigned learned=0;learned<2;++learned)
++    for(unsigned final_lbd=0;final_lbd<6;++final_lbd)
++    for(unsigned lbd=1;lbd<=4;++lbd)
++    for(unsigned vmtf=0;vmtf<2;++vmtf)
++    for(unsigned lrb=0;lrb<2;++lrb)
++    for(unsigned cancelled=0;cancelled<3;++cancelled)
++    for(unsigned large=0;large<2;++large) {
++        SolverOpts o=default_opts();o.quality_bump=enabled;o.vmtf=vmtf;o.lrb=lrb;
++        o.var_inc=large?9e99:1.0;
++        Solver *s=solver_new_with_opts(&o);assert(s);
++        assert(dimacs_parse_string(s,"p cnf 5 4\n-1 -2 3 4 0\n-1 -2 3 -4 0\n-1 -5 -3 0\n5 0\n")==DIMACS_OK);
++        // A lower-level glue reason participates too, but must receive no bonus.
++        CLAUSE_HEADER(s->arena,s->clauses[2])->flags|=CLAUSE_LEARNED;
++        set_clause_lbd(s->arena,s->clauses[2],1);
++        assert(solver_propagate(s)==INVALID_CLAUSE);
++        CRef reason=s->clauses[0],conflict=INVALID_CLAUSE;
++        set_clause_lbd(s->arena,reason,lbd);
++        if(learned) CLAUSE_HEADER(s->arena,reason)->flags|=CLAUSE_LEARNED;
++        for(Var v=1;v<=2;++v) {
++            s->trail_lims[++s->decision_level]=s->trail_size;
++            s->values[v]=TRUE;s->vars[v].level=s->decision_level;
++            s->vars[v].reason=INVALID_CLAUSE;s->vars[v].trail_pos=s->trail_size;
++            s->trail[s->trail_size++]=(Trail){mkLit(v,false)};
++            conflict=solver_propagate(s);
++        }
++        assert(conflict==s->clauses[1] && s->vars[4].reason==reason);
++        assert(s->vars[3].reason==s->clauses[2] && s->vars[3].level==1);
++        Lit learnt[6];uint32_t size;Level backjump;
++        solver_analyze(s,conflict,learnt,&size,&backjump);
++        bool active=enabled && !vmtf && !lrb;
++        assert(s->quality_count==(unsigned)(active && learned));
++        assert(!!s->quality_candidates==active);
++        assert(!s->stats.quality_bumps);
++        assert(size==3 && learnt[0]==mkLit(2,true) && learnt[1]==mkLit(1,true) && learnt[2]==mkLit(3,false) && backjump==1);
++        unsigned removed=solver_minimize_clause(s,learnt,&size);
++        assert(removed==1 && size==2); // Minimizer scratch must not corrupt candidates.
++        if(cancelled==1) s->interrupted=true;
++        if(cancelled==2) {
++            s->opts.max_time=0.001;
++            s->stats.start_time=(double)clock()/CLOCKS_PER_SEC-1.0;
++            s->clock_initialized=true;s->clock_polls=0;
++            s->clock_work=s->work;s->clock_minimize=s->stats.minimize_inspections;
++        }
++        solver_bump_quality(s,final_lbd);
++        bool bonus=active && learned && lbd<final_lbd && !cancelled;
++        assert(s->stats.quality_bumps==(unsigned)bonus && !s->quality_count);
++        solver_bump_quality(s,final_lbd); // A consumed list must not reward twice.
++        assert(s->stats.quality_bumps==(unsigned)bonus);
++        for(Var v=1;v<=4;++v) {
++            assert(!s->seen[v]);assert(isfinite(s->vars[v].activity));
++            if(!vmtf && !lrb)
++                assert(fabs(s->vars[v].activity/s->order.var_inc-(v==4 && bonus?2.0:1.0))<1e-12);
++        }
++        assert(isfinite(s->order.var_inc));
++        if(active && learned && !cancelled && !large) {
++            while(s->num_vars<9) assert(solver_new_var(s));
++            solver_analyze(s,conflict,learnt,&size,&backjump);
++            assert(s->quality_capacity>=9 && s->quality_count==1);
++            solver_bump_quality(s,final_lbd);
++            assert(!s->quality_count);
++        }
++        solver_free(s);++checks;
++    }
++    printf("PASS: %u quality-reason reward, minimization, cancellation and rescaling cases\n",checks);
++}
