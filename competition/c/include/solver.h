@@ -68,10 +68,11 @@ typedef struct SolverOpts {
     uint32_t glue_lbd;          // LBD threshold for glue clauses (2)
     double   reduce_fraction;   // Fraction of learned clauses to keep (0.5)
     uint32_t reduce_interval;   // Conflicts between reductions (2000)
+    bool     binary_minimize; // Bounded binary-resolution pass on short low-LBD clauses
     bool     iterative_minimize; // Experimental binary-aware traversal (false)
     bool     protect_used;      // One reduction reprieve for used LBD <= 6 clauses
     bool     dynamic_lbd;       // Re-evaluate learned-clause quality during analysis
-    uint32_t minimize_budget;   // Reason inspections per clause, either mode (0 disables)
+    uint32_t minimize_budget;   // Work cap per minimization pass (0 disables)
     bool     minimize;          // Enable clause minimization (true)
 
     // Preprocessing
@@ -222,6 +223,8 @@ typedef struct Solver {
         uint64_t subsumed_clauses;   // Clauses removed by on-the-fly subsumption
         uint64_t minimized_literals; // Literals removed by clause minimization
         uint64_t minimize_inspections;
+        uint64_t binary_minimize_checks;
+        uint64_t binary_minimize_removed;
         uint64_t minimize_binary_steps;
         uint64_t minimize_cache_hits;
         uint64_t minimize_budget_hits;
@@ -360,6 +363,7 @@ void proof_delete_clause(Solver* s, const Lit* lits, uint32_t size);
 CRef solver_propagate(Solver* s);
 
 // Minimize an asserting clause while its reason graph is still assigned.
+uint32_t solver_minimize_binary(Solver *s, Lit *learnt, uint32_t *size, uint32_t lbd);
 uint32_t solver_minimize_clause(Solver* s, Lit* learnt, uint32_t* size);
 
 // Analyze conflict and learn clause

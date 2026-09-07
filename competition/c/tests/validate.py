@@ -209,6 +209,12 @@ def main():
                 ['--vmtf', '--protect-used', '--dynamic-lbd', '--reduce-interval', '1', '--binary-proof'],
                 ['--vmtf', '--equiv', '--elim', '--bce', '--inprocess', '--inprocess-interval', '1'],
                 ['--vmtf', '--local-search', '--ls-interval', '1', '--no-probing', '--iterative-minimize']]
+    configs += [['--binary-minimize'], ['--binary-minimize', '--vmtf'],
+                ['--binary-minimize', '--binary-proof', '--reduce-interval', '1', '--no-probing'],
+                ['--binary-minimize', '--equiv', '--elim', '--bce', '--inprocess', '--inprocess-interval', '1'],
+                ['--binary-minimize', '--iterative-minimize'],
+                ['--binary-minimize', '--minimize-budget', '1'],
+                ['--binary-minimize', '--minimize-budget', '0']]
     fixed = [
         (5, [[1, 2], [1, -2], [-3, 4], [3, -4], [4, 5]], None),
         (5, [[-4], [-1, 2, 4], [1, -2, 4]] +

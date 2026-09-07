@@ -773,6 +773,8 @@ void solver_print_stats(const Solver* s) {
     printf("c Learned clauses   : %llu\n", (unsigned long long)s->stats.learned_clauses);
     printf("c Learned literals  : %llu\n", (unsigned long long)s->stats.learned_literals);
     printf("c Deleted clauses   : %llu\n", (unsigned long long)s->stats.deleted_clauses);
+    printf("c Binary minimize checks: %llu\n", (unsigned long long)s->stats.binary_minimize_checks);
+    printf("c Binary minimize removed: %llu\n", (unsigned long long)s->stats.binary_minimize_removed);
     printf("c Minimize inspections: %llu\n", (unsigned long long)s->stats.minimize_inspections);
     printf("c Minimize binary steps: %llu\n", (unsigned long long)s->stats.minimize_binary_steps);
     printf("c Minimize cache hits : %llu\n", (unsigned long long)s->stats.minimize_cache_hits);
@@ -1886,6 +1888,9 @@ static lbool solve_internal(Solver *s, const Lit *assumps, uint32_t n_assumps) {
             solver_analyze(s, conflict, learnt, &n, &backtrack);
             s->stats.minimized_literals += solver_minimize_clause(s,learnt,&n);
             uint32_t lbd=calc_lbd(s,learnt,n);
+            uint32_t binary_removed = solver_minimize_binary(s,learnt,&n,lbd);
+            s->stats.minimized_literals += binary_removed;
+            if (binary_removed) lbd = calc_lbd(s,learnt,n);
             record_lbd(s,lbd);
             /* Put the highest remaining decision level in watch position 1. */
             backtrack=0;

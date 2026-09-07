@@ -294,3 +294,34 @@ uint32_t solver_minimize_clause(Solver *s, Lit *learnt, uint32_t *size) {
     *size = out;
     return original - out;
 }
+
+/* Resolve (a | b | rest) with (a | ~b), keeping the asserting literal a.
+   Exact signed marks make this independent of the current assignment values.
+   Eager watch deletion guarantees every inspected binary is still active. */
+uint32_t solver_minimize_binary(Solver *s, Lit *learnt, uint32_t *size, uint32_t lbd) {
+    if (!s->opts.binary_minimize || !s->opts.minimize || !s->opts.minimize_budget ||
+        *size < 2 || *size > 30 || lbd > 6 || solver_budget_exhausted(s)) return 0;
+    uint32_t n = *size;
+    for (uint32_t i = 1; i < n; ++i) {
+        Var v = var(learnt[i]);ASSERT(!s->seen[v]);
+        s->seen[v] = 1 + sign(learnt[i]);
+    }
+    WatchList *wl = watch_list(s->watches, learnt[0]);
+    uint32_t limit = MIN(wl->size, s->opts.minimize_budget);
+    for (uint32_t i = 0; i < limit; ++i) {
+        s->stats.binary_minimize_checks++;
+        if ((++s->stats.minimize_inspections & 1023) == 0 && solver_budget_exhausted(s)) break;
+        Watch w = wl->watches[i];
+        if (!is_binary_watch(w) && !is_arena_binary_watch(w)) continue;
+        Lit removed = neg(w.blocker);
+        if (s->seen[var(removed)] == 1 + sign(removed)) s->seen[var(removed)] = 3;
+    }
+    uint32_t out = 1;
+    for (uint32_t i = 1; i < n; ++i) {
+        Lit lit = learnt[i];Var v = var(lit);
+        if (s->seen[v] != 3) learnt[out++] = lit;
+        s->seen[v] = 0;
+    }
+    *size = out;s->stats.binary_minimize_removed += n-out;
+    return n-out;
+}

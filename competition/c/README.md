@@ -128,6 +128,15 @@ including at a longer limit. See
 [GROWING_REDUCTION_EXPERIMENT.md](GROWING_REDUCTION_EXPERIMENT.md) for both tested
 schedules, the integration regression, and the rejection decision.
 
+Opt-in `--binary-minimize` applies bounded binary resolution to learned clauses
+of at most 30 literals and LBD at most 6. It uses up to `--minimize-budget`
+additional watch inspections after the ordinary minimizer, preserves the
+asserting literal, and recomputes LBD and backjump level. Zero budget or
+`--no-minimize` disables both passes. It nearly halved runtime on one multiplier
+input, but showed no additional solves on the broader development sample and
+slowed some other inputs. See [BINARY_MINIMIZATION.md](BINARY_MINIMIZATION.md)
+for validation and measured tradeoffs. It is experimental and disabled by default.
+
 Opt-in `--iterative-minimize` follows both implicit binary and arena reasons using
 an iterative traversal with shared successful dependency checks. The
 `--minimize-budget` option caps antecedent inspections per learned clause
