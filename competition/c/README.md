@@ -103,6 +103,11 @@ reduce cache traffic during propagation. Search order is preserved. See
 ./bin/bsat --no-circular --subsume-budget 0 input.cnf
 ```
 
+Unsuccessful local-search attempts preserve the CDCL trail. Walks keep root
+assignments fixed while allowing non-root decisions to change in their separate
+assignment. See [LOCAL_SEARCH_STATE.md](LOCAL_SEARCH_STATE.md) for tests and the
+comparison against forced root backtracking and plain CDCL.
+
 Successful local-search model transfer resets assignment positions, reasons and
 the propagation cursor consistently. See
 [LOCAL_SEARCH_TRANSFER.md](LOCAL_SEARCH_TRANSFER.md) for its regression and

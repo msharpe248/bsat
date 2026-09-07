@@ -36,7 +36,9 @@ printed precision. Those deadline cases are general regression coverage, not a
 measurement of worst-case transfer latency.
 
 The CI formula/certificate step also runs this focused suite in each build mode.
-Reproduce it from the C directory:
+The suite was later expanded for [state-preserving walks](LOCAL_SEARCH_STATE.md);
+the counts above describe the transfer milestone. Reproduce the current suite
+from the C directory:
 
 ```sh
 python3 tests/validate_local_search.py --solver bin/bsat --checker /path/to/drat-trim

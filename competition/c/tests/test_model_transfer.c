@@ -53,8 +53,19 @@ static void integrated(void) {
     }
 }
 
+static void success_after_nonroot_backjump(void) {
+    SolverOpts o=default_opts();o.local_search=true;o.ls_interval=1;o.probing=false;
+    Solver *s=solver_new_with_opts(&o);assert(s);
+    /* The first conflict learns (1 | 3), retaining decision 1=false at level 1. */
+    assert(dimacs_parse_string(s,"p cnf 3 3\n1 2 3 0\n1 2 -3 0\n1 -2 3 0\n")==DIMACS_OK);
+    assert(solver_solve(s)==TRUE && s->stats.conflicts==1);
+    assert(s->local_search.calls==1 && s->local_search.successes==1);
+    check_transfer(s);
+    solver_free(s);
+}
+
 int main(void) {
-    stale_metadata();integrated();
+    stale_metadata();integrated();success_after_nonroot_backjump();
     puts("PASS: complete local-search transfer metadata and subsequent API solves");
     return 0;
 }

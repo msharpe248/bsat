@@ -770,6 +770,8 @@ void solver_print_stats(const Solver* s) {
     printf("c Conflicts         : %llu\n", (unsigned long long)s->stats.conflicts);
     printf("c Restarts          : %llu\n", (unsigned long long)s->stats.restarts);
     printf("c Reused levels     : %llu\n", (unsigned long long)s->stats.reused_levels);
+    printf("c Local search calls: %u\n", s->local_search.calls);
+    printf("c Local search wins : %u\n", s->local_search.successes);
     printf("c Learned clauses   : %llu\n", (unsigned long long)s->stats.learned_clauses);
     printf("c Learned literals  : %llu\n", (unsigned long long)s->stats.learned_literals);
     printf("c Deleted clauses   : %llu\n", (unsigned long long)s->stats.deleted_clauses);
@@ -1970,7 +1972,8 @@ static lbool solve_internal(Solver *s, const Lit *assumps, uint32_t n_assumps) {
             }
             if (!n_assumps && !s->elim && s->opts.local_search &&
                 s->stats.conflicts >= s->local_search.conflicts_since+s->opts.ls_interval) {
-                solver_backtrack(s,0);
+                // The walk owns a separate assignment; failed walks must not
+                // discard the CDCL trail or turn into uncounted root restarts.
                 bool found=solver_try_local_search(s);
                 s->local_search.conflicts_since=s->stats.conflicts;
                 if (found) { result=TRUE;break; }

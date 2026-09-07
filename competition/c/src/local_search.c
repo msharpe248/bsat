@@ -29,10 +29,18 @@ static inline void flip_var(LocalSearchState* ls, Var v) {
 /**
  * Initialize assignment from solver's saved phases.
  */
-static void init_assignment_from_phases(LocalSearchState* ls, Solver* s) {
+static bool root_fixed(const Solver *s, Var v) {
+    return s->values[v] != UNDEF && s->vars[v].level == 0;
+}
+
+static bool init_assignment_from_phases(LocalSearchState* ls, Solver* s) {
+    bool fixed = false;
     for (Var v = 1; v <= ls->num_vars; v++) {
-        ls->assignment[v] = s->vars[v].polarity;
+        bool root = root_fixed(s, v);
+        fixed |= root;
+        ls->assignment[v] = root ? s->values[v] == TRUE : s->vars[v].polarity;
     }
+    return fixed;
 }
 
 /**
@@ -197,7 +205,26 @@ static uint32_t pick_unsat_clause(LocalSearchState* ls) {
  * With probability (1-noise), pick variable with minimum break count.
  * With probability noise, pick random variable from clause.
  */
-static Var pick_var_to_flip(LocalSearchState* ls, uint32_t c, double noise) {
+static Var pick_var_to_flip(Solver *s, LocalSearchState* ls, uint32_t c, double noise, bool fixed) {
+    if (fixed) {
+        bool random = (bsat_random(&ls->random_state) / 4294967296.0) < noise;
+        Var best = INVALID_VAR;
+        uint32_t count = 0;
+        for (uint32_t i = 0; i < ls->clause_sizes[c]; ++i) {
+            Var v = var(ls->clause_lits[c][i]);
+            if (root_fixed(s, v)) continue;
+            ++count;
+            if (best == INVALID_VAR || ls->break_count[v] < ls->break_count[best]) best = v;
+        }
+        if (!random || !count) return best;
+        uint32_t target = bsat_random(&ls->random_state) % count;
+        for (uint32_t i = 0; i < ls->clause_sizes[c]; ++i) {
+            Var v = var(ls->clause_lits[c][i]);
+            if (!root_fixed(s, v) && !target--) return v;
+        }
+        return INVALID_VAR;
+    }
+    // Preserve the original random draws and choices without fixed variables.
     // Random walk with probability noise
     if ((bsat_random(&ls->random_state) / 4294967296.0) < noise) {
         uint32_t idx = bsat_random(&ls->random_state) % ls->clause_sizes[c];
@@ -354,7 +381,7 @@ void local_search_free(LocalSearchState* ls) {
 
 bool local_search_run(Solver* s, LocalSearchState* ls, uint32_t max_flips, double noise) {
     // Initialize assignment from saved phases
-    init_assignment_from_phases(ls, s);
+    bool fixed = init_assignment_from_phases(ls, s);
 
     // Initialize clause satisfaction state
     init_clause_state(ls);
@@ -371,7 +398,9 @@ bool local_search_run(Solver* s, LocalSearchState* ls, uint32_t max_flips, doubl
         uint32_t c = pick_unsat_clause(ls);
 
         // Pick variable to flip
-        Var v = pick_var_to_flip(ls, c, noise);
+        Var v = pick_var_to_flip(s, ls, c, noise, fixed);
+        // A walk cannot repair a clause falsified entirely by root assignments.
+        if (v == INVALID_VAR) return false;
 
         // Flip the variable
         flip_var(ls, v);

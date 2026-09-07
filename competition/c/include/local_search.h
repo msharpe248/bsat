@@ -63,7 +63,8 @@ LocalSearchState* local_search_init(Solver* s);
 void local_search_free(LocalSearchState* ls);
 
 /**
- * Run WalkSAT from current solver state.
+ * Run WalkSAT in a separate assignment, preserving root-level values.
+ * Non-root assignments remain movable; failure leaves the CDCL trail intact.
  * Returns true if a satisfying assignment was found.
  *
  * @param s       Solver (used to read current phases and write back solution)

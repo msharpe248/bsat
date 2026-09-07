@@ -1,0 +1,37 @@
+{
+  "paired_solved_runs": 6,
+  "counter_differences": 0,
+  "ignored_stats": [
+    "CPU time",
+    "Conflicts/sec",
+    "Deadline clock reads",
+    "Decisions/sec",
+    "Local search calls",
+    "Local search wins",
+    "PID",
+    "Propagations/sec"
+  ],
+  "summary": {
+    "old-hybrid": {
+      "verified_runs": 4,
+      "runs": 8,
+      "mean_par2": 16.15036201052135,
+      "max_rss_bytes": 59899904,
+      "errors": 0
+    },
+    "hybrid": {
+      "verified_runs": 6,
+      "runs": 8,
+      "mean_par2": 8.782794676895719,
+      "max_rss_bytes": 52117504,
+      "errors": 0
+    },
+    "cdcl": {
+      "verified_runs": 6,
+      "runs": 8,
+      "mean_par2": 8.742133645748254,
+      "max_rss_bytes": 52002816,
+      "errors": 0
+    }
+  }
+}

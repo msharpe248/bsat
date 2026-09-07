@@ -14,6 +14,8 @@ def main():
     args = parser.parse_args()
     solver, checker = str(args.solver.resolve()), str(args.checker.resolve())
     configs = [
+        ['--local-search', '--ls-interval', '1', '--alternating', '--no-probing', '--binary-proof'],
+        ['--local-search', '--ls-interval', '1', '--lrb', '--no-probing'],
         ['--local-search', '--ls-interval', '1', '--no-probing'],
         ['--local-search', '--ls-interval', '1', '--no-probing', '--vmtf'],
         ['--local-search', '--ls-interval', '1', '--no-probing', '--vmtf',
