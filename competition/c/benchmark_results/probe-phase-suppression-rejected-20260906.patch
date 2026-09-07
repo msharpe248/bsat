@@ -1,0 +1,36 @@
+--- a/competition/c/src/solver.c
++++ b/competition/c/src/solver.c
+@@ -1672,0 +1673,2 @@
++    bool phase_saving = s->opts.phase_saving;
++    s->opts.phase_saving = false;
+@@ -1681,0 +1684 @@
++    s->opts.phase_saving = phase_saving;
+--- a/competition/c/tests/test_phases.c
++++ b/competition/c/tests/test_phases.c
+@@ -1,0 +2 @@
++#include "../include/dimacs.h"
+@@ -39,0 +41,20 @@
++static void probing_phases(bool queue, uint64_t budget, bool saving) {
++    SolverOpts o = default_opts();o.vmtf = queue;o.random_phase = false;
++    o.preprocess_budget = budget;o.max_decisions = 1;o.phase_saving = saving;
++    Solver *s = solver_new_with_opts(&o);assert(s);
++    assert(dimacs_parse_string(s, "p cnf 2 1\n1 2 0\n") == DIMACS_OK);
++    assert(solver_solve(s) == UNDEF && s->stats.decisions == 1);
++    assert(s->opts.phase_saving == saving && !s->error);
++    assert(!s->vars[1].polarity && !s->vars[2].polarity);
++    solver_free(s);
++
++    if (budget < 100) return;
++    s = solver_new_with_opts(&o);assert(s);
++    assert(dimacs_parse_string(s, "p cnf 2 2\n-1 2 0\n-1 -2 0\n") == DIMACS_OK);
++    s->vars[1].polarity = true;
++    assert(solver_solve(s) == UNDEF);
++    assert(s->values[1] == FALSE && s->vars[1].level == 0);
++    assert(s->vars[1].polarity == !saving && s->opts.phase_saving == saving);
++    solver_free(s);
++}
++
+@@ -44,0 +66,3 @@
++        probing_phases(queue, 1000000, true);
++        probing_phases(queue, 1, true);
++        probing_phases(queue, 1000000, false);

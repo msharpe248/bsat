@@ -1,0 +1,10 @@
+--- a/competition/c/src/solver.c
++++ b/competition/c/src/solver.c
+@@ -619 +619 @@
+-    s->vars[v].polarity = false;  // Default phase
++    s->vars[v].polarity = true;  // Experimental positive initial phase
+@@ -1672,0 +1673,2 @@
++    bool phase_saving = s->opts.phase_saving;
++    s->opts.phase_saving = false;
+@@ -1681,0 +1684 @@
++    s->opts.phase_saving = phase_saving;

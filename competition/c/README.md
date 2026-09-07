@@ -112,6 +112,8 @@ shows a modest throughput improvement with matching search counters; see
 Phase saving records decisions as well as propagated assignments, retaining
 random and target-phase choices after backtracking. See
 [DECISION_PHASES.md](DECISION_PHASES.md) for the regression and performance tradeoffs.
+An experiment suppressing phase updates during probes was rejected after
+targeted comparisons; see [PROBE_PHASE_EXPERIMENT.md](PROBE_PHASE_EXPERIMENT.md).
 
 Opt-in `--iterative-minimize` follows both implicit binary and arena reasons using
 an iterative traversal with shared successful dependency checks. The
