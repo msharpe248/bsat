@@ -129,7 +129,6 @@ SolverOpts default_opts(void);
 typedef struct VarInfo {
     // VSIDS/LRB activity - first for 8-byte alignment and cache-friendly heap access
     double   activity;       // Variable activity score
-    uint64_t last_conflict;  // Last conflict where variable participated (for LRB)
 
     // Assignment metadata; hot truth values live in Solver.values.
     Level    level;          // Decision level
@@ -137,7 +136,6 @@ typedef struct VarInfo {
     uint32_t trail_pos;      // Position in trail
 
     // Less frequently accessed
-    uint32_t last_polarity;  // Last conflict where polarity was saved
     uint32_t heap_pos;       // Position in VSIDS heap
 
     // Phase saving - 1 byte, naturally packs at end with padding
@@ -172,6 +170,7 @@ typedef struct Solver {
     // Core data structures
     Arena*        arena;       // Clause allocator
     WatchManager* watches;     // Watch lists
+    uint64_t*     lrb_last_conflict; // Optional recency timestamps for LRB only
     VarInfo*      vars;        // Variable information, separate from hot values
     uint8_t*      values;      // One authoritative UNDEF/FALSE/TRUE byte per variable
 

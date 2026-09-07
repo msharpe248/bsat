@@ -314,3 +314,9 @@ A [deep-trail restart-blocking experiment](RESTART_BLOCKING_EXPERIMENT.md) teste
 EMA and sliding-window variants against the existing defaults and pinned Kissat.
 It added no solves and repeatedly slowed battleship with EMA; the prototype was
 rejected, with its implementation, tests and measurements preserved.
+
+[Compact variable metadata](COMPACT_VARIABLES.md) keeps LRB-only timestamps in
+an optional array and removes an unused field. Default variable records shrink
+from 40 to 32 bytes on arm64, with matching measured search counters and lower
+peak RSS on large allocation cases. Broad fixed-work CPU results are essentially
+flat.

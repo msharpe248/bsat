@@ -333,7 +333,7 @@ static void bump_var_activity(Solver* s, Var v, double inc) {
         // Hybrid VSIDS+LRB: Use VSIDS-style additive bumps with LRB-inspired
         // weighting based on recency of conflict participation
         uint64_t current = s->stats.conflicts;
-        uint64_t last = s->vars[v].last_conflict;
+        uint64_t last = s->lrb_last_conflict[v];
         uint64_t age = (current > last) ? (current - last) : 1;
 
         // Reward decreases with age: recent participation gets more weight
@@ -342,7 +342,7 @@ static void bump_var_activity(Solver* s, Var v, double inc) {
 
         // Add weighted increment (like VSIDS but with recency bonus)
         s->vars[v].activity += s->order.var_inc * multiplier;
-        s->vars[v].last_conflict = current;
+        s->lrb_last_conflict[v] = current;
 
         // Rescale if needed (same as VSIDS)
         if (s->vars[v].activity > 1e100) {
@@ -479,6 +479,7 @@ void solver_free(Solver* s) {
     free(s->conflict_clause);
     free(s->level_seen);
     free(s->input);
+    free(s->lrb_last_conflict);
     free(s->vars);
     free(s->values);
     free(s->trail);
@@ -527,6 +528,12 @@ static bool grow_var_arrays(Solver* s, uint32_t new_capacity) {
     VarInfo* new_vars = (VarInfo*)realloc(s->vars, alloc_size * sizeof(VarInfo));
     if (!new_vars) return false;
     s->vars = new_vars;
+
+    if (s->opts.lrb) {
+        uint64_t *timestamps = realloc(s->lrb_last_conflict, alloc_size * sizeof *timestamps);
+        if (!timestamps) return false;
+        s->lrb_last_conflict = timestamps;
+    }
 
     // Dense propagation values: no duplicate assignment state to synchronize.
     uint8_t *new_values = realloc(s->values, alloc_size * sizeof *new_values);
@@ -622,6 +629,7 @@ Var solver_new_var(Solver* s) {
     // Initialize new variable
     memset(&s->vars[v], 0, sizeof(VarInfo));
     s->values[v] = UNDEF;
+    if (s->lrb_last_conflict) s->lrb_last_conflict[v] = 0;
     s->vars[v].level = INVALID_LEVEL;
     s->vars[v].reason = INVALID_CLAUSE;
     s->vars[v].heap_pos = UINT32_MAX;

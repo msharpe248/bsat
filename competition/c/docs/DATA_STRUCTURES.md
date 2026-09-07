@@ -57,26 +57,23 @@ Per-variable state stored in solver→vars[v]:
 
 ```c
 typedef struct VarInfo {
-    // Current assignment
-    lbool    value;          // TRUE, FALSE, or UNDEF
+    double   activity;       // VSIDS/LRB score
     Level    level;          // Decision level where assigned
-    CRef     reason;         // Reason clause (INVALID_CREF for decisions)
+    CRef     reason;         // INVALID_CLAUSE for decisions/implicit binaries
     uint32_t trail_pos;      // Position in trail
-
-    // Phase saving
-    bool     polarity;       // Saved polarity for phase saving
-    uint32_t last_polarity;  // Last conflict where polarity was saved
-
-    // VSIDS activity
-    double   activity;       // Variable activity score
     uint32_t heap_pos;       // Position in VSIDS heap
+    bool     polarity;       // Saved phase
 } VarInfo;
 ```
 
+The record occupies 32 bytes on the measured arm64 ABI. LRB alone allocates
+`s->lrb_last_conflict[v]`, a separate 64-bit timestamp per variable. See
+[compact variable measurements](../COMPACT_VARIABLES.md).
+
 **Key fields:**
-- **value**: Current assignment (TRUE/FALSE/UNDEF)
+- **s->values[v]**: Authoritative assignment byte (TRUE/FALSE/UNDEF)
 - **level**: Decision level (0 = level 0, >0 = search level)
-- **reason**: CRef to implication clause (INVALID_CREF if decision)
+- **reason**: Arena implication clause; implicit binary reasons use `s->binary_reasons[v]`
 - **polarity**: Saved phase for next decision
 - **activity**: VSIDS score (higher = more active in conflicts)
 - **heap_pos**: Position in binary max-heap for VSIDS
@@ -84,7 +81,7 @@ typedef struct VarInfo {
 **Access pattern:**
 ```c
 VarInfo* var_info = &s->vars[v];
-if (var_info->value == TRUE && var_info->level == 0) {
+if (s->values[v] == TRUE && var_info->level == 0) {
     // Variable v is true at decision level 0 (unit clause)
 }
 ```
