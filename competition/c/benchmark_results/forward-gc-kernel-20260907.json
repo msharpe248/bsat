@@ -1,0 +1,375 @@
+{
+  "schema": 1,
+  "platform": "macOS-26.6.1-arm64-arm-64bit-Mach-O",
+  "machine": "arm64",
+  "revision": "fd2e7a187d28bf955a6d147508b8e8909cecb10f",
+  "dirty": true,
+  "split": "development",
+  "seed": 1,
+  "timeout": 20.0,
+  "repeats": 3,
+  "solvers": {
+    "baseline": {
+      "command": [
+        "/private/tmp/bsat-forward-gc-baseline-driver",
+        "{input}",
+        "10"
+      ],
+      "sha256": "386f230024235fdbef8d62535986180d0817d455edf7a8014e48b11122e5c606"
+    },
+    "forward": {
+      "command": [
+        "/Users/msharpe/python/bsat/competition/c/bin/gc_driver",
+        "{input}",
+        "10"
+      ],
+      "sha256": "510731040698a8203951af193ca239e886d272650b5a953327ba8e4a666cd72d"
+    }
+  },
+  "inputs": {
+    "/private/tmp/bsat-gc-corpus/clauses-10000.cnf": {
+      "sha256": "a723d9b0bc78932eb764e43fee09eb0311749ceab47cf72463c114f721bb9388",
+      "family": "bsat-gc-corpus"
+    },
+    "/private/tmp/bsat-gc-corpus/clauses-50000.cnf": {
+      "sha256": "81182af635e1eb75a6f58d0a1734bef0a0b1bc54d031cdfe78743660ed144cab",
+      "family": "bsat-gc-corpus"
+    },
+    "/private/tmp/bsat-gc-corpus/clauses-100000.cnf": {
+      "sha256": "d74332e2713c8a1e185faee710fdf38cffec7263f524b7287f27840814cd77a3",
+      "family": "bsat-gc-corpus"
+    }
+  },
+  "checker": {
+    "path": "/tmp/bsat-drat-trim",
+    "sha256": "9bfc20a5fa9eb2a0ffadd2b0cfc7cdd4a20f6aa9c8d7de5b6c771160b847f630"
+  },
+  "runs": [
+    {
+      "solver": "forward",
+      "input": "/private/tmp/bsat-gc-corpus/clauses-10000.cnf",
+      "repeat": 1,
+      "status": "SAT",
+      "verified": true,
+      "seconds": 0.2420594161376357,
+      "cpu_seconds": 0.009722999999999999,
+      "peak_rss_bytes": 11517952,
+      "par2": 0.2420594161376357,
+      "stats": {
+        "Collection CPU": "0.001295000",
+        "Collections": "10",
+        "Maximum old arena words": "540001"
+      },
+      "diagnostic": ""
+    },
+    {
+      "solver": "baseline",
+      "input": "/private/tmp/bsat-gc-corpus/clauses-100000.cnf",
+      "repeat": 2,
+      "status": "SAT",
+      "verified": true,
+      "seconds": 0.29193987511098385,
+      "cpu_seconds": 0.10283799999999998,
+      "peak_rss_bytes": 103235584,
+      "par2": 0.29193987511098385,
+      "stats": {
+        "Collection CPU": "0.039018000",
+        "Collections": "10",
+        "Maximum old arena words": "5400001"
+      },
+      "diagnostic": ""
+    },
+    {
+      "solver": "forward",
+      "input": "/private/tmp/bsat-gc-corpus/clauses-50000.cnf",
+      "repeat": 1,
+      "status": "SAT",
+      "verified": true,
+      "seconds": 0.07698404090479016,
+      "cpu_seconds": 0.038799,
+      "peak_rss_bytes": 48791552,
+      "par2": 0.07698404090479016,
+      "stats": {
+        "Collection CPU": "0.008185000",
+        "Collections": "10",
+        "Maximum old arena words": "2700001"
+      },
+      "diagnostic": ""
+    },
+    {
+      "solver": "forward",
+      "input": "/private/tmp/bsat-gc-corpus/clauses-50000.cnf",
+      "repeat": 2,
+      "status": "SAT",
+      "verified": true,
+      "seconds": 0.07039295881986618,
+      "cpu_seconds": 0.03713399999999999,
+      "peak_rss_bytes": 48791552,
+      "par2": 0.07039295881986618,
+      "stats": {
+        "Collection CPU": "0.007864000",
+        "Collections": "10",
+        "Maximum old arena words": "2700001"
+      },
+      "diagnostic": ""
+    },
+    {
+      "solver": "forward",
+      "input": "/private/tmp/bsat-gc-corpus/clauses-10000.cnf",
+      "repeat": 0,
+      "status": "SAT",
+      "verified": true,
+      "seconds": 0.02023254195228219,
+      "cpu_seconds": 0.008895,
+      "peak_rss_bytes": 11501568,
+      "par2": 0.02023254195228219,
+      "stats": {
+        "Collection CPU": "0.001190000",
+        "Collections": "10",
+        "Maximum old arena words": "540001"
+      },
+      "diagnostic": ""
+    },
+    {
+      "solver": "baseline",
+      "input": "/private/tmp/bsat-gc-corpus/clauses-10000.cnf",
+      "repeat": 0,
+      "status": "SAT",
+      "verified": true,
+      "seconds": 0.020110249985009432,
+      "cpu_seconds": 0.010558,
+      "peak_rss_bytes": 13647872,
+      "par2": 0.020110249985009432,
+      "stats": {
+        "Collection CPU": "0.001381000",
+        "Collections": "10",
+        "Maximum old arena words": "540001"
+      },
+      "diagnostic": ""
+    },
+    {
+      "solver": "forward",
+      "input": "/private/tmp/bsat-gc-corpus/clauses-50000.cnf",
+      "repeat": 0,
+      "status": "SAT",
+      "verified": true,
+      "seconds": 0.07731533283367753,
+      "cpu_seconds": 0.047873,
+      "peak_rss_bytes": 48775168,
+      "par2": 0.07731533283367753,
+      "stats": {
+        "Collection CPU": "0.009728000",
+        "Collections": "10",
+        "Maximum old arena words": "2700001"
+      },
+      "diagnostic": ""
+    },
+    {
+      "solver": "forward",
+      "input": "/private/tmp/bsat-gc-corpus/clauses-100000.cnf",
+      "repeat": 2,
+      "status": "SAT",
+      "verified": true,
+      "seconds": 0.13168100034818053,
+      "cpu_seconds": 0.097869,
+      "peak_rss_bytes": 110444544,
+      "par2": 0.13168100034818053,
+      "stats": {
+        "Collection CPU": "0.025269000",
+        "Collections": "10",
+        "Maximum old arena words": "5400001"
+      },
+      "diagnostic": ""
+    },
+    {
+      "solver": "baseline",
+      "input": "/private/tmp/bsat-gc-corpus/clauses-100000.cnf",
+      "repeat": 0,
+      "status": "SAT",
+      "verified": true,
+      "seconds": 0.1323798750527203,
+      "cpu_seconds": 0.114442,
+      "peak_rss_bytes": 103202816,
+      "par2": 0.1323798750527203,
+      "stats": {
+        "Collection CPU": "0.042612000",
+        "Collections": "10",
+        "Maximum old arena words": "5400001"
+      },
+      "diagnostic": ""
+    },
+    {
+      "solver": "baseline",
+      "input": "/private/tmp/bsat-gc-corpus/clauses-50000.cnf",
+      "repeat": 0,
+      "status": "SAT",
+      "verified": true,
+      "seconds": 0.07014508312568069,
+      "cpu_seconds": 0.057811999999999995,
+      "peak_rss_bytes": 55984128,
+      "par2": 0.07014508312568069,
+      "stats": {
+        "Collection CPU": "0.019730000",
+        "Collections": "10",
+        "Maximum old arena words": "2700001"
+      },
+      "diagnostic": ""
+    },
+    {
+      "solver": "forward",
+      "input": "/private/tmp/bsat-gc-corpus/clauses-10000.cnf",
+      "repeat": 2,
+      "status": "SAT",
+      "verified": true,
+      "seconds": 0.0200293748639524,
+      "cpu_seconds": 0.010868,
+      "peak_rss_bytes": 11501568,
+      "par2": 0.0200293748639524,
+      "stats": {
+        "Collection CPU": "0.001512000",
+        "Collections": "10",
+        "Maximum old arena words": "540001"
+      },
+      "diagnostic": ""
+    },
+    {
+      "solver": "forward",
+      "input": "/private/tmp/bsat-gc-corpus/clauses-100000.cnf",
+      "repeat": 1,
+      "status": "SAT",
+      "verified": true,
+      "seconds": 0.13219829089939594,
+      "cpu_seconds": 0.10033,
+      "peak_rss_bytes": 110460928,
+      "par2": 0.13219829089939594,
+      "stats": {
+        "Collection CPU": "0.026679000",
+        "Collections": "10",
+        "Maximum old arena words": "5400001"
+      },
+      "diagnostic": ""
+    },
+    {
+      "solver": "forward",
+      "input": "/private/tmp/bsat-gc-corpus/clauses-100000.cnf",
+      "repeat": 0,
+      "status": "SAT",
+      "verified": true,
+      "seconds": 0.13120250031352043,
+      "cpu_seconds": 0.101892,
+      "peak_rss_bytes": 110444544,
+      "par2": 0.13120250031352043,
+      "stats": {
+        "Collection CPU": "0.027359000",
+        "Collections": "10",
+        "Maximum old arena words": "5400001"
+      },
+      "diagnostic": ""
+    },
+    {
+      "solver": "baseline",
+      "input": "/private/tmp/bsat-gc-corpus/clauses-50000.cnf",
+      "repeat": 1,
+      "status": "SAT",
+      "verified": true,
+      "seconds": 0.07507579121738672,
+      "cpu_seconds": 0.057796,
+      "peak_rss_bytes": 55984128,
+      "par2": 0.07507579121738672,
+      "stats": {
+        "Collection CPU": "0.019730000",
+        "Collections": "10",
+        "Maximum old arena words": "2700001"
+      },
+      "diagnostic": ""
+    },
+    {
+      "solver": "baseline",
+      "input": "/private/tmp/bsat-gc-corpus/clauses-10000.cnf",
+      "repeat": 1,
+      "status": "SAT",
+      "verified": true,
+      "seconds": 0.02015720820054412,
+      "cpu_seconds": 0.010646,
+      "peak_rss_bytes": 13664256,
+      "par2": 0.02015720820054412,
+      "stats": {
+        "Collection CPU": "0.001425000",
+        "Collections": "10",
+        "Maximum old arena words": "540001"
+      },
+      "diagnostic": ""
+    },
+    {
+      "solver": "baseline",
+      "input": "/private/tmp/bsat-gc-corpus/clauses-50000.cnf",
+      "repeat": 2,
+      "status": "SAT",
+      "verified": true,
+      "seconds": 0.07710508303716779,
+      "cpu_seconds": 0.055806999999999995,
+      "peak_rss_bytes": 55984128,
+      "par2": 0.07710508303716779,
+      "stats": {
+        "Collection CPU": "0.018642000",
+        "Collections": "10",
+        "Maximum old arena words": "2700001"
+      },
+      "diagnostic": ""
+    },
+    {
+      "solver": "baseline",
+      "input": "/private/tmp/bsat-gc-corpus/clauses-10000.cnf",
+      "repeat": 2,
+      "status": "SAT",
+      "verified": true,
+      "seconds": 0.020067125093191862,
+      "cpu_seconds": 0.010833999999999998,
+      "peak_rss_bytes": 13680640,
+      "par2": 0.020067125093191862,
+      "stats": {
+        "Collection CPU": "0.001413000",
+        "Collections": "10",
+        "Maximum old arena words": "540001"
+      },
+      "diagnostic": ""
+    },
+    {
+      "solver": "baseline",
+      "input": "/private/tmp/bsat-gc-corpus/clauses-100000.cnf",
+      "repeat": 1,
+      "status": "SAT",
+      "verified": true,
+      "seconds": 0.1273466655984521,
+      "cpu_seconds": 0.113443,
+      "peak_rss_bytes": 103202816,
+      "par2": 0.1273466655984521,
+      "stats": {
+        "Collection CPU": "0.042625000",
+        "Collections": "10",
+        "Maximum old arena words": "5400001"
+      },
+      "diagnostic": ""
+    }
+  ],
+  "manifest": {
+    "path": "/private/tmp/bsat-gc-corpus/manifest.json",
+    "sha256": "c6b0e8883736e5532b9181ad6b74ee5227db486fe3d24354ab802f4d17b4ab48"
+  },
+  "summary": {
+    "baseline": {
+      "verified_runs": 9,
+      "runs": 9,
+      "mean_par2": 0.09270299515790409,
+      "max_rss_bytes": 103235584,
+      "errors": 0
+    },
+    "forward": {
+      "verified_runs": 9,
+      "runs": 9,
+      "mean_par2": 0.10023282856370012,
+      "max_rss_bytes": 110460928,
+      "errors": 0
+    }
+  }
+}

@@ -320,3 +320,8 @@ an optional array and removes an unused field. Default variable records shrink
 from 40 to 32 bytes on arm64, with matching measured search counters and lower
 peak RSS on large allocation cases. Broad fixed-work CPU results are essentially
 flat.
+
+[Garbage collection forwarding](FORWARDING_GC.md) reuses old clause headers after
+successful copying, removing the arena-sized temporary relocation map. Tests
+preserve headers, watches, reasons and occurrences; measured search counters and
+solved counts are unchanged. Collection CPU and peak RSS vary by workload.

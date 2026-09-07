@@ -207,3 +207,11 @@ $(ELIM_DRIVER): $(TESTDIR)/elim_driver.c $(filter-out $(OBJDIR)/main.o,$(OBJECTS
 	$(CC) $(CFLAGS) -o $@ $^ -lm
 
 .PHONY: elim-driver
+
+GC_DRIVER = $(BINDIR)/gc_driver$(if $(filter release,$(MODE)),,_$(MODE))
+gc-driver: dirs $(GC_DRIVER)
+
+$(GC_DRIVER): $(TESTDIR)/gc_driver.c $(filter-out $(OBJDIR)/main.o,$(OBJECTS))
+	$(CC) $(CFLAGS) -o $@ $^ -lm
+
+.PHONY: gc-driver

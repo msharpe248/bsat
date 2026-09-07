@@ -1565,19 +1565,27 @@ void solver_collect_garbage(Solver *s) {
     if (!s->arena->wasted || s->arena->wasted * 4 < s->arena->size) return;
     Arena *old = s->arena;
     Arena *fresh = arena_init(MAX((size_t)1024, old->size - old->wasted + 1));
-    CRef *map = malloc(old->size * sizeof *map);
-    if (!fresh || !map) { arena_free(fresh); free(map); return; }
+    if (!fresh) return;
     for (size_t at = 1; at < old->size;) {
         uint32_t n = CLAUSE_SIZE(old, at);
-        if (clause_deleted(old, at)) map[at] = INVALID_CLAUSE;
-        else {
+        if (!clause_deleted(old, at)) {
             CRef cr = arena_alloc(fresh, CLAUSE_LITS(old, at), n, clause_learned(old, at));
-            if (cr == INVALID_CLAUSE) { arena_free(fresh); free(map); return; }
+            if (cr == INVALID_CLAUSE) { arena_free(fresh); return; }
             *CLAUSE_HEADER(fresh, cr) = *CLAUSE_HEADER(old, at);
-            map[at] = cr;
         }
         at += sizeof(ClauseHeader)/4 + n;
     }
+    // All potentially failing copies are complete. Reuse old search cursors as
+    // forwarding references; fresh headers retain the original cursor values.
+    CRef next = 1;
+    for (size_t at = 1; at < old->size;) {
+        ClauseHeader *header = CLAUSE_HEADER(old, at);
+        uint32_t words = sizeof(ClauseHeader)/sizeof(uint32_t) + header->size;
+        header->search = clause_deleted(old, at) ? INVALID_CLAUSE : next;
+        if (!clause_deleted(old, at)) next += words;
+        at += words;
+    }
+    ASSERT(next == fresh->size);
     for (uint32_t l = 0; l < 2*(s->watches->num_vars+1); ++l) {
         WatchList *wl = &s->watches->lists[l];
         uint32_t out = 0;
@@ -1585,7 +1593,7 @@ void solver_collect_garbage(Solver *s) {
             Watch w = wl->watches[i];
             if (!is_binary_watch(w)) {
                 bool binary = is_arena_binary_watch(w);
-                CRef cr = map[watch_clause(w)];
+                CRef cr = CLAUSE_HEADER(old, watch_clause(w))->search;
                 if (cr == INVALID_CLAUSE) continue;
                 w.cref = binary ? arena_binary_watch_ref(cr) : cr;
             }
@@ -1595,19 +1603,19 @@ void solver_collect_garbage(Solver *s) {
     }
     for (Var v = 1; v <= s->num_vars; ++v)
         if (s->vars[v].reason != INVALID_CLAUSE) {
-            s->vars[v].reason = map[s->vars[v].reason];
+            s->vars[v].reason = CLAUSE_HEADER(old, s->vars[v].reason)->search;
             ASSERT(s->vars[v].reason != INVALID_CLAUSE || s->values[v] == UNDEF);
         }
     uint32_t out = 0;
     for (uint32_t i = 0; i < s->num_clauses; ++i) {
         CRef cr = s->clauses[i];
-        if (cr != INVALID_CLAUSE && map[cr] != INVALID_CLAUSE) s->clauses[out++] = map[cr];
+        if (cr != INVALID_CLAUSE && CLAUSE_HEADER(old, cr)->search != INVALID_CLAUSE) s->clauses[out++] = CLAUSE_HEADER(old, cr)->search;
     }
     s->num_original = s->num_clauses = out;
     out = 0;
     for (uint32_t i = 0; i < s->num_learnts; ++i) {
         CRef cr = s->learnts[i];
-        if (cr != INVALID_CLAUSE && map[cr] != INVALID_CLAUSE) s->learnts[out++] = map[cr];
+        if (cr != INVALID_CLAUSE && CLAUSE_HEADER(old, cr)->search != INVALID_CLAUSE) s->learnts[out++] = CLAUSE_HEADER(old, cr)->search;
     }
     s->num_learnts = out;
     fresh->peak_size = MAX(old->peak_size, fresh->peak_size);
@@ -1618,7 +1626,7 @@ void solver_collect_garbage(Solver *s) {
         s->elim->resolvent_crefs_size = 0;
         elim_build_occs(s);
     }
-    free(map); arena_free(old); s->garbage_collections++;
+    arena_free(old); s->garbage_collections++;
 }
 
 void solver_reduce_db(Solver* s) {
