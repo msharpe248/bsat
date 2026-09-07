@@ -1,0 +1,19 @@
+diff --git a/competition/c/src/solver.c b/competition/c/src/solver.c
+index 8446406..57a17f3 100644
+--- a/competition/c/src/solver.c
++++ b/competition/c/src/solver.c
+@@ -869,6 +869,14 @@ CRef solver_propagate(Solver* s) {
+                 ws->size=j; s->qhead--; return INVALID_CLAUSE;
+             }
+             s->work++;
++#if defined(__GNUC__) || defined(__clang__)
++            // Read ahead without changing watch processing or literal order.
++            if (ws->size - i > 4) {
++                Watch next = watches[i + 4];
++                if (!is_binary_watch(next) && !is_arena_binary_watch(next))
++                    __builtin_prefetch(CLAUSE_HEADER(s->arena, next.cref), 0, 1);
++            }
++#endif
+             Watch w = watches[i];
+
+             // Binary clause special case

@@ -304,3 +304,8 @@ pivot and the cheaper parent polarity. Pure-variable records need only two
 words, and overlapping-clause examples use roughly half the previous payload.
 Independent model/proof checks pass; competition solved counts are unchanged,
 and BVE remains opt-in.
+
+A [long-clause prefetch experiment](WATCH_PREFETCH_EXPERIMENT.md) preserved search
+counters but measured 1.36% higher aggregate CPU time on 26 development inputs.
+The hint was rejected; 459 mixed-watch regression cases and the measured patch
+are retained.
