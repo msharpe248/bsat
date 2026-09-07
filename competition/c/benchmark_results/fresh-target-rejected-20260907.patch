@@ -1,0 +1,48 @@
+diff --git a/competition/c/src/solver.c b/competition/c/src/solver.c
+index 7f963f3..b7f6aff 100644
+--- a/competition/c/src/solver.c
++++ b/competition/c/src/solver.c
+@@ -1351,0 +1352,2 @@ static void solver_rephase(Solver* s) {
++    s->rephase.best_trail_size = 0;
++    s->rephase.best_prefix_valid = false;
+diff --git a/competition/c/tests/test_fresh_target.c b/competition/c/tests/test_fresh_target.c
+new file mode 100644
+index 0000000..e81026f
+--- /dev/null
++++ b/competition/c/tests/test_fresh_target.c
+@@ -0,0 +1,35 @@
++#include "../include/solver.h"
++#include <assert.h>
++#include <stdio.h>
++
++int main(void) {
++    for (unsigned queue = 0; queue < 2; ++queue)
++    for (unsigned alternating = 0; alternating < 2; ++alternating)
++    for (unsigned trigger = 0; trigger < 2; ++trigger) {
++        SolverOpts o = default_opts();o.probing = false;o.vmtf = queue;
++        o.alternating = alternating;o.rephase_interval = 1;o.max_decisions = 1;
++        Solver *s = solver_new_with_opts(&o);assert(s);
++        for (unsigned i = 0; i < 4; ++i) assert(solver_new_var(s));
++        // A target from a previous, deeper branch. The next branch is shorter.
++        s->rephase.best_phase[1] = TRUE;s->rephase.best_phase[2] = FALSE;
++        s->rephase.best_trail_size = 2;s->rephase.best_prefix_valid = false;
++        s->stable_mode = alternating;
++        s->stats.conflicts = trigger;
++        assert(solver_solve(s) == UNDEF && !s->error && s->trail_size == 1);
++        assert(s->rephase.rephase_count == trigger);
++        if (trigger) {
++            assert(s->rephase.best_trail_size == 1 && s->rephase.best_prefix_valid);
++            Lit chosen = s->trail[0].lit;
++            for (Var v = 1; v <= 4; ++v)
++                assert(s->rephase.best_phase[v] == (v == var(chosen) ?
++                       (sign(chosen) ? FALSE : TRUE) : UNDEF));
++            assert(s->stats.target_cleared == 5 && s->stats.target_copied == 1);
++        } else {
++            assert(s->rephase.best_trail_size == 2);
++            assert(s->rephase.best_phase[1] == TRUE && s->rephase.best_phase[2] == FALSE);
++            assert(!s->stats.target_cleared && !s->stats.target_copied);
++        }
++        solver_free(s);
++    }
++    puts("PASS: 8 fresh-target/no-rephase-boundary cases across heap, queue and alternating modes");
++}

@@ -229,6 +229,10 @@ def main():
                 ['--lrb', '--reuse-trail', '--no-probing'],
                 ['--lrb', '--equiv', '--elim', '--bce'],
                 ['--lrb', '--alternating'], ['--lrb', '--vmtf']]
+    configs += [['--rephase-interval', '1', '--no-probing'],
+                ['--no-rephase', '--no-probing'],
+                ['--rephase-interval', '1', '--alternating'],
+                ['--rephase-interval', '1', '--vmtf', '--binary-proof']]
     fixed = [
         (5, [[1, 2], [1, -2], [-3, 4], [3, -4], [4, 5]], None),
         (5, [[-4], [-1, 2, 4], [1, -2, 4]] +

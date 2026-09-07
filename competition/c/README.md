@@ -357,3 +357,8 @@ a fixed work budget. Larger-input solved counts are unchanged; BCE remains opt-i
 recorded search counters but measured about 1.3% more aggregate CPU on the fixed
 work screen, so the runtime change was rejected. Retained tests cover exact
 long-scan accounting and interruption replay at polling boundaries.
+
+[Rephasing policy experiments](REPHASE_POLICY_EXPERIMENT.md) rejected disabling,
+delaying or refreshing the historical target policy on the tested screen.
+Retained checks cover partial-target application and rapid/disabled rephasing
+with independent model and proof validation.
