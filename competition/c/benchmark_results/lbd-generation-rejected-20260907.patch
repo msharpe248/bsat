@@ -1,0 +1,101 @@
+diff --git a/competition/c/include/solver.h b/competition/c/include/solver.h
+index 6daf951..0a870e7 100644
+--- a/competition/c/include/solver.h
++++ b/competition/c/include/solver.h
+@@ -292,7 +292,8 @@ typedef struct Solver {
+     } local_search;
+
+     /* Immutable input, used for model checking and safe incremental rebuilds. */
+-    uint8_t *level_seen;
++    uint32_t *level_seen;
++    uint32_t level_generation;
+     uint32_t levels_capacity, random_state;
+     Lit *conflict_clause;
+     uint32_t conflict_size;
+diff --git a/competition/c/src/solver.c b/competition/c/src/solver.c
+index 8446406..8bed030 100644
+--- a/competition/c/src/solver.c
++++ b/competition/c/src/solver.c
+@@ -1053,27 +1053,22 @@ CRef solver_propagate(Solver* s) {
+  *********************************************************************/
+
+ static uint32_t calc_lbd(Solver* s, const Lit* lits, uint32_t size) {
+-    // Separate level marks also cover dummy assumption levels.
++    // Generations avoid clearing every visited level after each calculation.
++    // Rollover clears stale generations before reusing generation one.
++    if (!++s->level_generation) {
++        memset(s->level_seen, 0, (size_t)s->levels_capacity * sizeof *s->level_seen);
++        s->level_generation = 1;
++    }
+     uint32_t lbd = 0;
+-
+-    // Track which levels we've seen
+     for (uint32_t i = 0; i < size; i++) {
+         Level level = s->vars[var(lits[i])].level;
+-        if (level == 0) continue;  // Level 0 doesn't count for LBD
+-        if (level < s->levels_capacity && !s->level_seen[level]) {
+-            s->level_seen[level] = 1;
++        if (level && level < s->levels_capacity &&
++            s->level_seen[level] != s->level_generation) {
++            s->level_seen[level] = s->level_generation;
+             lbd++;
+         }
+     }
+
+-    // Clear the seen flags for levels we marked
+-    for (uint32_t i = 0; i < size; i++) {
+-        Level level = s->vars[var(lits[i])].level;
+-        if (level != 0 && level < s->levels_capacity) {
+-            s->level_seen[level] = 0;
+-        }
+-    }
+-
+     return lbd;
+ }
+
+@@ -2026,7 +2021,7 @@ lbool solver_solve_with_assumptions(Solver *s, const Lit *assumps, uint32_t n_as
+     }
+     uint32_t levels=n_assumps+s->num_vars+2;
+     if (levels>s->levels_capacity) {
+-        uint8_t *p=calloc(levels,1);
++        uint32_t *p=calloc(levels,sizeof *p);
+         if (!p) { s->error=true;return UNDEF; }
+         free(s->level_seen);s->level_seen=p;s->levels_capacity=levels;
+     }
+diff --git a/competition/c/tests/test_regressions.c b/competition/c/tests/test_regressions.c
+index 2f450cd..05f21f6 100644
+--- a/competition/c/tests/test_regressions.c
++++ b/competition/c/tests/test_regressions.c
+@@ -160,6 +160,7 @@ static void circular_scan_order(void) {
+     }
+ }
+ static void dynamic_clause_quality(void) {
++    for (unsigned rollover = 0; rollover < 3; ++rollover)
+     for (unsigned initial_lbd = 4; initial_lbd <= 7; ++initial_lbd)
+     for (unsigned protect = 0; protect < 2; ++protect)
+     for (unsigned enabled = 0; enabled < 2; ++enabled)
+@@ -171,6 +172,10 @@ static void dynamic_clause_quality(void) {
+         s->levels_capacity = 5;
+         s->level_seen = calloc(s->levels_capacity, sizeof *s->level_seen);
+         assert(s->level_seen);
++        s->level_generation = rollover ? UINT32_MAX - (rollover - 1) : 0;
++        for (unsigned level = 1; level < s->levels_capacity; ++level)
++            s->level_seen[level] = 1; // Stale marks must not suppress a new count.
++        if (!rollover) memset(s->level_seen, 0, s->levels_capacity * sizeof *s->level_seen);
+         CRef a = s->clauses[0], b = s->clauses[1];
+         set_clause_lbd(s->arena, a, initial_lbd);
+         set_clause_lbd(s->arena, b, initial_lbd);
+@@ -202,7 +207,12 @@ static void dynamic_clause_quality(void) {
+         assert(clause_lbd(s->arena, a) == expected && clause_lbd(s->arena, b) == expected);
+         assert(s->stats.lbd_updates == (enabled && learned ? 2u : 0u));
+         for (Var v = 1; v <= 4; ++v) assert(!s->seen[v]);
+-        for (unsigned level = 0; level < s->levels_capacity; ++level) assert(!s->level_seen[level]);
++        assert(!s->level_seen[0]);
++        if (enabled && learned) {
++            assert(s->level_generation == (rollover == 2 ? 1u : 2u));
++            assert(s->level_seen[1] == s->level_generation);
++            assert(s->level_seen[2] == s->level_generation);
++        }
+         solver_backtrack(s, 0);
+         if (learned) {
+             s->learnts = malloc(2 * sizeof *s->learnts);assert(s->learnts);

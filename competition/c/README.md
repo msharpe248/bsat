@@ -273,3 +273,8 @@ small input per family. Pass its output to `tests/benchmark.py --manifest FILE`;
 the runner verifies input hashes before starting and records the manifest hash.
 See [DEFAULT_BRANCHING.md](DEFAULT_BRANCHING.md) for commands, tests, sampling
 limitations, and the additional-input comparison supporting the heap default.
+
+An [LBD generation-mark experiment](LBD_GENERATION_EXPERIMENT.md) removed the
+per-clause mark-clearing scan, but repeated competition-input measurements did
+not justify its extra storage. The tested patch and results are preserved; the
+production LBD implementation is unchanged.
