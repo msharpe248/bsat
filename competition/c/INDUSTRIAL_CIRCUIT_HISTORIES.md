@@ -47,7 +47,7 @@ Every reference UNSAT has DRAT converted to LRAT and accepted by CakeML's
 permanent clauses plus the current assumptions; its UNSAT proof is checked by the
 same independent chain. UNKNOWN is recorded without a correctness claim.
 
-Limits are five process-CPU seconds for each BSAT solve, ten cooperative wall
+Limits are five solver-thread CPU seconds for each BSAT solve, ten cooperative wall
 seconds for retained CaDiCaL, ten external wall seconds for fresh Kissat, and
 60 wall seconds per checker stage. These are validation budgets, not equal-budget
 competitive solver rankings. Serial release API timings exclude encoding, input

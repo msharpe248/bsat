@@ -1,0 +1,15 @@
+diff --git a/competition/c/src/bsat.c b/competition/c/src/bsat.c
+index 12761dd..1ba777a 100644
+--- a/competition/c/src/bsat.c
++++ b/competition/c/src/bsat.c
+@@ -48,6 +48,10 @@ bsat *bsat_create(uint32_t abi,uint32_t flags) {
+            original formula intact; do not enable equisatisfiable transforms. */
+         o.probing=false;o.equiv=false;o.congruence=false;o.elim=false;o.bce=false;
+         o.factor=false;o.inprocess=false;o.local_search=false;o.binary_proof=true;
++#ifdef BSAT_EXPERIMENT_CERT_PROBING
++        /* Experiment: namespace-preserving RUP units, bounded optional work. */
++        o.probing=true;o.preprocess_budget=100000;o.probe_on_change=true;
++#endif
+         s->journal=tmpfile();if(!s->journal){free(s);return NULL;}
+     }
+     s->core=solver_new_with_opts(&o);

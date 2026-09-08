@@ -12,8 +12,10 @@ production readiness documentation. Commit and push each validated milestone.
 2. Real incremental verification workloads: complete. Four pinned upstream
    circuits, 192 release/128 sanitizer queries, retained CaDiCaL, fresh Kissat,
    independent simulation and checked certificates. See INDUSTRIAL_CIRCUIT_HISTORIES.md.
-3. Certified-mode simplification: in progress.
-4. Service recovery: pending.
+3. Certified-mode simplification: complete as an evaluated experiment. Bounded
+   RUP probing validated but rejected for mixed timing and larger proof growth.
+   See CERTIFIED_SIMPLIFICATION_EXPERIMENT.md; production defaults unchanged.
+4. Service recovery: in progress.
 5. Readiness consolidation: pending.
 
 Timed runs are serial, without concurrent local builds/tests. Preserve negative
