@@ -41,6 +41,11 @@ jobs:
         run: |
           python3 competition/c/tests/differential_histories.py --library competition/c/bin/libbsat_release.so --reference "$RUNNER_TEMP/kissat-8af8e56f174b778aef3aa45af9f739b2a5f492c2/build/kissat" --output "$RUNNER_TEMP/results/differential.json"
           python3 competition/c/tests/check_upstream_ipasir.py --upstream "$RUNNER_TEMP/ipasir" --library competition/c/bin/libbsat_release.so --output "$RUNNER_TEMP/results/upstream-client.json"
+      - name: Service lifecycle smoke test (not a hosted timing baseline)
+        env:
+          BSAT_DRAT_TRIM: ${{ runner.temp }}/drat-trim
+          BSAT_CAKE_LPR: ${{ runner.temp }}/cake-lpr/cake_lpr
+        run: python3 competition/c/tests/benchmark_service_sessions.py --library competition/c/bin/libbsat_release.so --queries 128 --output "$RUNNER_TEMP/results/service-smoke.json.gz"
       - uses: actions/upload-artifact@v4
         if: always()
         with:

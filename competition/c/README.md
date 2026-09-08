@@ -6,7 +6,8 @@ certificate validation. Passing these tests does not establish production
 readiness for arbitrary workloads. See [HARDENING.md](HARDENING.md) for changes,
 validation evidence, research references, and remaining limitations.
 The latest milestones are tracked in
-[SEARCH_AND_RESOURCE_MILESTONES.md](SEARCH_AND_RESOURCE_MILESTONES.md);
+[SEARCH_AND_INTEGRATION_MILESTONES.md](SEARCH_AND_INTEGRATION_MILESTONES.md);
+[SEARCH_AND_RESOURCE_MILESTONES.md](SEARCH_AND_RESOURCE_MILESTONES.md),
 [ALGORITHM_AND_SERVICE_MILESTONES.md](ALGORITHM_AND_SERVICE_MILESTONES.md) and
 [PRODUCTION_GAPS.md](PRODUCTION_GAPS.md) records earlier batches.
 Earlier acceptance checks and evaluation are in [READINESS.md](READINESS.md), with executable coverage in
@@ -62,6 +63,18 @@ one line. Duplicates and tautologies are normalized. Numeric overflow and
 unfinished clauses are errors. Empty formulas are SAT; empty clauses are UNSAT.
 
 ## Search controls
+
+Use `make MODE=diagnostic` and `bin/bsat_diagnostic --accounting` for detailed
+watch/scan and learned-reason counters. These counters are compiled out of ordinary
+builds. See [PLANNING_PROPAGATION.md](PLANNING_PROPAGATION.md) for the corrected
+blocker skip-rate denominator and measured planning bottlenecks. The combined
+phase/factoring holdout rejected a global policy change; see
+[COMBINED_HOLDOUT.md](COMBINED_HOLDOUT.md) and [PHASE_REFRESH.md](PHASE_REFRESH.md).
+
+Independent long API histories and an unmodified upstream IPASIR application are
+covered in [INDEPENDENT_INTEGRATION.md](INDEPENDENT_INTEGRATION.md). For measured
+checkpoint/export latency, core-capacity growth and the cost of discarding learning,
+see [SERVICE_SESSION_TAILS.md](SERVICE_SESSION_TAILS.md).
 
 Experimental `--reduce-increment 1000` grows the gap between learned-clause
 reductions, starting at `--reduce-interval` (2,000 by default). Zero increment

@@ -1,0 +1,279 @@
+{
+  "scope": "Serial fixed/growing parity-chain sessions with proactive journal checkpoints.",
+  "library_sha256": "faa4cc4fa112f6fca87d07a979b4add1a62bdcd9047b3d93c7713fe99f5b9943",
+  "platform": "macOS-26.6.1-arm64-arm-64bit-Mach-O",
+  "queries_per_session": 8192,
+  "complete": true,
+  "clock_scope": "perf_counter around public API call, including ctypes overhead; validation outside measured intervals",
+  "memory_scope": "owned core capacity, normalized by permanent input literals; excludes Python and transient/RSS costs",
+  "converter_sha256": "9bfc20a5fa9eb2a0ffadd2b0cfc7cdd4a20f6aa9c8d7de5b6c771160b847f630",
+  "checker_sha256": "027e767e8e5543d61671c44f7475e985b7969112e6825d51f2207bf0580cbf5c",
+  "raw_report": "service-sessions-20260908.json.gz",
+  "raw_sha256": "52f42499b9f9ae065b60dbacf35f4f835b948133d7ed1ae34dc157b8427b20d5",
+  "sessions": [
+    {
+      "kind": "fixed",
+      "growing": false,
+      "watermark": 256,
+      "journal_limit": 131072,
+      "cancellations": 32,
+      "checkpoint_cancellations": 9,
+      "wall_retries": 17,
+      "summary": {
+        "query": {
+          "count": 8192,
+          "p50": 0.00024233432486653328,
+          "p95": 0.0003169998526573181,
+          "p99": 0.000391458161175251,
+          "max": 0.003907832782715559
+        },
+        "checkpoint": {
+          "count": 97,
+          "p50": 0.0033902497962117195,
+          "p95": 0.0037310421466827393,
+          "p99": 0.004052917007356882,
+          "max": 0.004052917007356882
+        },
+        "export": {
+          "count": 64,
+          "p50": 0.00545545807108283,
+          "p95": 0.005637666676193476,
+          "p99": 0.005760208237916231,
+          "max": 0.005760208237916231
+        }
+      },
+      "variables_start": 16384,
+      "variables_end": 16384,
+      "owned_start": 4011579,
+      "owned_end": 4011571,
+      "owned_peak": 4011579,
+      "journal_peak": 258,
+      "bytes_per_literal_start": 61.215574070683026,
+      "bytes_per_literal_end": 61.21545199291949,
+      "total_conflicts": 0,
+      "query_seconds": 2.1894961199723184,
+      "checkpoint_seconds": 0.3305227910168469,
+      "verified_exports": 64
+    },
+    {
+      "kind": "fixed",
+      "growing": false,
+      "watermark": 2048,
+      "journal_limit": 131072,
+      "cancellations": 32,
+      "checkpoint_cancellations": 9,
+      "wall_retries": 17,
+      "summary": {
+        "query": {
+          "count": 8192,
+          "p50": 0.00025358377024531364,
+          "p95": 0.00032291607931256294,
+          "p99": 0.0004102918319404125,
+          "max": 0.0037871249951422215
+        },
+        "checkpoint": {
+          "count": 17,
+          "p50": 0.003580874763429165,
+          "p95": 0.003789125010371208,
+          "p99": 0.003789125010371208,
+          "max": 0.003789125010371208
+        },
+        "export": {
+          "count": 64,
+          "p50": 0.005427999887615442,
+          "p95": 0.005621999967843294,
+          "p99": 0.005645708180963993,
+          "max": 0.005645708180963993
+        }
+      },
+      "variables_start": 16384,
+      "variables_end": 16384,
+      "owned_start": 4011579,
+      "owned_end": 4011571,
+      "owned_peak": 4011579,
+      "journal_peak": 2052,
+      "bytes_per_literal_start": 61.215574070683026,
+      "bytes_per_literal_end": 61.21545199291949,
+      "total_conflicts": 0,
+      "query_seconds": 2.1916209016926587,
+      "checkpoint_seconds": 0.06058500334620476,
+      "verified_exports": 64
+    },
+    {
+      "kind": "growing",
+      "growing": true,
+      "watermark": 256,
+      "journal_limit": 131072,
+      "cancellations": 32,
+      "checkpoint_cancellations": 9,
+      "wall_retries": 17,
+      "summary": {
+        "query": {
+          "count": 8192,
+          "p50": 0.00018695881590247154,
+          "p95": 0.00031295837834477425,
+          "p99": 0.0003432082012295723,
+          "max": 0.0038296664133667946
+        },
+        "checkpoint": {
+          "count": 94,
+          "p50": 0.0032323328778147697,
+          "p95": 0.0036970828659832478,
+          "p99": 0.003783541265875101,
+          "max": 0.003783541265875101
+        },
+        "export": {
+          "count": 64,
+          "p50": 0.005309542175382376,
+          "p95": 0.005825374741107225,
+          "p99": 0.005885375197976828,
+          "max": 0.005885375197976828
+        }
+      },
+      "variables_start": 1024,
+      "variables_end": 16384,
+      "owned_start": 272691,
+      "owned_end": 4011571,
+      "owned_peak": 4011579,
+      "journal_peak": 261,
+      "bytes_per_literal_start": 66.6400293255132,
+      "bytes_per_literal_end": 61.21545199291949,
+      "total_conflicts": 0,
+      "query_seconds": 1.6815197644755244,
+      "checkpoint_seconds": 0.25306912790983915,
+      "verified_exports": 64
+    },
+    {
+      "kind": "growing",
+      "growing": true,
+      "watermark": 2048,
+      "journal_limit": 131072,
+      "cancellations": 32,
+      "checkpoint_cancellations": 9,
+      "wall_retries": 17,
+      "summary": {
+        "query": {
+          "count": 8192,
+          "p50": 0.00015512481331825256,
+          "p95": 0.00030183326452970505,
+          "p99": 0.00031958287581801414,
+          "max": 0.0049612922593951225
+        },
+        "checkpoint": {
+          "count": 17,
+          "p50": 0.0028605000115931034,
+          "p95": 0.0037607080303132534,
+          "p99": 0.0037607080303132534,
+          "max": 0.0037607080303132534
+        },
+        "export": {
+          "count": 64,
+          "p50": 0.004339332692325115,
+          "p95": 0.0056062908843159676,
+          "p99": 0.005718584172427654,
+          "max": 0.005718584172427654
+        }
+      },
+      "variables_start": 1024,
+      "variables_end": 16384,
+      "owned_start": 272691,
+      "owned_end": 4011571,
+      "owned_peak": 4011579,
+      "journal_peak": 2052,
+      "bytes_per_literal_start": 66.6400293255132,
+      "bytes_per_literal_end": 61.21545199291949,
+      "total_conflicts": 0,
+      "query_seconds": 1.5114903678186238,
+      "checkpoint_seconds": 0.043068872299045324,
+      "verified_exports": 64
+    },
+    {
+      "kind": "learning",
+      "growing": false,
+      "watermark": 8192,
+      "journal_limit": 1048576,
+      "cancellations": 32,
+      "checkpoint_cancellations": 9,
+      "wall_retries": 17,
+      "summary": {
+        "query": {
+          "count": 8192,
+          "p50": 0.00099500035867095,
+          "p95": 0.0025327918119728565,
+          "p99": 0.0027178749442100525,
+          "max": 0.00734666595235467
+        },
+        "checkpoint": {
+          "count": 4105,
+          "p50": 0.00096549978479743,
+          "p95": 0.0010398328304290771,
+          "p99": 0.0011160001158714294,
+          "max": 0.001267625018954277
+        },
+        "export": {
+          "count": 64,
+          "p50": 0.0015337090007960796,
+          "p95": 0.001627833116799593,
+          "p99": 0.0018712077289819717,
+          "max": 0.0018712077289819717
+        }
+      },
+      "variables_start": 4139,
+      "variables_end": 4139,
+      "owned_start": 1609413,
+      "owned_end": 1450005,
+      "owned_peak": 1613765,
+      "journal_peak": 16204,
+      "bytes_per_literal_start": 95.7584934848575,
+      "bytes_per_literal_end": 86.27387398107932,
+      "total_conflicts": 2691016,
+      "query_seconds": 9.830457690637559,
+      "checkpoint_seconds": 3.8362605194561183,
+      "verified_exports": 64
+    },
+    {
+      "kind": "learning",
+      "growing": false,
+      "watermark": 65536,
+      "journal_limit": 1048576,
+      "cancellations": 32,
+      "checkpoint_cancellations": 9,
+      "wall_retries": 17,
+      "summary": {
+        "query": {
+          "count": 8192,
+          "p50": 5.770893767476082e-05,
+          "p95": 6.9458968937397e-05,
+          "p99": 0.0008190837688744068,
+          "max": 0.003444208297878504
+        },
+        "checkpoint": {
+          "count": 17,
+          "p50": 0.000884542241692543,
+          "p95": 0.001027124933898449,
+          "p99": 0.001027124933898449,
+          "max": 0.001027124933898449
+        },
+        "export": {
+          "count": 64,
+          "p50": 0.0012480001896619797,
+          "p95": 0.001319249626249075,
+          "p99": 0.0014542504213750362,
+          "max": 0.0014542504213750362
+        }
+      },
+      "variables_start": 4139,
+      "variables_end": 4139,
+      "owned_start": 1609413,
+      "owned_end": 1610369,
+      "owned_peak": 1614725,
+      "journal_peak": 81732,
+      "bytes_per_literal_start": 95.7584934848575,
+      "bytes_per_literal_end": 95.81537454631999,
+      "total_conflicts": 41992,
+      "query_seconds": 0.49725067522376776,
+      "checkpoint_seconds": 0.015099957585334778,
+      "verified_exports": 64
+    }
+  ]
+}
