@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """Long public-ABI histories compared with an independent solver on exact snapshots."""
 import argparse
+import ctypes as C
 import hashlib
 import json
 import os
@@ -18,12 +19,19 @@ def main():
     p.add_argument('--library', required=True, type=Path)
     p.add_argument('--reference', required=True, type=Path, help='Kissat executable')
     p.add_argument('--queries', type=int, default=256, help='Queries per flag combination')
+    p.add_argument('--flags',default='0,1,2,3',help='Comma-separated supported public flag combinations')
     p.add_argument('--output', required=True, type=Path)
     p.add_argument('--incremental-reference',type=Path,help='Independent IPASIR shared library retained for each history')
     p.add_argument('--growing-blocks',action='store_true',help='Grow 1,024 to 9,216 variables over 256 queries')
+    p.add_argument('--diagnostic-profile',choices=['control','probe-default-budget'],help='Pre-input profile from the separate test-only diagnostic library')
     a = p.parse_args()
     if a.queries < 1: p.error('queries must be positive')
+    flags_list=list(map(int,a.flags.split(',')))
+    if not flags_list or any(f not in (0,1,2,3,6,7) for f in flags_list):p.error('invalid flags')
     lib = library(a.library.resolve())
+    if a.diagnostic_profile:
+        lib.bsat_diagnostic_configure.argtypes=[C.c_void_p,C.c_char_p,C.c_int]
+        lib.bsat_diagnostic_configure.restype=C.c_int
     converter, checker = os.environ['BSAT_DRAT_TRIM'], os.environ['BSAT_CAKE_LPR']
     sha = lambda f: hashlib.sha256(Path(f).read_bytes()).hexdigest()
     report = dict(scope=__doc__, library_sha256=sha(a.library), reference_sha256=sha(a.reference),
@@ -33,10 +41,12 @@ def main():
     if a.incremental_reference:
         report['incremental_reference_sha256']=sha(a.incremental_reference)
     report['growing_blocks']=a.growing_blocks
+    report['diagnostic_profile']=a.diagnostic_profile
     report['limits']=dict(bsat_query_cpu_seconds=5,retained_reference_cooperative_wall_seconds=10,fresh_reference_wall_seconds=10,checker_wall_seconds=30)
-    for flags in range(4):
+    for flags in flags_list:
         rng = random.Random(report['seed']) # Replay identical histories across modes.
         s = lib.bsat_create(1, flags); assert s
+        if a.diagnostic_profile:assert lib.bsat_diagnostic_configure(s,a.diagnostic_profile.encode(),0)
         stop = [0]
         callback = Cancel(lambda _: stop[0])
         lib.bsat_set_terminate(s, None, callback)

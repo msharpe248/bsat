@@ -1,0 +1,116 @@
+{
+  "complete": true,
+  "target": {
+    "2": {
+      "repetitions": {
+        "control": [
+          {
+            "cpu": 1.30031,
+            "conflicts": 4315,
+            "journal_peak": 1708399
+          },
+          {
+            "cpu": 1.3322269999999992,
+            "conflicts": 4315,
+            "journal_peak": 1708399
+          },
+          {
+            "cpu": 1.2296439999999997,
+            "conflicts": 4315,
+            "journal_peak": 1708399
+          }
+        ],
+        "probe-default-budget": [
+          {
+            "cpu": 0.6198499999999997,
+            "conflicts": 2848,
+            "journal_peak": 1240327
+          },
+          {
+            "cpu": 0.6339639999999997,
+            "conflicts": 2848,
+            "journal_peak": 1240327
+          },
+          {
+            "cpu": 0.6646110000000003,
+            "conflicts": 2848,
+            "journal_peak": 1240327
+          }
+        ]
+      },
+      "median_gain": 0.5124516461459192,
+      "each_pair_gain": [
+        0.5233059808814824,
+        0.5241321486503425,
+        0.4595094189863079
+      ],
+      "passes": true
+    },
+    "3": {
+      "repetitions": {
+        "control": [
+          {
+            "cpu": 0.9901030000000004,
+            "conflicts": 6707,
+            "journal_peak": 5968936
+          },
+          {
+            "cpu": 1.0616759999999994,
+            "conflicts": 6707,
+            "journal_peak": 5968936
+          },
+          {
+            "cpu": 1.001980999999998,
+            "conflicts": 6707,
+            "journal_peak": 5968936
+          }
+        ],
+        "probe-default-budget": [
+          {
+            "cpu": 0.4733040000000015,
+            "conflicts": 3350,
+            "journal_peak": 1309106
+          },
+          {
+            "cpu": 0.4859859999999987,
+            "conflicts": 3350,
+            "journal_peak": 1309106
+          },
+          {
+            "cpu": 0.5206760000000026,
+            "conflicts": 3350,
+            "journal_peak": 1309106
+          }
+        ]
+      },
+      "median_gain": 0.5149748348521582,
+      "each_pair_gain": [
+        0.5219648864815061,
+        0.5422464103926254,
+        0.4803534198752236
+      ],
+      "passes": true
+    }
+  },
+  "confirmation": {
+    "queries": 56,
+    "lost_solves": [],
+    "total_cpu_par2": [
+      22.41432499999999,
+      22.832856999999994
+    ],
+    "regression": 0.018672523040511146,
+    "passes": true
+  },
+  "sources": {
+    "gen23-probe-comparison-control-0-20260908.json": "745db3bcd419f6fe8ebeb223977f141566fb32bfcdef9d2993dde2437790253b",
+    "gen23-probe-comparison-control-1-20260908.json": "3babbe03c56fa203fc8ca4c8f7567c9f792709ca310c18336c8e78bbf3520691",
+    "gen23-probe-comparison-control-2-20260908.json": "444845b75005fc56a7d63105c20c1e2ef14e7fa5c1c8157d03a35c12c3cf73bb",
+    "gen23-probe-comparison-probe-default-budget-0-20260908.json": "368705f8a539ec66fbf7c54231502a36be4c0cb11dd0cecf0825a7a08fc893fc",
+    "gen23-probe-comparison-probe-default-budget-1-20260908.json": "f4e682aad8e83279b24e09133bbf55d87ddfaa00f26e26db7bd35f0f83fac573",
+    "gen23-probe-comparison-probe-default-budget-2-20260908.json": "892b90e825bdc2f3036c5dc095dfd4f1b713bfdded04814844e144a5ac57d5b5",
+    "circuit-probe-confirmation-control-20260908.json": "d438c583216359b9c3fe852f50f04716d6b23b1ff5f0ad9ba142ab6cd8cce821",
+    "circuit-probe-confirmation-probe-default-budget-20260908.json": "c5eb79a2aac6dc16c54eb5351fb8a63983858f0f67a3db149deb1bbb0d530374"
+  },
+  "passes": true
+}

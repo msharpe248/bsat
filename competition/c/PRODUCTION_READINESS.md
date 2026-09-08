@@ -22,7 +22,7 @@ Passing finite tests is not a formal proof of the complete C implementation.
 | Incremental additions and assumptions | Copied permanent clauses, temporary assumptions, model and sufficient failed core | [Contract](API_CONTRACT.md); public assumptions reference existing variables; additions introduce variables |
 | Retained learning | Opt-in `BSAT_REUSE_LEARNTS`, including compatible conditional UNSAT and budget slices | [Reuse](INCREMENTAL_REUSE.md); cancellation and incompatible state rebuild from permanent input |
 | Certified incremental queries | `BSAT_CERTIFICATES`, alone or with reuse; exact CNF and binary proof export | [Retained certificates](RETAINED_CERTIFICATES.md); conservative options, growing journal, synchronous export |
-| Proof-producing simplification in certified mode | New bounded probing candidate evaluated and rejected | [Experiment](CERTIFIED_SIMPLIFICATION_EXPERIMENT.md); production still disables probing and destructive transformations here |
+| Proof-producing simplification in certified mode | Opt-in `BSAT_CERTIFIED_PROBING`, requiring certification | [gen23 investigation](GEN23_CERTIFIED_DIAGNOSIS.md); bounded RUP units preserve variables/assumptions, other transformations remain disabled |
 | IPASIR 1.0 | Installed adapter, assumptions, termination and learned-clause callbacks | [IPASIR](IPASIR.md); adapter may introduce assumption variables, unlike the direct public API |
 | Independent solver instances | Different handles may run concurrently | [Embedding](EMBEDDING.md), thread sanitizer and isolated CPU-budget tests; serialize calls on each handle and never reenter it from callbacks |
 | Query controls/statistics | Mutable CPU/conflict/decision budgets and stable latest-query snapshots | [IPASIR](IPASIR.md); CPU uses solving-thread time, zero limit means unlimited |
@@ -56,9 +56,12 @@ supervisor's cgroup/storage policy remain application work.
 
 Linux planning sampling attributes about 70% of samples to propagation. Hardware
 cache/branch events are unsupported on the tested hosted machine; target-server
-PMU attribution is still missing. Compact original headers and bounded certified
-probing passed their checks but did not justify changing production defaults.
-Neither rejected experiment is compiled into the shipped runtime.
+PMU attribution is still missing. Compact original headers and the 100,000-work
+certified probing prototype were rejected. A later ordinary-budget probing
+investigation cuts median certified gen23 query CPU by about half on the target
+history and is now available explicitly via `BSAT_CERTIFIED_PROBING`. Defaults
+remain unchanged because some confirmation histories regress. See
+[the targeted investigation](TARGETED_PERFORMANCE_MILESTONES.md).
 
 ## Release gates
 
@@ -83,7 +86,7 @@ those requirements and the exact-candidate checks are satisfied.
 
 ## Where to look
 
-- [Current batch and outcomes](PRODUCTION_WORKLOAD_MILESTONES.md)
+- [Current batch and outcomes](TARGETED_PERFORMANCE_MILESTONES.md)
 - [Public ABI and lifetime contract](API_CONTRACT.md), [build/install](INSTALLING.md)
 - [Executable coverage and reproduction](tests/FEATURE_COVERAGE.md)
 - [Correctness CI](../../.github/workflows/c-solver.yml), [independent integration](../../.github/workflows/c-integration.yml), [fuzz CI](../../.github/workflows/c-fuzz.yml)

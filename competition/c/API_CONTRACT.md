@@ -20,6 +20,12 @@ Errors poison a handle. Destroy it exactly once; destroying NULL is valid.
 `BSAT_CERTIFICATES` enables query-scoped exports over retained learning; see
 `RETAINED_CERTIFICATES.md`. Other internal options remain private.
 
+`BSAT_CERTIFIED_PROBING` enables bounded RUP failed-literal probing and requires
+`BSAT_CERTIFICATES`; passing it alone or with only `BSAT_REUSE_LEARNTS` fails
+construction. Valid combinations are 0, 1, 2, 3, 6 and 7. Existing flags retain
+their defaults. This additive ABI-v1 option preserves original variables and
+future assumptions; it can increase work or journal growth on some workloads.
+
 The following details additionally describe the internal C interface.
 
 ## Ownership and construction

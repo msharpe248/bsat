@@ -30,5 +30,7 @@ phase/counter runs are diagnostic only. Fresh proof checks are outside solve tim
 
 1. cal3: complete. Equal-budget reference gap confirmed, 30-second control and
    phase/restart/retention switches remain UNKNOWN. See CAL3_SEARCH_DIAGNOSIS.md.
-2. gen23: in progress.
-3. planning: pending.
+2. gen23: complete. Ordinary-budget certified probing passes the frozen target
+   and confirmation gates; exposed as an opt-in with unchanged defaults. See
+   GEN23_CERTIFIED_DIAGNOSIS.md for proof checks, public API parity and regressions.
+3. planning: measurements complete; final analysis pending.

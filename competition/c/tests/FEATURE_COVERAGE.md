@@ -2,7 +2,7 @@
 
 This matrix describes checked behavior, not a percentage of solver correctness.
 The former “100% of directly testable features” claim and 2025 test counts were
-outdated. The Makefile discovers `test_*.c` automatically (64 C executables as of
+outdated. The Makefile discovers `test_*.c` automatically (65 C executables as of
 2026-09-08). Release and ASan/UBSan use separate object directories. The authoritative
 capability and release-gate summary is [Production readiness](../PRODUCTION_READINESS.md).
 
@@ -24,6 +24,7 @@ capability and release-gate summary is [Production readiness](../PRODUCTION_READ
 | Retained incremental reference | `differential_histories.py`, `incremental_reference.py` | Persistent CaDiCaL plus fresh Kissat; additions, assumptions, cancellation and checkpoints |
 | Real verification circuits | `test_aag_history.py`, `industrial_histories.py` | Pinned AIGER input, growing CNF, independent circuit simulation and checked proofs; bounded safety queries |
 | Certified journals | `test_proof_journal`, `test_query_export`, `test_journal_limits`, `check_retained_certificates.py` | Exact query context, RUP journal, quota and I/O failures; independent checker required |
+| Certified probing | `test_certified_probing`, public flags 6/7 in `industrial_histories.py` and `differential_histories.py` | 4,096 oracle queries per C build, assumption-safe RUP units, future additions, cancellation and journal quotas |
 | Service recovery | `test_recovery_service`, `make recovery-fault-test`, `check_recovery_supervisor.py` | Retained input replay, ENOMEM, killed child, cancellation and quota; parent durability outside example |
 | Service limits | `test_service_limits`, `test_query_controls`, `test_resource_limits.py` | Cooperative API limits and isolated OS process limits; owned capacity is not RSS |
 | IPASIR/ABI/concurrency | `test_ipasir`, `make embedding-test package-test soak-test` | Installed/frozen consumers, independent instances and callbacks; same-handle calls serialized |

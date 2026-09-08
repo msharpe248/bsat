@@ -11,6 +11,7 @@ BSAT_API int bsat_diagnostic_configure(bsat *s,const char *profile,int accountin
     else if(!strcmp(profile,"alternating"))o->alternating=true;
     else if(!strcmp(profile,"chrono"))o->chrono=true;
     else if(!strcmp(profile,"growing-reduce"))o->reduce_increment=1000;
+    else if(!strcmp(profile,"probe-default-budget"))o->probing=true;
     else if(!strcmp(profile,"journal-off")) {
         if(!s->journal)return 0;
         if(fclose(s->journal)){s->core->error=true;s->journal=NULL;s->core->proof_journal=NULL;return 0;}

@@ -1,0 +1,84 @@
+{
+  "complete": true,
+  "pairs": [
+    {
+      "on": "competition/c/benchmark_results/gen23-control-repeat0-20260908.json",
+      "off": "competition/c/benchmark_results/gen23-journal-off-repeat0-20260908.json",
+      "on_sha256": "377a1769b438ac6b87529b7ab15ea60be2a3e8e2b33cf3d2fc515fb7c0c78497",
+      "off_sha256": "ac7cd0b5e65cf805922d04697eb2aad02144eeca43a9b3c89828ab731c02c6cc",
+      "matched_queries": 24
+    },
+    {
+      "on": "competition/c/benchmark_results/gen23-control-repeat1-20260908.json",
+      "off": "competition/c/benchmark_results/gen23-journal-off-repeat1-20260908.json",
+      "on_sha256": "9cdc98172d4d2b0d2c09e188d75bd967f8ad0bcb1d6a583bcb76e22fb9ae4385",
+      "off_sha256": "87165707e4b871dfbd5da4842eadaa9e9a791a1442401e16b42f4c3c3a08d785",
+      "matched_queries": 24
+    },
+    {
+      "on": "competition/c/benchmark_results/gen23-control-repeat2-20260908.json",
+      "off": "competition/c/benchmark_results/gen23-journal-off-repeat2-20260908.json",
+      "on_sha256": "f99b0323665ad68c9b7c88c7bc10e08f19d1399176a75fc18dcb6b02215c6109",
+      "off_sha256": "f8ee237abbb7b2b38facddf18c52d7fbce0d9dadea3761af14ba974f4663b710",
+      "matched_queries": 24
+    }
+  ],
+  "modes": {
+    "2": {
+      "repetitions": [
+        {
+          "on": 1.3118549999999995,
+          "off": 1.2452230000000004,
+          "conflicts": 4315,
+          "learned_literals": 566982,
+          "peak_journal_bytes": 1708399
+        },
+        {
+          "on": 1.5475340000000002,
+          "off": 1.0378839999999998,
+          "conflicts": 4315,
+          "learned_literals": 566982,
+          "peak_journal_bytes": 1708399
+        },
+        {
+          "on": 1.1738990000000002,
+          "off": 0.9589110000000001,
+          "conflicts": 4315,
+          "learned_literals": 566982,
+          "peak_journal_bytes": 1708399
+        }
+      ],
+      "median_on_cpu": 1.3118549999999995,
+      "median_off_cpu": 1.0378839999999998,
+      "removed_fraction": 0.2088424406660796
+    },
+    "3": {
+      "repetitions": [
+        {
+          "on": 1.025002999999999,
+          "off": 0.8989749999999974,
+          "conflicts": 6707,
+          "learned_literals": 1985327,
+          "peak_journal_bytes": 5968936
+        },
+        {
+          "on": 1.1150430000000036,
+          "off": 0.8218700000000005,
+          "conflicts": 6707,
+          "learned_literals": 1985327,
+          "peak_journal_bytes": 5968936
+        },
+        {
+          "on": 0.8444739999999991,
+          "off": 0.8042039999999995,
+          "conflicts": 6707,
+          "learned_literals": 1985327,
+          "peak_journal_bytes": 5968936
+        }
+      ],
+      "median_on_cpu": 1.025002999999999,
+      "median_off_cpu": 0.8218700000000005,
+      "removed_fraction": 0.19817795655232098
+    }
+  }
+}

@@ -18,12 +18,22 @@ RUP and allows subsequent proofs to use retained learning. Cancellation or
 budget exhaustion can leave a valid proof prefix, but neither permits an export
 or a conclusive answer. Cancellation rebuilds search while preserving the journal.
 
-Certified handles use conservative CDCL options: no probing, variable factoring,
+Certified handles use conservative CDCL options by default: no probing, variable factoring,
 equivalence substitution, congruence, elimination, inprocessing or local search.
 This keeps original variables and global implication semantics intact. Ordinary
 CLI proof streams retain their original ownership/reset behavior; the internal
 assumptions API still rejects an ordinary proof stream. The borrowed journal is
 owned and closed by the public facade, including after core replacement.
+
+`BSAT_CERTIFIED_PROBING` optionally enables namespace-preserving failed-literal
+probing with the ordinary 1,000,000-work-unit preprocessing budget. It requires
+`BSAT_CERTIFICATES` and may be combined with `BSAT_REUSE_LEARNTS`. The pass runs
+before assumptions and journals only RUP-implied units from permanent input.
+Retained handles probe again when permanent input changes; rebuilds may repeat
+the pass. Optional work is bounded with cooperative polling; mandatory root
+propagation is not a hard wall-time guarantee. Other transformations remain
+disabled. See [gen23 evidence and limitations](GEN23_CERTIFIED_DIAGNOSIS.md):
+some histories improve substantially, while others become slower.
 
 Journal write/flush failures poison the handle and return UNKNOWN. Export uses
 exclusive file creation, so existing files are preserved. Output errors return

@@ -1,0 +1,195 @@
+{
+  "complete": true,
+  "scope": "Public flags 6/7 versus test-facade probing flags 2/3; no timing parity claim",
+  "sources": {
+    "certified-probing-public-release-20260908.json": "c82516fc2c45b72c335f38b0da785d5b72d82e462e758b6714268f28279ea5ba",
+    "gen23-probe-comparison-probe-default-budget-0-20260908.json": "368705f8a539ec66fbf7c54231502a36be4c0cb11dd0cecf0825a7a08fc893fc"
+  },
+  "row_fields": [
+    "result",
+    "variables",
+    "clauses",
+    "assumptions",
+    "input_sha256",
+    "journal_bytes",
+    "bsat_proof_sha256",
+    "model_sha256"
+  ],
+  "stats_fields": [
+    "conflicts",
+    "decisions",
+    "propagations",
+    "reused_preparations",
+    "owned_capacity_bytes"
+  ],
+  "queries": [
+    {
+      "circuit": "gen23.aig",
+      "flags": 6,
+      "depth": 0,
+      "polarity": 1,
+      "matches": true
+    },
+    {
+      "circuit": "gen23.aig",
+      "flags": 6,
+      "depth": 0,
+      "polarity": -1,
+      "matches": true
+    },
+    {
+      "circuit": "gen23.aig",
+      "flags": 6,
+      "depth": 1,
+      "polarity": 1,
+      "matches": true
+    },
+    {
+      "circuit": "gen23.aig",
+      "flags": 6,
+      "depth": 1,
+      "polarity": -1,
+      "matches": true
+    },
+    {
+      "circuit": "gen23.aig",
+      "flags": 6,
+      "depth": 2,
+      "polarity": 1,
+      "matches": true
+    },
+    {
+      "circuit": "gen23.aig",
+      "flags": 6,
+      "depth": 2,
+      "polarity": -1,
+      "matches": true
+    },
+    {
+      "circuit": "gen23.aig",
+      "flags": 6,
+      "depth": 4,
+      "polarity": 1,
+      "matches": true
+    },
+    {
+      "circuit": "gen23.aig",
+      "flags": 6,
+      "depth": 4,
+      "polarity": -1,
+      "matches": true
+    },
+    {
+      "circuit": "gen23.aig",
+      "flags": 6,
+      "depth": 8,
+      "polarity": 1,
+      "matches": true
+    },
+    {
+      "circuit": "gen23.aig",
+      "flags": 6,
+      "depth": 8,
+      "polarity": -1,
+      "matches": true
+    },
+    {
+      "circuit": "gen23.aig",
+      "flags": 6,
+      "depth": 16,
+      "polarity": 1,
+      "matches": true
+    },
+    {
+      "circuit": "gen23.aig",
+      "flags": 6,
+      "depth": 16,
+      "polarity": -1,
+      "matches": true
+    },
+    {
+      "circuit": "gen23.aig",
+      "flags": 7,
+      "depth": 0,
+      "polarity": 1,
+      "matches": true
+    },
+    {
+      "circuit": "gen23.aig",
+      "flags": 7,
+      "depth": 0,
+      "polarity": -1,
+      "matches": true
+    },
+    {
+      "circuit": "gen23.aig",
+      "flags": 7,
+      "depth": 1,
+      "polarity": 1,
+      "matches": true
+    },
+    {
+      "circuit": "gen23.aig",
+      "flags": 7,
+      "depth": 1,
+      "polarity": -1,
+      "matches": true
+    },
+    {
+      "circuit": "gen23.aig",
+      "flags": 7,
+      "depth": 2,
+      "polarity": 1,
+      "matches": true
+    },
+    {
+      "circuit": "gen23.aig",
+      "flags": 7,
+      "depth": 2,
+      "polarity": -1,
+      "matches": true
+    },
+    {
+      "circuit": "gen23.aig",
+      "flags": 7,
+      "depth": 4,
+      "polarity": 1,
+      "matches": true
+    },
+    {
+      "circuit": "gen23.aig",
+      "flags": 7,
+      "depth": 4,
+      "polarity": -1,
+      "matches": true
+    },
+    {
+      "circuit": "gen23.aig",
+      "flags": 7,
+      "depth": 8,
+      "polarity": 1,
+      "matches": true
+    },
+    {
+      "circuit": "gen23.aig",
+      "flags": 7,
+      "depth": 8,
+      "polarity": -1,
+      "matches": true
+    },
+    {
+      "circuit": "gen23.aig",
+      "flags": 7,
+      "depth": 16,
+      "polarity": 1,
+      "matches": true
+    },
+    {
+      "circuit": "gen23.aig",
+      "flags": 7,
+      "depth": 16,
+      "polarity": -1,
+      "matches": true
+    }
+  ]
+}

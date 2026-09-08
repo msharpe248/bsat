@@ -41,6 +41,7 @@ jobs:
           python3 competition/c/tests/test_select_corpus.py
           python3 competition/c/tests/test_benchmark_manifest.py
           python3 competition/c/tests/test_profile_linux.py
+          python3 competition/c/tests/test_query_pairs.py
           python3 competition/c/tests/test_process_control.py
           python3 competition/c/tests/test_resource_limits.py
       - name: Certificate retention and checker compatibility regressions

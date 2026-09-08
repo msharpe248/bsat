@@ -1,0 +1,47 @@
+{
+  "scope": "Confirmation selected before running the ordinary-budget certified probing candidate",
+  "candidate": "probe-default-budget: enable existing probing with unchanged 1000000-work budget",
+  "target": {
+    "circuit": "gen23.aig",
+    "depths": [
+      0,
+      1,
+      2,
+      4,
+      8,
+      16
+    ],
+    "flags": [
+      2,
+      3
+    ],
+    "repeats": 3
+  },
+  "confirmation": {
+    "circuits": [
+      "cal3.aig",
+      "usb_phy.aig",
+      "vgasim_imgfifo-p039.aig",
+      "gen23.aig"
+    ],
+    "depths": [
+      0,
+      1,
+      2,
+      4,
+      8,
+      12,
+      20
+    ],
+    "flags": [
+      3
+    ],
+    "repeats": 1
+  },
+  "budgets": {
+    "bsat_thread_cpu": 5,
+    "cadical_thread_cpu": 5,
+    "cadical_wall": 60
+  },
+  "acceptance": "At least 10% repeatable target aggregate query CPU gain, no lost solves, and at most 5% confirmation aggregate PAR-2 regression. Flag 2 and flag 3 examined separately. No production default promotion from a single confirmation history."
+}

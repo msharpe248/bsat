@@ -39,14 +39,16 @@ static void begin_service(bsat *s) {
 }
 uint32_t bsat_abi_version(void) { return BSAT_ABI_VERSION; }
 bsat *bsat_create(uint32_t abi,uint32_t flags) {
-    if(abi!=BSAT_ABI_VERSION || (flags & ~(BSAT_REUSE_LEARNTS|BSAT_CERTIFICATES)))return NULL;
+    if(abi!=BSAT_ABI_VERSION || (flags & ~(BSAT_REUSE_LEARNTS|BSAT_CERTIFICATES|BSAT_CERTIFIED_PROBING)) ||
+       ((flags&BSAT_CERTIFIED_PROBING) && !(flags&BSAT_CERTIFICATES)))return NULL;
     bsat *s=calloc(1,sizeof *s);if(!s)return NULL;
     SolverOpts o=default_opts();o.reuse_learnts=(flags&BSAT_REUSE_LEARNTS)!=0;
     o.probe_on_change=o.reuse_learnts;
     if(flags&BSAT_CERTIFICATES) {
         /* The journal contains RUP additions only. Keep variable namespace and
            original formula intact; do not enable equisatisfiable transforms. */
-        o.probing=false;o.equiv=false;o.congruence=false;o.elim=false;o.bce=false;
+        o.probing=(flags&BSAT_CERTIFIED_PROBING)!=0;
+        o.equiv=false;o.congruence=false;o.elim=false;o.bce=false;
         o.factor=false;o.inprocess=false;o.local_search=false;o.binary_proof=true;
         s->journal=tmpfile();if(!s->journal){free(s);return NULL;}
     }

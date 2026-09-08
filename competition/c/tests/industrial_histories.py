@@ -34,7 +34,7 @@ def main():
     p.add_argument('--reference-cpu',type=float,default=0,help='Optional retained-reference thread CPU budget; 0 keeps historical wall-only policy')
     p.add_argument('--reference-wall',type=float,default=10)
     p.add_argument('--conflicts',type=int,default=0)
-    p.add_argument('--profile',choices=['control','no-rephase','alternating','chrono','growing-reduce','journal-off'],help='Requires separate test diagnostic library')
+    p.add_argument('--profile',choices=['control','no-rephase','alternating','chrono','growing-reduce','probe-default-budget','journal-off'],help='Requires separate test diagnostic library')
     p.add_argument('--accounting',action='store_true',help='Intrusive per-query phase timers, not timing scores')
     p.add_argument('--snapshots',type=Path,help='Retain exact CNFs for one-shot comparisons')
     a = p.parse_args()
@@ -44,7 +44,7 @@ def main():
     if any(not math.isfinite(x) or x<0 for x in (a.cpu,a.reference_cpu,a.reference_wall)) or not a.cpu or not a.reference_wall or not 0<=a.conflicts<2**32:
         p.error('invalid query limits')
     if a.accounting and not a.profile:p.error('accounting requires a diagnostic profile')
-    if any(f not in range(4) for f in flags_list) or not flags_list:p.error('invalid flags')
+    if any(f not in (0,1,2,3,6,7) for f in flags_list) or not flags_list:p.error('invalid flags')
     if a.profile=='journal-off' and any(not f&2 for f in flags_list):p.error('journal-off requires certificate flags')
     lib = library(a.library.resolve())
     if a.profile:

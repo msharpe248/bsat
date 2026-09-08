@@ -20,7 +20,9 @@ int LLVMFuzzerTestOneInput(const uint8_t *data,size_t size) {
     if(size<3 || size>512)return 0;
     fuzz_alloc_reset(data[0]&128?(size_t)data[1]+1:0);
     bool ip=data[0]&4;bsat *s=NULL;void *adapter=NULL;
-    if(ip)adapter=ipasir_init();else s=bsat_create(1,data[0]&3);
+    unsigned flags=data[0]&3;
+    if((flags&BSAT_CERTIFICATES)&&(data[1]&1))flags|=BSAT_CERTIFIED_PROBING;
+    if(ip)adapter=ipasir_init();else s=bsat_create(1,flags);
     if(!s && !adapter)return 0;
     if(s && (data[0]&32) && (data[0]&2))bsat_set_journal_limit(s,32);
     Clause cs[32];unsigned count=0;

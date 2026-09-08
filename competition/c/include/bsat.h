@@ -13,6 +13,9 @@ extern "C" {
 #define BSAT_ABI_VERSION 1u
 #define BSAT_REUSE_LEARNTS 1u
 #define BSAT_CERTIFICATES 2u
+/* Optional bounded RUP failed-literal probing. Requires BSAT_CERTIFICATES;
+   preserves original variables and future assumptions. Workload-dependent cost. */
+#define BSAT_CERTIFIED_PROBING 4u
 #define BSAT_UNKNOWN 0
 #define BSAT_SAT 10
 #define BSAT_UNSAT 20

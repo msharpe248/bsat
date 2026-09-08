@@ -1,5 +1,10 @@
 # Bounded certified probing — 2026-09-08
 
+Historical experiment using a 100,000-work-unit budget. The later
+[gen23 investigation](GEN23_CERTIFIED_DIAGNOSIS.md) evaluates the ordinary
+1,000,000-work-unit budget and makes that policy explicitly opt-in. The rejected
+small-budget prototype and its measurements below remain unchanged.
+
 Decision: keep certified-mode preprocessing unchanged. A namespace-preserving
 failed-literal probing prototype passed independent validation but did not improve
 solved counts and slowed the retained certified mode on the circuit screen.
