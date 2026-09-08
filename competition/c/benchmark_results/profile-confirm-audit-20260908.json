@@ -1,0 +1,37 @@
+{
+  "runs": 64,
+  "unique_grid": true,
+  "frozen_options_binary_inputs": true,
+  "history_hashes_checked": 445,
+  "acceptance_checked": true,
+  "summary": {
+    "full": {
+      "verified_runs": 0,
+      "runs": 16,
+      "mean_par2": 32.0,
+      "max_rss_bytes": 49250304,
+      "errors": 0
+    },
+    "no-vmtf": {
+      "verified_runs": 4,
+      "runs": 16,
+      "mean_par2": 25.664402882772265,
+      "max_rss_bytes": 58540032,
+      "errors": 0
+    },
+    "no-congruence": {
+      "verified_runs": 0,
+      "runs": 16,
+      "mean_par2": 32.0,
+      "max_rss_bytes": 45678592,
+      "errors": 0
+    },
+    "neither": {
+      "verified_runs": 4,
+      "runs": 16,
+      "mean_par2": 25.64669173953007,
+      "max_rss_bytes": 53002240,
+      "errors": 0
+    }
+  }
+}

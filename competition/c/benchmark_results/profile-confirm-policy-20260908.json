@@ -1,0 +1,57 @@
+{
+  "inputs": {
+    "/Users/msharpe/python/bsat/dataset/sat_competition2025/circuit-multiplier/9ea8deb8313d93e60743638909f37d6c.cnf": {
+      "sha256": "a04170aa49ccc2e9fc352a23da0c56cbf6064874d407cb2596544caab8127517",
+      "family": "circuit-multiplier",
+      "bytes": 668456
+    },
+    "/Users/msharpe/python/bsat/dataset/sat_competition2025/oddball-weighing/c569d4b2b2e90a1a70bd23a1169355ef.cnf": {
+      "sha256": "1b18219ad5fe71c9db9a3d118ebeb29feae128da0c296a557d0bc2423e1ba08a",
+      "family": "oddball-weighing",
+      "bytes": 3318673
+    },
+    "/Users/msharpe/python/bsat/dataset/sat_competition2025/generic-csp/36ba44cf208034e2c8e84a1971b9bfd4.cnf": {
+      "sha256": "fb9b1c87561d5abec31c478ecbd58eab2085d85fb01e2008267620ca7f49dff9",
+      "family": "generic-csp",
+      "bytes": 208052
+    },
+    "/Users/msharpe/python/bsat/dataset/sat_competition2025/quasigroup-completion/1e0d58c7e52319b3b17e343ec7ca6de5.cnf": {
+      "sha256": "a48818f1004e6ce9fd85877dc87e82f7c28e371e55eb9cdb77cbcf8a5015ea23",
+      "family": "quasigroup-completion",
+      "bytes": 363254
+    },
+    "/Users/msharpe/python/bsat/dataset/sat_competition2025/coloring/08d56c03e6561f6b9bec2e3f344ea3de.cnf": {
+      "sha256": "efb7e17df494bfa073e839056a7263cceec6269cf8c1c6cef03c6da5a7ae0973",
+      "family": "coloring",
+      "bytes": 286332
+    },
+    "/Users/msharpe/python/bsat/dataset/sat_competition2025/unknown-cases/416e33a8463911546e4cd87d282a7e1e.cnf": {
+      "sha256": "a37a3f891d438d859c3285a1236ddc3d4e92cc50bb6e5dd74f1e3390c999400b",
+      "family": "unknown-cases",
+      "bytes": 67488
+    },
+    "/Users/msharpe/python/bsat/dataset/sat_competition2025/argumentation/6fab31665147f538da92dc16c3a239ad.cnf": {
+      "sha256": "ea90e0faad01bed8c668767266fd36052da3f3c309804710ac4e902f50f7d7ec",
+      "family": "argumentation",
+      "bytes": 282576
+    },
+    "/Users/msharpe/python/bsat/dataset/sat_competition2025/argumentation/f371fb73e6bd6d05b306519818bd5c89.cnf": {
+      "sha256": "eb6cc838ded5b29c62937b183fa15c7247075a6d95db38b7ee5dad8c8959661e",
+      "family": "argumentation",
+      "bytes": 161936
+    }
+  },
+  "binary_sha256": "6c06577a2635536c183ad14063c308bc8ced06d6a97325fe805c8760bed7a492",
+  "common": "--chrono --equiv --equiv-budget 100000000 --alternating --time 12 --binary-proof --proof {proof}",
+  "profiles": {
+    "full": "--vmtf --congruence",
+    "no-vmtf": "--congruence",
+    "no-congruence": "--vmtf",
+    "neither": ""
+  },
+  "repeats": 2,
+  "timeout": 16,
+  "cpu_limit": 12,
+  "seed": 2026090815,
+  "scope": "VMTF x congruence factorial confirmation on six fresh families plus two fresh argumentation inputs; no default promotion from two repetitions"
+}

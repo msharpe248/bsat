@@ -13,3 +13,10 @@ workspace state is preserved. Linux PMU profiling still needs a target host.
    see `REGN_DIAGNOSIS.md`. This is diagnosis, not a BSAT factoring implementation.
 2. Memory lifetimes and watch capacity: measured roughly 11% less peak RSS on
    the largest input at fixed work; see `MEMORY_LIFETIMES.md` for checks and limits.
+3. Hard incremental histories complete before changing conditional reuse; see
+   `HARD_INCREMENTAL.md`. This establishes a checked baseline for that change.
+4. Installation/pkg-config and frozen ABI-v1 C/C++ consumers pass locally in
+   release and ASan/UBSan builds. Linux ThreadSanitizer passed job 102000866067
+   in run 34207651049 at `092b1b5`; compiler/platform CI continues separately.
+5. Fresh profile confirmation complete: 64 audited factorial runs on eight new
+   inputs; no-VMTF wins on two inputs from two families. See `PROFILE_CONFIRMATION.md`.
