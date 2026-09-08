@@ -33,4 +33,6 @@ phase/counter runs are diagnostic only. Fresh proof checks are outside solve tim
 2. gen23: complete. Ordinary-budget certified probing passes the frozen target
    and confirmation gates; exposed as an opt-in with unchanged defaults. See
    GEN23_CERTIFIED_DIAGNOSIS.md for proof checks, public API parity and regressions.
-3. planning: measurements complete; final analysis pending.
+3. planning: complete. Equal external budgets leave all three configurations
+   UNKNOWN; fixed-conflict results distinguish faster conflict throughput from
+   solving quality. No planning default change. See PLANNING_SEARCH_COMPARISON.md.

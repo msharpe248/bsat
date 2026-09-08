@@ -43,6 +43,12 @@ UNSAT and four UNKNOWN results, with no disagreements. All four UNKNOWN results
 are positive `cal3` depth-16 queries; both independent solvers prove them UNSAT.
 This is an explicit performance gap. The sanitizer circuit smoke adds 128 queries.
 
+The [targeted cal3 diagnosis](CAL3_SEARCH_DIAGNOSIS.md) confirms that gap with
+equal retained-query CPU budgets: CaDiCaL proves the difficult query in under one
+second, while certified BSAT remains UNKNOWN even at 30 seconds. The optional
+certified-probing public-library campaign adds 96 release queries (48 SAT, 46
+UNSAT, two UNKNOWN) and 64 sanitizer queries, with independently checked answers.
+
 Earlier [retained-reference histories](RETAINED_INCREMENTAL_REFERENCE.md) cover
 growing variables, changing assumptions, cancelled checkpoint retries and budget
 slices. [Long service sessions](SERVICE_SESSION_TAILS.md) cover 49,152 queries and
@@ -62,6 +68,12 @@ investigation cuts median certified gen23 query CPU by about half on the target
 history and is now available explicitly via `BSAT_CERTIFIED_PROBING`. Defaults
 remain unchanged because some confirmation histories regress. See
 [the targeted investigation](TARGETED_PERFORMANCE_MILESTONES.md).
+
+The [planning comparison](PLANNING_SEARCH_COMPARISON.md) leaves BSAT default,
+the existing planning profile and Kissat UNKNOWN on both frozen inputs at equal
+15-second process-CPU / 20-second wall budgets. BSAT reaches 100,000 conflicts
+faster, but that does not establish better solving: the solvers perform different
+search and simplification work. No additional planning policy is promoted.
 
 ## Release gates
 
