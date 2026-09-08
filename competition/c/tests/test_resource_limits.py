@@ -2,7 +2,7 @@ import sys
 import tempfile
 import unittest
 from pathlib import Path
-from benchmark import worker
+from benchmark import worker, external_wall_command
 from resource_limits import child_limits
 
 
@@ -18,6 +18,11 @@ class Limits(unittest.TestCase):
         for value in (-1,1.5,float('nan')):
             with self.assertRaises(ValueError):child_limits(value)
         self.assertIsNone(child_limits())
+
+    def test_uniform_wall_commands(self):
+        for flag in ('--time','--time=0','-t','-t60','--conflicts=10','--decisions','--portfolio'):
+            with self.assertRaises(ValueError):external_wall_command(['solver',flag])
+        external_wall_command(['solver','--chrono','--no-rephase','--proof','{proof}','{input}'])
 
     def test_wall_rejects_early_status(self):
         row=self.run_case("import time\nprint('s SATISFIABLE',flush=True)\nprint('v 1 0',flush=True)\ntime.sleep(5)\n",timeout=0.2)

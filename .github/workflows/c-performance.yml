@@ -1,0 +1,58 @@
+name: C solver Linux performance baseline
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  serial-baseline:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Build portable solver and pinned references
+        run: |
+          make -C competition/c -j2 OPTFLAGS='-O3 -flto' all
+          curl -Lf https://github.com/arminbiere/kissat/archive/8af8e56f174b778aef3aa45af9f739b2a5f492c2.tar.gz -o "$RUNNER_TEMP/kissat.tar.gz"
+          tar -xzf "$RUNNER_TEMP/kissat.tar.gz" -C "$RUNNER_TEMP"
+          cd "$RUNNER_TEMP/kissat-8af8e56f174b778aef3aa45af9f739b2a5f492c2"
+          ./configure --no-embedded -flto
+          make -j2
+      - name: Build independent certificate chain
+        run: |
+          curl -Lf https://raw.githubusercontent.com/marijnheule/drat-trim/2e3b2dc0ecf938addbd779d42877b6ed69d9a985/drat-trim.c -o "$RUNNER_TEMP/drat-trim.c"
+          cc -O2 "$RUNNER_TEMP/drat-trim.c" -o "$RUNNER_TEMP/drat-trim"
+          python3 competition/c/tests/build_verified_checker.py --directory "$RUNNER_TEMP/cake-lpr"
+      - name: Verify inputs and platform resource enforcement
+        run: |
+          python3 competition/c/tests/prepare_linux_baseline.py "$RUNNER_TEMP/inputs"
+          python3 competition/c/tests/test_resource_limits.py
+          mkdir -p "$RUNNER_TEMP/results"
+          lscpu > "$RUNNER_TEMP/results/lscpu.txt"
+          uname -a > "$RUNNER_TEMP/results/uname.txt"
+          python3 -c 'import os; print(sorted(os.sched_getaffinity(0)))' > "$RUNNER_TEMP/results/affinity.txt"
+          cat /proc/sys/kernel/perf_event_paranoid > "$RUNNER_TEMP/results/perf_event_paranoid.txt"
+          cc --version > "$RUNNER_TEMP/results/compiler.txt"
+          git rev-parse HEAD > "$RUNNER_TEMP/results/revision.txt"
+          sha256sum "$RUNNER_TEMP/drat-trim" "$RUNNER_TEMP/cake-lpr/cake_lpr" competition/c/tests/verified_check.py > "$RUNNER_TEMP/results/checker-sha256.txt"
+      - name: Frozen serial comparison with uniform external wall limits
+        env:
+          BSAT_DRAT_TRIM: ${{ runner.temp }}/drat-trim
+          BSAT_CAKE_LPR: ${{ runner.temp }}/cake-lpr/cake_lpr
+        run: |
+          cpu=$(python3 -c 'import os; print(min(os.sched_getaffinity(0)))')
+          taskset -c "$cpu" python3 competition/c/tests/benchmark.py \
+            --external-wall-only --timeout 60 --check-timeout 600 --repeats 2 --seed 2026090805 \
+            --address-space-limit 4294967296 --file-size-limit 1073741824 \
+            --checker competition/c/tests/verified_check.py \
+            --solver 'control=competition/c/bin/bsat --chrono --congruence --equiv --equiv-budget 100000000 --alternating --binary-proof --proof {proof} {input}' \
+            --solver 'no-rephase=competition/c/bin/bsat --chrono --congruence --equiv --equiv-budget 100000000 --alternating --no-rephase --binary-proof --proof {proof} {input}' \
+            --solver "kissat=$RUNNER_TEMP/kissat-8af8e56f174b778aef3aa45af9f739b2a5f492c2/build/kissat {input} {proof}" \
+            --manifest "$RUNNER_TEMP/inputs/manifest.json" --output "$RUNNER_TEMP/results/baseline.json"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: linux-performance-baseline
+          path: ${{ runner.temp }}/results/

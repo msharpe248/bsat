@@ -42,6 +42,15 @@ def digest(path):
     return h.hexdigest()
 
 
+def external_wall_command(command):
+    """Reject known BSAT/Kissat native stopping flags in uniform-wall mode."""
+    for arg in command[1:]:
+        key=arg.split('=',1)[0]
+        if key in ('--time','--conflicts','--decisions','--portfolio','-t') or (
+                arg.startswith('-t') and len(arg)>2 and arg[2].isdigit()):
+            raise ValueError(f'external-wall-only forbids native stopping option {arg}')
+
+
 def retain_unverified(directory, config, command, temporary, result):
     """Keep exact evidence after timing, without upgrading an unchecked answer."""
     root = Path(directory).resolve()
@@ -176,6 +185,7 @@ def main():
     p.add_argument('--check-timeout', type=float, default=60)
     p.add_argument('--address-space-limit', type=int, default=0, help='Linux child virtual-memory ceiling in bytes (0 unlimited)')
     p.add_argument('--file-size-limit', type=int, default=0, help='Child per-file size ceiling in bytes (0 unlimited)')
+    p.add_argument('--external-wall-only', action='store_true', help='Use one external deadline; reject known native BSAT/Kissat stop flags')
     p.add_argument('--retain-unverified', type=Path, help='Keep input, proof, outputs and metadata for unchecked answers/errors')
     p.add_argument('--repeats', type=int, default=3)
     p.add_argument('--seed', type=int, default=1)
@@ -197,6 +207,11 @@ def main():
     for spec in args.solver:
         name, cmd = spec.split('=',1)
         command = shlex.split(cmd)
+        if not command:
+            p.error('empty solver command')
+        if args.external_wall_only:
+            try: external_wall_command(command)
+            except ValueError as error: p.error(str(error))
         binary = shutil.which(command[0])
         if not binary or name in solvers:
             p.error(f'missing executable or duplicate solver name: {name}')
@@ -225,12 +240,15 @@ def main():
                   revision=revision, dirty=dirty, split=args.split, seed=args.seed,
                   timeout=args.timeout, repeats=args.repeats, solvers=solvers, inputs=inputs,
                   address_space_limit=args.address_space_limit,file_size_limit=args.file_size_limit,
+                  clock_policy='external-wall-only' if args.external_wall_only else 'command-specific',
+                  complete=False,
                   checker=dict(path=checker, sha256=digest(checker)) if checker else None, runs=[])
     if manifest_info:
         report['manifest'] = manifest_info
     jobs = [(name, str(path), repeat) for name in solvers for path in paths for repeat in range(args.repeats)]
     random.Random(args.seed).shuffle(jobs)
     args.output.parent.mkdir(parents=True, exist_ok=True)
+    args.output.write_text(json.dumps(report,indent=2)+'\n')
     for name, path, repeat in jobs:
         config = dict(input=path, command=solvers[name]['command'], timeout=args.timeout,
                       checker=checker, check_timeout=args.check_timeout,
@@ -245,6 +263,7 @@ def main():
         args.output.write_text(json.dumps(report,indent=2)+'\n')
         print(f"{name}: {Path(path).name}: {result['status']} verified={result['verified']} {result['seconds']:.3f}s",flush=True)
     report['summary'] = {}
+    report['complete'] = True
     for name in solvers:
         rows = [r for r in report['runs'] if r['solver']==name]
         report['summary'][name] = dict(verified_runs=sum(r['verified'] for r in rows), runs=len(rows),
