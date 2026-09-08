@@ -1,0 +1,159 @@
+{
+  "schema": 1,
+  "platform": "macOS-26.6.1-arm64-arm-64bit-Mach-O",
+  "machine": "arm64",
+  "revision": "a99807e46ec69177369c093de8dfeb1048236283",
+  "dirty": true,
+  "split": "development",
+  "seed": 2026090847,
+  "timeout": 2.0,
+  "repeats": 2,
+  "solvers": {
+    "control": {
+      "command": [
+        "/Users/msharpe/python/bsat/competition/c/bin/bsat",
+        "--chrono",
+        "--congruence",
+        "--equiv",
+        "--equiv-budget",
+        "100000000",
+        "--alternating",
+        "--binary-proof",
+        "--proof",
+        "{proof}",
+        "{input}"
+      ],
+      "sha256": "cdef7bd63217c941ebe30cfc27ef00fafd2d88e362fdf950c856b952c66e0a57"
+    },
+    "portfolio": {
+      "command": [
+        "/Users/msharpe/python/bsat/competition/c/bin/bsat",
+        "--chrono",
+        "--congruence",
+        "--equiv",
+        "--equiv-budget",
+        "100000000",
+        "--portfolio",
+        "0.2",
+        "--binary-proof",
+        "--proof",
+        "{proof}",
+        "{input}"
+      ],
+      "sha256": "cdef7bd63217c941ebe30cfc27ef00fafd2d88e362fdf950c856b952c66e0a57"
+    }
+  },
+  "inputs": {
+    "/Users/msharpe/python/bsat/dataset/sat_competition2025/planning/16c999d046885c8e51f196e60c34d966.cnf": {
+      "sha256": "77db4df9cc8bd8cd59dae994f24a3cf686ebd46e2aa123c534b5e3cc3a75d9b5",
+      "family": "planning"
+    }
+  },
+  "address_space_limit": 0,
+  "file_size_limit": 0,
+  "cpu_limit": 2,
+  "clock_policy": "command-specific",
+  "complete": true,
+  "checker": {
+    "path": "competition/c/tests/verified_check.py",
+    "sha256": "911ec7499866ffd6687df29ea80142d68137ddbcd764f499415de9703ad6a6c5"
+  },
+  "runs": [
+    {
+      "solver": "control",
+      "input": "/Users/msharpe/python/bsat/dataset/sat_competition2025/planning/16c999d046885c8e51f196e60c34d966.cnf",
+      "repeat": 1,
+      "status": "UNKNOWN",
+      "verified": false,
+      "seconds": 2.0052822502329946,
+      "exit_code": -9,
+      "spawn_seconds": 0.0019099581986665726,
+      "wall_limit_hit": true,
+      "cpu_limit_hit": false,
+      "validation_seconds": 1.1669471859931946e-06,
+      "end_to_end_seconds": 2.0052834171801805,
+      "proof_sha256": "54798a2a30de4440eb628928ff6ed291baf0433a9f695f2ac434241425370f3a",
+      "cpu_seconds": 1.7888309999999998,
+      "peak_rss_bytes": 93847552,
+      "par2": 4.0,
+      "stats": {},
+      "diagnostic": ""
+    },
+    {
+      "solver": "control",
+      "input": "/Users/msharpe/python/bsat/dataset/sat_competition2025/planning/16c999d046885c8e51f196e60c34d966.cnf",
+      "repeat": 0,
+      "status": "UNKNOWN",
+      "verified": false,
+      "seconds": 2.0040129581466317,
+      "exit_code": -9,
+      "spawn_seconds": 0.002005165908485651,
+      "wall_limit_hit": true,
+      "cpu_limit_hit": false,
+      "validation_seconds": 9.997747838497162e-07,
+      "end_to_end_seconds": 2.0040139579214156,
+      "proof_sha256": "10adf7d7526ffb4c4554fc4c6b4d2dec8ad2a26e136b4e4cc6efcea547e7d2e3",
+      "cpu_seconds": 1.998322,
+      "peak_rss_bytes": 103874560,
+      "par2": 4.0,
+      "stats": {},
+      "diagnostic": ""
+    },
+    {
+      "solver": "portfolio",
+      "input": "/Users/msharpe/python/bsat/dataset/sat_competition2025/planning/16c999d046885c8e51f196e60c34d966.cnf",
+      "repeat": 0,
+      "status": "UNKNOWN",
+      "verified": false,
+      "seconds": 2.004151999950409,
+      "exit_code": -9,
+      "spawn_seconds": 0.0018231249414384365,
+      "wall_limit_hit": true,
+      "cpu_limit_hit": false,
+      "validation_seconds": 1.7499551177024841e-06,
+      "end_to_end_seconds": 2.0041537499055266,
+      "proof_sha256": "5a1cb255c6feab495423cc4d3288bac0d0a5b29067a4a5072c0504263bcd1c80",
+      "cpu_seconds": 1.998842,
+      "peak_rss_bytes": 103825408,
+      "par2": 4.0,
+      "stats": {},
+      "diagnostic": ""
+    },
+    {
+      "solver": "portfolio",
+      "input": "/Users/msharpe/python/bsat/dataset/sat_competition2025/planning/16c999d046885c8e51f196e60c34d966.cnf",
+      "repeat": 1,
+      "status": "UNKNOWN",
+      "verified": false,
+      "seconds": 2.005080707836896,
+      "exit_code": -9,
+      "spawn_seconds": 0.0015560421161353588,
+      "wall_limit_hit": true,
+      "cpu_limit_hit": false,
+      "validation_seconds": 1.2079253792762756e-06,
+      "end_to_end_seconds": 2.0050819157622755,
+      "proof_sha256": "63607da5c52b27eae642e6c37c0303892d2049842c2af0b5d63bc96b5431fba6",
+      "cpu_seconds": 2.000531,
+      "peak_rss_bytes": 103923712,
+      "par2": 4.0,
+      "stats": {},
+      "diagnostic": ""
+    }
+  ],
+  "summary": {
+    "control": {
+      "verified_runs": 0,
+      "runs": 2,
+      "mean_par2": 4.0,
+      "max_rss_bytes": 103874560,
+      "errors": 0
+    },
+    "portfolio": {
+      "verified_runs": 0,
+      "runs": 2,
+      "mean_par2": 4.0,
+      "max_rss_bytes": 103923712,
+      "errors": 0
+    }
+  }
+}

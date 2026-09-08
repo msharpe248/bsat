@@ -1,0 +1,26 @@
+{
+  "run": 34277065799,
+  "job": 102232590538,
+  "step": "Benchmark input regressions",
+  "failure_excerpt": [
+    "2026-09-08T20:50:59.6476625Z FAIL: test_cpu_ceiling (__main__.Limits.test_cpu_ceiling)",
+    "2026-09-08T20:50:59.6477294Z ----------------------------------------------------------------------",
+    "2026-09-08T20:50:59.6477621Z Traceback (most recent call last):",
+    "2026-09-08T20:50:59.6486006Z   File \"/home/runner/work/bsat/bsat/competition/c/tests/test_resource_limits.py\", line 37, in test_cpu_ceiling",
+    "2026-09-08T20:50:59.6486664Z     self.assertTrue(row['cpu_limit_hit']);self.assertEqual(row['status'],'UNKNOWN')",
+    "2026-09-08T20:50:59.6487032Z     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^",
+    "2026-09-08T20:50:59.6487293Z AssertionError: False is not true",
+    "2026-09-08T20:50:59.6487460Z ",
+    "2026-09-08T20:50:59.6487624Z ----------------------------------------------------------------------",
+    "2026-09-08T20:50:59.6487915Z Ran 7 tests in 5.257s",
+    "2026-09-08T20:50:59.6488054Z ",
+    "2026-09-08T20:50:59.6488121Z FAILED (failures=1)",
+    "2026-09-08T20:50:59.6582952Z ##[error]Process completed with exit code 1."
+  ],
+  "old_outer_wall_seconds": 5,
+  "new_outer_wall_seconds": 60,
+  "cpu_limit_seconds": 1,
+  "interpretation": "Consistent with the outer wall fuse winning on a contended runner; the old assertion did not include the result row.",
+  "change": "Preserve strict CPU-limit and UNKNOWN assertions; use a generous independent outer fuse and print the complete row on failure.",
+  "local_tests": "Eight tests: seven pass, Linux address-space test skipped on macOS"
+}

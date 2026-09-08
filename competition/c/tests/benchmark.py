@@ -110,7 +110,7 @@ def worker(config):
         output = (tmp/'out').read_text(errors='replace')
         status = 'SAT' if code == 10 else 'UNSAT' if code == 20 else 'UNKNOWN' if code == 0 else 'ERROR'
         import signal
-        cpu_limit_hit=bool(config.get('cpu_limit') and code == -signal.SIGXCPU)
+        cpu_limit_hit=bool(config.get('cpu_limit') and proc.returncode == -signal.SIGXCPU)
         if cpu_limit_hit:status='UNKNOWN'
         expected = {10:'s SATISFIABLE',20:'s UNSATISFIABLE',0:'s UNKNOWN'}.get(code)
         markers = [line for line in output.splitlines() if line.startswith('s ')]

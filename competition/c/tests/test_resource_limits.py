@@ -42,9 +42,11 @@ class Limits(unittest.TestCase):
         self.assertEqual(row['status'],'UNKNOWN')
 
     def test_cpu_ceiling(self):
-        row=self.run_case("print('s SATISFIABLE',flush=True)\nprint('v 1 0',flush=True)\nwhile True: pass\n",timeout=5,cpu_limit=1)
-        self.assertTrue(row['cpu_limit_hit']);self.assertEqual(row['status'],'UNKNOWN')
-        self.assertFalse(row['verified']);self.assertLess(row['seconds'],5)
+        # A CPU-limit test must not require one CPU second within five wall
+        # seconds on a contended hosted runner. Keep a generous outer fuse.
+        row=self.run_case("print('s SATISFIABLE',flush=True)\nprint('v 1 0',flush=True)\nwhile True: pass\n",timeout=60,cpu_limit=1)
+        self.assertTrue(row['cpu_limit_hit'],row);self.assertEqual(row['status'],'UNKNOWN',row)
+        self.assertFalse(row['verified']);self.assertLess(row['seconds'],60)
 
     def test_file_ceiling(self):
         row=self.run_case("import sys,os\ntry:\n with open(sys.argv[1],'wb') as f: f.write(b'x'*8192)\nexcept OSError: pass\nelse: raise AssertionError('limit not enforced')\nassert os.stat(sys.argv[1]).st_size<=1024\nprint('s UNKNOWN')\n",file_size_limit=1024)
