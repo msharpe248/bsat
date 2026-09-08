@@ -1,0 +1,81 @@
+{
+  "inputs": {
+    "/Users/msharpe/python/bsat/dataset/sat_competition2025/relativized-pigeon-hole/e12874b16df577b301608d03731595d8.cnf": {
+      "sha256": "d4db4a3b60fce7c7933b6f2e264908f65904587a6266cfbf44f8785c2a97eea9",
+      "family": "relativized-pigeon-hole",
+      "bytes": 294476
+    },
+    "/Users/msharpe/python/bsat/dataset/sat_competition2025/ramsey-numbers/847c8843ee292b9b31f0c346574af260.cnf": {
+      "sha256": "9c8ddd5ad86590ef636f46a61ecf4732abf42dadee70fd2be3c0783c08e7160f",
+      "family": "ramsey-numbers",
+      "bytes": 195447
+    },
+    "/Users/msharpe/python/bsat/dataset/sat_competition2025/random-csp/9b998be0c639d06988c4902eb125c0b7.cnf": {
+      "sha256": "a864d5f3f6e6a0a41d64f20810a59bdd15c5bc2539e4ea5370015a158d77fa25",
+      "family": "random-csp",
+      "bytes": 520983
+    },
+    "/Users/msharpe/python/bsat/dataset/sat_competition2025/p-center/abadaf0ee0e21ff1a4b0e294f13ab5ab.cnf": {
+      "sha256": "438740bdef8cf12722ac599544614718ca77dc0b52e6eca406f2150d45c4a807",
+      "family": "p-center",
+      "bytes": 589083
+    },
+    "/Users/msharpe/python/bsat/dataset/sat_competition2025/at-least-two-sol/4ba2c1aa580b6497df6baf5e7e2c87be.cnf": {
+      "sha256": "5fac52ea0215c0ce7637891284954fe1b083b55f031de6696cf490d66aec4e4e",
+      "family": "at-least-two-sol",
+      "bytes": 3354864
+    },
+    "/Users/msharpe/python/bsat/dataset/sat_competition2025/planning/16c999d046885c8e51f196e60c34d966.cnf": {
+      "sha256": "77db4df9cc8bd8cd59dae994f24a3cf686ebd46e2aa123c534b5e3cc3a75d9b5",
+      "family": "planning",
+      "bytes": 4669946
+    },
+    "/Users/msharpe/python/bsat/dataset/sat_competition2025/sum-of-3-cubes/7a044c997ede14d00002f1db39d45170.cnf": {
+      "sha256": "3d018c231b18baa7894a9885e948e20d7dd27cfffc5fb9e906074a36158234f3",
+      "family": "sum-of-3-cubes",
+      "bytes": 3412155
+    },
+    "/Users/msharpe/python/bsat/dataset/sat_competition2025/gray_codes/43687a48fb119ca61b47c2fc69a71e7d.cnf": {
+      "sha256": "f21abe672501abe130d5c5b9dcb984d170eb724734677e073af3b65d21f67f45",
+      "family": "gray_codes",
+      "bytes": 1129517
+    },
+    "/Users/msharpe/python/bsat/dataset/sat_competition2025/at-least-two-sol/cdf559a186b55457ce49516ec323e907.cnf": {
+      "sha256": "c1ec7d1c397551a3ff12f3b8d44814f0ac1e91b87beaa6ad3baf4b032ab48a6a",
+      "family": "at-least-two-sol",
+      "bytes": 39215086
+    },
+    "/Users/msharpe/python/bsat/dataset/sat_competition2025/station-repacking/e2d2b011b0805782df6adba648db92e8.cnf": {
+      "sha256": "8e04a900d6bb3f46311ffad01d497d0ee45f7dbf6b0f0e48f95851ea11190f1e",
+      "family": "station-repacking",
+      "bytes": 12379914
+    },
+    "/Users/msharpe/python/bsat/dataset/sat_competition2025/tseitin-formulas/f3abc375afaf48c7eae21500b773bd21.cnf": {
+      "sha256": "937ec11b29143cbb27213a42737ce9fcdb20b43d6e4f4b3c90b40d83a6c5163d",
+      "family": "tseitin-formulas",
+      "bytes": 38948285
+    },
+    "/Users/msharpe/python/bsat/dataset/sat_competition2025/risc-instruction-removal-golcrest/c0bd86bd7ca2c65e44311de374168150.cnf": {
+      "sha256": "6c6e953a92baf3b6747f6d1e046b2d06a56b3fbbaae4446064d1d16fa7c0e85b",
+      "family": "risc-instruction-removal-golcrest",
+      "bytes": 42449006
+    }
+  },
+  "scope": "fresh hash/name-excluded size-stratified industrial evaluation; 4 inputs per size stratum, family-balanced within stratum; 60 CPU / 75 wall seconds; two repetitions; serial workloads; all conclusive answers independently validated",
+  "selection_manifests": [
+    "/Users/msharpe/python/bsat/competition/c/benchmark_results/industrial-long-stratum-0-20260908.json",
+    "/Users/msharpe/python/bsat/competition/c/benchmark_results/industrial-long-stratum-1-20260908.json",
+    "/Users/msharpe/python/bsat/competition/c/benchmark_results/industrial-long-stratum-2-20260908.json"
+  ],
+  "profiles": {
+    "control": "/tmp/bsat-industrial-batch --chrono --congruence --equiv --equiv-budget 100000000 --alternating --time 60 --binary-proof --proof {proof}",
+    "factor": "/tmp/bsat-industrial-batch --chrono --congruence --equiv --equiv-budget 100000000 --alternating --time 60 --binary-proof --proof {proof} --factor",
+    "kissat": "/private/tmp/kissat-8af8e56f174b778aef3aa45af9f739b2a5f492c2/build/kissat --time=60 {input} {proof}"
+  },
+  "binary_sha256": "ed073f955c7bf66be0f649784c28f91007bef41666244603728a1f2370a0c00a",
+  "kissat_sha256": "5cad8e92487416008cf8ec4573c2ab2a02b7c1927ab06e8c8cacb317908cff1f",
+  "repeats": 2,
+  "seed": 2026090824,
+  "cpu_limit": 60,
+  "wall_limit": 75
+}

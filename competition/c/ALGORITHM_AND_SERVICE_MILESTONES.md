@@ -24,4 +24,15 @@ against original input and UNSAT through independent certificates.
 3. Full-search memory: four 120-second largest-input runs and twelve longer
    fixed-work format comparisons complete. Retained savings persist; RSS is
    mixed and no general speedup is claimed. See FULL_SEARCH_MEMORY.md.
-2. Longer industrial evaluation remains in progress.
+2. Longer industrial evaluation: 72 audited trials across 12 fresh inputs / 11
+   families, 60-second solve limits and two repetitions complete. Control and
+   factoring each verify 2/24 trials; Kissat verifies 6/24. Ten conclusive answers
+   pass independent checks, 62 remain UNKNOWN, and no errors occur. The planned
+   replacement of one potentially contaminated timing is recorded explicitly.
+   See INDUSTRIAL_LONG.md. All six authorized milestones are complete for the
+   documented scope; experimental options remain opt-in.
+
+Implementation validation: all seven Linux/macOS correctness jobs, including
+ThreadSanitizer, pass for 9496c4f (run 34246109456). Expanded core/parser/public
+fuzzing and ABI soak CI also pass. Subsequent memory/industrial commits contain
+measurement records and documentation; they do not change solver code.

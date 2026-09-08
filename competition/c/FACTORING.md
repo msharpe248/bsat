@@ -45,3 +45,8 @@ inputs diagnose the implementation and do not establish a general speedup.
 The earlier binary-only prototype results are retained as negative evidence.
 See `benchmark_results/factor-general-development-20260908.json` and its frozen
 policy for timings, counters, executable/input hashes and checker costs.
+
+The later 72-trial fresh industrial campaign finds no solved-count gain:
+control and factoring each verify 2/24 trials, versus Kissat's 6/24. Factoring
+remains opt-in. See `INDUSTRIAL_LONG.md` for the size/family strata, timings,
+independent checks, peak memory, and the single audited timing replacement.

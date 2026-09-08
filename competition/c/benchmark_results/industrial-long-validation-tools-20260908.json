@@ -1,0 +1,17 @@
+{
+  "scope": "checker identities cross-checked against the earlier independently verified application certificates and the frozen industrial wrapper hash",
+  "tools": {
+    "converter": {
+      "path": "/tmp/bsat-drat-trim",
+      "sha256": "9bfc20a5fa9eb2a0ffadd2b0cfc7cdd4a20f6aa9c8d7de5b6c771160b847f630"
+    },
+    "checker": {
+      "path": "/tmp/bsat-cake-verified-build/cake_lpr",
+      "sha256": "027e767e8e5543d61671c44f7475e985b7969112e6825d51f2207bf0580cbf5c"
+    },
+    "wrapper": {
+      "path": "competition/c/tests/verified_check.py",
+      "sha256": "911ec7499866ffd6687df29ea80142d68137ddbcd764f499415de9703ad6a6c5"
+    }
+  }
+}

@@ -303,6 +303,12 @@ Opt-in `--factor` performs proof-producing binary/ternary residual factoring.
 It closes the measured reg-n development gap but regresses another workload;
 see [FACTORING.md](FACTORING.md) for scope, correctness checks and timings.
 
+The latest longer evaluation is in [INDUSTRIAL_LONG.md](INDUSTRIAL_LONG.md):
+72 audited trials, 12 fresh inputs across 11 families, and 60-second solve limits.
+It exposes remaining speed gaps against Kissat; every conclusive answer is
+independently checked. [FULL_SEARCH_MEMORY.md](FULL_SEARCH_MEMORY.md) separates
+persistent retained-capacity savings from variable peak RSS.
+
 ## Measure performance
 
 ```sh
