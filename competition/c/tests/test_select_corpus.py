@@ -73,6 +73,20 @@ class SelectionTests(unittest.TestCase):
             with self.assertRaises(ValueError):
                 select(self.dataset, self.reports, self.output, 1, maximum, minimum)
 
+    def test_seeded_family_selection_replay_and_exclusions(self):
+        for family in range(8):
+            for case in range(4):
+                self.cnf(str(family),f'{family}-{case}.cnf',f'c {family} {case}\np cnf 0 0\n')
+        old=self.dataset/'0'/'0-0.cnf'
+        (self.reports/'prior.json').write_text(json.dumps({'hash':digest(old)}))
+        a=select(self.dataset,self.reports,self.output,6,seed=123)
+        self.output.write_text(json.dumps(a))
+        self.assertEqual(a,select(self.dataset,self.reports,self.output,6,seed=123))
+        self.assertEqual(len({m['family'] for m in a['inputs'].values()}),6)
+        self.assertNotIn(digest(old),[m['sha256'] for m in a['inputs'].values()])
+        b=select(self.dataset,self.reports,self.output,6,seed=124)
+        self.assertNotEqual(list(a['inputs']),list(b['inputs']))
+
 
 if __name__ == '__main__':
     unittest.main()

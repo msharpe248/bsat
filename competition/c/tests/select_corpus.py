@@ -5,6 +5,7 @@ import hashlib
 import json
 from pathlib import Path
 import re
+import random
 
 
 def digest(path):
@@ -15,7 +16,7 @@ def digest(path):
     return h.hexdigest()
 
 
-def select(dataset, reports, output, families, max_bytes=0, min_bytes=0):
+def select(dataset, reports, output, families, max_bytes=0, min_bytes=0, seed=None):
     if families <= 0 or max_bytes < 0 or min_bytes < 0:
         raise ValueError('families must be positive and byte limits nonnegative')
     if max_bytes and min_bytes > max_bytes:
@@ -34,6 +35,17 @@ def select(dataset, reports, output, families, max_bytes=0, min_bytes=0):
         history.append({'path': str(report), 'sha256': digest(report)})
     candidates = sorted((p for p in dataset.glob('*/*.cnf') if p.is_file()),
                         key=lambda p: (p.stat().st_size, p.relative_to(dataset).as_posix()))
+    if seed is not None:
+        # Shuffle families first, so families with many files do not get more
+        # chances to enter the sample. Shuffle files independently within each.
+        groups = {}
+        for path in sorted(candidates):
+            groups.setdefault(path.parent.name, []).append(path)
+        rng = random.Random(seed)
+        names_order = sorted(groups); rng.shuffle(names_order)
+        candidates = []
+        for family in names_order:
+            rng.shuffle(groups[family]); candidates.extend(groups[family])
     selected, used_families, used_hashes = {}, set(), set()
     for path in candidates:
         family, size = path.parent.name, path.stat().st_size
@@ -50,7 +62,9 @@ def select(dataset, reports, output, families, max_bytes=0, min_bytes=0):
             break
     if len(selected) != families:
         raise ValueError(f'only {len(selected)} eligible distinct families; requested {families}')
-    return {'schema': 1, 'policy': 'smallest eligible file first; one per family; path breaks size ties',
+    return {'schema': 1, 'policy': ('smallest eligible file first; one per family; path breaks size ties'
+                                  if seed is None else 'seeded family shuffle, then file shuffle; first eligible unique content per family'),
+            'seed': seed,
             'exclusions': 'CNF filenames and SHA256 strings appearing in JSON history; duplicate selected content',
             'dataset': str(dataset), 'requested_families': families,
             'min_bytes': min_bytes, 'max_bytes': max_bytes,
@@ -65,10 +79,11 @@ def main():
     p.add_argument('--families', type=int, default=16)
     p.add_argument('--max-bytes', type=int, default=0)
     p.add_argument('--min-bytes', type=int, default=0)
+    p.add_argument('--seed', type=int, help='Shuffle families and files reproducibly instead of selecting smallest first')
     args = p.parse_args()
     try:
         result = select(args.dataset, args.reports, args.output, args.families,
-                        args.max_bytes, args.min_bytes)
+                        args.max_bytes, args.min_bytes, args.seed)
     except (ValueError, OSError) as error:
         p.error(str(error))
     args.output.parent.mkdir(parents=True, exist_ok=True)

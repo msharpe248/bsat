@@ -33,11 +33,16 @@ UNSAT certificate. UNKNOWN is unfinished, not an incorrect answer.
    Evidence: `benchmark_results/api-contract-20260907.json`. Concurrent embedding,
    conditional proofs and learned-clause reuse remain unsupported capabilities,
    rather than implied production promises.
-5. Profiling and broader frozen evaluation: pending. Profile development cases
-   separately from timing, then evaluate a family-balanced unseen sample with
-   longer budgets and repetitions against a pinned reference solver.
-6. Coverage documentation: pending. Replace the outdated feature-count claims
-   with executable coverage, remaining limitations and reproducible commands.
+5. Profiling and broader frozen evaluation: profiling complete; evaluation running.
+   `READINESS_PROFILING.md` records six native profiles. The new seeded selector
+   gives families equal entry opportunities instead of preferring the smallest
+   inputs (six selector tests and three manifest tests pass). The frozen sample
+   contains twelve unused families, two repetitions per solver, equal 60-second
+   wall limits and a pinned Kissat reference. The manifest/policy are committed
+   before final results are assessed; no policy changes during execution.
+6. Coverage documentation: complete. `tests/FEATURE_COVERAGE.md` now maps
+   executable checks to behavior and limits, replacing the unsupported 100%
+   claim. `tests/TEST_SUMMARY.md` points to that maintained inventory.
 
 Each milestone is committed and pushed separately. Benchmark manifests and
 policies must be frozen before execution, and reused inputs are development data.
