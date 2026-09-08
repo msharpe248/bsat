@@ -9,6 +9,11 @@ UNSAT certificate. UNKNOWN is unfinished, not an incorrect answer.
 1. CI certificate regressions: complete. The Linux/macOS release/debug workflow
    now runs `test_benchmark_artifacts.py` with its pinned external checker.
    Local validation: all seven tests pass with `/tmp/bsat-drat-trim`.
+   Hosted run 34177820780 passed both release jobs and Linux debug, but macOS
+   debug was cancelled at the 20-minute allowance during independent validation.
+   The allowance is now 60 minutes and matrix fail-fast is disabled, preserving
+   all cases and independent platform results. This is an observed CI-runtime
+   correction, not a solver correctness failure.
 2. Resource failures and interruption: complete. Existing
    `test_proof_encoding.c` already covers 22 short-write cutoffs and two deferred
    flush failures; the earlier gap assessment understated that coverage.

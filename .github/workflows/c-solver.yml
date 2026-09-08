@@ -9,11 +9,14 @@ permissions:
 jobs:
   check:
     strategy:
+      fail-fast: false
       matrix:
         os: [ubuntu-latest, macos-latest]
         mode: [release, debug]
     runs-on: ${{ matrix.os }}
-    timeout-minutes: 20
+    # Hosted macOS ASan process startup makes the independent CLI matrix slow.
+    # Preserve all cases; a failure in one platform must not cancel the others.
+    timeout-minutes: 60
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
