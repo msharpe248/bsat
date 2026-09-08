@@ -118,7 +118,7 @@ static void check_cpu_deadline(Solver *s) {
 static bool budget_exhausted(Solver *s, bool force_clock) {
     if (s->watches->failed) s->error = true;
     if (s->error || s->interrupted) return true;
-    if (s->terminate && s->terminate(s->terminate_state)) { s->interrupted=true;return true; }
+    if (s->terminate && s->terminate(s->terminate_state)) { s->cancelled=true;s->interrupted=true;return true; }
     /* Avoid a system clock read at every cheap decision/preprocessing poll.
        Long inner loops already poll every 1024 inspections: either work counter
        reaching that interval must force a read, without a second throttle. */
@@ -2047,6 +2047,7 @@ static bool solver_rebuild_timed(Solver *s, double start_time, double max_time) 
 incomplete:
     s->error |= fresh->error;
     s->interrupted |= fresh->interrupted;
+    s->cancelled |= fresh->cancelled;
     solver_free(fresh);
     return false;
 }
@@ -2301,7 +2302,7 @@ static lbool solver_solve_at(Solver *s, const Lit *assumps, uint32_t n_assumps, 
         free(s->level_seen);s->level_seen=p;s->levels_capacity=levels;
     }
     s->stats.start_time=start_time < 0 ? solver_cpu_time() : start_time;
-    s->work_limit=0;s->interrupted=false;
+    s->work_limit=0;s->interrupted=false;s->cancelled=false;
     s->clock_initialized=false;s->clock_polls=0;
     s->random_state=s->opts.seed;
     lbool result=solve_internal(s,assumps,n_assumps);
@@ -2331,8 +2332,8 @@ static lbool solver_solve_at(Solver *s, const Lit *assumps, uint32_t n_assumps, 
     if (s->watches->failed) s->error=true;
     /* Cached polls must not permit a completed result after the CPU deadline,
        including time spent reconstructing/checking models or flushing proofs. */
+    if (s->terminate && s->terminate(s->terminate_state)) {s->cancelled=true;s->interrupted=true;}
     check_cpu_deadline(s);
-    if (s->terminate && s->terminate(s->terminate_state)) s->interrupted=true;
     if (s->error || s->interrupted) result=UNDEF;
     s->result=result;
     return result;
@@ -2356,7 +2357,7 @@ lbool solver_solve_portfolio(Solver *s, double focused_seconds) {
     s->opts.alternating = false;
     s->opts.max_time = saved.max_time > 0 ? fmin(saved.max_time, focused_seconds) : focused_seconds;
     result = solver_solve_at(s, NULL, 0, start);
-    if (result != UNDEF || s->error || !s->interrupted) goto done;
+    if (result != UNDEF || s->error || s->cancelled || !s->interrupted) goto done;
     /* Only expiration of the private first slice authorizes a second attempt.
        Global conflict/decision limits must never be refreshed by rebuilding. */
     double elapsed = solver_cpu_time() - start;

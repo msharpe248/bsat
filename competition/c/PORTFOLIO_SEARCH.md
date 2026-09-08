@@ -167,3 +167,8 @@ competition parity. The next performance investigation should address the
 fresh random-circuits and hardware-model-checking gaps, including existing
 preprocessing/search profiles before inventing another heuristic. Larger suites,
 longer limits and more repetitions remain necessary.
+
+Explicit callback cancellation is tracked separately from private-slice timeout
+and never authorizes a second attempt, even if the callback consumed the slice.
+See [CANCELLATION_BOUNDARIES.md](CANCELLATION_BOUNDARIES.md) for the reproduced
+regression and correction.

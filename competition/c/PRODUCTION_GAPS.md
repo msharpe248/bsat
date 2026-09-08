@@ -26,3 +26,6 @@ stateful/certificate assurance. Commit and push each validated milestone.
 
 Linux PMU tools already exist, but actual target measurements still require a
 Linux host. No target-server result is implied by local macOS measurements.
+
+A post-milestone audit additionally fixes one-shot portfolio cancellation and
+terminal callback deadline accounting; see `CANCELLATION_BOUNDARIES.md`.

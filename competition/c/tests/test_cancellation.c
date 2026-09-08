@@ -3,7 +3,26 @@
 #include <stdio.h>
 typedef struct {unsigned calls,stop;} Poll;
 static int cancel(void *p) {Poll *q=p;return ++q->calls>=q->stop;}
+typedef struct {bool used,cancel;} OneShot;
+static int delayed(void *state) {
+    OneShot *p=state;if(p->used)return 0;p->used=true;
+    double begin=solver_cpu_time();while(solver_cpu_time()-begin<.01) {}
+    return p->cancel;
+}
+static void portfolio_cancel(void) {
+    SolverOpts o=default_opts();o.probing=false;
+    Solver *s=solver_new_with_opts(&o);assert(s);assert(solver_new_var(s));
+    OneShot p={false,true};solver_set_terminate(s,&p,delayed);
+    assert(solver_solve_portfolio(s,.001)==UNDEF);
+    assert(s->cancelled && s->portfolio_attempts==1 && !s->error);
+    solver_set_terminate(s,NULL,NULL);assert(solver_solve(s)==TRUE);solver_free(s);
+    o.max_time=.001;s=solver_new_with_opts(&o);assert(s);assert(!solver_add_clause(s,NULL,0));
+    p=(OneShot){false,false};solver_set_terminate(s,&p,delayed);
+    assert(solver_solve(s)==UNDEF && s->interrupted && !s->cancelled);
+    solver_free(s);
+}
 int main(void) {
+    portfolio_cancel();
     for(unsigned profile=0;profile<4;++profile) {
         SolverOpts o=default_opts();o.reuse_learnts=profile&1;o.equiv=profile&2;o.probing=false;
         Solver *s=solver_new_with_opts(&o);assert(s);

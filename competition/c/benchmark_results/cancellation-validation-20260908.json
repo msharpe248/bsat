@@ -1,0 +1,65 @@
+{
+  "unit_executables_per_build": 52,
+  "allocation_failures_per_build": 2016,
+  "shared_concurrency_queries_per_build": 12000,
+  "soak_queries_per_build": 16384,
+  "deadline_cases": 69,
+  "long_search_cases": 24,
+  "before_regression_mask": 3,
+  "after_regression_mask": 0,
+  "reproducer_source": "#include \"solver.h\"\n#include <stdio.h>\ntypedef struct {bool used,cancel;} State;\nstatic int callback(void *p) {\n    State *s=p;if(s->used)return 0;s->used=true;\n    double start=solver_cpu_time();while(solver_cpu_time()-start<.01) {}\n    return s->cancel;\n}\nint main(void) {\n    unsigned failures=0;SolverOpts o=default_opts();o.probing=false;\n    Solver *s=solver_new_with_opts(&o);if(!s)return 99;solver_new_var(s);\n    State p={false,true};solver_set_terminate(s,&p,callback);\n    lbool result=solver_solve_portfolio(s,.001);\n    printf(\"one-shot cancellation: result=%d attempts=%u\\n\",result,s->portfolio_attempts);\n    if(result!=UNDEF || s->portfolio_attempts!=1)failures|=1;\n    solver_free(s);o.max_time=.001;s=solver_new_with_opts(&o);if(!s)return 99;\n    solver_add_clause(s,NULL,0);p=(State){false,false};solver_set_terminate(s,&p,callback);\n    result=solver_solve(s);printf(\"terminal callback CPU: result=%d interrupted=%d\\n\",result,s->interrupted);\n    if(result!=UNDEF || !s->interrupted)failures|=2;\n    solver_free(s);printf(\"regression failure mask=%u\\n\",failures);return (int)failures;\n}\n",
+  "binary_sha256": "e91f4d3cde77c5e37ff662b075435b7e20b15fa3b2c6e5493f061e8237fad249",
+  "logs": {
+    "/tmp/bsat-cancellation-release.log": {
+      "sha256": "1b9ec896c3919fc282a7ac0683db04cdb758841267d04a095992214db7f0fd77",
+      "tail": [
+        "========================================",
+        "Running bin/tests/release/test_watch_lookahead...",
+        "PASS: 459 mixed-watch boundary, unit and conflict cases",
+        "All tests passed!"
+      ]
+    },
+    "/tmp/bsat-cancellation-debug.log": {
+      "sha256": "95cf66a3f8b78737b58b1c4aa5996a1c08f1728c2866db0ebd1b1eccbbc31493",
+      "tail": [
+        "========================================",
+        "Running bin/tests/debug/test_watch_lookahead...",
+        "PASS: 459 mixed-watch boundary, unit and conflict cases",
+        "All tests passed!"
+      ]
+    },
+    "/tmp/bsat-cancellation-deadlines.log": {
+      "sha256": "adc4577f4cf4610c31d5b18c4e291b308b1014dd43fcee4bdeed71a4778b5bbe",
+      "tail": [
+        "PASS: 69 short-deadline runs; maximum observed CPU overrun 0.001s"
+      ]
+    },
+    "/tmp/bsat-cancellation-long.log": {
+      "sha256": "7288c7dfa7c5a61eac72246681684315131c959c66e99b2029702daa146d11dc",
+      "tail": [
+        "PASS profile=2 variant=0 SAT=True conflicts=0",
+        "PASS profile=2 variant=1 SAT=False conflicts=15019",
+        "PASS profile=2 variant=1 SAT=True conflicts=6",
+        "PASS: 24 structured/metamorphic cases with verified models/proofs and search-event coverage"
+      ]
+    },
+    "/tmp/bsat-cancel-repro-before.log": {
+      "sha256": "d561611f45946eaf56e96338e1ca6c81855cb07aa6d5a7f9e59fadd6a214c531",
+      "tail": [
+        "one-shot cancellation: result=2 attempts=2",
+        "terminal callback CPU: result=1 interrupted=0",
+        "regression failure mask=3"
+      ]
+    },
+    "/tmp/bsat-cancel-repro-after.log": {
+      "sha256": "e111f1e241b046ee9fdf2cc0be2ddcef067f3a071dca70efa1f82983620fce60",
+      "tail": [
+        "one-shot cancellation: result=0 attempts=1",
+        "terminal callback CPU: result=0 interrupted=1",
+        "regression failure mask=0"
+      ]
+    }
+  },
+  "fixed_work_runs": 28,
+  "fixed_work_counters_and_prefix_hashes_match": true
+}

@@ -93,7 +93,9 @@ CPU budget. Wall limits still require an application deadline/cancellation polic
 `bsat_set_terminate` (internal: `solver_set_terminate`) installs a borrowed state
 pointer and callback. Polls run synchronously at existing bounded-work checks and
 before accepting a result. Nonzero produces UNKNOWN without poisoning the handle.
-The callback survives rebuilding/equivalence replacement. Disable/reset the
+The callback survives rebuilding/equivalence replacement. Explicit cancellation
+never authorizes a second portfolio attempt, and final callback CPU is charged
+to the deadline. See `CANCELLATION_BOUNDARIES.md` for regressions. Disable/reset the
 request before retrying. It may inspect an application-owned atomic flag updated
 by another thread; never reenter/mutate the handle from a callback, other thread
 or signal handler. Polling is cooperative: allocation, I/O, model reconstruction

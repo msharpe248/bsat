@@ -1,0 +1,23 @@
+{
+  "scope": "Compare process cost at bounded search work, with strict trace/byte guards.\n\nCPU per propagation includes loading and proof output: it is not isolated BCP time.\nUNKNOWN proof prefixes are trace evidence, never UNSAT certificates.\n",
+  "seed": 2026090810,
+  "conflict_limit": 20000,
+  "repeats": 5,
+  "options": [],
+  "solvers": {
+    "before": {
+      "path": "/private/tmp/bsat-before-cancellation",
+      "sha256": "59f0e4f7ec607c00b49986e9b6490eb71b000789f10824ad4a99e5d5c51b6869"
+    },
+    "fixed": {
+      "path": "/Users/msharpe/python/bsat/competition/c/bin/bsat",
+      "sha256": "e91f4d3cde77c5e37ff662b075435b7e20b15fa3b2c6e5493f061e8237fad249"
+    }
+  },
+  "inputs": {
+    "/Users/msharpe/python/bsat/dataset/sat_competition2025/diagnosis/9a839badecb20dcf505ec79eedd3753a.cnf": "64e6eb3f2cb7223fc90cdaf366ac0688e6a955b960b777eb921450aa864c6a2d",
+    "/Users/msharpe/python/bsat/dataset/sat_competition2025/station-repacking/a2ca167a8fdbf165f40b5d6dee94b040.cnf": "bc053107e97fd429a204f5dbe8f7afb40dbb8c3e3592b7a716eda6f50a5a2e6a"
+  },
+  "checker_sha256": "9bfc20a5fa9eb2a0ffadd2b0cfc7cdd4a20f6aa9c8d7de5b6c771160b847f630",
+  "runs": []
+}
