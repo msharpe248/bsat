@@ -1,0 +1,713 @@
+{
+  "scope": "Build unmodified upstream genipaessentials against BSAT and check its answers.",
+  "upstream_revision": "461a8f4611c41980037723d0e26856fb224ab188",
+  "source_sha256": "f08818a1545885d878d8f29ec9675ed57bb2080fe59fdc932a4c88d332760660",
+  "header_sha256": "43502bf0ab95a86af0ed0c66311449618d2d99be5f18b36f7695c5e34ede2e33",
+  "library_sha256": "faa4cc4fa112f6fca87d07a979b4add1a62bdcd9047b3d93c7713fe99f5b9943",
+  "seed": 2026090834,
+  "runs": [
+    {
+      "case": 0,
+      "variables": 8,
+      "input_sha256": "acfdf8870004d009d5a030272f28a16202ac7162ce7da8da941a1c25c17282ae",
+      "satisfiable": false,
+      "essential": [],
+      "verified": true
+    },
+    {
+      "case": 1,
+      "variables": 8,
+      "input_sha256": "5d6efaba13a306822860cf30daf469377d1c86fbaf7052b5efffba1726d1516c",
+      "satisfiable": true,
+      "essential": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8
+      ],
+      "verified": true
+    },
+    {
+      "case": 2,
+      "variables": 8,
+      "input_sha256": "ab056faa276ae7724c091c8b75fa762c2c9638aa29f57e73a8ab94658584d33c",
+      "satisfiable": false,
+      "essential": [],
+      "verified": true
+    },
+    {
+      "case": 3,
+      "variables": 8,
+      "input_sha256": "ff77f0ed970fd3117c290ab335148c52602f86f922fee534c4a4ccecc91b976c",
+      "satisfiable": false,
+      "essential": [],
+      "verified": true
+    },
+    {
+      "case": 4,
+      "variables": 8,
+      "input_sha256": "8b1621c8e47843e683a972969c4345a39fc0d51426eca518f7c5478a08e3a011",
+      "satisfiable": true,
+      "essential": [
+        2,
+        4,
+        7
+      ],
+      "verified": true
+    },
+    {
+      "case": 5,
+      "variables": 8,
+      "input_sha256": "32d291b0fcca113dcd6c3c1c9f8225c5a04038cbcbd67b74127c151558b19c9e",
+      "satisfiable": false,
+      "essential": [],
+      "verified": true
+    },
+    {
+      "case": 6,
+      "variables": 8,
+      "input_sha256": "3f7dbae0f3c26be666e469bd0a12691d1559903f1468c422390fcd1d8489bee6",
+      "satisfiable": false,
+      "essential": [],
+      "verified": true
+    },
+    {
+      "case": 7,
+      "variables": 8,
+      "input_sha256": "2d6311c5b4192cb8736f596f8c0eb82434e4446c8b8d8d1ac327d68e1ac46076",
+      "satisfiable": false,
+      "essential": [],
+      "verified": true
+    },
+    {
+      "case": 8,
+      "variables": 8,
+      "input_sha256": "5db7e6006401a8fbb5766f774cac2c3508b9d6bdf5189f6a2ab3bd79e7f981fb",
+      "satisfiable": false,
+      "essential": [],
+      "verified": true
+    },
+    {
+      "case": 9,
+      "variables": 8,
+      "input_sha256": "f8eafa494cbd93ade189224bfea7ab2420fb915bf92ba4daf30147a13c77e2a9",
+      "satisfiable": true,
+      "essential": [
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8
+      ],
+      "verified": true
+    },
+    {
+      "case": 10,
+      "variables": 8,
+      "input_sha256": "27e3a2009dfbcc445ee3ab35e7bb4eafc7de9c61b0914a3e51e465baa5ae7f1c",
+      "satisfiable": true,
+      "essential": [
+        2,
+        3,
+        4,
+        5,
+        8
+      ],
+      "verified": true
+    },
+    {
+      "case": 11,
+      "variables": 8,
+      "input_sha256": "e2fab412a129448b29683464882626c16602bc49d24d5ab2585af7bb80907df6",
+      "satisfiable": true,
+      "essential": [
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8
+      ],
+      "verified": true
+    },
+    {
+      "case": 12,
+      "variables": 8,
+      "input_sha256": "eef1e95567ff0f969b4a688b8e70b8d4686bcc37c65ea0cba54547cd1afcce7f",
+      "satisfiable": true,
+      "essential": [
+        4,
+        5,
+        6,
+        7,
+        8
+      ],
+      "verified": true
+    },
+    {
+      "case": 13,
+      "variables": 8,
+      "input_sha256": "3054ea05ba47401826e168bdd8ea1b4d9f8ee15398a8580d2fe259a6d8a8e113",
+      "satisfiable": false,
+      "essential": [],
+      "verified": true
+    },
+    {
+      "case": 14,
+      "variables": 8,
+      "input_sha256": "1b9808dd8fd582ec87c81f06b3443ec7c43963efaac18faffd9123ec6579b17a",
+      "satisfiable": false,
+      "essential": [],
+      "verified": true
+    },
+    {
+      "case": 15,
+      "variables": 8,
+      "input_sha256": "e2efa7ff73fcb3c736d3c219b1518255c41eda2a5d428f65f6478a7d6286df00",
+      "satisfiable": true,
+      "essential": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8
+      ],
+      "verified": true
+    },
+    {
+      "case": 16,
+      "variables": 8,
+      "input_sha256": "85974a18ed1fe3fec92fdd1dbfc4d5534e1ebbb0738ad5e2288cc640c83f8be2",
+      "satisfiable": false,
+      "essential": [],
+      "verified": true
+    },
+    {
+      "case": 17,
+      "variables": 8,
+      "input_sha256": "d595b9d769bf5d63f1603133a20be0a742fb1b3c0772dbd9d97e0f1ab57611c5",
+      "satisfiable": true,
+      "essential": [
+        1,
+        3,
+        4,
+        5
+      ],
+      "verified": true
+    },
+    {
+      "case": 18,
+      "variables": 8,
+      "input_sha256": "36471e53c4fd633c4eeb4670551aaab2838d726569d17f0486f4fa7b7824b212",
+      "satisfiable": false,
+      "essential": [],
+      "verified": true
+    },
+    {
+      "case": 19,
+      "variables": 8,
+      "input_sha256": "dff56079003d2ac94db66f13310e04d41bbcefcc8b720f4e183c2f7d229a7a62",
+      "satisfiable": true,
+      "essential": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        7,
+        8
+      ],
+      "verified": true
+    },
+    {
+      "case": 20,
+      "variables": 8,
+      "input_sha256": "cb51e5ec8b0910d65ab1b4693c982130daa23d4d7bade28e34a20ead66dc695b",
+      "satisfiable": false,
+      "essential": [],
+      "verified": true
+    },
+    {
+      "case": 21,
+      "variables": 8,
+      "input_sha256": "7471a38b0275164b3733846bbb9685843ff9709368ec16c5b6681fbc7fbfa07c",
+      "satisfiable": true,
+      "essential": [
+        1,
+        2,
+        4,
+        5,
+        7,
+        8
+      ],
+      "verified": true
+    },
+    {
+      "case": 22,
+      "variables": 8,
+      "input_sha256": "15eff57a90e0105852afe0b974abc1a7574b68af5246118f60997160ce98d7d2",
+      "satisfiable": false,
+      "essential": [],
+      "verified": true
+    },
+    {
+      "case": 23,
+      "variables": 8,
+      "input_sha256": "d91a17f2f28571cc9e7cdf522892da6e4759d0b68cfb9c46c7898c9f3323e01a",
+      "satisfiable": false,
+      "essential": [],
+      "verified": true
+    },
+    {
+      "case": 24,
+      "variables": 8,
+      "input_sha256": "186f39e8b74a6eaddb3ac618f15dc1635097dc18433888c2c5a0388fb86d2839",
+      "satisfiable": false,
+      "essential": [],
+      "verified": true
+    },
+    {
+      "case": 25,
+      "variables": 8,
+      "input_sha256": "1c10a6665c41578b8795795d604fed2bc86ab16101eb37dbafee6e42cd84fe56",
+      "satisfiable": false,
+      "essential": [],
+      "verified": true
+    },
+    {
+      "case": 26,
+      "variables": 8,
+      "input_sha256": "fd31440335d5bfb2d894c4ce3ae76a00c1509647fe48714e2f628ca29a020da2",
+      "satisfiable": false,
+      "essential": [],
+      "verified": true
+    },
+    {
+      "case": 27,
+      "variables": 8,
+      "input_sha256": "cd457f4b09315ff56ea9174fe1815183b6d1b0f1afa9bed77cccd5d995de448e",
+      "satisfiable": true,
+      "essential": [
+        2,
+        5,
+        6,
+        8
+      ],
+      "verified": true
+    },
+    {
+      "case": 28,
+      "variables": 8,
+      "input_sha256": "1834e893d3931fedae3000291f5fcdc884b6d0bf43e6f9fd3f3b11cbd4ef8338",
+      "satisfiable": false,
+      "essential": [],
+      "verified": true
+    },
+    {
+      "case": 29,
+      "variables": 8,
+      "input_sha256": "a4bbe6e98ce8aa776fa9179deb3b4d6d8e2d8a5bdd54dd1859193626bef70ee8",
+      "satisfiable": false,
+      "essential": [],
+      "verified": true
+    },
+    {
+      "case": 30,
+      "variables": 8,
+      "input_sha256": "c6a62bd296888809f3ecedc901ad9c9c36089684bc13296c640ecc5d28b325cb",
+      "satisfiable": false,
+      "essential": [],
+      "verified": true
+    },
+    {
+      "case": 31,
+      "variables": 8,
+      "input_sha256": "e042a3bd5087e647e7d44af1dfdc09761494692c9180ab6e97a7b2f67dc22ec5",
+      "satisfiable": true,
+      "essential": [
+        1,
+        4,
+        6
+      ],
+      "verified": true
+    },
+    {
+      "case": 32,
+      "variables": 8,
+      "input_sha256": "035144d2a651f57a400035d13f557f87bfaead3c0da6138cc34a50bed16df88c",
+      "satisfiable": true,
+      "essential": [
+        1,
+        2,
+        8
+      ],
+      "verified": true
+    },
+    {
+      "case": 33,
+      "variables": 8,
+      "input_sha256": "cf32a6f07346d8f145e7a9cf4b0077758f5fa4085d1f22a02e51227ebf274471",
+      "satisfiable": true,
+      "essential": [
+        1,
+        3,
+        4,
+        5,
+        8
+      ],
+      "verified": true
+    },
+    {
+      "case": 34,
+      "variables": 8,
+      "input_sha256": "300d4c930ca4cc72660e1589c5209957119794ffad8dcaecc38eeed40f1014d4",
+      "satisfiable": false,
+      "essential": [],
+      "verified": true
+    },
+    {
+      "case": 35,
+      "variables": 8,
+      "input_sha256": "6e03934d50eb149f20cdb2e5ef05e77d32970aa83e079d4d44eaf60272240840",
+      "satisfiable": true,
+      "essential": [
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8
+      ],
+      "verified": true
+    },
+    {
+      "case": 36,
+      "variables": 8,
+      "input_sha256": "39f461d8c916095e4b9bd575315e385e857506c29eece8c9615eb9812316d7c5",
+      "satisfiable": true,
+      "essential": [
+        2,
+        3,
+        5,
+        7,
+        8
+      ],
+      "verified": true
+    },
+    {
+      "case": 37,
+      "variables": 8,
+      "input_sha256": "10690338c37894266e98da5e1fef47addfadf103bb8ed7b4e6d2992aabab61ab",
+      "satisfiable": false,
+      "essential": [],
+      "verified": true
+    },
+    {
+      "case": 38,
+      "variables": 8,
+      "input_sha256": "4ed03e12e18876a9f8e6d0341811b2a383750124879dbcfeb43f31219d63f693",
+      "satisfiable": false,
+      "essential": [],
+      "verified": true
+    },
+    {
+      "case": 39,
+      "variables": 8,
+      "input_sha256": "4620798d33316b85fa8e0fe9a2b3fb6ddc78d4dd5b9ca400d4c8899fd4db2a74",
+      "satisfiable": false,
+      "essential": [],
+      "verified": true
+    },
+    {
+      "case": 40,
+      "variables": 8,
+      "input_sha256": "e850837a71cab2366155b06101de251372096f8cd8e6ec277677fe4809bd0c8f",
+      "satisfiable": true,
+      "essential": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8
+      ],
+      "verified": true
+    },
+    {
+      "case": 41,
+      "variables": 8,
+      "input_sha256": "97e44624604831cfccb28f0979d77dcf1da8398572fc2a9b1eec06aee58c115e",
+      "satisfiable": false,
+      "essential": [],
+      "verified": true
+    },
+    {
+      "case": 42,
+      "variables": 8,
+      "input_sha256": "4292c67175aa056e729db7456a52b8f0e042273b009924879693afd4d2375620",
+      "satisfiable": false,
+      "essential": [],
+      "verified": true
+    },
+    {
+      "case": 43,
+      "variables": 8,
+      "input_sha256": "9509729a17fa765b850a9d59c8c330aef39a65f7a86068dd3aafa79b1b7c175d",
+      "satisfiable": false,
+      "essential": [],
+      "verified": true
+    },
+    {
+      "case": 44,
+      "variables": 8,
+      "input_sha256": "d10a46d5016af7d2ef63e472454360c2acb1d5f6ca61bcf93840515c71214be0",
+      "satisfiable": false,
+      "essential": [],
+      "verified": true
+    },
+    {
+      "case": 45,
+      "variables": 8,
+      "input_sha256": "506cef31672dc2d2ae4c97acaf119738113da6929bc17ad233e82b9e898fb820",
+      "satisfiable": false,
+      "essential": [],
+      "verified": true
+    },
+    {
+      "case": 46,
+      "variables": 8,
+      "input_sha256": "78d6520801170c7aca5089daefbab65f4812eb70648b154fc637a1870ab355ce",
+      "satisfiable": false,
+      "essential": [],
+      "verified": true
+    },
+    {
+      "case": 47,
+      "variables": 8,
+      "input_sha256": "d5b9cf516830c7bd94077a4efb46bff0b2333284cd573e5a88b8da4349779d4c",
+      "satisfiable": true,
+      "essential": [
+        1,
+        2,
+        4,
+        6,
+        8
+      ],
+      "verified": true
+    },
+    {
+      "case": 48,
+      "variables": 8,
+      "input_sha256": "3a079d9cecc8b62468f9756e24ca4c077db3898f33da067483c10cc8332b17db",
+      "satisfiable": true,
+      "essential": [
+        1,
+        2,
+        3,
+        5,
+        6,
+        7
+      ],
+      "verified": true
+    },
+    {
+      "case": 49,
+      "variables": 8,
+      "input_sha256": "03d42554e424f6006f7705fdc8cfe106f794bb2b456fd44a4f37dafeb2ed9657",
+      "satisfiable": true,
+      "essential": [
+        1,
+        2,
+        4,
+        5,
+        6,
+        8
+      ],
+      "verified": true
+    },
+    {
+      "case": 50,
+      "variables": 8,
+      "input_sha256": "1785186d9933ea0f07afd54ea446fed6411828c112e0c75e05b97ca4ac246e08",
+      "satisfiable": false,
+      "essential": [],
+      "verified": true
+    },
+    {
+      "case": 51,
+      "variables": 8,
+      "input_sha256": "a6392346c9244d693957977595b5ab31ea1eaa088ebd75f6c2e1742361a6ae1e",
+      "satisfiable": false,
+      "essential": [],
+      "verified": true
+    },
+    {
+      "case": 52,
+      "variables": 8,
+      "input_sha256": "766d51d4adc7647c31b56fee6013c6819e24eb33b87d19eb358958dd9555ad1d",
+      "satisfiable": true,
+      "essential": [
+        1,
+        2,
+        3,
+        4,
+        6,
+        7,
+        8
+      ],
+      "verified": true
+    },
+    {
+      "case": 53,
+      "variables": 8,
+      "input_sha256": "3b60741d62289f3746fa2757c73f197c6e4cee198523c22a1fbeae79e4c19de1",
+      "satisfiable": true,
+      "essential": [
+        1,
+        2,
+        4,
+        5,
+        6,
+        7,
+        8
+      ],
+      "verified": true
+    },
+    {
+      "case": 54,
+      "variables": 8,
+      "input_sha256": "a3e6b5b0e11c31c2c7aee4bd9897e1ea20ae7064817810f339a4f61162af0913",
+      "satisfiable": false,
+      "essential": [],
+      "verified": true
+    },
+    {
+      "case": 55,
+      "variables": 8,
+      "input_sha256": "6af7f08166193318403740a50d9a0dddcc97d4cc46d18f48d93c67a77cb61cf3",
+      "satisfiable": true,
+      "essential": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8
+      ],
+      "verified": true
+    },
+    {
+      "case": 56,
+      "variables": 8,
+      "input_sha256": "fd313d9439b909b3901518f4361ad527d338c2710877eddcaf0104c8df2769da",
+      "satisfiable": false,
+      "essential": [],
+      "verified": true
+    },
+    {
+      "case": 57,
+      "variables": 8,
+      "input_sha256": "1b2e557880de81f817f858489134aada153dc268cd4099516779e6bd9e323bb8",
+      "satisfiable": false,
+      "essential": [],
+      "verified": true
+    },
+    {
+      "case": 58,
+      "variables": 8,
+      "input_sha256": "001472163d05c681344d8559a2bf8ac86325589966bfa3a440b55060cc543376",
+      "satisfiable": false,
+      "essential": [],
+      "verified": true
+    },
+    {
+      "case": 59,
+      "variables": 8,
+      "input_sha256": "d00edbf3e8398bf1ee26238ca8653077dadb4fbf4d3988e28949a30bcd7b3f85",
+      "satisfiable": true,
+      "essential": [
+        1,
+        3,
+        4,
+        5,
+        6,
+        7
+      ],
+      "verified": true
+    },
+    {
+      "case": 60,
+      "variables": 8,
+      "input_sha256": "1dbf9d3b6328051e9b693ee78170129c94baa1b0dd94ee274e38ecf9fb47276b",
+      "satisfiable": false,
+      "essential": [],
+      "verified": true
+    },
+    {
+      "case": 61,
+      "variables": 8,
+      "input_sha256": "9f730622b103b966bb9e596ce685a8cc12b046fda35000415d9bfba8a8a507c7",
+      "satisfiable": true,
+      "essential": [
+        1,
+        2,
+        3,
+        5,
+        8
+      ],
+      "verified": true
+    },
+    {
+      "case": 62,
+      "variables": 8,
+      "input_sha256": "26565e9add09762e949ff5094630b731e3445f33e5e57cfbbbb5a4f35efb2ef5",
+      "satisfiable": false,
+      "essential": [],
+      "verified": true
+    },
+    {
+      "case": 63,
+      "variables": 8,
+      "input_sha256": "67777d3875a74b697e0f19ced3ab35a0cc40b6c9c6c79db2b2aca90cf0bb89ab",
+      "satisfiable": false,
+      "essential": [],
+      "verified": true
+    },
+    {
+      "case": 64,
+      "variables": 4096,
+      "input_sha256": "0cd52ebc3bb8ed0c1c72ab4aa5b8a057805c8092360bb98f596a932ee7056dc5",
+      "satisfiable": true,
+      "essential": [
+        1
+      ],
+      "verified": true
+    }
+  ],
+  "build_command": [
+    "c++",
+    "-O2",
+    "-I/private/tmp/bsat-ipasir-upstream",
+    "/private/tmp/bsat-ipasir-upstream/app/genipaessentials/genipaessentials.cpp",
+    "/Users/msharpe/python/bsat/competition/c/bin/libbsat_release.dylib",
+    "-Wl,-rpath,/Users/msharpe/python/bsat/competition/c/bin",
+    "-o",
+    "/var/folders/ts/779j13fj7_x2z167570zvv4c0000gn/T/bsat-upstream-client-hg_qpoaz/essentials"
+  ],
+  "complete": true
+}

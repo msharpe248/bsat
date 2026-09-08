@@ -1,0 +1,48 @@
+name: C solver independent incremental integration
+on:
+  push:
+    paths: ['competition/c/**', '.github/workflows/c-integration.yml']
+  pull_request:
+    paths: ['competition/c/**', '.github/workflows/c-integration.yml']
+permissions:
+  contents: read
+jobs:
+  independent-histories:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Build public library and fetch pinned independent sources
+        run: |
+          make -C competition/c -j2 OPTFLAGS='-O3 -flto' shared
+          curl -Lf https://github.com/arminbiere/kissat/archive/8af8e56f174b778aef3aa45af9f739b2a5f492c2.tar.gz -o "$RUNNER_TEMP/kissat.tar.gz"
+          tar -xzf "$RUNNER_TEMP/kissat.tar.gz" -C "$RUNNER_TEMP"
+          git init "$RUNNER_TEMP/ipasir"
+          git -C "$RUNNER_TEMP/ipasir" remote add origin https://github.com/biotomas/ipasir.git
+          git -C "$RUNNER_TEMP/ipasir" fetch --depth 1 origin 461a8f4611c41980037723d0e26856fb224ab188
+          git -C "$RUNNER_TEMP/ipasir" checkout --detach FETCH_HEAD
+      - name: Build reference solver
+        working-directory: ${{ runner.temp }}/kissat-8af8e56f174b778aef3aa45af9f739b2a5f492c2
+        run: |
+          ./configure --no-embedded -flto
+          make -j2
+      - name: Build independent certificate chain
+        run: |
+          curl -Lf https://raw.githubusercontent.com/marijnheule/drat-trim/2e3b2dc0ecf938addbd779d42877b6ed69d9a985/drat-trim.c -o "$RUNNER_TEMP/drat-trim.c"
+          cc -O2 "$RUNNER_TEMP/drat-trim.c" -o "$RUNNER_TEMP/drat-trim"
+          python3 competition/c/tests/build_verified_checker.py --directory "$RUNNER_TEMP/cake-lpr"
+      - name: Differential histories and unmodified upstream application
+        env:
+          BSAT_DRAT_TRIM: ${{ runner.temp }}/drat-trim
+          BSAT_CAKE_LPR: ${{ runner.temp }}/cake-lpr/cake_lpr
+        run: |
+          python3 competition/c/tests/differential_histories.py --library competition/c/bin/libbsat_release.so --reference "$RUNNER_TEMP/kissat-8af8e56f174b778aef3aa45af9f739b2a5f492c2/build/kissat" --output "$RUNNER_TEMP/results/differential.json"
+          python3 competition/c/tests/check_upstream_ipasir.py --upstream "$RUNNER_TEMP/ipasir" --library competition/c/bin/libbsat_release.so --output "$RUNNER_TEMP/results/upstream-client.json"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: independent-integration
+          path: ${{ runner.temp }}/results
