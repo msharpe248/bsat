@@ -51,8 +51,27 @@ static void search(bool equiv, bool chrono, bool queue) {
     solver_free(s);
 }
 
+static void sliced(unsigned increment) {
+    SolverOpts o=default_opts();o.probing=false;o.reuse_learnts=true;
+    o.max_conflicts=1;o.reduce_interval=7;o.reduce_increment=increment;
+    Solver *s=solver_new_with_opts(&o);assert(s);
+    for(unsigned v=0;v<8;++v)assert(solver_new_var(s));
+    for(unsigned bits=0;bits<256;++bits) {
+        Lit c[8];for(unsigned v=0;v<8;++v)c[v]=mkLit(v+1,(bits>>v)&1);assert(solver_add_clause(s,c,8));
+    }
+    uint64_t reductions=0,conflicts=0;bool done=false;
+    for(unsigned q=0;q<512;++q) {
+        lbool r=solver_solve(s);assert(!s->error && r!=TRUE);
+        reductions+=s->stats.reduces;conflicts+=s->stats.conflicts;
+        if(r==FALSE){done=true;break;}
+        assert(s->stats.conflicts==1);
+    }
+    if(!done){s->opts.max_conflicts=0;assert(solver_solve(s)==FALSE);}
+    assert(reductions>1 && conflicts>7 && s->reused_solves>7);
+    assert(s->reduce_conflict_offset>7);solver_free(s);
+}
 int main(void) {
-    schedule();
+    schedule();sliced(0);sliced(3);
     for(unsigned mask=0;mask<8;++mask)search(mask&1,mask&2,mask&4);
     puts("PASS: fixed/growing reduction boundaries, saturation, actual deletions, SCC, chronology, VMTF and repeated assumption solves");
 }

@@ -16,7 +16,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        target: [api, dimacs]
+        target: [api, dimacs, public]
     steps:
       - uses: actions/checkout@v4
       - uses: actions/cache@v4

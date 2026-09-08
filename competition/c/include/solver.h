@@ -347,7 +347,7 @@ typedef struct Solver {
     uint64_t clock_work, clock_minimize;
     uint64_t work, work_limit, last_vivify, mode_limit;
     uint64_t garbage_collections, lbd_samples, recent_lbd_sum;
-    uint64_t reduce_limit, reduce_span;
+    uint64_t reduce_limit, reduce_span, reduce_conflict_offset;
     uint32_t subsume_cursor, vivify_cursor;
     bool stable_mode;
     /* Portfolio diagnostics: ordinary stats describe the final attempt. */

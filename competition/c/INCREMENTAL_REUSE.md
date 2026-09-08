@@ -91,3 +91,9 @@ are used only for these trace comparisons.
 Public `BSAT_CERTIFICATES` handles now support a separate append-only RUP
 journal without disabling compatible reuse. See `RETAINED_CERTIFICATES.md`
 for exact query binding, independent verification and storage tradeoffs.
+
+Learned-database reduction now keeps cumulative scheduling progress across
+compatible queries. Per-query counters, restart state and budgets still reset.
+Short queries can no longer indefinitely postpone cleanup by remaining below
+the per-query reduction interval. See `APPLICATION_HISTORIES.md` for the larger
+workloads that exposed this issue and the measured tradeoffs.

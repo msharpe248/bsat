@@ -18,5 +18,8 @@ against original input and UNSAT through independent certificates.
    ASan/UBSan, including frozen-header and installed C++ consumers. See IPASIR.md.
 6. Retained-state certificates: implemented and independently validated over
    reused/rebuilt histories in both builds. See RETAINED_CERTIFICATES.md.
-2–4. Longer evaluation, memory tradeoffs and application histories remain
+4. Application histories: added exact domain oracles, >4,000-variable growth,
+   actual retained certificates and a fix for cleanup starvation across short
+   queries. Measured reuse/rebuild tradeoffs; see APPLICATION_HISTORIES.md.
+2–3. Longer industrial evaluation and full-search memory tradeoffs remain
    in progress.

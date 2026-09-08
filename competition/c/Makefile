@@ -324,3 +324,8 @@ $(BINDIR)/query_certificate_driver_$(MODE): $(TESTDIR)/query_certificate_driver.
 	$(CC) $(CFLAGS) -o $@ $< -L$(BINDIR) -lbsat_$(MODE) -Wl,-rpath,$(abspath $(BINDIR))
 query-certificate-driver: $(BINDIR)/query_certificate_driver_$(MODE)
 .PHONY: query-certificate-driver
+
+$(BINDIR)/application_histories_$(MODE): $(TESTDIR)/application_histories.c $(LIBRARY)
+	$(CC) $(CFLAGS) -o $@ $< -L$(BINDIR) -lbsat_$(MODE) -Wl,-rpath,$(abspath $(BINDIR))
+application-histories: $(BINDIR)/application_histories_$(MODE)
+.PHONY: application-histories

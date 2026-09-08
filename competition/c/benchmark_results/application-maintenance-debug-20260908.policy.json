@@ -1,0 +1,15 @@
+{
+  "scope": "Run generated BMC/configuration histories with exact domain oracles.",
+  "driver_sha256": "9441ce35287a158eeff8f2891af677014c11bbf153873cf4440d3ce88e9420d4",
+  "libraries": {
+    "/Users/msharpe/python/bsat/competition/c/bin/libbsat_debug.dylib": "1eb1eb42a1a2d7ea55a2182ec93e101d9bfac43dd021f638f3bb6d075ab38790",
+    "/Users/msharpe/python/bsat/competition/c/bin/libbsat_release.dylib": "6eac4b0c0e6f25a26a7a780de630459bfc5ade372d37c712d41c541d000cca87"
+  },
+  "repeats": 1,
+  "seed": 2026090825,
+  "query_limits": {
+    "cpu_seconds": 0.2,
+    "conflicts": 2000
+  },
+  "runs": []
+}

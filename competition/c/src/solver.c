@@ -1711,12 +1711,14 @@ static void solver_collect_garbage_account_impl(Solver *s) {
 }
 
 bool solver_should_reduce(Solver* s) {
+    uint64_t conflicts=s->reduce_conflict_offset+MIN(s->stats.conflicts,UINT64_MAX-s->reduce_conflict_offset);
     if (!s->opts.reduce_increment)
-        return s->stats.conflicts % s->opts.reduce_interval == 0;
-    if (s->stats.conflicts < s->reduce_limit || s->reduce_limit == UINT64_MAX)
+        return (s->reduce_conflict_offset%s->opts.reduce_interval+
+                s->stats.conflicts%s->opts.reduce_interval)%s->opts.reduce_interval == 0;
+    if (conflicts < s->reduce_limit || s->reduce_limit == UINT64_MAX)
         return false;
     s->reduce_span += MIN((uint64_t)s->opts.reduce_increment, UINT64_MAX-s->reduce_span);
-    s->reduce_limit = s->stats.conflicts + MIN(s->reduce_span, UINT64_MAX-s->stats.conflicts);
+    s->reduce_limit = conflicts + MIN(s->reduce_span, UINT64_MAX-conflicts);
     return true;
 }
 
@@ -2081,6 +2083,9 @@ static bool solver_prepare_next(Solver *s, double start) {
         !s->interrupted;
     if (!reuse) return start<0 ? solver_rebuild(s) : solver_rebuild_timed(s,start,s->opts.max_time);
     bool unsat=s->base_unsat || (s->result==FALSE && !s->last_assumptions);
+    /* Database maintenance follows the retained database across short queries,
+       while public work counters and query budgets still restart at zero. */
+    s->reduce_conflict_offset+=MIN(s->stats.conflicts,UINT64_MAX-s->reduce_conflict_offset);
     memset(&s->stats,0,sizeof s->stats);
     s->stats.start_time=start<0 ? solver_cpu_time() : start;
     s->work_limit=0;s->clock_initialized=false;s->clock_polls=0;
@@ -2197,10 +2202,12 @@ static lbool solve_internal_account_impl(Solver *s, const Lit *assumps, uint32_t
     Lit *learnt = malloc((s->num_vars+1)*sizeof *learnt);
     if (!learnt) { s->error=true; return UNDEF; }
     lbool result=UNDEF;
-    /* Initialize after preprocessing, which may replace the solver. Each API
-       solve starts a fresh schedule, just like its rebuilt search state. */
-    s->reduce_span = s->opts.reduce_interval;
-    s->reduce_limit = s->stats.conflicts + MIN(s->reduce_span, UINT64_MAX-s->stats.conflicts);
+    /* Initialize after preprocessing, which may replace the solver. Rebuilt
+       databases start fresh; retained databases keep their maintenance schedule. */
+    if (!s->reduce_span) {
+        s->reduce_span = s->opts.reduce_interval;
+        s->reduce_limit = s->reduce_span;
+    }
     for (;;) {
         if (solver_budget_exhausted(s)) break;
         CRef conflict=solver_propagate(s);
