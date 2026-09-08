@@ -40,7 +40,7 @@ static void bytes(void) {
     const unsigned vars[]={1,9,10,63,64,99,100,127,128,999,1000,8191,8192,
         9999,10000,99999,100000,999999,1000000,9999999,10000000,99999999,
         100000000,MAX_VARS,INT32_MAX};
-    const unsigned sizes[]={0,1,2,31,340,341,342,343,355,356,357,371,372,373,4095,4096,4097,10000};
+    const unsigned sizes[]={0,1,2,31,340,341,342,343,355,356,357,371,372,373,818,819,820,4095,4096,4097,10000};
     Lit *lits=malloc(10000*sizeof *lits);assert(lits);unsigned cases=0;
     for(unsigned binary=0;binary<2;++binary)for(unsigned unbuffered=0;unbuffered<2;++unbuffered)
     for(unsigned pattern=0;pattern<4;++pattern)for(unsigned k=0;k<sizeof sizes/sizeof *sizes;++k) {
@@ -60,10 +60,10 @@ static void bytes(void) {
         proof_add_clause(s,NULL,0);reference(expected,NULL,0,binary,false);
         assert(!s->error);equal(s->proof_file,expected);fclose(expected);solver_free(s);++cases;
     }
-    assert(cases==288);free(lits);
+    assert(cases==336);free(lits);
     Solver *s=solver_new();assert(s);proof_add_clause(s,NULL,UINT32_MAX);
     proof_delete_clause(s,NULL,UINT32_MAX);assert(!s->error);solver_free(s);
-    puts("PASS: 288 text/binary proof byte cases, numeric/chunk boundaries and disabled output");
+    puts("PASS: 336 text/binary proof byte cases, numeric/chunk boundaries and disabled output");
 }
 
 #if defined(__APPLE__) || defined(__GLIBC__)

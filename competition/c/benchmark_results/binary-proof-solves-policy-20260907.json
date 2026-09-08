@@ -1,0 +1,35 @@
+{
+  "command": [
+    "python3",
+    "/Users/msharpe/python/bsat/competition/c/tests/benchmark.py",
+    "--solver",
+    "baseline=/tmp/bsat-binary-proof-baseline --chrono --congruence --equiv --equiv-budget 100000000 --alternating --vmtf --binary-proof --proof {proof} {input}",
+    "--solver",
+    "chunked=/Users/msharpe/python/bsat/competition/c/bin/bsat --chrono --congruence --equiv --equiv-budget 100000000 --alternating --vmtf --binary-proof --proof {proof} {input}",
+    "--checker",
+    "/tmp/bsat-drat-trim",
+    "--timeout",
+    "75",
+    "--check-timeout",
+    "600",
+    "--repeats",
+    "2",
+    "--seed",
+    "20261327",
+    "--retain-unverified",
+    "/tmp/bsat-binary-certs",
+    "--output",
+    "/Users/msharpe/python/bsat/competition/c/benchmark_results/binary-proof-solves-20260907.json",
+    "/Users/msharpe/python/bsat/dataset/sat_competition2025/summle/6ef090a10c10352090100af7b6654c31.cnf",
+    "/Users/msharpe/python/bsat/dataset/sat_competition2025/hardware-model-checking/7bdf3e5401cc263951003b569bcd689c.cnf"
+  ],
+  "input_hashes": {
+    "/Users/msharpe/python/bsat/dataset/sat_competition2025/summle/6ef090a10c10352090100af7b6654c31.cnf": "09832848d3c4a52517cee047820cc3b7b52ee3c347d4dfab07410e4ff852bc62",
+    "/Users/msharpe/python/bsat/dataset/sat_competition2025/hardware-model-checking/7bdf3e5401cc263951003b569bcd689c.cnf": "7aada02dc300ce6db773dbab34f115969174896a161b6d28ce37f5743e8fff4f"
+  },
+  "binary_hashes": {
+    "/tmp/bsat-binary-proof-baseline": "36ff17ca4f8db73bb65866d192cbffe0d24bfb8cc2c7ea9bd475351e1088e9ae",
+    "competition/c/bin/bsat": "a349a07c51b8ac4e3a7409f0b45bae0b3d4509538fe544c19af7bb49797d03ec"
+  },
+  "scope": "Frozen development solve comparison, two repetitions, equal 75-second external wall limit. No concurrent local builds/tests/profiling."
+}

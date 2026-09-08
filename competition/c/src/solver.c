@@ -81,7 +81,7 @@ static void print_progress_stats(const Solver* s) {
 
 /* Write complete chunks through stdio so its normal buffering and final flush
    semantics remain intact. A short write invalidates the solve certificate. */
-static bool proof_text_write(Solver *s, const char *buffer, uint32_t size) {
+static bool proof_write(Solver *s, const void *buffer, uint32_t size) {
     if (fwrite(buffer, 1, size, s->proof_file) == size) return true;
     s->error = true;
     return false;
@@ -95,7 +95,7 @@ static void proof_text_clause(Solver *s, const Lit *lits, uint32_t size, bool de
         /* uint32_t literals contain at most a ten-digit variable number,
            one minus sign and a separating space. */
         if (sizeof buffer - used < 12) {
-            if (!proof_text_write(s, buffer, used)) return;
+            if (!proof_write(s, buffer, used)) return;
             used = 0;
         }
         uint32_t value = var(lits[i]);
@@ -106,23 +106,39 @@ static void proof_text_clause(Solver *s, const Lit *lits, uint32_t size, bool de
         buffer[used++] = ' ';
     }
     if (sizeof buffer - used < 2) {
-        if (!proof_text_write(s, buffer, used)) return;
+        if (!proof_write(s, buffer, used)) return;
         used = 0;
     }
     buffer[used++] = '0';buffer[used++] = '\n';
-    proof_text_write(s, buffer, used);
+    proof_write(s, buffer, used);
+}
+
+static void proof_binary_clause(Solver *s, const Lit *lits, uint32_t size, bool deletion) {
+    unsigned char buffer[4096];
+    uint32_t used=0;
+    buffer[used++]=deletion ? 'd' : 'a';
+    for (uint32_t i=0;i<size;++i) {
+        /* A uint32_t takes at most five base-128 bytes. */
+        if (sizeof buffer-used<5) {
+            if (!proof_write(s,buffer,used)) return;
+            used=0;
+        }
+        uint32_t x=lits[i];
+        while (x>=128) { buffer[used++]=(unsigned char)((x&127)|128);x>>=7; }
+        buffer[used++]=(unsigned char)x;
+    }
+    if (used==sizeof buffer) {
+        if (!proof_write(s,buffer,used)) return;
+        used=0;
+    }
+    buffer[used++]=0;
+    proof_write(s,buffer,used);
 }
 
 static void proof_clause(Solver *s, const Lit *lits, uint32_t size, bool deletion) {
     if (!s->proof_file) return;
     if (s->opts.binary_proof) {
-        fputc(deletion ? 'd' : 'a', s->proof_file);
-        for (uint32_t i = 0; i < size; ++i) {
-            uint32_t x = lits[i];
-            while (x >= 128) { fputc((x & 127) | 128, s->proof_file); x >>= 7; }
-            fputc(x, s->proof_file);
-        }
-        fputc(0, s->proof_file);
+        proof_binary_clause(s,lits,size,deletion);
     } else {
         proof_text_clause(s, lits, size, deletion);
     }
