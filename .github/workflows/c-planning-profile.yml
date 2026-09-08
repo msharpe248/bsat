@@ -1,0 +1,38 @@
+name: C solver planning host profile
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  profile:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Build solver, perf and independent checker
+        run: |
+          make -C competition/c -j2 OPTFLAGS='-O3 -g -fno-omit-frame-pointer' all
+          sudo apt-get update -qq
+          sudo apt-get install -y linux-tools-generic
+          curl -Lf https://raw.githubusercontent.com/marijnheule/drat-trim/2e3b2dc0ecf938addbd779d42877b6ed69d9a985/drat-trim.c -o "$RUNNER_TEMP/drat-trim.c"
+          cc -O2 "$RUNNER_TEMP/drat-trim.c" -o "$RUNNER_TEMP/drat-trim"
+          python3 competition/c/tests/build_verified_checker.py --directory "$RUNNER_TEMP/cake-lpr"
+          python3 competition/c/tests/prepare_linux_baseline.py "$RUNNER_TEMP/inputs"
+      - name: Measure PMU availability and software stacks
+        env:
+          BSAT_DRAT_TRIM: ${{ runner.temp }}/drat-trim
+          BSAT_CAKE_LPR: ${{ runner.temp }}/cake-lpr/cake_lpr
+        run: |
+          perf=$(find /usr/lib/linux-tools -type f -name perf | sort | tail -1)
+          test -n "$perf"
+          sudo --preserve-env=BSAT_DRAT_TRIM,BSAT_CAKE_LPR "$(command -v python3)" competition/c/tests/planning_host_profile.py --solver competition/c/bin/bsat --perf "$perf" --output "$RUNNER_TEMP/results/profile" "$RUNNER_TEMP"/inputs/planning/*.cnf
+          lscpu > "$RUNNER_TEMP/results/lscpu.txt"
+          git rev-parse HEAD > "$RUNNER_TEMP/results/revision.txt"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: planning-host-profile
+          path: ${{ runner.temp }}/results
