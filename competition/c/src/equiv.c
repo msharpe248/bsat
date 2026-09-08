@@ -199,6 +199,15 @@ uint32_t solver_substitute_equivalences(Solver *s) {
     if (solver_budget_exhausted(s)) goto done;
     fresh->opts = s->opts;
     fresh->stats = s->stats;
+    if (s->opts.accounting) {
+        uint64_t overlap=solver_memory(s).total+solver_memory(fresh).total;
+        fresh->accounting.rebuild_overlap_peak=MAX(overlap,s->accounting.rebuild_overlap_peak);
+        fresh->accounting.congruence_temporary_peak=MAX(fresh->accounting.congruence_temporary_peak,s->accounting.congruence_temporary_peak);
+    }
+    for (unsigned phase=0;phase<ACCOUNT_PHASES;++phase) {
+        fresh->accounting.seconds[phase] += s->accounting.seconds[phase];
+        fresh->accounting.calls[phase] += s->accounting.calls[phase];
+    }
     fresh->stats.equiv_variables += count;
     fresh->stats.equiv_clauses += rewritten;
     fresh->work = s->work; fresh->work_limit = s->work_limit;

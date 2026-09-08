@@ -22,6 +22,18 @@ typedef struct {
     uint32_t changes;
 } Closure;
 
+static void account_temporary(Closure *c) {
+    if (!c->s->opts.accounting) return;
+    uint64_t bytes=(c->cells?(uint64_t)c->cell_cap*sizeof *c->cells:0)+
+        (c->branches?(uint64_t)c->branch_cap*sizeof *c->branches:0)+
+        (c->alternatives?(uint64_t)c->alternative_capacity*sizeof *c->alternatives:0)+
+        (c->gates?(uint64_t)c->capacity*sizeof *c->gates:0)+
+        (c->parent?((uint64_t)c->s->num_vars+1)*sizeof *c->parent:0)+
+        (c->table?(uint64_t)c->table_cap*sizeof *c->table:0);
+    if (bytes>c->s->accounting.congruence_temporary_peak)
+        c->s->accounting.congruence_temporary_peak=bytes;
+}
+
 static bool seed_alias(Closure *, Lit, Lit);
 static bool lemma(Closure *, const Lit *, unsigned);
 
@@ -218,6 +230,7 @@ static bool extract(Closure *c) {
             }
     }
 extracted:
+    account_temporary(c);
     free(c->cells);c->cells=NULL;free(c->branches);c->branches=NULL;
     free(c->alternatives);c->alternatives=NULL;
     return true;
@@ -413,6 +426,7 @@ uint32_t solver_congruence(Solver *s) {
  done:
     s->stats.congruence_work += s->work-start_work;
     s->stats.congruence_units += s->trail_size-start_trail;
+    account_temporary(&c);
     free(c.cells);free(c.branches);free(c.alternatives);free(c.gates);free(c.parent);free(c.table);
     return c.changes;
 }

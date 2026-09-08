@@ -117,6 +117,7 @@ static void print_usage(const char* program) {
     printf("\n");
     printf("Proof logging:\n");
     printf("  --proof <file>            Write DRAT proof to file\n");
+    printf("  --accounting              Report intrusive phase CPU and owned capacities\n");
     printf("  --binary-proof            Use binary DRAT format (more compact)\n");
     printf("\n");
     printf("Output format:\n");
@@ -204,6 +205,7 @@ static struct option long_options[] = {
     {"ls-save-phases", no_argument, 0, 0},
     {"ls-noise",        required_argument, 0, 0},
     {"proof",           required_argument, 0, 0},
+    {"accounting",      no_argument,       0, 0},
     {"binary-proof",    no_argument,       0, 0},
     {0, 0, 0, 0}
 };
@@ -412,6 +414,8 @@ int main(int argc, char** argv) {
                     opts.ls_noise = atof(optarg);
                 } else if (strcmp(long_options[option_index].name, "proof") == 0) {
                     opts.proof_path = optarg;
+                } else if (strcmp(long_options[option_index].name, "accounting") == 0) {
+                    opts.accounting = true;
                 } else if (strcmp(long_options[option_index].name, "binary-proof") == 0) {
                     opts.binary_proof = true;
                 }
@@ -469,6 +473,11 @@ int main(int argc, char** argv) {
         printf("c\n");
     }
 
+    if (opts.accounting && !opts.quiet) {
+        puts("c Accounting checkpoint: parsed");
+        solver_print_accounting(solver);
+    }
+
     // Solve
     double start_time = (double)clock() / CLOCKS_PER_SEC;
     lbool result = portfolio_seconds ? solver_solve_portfolio(solver, portfolio_seconds) : solver_solve(solver);
@@ -511,6 +520,10 @@ int main(int argc, char** argv) {
         printf("c\n");
         printf("c CPU time:         %.3f s\n", solve_time);
         solver_print_stats(solver);
+        if (opts.accounting) {
+            puts("c Accounting checkpoint: final");
+            solver_print_accounting(solver);
+        }
     }
 
     // Clean up

@@ -135,7 +135,8 @@ static void proof_binary_clause(Solver *s, const Lit *lits, uint32_t size, bool 
     proof_write(s,buffer,used);
 }
 
-static void proof_clause(Solver *s, const Lit *lits, uint32_t size, bool deletion) {
+static void proof_clause(Solver *s, const Lit *lits, uint32_t size, bool deletion);
+static void proof_clause_account_impl(Solver *s, const Lit *lits, uint32_t size, bool deletion) {
     if (!s->proof_file) return;
     if (s->opts.binary_proof) {
         proof_binary_clause(s,lits,size,deletion);
@@ -603,6 +604,7 @@ static bool grow_var_arrays(Solver* s, uint32_t new_capacity) {
     Level* new_lims = (Level*)realloc(s->trail_lims, alloc_size * sizeof(Level));
     if (!new_lims) return false;
     s->trail_lims = new_lims;
+    s->trail_limits_capacity = alloc_size;
 
     // Grow heap
     Var* new_heap = (Var*)realloc(s->order.heap, alloc_size * sizeof(Var));
@@ -948,7 +950,7 @@ void solver_print_stats(const Solver* s) {
  * Unit Propagation (Two-Watched Literals)
  *********************************************************************/
 
-CRef solver_propagate(Solver* s) {
+static CRef solver_propagate_account_impl(Solver* s) {
     while (s->qhead < s->trail_size) {
         if ((s->work & 1023) == 0 && solver_budget_exhausted(s)) return INVALID_CLAUSE;
         Lit p = s->trail[s->qhead++].lit;
@@ -1207,7 +1209,7 @@ static void improve_clause_lbd(Solver *s, CRef cr) {
         CLAUSE_HEADER(s->arena, cr)->flags |= CLAUSE_FROZEN;
 }
 
-void solver_analyze(Solver* s, CRef conflict, Lit* learnt, uint32_t* learnt_size, Level* bt_level) {
+static void solver_analyze_account_impl(Solver* s, CRef conflict, Lit* learnt, uint32_t* learnt_size, Level* bt_level) {
     s->vmtf.pending = 0;
     uint32_t index = s->trail_size - 1;
     uint32_t pathC = 0;
@@ -1668,7 +1670,7 @@ void solver_delete_clause(Solver *s, CRef cr) {
     arena_delete(s->arena, cr);
 }
 
-void solver_collect_garbage(Solver *s) {
+static void solver_collect_garbage_account_impl(Solver *s) {
     if (!s->arena->wasted || s->arena->wasted * 4 < s->arena->size) return;
     if (solver_budget_exhausted_now(s)) return;
     Arena *old = s->arena;
@@ -1760,7 +1762,7 @@ bool solver_should_reduce(Solver* s) {
     return true;
 }
 
-void solver_reduce_db(Solver* s) {
+static void solver_reduce_db_account_impl(Solver* s) {
     s->stats.reduces++;
     ClauseScore *scores = malloc((s->num_learnts ? s->num_learnts : 1) * sizeof *scores);
     if (!scores) return;
@@ -1921,7 +1923,7 @@ bool solver_add_rup_clause(Solver *s, const Lit *lits, uint32_t size) {
     return !s->error && !s->interrupted;
 }
 
-bool solver_simplify(Solver *s) {
+static bool solver_simplify_account_impl(Solver *s) {
     if (s->decision_level || !s->opts.inprocess || !s->opts.preprocess_budget ||
         s->stats.conflicts < s->last_vivify + s->opts.inprocess_interval) return true;
     s->last_vivify = s->stats.conflicts;
@@ -1980,7 +1982,8 @@ bool solver_simplify(Solver *s) {
     return s->result != FALSE;
 }
 
-static uint32_t solver_eliminate_blocked_clauses(Solver *s) {
+static uint32_t solver_eliminate_blocked_clauses(Solver *s);
+static uint32_t solver_eliminate_blocked_clauses_account_impl(Solver *s) {
     elim_build_occs(s);
     uint32_t eliminated = 0;
     if (!s->elim || !s->elim->occs_complete) return 0;
@@ -2016,7 +2019,8 @@ static uint32_t solver_eliminate_blocked_clauses(Solver *s) {
     return eliminated;
 }
 
-static int failed_literal_probing(Solver *s) {
+static int failed_literal_probing(Solver *s);
+static int failed_literal_probing_account_impl(Solver *s) {
     int found = 0;
     for (Var v = 1; v <= s->num_vars && !solver_budget_exhausted(s); ++v) {
         if (s->values[v] != UNDEF || elim_is_eliminated(s, v)) continue;
@@ -2075,6 +2079,15 @@ static bool solver_rebuild_timed(Solver *s, double start_time, double max_time) 
         fresh->proof_file=fopen(path, opts.binary_proof ? "wb" : "w");
         if (!fresh->proof_file) { solver_free(fresh); s->error=true; return false; }
     }
+    if (s->opts.accounting) {
+        uint64_t overlap=solver_memory(s).total+solver_memory(fresh).total;
+        fresh->accounting.rebuild_overlap_peak=MAX(overlap,s->accounting.rebuild_overlap_peak);
+        fresh->accounting.congruence_temporary_peak=MAX(fresh->accounting.congruence_temporary_peak,s->accounting.congruence_temporary_peak);
+    }
+    for (unsigned phase=0;phase<ACCOUNT_PHASES;++phase) {
+        fresh->accounting.seconds[phase] += s->accounting.seconds[phase];
+        fresh->accounting.calls[phase] += s->accounting.calls[phase];
+    }
     Solver old = *s; *s = *fresh; *fresh = old; solver_free(fresh);
     return true;
 incomplete:
@@ -2129,7 +2142,8 @@ bool solver_normalize_conflict(Solver *s, CRef conflict) {
     return highest>0;
 }
 
-static lbool solve_internal(Solver *s, const Lit *assumps, uint32_t n_assumps) {
+static lbool solve_internal(Solver *s, const Lit *assumps, uint32_t n_assumps);
+static lbool solve_internal_account_impl(Solver *s, const Lit *assumps, uint32_t n_assumps) {
     if (s->result == FALSE) return FALSE;
     if (solver_propagate(s) != INVALID_CLAUSE) return FALSE;
     if (s->error || s->interrupted) return UNDEF;
@@ -2138,7 +2152,9 @@ static lbool solve_internal(Solver *s, const Lit *assumps, uint32_t n_assumps) {
     if (!n_assumps && s->opts.congruence && s->opts.congruence_budget) {
         uint64_t remaining = s->work_limit > s->work ? s->work_limit-s->work : 0;
         s->work_limit = s->work + MIN(s->opts.congruence_budget, UINT64_MAX-s->work);
+        double started=solver_account_begin(s);
         solver_congruence(s);
+        solver_account_end(s,ACCOUNT_PREPROCESS,started);
         s->work_limit = 0;
         if (s->error || s->interrupted) return UNDEF;
         if (s->result == FALSE || solver_propagate(s) != INVALID_CLAUSE) return FALSE;
@@ -2147,7 +2163,9 @@ static lbool solve_internal(Solver *s, const Lit *assumps, uint32_t n_assumps) {
     if (!n_assumps && s->opts.equiv && s->opts.equiv_budget) {
         uint64_t remaining = s->work_limit > s->work ? s->work_limit-s->work : 0;
         s->work_limit = s->work + MIN(s->opts.equiv_budget, UINT64_MAX-s->work);
+        double started=solver_account_begin(s);
         solver_substitute_equivalences(s);
+        solver_account_end(s,ACCOUNT_PREPROCESS,started);
         s->work_limit = 0;
         if (s->error || s->interrupted) return UNDEF;
         if (s->result == FALSE || solver_propagate(s) != INVALID_CLAUSE) return FALSE;
@@ -2155,7 +2173,11 @@ static lbool solve_internal(Solver *s, const Lit *assumps, uint32_t n_assumps) {
     }
     if (s->opts.preprocess_budget && !n_assumps && s->opts.bce && !solver_budget_exhausted(s))
         s->stats.blocked_clauses = solver_eliminate_blocked_clauses(s);
-    if (s->opts.preprocess_budget && !n_assumps && s->opts.elim && !solver_budget_exhausted(s)) elim_preprocess(s);
+    if (s->opts.preprocess_budget && !n_assumps && s->opts.elim && !solver_budget_exhausted(s)) {
+        double started=solver_account_begin(s);
+        elim_preprocess(s);
+        solver_account_end(s,ACCOUNT_PREPROCESS,started);
+    }
     s->work_limit = 0;
     if (s->error || s->interrupted) return UNDEF;
     if (s->result == FALSE) return FALSE;
@@ -2285,6 +2307,7 @@ static lbool solver_solve_at(Solver *s, const Lit *assumps, uint32_t n_assumps, 
     if ((uint64_t)n_assumps+s->num_vars>s->var_capacity) {
         Level *p=realloc(s->trail_lims,((size_t)n_assumps+s->num_vars+2)*sizeof *p);
         if (!p) { s->error=true;return UNDEF; } s->trail_lims=p;
+        s->trail_limits_capacity=(size_t)n_assumps+s->num_vars+2;
     }
     uint32_t levels=n_assumps+s->num_vars+2;
     if (levels>s->levels_capacity) {
@@ -2300,8 +2323,12 @@ static lbool solver_solve_at(Solver *s, const Lit *assumps, uint32_t n_assumps, 
     lbool result=solve_internal(s,assumps,n_assumps);
     s->has_solved=true;
     if (result==TRUE) {
+        double started=solver_account_begin(s);
         elim_extend_model(s);
+        solver_account_end(s,ACCOUNT_RECONSTRUCT,started);
+        started=solver_account_begin(s);
         if (!solver_check_model(s)) s->error=true;
+        solver_account_end(s,ACCOUNT_MODEL,started);
         for (uint32_t i=0;i<n_assumps;++i)
             if (lxor(s->values[var(assumps[i])],sign(assumps[i]))!=TRUE) s->error=true;
     }
@@ -2314,7 +2341,9 @@ static lbool solver_solve_at(Solver *s, const Lit *assumps, uint32_t n_assumps, 
         }
     }
     if (result==FALSE && !s->error && !s->interrupted) proof_add_clause(s,NULL,0);
+    double flush_started=solver_account_begin(s);
     if (s->proof_file && (fflush(s->proof_file) || ferror(s->proof_file))) s->error=true;
+    solver_account_end(s,ACCOUNT_PROOF,flush_started);
     if (s->watches->failed) s->error=true;
     /* Cached polls must not permit a completed result after the CPU deadline,
        including time spent reconstructing/checking models or flushing proofs. */
@@ -2372,4 +2401,63 @@ done:
 const Lit *solver_conflict(const Solver *s, uint32_t *size) {
     if (size) *size=s && s->result==FALSE ? s->conflict_size : 0;
     return s && s->result==FALSE ? s->conflict_clause : NULL;
+}
+
+CRef solver_propagate(Solver* s) {
+    double started=solver_account_begin(s);
+    CRef result = solver_propagate_account_impl(s);
+    solver_account_end(s, ACCOUNT_PROPAGATE, started);
+    return result;
+}
+
+void solver_analyze(Solver* s, CRef conflict, Lit* learnt, uint32_t* learnt_size, Level* bt_level) {
+    double started=solver_account_begin(s);
+    solver_analyze_account_impl(s, conflict, learnt, learnt_size, bt_level);
+    solver_account_end(s, ACCOUNT_ANALYZE, started);
+}
+
+void solver_reduce_db(Solver* s) {
+    double started=solver_account_begin(s);
+    solver_reduce_db_account_impl(s);
+    solver_account_end(s, ACCOUNT_REDUCE, started);
+}
+
+void solver_collect_garbage(Solver *s) {
+    double started=solver_account_begin(s);
+    solver_collect_garbage_account_impl(s);
+    solver_account_end(s, ACCOUNT_GC, started);
+}
+
+bool solver_simplify(Solver *s) {
+    double started=solver_account_begin(s);
+    bool result = solver_simplify_account_impl(s);
+    solver_account_end(s, ACCOUNT_SIMPLIFY, started);
+    return result;
+}
+
+static void proof_clause(Solver *s, const Lit *lits, uint32_t size, bool deletion) {
+    double started=solver_account_begin(s);
+    proof_clause_account_impl(s, lits, size, deletion);
+    solver_account_end(s, ACCOUNT_PROOF, started);
+}
+
+static int failed_literal_probing(Solver *s) {
+    double started=solver_account_begin(s);
+    int result = failed_literal_probing_account_impl(s);
+    solver_account_end(s, ACCOUNT_PREPROCESS, started);
+    return result;
+}
+
+static uint32_t solver_eliminate_blocked_clauses(Solver *s) {
+    double started=solver_account_begin(s);
+    uint32_t result = solver_eliminate_blocked_clauses_account_impl(s);
+    solver_account_end(s, ACCOUNT_PREPROCESS, started);
+    return result;
+}
+
+static lbool solve_internal(Solver *s, const Lit *assumps, uint32_t n_assumps) {
+    double started=solver_account_begin(s);
+    lbool result = solve_internal_account_impl(s, assumps, n_assumps);
+    solver_account_end(s, ACCOUNT_SEARCH, started);
+    return result;
 }

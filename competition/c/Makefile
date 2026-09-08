@@ -98,6 +98,7 @@ pgo: pgo-generate pgo-train pgo-merge pgo-use
 # Step 1: Build with profiling instrumentation
 pgo-generate: clean dirs
 	@echo "Building with profile instrumentation..."
+	$(CC) $(CFLAGS) -O3 -march=native -fprofile-instr-generate -c -o $(OBJDIR)/accounting.o $(SRCDIR)/accounting.c
 	$(CC) $(CFLAGS) -O3 -march=native -fprofile-instr-generate -c -o $(OBJDIR)/arena.o $(SRCDIR)/arena.c
 	$(CC) $(CFLAGS) -O3 -march=native -fprofile-instr-generate -c -o $(OBJDIR)/dimacs.o $(SRCDIR)/dimacs.c
 	$(CC) $(CFLAGS) -O3 -march=native -fprofile-instr-generate -c -o $(OBJDIR)/congruence.o $(SRCDIR)/congruence.c
@@ -131,6 +132,7 @@ pgo-merge:
 # Step 4: Rebuild with profile data
 pgo-use: dirs
 	@echo "Building with profile optimization..."
+	$(CC) $(CFLAGS) -O3 -march=native -flto -fprofile-instr-use=pgo_data/default.profdata -c -o $(OBJDIR)/accounting.o $(SRCDIR)/accounting.c
 	$(CC) $(CFLAGS) -O3 -march=native -flto -fprofile-instr-use=pgo_data/default.profdata -c -o $(OBJDIR)/arena.o $(SRCDIR)/arena.c
 	$(CC) $(CFLAGS) -O3 -march=native -flto -fprofile-instr-use=pgo_data/default.profdata -c -o $(OBJDIR)/dimacs.o $(SRCDIR)/dimacs.c
 	$(CC) $(CFLAGS) -O3 -march=native -flto -fprofile-instr-use=pgo_data/default.profdata -c -o $(OBJDIR)/congruence.o $(SRCDIR)/congruence.c

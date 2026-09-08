@@ -112,6 +112,7 @@ typedef struct SolverOpts {
     bool alternating;          // Experimental focused/stable schedule
     bool circular;             // Circular replacement watch search
     uint32_t seed;
+    bool accounting;           // Opt-in intrusive phase CPU diagnostics
     // Output options
     bool     verbose;           // Verbose output (false) - same as BSAT_VERBOSE
     bool     debug;             // Debug output (false) - same as DEBUG_CDCL
@@ -165,6 +166,22 @@ typedef struct VmtfNode {
     uint64_t stamp;
 } VmtfNode;
 
+typedef enum {
+    ACCOUNT_PARSE, ACCOUNT_PROPAGATE, ACCOUNT_ANALYZE, ACCOUNT_REDUCE,
+    ACCOUNT_GC, ACCOUNT_PREPROCESS, ACCOUNT_SIMPLIFY, ACCOUNT_RECONSTRUCT,
+    ACCOUNT_MODEL, ACCOUNT_PROOF, ACCOUNT_SEARCH, ACCOUNT_PHASES
+} AccountPhase;
+typedef struct SolverAccounting {
+    uint64_t congruence_temporary_peak, rebuild_overlap_peak;
+    double seconds[ACCOUNT_PHASES];
+    uint64_t calls[ACCOUNT_PHASES];
+} SolverAccounting;
+typedef struct SolverMemory {
+    uint64_t arena, watches, input, variables, references, elimination, local_search;
+    uint64_t other, total;
+    bool complete; /* False for partial allocation failures; excludes transient/allocator costs. */
+} SolverMemory;
+
 typedef struct Solver {
     // Problem size
     uint32_t num_vars;
@@ -216,6 +233,8 @@ typedef struct Solver {
     Lit      binary_conflict_lits[2]; // Literals from binary clause conflict
     Lit*     binary_reasons;  // binary_reasons[v] = other literal if propagated by binary, LIT_UNDEF otherwise
 
+    SolverAccounting accounting;
+    size_t trail_limits_capacity;
     // Statistics
     struct {
         uint64_t decisions;
@@ -329,6 +348,11 @@ typedef struct Solver {
 
 /* Supported embedding contract: ../API_CONTRACT.md. Exposed internal helpers
    and structure layout do not constitute a stable binary interface. */
+double solver_account_begin(const Solver *s);
+void solver_account_end(Solver *s, AccountPhase phase, double start);
+SolverMemory solver_memory(const Solver *s);
+void solver_print_accounting(const Solver *s);
+
 // Create a new solver
 Solver* solver_new(void);
 

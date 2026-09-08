@@ -55,7 +55,7 @@ static bool integer(const char *buf, long long *v) {
     return !errno && end != buf && !*end;
 }
 
-DimacsError dimacs_parse_stream(Solver *s, FILE *file) {
+static DimacsError dimacs_parse_stream_account_impl(Solver *s, FILE *file) {
     if (!s || !file) return DIMACS_ERROR_FILE;
     struct InputReader reader;
     reader.file = file;reader.at = reader.size = 0;
@@ -209,4 +209,11 @@ void dimacs_write_cnf(const Solver* s, FILE* out) {
         if (lit) fprintf(out, "%d ", toDimacs(lit));
         else fprintf(out, "0\n");
     }
+}
+
+DimacsError dimacs_parse_stream(Solver *s, FILE *file) {
+    double started=solver_account_begin(s);
+    DimacsError result = dimacs_parse_stream_account_impl(s, file);
+    solver_account_end(s, ACCOUNT_PARSE, started);
+    return result;
 }
