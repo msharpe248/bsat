@@ -27,6 +27,8 @@ jobs:
         run: |
           python3 competition/c/tests/test_select_corpus.py
           python3 competition/c/tests/test_benchmark_manifest.py
+      - name: Certificate retention and checker compatibility regressions
+        run: DRAT_TRIM="$RUNNER_TEMP/drat-trim" python3 competition/c/tests/test_benchmark_artifacts.py
       - name: Unit and API regressions
         run: make -C competition/c all test parse-benchmark local-search-benchmark MODE=${{ matrix.mode }}
       - name: Parse benchmark smoke test
