@@ -1,0 +1,29 @@
+{
+  "revision": "7df3ce27c569615bdd205dbd6b473ab2c33953a7",
+  "inputs": [
+    {
+      "url": "https://raw.githubusercontent.com/TechnionFV/CAV_2025_artifact/7df3ce27c569615bdd205dbd6b473ab2c33953a7/benchmarks_aig/aig_inputs/hwmcc19_fold_fraigy_orchestrate/aig/goel/industry/cal3/cal3.aig",
+      "file": "cal3.aig",
+      "sha256": "c1948e7c2757b3d9c9cd22d492f1ee03528dbf9ba7c855af19d0f61568101eae",
+      "bytes": 1477
+    },
+    {
+      "url": "https://raw.githubusercontent.com/TechnionFV/CAV_2025_artifact/7df3ce27c569615bdd205dbd6b473ab2c33953a7/benchmarks_aig/aig_inputs/hwmcc19_fold_fraigy_orchestrate/aig/goel/opensource/usb_phy/usb_phy.aig",
+      "file": "usb_phy.aig",
+      "sha256": "3ab553645b0601b9f5f6924ed977dec5f40f6b193b79162574a3d133b33f8e0e",
+      "bytes": 2300
+    },
+    {
+      "url": "https://raw.githubusercontent.com/TechnionFV/CAV_2025_artifact/7df3ce27c569615bdd205dbd6b473ab2c33953a7/benchmarks_aig/aig_inputs/hwmcc19_fold_fraigy_orchestrate/aig/wolf/2019C/vgasim_imgfifo-p039.aig",
+      "file": "vgasim_imgfifo-p039.aig",
+      "sha256": "6c53a437a4181ee1e6d0482601a4ac205d311f07e8438a0a05a92f2385125803",
+      "bytes": 14402
+    },
+    {
+      "url": "https://raw.githubusercontent.com/TechnionFV/CAV_2025_artifact/7df3ce27c569615bdd205dbd6b473ab2c33953a7/benchmarks_aig/aig_inputs/hwmcc19_fold_fraigy_orchestrate/aig/goel/industry/gen23/gen23.aig",
+      "file": "gen23.aig",
+      "sha256": "6999de91a34e711d9c050db8700b7ea472c56726e2ff3012757f2614a4c9a0b4",
+      "bytes": 26489
+    }
+  ]
+}

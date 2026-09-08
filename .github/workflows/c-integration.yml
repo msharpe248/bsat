@@ -63,6 +63,19 @@ jobs:
         run: |
           make -C competition/c OPTFLAGS='-O3 -flto' checkpoint-example
           python3 competition/c/tests/check_checkpoint_example.py --binary competition/c/bin/checkpoint_service_release --queries 128 --repeats 1 --output "$RUNNER_TEMP/results/checkpoint-example.json"
+      - name: Pinned real verification circuits
+        env:
+          BSAT_DRAT_TRIM: ${{ runner.temp }}/drat-trim
+          BSAT_CAKE_LPR: ${{ runner.temp }}/cake-lpr/cake_lpr
+        run: |
+          git init "$RUNNER_TEMP/aiger"
+          git -C "$RUNNER_TEMP/aiger" remote add origin https://github.com/arminbiere/aiger.git
+          git -C "$RUNNER_TEMP/aiger" fetch --depth 1 origin 039ec1a2cc37d3093ac35c4b6df65336b346f409
+          git -C "$RUNNER_TEMP/aiger" checkout --detach FETCH_HEAD
+          (cd "$RUNNER_TEMP/aiger" && ./configure.sh && make -j2 aigtoaig)
+          python3 -m unittest discover -s competition/c/tests -p test_aag_history.py
+          python3 competition/c/tests/prepare_industrial_aig.py --aigtoaig "$RUNNER_TEMP/aiger/aigtoaig" --output "$RUNNER_TEMP/circuits"
+          python3 competition/c/tests/industrial_histories.py --library competition/c/bin/libbsat_release.so --reference "$RUNNER_TEMP/kissat-8af8e56f174b778aef3aa45af9f739b2a5f492c2/build/kissat" --incremental-reference "$RUNNER_TEMP/cadical/build/libcadical.so" --circuits "$RUNNER_TEMP/circuits" --depths 0,1,2,4 --output "$RUNNER_TEMP/results/industrial-histories.json"
       - name: Service lifecycle smoke test (not a hosted timing baseline)
         env:
           BSAT_DRAT_TRIM: ${{ runner.temp }}/drat-trim
