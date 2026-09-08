@@ -1,0 +1,9 @@
+{
+  "mutation": "Omit all assumptions from retained reference solve",
+  "detected": true,
+  "query": 0,
+  "error": "AssertionError((0, 0, 'incremental mismatch'))",
+  "stderr": "Traceback (most recent call last):\n  File \"<string>\", line 7, in <module>\n    runpy.run_module('differential_histories',run_name='__main__')\n    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"<frozen runpy>\", line 229, in run_module\n  File \"<frozen runpy>\", line 88, in _run_code\n  File \"/Users/msharpe/python/bsat/competition/c/tests/differential_histories.py\", line 168, in <module>\n    if __name__ == '__main__': main()\n                               ~~~~^^\n  File \"/Users/msharpe/python/bsat/competition/c/tests/differential_histories.py\", line 113, in main\n    assert inc.solve(assumptions)==result,(flags,q,'incremental mismatch')\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nAssertionError: (0, 0, 'incremental mismatch')\n",
+  "driver_sha256": "664e31085aeb07cb264079084de9eef97fc52ea9dce6f0b53e5f7e64cabf6634",
+  "binding_sha256": "339fae4d1dd26d9f291bd5261357c3bac3cf63b4e805e7579fa83dd03eeb208e"
+}

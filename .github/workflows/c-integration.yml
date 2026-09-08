@@ -24,6 +24,15 @@ jobs:
           git -C "$RUNNER_TEMP/ipasir" remote add origin https://github.com/biotomas/ipasir.git
           git -C "$RUNNER_TEMP/ipasir" fetch --depth 1 origin 461a8f4611c41980037723d0e26856fb224ab188
           git -C "$RUNNER_TEMP/ipasir" checkout --detach FETCH_HEAD
+          git init "$RUNNER_TEMP/cadical"
+          git -C "$RUNNER_TEMP/cadical" remote add origin https://github.com/arminbiere/cadical.git
+          git -C "$RUNNER_TEMP/cadical" fetch --depth 1 origin c60730422e758ef1cebe7aeddf2dda31c996bf04
+          git -C "$RUNNER_TEMP/cadical" checkout --detach FETCH_HEAD
+      - name: Build retained incremental reference
+        working-directory: ${{ runner.temp }}/cadical
+        run: |
+          ./configure -shared
+          make -j2
       - name: Build reference solver
         working-directory: ${{ runner.temp }}/kissat-8af8e56f174b778aef3aa45af9f739b2a5f492c2
         run: |
@@ -41,6 +50,19 @@ jobs:
         run: |
           python3 competition/c/tests/differential_histories.py --library competition/c/bin/libbsat_release.so --reference "$RUNNER_TEMP/kissat-8af8e56f174b778aef3aa45af9f739b2a5f492c2/build/kissat" --output "$RUNNER_TEMP/results/differential.json"
           python3 competition/c/tests/check_upstream_ipasir.py --upstream "$RUNNER_TEMP/ipasir" --library competition/c/bin/libbsat_release.so --output "$RUNNER_TEMP/results/upstream-client.json"
+      - name: Retained independent solver with growing variables and checkpoint cancellation
+        env:
+          BSAT_DRAT_TRIM: ${{ runner.temp }}/drat-trim
+          BSAT_CAKE_LPR: ${{ runner.temp }}/cake-lpr/cake_lpr
+        run: |
+          python3 competition/c/tests/differential_histories.py --library competition/c/bin/libbsat_release.so --reference "$RUNNER_TEMP/kissat-8af8e56f174b778aef3aa45af9f739b2a5f492c2/build/kissat" --incremental-reference "$RUNNER_TEMP/cadical/build/libcadical.so" --growing-blocks --output "$RUNNER_TEMP/results/retained-reference.json"
+      - name: Public C checkpoint policy example
+        env:
+          BSAT_DRAT_TRIM: ${{ runner.temp }}/drat-trim
+          BSAT_CAKE_LPR: ${{ runner.temp }}/cake-lpr/cake_lpr
+        run: |
+          make -C competition/c OPTFLAGS='-O3 -flto' checkpoint-example
+          python3 competition/c/tests/check_checkpoint_example.py --binary competition/c/bin/checkpoint_service_release --queries 128 --repeats 1 --output "$RUNNER_TEMP/results/checkpoint-example.json"
       - name: Service lifecycle smoke test (not a hosted timing baseline)
         env:
           BSAT_DRAT_TRIM: ${{ runner.temp }}/drat-trim
