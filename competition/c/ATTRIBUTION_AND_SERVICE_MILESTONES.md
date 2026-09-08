@@ -4,8 +4,8 @@ Authorized batch; commit and push each validated milestone. Preserve unrelated
 `.zvec-grep/`. Timed workloads run serially without concurrent local builds/tests.
 
 1. Clause attribution: complete; CLAUSE_ATTRIBUTION.md, diagnostic origin/age/reuse data.
-2. Selective strengthening: pending; measure tightly bounded hot-clause selection.
-3. Bounded portfolio: pending; equal overall resource and validation budgets.
+2. Selective strengthening: complete; HOT_CLAUSE_STRENGTHENING.md, tested prototype archived after holdout regression.
+3. Bounded portfolio: running on Linux; equal process CPU/wall/address-space and validation budgets.
 4. Checkpoint policy example: pending; changing workloads and quota headroom.
 5. Independent incremental comparator: pending; retained second solver, larger
    additions, cancellation and checkpoint histories.

@@ -1,0 +1,203 @@
+diff --git a/competition/c/include/arena.h b/competition/c/include/arena.h
+index bf094c2..0a676ea 100644
+--- a/competition/c/include/arena.h
++++ b/competition/c/include/arena.h
+@@ -36,6 +36,7 @@ typedef struct Arena {
+ typedef struct ClauseHeader {
+     uint32_t size     : 28;  // Number of literals (max 268M)
+     uint32_t flags    : 4;   // Clause flags (learned, deleted, etc.)
++    uint32_t heat;           // Experimental saturating scan score
+     uint32_t search;         // Circular watch search cursor
+     uint32_t lbd;            // Literal Block Distance score
+     float    activity;       // Clause activity for deletion
+diff --git a/competition/c/include/solver.h b/competition/c/include/solver.h
+index 8e78bf0..b4711c2 100644
+--- a/competition/c/include/solver.h
++++ b/competition/c/include/solver.h
+@@ -100,6 +100,7 @@ typedef struct SolverOpts {
+     bool     binary_proof;      // Use binary DRAT format (false)
+ 
+     // Inprocessing
++    bool     hot_vivify;        // Experimental bounded scan-guided selection
+     bool     inprocess;         // Enable inprocessing (false)
+     uint32_t inprocess_interval; // Conflicts between inprocessing (10000)
+     bool     subsumption;       // Enable subsumption (true)
+diff --git a/competition/c/src/arena.c b/competition/c/src/arena.c
+index 63a1a50..a29d7d0 100644
+--- a/competition/c/src/arena.c
++++ b/competition/c/src/arena.c
+@@ -184,7 +184,7 @@ CRef arena_alloc(Arena* arena, const Lit* lits, uint32_t size, bool learned) {
+ 
+     // Initialize clause header
+     ClauseHeader* header = CLAUSE_HEADER(arena, cref);
+-    header->search = 2;
++    header->search = 2;header->heat=0;
+     header->size = size;
+     header->flags = learned ? CLAUSE_LEARNED : CLAUSE_ORIGINAL;
+     header->lbd = 0;
+diff --git a/competition/c/src/main.c b/competition/c/src/main.c
+index 6e02a57..9ea0f57 100644
+--- a/competition/c/src/main.c
++++ b/competition/c/src/main.c
+@@ -237,6 +237,7 @@ static struct option long_options[] = {
+     {"bce", no_argument, 0, 0},
+     {"alternating", no_argument, 0, 0},
+     {"portfolio", required_argument, 0, 0},
++    {"hot-vivify", no_argument, 0, 0},
+     {"no-circular", no_argument, 0, 0},
+     {"seed", required_argument, 0, 0},
+     {"preprocess-budget", required_argument, 0, 0},
+@@ -358,6 +359,8 @@ int main(int argc, char** argv) {
+                     opts.factor_min_gain = strtoul(optarg,NULL,10);
+                 } else if (strcmp(long_options[option_index].name, "congruence-budget") == 0) {
+                     opts.congruence_budget = strtoull(optarg,NULL,10);
++                } else if (strcmp(long_options[option_index].name, "hot-vivify") == 0) {
++                    opts.hot_vivify=true;opts.inprocess=true;
+                 } else if (strcmp(long_options[option_index].name, "portfolio") == 0) {
+                     portfolio_seconds = atof(optarg);
+                     if (portfolio_seconds <= 0) { fprintf(stderr,"Error: portfolio slice must be positive\n");return 1; }
+diff --git a/competition/c/src/solver.c b/competition/c/src/solver.c
+index afae5fc..0a03ef6 100644
+--- a/competition/c/src/solver.c
++++ b/competition/c/src/solver.c
+@@ -1107,6 +1107,10 @@ static CRef solver_propagate_account_impl(Solver* s) {
+                     else if (size <= 8) s->accounting.scan_size_4_8++;
+                     else s->accounting.scan_size_9_plus++;
+                 }
++                if(s->opts.hot_vivify && clause_learned(s->arena,cref)) {
++                    ClauseHeader *h=CLAUSE_HEADER(s->arena,cref);
++                    if(h->heat<UINT32_MAX) ++h->heat;
++                }
+                 Lit lit = lits[k];
+                 Var v = var(lit);
+ 
+@@ -1955,13 +1959,35 @@ static bool solver_simplify_account_impl(Solver *s) {
+         s->stats.conflicts < s->last_vivify + s->opts.inprocess_interval) return true;
+     s->last_vivify = s->stats.conflicts;
+     s->work_limit = s->work + MIN(s->opts.preprocess_budget, UINT64_MAX-s->work);
+-    uint32_t count = MIN(s->num_learnts, 100u);
++    uint64_t pass_limit=s->work_limit;
++    uint32_t selected[4], selected_count=0;
++    if(s->opts.hot_vivify) {
++        s->work_limit=s->work+MIN(MIN(s->opts.preprocess_budget,25000u),UINT64_MAX-s->work);
++        pass_limit=s->work_limit;
++        /* Bound selection as well as RUP work. Rotate the window, so a large
++           learned database does not starve its tail. */
++        for(uint32_t i=0, limit=MIN(s->num_learnts,512u);i<limit && !solver_budget_exhausted(s);++i) {
++            uint32_t at=s->vivify_cursor++ % s->num_learnts;CRef cr=s->learnts[at];
++            ++s->work;
++            if(clause_deleted(s->arena,cr) || clause_locked(s,cr)) continue;
++            ClauseHeader *h=CLAUSE_HEADER(s->arena,cr);
++            if(h->size<3 || h->size>64 || h->heat<4096) continue;
++            unsigned pos=0;
++            while(pos<selected_count && CLAUSE_HEADER(s->arena,s->learnts[selected[pos]])->heat>=h->heat) ++pos;
++            if(pos==4) continue;
++            if(selected_count<4) ++selected_count;
++            for(unsigned j=selected_count-1;j>pos;--j) selected[j]=selected[j-1];
++            selected[pos]=at;
++        }
++    }
++    uint32_t count = s->opts.hot_vivify ? selected_count : MIN(s->num_learnts, 100u);
+     for (uint32_t k = 0; k < count && !solver_budget_exhausted(s); ++k) {
+-        uint32_t at = s->vivify_cursor++ % s->num_learnts;
++        uint32_t at = s->opts.hot_vivify ? selected[k] : s->vivify_cursor++ % s->num_learnts;
+         CRef cr = s->learnts[at];
+         if (clause_deleted(s->arena, cr) || clause_locked(s, cr)) continue;
+         uint32_t n = CLAUSE_SIZE(s->arena, cr);
+         if (n <= 2 || n > 64) continue;
++        if(s->opts.hot_vivify) CLAUSE_HEADER(s->arena,cr)->heat=0;
+         Lit *candidate = malloc(n * sizeof *candidate);
+         if (!candidate) continue;
+         memcpy(candidate, CLAUSE_LITS(s->arena, cr), n * sizeof *candidate);
+@@ -2007,7 +2033,7 @@ static bool solver_simplify_account_impl(Solver *s) {
+         /* Complete root propagation before the next temporary RUP check. */
+         s->work_limit = 0;
+         if (solver_propagate(s) != INVALID_CLAUSE) { s->result = FALSE; break; }
+-        s->work_limit = s->work + MIN(s->opts.preprocess_budget, UINT64_MAX-s->work) / (count ? count : 1);
++        s->work_limit = s->opts.hot_vivify ? pass_limit : s->work + MIN(s->opts.preprocess_budget, UINT64_MAX-s->work) / (count ? count : 1);
+     }
+     s->work_limit = 0;
+     return s->result != FALSE;
+diff --git a/competition/c/tests/test_vivify_prefix.c b/competition/c/tests/test_vivify_prefix.c
+index ac3fb5e..e9bfb68 100644
+--- a/competition/c/tests/test_vivify_prefix.c
++++ b/competition/c/tests/test_vivify_prefix.c
+@@ -43,7 +43,7 @@ static bool rup(const Solver *s, const Lit *lits, unsigned n) {
+     return false;
+ }
+ static Solver *fixture(const Lit *lits, unsigned n, unsigned budget) {
+-    SolverOpts o=default_opts();o.inprocess=true;o.inprocess_interval=1;
++    SolverOpts o=default_opts();o.inprocess=true;o.hot_vivify=true;o.inprocess_interval=1;
+     o.preprocess_budget=budget;o.probing=false;
+     Solver *s=solver_new_with_opts(&o);assert(s);
+     for (unsigned v=0;v<6;++v) assert(solver_new_var(s));
+@@ -53,6 +53,7 @@ static Solver *fixture(const Lit *lits, unsigned n, unsigned budget) {
+     s->learnts[0]=cr;s->num_learnts=s->learnts_size=1;
+     watch_add(s->watches,lits[0],cr,lits[1]);
+     watch_add(s->watches,lits[1],cr,lits[0]);
++    CLAUSE_HEADER(s->arena,cr)->heat=UINT32_MAX;
+     s->stats.conflicts=1;
+     return s;
+ }
+@@ -96,7 +97,7 @@ static void check(Solver *s, bool exact) {
+ static void interrupted_scan(void) {
+     const unsigned budgets[]={1,1023,1024,1025,2047,2048,4096,8192};
+     for(unsigned b=0;b<sizeof budgets/sizeof *budgets;++b) {
+-        SolverOpts o=default_opts();o.inprocess=true;o.inprocess_interval=1;
++        SolverOpts o=default_opts();o.inprocess=true;o.hot_vivify=true;o.inprocess_interval=1;
+         o.preprocess_budget=budgets[b];o.probing=false;
+         Solver *s=solver_new_with_opts(&o);assert(s);
+         for(unsigned v=0;v<4100;++v)assert(solver_new_var(s));
+diff --git a/competition/c/tests/validate.py b/competition/c/tests/validate.py
+index 6778bce..07991f7 100644
+--- a/competition/c/tests/validate.py
++++ b/competition/c/tests/validate.py
+@@ -197,6 +197,8 @@ def main():
+                ['--alternating', '--no-circular', '--no-probing'], ['--binary-proof', '--elim'],
+                ['--iterative-minimize', '--minimize-budget', '1', '--no-probing'],
+                ['--iterative-minimize', '--minimize-budget', '0', '--no-probing']]
++    configs += [['--hot-vivify','--inprocess-interval','1','--no-probing'],
++                ['--hot-vivify','--inprocess-interval','1','--binary-proof','--preprocess-budget','32']]
+     configs += [['--iterative-minimize'] + options for options in configs[:12]]
+     configs += [['--minimize-budget', '0', '--no-probing'],
+                 ['--minimize-budget', '1', '--no-probing']]
+diff --git a/competition/c/tests/test_hot_vivify.c b/competition/c/tests/test_hot_vivify.c
+new file mode 100644
+index 0000000..88ef49a
+--- /dev/null
++++ b/competition/c/tests/test_hot_vivify.c
+@@ -0,0 +1,34 @@
++#include "solver.h"
++#include <assert.h>
++#include <stdio.h>
++int main(void) {
++    const unsigned budgets[]={1,32,512,25000,1000000};
++    for(unsigned b=0;b<5;++b) {
++        SolverOpts o=default_opts();o.inprocess=o.hot_vivify=true;
++        o.inprocess_interval=1;o.preprocess_budget=budgets[b];o.probing=false;
++        Solver *s=solver_new_with_opts(&o);assert(s);
++        for(unsigned i=0;i<4;++i) assert(solver_new_var(s));
++        Lit base[]={mkLit(1,false),mkLit(2,false)};
++        assert(solver_add_clause(s,base,2));
++        Lit c[]={base[0],base[1],mkLit(3,false),mkLit(4,false)};
++        s->learnts=malloc(600*sizeof(CRef));assert(s->learnts);s->learnts_size=600;
++        for(unsigned i=0;i<600;++i) {
++            CRef cr=arena_alloc(s->arena,c,4,true);assert(cr!=INVALID_CLAUSE);
++            CLAUSE_HEADER(s->arena,cr)->heat=4096+i;
++            s->learnts[s->num_learnts++]=cr;
++            watch_add(s->watches,c[0],cr,c[1]);watch_add(s->watches,c[1],cr,c[0]);
++        }
++        s->stats.conflicts=1;uint64_t before=s->work;
++        assert(solver_simplify(s));
++        assert(!s->error && !s->interrupted && !s->decision_level && !s->work_limit);
++        assert(s->work-before<=MIN(budgets[b],25000u));
++        unsigned changed=0;
++        for(unsigned i=0;i<600;++i) {
++            unsigned n=CLAUSE_SIZE(s->arena,s->learnts[i]);
++            if(n<4) {++changed;assert(i>=508 && i<=511 && n==2);}
++        }
++        assert(changed==(budgets[b]>=25000?4:0));
++        assert(solver_solve(s)==TRUE && solver_check_model(s));solver_free(s);
++    }
++    puts("PASS: bounded 512-record window, top-four selection and five work cutoffs");
++}

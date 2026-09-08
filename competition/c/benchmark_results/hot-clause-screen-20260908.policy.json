@@ -1,0 +1,67 @@
+{
+  "scope": "Frozen development screen for the archived bounded hot-clause prototype.",
+  "seconds": 8,
+  "repeats": 2,
+  "seed": 2026090842,
+  "commands": {
+    "baseline": [
+      "/private/tmp/bsat-before-hot",
+      "--chrono",
+      "--congruence",
+      "--equiv",
+      "--equiv-budget",
+      "100000000",
+      "--alternating",
+      "--binary-proof",
+      "--proof",
+      "{proof}",
+      "{input}"
+    ],
+    "broad": [
+      "/private/tmp/bsat-before-hot",
+      "--chrono",
+      "--congruence",
+      "--equiv",
+      "--equiv-budget",
+      "100000000",
+      "--alternating",
+      "--inprocess",
+      "--binary-proof",
+      "--proof",
+      "{proof}",
+      "{input}"
+    ],
+    "hot": [
+      "/Users/msharpe/python/bsat/competition/c/bin/bsat",
+      "--chrono",
+      "--congruence",
+      "--equiv",
+      "--equiv-budget",
+      "100000000",
+      "--alternating",
+      "--hot-vivify",
+      "--binary-proof",
+      "--proof",
+      "{proof}",
+      "{input}"
+    ]
+  },
+  "binaries": {
+    "/tmp/bsat-before-hot": "cdef7bd63217c941ebe30cfc27ef00fafd2d88e362fdf950c856b952c66e0a57",
+    "competition/c/bin/bsat": "c79b717838d1da2041e691daab6d8255f2be8e4ebda980461067075cb4368e7f"
+  },
+  "inputs": {
+    "/Users/msharpe/python/bsat/dataset/sat_competition2025/planning/16c999d046885c8e51f196e60c34d966.cnf": {
+      "sha256": "77db4df9cc8bd8cd59dae994f24a3cf686ebd46e2aa123c534b5e3cc3a75d9b5"
+    },
+    "/Users/msharpe/python/bsat/dataset/sat_competition2025/planning/21b173943af57eefaac5e88bfa2662ad.cnf": {
+      "sha256": "c0391929a13777b719e8383b31cbee5904e05741e105c4c22914a2259a17ecfd"
+    },
+    "/Users/msharpe/python/bsat/dataset/sat_competition2025/battleship/ed6d842f96d10f3400bce251f9e95bfb.cnf": {
+      "sha256": "9d586fde48ebcc533f867c06569f008a9b3f5b71dca6a3c9e18db48e037a0b6f"
+    },
+    "/Users/msharpe/python/bsat/dataset/sat_competition2025/ktf/86173292a2c6a506acf27a81db853bb5.cnf": {
+      "sha256": "a8aea7e4da078513ac5af84fc390d3ab27f8bd26ee7eced9fac2589d18504d1f"
+    }
+  }
+}

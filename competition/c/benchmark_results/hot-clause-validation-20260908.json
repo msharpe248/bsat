@@ -1,0 +1,23 @@
+{
+  "patch_sha256": "08594e9f43343b0bc0d7ed376b7c728159bd4dbf9c9c1d62b32b689000c7cffe",
+  "builds": [
+    {
+      "mode": "release",
+      "sha256": "c79b717838d1da2041e691daab6d8255f2be8e4ebda980461067075cb4368e7f",
+      "unit_suites": "all pass",
+      "vivify_oracle_cases": 4704,
+      "hot_selection_cutoffs": 5,
+      "independent_cli_solves": 5922,
+      "seed": 2026090841
+    },
+    {
+      "mode": "debug",
+      "sha256": "db5d2244466b71e1fb86b4c644867696cf5075c0f11a3d3cb9542af5317ed9df",
+      "unit_suites": "all pass",
+      "vivify_oracle_cases": 4704,
+      "hot_selection_cutoffs": 5,
+      "independent_cli_solves": 5922,
+      "seed": 2026090841
+    }
+  ]
+}
