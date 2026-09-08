@@ -11,3 +11,5 @@ workspace state is preserved. Linux PMU profiling still needs a target host.
 1. reg-n diagnosis complete: 14 reference ablations, eight verified UNSAT answers,
    six UNKNOWN, no errors. Factoring is the isolated promising missing technique;
    see `REGN_DIAGNOSIS.md`. This is diagnosis, not a BSAT factoring implementation.
+2. Memory lifetimes and watch capacity: measured roughly 11% less peak RSS on
+   the largest input at fixed work; see `MEMORY_LIFETIMES.md` for checks and limits.

@@ -86,7 +86,7 @@ static inline WatchList* watch_list(WatchManager* wm, Lit lit) {
 // Ensure watch list has capacity for at least one more watch
 static inline bool watchlist_ensure_capacity(WatchList* wl) {
     if (wl->size >= wl->capacity) {
-        uint32_t new_cap = wl->capacity ? wl->capacity * 2 : 16;
+        uint32_t new_cap = wl->capacity ? wl->capacity * 2 : 4;
         Watch* new_watches = (Watch*)realloc(wl->watches, new_cap * sizeof(Watch));
         if (!new_watches) return false;
         wl->watches = new_watches;

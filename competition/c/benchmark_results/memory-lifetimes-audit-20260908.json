@@ -1,0 +1,20 @@
+{
+  "runs": 12,
+  "identical_status_work_and_proof": true,
+  "counters": [
+    "Decisions",
+    "Propagations",
+    "Conflicts",
+    "Restarts",
+    "Learned clauses",
+    "Learned literals",
+    "Deleted clauses",
+    "Minimized literals",
+    "Max LBD",
+    "Garbage collections",
+    "Reductions",
+    "Substituted vars",
+    "Literal inspections"
+  ],
+  "scope": "UNKNOWN proof prefixes are trace guards, not UNSAT certificates"
+}

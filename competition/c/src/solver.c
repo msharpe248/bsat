@@ -2014,6 +2014,7 @@ static bool solver_rebuild_timed(Solver *s, double start_time, double max_time) 
         if (solver_budget_exhausted(fresh)) goto incomplete;
         if (!solver_new_var(fresh)) { solver_free(fresh); s->error=true; return false; }
     }
+    fresh->internal_add=true; /* Borrow original input until commit, never duplicate it. */
     size_t start = 0;
     for (size_t i = 0; i < s->input_size; ++i) {
         if (!(i & 1023) && solver_budget_exhausted_now(fresh)) goto incomplete;
@@ -2032,6 +2033,10 @@ static bool solver_rebuild_timed(Solver *s, double start_time, double max_time) 
         fresh->proof_file=fopen(path, opts.binary_proof ? "wb" : "w");
         if (!fresh->proof_file) { solver_free(fresh); s->error=true; return false; }
     }
+    fresh->internal_add=false;
+    fresh->input=s->input;fresh->input_size=s->input_size;
+    fresh->input_capacity=s->input_capacity;fresh->input_clauses=s->input_clauses;
+    s->input=NULL;s->input_size=s->input_capacity=0;s->input_clauses=0;
     if (s->opts.accounting) {
         uint64_t overlap=solver_memory(s).total+solver_memory(fresh).total;
         fresh->accounting.rebuild_overlap_peak=MAX(overlap,s->accounting.rebuild_overlap_peak);

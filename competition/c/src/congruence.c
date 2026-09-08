@@ -224,6 +224,9 @@ static bool extract(Closure *c) {
                           mkLit(p->v[(j+2)%3],false),0,XOR_GATE)) return false;
         }
     }
+    /* All clause-index lookups are complete; ITE expansion only reads branches. */
+    account_temporary(c);
+    free(c->cells);c->cells=NULL;
     for (size_t i=0;i<c->branch_cap;++i) {
         if (!tick(c)) return false;
         /* Charge the same bounded scan work even for an unallocated table. */
