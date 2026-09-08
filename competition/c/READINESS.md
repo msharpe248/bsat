@@ -25,10 +25,14 @@ UNSAT certificate. UNKNOWN is unfinished, not an incorrect answer.
    preserve input/proof files. Records: `benchmark_results/long-search-*-20260907.json`.
    These are deterministic stress cases, not exhaustive combinations or a
    substitute for large application benchmarks.
-4. Production API contract: pending. Specify ownership, error/result lifetime,
-   repeated solves, assumptions, concurrency and interruption behavior; exercise
-   the supported contract. Learned-clause reuse and concurrent embedding are not
-   promised by the existing API.
+4. Production API contract: complete. `API_CONTRACT.md` defines ownership,
+   error/result lifetime, repeated solves, assumptions and the supported
+   single-threaded synchronous boundary. Invalid pointer/literal inputs now
+   poison the instance consistently. 48 C tests and 1,868 allocation failures
+   pass per build; final sanitizer long-search and process suites also pass.
+   Evidence: `benchmark_results/api-contract-20260907.json`. Concurrent embedding,
+   conditional proofs and learned-clause reuse remain unsupported capabilities,
+   rather than implied production promises.
 5. Profiling and broader frozen evaluation: pending. Profile development cases
    separately from timing, then evaluate a family-balanced unseen sample with
    longer budgets and repetitions against a pinned reference solver.

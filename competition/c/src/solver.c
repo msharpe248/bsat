@@ -759,7 +759,8 @@ static int compare_lits(const void *a, const void *b) {
 }
 
 bool solver_add_clause(Solver* s, const Lit* lits, uint32_t size) {
-    if (!s || (size && !lits)) return false;
+    if (!s) return false;
+    if (size && !lits) { s->error=true; s->result=UNDEF; return false; }
     if (s->error || s->watches->failed) return false;
     if (s->has_solved && !solver_rebuild(s)) return false;
     ASSERT(s->decision_level == 0);
@@ -830,7 +831,7 @@ bool solver_add_clause(Solver* s, const Lit* lits, uint32_t size) {
  *********************************************************************/
 
 lbool solver_model_value(const Solver* s, Var v) {
-    if (!v || v > s->num_vars) return UNDEF;
+    if (!s || !v || v > s->num_vars) return UNDEF;
     return s->values[v];
 }
 
@@ -2254,11 +2255,14 @@ done:
 }
 
 static lbool solver_solve_at(Solver *s, const Lit *assumps, uint32_t n_assumps, double start_time) {
-    if (!s || (n_assumps && !assumps)) return UNDEF;
+    if (!s) return UNDEF;
+    if (n_assumps && !assumps) { s->error=true; s->result=UNDEF; return UNDEF; }
     if (s->error || s->watches->failed) { s->error=true; s->result=UNDEF; return UNDEF; }
     if (s->has_solved && !solver_rebuild(s)) return UNDEF;
     for (uint32_t i=0;i<n_assumps;++i)
-        if (!var(assumps[i]) || var(assumps[i])>s->num_vars) return UNDEF;
+        if (!var(assumps[i]) || var(assumps[i])>s->num_vars) {
+            s->error=true; s->result=UNDEF; return UNDEF;
+        }
     /* Proofs under assumptions need an augmented input or a conditional proof
        interface. Do not emit an unconditional UNSAT certificate for them. */
     if (n_assumps && s->proof_file) return UNDEF;

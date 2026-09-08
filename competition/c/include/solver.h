@@ -327,6 +327,8 @@ typedef struct Solver {
  * Solver API
  *********************************************************************/
 
+/* Supported embedding contract: ../API_CONTRACT.md. Exposed internal helpers
+   and structure layout do not constitute a stable binary interface. */
 // Create a new solver
 Solver* solver_new(void);
 
@@ -339,7 +341,7 @@ void solver_free(Solver* s);
 // Add a variable (returns variable index)
 Var solver_new_var(Solver* s);
 
-// Add a clause
+// Copies literals. False means a contradiction or error; inspect Solver.error.
 bool solver_add_clause(Solver* s, const Lit* lits, uint32_t size);
 
 // Main solve function
@@ -361,7 +363,7 @@ bool solver_normalize_conflict(Solver* s, CRef conflict);
 // Solve with assumptions
 lbool solver_solve_with_assumptions(Solver* s, const Lit* assumps, uint32_t n_assumps);
 
-// Get variable value in model
+// Read only after a successful SAT solve and before any mutation/next solve.
 lbool solver_model_value(const Solver* s, Var v);
 
 // Get a nonminimal clause of negated failed assumptions (empty for base UNSAT).

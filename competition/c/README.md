@@ -267,6 +267,8 @@ measurements and the comparison with Glucose.
 ## C API
 
 Include `include/solver.h` and link the core objects without `main.o`.
+The supported ownership, result lifetime, errors and concurrency boundary are
+specified in [API_CONTRACT.md](API_CONTRACT.md).
 Use `solver_model_value` to read assignments; invalid variable indices return
 UNDEF. Internal structure layout changed with the compact assignment array:
 recompile embedding code and replace direct `vars[v].value` accesses with the
