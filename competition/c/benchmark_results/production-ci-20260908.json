@@ -1,0 +1,40 @@
+{
+  "scope": "Six GCC/Clang Linux/macOS release/debug jobs per run; recorded before final cancellation regression fix",
+  "runs": [
+    {
+      "conclusion": "success",
+      "databaseId": 34200384209,
+      "headSha": "be5e69842d3c82a2949c0c683afba656a61b312e",
+      "status": "completed",
+      "url": "https://github.com/msharpe248/bsat/actions/runs/34200384209"
+    },
+    {
+      "conclusion": "success",
+      "databaseId": 34199495690,
+      "headSha": "4449b2c2ae3de670a9d85f5475721bf63b3ab6a1",
+      "status": "completed",
+      "url": "https://github.com/msharpe248/bsat/actions/runs/34199495690"
+    },
+    {
+      "conclusion": "success",
+      "databaseId": 34198865058,
+      "headSha": "a77f0173ce70f109d95caefa00b9b0ab4a86dc3c",
+      "status": "completed",
+      "url": "https://github.com/msharpe248/bsat/actions/runs/34198865058"
+    },
+    {
+      "conclusion": "success",
+      "databaseId": 34197431281,
+      "headSha": "46ac04ecf100ec8c2fb519c94e862f6da56e4139",
+      "status": "completed",
+      "url": "https://github.com/msharpe248/bsat/actions/runs/34197431281"
+    },
+    {
+      "conclusion": "success",
+      "databaseId": 34196694265,
+      "headSha": "b7316991e260115702a0f5c04e87762de201bfce",
+      "status": "completed",
+      "url": "https://github.com/msharpe248/bsat/actions/runs/34196694265"
+    }
+  ]
+}

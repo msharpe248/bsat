@@ -16,8 +16,9 @@ conflict/reduction/GC behavior separately.
 
 `BSAT_SOAK_CYCLES` scales the run up to 100,000 instances. Linux CI runs the soak
 under ASan/UBSan with leak detection; scheduled/manual runs use 2,048 instances
-(262,144 queries). Local macOS ASan success is not a claim of Linux leak-test
-completion. The existing coverage fuzzing workflow remains in place.
+(262,144 queries). The initial 128-instance Linux ASan/UBSan/LSan run also passed in
+[workflow 34200384128](https://github.com/msharpe248/bsat/actions/runs/34200384128).
+Extended-run evidence is recorded separately. The existing coverage fuzzing workflow remains in place.
 
 Conditional proof support and wrong-context rejection are documented in
 `CONDITIONAL_CERTIFICATES.md`. The benchmark and verified-checker reports now
@@ -45,3 +46,13 @@ Checker timing can exceed solver timing; callers need an end-to-end budget.
 Policies, run records and compact certificate receipts are retained under
 `benchmark_results/assurance-*-20260908.json`; full certificates remain at the
 local artifact paths named by the receipts.
+
+
+The explicitly dispatched extended Linux run also passes:
+[workflow 34200894962](https://github.com/msharpe248/bsat/actions/runs/34200894962),
+on `be5e698`, completes 2,048 instances / 262,144 exact-oracle queries (149,286 SAT,
+112,858 UNSAT) under ASan/UBSan/LSan. Each fuzzer runs 601 seconds: 155,391 API
+cases and 2,792,866 DIMACS cases, with no findings. Peak fuzzer RSS is 504 and
+458 MiB respectively. The fuzz grammar is still bounded; this does not exhaust
+arbitrary input sizes or histories. Exact evidence is in
+`benchmark_results/assurance-extended-20260908.json`.

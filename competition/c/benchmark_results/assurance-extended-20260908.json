@@ -1,0 +1,35 @@
+{
+  "revision": "be5e69842d3c82a2949c0c683afba656a61b312e",
+  "run": 34200894962,
+  "url": "https://github.com/msharpe248/bsat/actions/runs/34200894962",
+  "conclusion": "success",
+  "soak": {
+    "instances": 2048,
+    "queries": 262144,
+    "sat": 149286,
+    "unsat": 112858,
+    "variables": 256,
+    "sanitizers": [
+      "address",
+      "undefined",
+      "leak"
+    ]
+  },
+  "fuzz": {
+    "api": {
+      "cases": 155391,
+      "seconds": 601,
+      "peak_rss_mib": 504
+    },
+    "dimacs": {
+      "cases": 2792866,
+      "seconds": 601,
+      "peak_rss_mib": 458
+    },
+    "grammar_limit": "six-variable API oracle / 512-byte maximum input"
+  },
+  "logs": {
+    "/tmp/bsat-extended-assurance.log": "21598a02e62d6c8173628419bd1fb295e54cadae45296afb8a9bc7396c5a7973",
+    "/tmp/bsat-assurance-hosted.log": "508b0472a451f87d38b773fe51717ec90f5bc164853ac2e43cd554f46d8f305a"
+  }
+}

@@ -5,8 +5,8 @@ work fixes known wrong-answer and memory-management defects and adds independent
 certificate validation. Passing these tests does not establish production
 readiness for arbitrary workloads. See [HARDENING.md](HARDENING.md) for changes,
 validation evidence, research references, and remaining limitations.
-The current acceptance checks, API boundary and broader evaluation are tracked
-in [READINESS.md](READINESS.md), with executable coverage in
+The latest production milestones are tracked in [PRODUCTION_GAPS.md](PRODUCTION_GAPS.md).
+Earlier acceptance checks and evaluation are in [READINESS.md](READINESS.md), with executable coverage in
 [tests/FEATURE_COVERAGE.md](tests/FEATURE_COVERAGE.md).
 
 ## Build and verify
@@ -269,26 +269,27 @@ measurements and the comparison with Glucose.
 
 ## C API
 
-Include `include/solver.h` and link the core objects without `main.o`.
-The supported ownership, result lifetime, errors and concurrency boundary are
-specified in [API_CONTRACT.md](API_CONTRACT.md).
-Use `solver_model_value` to read assignments; invalid variable indices return
-UNDEF. Internal structure layout changed with the compact assignment array:
-recompile embedding code and replace direct `vars[v].value` accesses with the
-accessor. The C API does not promise a stable binary layout.
-`solver_new_with_opts` returns NULL for invalid numeric options; `clause_decay`
-must be finite and in (0,1].
-`solver_solve_with_assumptions` accepts repeated or contradictory assumptions.
-Subsequent solves, new variables, or added clauses rebuild working state from the
-original input. This restores eliminated clauses and avoids stale assumption
-results, but does not retain learned clauses across calls. Allocation failures or
-invalid API literals set `Solver.error`; no SAT/UNSAT answer is returned on error.
+For production embedding, include `include/bsat.h` and build with `make shared`.
+The opaque ABI-v1 interface supports independent solver instances, copied DIMACS
+clause/assumption arrays, model/core queries, resource limits and cooperative
+cancellation. `make embedding-test soak-test` exercises a dynamically linked
+client and larger stateful histories. See [EMBEDDING.md](EMBEDDING.md) and
+[API_CONTRACT.md](API_CONTRACT.md) for ownership, error and concurrency rules.
 
-An assumption solve with proof output configured returns UNKNOWN: the current
-API does not expose conditional proofs. For a certificate of the augmented
-formula, explicitly add the assumptions as unit clauses to that formula.
-The solver still uses process-wide diagnostic flags and a SIGUSR1 progress
-handler; concurrent embedding is not yet a supported API contract.
+Calls on one handle must be serialized; distinct handles may solve concurrently.
+The library does not install signal handlers. CPU limits use solving-thread CPU
+time. The CLI alone handles SIGUSR1 progress requests and environment diagnostics.
+
+Opt-in `BSAT_REUSE_LEARNTS` (internal `SolverOpts.reuse_learnts`) retains learned
+clauses across compatible calls; preprocessing, proof and interruption cases use
+conservative rebuild fallbacks. See [INCREMENTAL_REUSE.md](INCREMENTAL_REUSE.md).
+`solver.h` remains an internal development interface with no stable structure ABI.
+Allocation/argument failures poison a handle and cannot yield a conclusive answer.
+
+The internal assumptions-plus-proof call still returns UNKNOWN. For independently
+checkable conditional certificates, [certify_query.py](tests/certify_query.py)
+binds the base, exact assumptions and augmented query in a separate artifact
+bundle. See [CONDITIONAL_CERTIFICATES.md](CONDITIONAL_CERTIFICATES.md).
 
 ## Measure performance
 
@@ -304,8 +305,8 @@ python3 tests/benchmark.py --checker /path/to/drat-trim \
 
 Runs are serial within the harness and order is seeded. Results include executable
 and input hashes, commands, platform, wall/CPU time, peak RSS, solver counters,
-verified solved counts and PAR-2. Certificate checking is outside solver timing;
-unverified results receive the timeout penalty. Keep development and held-out
+verified solved counts and PAR-2. Certificate checking is outside solver timing; validation and combined end-to-end
+time are reported separately. Unverified results receive the timeout penalty. Keep development and held-out
 families separate and avoid other workloads during timing. Synthetic cases and
 millisecond process runs establish smoke-test coverage, not industrial speedups.
 

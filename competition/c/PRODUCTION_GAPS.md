@@ -10,7 +10,9 @@ stateful/certificate assurance. Commit and push each validated milestone.
 2. Memory: first measured reduction complete. Lazy congruence tables save
    64 MiB on two workloads with matching work/proof signatures; see
    `LAZY_CONGRUENCE.md`. Largest-input reconstruction/watch costs remain.
-3. Search: pending frozen ablations on reg-n, Stedman-triples and argumentation.
+3. Search: all 36 frozen ablation runs audited. Omitting VMTF improves one
+   argumentation input about 7x in wall time; reg-n/Stedman remain unresolved.
+   Defaults unchanged; see `SEARCH_ABLATIONS.md`.
 4. Incremental reuse: opt-in conservative fast path implemented; incompatible
    transformations and interrupted/conditional-UNSAT states rebuild. See
    `INCREMENTAL_REUSE.md` for stateful, allocation and timing evidence.

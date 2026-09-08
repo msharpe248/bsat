@@ -1,0 +1,476 @@
+{
+  "complete_unique_grid": true,
+  "policy_and_hash_guards": true,
+  "no_errors": true,
+  "summary": {
+    "full": {
+      "verified": 2,
+      "mean_par2": 70.55525884715219,
+      "cases": {
+        "argumentation": [
+          {
+            "status": "SAT",
+            "verified": true,
+            "wall": 31.606011958327144,
+            "cpu": 29.701978,
+            "rss": 179994624,
+            "conflicts": "1044768",
+            "propagations": "302177729",
+            "decisions": "1885858",
+            "proof_sha256": "e946371745e3ecd864c9d02e8791d16e315e9e707e74c0bf1ebbf0743bca15bd"
+          },
+          {
+            "status": "SAT",
+            "verified": true,
+            "wall": 31.725541124586016,
+            "cpu": 29.735589,
+            "rss": 179961856,
+            "conflicts": "1044768",
+            "propagations": "302177729",
+            "decisions": "1885858",
+            "proof_sha256": "e946371745e3ecd864c9d02e8791d16e315e9e707e74c0bf1ebbf0743bca15bd"
+          }
+        ],
+        "reg-n": [
+          {
+            "status": "UNKNOWN",
+            "verified": false,
+            "wall": 42.3501697499305,
+            "cpu": 40.098397999999996,
+            "rss": 300187648,
+            "conflicts": "1872642",
+            "propagations": "37992554",
+            "decisions": "12645427",
+            "proof_sha256": "2de8f4306e4e95d1d1d76807a743c8136f1402ef0290adbb8bc07fcbbc9c4efb"
+          },
+          {
+            "status": "UNKNOWN",
+            "verified": false,
+            "wall": 44.50422087498009,
+            "cpu": 40.097267,
+            "rss": 218267648,
+            "conflicts": "1867033",
+            "propagations": "37901797",
+            "decisions": "12617921",
+            "proof_sha256": "050c98f5c2533f2e1de4036ead7dfbcd519d4ee8aac5e38a4f0d19a084aac8eb"
+          }
+        ],
+        "stedman-triples": [
+          {
+            "status": "UNKNOWN",
+            "verified": false,
+            "wall": 42.952304292004555,
+            "cpu": 40.025788999999996,
+            "rss": 74924032,
+            "conflicts": "1117469",
+            "propagations": "630094492",
+            "decisions": "2038502",
+            "proof_sha256": "ee8135ceec96296287179c31b71527035c74a74d5bd084865209fea83b5b43aa"
+          },
+          {
+            "status": "UNKNOWN",
+            "verified": false,
+            "wall": 41.542126417160034,
+            "cpu": 40.026433,
+            "rss": 74924032,
+            "conflicts": "1114237",
+            "propagations": "628170844",
+            "decisions": "2033402",
+            "proof_sha256": "ec85b6fce647d46ec3e4abbde05168dedae5fd8705498c977901e1a08bd936c6"
+          }
+        ]
+      }
+    },
+    "minus-chrono": {
+      "verified": 2,
+      "mean_par2": 70.80872436799109,
+      "cases": {
+        "argumentation": [
+          {
+            "status": "SAT",
+            "verified": true,
+            "wall": 32.10762304067612,
+            "cpu": 30.109017,
+            "rss": 178356224,
+            "conflicts": "1116534",
+            "propagations": "321138741",
+            "decisions": "1988912",
+            "proof_sha256": "f34cb5efc3f02ea39ca27838f23d8ba3e569670bfc18b914e9b7559010998746"
+          },
+          {
+            "status": "SAT",
+            "verified": true,
+            "wall": 32.74472316727042,
+            "cpu": 30.873305,
+            "rss": 178339840,
+            "conflicts": "1116534",
+            "propagations": "321138741",
+            "decisions": "1988912",
+            "proof_sha256": "f34cb5efc3f02ea39ca27838f23d8ba3e569670bfc18b914e9b7559010998746"
+          }
+        ],
+        "reg-n": [
+          {
+            "status": "UNKNOWN",
+            "verified": false,
+            "wall": 42.35725766699761,
+            "cpu": 40.098984,
+            "rss": 225525760,
+            "conflicts": "1823570",
+            "propagations": "41633664",
+            "decisions": "15766620",
+            "proof_sha256": "b24097b496ee236434903b4a808a2a05d49b1e0648dd839a7b13072717361437"
+          },
+          {
+            "status": "UNKNOWN",
+            "verified": false,
+            "wall": 42.36758799990639,
+            "cpu": 40.09958,
+            "rss": 225361920,
+            "conflicts": "1807425",
+            "propagations": "41163259",
+            "decisions": "15557101",
+            "proof_sha256": "47c849e44b2a141f6ab699c04f5b84a718b7f7b0f7fa24acb66312ea2bb4a512"
+          }
+        ],
+        "stedman-triples": [
+          {
+            "status": "UNKNOWN",
+            "verified": false,
+            "wall": 44.68646612484008,
+            "cpu": 40.026903,
+            "rss": 74825728,
+            "conflicts": "1125587",
+            "propagations": "635673030",
+            "decisions": "2052391",
+            "proof_sha256": "844ec943f2f9b337a7bfc60fcb4a06938780a4c52484fa75434a21bb56f476ea"
+          },
+          {
+            "status": "UNKNOWN",
+            "verified": false,
+            "wall": 41.655080624856055,
+            "cpu": 40.026809,
+            "rss": 74924032,
+            "conflicts": "1123093",
+            "propagations": "634290497",
+            "decisions": "2048656",
+            "proof_sha256": "8d428a75656543d87b9515a417fa2f0c9d4ee75e9bdaf6924950504039a88eb9"
+          }
+        ]
+      }
+    },
+    "minus-congruence": {
+      "verified": 2,
+      "mean_par2": 70.47675844437133,
+      "cases": {
+        "argumentation": [
+          {
+            "status": "SAT",
+            "verified": true,
+            "wall": 31.41290787514299,
+            "cpu": 29.548969,
+            "rss": 152387584,
+            "conflicts": "1044768",
+            "propagations": "302177729",
+            "decisions": "1885858",
+            "proof_sha256": "e946371745e3ecd864c9d02e8791d16e315e9e707e74c0bf1ebbf0743bca15bd"
+          },
+          {
+            "status": "SAT",
+            "verified": true,
+            "wall": 31.447642791084945,
+            "cpu": 29.526991,
+            "rss": 152453120,
+            "conflicts": "1044768",
+            "propagations": "302177729",
+            "decisions": "1885858",
+            "proof_sha256": "e946371745e3ecd864c9d02e8791d16e315e9e707e74c0bf1ebbf0743bca15bd"
+          }
+        ],
+        "reg-n": [
+          {
+            "status": "UNKNOWN",
+            "verified": false,
+            "wall": 42.436584250070155,
+            "cpu": 40.098194,
+            "rss": 230506496,
+            "conflicts": "1920959",
+            "propagations": "38944611",
+            "decisions": "12930503",
+            "proof_sha256": "02696f73460aa96121ffb46c139f35f521970030b471807936c68c71e136a6a6"
+          },
+          {
+            "status": "UNKNOWN",
+            "verified": false,
+            "wall": 42.36341366590932,
+            "cpu": 40.097191,
+            "rss": 230506496,
+            "conflicts": "1918604",
+            "propagations": "38901021",
+            "decisions": "12916783",
+            "proof_sha256": "c9ad722d4cbee7f48f7d5407185e31f6cde7f872e7f276b6e5c74a0dfa0087ec"
+          }
+        ],
+        "stedman-triples": [
+          {
+            "status": "UNKNOWN",
+            "verified": false,
+            "wall": 41.553451041225344,
+            "cpu": 40.026328,
+            "rss": 62619648,
+            "conflicts": "1051192",
+            "propagations": "629063044",
+            "decisions": "1930435",
+            "proof_sha256": "4ae6c1e869fc91c298cf24fb6f396131d48428936c9cf8de3247b9605a0b8ebc"
+          },
+          {
+            "status": "UNKNOWN",
+            "verified": false,
+            "wall": 41.51666249986738,
+            "cpu": 40.026917,
+            "rss": 62619648,
+            "conflicts": "1050468",
+            "propagations": "628603830",
+            "decisions": "1929415",
+            "proof_sha256": "f365417888d60d63283789128c3a993f0a6039ac467840688d9d78f1a120da70"
+          }
+        ]
+      }
+    },
+    "minus-equiv": {
+      "verified": 2,
+      "mean_par2": 70.82930643755633,
+      "cases": {
+        "argumentation": [
+          {
+            "status": "SAT",
+            "verified": true,
+            "wall": 31.73072887538001,
+            "cpu": 29.74386,
+            "rss": 180011008,
+            "conflicts": "1044768",
+            "propagations": "302177729",
+            "decisions": "1885858",
+            "proof_sha256": "e946371745e3ecd864c9d02e8791d16e315e9e707e74c0bf1ebbf0743bca15bd"
+          },
+          {
+            "status": "SAT",
+            "verified": true,
+            "wall": 33.24510974995792,
+            "cpu": 29.990969,
+            "rss": 180994048,
+            "conflicts": "1044768",
+            "propagations": "302177729",
+            "decisions": "1885858",
+            "proof_sha256": "e946371745e3ecd864c9d02e8791d16e315e9e707e74c0bf1ebbf0743bca15bd"
+          }
+        ],
+        "reg-n": [
+          {
+            "status": "UNKNOWN",
+            "verified": false,
+            "wall": 42.32939429208636,
+            "cpu": 40.097395999999996,
+            "rss": 269860864,
+            "conflicts": "1883547",
+            "propagations": "38209412",
+            "decisions": "12712700",
+            "proof_sha256": "84a0e73bc48b424591dff401b8aabcdcd8852681bead525954e2d7e561bcad3f"
+          },
+          {
+            "status": "UNKNOWN",
+            "verified": false,
+            "wall": 42.26510362466797,
+            "cpu": 40.098152999999996,
+            "rss": 308985856,
+            "conflicts": "1875856",
+            "propagations": "38046455",
+            "decisions": "12662030",
+            "proof_sha256": "697e38f3951e07c34ce4a0c6ee1f7e16dc577b32973d82ec3da6e01a446f5506"
+          }
+        ],
+        "stedman-triples": [
+          {
+            "status": "UNKNOWN",
+            "verified": false,
+            "wall": 41.465053415857255,
+            "cpu": 40.025321000000005,
+            "rss": 68452352,
+            "conflicts": "998681",
+            "propagations": "622977438",
+            "decisions": "1834441",
+            "proof_sha256": "92ba2edebb80043166d493a513e04fbd9c92470a13a3a7882d65f3206fc2d999"
+          },
+          {
+            "status": "UNKNOWN",
+            "verified": false,
+            "wall": 41.509871624875814,
+            "cpu": 40.025605,
+            "rss": 68452352,
+            "conflicts": "992429",
+            "propagations": "619039111",
+            "decisions": "1823348",
+            "proof_sha256": "c72079460212eb5ce7971b3aa87e80f965ead463bcd72d0e163885e5847534e0"
+          }
+        ]
+      }
+    },
+    "minus-alternating": {
+      "verified": 0,
+      "mean_par2": 90.0,
+      "cases": {
+        "argumentation": [
+          {
+            "status": "UNKNOWN",
+            "verified": false,
+            "wall": 42.09115495765582,
+            "cpu": 40.097219,
+            "rss": 178864128,
+            "conflicts": "1443395",
+            "propagations": "419328944",
+            "decisions": "2757376",
+            "proof_sha256": "02ace03d712f278779dbc835b3d63a6e90853c5517bac3bdf404ce422d154566"
+          },
+          {
+            "status": "UNKNOWN",
+            "verified": false,
+            "wall": 41.966871791984886,
+            "cpu": 40.094995000000004,
+            "rss": 178028544,
+            "conflicts": "1438910",
+            "propagations": "418116332",
+            "decisions": "2749483",
+            "proof_sha256": "1dfb684e5d9df280c6bc6bda9d12a246f97dc81342c37bfcd8b0832facc8d0cb"
+          }
+        ],
+        "reg-n": [
+          {
+            "status": "UNKNOWN",
+            "verified": false,
+            "wall": 42.28607587469742,
+            "cpu": 40.096830999999995,
+            "rss": 189890560,
+            "conflicts": "3325372",
+            "propagations": "83413489",
+            "decisions": "28012100",
+            "proof_sha256": "c51ed44c44f0257360605097118a98221a886ce510f73a87ff4e6c65243d37af"
+          },
+          {
+            "status": "UNKNOWN",
+            "verified": false,
+            "wall": 42.31533791683614,
+            "cpu": 40.097074000000006,
+            "rss": 189874176,
+            "conflicts": "3318617",
+            "propagations": "83233762",
+            "decisions": "27949457",
+            "proof_sha256": "6282fac4d79b792268adf2b35cea2c67e8b53cc9b3c282c2be56dbb17e88deda"
+          }
+        ],
+        "stedman-triples": [
+          {
+            "status": "UNKNOWN",
+            "verified": false,
+            "wall": 41.48564683413133,
+            "cpu": 40.027066,
+            "rss": 73842688,
+            "conflicts": "1103996",
+            "propagations": "632025826",
+            "decisions": "2165666",
+            "proof_sha256": "b2b1fbf1713142166cdf86ab9b7ab9769526046245125eb24bcd09ff806f7513"
+          },
+          {
+            "status": "UNKNOWN",
+            "verified": false,
+            "wall": 42.94283266691491,
+            "cpu": 40.026967,
+            "rss": 73924608,
+            "conflicts": "1096211",
+            "propagations": "627523241",
+            "decisions": "2150515",
+            "proof_sha256": "602bfe341c5dd361d513e0f854a47a3a71118e41f95c41e5e81430565f32fa31"
+          }
+        ]
+      }
+    },
+    "minus-vmtf": {
+      "verified": 2,
+      "mean_par2": 61.51529830546739,
+      "cases": {
+        "argumentation": [
+          {
+            "status": "SAT",
+            "verified": true,
+            "wall": 4.870726999826729,
+            "cpu": 3.29798,
+            "rss": 185778176,
+            "conflicts": "92015",
+            "propagations": "31741034",
+            "decisions": "159739",
+            "proof_sha256": "10891a7a371db493f761c05f85e8516244be0b3e6fb73b5773de59d460bcba6a"
+          },
+          {
+            "status": "SAT",
+            "verified": true,
+            "wall": 4.221062832977623,
+            "cpu": 3.152173,
+            "rss": 186662912,
+            "conflicts": "92015",
+            "propagations": "31741034",
+            "decisions": "159739",
+            "proof_sha256": "10891a7a371db493f761c05f85e8516244be0b3e6fb73b5773de59d460bcba6a"
+          }
+        ],
+        "reg-n": [
+          {
+            "status": "UNKNOWN",
+            "verified": false,
+            "wall": 40.18446191679686,
+            "cpu": 40.093325,
+            "rss": 197017600,
+            "conflicts": "4287357",
+            "propagations": "89400376",
+            "decisions": "23189395",
+            "proof_sha256": "4d10692a6ade483784bd74fbdcb6016cee7a9018f5a3b9d222eb9f45bcc318eb"
+          },
+          {
+            "status": "UNKNOWN",
+            "verified": false,
+            "wall": 42.40673145791516,
+            "cpu": 40.098507999999995,
+            "rss": 204537856,
+            "conflicts": "4210920",
+            "propagations": "87745173",
+            "decisions": "22836285",
+            "proof_sha256": "8ad133c0a8606ba2b3fd74af683468de1cf6e2442be523923195fef11182a8cf"
+          }
+        ],
+        "stedman-triples": [
+          {
+            "status": "UNKNOWN",
+            "verified": false,
+            "wall": 41.7081106249243,
+            "cpu": 40.026716,
+            "rss": 74121216,
+            "conflicts": "1122000",
+            "propagations": "690992457",
+            "decisions": "1790570",
+            "proof_sha256": "b607ba2a95361b7c50b3246226ba7495767dba9f9fc29925a0963e81ad01f653"
+          },
+          {
+            "status": "UNKNOWN",
+            "verified": false,
+            "wall": 41.625083750113845,
+            "cpu": 40.026493,
+            "rss": 74088448,
+            "conflicts": "1117782",
+            "propagations": "688208411",
+            "decisions": "1784846",
+            "proof_sha256": "9a0c898d6f9e0a8b3600379603ff7a0222e90c12c6ad6356ce1552fecdbf31b1"
+          }
+        ]
+      }
+    }
+  },
+  "scope": "Bounded development ablation; no default promotion"
+}

@@ -1,5 +1,10 @@
 # C solver hardening — September 2026
 
+September 8 update: embedding, conservative learned reuse, conditional-certificate
+bundles and broader assurance now have implementations and validation recorded in
+[PRODUCTION_GAPS.md](PRODUCTION_GAPS.md). Capability limits below describe this
+earlier milestone where they conflict with the current API contract.
+
 This work addresses the correctness and performance review of the C implementation.
 It establishes a validated baseline, not a claim of industrial production readiness.
 

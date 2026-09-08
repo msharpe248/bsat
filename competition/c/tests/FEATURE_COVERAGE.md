@@ -52,8 +52,22 @@ No formal verification of the whole C implementation is claimed. Coverage does
 not exhaust every option combination, allocation site, platform or long history.
 The larger frozen application screen complements these constructed stress cases.
 
-The supported API boundary and unsupported concurrency/conditional-proof/reuse
-capabilities are explicit in [API_CONTRACT.md](../API_CONTRACT.md).
-[READINESS.md](../READINESS.md) tracks the current milestones and evidence.
+The supported API, concurrency, cancellation and reuse boundaries are explicit
+in [API_CONTRACT.md](../API_CONTRACT.md). Conditional certificates use a separate
+augmented-input workflow. [PRODUCTION_GAPS.md](../PRODUCTION_GAPS.md) tracks the
+latest milestones and evidence.
 Older experiment records are historical snapshots; their counts and performance
 claims apply only to their pinned binaries and workloads.
+
+## September 8 production extensions
+
+- `test_accounting.c`: opt-in phase/capacity estimates and replacement lifetime.
+- `test_congruence_memory.c`: lazy conditional-join allocation.
+- `test_incremental_reuse.c`: eight-variable exact oracle, retained clauses,
+  added input, conditional-UNSAT fallbacks and repeated conflict slices.
+- `embedding_client.c`: opaque shared ABI, concurrent independent instances,
+  application-owned signals, atomic cancellation and separate thread CPU budgets.
+- `test_cancellation.c`: search, rebuild, equivalence and cached-result polling.
+- `embedding_soak.c`: 256-variable parity histories with an exact four-model oracle.
+- `test_certify_query.py`: augmented-query acceptance and wrong-base rejection.
+- `test_process_control.py`: timeout cleanup of descendants and nested wrappers.

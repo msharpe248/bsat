@@ -1,0 +1,104 @@
+{
+  "inputs": {
+    "/Users/msharpe/python/bsat/dataset/sat_competition2025/reg-n/46355da785714f239393e7630020cae3.cnf": {
+      "sha256": "715b72da9f4c1709add9e486940d77e67d34ac5f0aa5f0ad97cd1dbe08929cae"
+    },
+    "/Users/msharpe/python/bsat/dataset/sat_competition2025/stedman-triples/cdd89d1b9259dcf26d4a53ba94041e93.cnf": {
+      "sha256": "36a28ae72b6e34c0a4dbf944615b1b0b546a32ba4f60d922053c1be011751685"
+    },
+    "/Users/msharpe/python/bsat/dataset/sat_competition2025/argumentation/2241a1fb5bdbac0c1a3c1980ed8b332d.cnf": {
+      "sha256": "751145a8e891fb33cf886d3f3d36a07985a658b7a6b0515da97bea121977cb91"
+    }
+  },
+  "profiles": {
+    "full": [
+      "--time",
+      "40",
+      "--chrono",
+      "--congruence",
+      "--equiv",
+      "--equiv-budget",
+      "100000000",
+      "--alternating",
+      "--vmtf",
+      "--binary-proof",
+      "--proof",
+      "{proof}",
+      "{input}"
+    ],
+    "minus-chrono": [
+      "--time",
+      "40",
+      "--congruence",
+      "--equiv",
+      "--equiv-budget",
+      "100000000",
+      "--alternating",
+      "--vmtf",
+      "--binary-proof",
+      "--proof",
+      "{proof}",
+      "{input}"
+    ],
+    "minus-congruence": [
+      "--time",
+      "40",
+      "--chrono",
+      "--equiv",
+      "--equiv-budget",
+      "100000000",
+      "--alternating",
+      "--vmtf",
+      "--binary-proof",
+      "--proof",
+      "{proof}",
+      "{input}"
+    ],
+    "minus-equiv": [
+      "--time",
+      "40",
+      "--chrono",
+      "--congruence",
+      "--alternating",
+      "--vmtf",
+      "--binary-proof",
+      "--proof",
+      "{proof}",
+      "{input}"
+    ],
+    "minus-alternating": [
+      "--time",
+      "40",
+      "--chrono",
+      "--congruence",
+      "--equiv",
+      "--equiv-budget",
+      "100000000",
+      "--vmtf",
+      "--binary-proof",
+      "--proof",
+      "{proof}",
+      "{input}"
+    ],
+    "minus-vmtf": [
+      "--time",
+      "40",
+      "--chrono",
+      "--congruence",
+      "--equiv",
+      "--equiv-budget",
+      "100000000",
+      "--alternating",
+      "--binary-proof",
+      "--proof",
+      "{proof}",
+      "{input}"
+    ]
+  },
+  "seed": 2026090808,
+  "repeats": 2,
+  "cpu_limit": 40,
+  "wall_timeout": 45,
+  "binary_sha256": "59f0e4f7ec607c00b49986e9b6490eb71b000789f10824ad4a99e5d5c51b6869",
+  "scope": "Frozen leave-one-feature-out development ablation. No default promotion without independent confirmation. All 36 runs retained; no concurrent builds/tests/fuzzing. SAT models and UNSAT LRAT chains independently checked."
+}

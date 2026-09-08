@@ -1,5 +1,10 @@
 # Broader repeated evaluation of the hardened C solver
 
+September 8 update: embedding, conservative learned reuse, conditional-certificate
+bundles and broader assurance now have implementations and validation recorded in
+[PRODUCTION_GAPS.md](PRODUCTION_GAPS.md). Capability limits below describe this
+earlier milestone where they conflict with the current API contract.
+
 BSAT solved **one of twelve inputs in both repetitions**; pinned Kissat solved
 **two of twelve in both repetitions**. BSAT has 2/24 verified runs and Kissat
 4/24. All conclusive answers in this screen are SAT and their original-input
