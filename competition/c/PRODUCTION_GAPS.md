@@ -7,7 +7,9 @@ stateful/certificate assurance. Commit and push each validated milestone.
 1. Accounting: complete for the measured scope. Opt-in inclusive CPU, retained
    capacities, congruence temporaries and rebuild overlap identify concrete
    memory targets. See `ACCOUNTING.md` for limits and validation.
-2. Memory: pending measured attribution and a validated, repeated comparison.
+2. Memory: first measured reduction complete. Lazy congruence tables save
+   64 MiB on two workloads with matching work/proof signatures; see
+   `LAZY_CONGRUENCE.md`. Largest-input reconstruction/watch costs remain.
 3. Search: pending frozen ablations on reg-n, Stedman-triples and argumentation.
 4. Incremental reuse: pending explicit safe boundaries for preprocessing,
    assumptions, new clauses, budgets, model reconstruction and proofs.

@@ -95,6 +95,12 @@ static bool gate(Closure *c, Lit out, Lit a, Lit b, Lit condition, unsigned kind
 }
 
 static bool branch(Closure *c, Var out, Lit condition, Lit input) {
+    /* AND/XOR-only inputs never need the conditional-equivalence join table.
+       Keep its capacity/hash/scan order unchanged when it is needed. */
+    if (!c->branches) {
+        c->branches=calloc(c->branch_cap,sizeof *c->branches);
+        if (!c->branches) { c->s->error=true;return false; }
+    }
     size_t at = mix(out ^ ((uint64_t)var(condition)<<32)) & (c->branch_cap-1);
     for (;;) {
         if (!tick(c)) return false;
@@ -132,8 +138,7 @@ static bool extract(Closure *c) {
     /* Avoid allocating a full index when its later scan cannot fit the budget. */
     if (s->work_limit && s->work_limit-s->work < c->cell_cap+c->branch_cap) return false;
     c->cells=calloc(c->cell_cap,sizeof *c->cells);
-    c->branches=calloc(c->branch_cap,sizeof *c->branches);
-    if (!c->cells || !c->branches) { s->error=true;return false; }
+    if (!c->cells) { s->error=true;return false; }
     for (uint32_t i=0;i<s->num_clauses;++i) {
         if (!tick(c)) return false;
         CRef cr=s->clauses[i];
@@ -221,6 +226,8 @@ static bool extract(Closure *c) {
     }
     for (size_t i=0;i<c->branch_cap;++i) {
         if (!tick(c)) return false;
+        /* Charge the same bounded scan work even for an unallocated table. */
+        if (!c->branches) continue;
         Branch *p=c->branches+i;
         for (uint32_t a=p->yes;a;a=c->alternatives[a-1].next)
             for (uint32_t b=p->no;b;b=c->alternatives[b-1].next) {

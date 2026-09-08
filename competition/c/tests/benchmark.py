@@ -109,6 +109,7 @@ def worker(config):
                 name, value = line[2:].split(':', 1)
                 stats[name.strip()] = value.strip()
         result = dict(status=status, verified=verified, seconds=elapsed,
+                    proof_sha256=digest(proof) if proof.exists() else None,
                     cpu_seconds=usage.ru_utime+usage.ru_stime, peak_rss_bytes=peak,
                     par2=elapsed if verified else 2*config['timeout'], stats=stats,
                     diagnostic=diagnostic or (tmp/'err').read_text(errors='replace')[-2000:])

@@ -1,0 +1,22 @@
+{
+  "inputs": {
+    "/Users/msharpe/python/bsat/dataset/sat_competition2025/at-least-two-sol/2925ee90763e08b2f7e79c7c713c86b9.cnf": {
+      "sha256": "64bc4ebd87e3db66d2a1847c9c7cf34ce558bee3821efcd80cc5bf9c5dca33c8"
+    },
+    "/Users/msharpe/python/bsat/dataset/sat_competition2025/argumentation/2241a1fb5bdbac0c1a3c1980ed8b332d.cnf": {
+      "sha256": "751145a8e891fb33cf886d3f3d36a07985a658b7a6b0515da97bea121977cb91"
+    },
+    "/Users/msharpe/python/bsat/dataset/sat_competition2025/reg-n/46355da785714f239393e7630020cae3.cnf": {
+      "sha256": "715b72da9f4c1709add9e486940d77e67d34ac5f0aa5f0ad97cd1dbe08929cae"
+    }
+  },
+  "options": "--accounting --conflicts 5000 --chrono --congruence --equiv --equiv-budget 100000000 --alternating --vmtf --binary-proof --proof {proof} {input}",
+  "binaries": {
+    "/tmp/bsat-memory-baseline": "db3f26b5559d774f80b4048013b39eed6380e2a30a716b70c1798099d80da5ad",
+    "competition/c/bin/bsat": "1525aea1408ad06916aca957a470b91283e5272a89588fdf8143bf1cf64fff5f"
+  },
+  "repeats": 2,
+  "timeout": 120,
+  "seed": 2026090803,
+  "scope": "Matched-work memory comparison; instrumented diagnostic CPU. Require equal selected counters and binary proof bytes; no new solved-count claim."
+}
