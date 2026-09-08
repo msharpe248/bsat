@@ -2012,6 +2012,7 @@ static bool solver_rebuild_timed(Solver *s, double start_time, double max_time) 
     Solver *fresh = solver_new_with_opts(&opts);
     if (!fresh) { s->error = true; return false; }
     fresh->terminate=s->terminate;fresh->terminate_state=s->terminate_state;
+    fresh->learn_callback=s->learn_callback;fresh->learn_state=s->learn_state;fresh->learn_max_length=s->learn_max_length;
     fresh->opts.proof_path = path;
     fresh->stats.start_time = start_time;
     fresh->opts.max_time = max_time;
@@ -2231,6 +2232,12 @@ static lbool solve_internal_account_impl(Solver *s, const Lit *assumps, uint32_t
             /* The assertion keeps its logical level, including zero for units. */
             solver_backtrack(s,backtrack);
             proof_add_clause(s,learnt,n);
+            if (s->learn_callback && n<=s->learn_max_length) {
+                int *exported=malloc(((size_t)n+1)*sizeof *exported);
+                if (!exported) {s->error=true;break;}
+                for(uint32_t i=0;i<n;++i)exported[i]=toDimacs(learnt[i]);
+                exported[n]=0;s->learn_callback(s->learn_state,exported);free(exported);
+            }
             CRef reason=INVALID_CLAUSE;
             if (n>1) {
                 if (s->num_learnts == s->learnts_size) {

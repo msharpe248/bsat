@@ -14,5 +14,7 @@ against original input and UNSAT through independent certificates.
    bounded work, auxiliary namespace isolation, exhaustive projection tests,
    allocation injection and sanitizer fuzzing. reg-n development gap closed;
    argumentation regression keeps the option experimental. See FACTORING.md.
-2–6. Longer evaluation, memory tradeoffs, application histories, embedding
-   controls/IPASIR and retained-state certificates remain in progress.
+5. Embedding controls/IPASIR: implemented and validated in release and
+   ASan/UBSan, including frozen-header and installed C++ consumers. See IPASIR.md.
+2–4, 6. Longer evaluation, memory tradeoffs, application histories and
+   retained-state certificates remain in progress.

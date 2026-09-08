@@ -143,6 +143,7 @@ uint32_t solver_substitute_equivalences(Solver *s) {
     fresh = solver_new_with_opts(&opts);
     if (!fresh) { s->error = true; goto done; }
     fresh->terminate=s->terminate;fresh->terminate_state=s->terminate_state;
+    fresh->learn_callback=s->learn_callback;fresh->learn_state=s->learn_state;fresh->learn_max_length=s->learn_max_length;
     fresh->reused_solves=s->reused_solves;
     for (Var v = 1; v <= s->num_vars; ++v) {
         if (!tick(s)) goto done;

@@ -301,6 +301,9 @@ typedef struct Solver {
     SolverOpts opts;
     int (*terminate)(void *);
     void *terminate_state;
+    void (*learn_callback)(void *, int *);
+    void *learn_state;
+    uint32_t learn_max_length;
 
     // Variable Elimination (BVE)
     ElimState* elim;          // Elimination state (NULL if not using BVE)

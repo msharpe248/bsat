@@ -109,6 +109,7 @@ pgo-generate: clean dirs
 	$(CC) $(CFLAGS) -O3 -march=native -fprofile-instr-generate -c -o $(OBJDIR)/elim.o $(SRCDIR)/elim.c
 	$(CC) $(CFLAGS) -O3 -march=native -fprofile-instr-generate -c -o $(OBJDIR)/equiv.o $(SRCDIR)/equiv.c
 	$(CC) $(CFLAGS) -O3 -march=native -fprofile-instr-generate -c -o $(OBJDIR)/factor.o $(SRCDIR)/factor.c
+	$(CC) $(CFLAGS) -O3 -march=native -fprofile-instr-generate -c -o $(OBJDIR)/ipasir.o $(SRCDIR)/ipasir.c
 	$(CC) $(CFLAGS) -O3 -march=native -fprofile-instr-generate -c -o $(OBJDIR)/local_search.o $(SRCDIR)/local_search.c
 	$(CC) $(CFLAGS) -O3 -march=native -fprofile-instr-generate -c -o $(OBJDIR)/minimize.o $(SRCDIR)/minimize.c
 	$(CC) $(CFLAGS) -O3 -march=native -fprofile-instr-generate -c -o $(OBJDIR)/main.o $(SRCDIR)/main.c
@@ -145,6 +146,7 @@ pgo-use: dirs
 	$(CC) $(CFLAGS) -O3 -march=native -flto -fprofile-instr-use=pgo_data/default.profdata -c -o $(OBJDIR)/elim.o $(SRCDIR)/elim.c
 	$(CC) $(CFLAGS) -O3 -march=native -flto -fprofile-instr-use=pgo_data/default.profdata -c -o $(OBJDIR)/equiv.o $(SRCDIR)/equiv.c
 	$(CC) $(CFLAGS) -O3 -march=native -flto -fprofile-instr-use=pgo_data/default.profdata -c -o $(OBJDIR)/factor.o $(SRCDIR)/factor.c
+	$(CC) $(CFLAGS) -O3 -march=native -flto -fprofile-instr-use=pgo_data/default.profdata -c -o $(OBJDIR)/ipasir.o $(SRCDIR)/ipasir.c
 	$(CC) $(CFLAGS) -O3 -march=native -flto -fprofile-instr-use=pgo_data/default.profdata -c -o $(OBJDIR)/local_search.o $(SRCDIR)/local_search.c
 	$(CC) $(CFLAGS) -O3 -march=native -flto -fprofile-instr-use=pgo_data/default.profdata -c -o $(OBJDIR)/minimize.o $(SRCDIR)/minimize.c
 	$(CC) $(CFLAGS) -O3 -march=native -flto -fprofile-instr-use=pgo_data/default.profdata -c -o $(OBJDIR)/main.o $(SRCDIR)/main.c
@@ -307,6 +309,7 @@ install: all $(PACKAGE_LIBRARY)
 	install -m 755 $(TARGET) "$(DESTDIR)$(PREFIX)/bin/bsat"
 	install -m 755 $(PACKAGE_LIBRARY) "$(DESTDIR)$(PREFIX)/lib/$(notdir $(PACKAGE_LIBRARY))"
 	install -m 644 include/bsat.h "$(DESTDIR)$(PREFIX)/include/bsat.h"
+	install -m 644 include/ipasir.h "$(DESTDIR)$(PREFIX)/include/ipasir.h"
 ifeq ($(shell uname -s),Darwin)
 	ln -sf libbsat.1.dylib "$(DESTDIR)$(PREFIX)/lib/libbsat.dylib"
 else

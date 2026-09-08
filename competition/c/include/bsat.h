@@ -22,6 +22,19 @@ BSAT_API bsat *bsat_create(uint32_t abi, uint32_t flags);
 BSAT_API void bsat_destroy(bsat *s);
 /* Set before first input/solve; 0 means unlimited. Returns 1 on success. */
 BSAT_API int bsat_set_limits(bsat *s, double cpu_seconds, uint32_t conflicts, uint32_t decisions);
+/* Update limits between queries, including after input. Preserves the latest
+   model/core. Limits apply separately to each subsequent solve; 0 is unlimited. */
+BSAT_API int bsat_set_query_limits(bsat *s, double cpu_seconds, uint32_t conflicts, uint32_t decisions);
+/* Snapshot of the latest query. CPU excludes input and later idle time. Owned
+   capacity is an estimate, not RSS. Getter accepts sizeof(bsat_stats_v1) or more. */
+typedef struct bsat_stats_v1 {
+    uint32_t version;
+    int32_t result;
+    uint64_t conflicts, decisions, propagations, reused_preparations;
+    uint64_t owned_capacity_bytes;
+    double cpu_seconds;
+} bsat_stats_v1;
+BSAT_API int bsat_get_stats(const bsat *s, bsat_stats_v1 *out, size_t size);
 /* DIMACS signed literals, no zero terminator. Variables grow automatically.
    Return 1 means accepted, including an empty/contradictory clause. */
 BSAT_API int bsat_add_clause(bsat *s, const int *lits, size_t count);

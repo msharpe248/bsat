@@ -9,7 +9,8 @@ Public callers pass `BSAT_ABI_VERSION` and supported flags to `bsat_create`;
 unknown versions/flags fail construction. Signed DIMACS arrays are copied during
 calls, variables grow automatically, and zero is invalid inside a literal array.
 Empty clauses are accepted input. Assumptions must reference existing variables.
-Set limits before input/solving. Only the
+Use `bsat_set_limits` before input, or `bsat_set_query_limits` between queries.
+`bsat_get_stats` returns a stable latest-query snapshot; see `IPASIR.md`. Only the
 latest SAT result permits model reads; mutation/solve invalidates that lifetime.
 Errors poison a handle. Destroy it exactly once; destroying NULL is valid.
 The public facade does not expose proof paths or mutable solver options.

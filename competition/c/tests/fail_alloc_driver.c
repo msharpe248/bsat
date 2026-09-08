@@ -1,4 +1,5 @@
 #include "solver.h"
+#include "ipasir.h"
 #include <assert.h>
 #include <errno.h>
 #include <stdio.h>
@@ -73,6 +74,22 @@ done:
     solver_free(s);
     return calls;
 }
+static void receive(void *state,int *clause) { (void)state;while(*clause)++clause; }
+static size_t ipasir_attempt(bool sat,size_t cutoff) {
+    calls=0;fail_at=cutoff;failed=false;
+    void *s=ipasir_init();if(!s){assert(failed);return calls;}
+    ipasir_set_learn(s,NULL,6,receive);
+    for(unsigned bits=0;bits<64-(unsigned)sat;++bits) {
+        for(unsigned v=0;v<6;++v)ipasir_add(s,(bits>>v)&1?-(int)(v+1):(int)(v+1));
+        ipasir_add(s,0);
+    }
+    for(unsigned repeat=0;repeat<2;++repeat) {
+        int r=ipasir_solve(s);assert(r==(failed?0:sat?10:20));
+        if(sat && r==10)for(int v=1;v<=6;++v)assert(ipasir_val(s,v)==v);
+        ipasir_assume(s,7); /* Growth and assumption buffer allocations. */
+    }
+    ipasir_release(s);return calls;
+}
 int main(void) {
     size_t injected=0;
     for(unsigned p=0;p<8;++p)for(unsigned sat=0;sat<2;++sat) {
@@ -82,5 +99,9 @@ int main(void) {
             attempt(p,sat,i);assert(failed);++injected;
         }
     }
-    printf("PASS: %zu single-allocation failures across 16 profiles/formulas and repeated solves\n",injected);
+    for(unsigned sat=0;sat<2;++sat) {
+        size_t count=ipasir_attempt(sat,0);
+        for(size_t i=1;i<=count;++i){ipasir_attempt(sat,i);assert(failed);++injected;}
+    }
+    printf("PASS: %zu single-allocation failures across 18 profiles/formulas and repeated solves\n",injected);
 }

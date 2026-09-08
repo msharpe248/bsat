@@ -39,3 +39,7 @@ see `benchmark_results/embedding-work-20260908.json`. Short CPU measurements are
 noisy (especially station-repacking); no performance improvement is claimed for
 this embedding change. macOS shared-symbol inspection exposes only ten `bsat_*`
 functions, with no internal solver symbols.
+
+The additive ABI-v1 query controls/statistics and installed IPASIR adapter are
+documented in `IPASIR.md`; its newer validation supersedes the original export
+count above. Internal solver symbols remain hidden.

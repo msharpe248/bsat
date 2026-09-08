@@ -1,7 +1,7 @@
 #include "bsat.h"
 #include "solver.h"
 #include <math.h>
-struct bsat { Solver *core; int result; bool started; };
+struct bsat { Solver *core; int result; bool started; bsat_stats_v1 stats; };
 uint32_t bsat_abi_version(void) { return BSAT_ABI_VERSION; }
 bsat *bsat_create(uint32_t abi,uint32_t flags) {
     if(abi!=BSAT_ABI_VERSION || (flags & ~BSAT_REUSE_LEARNTS))return NULL;
@@ -16,6 +16,15 @@ int bsat_set_limits(bsat *s,double cpu,uint32_t conflicts,uint32_t decisions) {
     if(bsat_error(s))return 0;
     if(s->started || !isfinite(cpu) || cpu<0){s->core->error=true;return 0;}
     s->core->opts.max_time=cpu;s->core->opts.max_conflicts=conflicts;s->core->opts.max_decisions=decisions;return 1;
+}
+int bsat_set_query_limits(bsat *s,double cpu,uint32_t conflicts,uint32_t decisions) {
+    if(bsat_error(s))return 0;
+    if(!isfinite(cpu) || cpu<0){s->core->error=true;return 0;}
+    s->core->opts.max_time=cpu;s->core->opts.max_conflicts=conflicts;s->core->opts.max_decisions=decisions;return 1;
+}
+int bsat_get_stats(const bsat *s,bsat_stats_v1 *out,size_t size) {
+    if(bsat_error(s) || !out || size<sizeof *out || !s->stats.version)return 0;
+    *out=s->stats;return 1;
 }
 static Lit *translate(bsat *s,const int *lits,size_t count,bool grow) {
     if(count>((1u<<28)-1) || (count&&!lits))goto bad;
@@ -43,8 +52,15 @@ int bsat_solve(bsat *s,const int *assumptions,size_t count) {
     if(bsat_error(s))return BSAT_UNKNOWN;
     s->started=true;s->result=BSAT_UNKNOWN;
     Lit *a=translate(s,assumptions,count,false);if(bsat_error(s)){free(a);return BSAT_UNKNOWN;}
+    double start=solver_cpu_time();
     lbool r=solver_solve_with_assumptions(s->core,a,(uint32_t)count);free(a);
-    s->result=r==TRUE?BSAT_SAT:r==FALSE?BSAT_UNSAT:BSAT_UNKNOWN;return s->result;
+    s->result=r==TRUE?BSAT_SAT:r==FALSE?BSAT_UNSAT:BSAT_UNKNOWN;
+    bool searched=s->core->stats.start_time>=start;
+    s->stats=(bsat_stats_v1){.version=1,.result=s->result,
+        .conflicts=searched?s->core->stats.conflicts:0,.decisions=searched?s->core->stats.decisions:0,
+        .propagations=searched?s->core->stats.propagations:0,.reused_preparations=s->core->reused_solves,
+        .cpu_seconds=solver_cpu_time()-start,.owned_capacity_bytes=solver_memory(s->core).total};
+    return s->result;
 }
 int bsat_value(const bsat *s,int lit) {
     if(bsat_error(s)||s->result!=BSAT_SAT)return 0;
