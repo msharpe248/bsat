@@ -6,7 +6,8 @@ certificate validation. Passing these tests does not establish production
 readiness for arbitrary workloads. See [HARDENING.md](HARDENING.md) for changes,
 validation evidence, research references, and remaining limitations.
 The latest milestones are tracked in
-[ALGORITHM_AND_SERVICE_MILESTONES.md](ALGORITHM_AND_SERVICE_MILESTONES.md);
+[SEARCH_AND_RESOURCE_MILESTONES.md](SEARCH_AND_RESOURCE_MILESTONES.md);
+[ALGORITHM_AND_SERVICE_MILESTONES.md](ALGORITHM_AND_SERVICE_MILESTONES.md) and
 [PRODUCTION_GAPS.md](PRODUCTION_GAPS.md) records earlier batches.
 Earlier acceptance checks and evaluation are in [READINESS.md](READINESS.md), with executable coverage in
 [tests/FEATURE_COVERAGE.md](tests/FEATURE_COVERAGE.md).

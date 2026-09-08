@@ -1,0 +1,40 @@
+{
+  "workflow_run": 34257988158,
+  "url": "https://github.com/msharpe248/bsat/actions/runs/34257988158",
+  "revision": "6c65322c6045c092205c2aeff40c24fe3c680e97",
+  "files": {
+    "uname.txt": {
+      "sha256": "45e9d6c8002853d2f9d6fb7bd22261836b1d8e49400cf2a020e33567755cc387",
+      "bytes": 113
+    },
+    "revision.txt": {
+      "sha256": "bcf32c21596cc768654f27ebdb7b1127c157eb9777d1a8a3bfb2d40d2458f4a8",
+      "bytes": 41
+    },
+    "affinity.txt": {
+      "sha256": "bbf44322eda755805dcb8740aa987e2e3e69fb9936d5cab03b0c047f31c44f16",
+      "bytes": 13
+    },
+    "baseline.json": {
+      "sha256": "ecc040aa0fd4d9c9ea03c6d7e72e975ec8d218f721732f193dce29808810f3dd",
+      "bytes": 17280
+    },
+    "compiler.txt": {
+      "sha256": "3e8cc208c40f60832f67377aa1b03c3e7e858f20cd5d365464944700c0bd7ad1",
+      "bytes": 245
+    },
+    "lscpu.txt": {
+      "sha256": "d893a2e1fe38c883e9c6304826742490a3e71cb4324cac80c4809870147219b4",
+      "bytes": 3189
+    },
+    "checker-sha256.txt": {
+      "sha256": "a54a637058f77cec41a3a567e3cedf2ed0a58bf4c696931d22dd9950c0997d48",
+      "bytes": 312
+    },
+    "perf_event_paranoid.txt": {
+      "sha256": "7de1555df0c2700329e815b93b32c571c3ea54dc967b89e81ab73b9972b72d1d",
+      "bytes": 2
+    }
+  },
+  "audit": "12 completed serial trials, matching pinned input hashes; four independently verified SAT answers, eight UNKNOWN, no errors. Unmodified downloaded artifact files."
+}

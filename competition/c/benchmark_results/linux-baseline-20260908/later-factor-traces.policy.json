@@ -1,0 +1,30 @@
+{
+  "scope": "Compare process cost at bounded search work, with strict trace/byte guards.\n\nCPU per propagation includes loading and proof output: it is not isolated BCP time.\nUNKNOWN proof prefixes are trace evidence, never UNSAT certificates.\n",
+  "seed": 20261326,
+  "conflict_limit": 1000,
+  "repeats": 1,
+  "options": [
+    "--chrono",
+    "--congruence",
+    "--equiv",
+    "--equiv-budget",
+    "100000000",
+    "--alternating"
+  ],
+  "solvers": {
+    "before": {
+      "path": "/private/tmp/bsat-factor-select-before",
+      "sha256": "bb40e23937b92570bff628fe14af29f8f62d0cb492c181b67697466f3f7ca699"
+    },
+    "current": {
+      "path": "/Users/msharpe/python/bsat/competition/c/bin/bsat",
+      "sha256": "0215b432f9dc116af16c10367fa844fc007b7a10747136aff121d2f2f594a181"
+    }
+  },
+  "inputs": {
+    "/Users/msharpe/python/bsat/dataset/sat_competition2025/random-csp/9b998be0c639d06988c4902eb125c0b7.cnf": "a864d5f3f6e6a0a41d64f20810a59bdd15c5bc2539e4ea5370015a158d77fa25",
+    "/Users/msharpe/python/bsat/dataset/sat_competition2025/planning/16c999d046885c8e51f196e60c34d966.cnf": "77db4df9cc8bd8cd59dae994f24a3cf686ebd46e2aa123c534b5e3cc3a75d9b5"
+  },
+  "checker_sha256": "9bfc20a5fa9eb2a0ffadd2b0cfc7cdd4a20f6aa9c8d7de5b6c771160b847f630",
+  "runs": []
+}
