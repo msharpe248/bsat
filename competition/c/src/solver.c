@@ -152,6 +152,8 @@ SolverOpts default_opts(void) {
         .equiv_budget = 1000000,
         .congruence = false,
         .congruence_budget = 100000000,
+        .factor_budget = 100000000,
+        .factor_max_variables = 1024,
         .chrono = false,
         .chrono_levels = 100,
         .protect_used = false,
@@ -600,11 +602,8 @@ static bool grow_var_arrays(Solver* s, uint32_t new_capacity) {
 
 Var solver_new_var(Solver* s) {
     if (!s || s->error || s->watches->failed) return INVALID_VAR;
-    if (s->num_vars >= MAX_VARS) {
-        return INVALID_VAR;
-    }
-
     if (s->has_solved && !solver_prepare_next(s, -1)) return INVALID_VAR;
+    if (s->num_vars >= MAX_VARS) return INVALID_VAR;
     Var v = ++s->num_vars;
 
     // Grow arrays if needed (geometric growth strategy)
@@ -814,6 +813,12 @@ void solver_print_stats(const Solver* s) {
     printf("c\n");
     printf("c ========== Statistics ==========\n");
     printf("c CPU time          : %.3f s\n", cpu_time);
+    if(s->opts.factor) {
+        printf("c Factoring work: %llu\n",(unsigned long long)s->stats.factor_work);
+        printf("c Factoring variables: %u\n",s->stats.factor_variables);
+        printf("c Factoring added: %llu\n",(unsigned long long)s->stats.factor_added);
+        printf("c Factoring deleted: %llu\n",(unsigned long long)s->stats.factor_deleted);
+    }
     if (s->opts.chrono) {
         printf("c Chronological backtracks: %llu\n", (unsigned long long)s->stats.chronological);
         printf("c Chronological retained assignments: %llu\n", (unsigned long long)s->stats.chrono_retained);
@@ -2010,7 +2015,8 @@ static bool solver_rebuild_timed(Solver *s, double start_time, double max_time) 
     fresh->opts.proof_path = path;
     fresh->stats.start_time = start_time;
     fresh->opts.max_time = max_time;
-    while (fresh->num_vars < s->num_vars) {
+    Var original_vars=s->factor_original_vars?s->factor_original_vars:s->num_vars;
+    while (fresh->num_vars < original_vars) {
         if (solver_budget_exhausted(fresh)) goto incomplete;
         if (!solver_new_var(fresh)) { solver_free(fresh); s->error=true; return false; }
     }
@@ -2067,7 +2073,7 @@ static bool solver_rebuild(Solver *s) { return solver_rebuild_timed(s, 0, 0); }
    actual equivalence substitution records reconstruction state and falls back. */
 static bool solver_prepare_next(Solver *s, double start) {
     if (s->error || s->watches->failed) return false;
-    bool reuse=s->opts.reuse_learnts && !s->proof_file && !s->opts.proof_path &&
+    bool reuse=s->opts.reuse_learnts && !s->factor_original_vars && !s->proof_file && !s->opts.proof_path &&
         !s->elim && !s->opts.elim && !s->opts.bce && !s->opts.local_search && !s->opts.inprocess &&
         !s->interrupted;
     if (!reuse) return start<0 ? solver_rebuild(s) : solver_rebuild_timed(s,start,s->opts.max_time);
@@ -2172,6 +2178,19 @@ static lbool solve_internal_account_impl(Solver *s, const Lit *assumps, uint32_t
     s->work_limit = 0;
     if (s->error || s->interrupted) return UNDEF;
     if (s->result == FALSE) {s->base_unsat=true;return FALSE;}
+    if(!n_assumps && s->opts.factor && s->opts.factor_budget && s->opts.factor_max_variables) {
+        s->work_limit=s->work+MIN(s->opts.factor_budget,UINT64_MAX-s->work);
+        double started=solver_account_begin(s);
+        solver_factor(s);
+        solver_account_end(s,ACCOUNT_PREPROCESS,started);
+        s->work_limit=0;
+        if(s->error || s->interrupted)return UNDEF;
+        if(s->num_vars+2>s->levels_capacity) {
+            uint8_t *seen=calloc((size_t)s->num_vars+2,1);
+            if(!seen){s->error=true;return UNDEF;}
+            free(s->level_seen);s->level_seen=seen;s->levels_capacity=s->num_vars+2;
+        }
+    }
     Lit *learnt = malloc((s->num_vars+1)*sizeof *learnt);
     if (!learnt) { s->error=true; return UNDEF; }
     lbool result=UNDEF;

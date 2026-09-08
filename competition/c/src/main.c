@@ -152,6 +152,9 @@ static void print_usage(const char* program) {
     printf("  --equiv-budget <n>       SCC preprocessing work budget (1000000)\n");
     printf("  --congruence             Experimental AND/XOR/ITE gate congruence\n");
     printf("  --congruence-budget <n>   Gate work budget (100000000)\n");
+    printf("  --factor                 Experimental binary-clause factoring\n");
+    printf("  --factor-budget <n>       Factoring work budget (100000000)\n");
+    printf("  --factor-max-variables <n> Fresh-variable limit (1024)\n");
     printf("  --no-probing              Disable failed literal probing\n");
     printf("\n");
     printf("Inprocessing:\n");
@@ -246,6 +249,9 @@ static struct option long_options[] = {
     {"equiv-budget",    required_argument, 0, 0},
     {"congruence", no_argument, 0, 0},
     {"congruence-budget", required_argument, 0, 0},
+    {"factor", no_argument, 0, 0},
+    {"factor-budget", required_argument, 0, 0},
+    {"factor-max-variables", required_argument, 0, 0},
     {"no-probing",      no_argument,       0, 0},
     {"inprocess",       no_argument,       0, 0},
     {"inprocess-interval", required_argument, 0, 0},
@@ -296,7 +302,7 @@ int main(int argc, char** argv) {
             } else {
                 unsigned long long value=strtoull(optarg,&end,10);
                 valid=optarg[0]>='0' && optarg[0]<='9' && !errno && end!=optarg && !*end &&
-                    (!strcmp(name,"preprocess-budget") || !strcmp(name,"equiv-budget") || !strcmp(name,"congruence-budget") || value<=UINT32_MAX);
+                    (!strcmp(name,"preprocess-budget") || !strcmp(name,"equiv-budget") || !strcmp(name,"congruence-budget") || !strcmp(name,"factor-budget") || value<=UINT32_MAX);
             }
             if (!valid) { fprintf(stderr,"Error: invalid numeric argument: %s\n",optarg);return 1; }
         }
@@ -340,6 +346,12 @@ int main(int argc, char** argv) {
                     opts.alternating = true;
                 } else if (strcmp(long_options[option_index].name, "congruence") == 0) {
                     opts.congruence = true;
+                } else if (strcmp(long_options[option_index].name, "factor") == 0) {
+                    opts.factor = true;
+                } else if (strcmp(long_options[option_index].name, "factor-budget") == 0) {
+                    opts.factor_budget = strtoull(optarg,NULL,10);
+                } else if (strcmp(long_options[option_index].name, "factor-max-variables") == 0) {
+                    opts.factor_max_variables = strtoul(optarg,NULL,10);
                 } else if (strcmp(long_options[option_index].name, "congruence-budget") == 0) {
                     opts.congruence_budget = strtoull(optarg,NULL,10);
                 } else if (strcmp(long_options[option_index].name, "portfolio") == 0) {
@@ -550,7 +562,8 @@ int main(int argc, char** argv) {
         // Print model
         printf("v ");
         int vars_per_line = 0;
-        for (Var v = 1; v <= solver->num_vars; v++) {
+        Var model_vars=solver->factor_original_vars?solver->factor_original_vars:solver->num_vars;
+        for (Var v = 1; v <= model_vars; v++) {
             lbool val = solver_model_value(solver, v);
             if (val == TRUE) {
                 printf("%u ", v);

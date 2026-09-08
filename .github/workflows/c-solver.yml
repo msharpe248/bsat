@@ -71,6 +71,7 @@ jobs:
           python3 competition/c/tests/check_long_search.py --solver "$binary" --checker "$RUNNER_TEMP/drat-trim" --output "$RUNNER_TEMP/long-search.json"
           BSAT_SOLVER="$binary" BSAT_DRAT_TRIM="$RUNNER_TEMP/drat-trim" BSAT_CAKE_LPR="$RUNNER_TEMP/cake-lpr/cake_lpr" python3 competition/c/tests/test_verified_check.py
           BSAT_SOLVER="$binary" BSAT_DRAT_TRIM="$RUNNER_TEMP/drat-trim" BSAT_CAKE_LPR="$RUNNER_TEMP/cake-lpr/cake_lpr" python3 competition/c/tests/test_certify_query.py
+          BSAT_DRAT_TRIM="$RUNNER_TEMP/drat-trim" BSAT_CAKE_LPR="$RUNNER_TEMP/cake-lpr/cake_lpr" python3 competition/c/tests/check_factor_certificates.py --solver "$binary" --output "$RUNNER_TEMP/factor-certificates.json"
       - uses: actions/upload-artifact@v4
         if: failure()
         with:

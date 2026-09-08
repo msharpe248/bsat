@@ -24,10 +24,22 @@ static size_t attempt(unsigned profile, bool sat, size_t cutoff) {
     o.chrono=profile==4;o.chrono_levels=0;o.vmtf=profile==4;
     o.reuse_learnts=profile==6;
     o.lrb=profile==5;o.rephase=profile==5;
+    o.factor=profile==7;
     Solver *s=solver_new_with_opts(&o);
     if (!s) { assert(failed); return calls; }
     for (unsigned v=0;v<8;++v) if (!solver_new_var(s)) goto done;
-    for (unsigned bits=0;bits<64-(unsigned)sat;++bits) {
+    if(profile==7) {
+        for(Var a=1;a<=3;++a)for(Var b=4;b<=6;++b) {
+            Lit c[]={mkLit(a,false),mkLit(b,false)};solver_add_clause(s,c,2);
+            if(s->error || s->watches->failed)goto done;
+        }
+        if(!sat) {
+            Lit a[]={mkLit(1,true),mkLit(2,true),mkLit(3,true)};
+            Lit b[]={mkLit(4,true),mkLit(5,true),mkLit(6,true)};
+            solver_add_clause(s,a,3);solver_add_clause(s,b,3);
+            if(s->error || s->watches->failed)goto done;
+        }
+    } else for (unsigned bits=0;bits<64-(unsigned)sat;++bits) {
         Lit c[6];for(unsigned v=0;v<6;++v)c[v]=mkLit(v+1,(bits>>v)&1);
         solver_add_clause(s,c,6);
         if(s->error || s->watches->failed) goto done;
@@ -40,7 +52,10 @@ static size_t attempt(unsigned profile, bool sat, size_t cutoff) {
         lbool r=solver_solve(s);
         if(s->error || s->watches->failed) {assert(r==UNDEF);break;}
         assert(r==(sat?TRUE:FALSE));
-        if(sat) for(unsigned v=1;v<=6;++v)assert(solver_model_value(s,v)==TRUE);
+        if(sat) {
+            assert(solver_check_model(s));
+            if(profile!=7)for(unsigned v=1;v<=6;++v)assert(solver_model_value(s,v)==TRUE);
+        }
         if(profile==6 && sat && repeat==0) {
             Lit assumption=mkLit(1,true);
             r=solver_solve_with_assumptions(s,&assumption,1);
@@ -60,12 +75,12 @@ done:
 }
 int main(void) {
     size_t injected=0;
-    for(unsigned p=0;p<7;++p)for(unsigned sat=0;sat<2;++sat) {
+    for(unsigned p=0;p<8;++p)for(unsigned sat=0;sat<2;++sat) {
         size_t count=attempt(p,sat,0);
         for(size_t i=1;i<=count;++i) {
             fprintf(stderr,"fault profile=%u sat=%u allocation=%zu/%zu\n",p,sat,i,count);
             attempt(p,sat,i);assert(failed);++injected;
         }
     }
-    printf("PASS: %zu single-allocation failures across 14 profiles/formulas and repeated solves\n",injected);
+    printf("PASS: %zu single-allocation failures across 16 profiles/formulas and repeated solves\n",injected);
 }

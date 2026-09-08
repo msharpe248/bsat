@@ -1,0 +1,21 @@
+{
+  "inputs": {
+    "/Users/msharpe/python/bsat/dataset/sat_competition2025/reg-n/46355da785714f239393e7630020cae3.cnf": {
+      "sha256": "715b72da9f4c1709add9e486940d77e67d34ac5f0aa5f0ad97cd1dbe08929cae"
+    },
+    "/Users/msharpe/python/bsat/dataset/sat_competition2025/argumentation/2241a1fb5bdbac0c1a3c1980ed8b332d.cnf": {
+      "sha256": "751145a8e891fb33cf886d3f3d36a07985a658b7a6b0515da97bea121977cb91"
+    }
+  },
+  "binary_sha256": "31349c1b121b150cc35a1a9d6188d53b1ab6ef9c3815ff1c3cfd1f7f5be5d98a",
+  "common": "--chrono --congruence --equiv --equiv-budget 100000000 --alternating --time 20 --binary-proof --proof {proof}",
+  "profiles": {
+    "control": "",
+    "factor": "--factor"
+  },
+  "cpu_limit": 20,
+  "wall_limit": 25,
+  "repeats": 2,
+  "seed": 2026090817,
+  "scope": "development binary-factoring ablation; conclusive answers independently checked; no concurrent local solver/build/test load"
+}

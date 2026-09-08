@@ -28,6 +28,9 @@ typedef struct SolverOpts {
     uint64_t equiv_budget;       // Independent preprocessing work budget
     bool     congruence;         // Experimental AND/XOR/ITE gate congruence
     uint64_t congruence_budget;  // Independent gate extraction/derivation budget
+    bool factor;                // Opt-in proof-producing binary BVA
+    uint64_t factor_budget;
+    uint32_t factor_max_variables;
 
     // Branching heuristic
     bool     vmtf;              // Experimental move-to-front variable queue
@@ -262,6 +265,8 @@ typedef struct Solver {
         uint64_t congruence_work, congruence_gates, congruence_merges, congruence_clauses;
         uint64_t congruence_seeds;
         uint64_t congruence_strengthened, congruence_units;
+        uint64_t factor_work, factor_added, factor_deleted;
+        uint32_t factor_variables;
         uint64_t chronological, chrono_retained, chrono_rewatched, chrono_lower_conflicts;
         uint64_t lbd_updates;
         uint64_t clock_checks;      // Actual CPU deadline clock reads
@@ -329,6 +334,7 @@ typedef struct Solver {
     size_t input_size, input_capacity;
     uint32_t input_clauses, clauses_capacity;
     uint32_t last_assumptions;
+    Var factor_original_vars; // Auxiliary variables are discarded on rebuild
     uint64_t reused_solves;
     bool internal_add, has_solved, error, interrupted;
     bool base_unsat; // Permanent root inconsistency, separate from assumption failure
@@ -385,6 +391,7 @@ lbool solver_solve_portfolio(Solver* s, double focused_seconds);
 /* Root-only preprocessing helpers. Derived clauses never enter immutable input. */
 bool solver_add_rup_clause(Solver* s, const Lit* lits, uint32_t size);
 uint32_t solver_congruence(Solver* s);
+uint32_t solver_factor(Solver* s);
 /* Internal conflict preparation for chronological search.
    False means a root conflict or a resource/error stop; inspect solver flags. */
 bool solver_normalize_conflict(Solver* s, CRef conflict);

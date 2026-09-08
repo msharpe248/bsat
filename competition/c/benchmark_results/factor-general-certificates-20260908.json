@@ -1,0 +1,677 @@
+{
+  "scope": "Check signed factoring rectangles and partial optimization prefixes.",
+  "runs": [
+    {
+      "kind": "binary",
+      "signs": 0,
+      "format": "text",
+      "budget": 50,
+      "verified": true
+    },
+    {
+      "kind": "ternary",
+      "signs": 0,
+      "format": "text",
+      "budget": 50,
+      "verified": true
+    },
+    {
+      "kind": "binary",
+      "signs": 0,
+      "format": "text",
+      "budget": 120,
+      "verified": true
+    },
+    {
+      "kind": "ternary",
+      "signs": 0,
+      "format": "text",
+      "budget": 120,
+      "verified": true
+    },
+    {
+      "kind": "binary",
+      "signs": 0,
+      "format": "text",
+      "budget": 100000,
+      "verified": true
+    },
+    {
+      "kind": "ternary",
+      "signs": 0,
+      "format": "text",
+      "budget": 100000,
+      "verified": true
+    },
+    {
+      "kind": "binary",
+      "signs": 0,
+      "format": "binary",
+      "budget": 50,
+      "verified": true
+    },
+    {
+      "kind": "ternary",
+      "signs": 0,
+      "format": "binary",
+      "budget": 50,
+      "verified": true
+    },
+    {
+      "kind": "binary",
+      "signs": 0,
+      "format": "binary",
+      "budget": 120,
+      "verified": true
+    },
+    {
+      "kind": "ternary",
+      "signs": 0,
+      "format": "binary",
+      "budget": 120,
+      "verified": true
+    },
+    {
+      "kind": "binary",
+      "signs": 0,
+      "format": "binary",
+      "budget": 100000,
+      "verified": true
+    },
+    {
+      "kind": "ternary",
+      "signs": 0,
+      "format": "binary",
+      "budget": 100000,
+      "verified": true
+    },
+    {
+      "kind": "binary",
+      "signs": 1,
+      "format": "text",
+      "budget": 50,
+      "verified": true
+    },
+    {
+      "kind": "ternary",
+      "signs": 1,
+      "format": "text",
+      "budget": 50,
+      "verified": true
+    },
+    {
+      "kind": "binary",
+      "signs": 1,
+      "format": "text",
+      "budget": 120,
+      "verified": true
+    },
+    {
+      "kind": "ternary",
+      "signs": 1,
+      "format": "text",
+      "budget": 120,
+      "verified": true
+    },
+    {
+      "kind": "binary",
+      "signs": 1,
+      "format": "text",
+      "budget": 100000,
+      "verified": true
+    },
+    {
+      "kind": "ternary",
+      "signs": 1,
+      "format": "text",
+      "budget": 100000,
+      "verified": true
+    },
+    {
+      "kind": "binary",
+      "signs": 1,
+      "format": "binary",
+      "budget": 50,
+      "verified": true
+    },
+    {
+      "kind": "ternary",
+      "signs": 1,
+      "format": "binary",
+      "budget": 50,
+      "verified": true
+    },
+    {
+      "kind": "binary",
+      "signs": 1,
+      "format": "binary",
+      "budget": 120,
+      "verified": true
+    },
+    {
+      "kind": "ternary",
+      "signs": 1,
+      "format": "binary",
+      "budget": 120,
+      "verified": true
+    },
+    {
+      "kind": "binary",
+      "signs": 1,
+      "format": "binary",
+      "budget": 100000,
+      "verified": true
+    },
+    {
+      "kind": "ternary",
+      "signs": 1,
+      "format": "binary",
+      "budget": 100000,
+      "verified": true
+    },
+    {
+      "kind": "binary",
+      "signs": 2,
+      "format": "text",
+      "budget": 50,
+      "verified": true
+    },
+    {
+      "kind": "ternary",
+      "signs": 2,
+      "format": "text",
+      "budget": 50,
+      "verified": true
+    },
+    {
+      "kind": "binary",
+      "signs": 2,
+      "format": "text",
+      "budget": 120,
+      "verified": true
+    },
+    {
+      "kind": "ternary",
+      "signs": 2,
+      "format": "text",
+      "budget": 120,
+      "verified": true
+    },
+    {
+      "kind": "binary",
+      "signs": 2,
+      "format": "text",
+      "budget": 100000,
+      "verified": true
+    },
+    {
+      "kind": "ternary",
+      "signs": 2,
+      "format": "text",
+      "budget": 100000,
+      "verified": true
+    },
+    {
+      "kind": "binary",
+      "signs": 2,
+      "format": "binary",
+      "budget": 50,
+      "verified": true
+    },
+    {
+      "kind": "ternary",
+      "signs": 2,
+      "format": "binary",
+      "budget": 50,
+      "verified": true
+    },
+    {
+      "kind": "binary",
+      "signs": 2,
+      "format": "binary",
+      "budget": 120,
+      "verified": true
+    },
+    {
+      "kind": "ternary",
+      "signs": 2,
+      "format": "binary",
+      "budget": 120,
+      "verified": true
+    },
+    {
+      "kind": "binary",
+      "signs": 2,
+      "format": "binary",
+      "budget": 100000,
+      "verified": true
+    },
+    {
+      "kind": "ternary",
+      "signs": 2,
+      "format": "binary",
+      "budget": 100000,
+      "verified": true
+    },
+    {
+      "kind": "binary",
+      "signs": 3,
+      "format": "text",
+      "budget": 50,
+      "verified": true
+    },
+    {
+      "kind": "ternary",
+      "signs": 3,
+      "format": "text",
+      "budget": 50,
+      "verified": true
+    },
+    {
+      "kind": "binary",
+      "signs": 3,
+      "format": "text",
+      "budget": 120,
+      "verified": true
+    },
+    {
+      "kind": "ternary",
+      "signs": 3,
+      "format": "text",
+      "budget": 120,
+      "verified": true
+    },
+    {
+      "kind": "binary",
+      "signs": 3,
+      "format": "text",
+      "budget": 100000,
+      "verified": true
+    },
+    {
+      "kind": "ternary",
+      "signs": 3,
+      "format": "text",
+      "budget": 100000,
+      "verified": true
+    },
+    {
+      "kind": "binary",
+      "signs": 3,
+      "format": "binary",
+      "budget": 50,
+      "verified": true
+    },
+    {
+      "kind": "ternary",
+      "signs": 3,
+      "format": "binary",
+      "budget": 50,
+      "verified": true
+    },
+    {
+      "kind": "binary",
+      "signs": 3,
+      "format": "binary",
+      "budget": 120,
+      "verified": true
+    },
+    {
+      "kind": "ternary",
+      "signs": 3,
+      "format": "binary",
+      "budget": 120,
+      "verified": true
+    },
+    {
+      "kind": "binary",
+      "signs": 3,
+      "format": "binary",
+      "budget": 100000,
+      "verified": true
+    },
+    {
+      "kind": "ternary",
+      "signs": 3,
+      "format": "binary",
+      "budget": 100000,
+      "verified": true
+    },
+    {
+      "kind": "binary",
+      "signs": 4,
+      "format": "text",
+      "budget": 50,
+      "verified": true
+    },
+    {
+      "kind": "ternary",
+      "signs": 4,
+      "format": "text",
+      "budget": 50,
+      "verified": true
+    },
+    {
+      "kind": "binary",
+      "signs": 4,
+      "format": "text",
+      "budget": 120,
+      "verified": true
+    },
+    {
+      "kind": "ternary",
+      "signs": 4,
+      "format": "text",
+      "budget": 120,
+      "verified": true
+    },
+    {
+      "kind": "binary",
+      "signs": 4,
+      "format": "text",
+      "budget": 100000,
+      "verified": true
+    },
+    {
+      "kind": "ternary",
+      "signs": 4,
+      "format": "text",
+      "budget": 100000,
+      "verified": true
+    },
+    {
+      "kind": "binary",
+      "signs": 4,
+      "format": "binary",
+      "budget": 50,
+      "verified": true
+    },
+    {
+      "kind": "ternary",
+      "signs": 4,
+      "format": "binary",
+      "budget": 50,
+      "verified": true
+    },
+    {
+      "kind": "binary",
+      "signs": 4,
+      "format": "binary",
+      "budget": 120,
+      "verified": true
+    },
+    {
+      "kind": "ternary",
+      "signs": 4,
+      "format": "binary",
+      "budget": 120,
+      "verified": true
+    },
+    {
+      "kind": "binary",
+      "signs": 4,
+      "format": "binary",
+      "budget": 100000,
+      "verified": true
+    },
+    {
+      "kind": "ternary",
+      "signs": 4,
+      "format": "binary",
+      "budget": 100000,
+      "verified": true
+    },
+    {
+      "kind": "binary",
+      "signs": 5,
+      "format": "text",
+      "budget": 50,
+      "verified": true
+    },
+    {
+      "kind": "ternary",
+      "signs": 5,
+      "format": "text",
+      "budget": 50,
+      "verified": true
+    },
+    {
+      "kind": "binary",
+      "signs": 5,
+      "format": "text",
+      "budget": 120,
+      "verified": true
+    },
+    {
+      "kind": "ternary",
+      "signs": 5,
+      "format": "text",
+      "budget": 120,
+      "verified": true
+    },
+    {
+      "kind": "binary",
+      "signs": 5,
+      "format": "text",
+      "budget": 100000,
+      "verified": true
+    },
+    {
+      "kind": "ternary",
+      "signs": 5,
+      "format": "text",
+      "budget": 100000,
+      "verified": true
+    },
+    {
+      "kind": "binary",
+      "signs": 5,
+      "format": "binary",
+      "budget": 50,
+      "verified": true
+    },
+    {
+      "kind": "ternary",
+      "signs": 5,
+      "format": "binary",
+      "budget": 50,
+      "verified": true
+    },
+    {
+      "kind": "binary",
+      "signs": 5,
+      "format": "binary",
+      "budget": 120,
+      "verified": true
+    },
+    {
+      "kind": "ternary",
+      "signs": 5,
+      "format": "binary",
+      "budget": 120,
+      "verified": true
+    },
+    {
+      "kind": "binary",
+      "signs": 5,
+      "format": "binary",
+      "budget": 100000,
+      "verified": true
+    },
+    {
+      "kind": "ternary",
+      "signs": 5,
+      "format": "binary",
+      "budget": 100000,
+      "verified": true
+    },
+    {
+      "kind": "binary",
+      "signs": 6,
+      "format": "text",
+      "budget": 50,
+      "verified": true
+    },
+    {
+      "kind": "ternary",
+      "signs": 6,
+      "format": "text",
+      "budget": 50,
+      "verified": true
+    },
+    {
+      "kind": "binary",
+      "signs": 6,
+      "format": "text",
+      "budget": 120,
+      "verified": true
+    },
+    {
+      "kind": "ternary",
+      "signs": 6,
+      "format": "text",
+      "budget": 120,
+      "verified": true
+    },
+    {
+      "kind": "binary",
+      "signs": 6,
+      "format": "text",
+      "budget": 100000,
+      "verified": true
+    },
+    {
+      "kind": "ternary",
+      "signs": 6,
+      "format": "text",
+      "budget": 100000,
+      "verified": true
+    },
+    {
+      "kind": "binary",
+      "signs": 6,
+      "format": "binary",
+      "budget": 50,
+      "verified": true
+    },
+    {
+      "kind": "ternary",
+      "signs": 6,
+      "format": "binary",
+      "budget": 50,
+      "verified": true
+    },
+    {
+      "kind": "binary",
+      "signs": 6,
+      "format": "binary",
+      "budget": 120,
+      "verified": true
+    },
+    {
+      "kind": "ternary",
+      "signs": 6,
+      "format": "binary",
+      "budget": 120,
+      "verified": true
+    },
+    {
+      "kind": "binary",
+      "signs": 6,
+      "format": "binary",
+      "budget": 100000,
+      "verified": true
+    },
+    {
+      "kind": "ternary",
+      "signs": 6,
+      "format": "binary",
+      "budget": 100000,
+      "verified": true
+    },
+    {
+      "kind": "binary",
+      "signs": 7,
+      "format": "text",
+      "budget": 50,
+      "verified": true
+    },
+    {
+      "kind": "ternary",
+      "signs": 7,
+      "format": "text",
+      "budget": 50,
+      "verified": true
+    },
+    {
+      "kind": "binary",
+      "signs": 7,
+      "format": "text",
+      "budget": 120,
+      "verified": true
+    },
+    {
+      "kind": "ternary",
+      "signs": 7,
+      "format": "text",
+      "budget": 120,
+      "verified": true
+    },
+    {
+      "kind": "binary",
+      "signs": 7,
+      "format": "text",
+      "budget": 100000,
+      "verified": true
+    },
+    {
+      "kind": "ternary",
+      "signs": 7,
+      "format": "text",
+      "budget": 100000,
+      "verified": true
+    },
+    {
+      "kind": "binary",
+      "signs": 7,
+      "format": "binary",
+      "budget": 50,
+      "verified": true
+    },
+    {
+      "kind": "ternary",
+      "signs": 7,
+      "format": "binary",
+      "budget": 50,
+      "verified": true
+    },
+    {
+      "kind": "binary",
+      "signs": 7,
+      "format": "binary",
+      "budget": 120,
+      "verified": true
+    },
+    {
+      "kind": "ternary",
+      "signs": 7,
+      "format": "binary",
+      "budget": 120,
+      "verified": true
+    },
+    {
+      "kind": "binary",
+      "signs": 7,
+      "format": "binary",
+      "budget": 100000,
+      "verified": true
+    },
+    {
+      "kind": "ternary",
+      "signs": 7,
+      "format": "binary",
+      "budget": 100000,
+      "verified": true
+    }
+  ]
+}

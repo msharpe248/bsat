@@ -1,0 +1,293 @@
+{
+  "scope": "signed binary rectangles, text/binary RAT proofs, partial work budgets, DRAT-to-LRAT and CakeML verification",
+  "runs": [
+    {
+      "signs": 0,
+      "format": "text",
+      "budget": 50,
+      "verified": true
+    },
+    {
+      "signs": 0,
+      "format": "text",
+      "budget": 120,
+      "verified": true
+    },
+    {
+      "signs": 0,
+      "format": "text",
+      "budget": 100000,
+      "verified": true
+    },
+    {
+      "signs": 0,
+      "format": "binary",
+      "budget": 50,
+      "verified": true
+    },
+    {
+      "signs": 0,
+      "format": "binary",
+      "budget": 120,
+      "verified": true
+    },
+    {
+      "signs": 0,
+      "format": "binary",
+      "budget": 100000,
+      "verified": true
+    },
+    {
+      "signs": 1,
+      "format": "text",
+      "budget": 50,
+      "verified": true
+    },
+    {
+      "signs": 1,
+      "format": "text",
+      "budget": 120,
+      "verified": true
+    },
+    {
+      "signs": 1,
+      "format": "text",
+      "budget": 100000,
+      "verified": true
+    },
+    {
+      "signs": 1,
+      "format": "binary",
+      "budget": 50,
+      "verified": true
+    },
+    {
+      "signs": 1,
+      "format": "binary",
+      "budget": 120,
+      "verified": true
+    },
+    {
+      "signs": 1,
+      "format": "binary",
+      "budget": 100000,
+      "verified": true
+    },
+    {
+      "signs": 2,
+      "format": "text",
+      "budget": 50,
+      "verified": true
+    },
+    {
+      "signs": 2,
+      "format": "text",
+      "budget": 120,
+      "verified": true
+    },
+    {
+      "signs": 2,
+      "format": "text",
+      "budget": 100000,
+      "verified": true
+    },
+    {
+      "signs": 2,
+      "format": "binary",
+      "budget": 50,
+      "verified": true
+    },
+    {
+      "signs": 2,
+      "format": "binary",
+      "budget": 120,
+      "verified": true
+    },
+    {
+      "signs": 2,
+      "format": "binary",
+      "budget": 100000,
+      "verified": true
+    },
+    {
+      "signs": 3,
+      "format": "text",
+      "budget": 50,
+      "verified": true
+    },
+    {
+      "signs": 3,
+      "format": "text",
+      "budget": 120,
+      "verified": true
+    },
+    {
+      "signs": 3,
+      "format": "text",
+      "budget": 100000,
+      "verified": true
+    },
+    {
+      "signs": 3,
+      "format": "binary",
+      "budget": 50,
+      "verified": true
+    },
+    {
+      "signs": 3,
+      "format": "binary",
+      "budget": 120,
+      "verified": true
+    },
+    {
+      "signs": 3,
+      "format": "binary",
+      "budget": 100000,
+      "verified": true
+    },
+    {
+      "signs": 4,
+      "format": "text",
+      "budget": 50,
+      "verified": true
+    },
+    {
+      "signs": 4,
+      "format": "text",
+      "budget": 120,
+      "verified": true
+    },
+    {
+      "signs": 4,
+      "format": "text",
+      "budget": 100000,
+      "verified": true
+    },
+    {
+      "signs": 4,
+      "format": "binary",
+      "budget": 50,
+      "verified": true
+    },
+    {
+      "signs": 4,
+      "format": "binary",
+      "budget": 120,
+      "verified": true
+    },
+    {
+      "signs": 4,
+      "format": "binary",
+      "budget": 100000,
+      "verified": true
+    },
+    {
+      "signs": 5,
+      "format": "text",
+      "budget": 50,
+      "verified": true
+    },
+    {
+      "signs": 5,
+      "format": "text",
+      "budget": 120,
+      "verified": true
+    },
+    {
+      "signs": 5,
+      "format": "text",
+      "budget": 100000,
+      "verified": true
+    },
+    {
+      "signs": 5,
+      "format": "binary",
+      "budget": 50,
+      "verified": true
+    },
+    {
+      "signs": 5,
+      "format": "binary",
+      "budget": 120,
+      "verified": true
+    },
+    {
+      "signs": 5,
+      "format": "binary",
+      "budget": 100000,
+      "verified": true
+    },
+    {
+      "signs": 6,
+      "format": "text",
+      "budget": 50,
+      "verified": true
+    },
+    {
+      "signs": 6,
+      "format": "text",
+      "budget": 120,
+      "verified": true
+    },
+    {
+      "signs": 6,
+      "format": "text",
+      "budget": 100000,
+      "verified": true
+    },
+    {
+      "signs": 6,
+      "format": "binary",
+      "budget": 50,
+      "verified": true
+    },
+    {
+      "signs": 6,
+      "format": "binary",
+      "budget": 120,
+      "verified": true
+    },
+    {
+      "signs": 6,
+      "format": "binary",
+      "budget": 100000,
+      "verified": true
+    },
+    {
+      "signs": 7,
+      "format": "text",
+      "budget": 50,
+      "verified": true
+    },
+    {
+      "signs": 7,
+      "format": "text",
+      "budget": 120,
+      "verified": true
+    },
+    {
+      "signs": 7,
+      "format": "text",
+      "budget": 100000,
+      "verified": true
+    },
+    {
+      "signs": 7,
+      "format": "binary",
+      "budget": 50,
+      "verified": true
+    },
+    {
+      "signs": 7,
+      "format": "binary",
+      "budget": 120,
+      "verified": true
+    },
+    {
+      "signs": 7,
+      "format": "binary",
+      "budget": 100000,
+      "verified": true
+    }
+  ]
+}
