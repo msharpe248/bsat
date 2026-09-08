@@ -112,7 +112,22 @@ static bool add(Factor *f,Lit first,Lit second,Lit third) {
     return !s->error && !s->watches->failed;
 }
 static bool rectangle(Factor *f,Lit a) {
-    Solver *s=f->s;uint32_t touched=0;Lit best=0;uint32_t score=2;
+    Solver *s=f->s;uint32_t touched=0;Lit best=0;uint32_t score=1;
+    ++s->stats.factor_candidates;
+    if(s->opts.factor_min_gain>1) {
+        /* A cheap upper bound before the two-hop common-neighbor scan. Static
+           reverse degrees overestimate remaining rows after deletions, which
+           is safe: this may miss pruning, but cannot prune a profitable seed. */
+        uint64_t columns=0,rows=0;
+        for(size_t i=f->offset[a];i<f->offset[a+1];++i) {
+            if(!tick(f))return false;
+            Edge e=f->edges[i];if(!live(f,e))continue;
+            ++columns;rows=MAX(rows,f->column_offset[e.other+1]-f->column_offset[e.other]);
+        }
+        if(columns<2 || rows<2 || (columns-1)*(rows-1)-1<s->opts.factor_min_gain) {
+            ++s->stats.factor_pruned;return true;
+        }
+    }
     for(size_t i=f->offset[a];i<f->offset[a+1];++i) {
         if(!tick(f))return false;
         Edge e=f->edges[i];if(!live(f,e))continue;
@@ -150,7 +165,8 @@ static bool rectangle(Factor *f,Lit a) {
         if(!tick(f))return false;
         Lit b=f->touched[i];if(f->counts[b]==columns)f->rows[rows++]=b;f->counts[b]=0;
     }
-    if((uint64_t)rows*columns <= (uint64_t)rows+columns)goto done;
+    uint64_t removed=(uint64_t)rows*columns,added=(uint64_t)rows+columns;
+    if(removed<=added || removed-added<s->opts.factor_min_gain)goto done;
     /* Reserve an auxiliary namespace before any mutation. All partial prefixes
        remain equisatisfiable; cancellation never requires undoing a rectangle. */
     if(!s->factor_original_vars)s->factor_original_vars=s->num_vars;
@@ -183,7 +199,7 @@ uint32_t solver_factor(Solver *s) {
     Factor f={.s=s,.literals=2*(s->num_vars+1)};
     if(graph(&f))for(Lit a=2;a<f.literals;++a) {
         if(!tick(&f) || s->stats.factor_variables>=s->opts.factor_max_variables)break;
-        if(s->values[var(a)]==UNDEF && f.offset[a+1]-f.offset[a]>=3 && !rectangle(&f,a))break;
+        if(s->values[var(a)]==UNDEF && f.offset[a+1]-f.offset[a]>=2 && !rectangle(&f,a))break;
     }
     free(f.pairs);free(f.edges);free(f.reverse);free(f.residues);free(f.column_offset);free(f.offset);free(f.counts);free(f.marked);
     free(f.touched);free(f.columns);free(f.rows);

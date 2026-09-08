@@ -11,7 +11,7 @@ promotion. Preserve independent model/certificate checks and unrelated files.
 3. Certificate limits and bounded sessions: complete; see JOURNAL_LIMITS.md.
 4. Service resource limits and exhaustion tests: complete; see SERVICE_RESOURCES.md.
 5. Uniform external deadlines and Linux baseline: in progress.
-6. Factoring selection and coverage: pending.
+6. Factoring selection and coverage: complete; see FACTORING_SELECTION.md.
 
 Timed workloads run serially without concurrent local builds or tests. Intrusive
 accounting is diagnostic only. Record inconclusive experiments and limitations;

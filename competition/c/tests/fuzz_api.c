@@ -29,6 +29,7 @@ int LLVMFuzzerTestOneInput(const uint8_t *data,size_t size) {
     o.chrono=data[0]&32;o.chrono_levels=0;o.vmtf=data[0]&64;
     o.reuse_learnts=data[2]&128;
     o.factor=data[2]&64;
+    o.factor_min_gain=1+((data[1]>>1)&7);
     /* Half of reuse inputs permit compatible preprocessing reuse; actual
        equivalence reconstruction still falls back. Others enable destructive
        modes and exercise the conservative rebuild path. */

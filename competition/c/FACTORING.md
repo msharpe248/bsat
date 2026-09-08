@@ -16,6 +16,10 @@ million arcs. Temporary storage is linear in variables, residuals and arcs. All 
 consume work and poll cancellation. Duplicate input clauses are deduplicated
 for finding rectangles, so multiplicity cannot masquerade as a complete group.
 
+`--factor-min-gain` optionally requires a larger net clause saving per rectangle
+(default 1). Profitable two-column ternary rectangles are now covered too. See
+`FACTORING_SELECTION.md` for selection bounds, validation and measured tradeoffs.
+
 The NOT-x replacement clauses are RAT on a fresh pivot. Each subsequent x
 clause has the original rectangle clauses as resolvents. Original clauses are
 deleted only after all replacements exist. Every interrupted prefix preserves
@@ -26,7 +30,7 @@ variables. Later input growth or queries rebuild the original variable namespace
 Reconstruction state, existing learned clauses, inprocessing and local-search
 modes conservatively skip factoring. It is opt-in and does not change defaults.
 
-Release and ASan/UBSan suites pass 7,488 signed/duplicate/budget/rebuild and
+Initial release and ASan/UBSan suites passed 7,488 signed/duplicate/budget/rebuild and
 exhaustive original-variable projection cases, plus a 20-auxiliary-variable
 growth regression, including chronology/VMTF combinations. Each suite passes
 2,773 injected allocation failures across 16 paths/formulas. An API ASan/UBSan

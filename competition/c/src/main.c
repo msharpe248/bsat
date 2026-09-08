@@ -152,9 +152,10 @@ static void print_usage(const char* program) {
     printf("  --equiv-budget <n>       SCC preprocessing work budget (1000000)\n");
     printf("  --congruence             Experimental AND/XOR/ITE gate congruence\n");
     printf("  --congruence-budget <n>   Gate work budget (100000000)\n");
-    printf("  --factor                 Experimental binary-clause factoring\n");
+    printf("  --factor                 Experimental binary/ternary clause factoring\n");
     printf("  --factor-budget <n>       Factoring work budget (100000000)\n");
     printf("  --factor-max-variables <n> Fresh-variable limit (1024)\n");
+    printf("  --factor-min-gain <n>      Minimum net clause saving per rectangle (1)\n");
     printf("  --no-probing              Disable failed literal probing\n");
     printf("\n");
     printf("Inprocessing:\n");
@@ -252,6 +253,7 @@ static struct option long_options[] = {
     {"factor", no_argument, 0, 0},
     {"factor-budget", required_argument, 0, 0},
     {"factor-max-variables", required_argument, 0, 0},
+    {"factor-min-gain", required_argument, 0, 0},
     {"no-probing",      no_argument,       0, 0},
     {"inprocess",       no_argument,       0, 0},
     {"inprocess-interval", required_argument, 0, 0},
@@ -352,6 +354,8 @@ int main(int argc, char** argv) {
                     opts.factor_budget = strtoull(optarg,NULL,10);
                 } else if (strcmp(long_options[option_index].name, "factor-max-variables") == 0) {
                     opts.factor_max_variables = strtoul(optarg,NULL,10);
+                } else if (strcmp(long_options[option_index].name, "factor-min-gain") == 0) {
+                    opts.factor_min_gain = strtoul(optarg,NULL,10);
                 } else if (strcmp(long_options[option_index].name, "congruence-budget") == 0) {
                     opts.congruence_budget = strtoull(optarg,NULL,10);
                 } else if (strcmp(long_options[option_index].name, "portfolio") == 0) {

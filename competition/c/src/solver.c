@@ -172,6 +172,7 @@ SolverOpts default_opts(void) {
         .congruence_budget = 100000000,
         .factor_budget = 100000000,
         .factor_max_variables = 1024,
+        .factor_min_gain = 1,
         .chrono = false,
         .chrono_levels = 100,
         .protect_used = false,
@@ -833,6 +834,8 @@ void solver_print_stats(const Solver* s) {
     printf("c CPU time          : %.3f s\n", cpu_time);
     if(s->opts.factor) {
         printf("c Factoring work: %llu\n",(unsigned long long)s->stats.factor_work);
+        printf("c Factoring candidates: %llu\n",(unsigned long long)s->stats.factor_candidates);
+        printf("c Factoring pruned: %llu\n",(unsigned long long)s->stats.factor_pruned);
         printf("c Factoring variables: %u\n",s->stats.factor_variables);
         printf("c Factoring added: %llu\n",(unsigned long long)s->stats.factor_added);
         printf("c Factoring deleted: %llu\n",(unsigned long long)s->stats.factor_deleted);

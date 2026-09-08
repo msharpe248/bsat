@@ -59,9 +59,25 @@ static void auxiliary_growth(void) {
     assert(solver_solve(s)==TRUE && solver_model_value(s,129)==FALSE && solver_check_model(s));
     solver_free(s);
 }
+static void two_columns(void) {
+    for(unsigned gain=1;gain<=2;++gain)for(unsigned signs=0;signs<8;++signs)
+    for(unsigned bits=0;bits<128;++bits) {
+        SolverOpts o=default_opts();o.factor=true;o.probing=false;o.factor_min_gain=gain;
+        Solver *s=solver_new_with_opts(&o);assert(s);Lit v[7];
+        for(unsigned i=0;i<7;++i){assert(solver_new_var(s));v[i]=mkLit(i+1,(signs>>(i%3))&1);}
+        for(unsigned row=0;row<3;++row)for(unsigned col=3;col<7;col+=2){Lit c[]={v[row],v[col],v[col+1]};assert(solver_add_clause(s,c,3));}
+        bool expected=original_value(s,bits);
+        assert(solver_factor(s)==(gain==1?1u:0u));
+        if(gain==1)assert(s->stats.factor_deleted==6 && s->stats.factor_added==5);
+        else assert(s->stats.factor_pruned>0);
+        Lit a[7];for(unsigned i=0;i<7;++i)a[i]=mkLit(i+1,!((bits>>i)&1));
+        assert(solver_solve_with_assumptions(s,a,7)==(expected?TRUE:FALSE));solver_free(s);
+    }
+}
 int main(void) {
+    two_columns();
     auxiliary_growth();
-    unsigned cases=0;
+    unsigned cases=2048; /* two-column projection and gain-boundary cases */
     for(unsigned signs=0;signs<64;++signs)for(unsigned bad=0;bad<2;++bad)
     for(unsigned cutoff=0;cutoff<20;++cutoff) {
         Solver *s=formula(signs,bad,cutoff==19?100000:cutoff*17);

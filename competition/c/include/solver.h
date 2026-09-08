@@ -28,9 +28,10 @@ typedef struct SolverOpts {
     uint64_t equiv_budget;       // Independent preprocessing work budget
     bool     congruence;         // Experimental AND/XOR/ITE gate congruence
     uint64_t congruence_budget;  // Independent gate extraction/derivation budget
-    bool factor;                // Opt-in proof-producing binary BVA
+    bool factor;                // Opt-in proof-producing binary/ternary BVA
     uint64_t factor_budget;
     uint32_t factor_max_variables;
+    uint32_t factor_min_gain;    // Minimum net clauses removed per rectangle
 
     // Branching heuristic
     bool     vmtf;              // Experimental move-to-front variable queue
@@ -268,6 +269,7 @@ typedef struct Solver {
         uint64_t congruence_seeds;
         uint64_t congruence_strengthened, congruence_units;
         uint64_t factor_work, factor_added, factor_deleted;
+        uint64_t factor_candidates, factor_pruned;
         uint32_t factor_variables;
         uint64_t chronological, chrono_retained, chrono_rewatched, chrono_lower_conflicts;
         uint64_t lbd_updates;
