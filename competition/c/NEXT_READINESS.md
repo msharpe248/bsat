@@ -8,8 +8,9 @@ performance experiments are recorded without retaining regressing runtime change
    24 long-search certificates/models pass per release/sanitizer build. Thirty-six
    fixed-work traces match exactly. Both Summle repetitions improve (52.0–53.4 s
    versus 57.5–59.4 s); hardware UNSAT remains verified. See `BINARY_PROOFS.md`.
-2. Propagation and search-efficiency measurements: pending. Add reproducible Linux
-   hardware-counter collection and separate search work from cost per work unit.
+2. Propagation and search-efficiency tooling: implemented. `compare_work.py`
+   separates equal search traces from process cost; `profile_linux.py` records
+   CPU-pinned real PMU events, work counters and independent answer checks.
    The target Linux host has been requested; do not substitute hosted VM timing
    for dedicated target-hardware evidence.
 3. Simplification candidate/work selection: pending. Implement a bounded candidate
