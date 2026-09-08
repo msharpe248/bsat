@@ -229,3 +229,18 @@ fault-test: $(BINDIR)/fail_alloc_$(MODE)
 	$<
 .PHONY: fault-test
 -include $(FAULT_OBJECTS:.o=.d)
+
+# Coverage-guided fuzzers use isolated Clang/ASan/UBSan objects and allocator hooks.
+FUZZ_CC ?= clang
+FUZZ_ENGINE ?= -fsanitize=fuzzer
+FUZZ_FLAGS = -std=c11 -D_POSIX_C_SOURCE=200809L -DDEBUG -g -O1 -I$(INCDIR) -fsanitize=fuzzer-no-link,address,undefined
+FUZZ_OBJECTS := $(patsubst $(SRCDIR)/%.c,build/fuzz/%.o,$(filter-out $(SRCDIR)/main.c,$(SOURCES)))
+build/fuzz/%.o: $(SRCDIR)/%.c $(TESTDIR)/fail_alloc.h
+	@mkdir -p $(@D)
+	$(FUZZ_CC) $(FUZZ_FLAGS) -include $(TESTDIR)/fail_alloc.h -MMD -MP -c -o $@ $<
+$(BINDIR)/fuzz_%: $(TESTDIR)/fuzz_%.c $(TESTDIR)/fuzz_alloc.c $(FUZZ_OBJECTS) | dirs
+	$(FUZZ_CC) $(FUZZ_FLAGS) -o $@ $^ $(FUZZ_ENGINE) -lm
+fuzzers: $(BINDIR)/fuzz_api $(BINDIR)/fuzz_dimacs
+.PHONY: fuzzers
+.SECONDARY: $(FUZZ_OBJECTS)
+-include $(FUZZ_OBJECTS:.o=.d)

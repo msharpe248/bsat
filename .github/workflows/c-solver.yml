@@ -11,8 +11,13 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-latest, macos-latest]
-        mode: [release, debug]
+        include:
+          - {os: ubuntu-latest, compiler: gcc, mode: release}
+          - {os: ubuntu-latest, compiler: gcc, mode: debug}
+          - {os: ubuntu-latest, compiler: clang, mode: release}
+          - {os: ubuntu-latest, compiler: clang, mode: debug}
+          - {os: macos-latest, compiler: clang, mode: release}
+          - {os: macos-latest, compiler: clang, mode: debug}
     runs-on: ${{ matrix.os }}
     # Hosted macOS ASan process startup makes the independent CLI matrix slow.
     # Preserve all cases; a failure in one platform must not cancel the others.
@@ -35,9 +40,9 @@ jobs:
       - name: Certificate retention and checker compatibility regressions
         run: DRAT_TRIM="$RUNNER_TEMP/drat-trim" python3 competition/c/tests/test_benchmark_artifacts.py
       - name: Unit and API regressions
-        run: make -C competition/c all test parse-benchmark local-search-benchmark MODE=${{ matrix.mode }}
+        run: make -C competition/c all test parse-benchmark local-search-benchmark MODE=${{ matrix.mode }} CC=${{ matrix.compiler }}
       - name: Allocation failure regressions
-        run: make -C competition/c fault-test MODE=${{ matrix.mode }}
+        run: make -C competition/c fault-test MODE=${{ matrix.mode }} CC=${{ matrix.compiler }}
       - name: Parse benchmark smoke test
         run: python3 competition/c/tests/benchmark_parse.py --parser current=competition/c/bin/parse_benchmark_${{ matrix.mode }} --repeats 1 --output "$RUNNER_TEMP/parse.json" competition/tests/fixtures/unit/trivial_sat.cnf
       - name: Local-search benchmark smoke test
@@ -62,7 +67,7 @@ jobs:
       - uses: actions/upload-artifact@v4
         if: failure()
         with:
-          name: failures-${{ matrix.os }}-${{ matrix.mode }}
+          name: failures-${{ matrix.os }}-${{ matrix.compiler }}-${{ matrix.mode }}
           path: |
             validation-failures/
             ${{ runner.temp }}/long-search.json

@@ -1,0 +1,45 @@
+name: C solver coverage fuzzing
+on:
+  push:
+    paths: ['competition/c/**', '.github/workflows/c-fuzz.yml']
+  pull_request:
+    paths: ['competition/c/**', '.github/workflows/c-fuzz.yml']
+  schedule:
+    - cron: '23 3 * * *'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  fuzz:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    strategy:
+      fail-fast: false
+      matrix:
+        target: [api, dimacs]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/cache@v4
+        with:
+          path: fuzz-corpus/${{ matrix.target }}
+          key: fuzz-${{ matrix.target }}-${{ github.run_id }}-${{ github.run_attempt }}
+          restore-keys: fuzz-${{ matrix.target }}-
+      - name: Build sanitizer and coverage instrumented targets
+        run: make -C competition/c -j2 fuzzers FUZZ_CC=clang
+      - name: Seed corpus
+        run: python3 competition/c/tests/seed_fuzz.py fuzz-corpus
+      - name: Fuzz stateful or parser operations
+        shell: bash
+        run: |
+          mkdir -p fuzz-artifacts
+          seconds=60
+          if [ '${{ github.event_name }}' = schedule ] || [ '${{ github.event_name }}' = workflow_dispatch ]; then seconds=600; fi
+          set -o pipefail
+          competition/c/bin/fuzz_${{ matrix.target }} -max_total_time="$seconds" -timeout=10 -rss_limit_mb=2048 -max_len=512 -print_final_stats=1 -artifact_prefix=fuzz-artifacts/ fuzz-corpus/${{ matrix.target }} 2>&1 | tee fuzz-artifacts/${{ matrix.target }}.log
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: fuzz-${{ matrix.target }}-${{ github.run_attempt }}
+          path: |
+            fuzz-artifacts/
+            fuzz-corpus/${{ matrix.target }}/

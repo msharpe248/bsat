@@ -17,10 +17,11 @@ performance experiments are recorded without retaining regressing runtime change
 4. Verified UNSAT checking: complete. Pinned, hash-checked cake_lpr assembly
    accepts the original CNF plus converted LRAT. Valid, corrupted, mismatched,
    long-search and large hardware certificates exercised; see `VERIFIED_CHECKING.md`.
-5. Continuous stateful and coverage-guided fuzzing: pending. Include input/API
-   sequences, bounded independent oracles, failure artifacts and replay/shrinking.
-6. Explicit GCC/Clang coverage: pending. Run both compilers on Linux in CI without
-   dropping the existing platform/build checks.
+5. Continuous stateful and coverage-guided fuzzing: implemented and locally
+   exercised. Independent bounded oracles, allocation failures, nightly/PR CI,
+   retained corpora and replay/minimization instructions; see `FUZZING.md`.
+6. Explicit GCC/Clang coverage: six-job matrix configured; hosted results pending.
+   Both compilers on Linux retain release/sanitizer and macOS checks.
 7. Longer evaluation: pending. Freeze a fresh multi-family corpus and longer run
    policy after implementation; report all checked answers and timeouts. Target
    hardware and long local runs are separate evidence scopes.
