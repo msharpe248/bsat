@@ -1,16 +1,25 @@
 #include "bsat.h"
 #include "solver.h"
 #include <math.h>
-struct bsat { Solver *core; int result; bool started; bsat_stats_v1 stats; };
+#include <sys/types.h>
+struct bsat { Solver *core; int result; bool started; bsat_stats_v1 stats; FILE *journal; Lit *query; size_t query_count; off_t journal_end; };
 uint32_t bsat_abi_version(void) { return BSAT_ABI_VERSION; }
 bsat *bsat_create(uint32_t abi,uint32_t flags) {
-    if(abi!=BSAT_ABI_VERSION || (flags & ~BSAT_REUSE_LEARNTS))return NULL;
+    if(abi!=BSAT_ABI_VERSION || (flags & ~(BSAT_REUSE_LEARNTS|BSAT_CERTIFICATES)))return NULL;
     bsat *s=calloc(1,sizeof *s);if(!s)return NULL;
     SolverOpts o=default_opts();o.reuse_learnts=(flags&BSAT_REUSE_LEARNTS)!=0;
+    if(flags&BSAT_CERTIFICATES) {
+        /* The journal contains RUP additions only. Keep variable namespace and
+           original formula intact; do not enable equisatisfiable transforms. */
+        o.probing=false;o.equiv=false;o.congruence=false;o.elim=false;o.bce=false;
+        o.factor=false;o.inprocess=false;o.local_search=false;o.binary_proof=true;
+        s->journal=tmpfile();if(!s->journal){free(s);return NULL;}
+    }
     s->core=solver_new_with_opts(&o);
-    if(!s->core){free(s);return NULL;}return s;
+    if(!s->core){if(s->journal)fclose(s->journal);free(s);return NULL;}
+    s->core->proof_journal=s->journal;return s;
 }
-void bsat_destroy(bsat *s) {if(s){solver_free(s->core);free(s);}}
+void bsat_destroy(bsat *s) {if(s){solver_free(s->core);if(s->journal)fclose(s->journal);free(s->query);free(s);}}
 int bsat_error(const bsat *s) {return !s || s->core->error || s->core->watches->failed;}
 int bsat_set_limits(bsat *s,double cpu,uint32_t conflicts,uint32_t decisions) {
     if(bsat_error(s))return 0;
@@ -44,22 +53,30 @@ bad:s->core->error=true;return NULL;
 }
 int bsat_add_clause(bsat *s,const int *lits,size_t count) {
     if(bsat_error(s))return 0;
-    s->started=true;s->result=BSAT_UNKNOWN;
+    s->started=true;s->result=BSAT_UNKNOWN;free(s->query);s->query=NULL;s->query_count=0;
     Lit *a=translate(s,lits,count,true);if(bsat_error(s)){free(a);return 0;}
     solver_add_clause(s->core,a,(uint32_t)count);free(a);return !bsat_error(s);
 }
 int bsat_solve(bsat *s,const int *assumptions,size_t count) {
     if(bsat_error(s))return BSAT_UNKNOWN;
-    s->started=true;s->result=BSAT_UNKNOWN;
+    s->started=true;s->result=BSAT_UNKNOWN;free(s->query);s->query=NULL;s->query_count=0;
     Lit *a=translate(s,assumptions,count,false);if(bsat_error(s)){free(a);return BSAT_UNKNOWN;}
     double start=solver_cpu_time();
-    lbool r=solver_solve_with_assumptions(s->core,a,(uint32_t)count);free(a);
+    lbool r=solver_solve_with_assumptions(s->core,a,(uint32_t)count);
+    if(s->journal) {
+        s->query=a;s->query_count=count;s->journal_end=ftello(s->journal);
+        if(s->journal_end<0){s->core->error=true;r=UNDEF;}
+    } else free(a);
+    uint64_t owned=solver_memory(s->core).total;
+    /* Snapshot collection and journal positioning are part of the solve call.
+       Recheck its deadline/callback before exposing a conclusive facade result. */
+    if(solver_budget_exhausted_now(s->core)) {r=UNDEF;s->core->result=UNDEF;}
     s->result=r==TRUE?BSAT_SAT:r==FALSE?BSAT_UNSAT:BSAT_UNKNOWN;
     bool searched=s->core->stats.start_time>=start;
     s->stats=(bsat_stats_v1){.version=1,.result=s->result,
         .conflicts=searched?s->core->stats.conflicts:0,.decisions=searched?s->core->stats.decisions:0,
         .propagations=searched?s->core->stats.propagations:0,.reused_preparations=s->core->reused_solves,
-        .cpu_seconds=solver_cpu_time()-start,.owned_capacity_bytes=solver_memory(s->core).total};
+        .cpu_seconds=solver_cpu_time()-start,.owned_capacity_bytes=owned};
     return s->result;
 }
 int bsat_value(const bsat *s,int lit) {
@@ -77,4 +94,31 @@ int bsat_failed(const bsat *s,int assumption) {
 }
 void bsat_set_terminate(bsat *s,void *state,int (*callback)(void *)) {
     if(s)solver_set_terminate(s->core,state,callback);
+}
+
+int bsat_export_query(bsat *s,const char *cnf_path,const char *proof_path) {
+    if(bsat_error(s) || !s->journal || (s->result!=10 && s->result!=20) ||
+       !cnf_path || !proof_path || !strcmp(cnf_path,proof_path))return 0;
+    FILE *cnf=fopen(cnf_path,"wbx");if(!cnf)return 0;
+    FILE *proof=fopen(proof_path,"wbx");if(!proof){fclose(cnf);return 0;}
+    bool ok=fprintf(cnf,"p cnf %u %zu\n",s->core->num_vars,
+                    (size_t)s->core->input_clauses+s->query_count)>0;
+    for(size_t i=0;ok && i<s->core->input_size;++i) {
+        Lit lit=s->core->input[i];
+        ok=lit?fprintf(cnf,"%d ",toDimacs(lit))>0:fputs("0\n",cnf)>=0;
+    }
+    for(size_t i=0;ok && i<s->query_count;++i)ok=fprintf(cnf,"%d 0\n",toDimacs(s->query[i]))>0;
+    if(fclose(cnf))ok=false;
+    if(fseeko(s->journal,0,SEEK_SET)){s->core->error=true;ok=false;}
+    unsigned char buffer[65536];off_t left=s->journal_end;
+    while(ok && left>0) {
+        size_t n=left>(off_t)sizeof buffer?sizeof buffer:(size_t)left;
+        if(fread(buffer,1,n,s->journal)!=n){s->core->error=true;ok=false;break;}
+        if(fwrite(buffer,1,n,proof)!=n){ok=false;break;}left-=(off_t)n;
+    }
+    /* Restore append position even when an output write failed. */
+    if(fseeko(s->journal,s->journal_end,SEEK_SET)){s->core->error=true;ok=false;}
+    if(ok && s->result==20 && fwrite("a\0",1,2,proof)!=2)ok=false;
+    if(fclose(proof))ok=false;
+    return ok;
 }

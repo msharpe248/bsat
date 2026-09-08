@@ -16,5 +16,7 @@ against original input and UNSAT through independent certificates.
    argumentation regression keeps the option experimental. See FACTORING.md.
 5. Embedding controls/IPASIR: implemented and validated in release and
    ASan/UBSan, including frozen-header and installed C++ consumers. See IPASIR.md.
-2–4, 6. Longer evaluation, memory tradeoffs, application histories and
-   retained-state certificates remain in progress.
+6. Retained-state certificates: implemented and independently validated over
+   reused/rebuilt histories in both builds. See RETAINED_CERTIFICATES.md.
+2–4. Longer evaluation, memory tradeoffs and application histories remain
+   in progress.

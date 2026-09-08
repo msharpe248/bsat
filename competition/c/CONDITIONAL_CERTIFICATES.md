@@ -38,3 +38,7 @@ and hashing costs outside a reported timing scope are not implied to be included
 Timeout supervision terminates process groups, gives wrappers a short cleanup
 window, and escalates to SIGKILL. Forced external SIGKILL of the supervisor itself
 still needs OS-level process containment for a strict no-orphan guarantee.
+
+For public API sessions that retain learned clauses, use `BSAT_CERTIFICATES`
+and `bsat_export_query`; see `RETAINED_CERTIFICATES.md`. That path exports
+the actual session journal without invoking the fresh-solve wrapper.

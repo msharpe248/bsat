@@ -90,6 +90,18 @@ static size_t ipasir_attempt(bool sat,size_t cutoff) {
     }
     ipasir_release(s);return calls;
 }
+static size_t certificate_attempt(bool reuse,size_t cutoff) {
+    calls=0;fail_at=cutoff;failed=false;
+    bsat *s=bsat_create(1,BSAT_CERTIFICATES|(reuse?BSAT_REUSE_LEARNTS:0));
+    if(!s){assert(failed);return calls;}
+    int a[]={1,2},b[]={-1,2},unit=-2;
+    bsat_add_clause(s,a,2);bsat_add_clause(s,b,2);
+    for(unsigned i=0;i<4;++i) {
+        int r=bsat_solve(s,i&1?NULL:&unit,i&1?0:1);
+        assert(r==(failed?0:i&1?10:20));
+    }
+    bsat_destroy(s);return calls;
+}
 int main(void) {
     size_t injected=0;
     for(unsigned p=0;p<8;++p)for(unsigned sat=0;sat<2;++sat) {
@@ -103,5 +115,9 @@ int main(void) {
         size_t count=ipasir_attempt(sat,0);
         for(size_t i=1;i<=count;++i){ipasir_attempt(sat,i);assert(failed);++injected;}
     }
-    printf("PASS: %zu single-allocation failures across 18 profiles/formulas and repeated solves\n",injected);
+    for(unsigned reuse=0;reuse<2;++reuse) {
+        size_t count=certificate_attempt(reuse,0);
+        for(size_t i=1;i<=count;++i){certificate_attempt(reuse,i);assert(failed);++injected;}
+    }
+    printf("PASS: %zu single-allocation failures across 20 profiles/formulas and repeated solves\n",injected);
 }

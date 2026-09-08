@@ -13,7 +13,8 @@ Use `bsat_set_limits` before input, or `bsat_set_query_limits` between queries.
 `bsat_get_stats` returns a stable latest-query snapshot; see `IPASIR.md`. Only the
 latest SAT result permits model reads; mutation/solve invalidates that lifetime.
 Errors poison a handle. Destroy it exactly once; destroying NULL is valid.
-The public facade does not expose proof paths or mutable solver options.
+`BSAT_CERTIFICATES` enables query-scoped exports over retained learning; see
+`RETAINED_CERTIFICATES.md`. Other internal options remain private.
 
 The following details additionally describe the internal C interface.
 
@@ -77,8 +78,8 @@ search, inprocessing and interrupted propagation use the rebuild path. See
 Repeated-solve preparation is charged to the new call's CPU limit. Do not mutate
 options or internal storage after construction.
 
-Assumptions plus a configured proof stream return UNDEF because conditional
-proofs are unsupported. For an independently checkable certificate, create a
+Assumptions plus an ordinary internal proof stream return UNDEF. Public
+certified handles use a separate journal and support retained conditional proofs. For an independently checkable certificate, create a
 separate solver/input with those assumptions explicitly added as unit clauses.
 Repeated proof-producing solves reset the proof file; copy a completed proof
 before starting the next call. Successful flushing is checked before a conclusive
@@ -123,8 +124,9 @@ files. These tests run in release and sanitizer CI builds.
 `embedding_client.c` dynamically links using only the public header, exercises
 independent concurrent instances, application-owned signals and cancellation/retry.
 `test_cancellation.c` covers callback preservation through rebuild and equivalence
-replacement, plus cancellation of cached UNSAT. Conditional proof calls on the
-internal assumptions API remain unsupported; use an explicitly augmented input.
+replacement, plus cancellation of cached UNSAT. Ordinary proof-stream calls on the
+internal assumptions API remain unsupported; use the public certified handle or
+an explicitly augmented input.
 
 `tests/certify_query.py` now supplies an independently checked augmented-input
 workflow for conditional certificates, with exact base/query/assumption bindings;

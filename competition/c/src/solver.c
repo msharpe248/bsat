@@ -36,8 +36,9 @@ static bool solver_prepare_next(Solver *s, double start);
 
 /* Write complete chunks through stdio so its normal buffering and final flush
    semantics remain intact. A short write invalidates the solve certificate. */
+static FILE *proof_stream(const Solver *s) { return s->proof_file?s->proof_file:s->proof_journal; }
 static bool proof_write(Solver *s, const void *buffer, uint32_t size) {
-    if (fwrite(buffer, 1, size, s->proof_file) == size) return true;
+    if (fwrite(buffer, 1, size, proof_stream(s)) == size) return true;
     s->error = true;
     return false;
 }
@@ -92,13 +93,13 @@ static void proof_binary_clause(Solver *s, const Lit *lits, uint32_t size, bool 
 
 static void proof_clause(Solver *s, const Lit *lits, uint32_t size, bool deletion);
 static void proof_clause_account_impl(Solver *s, const Lit *lits, uint32_t size, bool deletion) {
-    if (!s->proof_file) return;
+    if (!proof_stream(s) || (deletion && !s->proof_file)) return;
     if (s->opts.binary_proof) {
         proof_binary_clause(s,lits,size,deletion);
     } else {
         proof_text_clause(s, lits, size, deletion);
     }
-    if (ferror(s->proof_file)) s->error = true;
+    if (ferror(proof_stream(s))) s->error = true;
 }
 void proof_add_clause(Solver *s, const Lit *lits, uint32_t size) { proof_clause(s, lits, size, false); }
 void proof_delete_clause(Solver *s, const Lit *lits, uint32_t size) { proof_clause(s, lits, size, true); }
@@ -2011,6 +2012,7 @@ static bool solver_rebuild_timed(Solver *s, double start_time, double max_time) 
     opts.proof_path = NULL;
     Solver *fresh = solver_new_with_opts(&opts);
     if (!fresh) { s->error = true; return false; }
+    fresh->proof_journal=s->proof_journal;
     fresh->terminate=s->terminate;fresh->terminate_state=s->terminate_state;
     fresh->learn_callback=s->learn_callback;fresh->learn_state=s->learn_state;fresh->learn_max_length=s->learn_max_length;
     fresh->opts.proof_path = path;
@@ -2357,9 +2359,15 @@ static lbool solver_solve_at(Solver *s, const Lit *assumps, uint32_t n_assumps, 
             for (uint32_t i=0;i<n_assumps;++i) s->conflict_clause[i]=neg(assumps[i]);
         }
     }
-    if (result==FALSE && !s->error && !s->interrupted) proof_add_clause(s,NULL,0);
+    if (result==FALSE && !s->error && !s->interrupted) {
+        /* Only a globally entailed blocking clause belongs in the shared
+           ledger. Query exports add their empty clause in the assumption context. */
+        if(s->proof_journal && !s->proof_file && n_assumps)
+            proof_add_clause(s,s->conflict_clause,s->conflict_size);
+        else proof_add_clause(s,NULL,0);
+    }
     double flush_started=solver_account_begin(s);
-    if (s->proof_file && (fflush(s->proof_file) || ferror(s->proof_file))) s->error=true;
+    if (proof_stream(s) && (fflush(proof_stream(s)) || ferror(proof_stream(s)))) s->error=true;
     solver_account_end(s,ACCOUNT_PROOF,flush_started);
     if (s->watches->failed) s->error=true;
     /* Cached polls must not permit a completed result after the CPU deadline,

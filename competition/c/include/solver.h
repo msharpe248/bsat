@@ -309,7 +309,8 @@ typedef struct Solver {
     ElimState* elim;          // Elimination state (NULL if not using BVE)
 
     // DRAT Proof Logging
-    FILE* proof_file;         // Proof output file (NULL if not logging)
+    FILE* proof_file;         // Owned ordinary proof output
+    FILE* proof_journal;      // Borrowed append-only RUP journal; no deletions
 
     // Rephasing state (Kissat-style target phases)
     struct {

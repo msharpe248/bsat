@@ -12,6 +12,7 @@ extern "C" {
 #endif
 #define BSAT_ABI_VERSION 1u
 #define BSAT_REUSE_LEARNTS 1u
+#define BSAT_CERTIFICATES 2u
 #define BSAT_UNKNOWN 0
 #define BSAT_SAT 10
 #define BSAT_UNSAT 20
@@ -40,6 +41,11 @@ BSAT_API int bsat_get_stats(const bsat *s, bsat_stats_v1 *out, size_t size);
 BSAT_API int bsat_add_clause(bsat *s, const int *lits, size_t count);
 /* Assumptions must reference variables already introduced by clauses. */
 BSAT_API int bsat_solve(bsat *s, const int *assumptions, size_t count);
+/* BSAT_CERTIFICATES handles: export the latest conclusive query's exact CNF
+   (permanent input plus assumption units) and binary proof prefix. UNSAT adds a
+   query-local empty clause. Does not solve again. Both paths must be new files;
+   failure returns 0 and can leave incomplete outputs. Check independently. */
+BSAT_API int bsat_export_query(bsat *s, const char *cnf_path, const char *proof_path);
 /* Latest SAT: returns lit if true, -lit if false, 0 if unavailable. */
 BSAT_API int bsat_value(const bsat *s, int lit);
 /* Latest UNSAT: membership in a sufficient, possibly nonminimal assumption core. */

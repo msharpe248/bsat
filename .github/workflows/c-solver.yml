@@ -42,7 +42,7 @@ jobs:
       - name: Certificate retention and checker compatibility regressions
         run: DRAT_TRIM="$RUNNER_TEMP/drat-trim" python3 competition/c/tests/test_benchmark_artifacts.py
       - name: Unit and API regressions
-        run: make -C competition/c all test embedding-test soak-test package-test parse-benchmark local-search-benchmark incremental-benchmark MODE=${{ matrix.mode }} CC=${{ matrix.compiler }}
+        run: make -C competition/c all test embedding-test soak-test package-test query-certificate-driver parse-benchmark local-search-benchmark incremental-benchmark MODE=${{ matrix.mode }} CC=${{ matrix.compiler }}
       - name: Allocation failure regressions
         run: make -C competition/c fault-test MODE=${{ matrix.mode }} CC=${{ matrix.compiler }}
       - name: Parse benchmark smoke test
@@ -72,6 +72,7 @@ jobs:
           BSAT_SOLVER="$binary" BSAT_DRAT_TRIM="$RUNNER_TEMP/drat-trim" BSAT_CAKE_LPR="$RUNNER_TEMP/cake-lpr/cake_lpr" python3 competition/c/tests/test_verified_check.py
           BSAT_SOLVER="$binary" BSAT_DRAT_TRIM="$RUNNER_TEMP/drat-trim" BSAT_CAKE_LPR="$RUNNER_TEMP/cake-lpr/cake_lpr" python3 competition/c/tests/test_certify_query.py
           BSAT_DRAT_TRIM="$RUNNER_TEMP/drat-trim" BSAT_CAKE_LPR="$RUNNER_TEMP/cake-lpr/cake_lpr" python3 competition/c/tests/check_factor_certificates.py --solver "$binary" --output "$RUNNER_TEMP/factor-certificates.json"
+          BSAT_DRAT_TRIM="$RUNNER_TEMP/drat-trim" BSAT_CAKE_LPR="$RUNNER_TEMP/cake-lpr/cake_lpr" python3 competition/c/tests/check_retained_certificates.py --driver competition/c/bin/query_certificate_driver_${{ matrix.mode }} --output "$RUNNER_TEMP/retained-certificates.json"
       - uses: actions/upload-artifact@v4
         if: failure()
         with:

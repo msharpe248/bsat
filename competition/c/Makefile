@@ -251,7 +251,7 @@ build/fuzz/%.o: $(SRCDIR)/%.c $(TESTDIR)/fail_alloc.h
 	$(FUZZ_CC) $(FUZZ_FLAGS) -include $(TESTDIR)/fail_alloc.h -MMD -MP -c -o $@ $<
 $(BINDIR)/fuzz_%: $(TESTDIR)/fuzz_%.c $(TESTDIR)/fuzz_alloc.c $(FUZZ_OBJECTS) | dirs
 	$(FUZZ_CC) $(FUZZ_FLAGS) -o $@ $^ $(FUZZ_ENGINE) -lm
-fuzzers: $(BINDIR)/fuzz_api $(BINDIR)/fuzz_dimacs
+fuzzers: $(BINDIR)/fuzz_api $(BINDIR)/fuzz_dimacs $(BINDIR)/fuzz_public
 .PHONY: fuzzers
 .SECONDARY: $(FUZZ_OBJECTS)
 -include $(FUZZ_OBJECTS:.o=.d)
@@ -319,3 +319,8 @@ endif
 package-test: all $(PACKAGE_LIBRARY)
 	python3 tests/test_install.py --cc "$(CC)" --mode "$(MODE)"
 .PHONY: install package-test
+
+$(BINDIR)/query_certificate_driver_$(MODE): $(TESTDIR)/query_certificate_driver.c $(LIBRARY)
+	$(CC) $(CFLAGS) -o $@ $< -L$(BINDIR) -lbsat_$(MODE) -Wl,-rpath,$(abspath $(BINDIR))
+query-certificate-driver: $(BINDIR)/query_certificate_driver_$(MODE)
+.PHONY: query-certificate-driver

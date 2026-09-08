@@ -7,7 +7,7 @@ failed-assumption result and resets per-call budgets and restart bookkeeping.
 Input growth and new clauses use the same preparation. Assumptions remain
 one-call decisions; their learned consequences are entailed by permanent input.
 
-The fast path requires no proof, elimination state, BVE, BCE, local search or
+The fast path requires no ordinary proof stream, elimination state, BVE, BCE, local search or
 inprocessing; it also requires no interruption. Those cases rebuild from original
 input. Congruence's entailed additions are compatible. Enabling equivalence
 processing is compatible only until an actual rewrite creates reconstruction
@@ -87,3 +87,7 @@ Twelve additional single-query runs at 20,000 conflicts preserve the pre-extensi
 status, selected search counters and binary/text proof bytes; see
 `benchmark_results/reuse-single-query-trace-20260908.json`. UNKNOWN prefixes
 are used only for these trace comparisons.
+
+Public `BSAT_CERTIFICATES` handles now support a separate append-only RUP
+journal without disabling compatible reuse. See `RETAINED_CERTIFICATES.md`
+for exact query binding, independent verification and storage tradeoffs.
