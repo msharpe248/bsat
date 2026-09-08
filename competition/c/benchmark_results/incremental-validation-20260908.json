@@ -1,0 +1,72 @@
+{
+  "unit_executables_per_build": 51,
+  "stateful_queries_per_build": 8192,
+  "allocation_failures_per_build": 2016,
+  "deadline_cases": 69,
+  "fuzz_cases": 76929,
+  "fuzz_seconds": 121,
+  "fuzz_peak_rss_mib": 507,
+  "query_guards_match_all_12_runs": true,
+  "logs": {
+    "/tmp/bsat-incremental-release.log": {
+      "sha256": "abce409c053ee33246fe6b6bc710a97d990977ea96827b765c538e411d546419",
+      "tail": [
+        "Running bin/tests/release/test_watch_lookahead...",
+        "PASS: 459 mixed-watch boundary, unit and conflict cases",
+        "All tests passed!"
+      ]
+    },
+    "/tmp/bsat-incremental-debug.log": {
+      "sha256": "63b6a2847d59ff9cfaa9b7617894f65b87128788abd61b82888724489d80fbe4",
+      "tail": [
+        "Running bin/tests/debug/test_watch_lookahead...",
+        "PASS: 459 mixed-watch boundary, unit and conflict cases",
+        "All tests passed!"
+      ]
+    },
+    "/tmp/bsat-incremental-fault-release.log": {
+      "sha256": "69ea5cd30d01e160aadab95e10057df35e864ddded96f9e43bd95ec076e033d3",
+      "tail": [
+        "fault profile=6 sat=1 allocation=71/72",
+        "fault profile=6 sat=1 allocation=72/72",
+        "PASS: 2016 single-allocation failures across 14 profiles/formulas and repeated solves"
+      ]
+    },
+    "/tmp/bsat-incremental-fault-debug.log": {
+      "sha256": "8a2760adc7794eeb0f658c9f989de742a733fc0d32f8da4cf62a2fbc3c8350f1",
+      "tail": [
+        "fault profile=6 sat=1 allocation=71/72",
+        "fault profile=6 sat=1 allocation=72/72",
+        "PASS: 2016 single-allocation failures across 14 profiles/formulas and repeated solves"
+      ]
+    },
+    "/tmp/bsat-incremental-fuzz.log": {
+      "sha256": "aff7fd94267b0e2889d3df733f2fe6f0f2c0718801830d5f676a3d831b06a952",
+      "tail": [
+        "stat::new_units_added:          427",
+        "stat::slowest_unit_time_sec:    0",
+        "stat::peak_rss_mb:              507"
+      ]
+    },
+    "/tmp/bsat-incremental-deadlines.log": {
+      "sha256": "4c896aa007735db21a6dcc1f6f0109111fc67b70af34d5d0e9357bf43919be4a",
+      "tail": [
+        "PASS: 69 short-deadline runs; maximum observed CPU overrun 0.000s"
+      ]
+    },
+    "/tmp/bsat-reuse-slices-release.log": {
+      "sha256": "f719bbaf16076effd0ad1ca36875559fc47af0a56d6367ec06373cf3077d6fe6",
+      "tail": [
+        "cc -std=c11 -D_POSIX_C_SOURCE=200809L -Wall -Wextra -pedantic -O3 -march=native -flto -Iinclude -o bin/tests/release/test_incremental_reuse tests/test_incremental_reuse.c build/release/accounting.o build/release/arena.o build/release/congruence.o build/release/dimacs.o build/release/elim.o build/release/equiv.o build/release/local_search.o build/release/minimize.o build/release/solver.o build/release/vmtf.o build/release/watch.o -lm",
+        "PASS: 8192 independent stateful solves, 3268 fast preparations, learned retention and fallback"
+      ]
+    },
+    "/tmp/bsat-reuse-slices-debug.log": {
+      "sha256": "51c2e77d472139f5b3a83225c6d1d7d180a48bd40fbef01166bd10ed8ae0c827",
+      "tail": [
+        "cc -std=c11 -D_POSIX_C_SOURCE=200809L -Wall -Wextra -pedantic -g -O0 -DDEBUG -fsanitize=address -fsanitize=undefined -Iinclude -o bin/tests/debug/test_incremental_reuse tests/test_incremental_reuse.c build/debug/accounting.o build/debug/arena.o build/debug/congruence.o build/debug/dimacs.o build/debug/elim.o build/debug/equiv.o build/debug/local_search.o build/debug/minimize.o build/debug/solver.o build/debug/vmtf.o build/debug/watch.o -lm",
+        "PASS: 8192 independent stateful solves, 3268 fast preparations, learned retention and fallback"
+      ]
+    }
+  }
+}

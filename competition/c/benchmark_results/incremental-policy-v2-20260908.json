@@ -1,0 +1,16 @@
+{
+  "inputs": {
+    "/Users/msharpe/python/bsat/competition/c/tests/fixtures/incremental/assignment9.cnf": {
+      "sha256": "df975dab347701044282c099142caff852338790bcf144f946345683cf9bdf9c"
+    },
+    "/Users/msharpe/python/bsat/dataset/sat_competition2025/battleship/ed6d842f96d10f3400bce251f9e95bfb.cnf": {
+      "sha256": "9d586fde48ebcc533f867c06569f008a9b3f5b71dca6a3c9e18db48e037a0b6f"
+    }
+  },
+  "binary_sha256": "ad1c1fe46b479efc583828f784ba39b524550601a017f2b4c971c3a4ee245f0e",
+  "rounds": 20,
+  "repeats": 3,
+  "timeout": 30,
+  "seed": 2026090805,
+  "scope": "Identical repeated SAT queries fixed by initial model; external final model check each process. Initial model strings must match. Timing after all builds/fuzzing/validation finish. Rerun v2 flushes initial model before query loop, so timeout runs retain the guard. Previous run is retained separately; no search change."
+}

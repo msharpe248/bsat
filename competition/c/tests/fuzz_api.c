@@ -27,7 +27,12 @@ int LLVMFuzzerTestOneInput(const uint8_t *data,size_t size) {
     SolverOpts o=default_opts();o.probing=data[0]&1;o.equiv=data[0]&2;
     o.congruence=data[0]&4;o.elim=data[0]&8;o.bce=data[0]&16;
     o.chrono=data[0]&32;o.chrono_levels=0;o.vmtf=data[0]&64;
-    o.reduce_interval=2;o.inprocess=true;o.inprocess_interval=2;
+    o.reuse_learnts=data[2]&128;
+    /* Half of reuse inputs exercise its compatible fast path; others retain
+       feature combinations that must conservatively rebuild. */
+    if (o.reuse_learnts && (data[1]&1))
+        o.equiv=o.congruence=o.elim=o.bce=false;
+    o.reduce_interval=2;o.inprocess=!(o.reuse_learnts && (data[1]&1));o.inprocess_interval=2;
     o.preprocess_budget=10000;o.equiv_budget=10000;o.congruence_budget=10000;
     Solver *s=solver_new_with_opts(&o);if(!s){assert(fuzz_alloc_failed());return 0;}
     unsigned vars=1+data[2]%6,nc=0;Original clauses[32];

@@ -112,6 +112,7 @@ typedef struct SolverOpts {
     bool alternating;          // Experimental focused/stable schedule
     bool circular;             // Circular replacement watch search
     uint32_t seed;
+    bool reuse_learnts;         // Opt-in safe repeated-call fast path
     bool accounting;           // Opt-in intrusive phase CPU diagnostics
     // Output options
     bool     verbose;           // Verbose output (false) - same as BSAT_VERBOSE
@@ -326,6 +327,8 @@ typedef struct Solver {
     Lit *input;
     size_t input_size, input_capacity;
     uint32_t input_clauses, clauses_capacity;
+    uint32_t last_assumptions;
+    uint64_t reused_solves;
     bool internal_add, has_solved, error, interrupted;
     bool clock_initialized;
     uint32_t clock_polls;

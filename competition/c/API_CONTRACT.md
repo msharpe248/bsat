@@ -2,7 +2,7 @@
 
 BSAT currently supports a synchronous, single-threaded C11/POSIX API. This
 contract defines the supported boundary; it does not claim ABI stability,
-concurrent embedding, or retained learned clauses between calls.
+concurrent embedding. Learned-clause retention is an opt-in capability described below.
 
 ## Ownership and construction
 
@@ -52,10 +52,15 @@ clause references may move or become invalid during solving and garbage collecti
 
 Assumptions are caller-owned and consumed synchronously for one call; they do
 not become permanent input. Repeated and contradictory assumptions are allowed.
-A subsequent solve or added input rebuilds from the original formula, restoring
-clauses removed by preprocessing. Learned clauses are not retained across calls.
-This supports incremental input correctness, but is not an incremental-performance
-claim. Do not mutate options or internal storage after construction.
+By default, a subsequent solve or added input rebuilds from the original formula,
+restoring clauses removed by preprocessing. Set `opts.reuse_learnts=true` before
+construction to retain learned clauses, root consequences and activities after
+compatible SAT or conflict/decision-limited calls. Temporary assumptions are
+removed and root assignments replayed. Proofs, destructive preprocessing, local
+search, inprocessing, interrupted propagation and conditional UNSAT use the
+rebuild path. See `INCREMENTAL_REUSE.md` for the exact boundary and evidence.
+Repeated-solve preparation is charged to the new call's CPU limit. Do not mutate
+options or internal storage after construction.
 
 Assumptions plus a configured proof stream return UNDEF because conditional
 proofs are unsupported. For an independently checkable certificate, create a
@@ -89,6 +94,6 @@ checks API sequences against a small independent truth-table oracle.
 `check_process_failures.py` checks actual process termination and exhausted proof
 files. These tests run in release and sanitizer CI builds.
 
-Concurrent embedding, callbacks, stable ABI, conditional proofs and learned-clause
-reuse require separate designs and tests before they can be advertised. Applications
+Concurrent embedding, callbacks, stable ABI and conditional proofs require
+separate designs and tests before they can be advertised. Applications
 requiring those capabilities cannot yet use this API as their production contract.

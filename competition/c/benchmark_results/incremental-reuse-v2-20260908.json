@@ -1,0 +1,301 @@
+{
+  "schema": 1,
+  "platform": "macOS-26.6.1-arm64-arm-64bit-Mach-O",
+  "machine": "arm64",
+  "revision": "46ac04ecf100ec8c2fb519c94e862f6da56e4139",
+  "dirty": true,
+  "split": "development",
+  "seed": 2026090805,
+  "timeout": 30.0,
+  "repeats": 3,
+  "solvers": {
+    "rebuild": {
+      "command": [
+        "/Users/msharpe/python/bsat/competition/c/bin/incremental_benchmark_release",
+        "{input}",
+        "0",
+        "20"
+      ],
+      "sha256": "ad1c1fe46b479efc583828f784ba39b524550601a017f2b4c971c3a4ee245f0e"
+    },
+    "reuse": {
+      "command": [
+        "/Users/msharpe/python/bsat/competition/c/bin/incremental_benchmark_release",
+        "{input}",
+        "1",
+        "20"
+      ],
+      "sha256": "ad1c1fe46b479efc583828f784ba39b524550601a017f2b4c971c3a4ee245f0e"
+    }
+  },
+  "inputs": {
+    "/Users/msharpe/python/bsat/competition/c/tests/fixtures/incremental/assignment9.cnf": {
+      "sha256": "df975dab347701044282c099142caff852338790bcf144f946345683cf9bdf9c",
+      "family": "incremental"
+    },
+    "/Users/msharpe/python/bsat/dataset/sat_competition2025/battleship/ed6d842f96d10f3400bce251f9e95bfb.cnf": {
+      "sha256": "9d586fde48ebcc533f867c06569f008a9b3f5b71dca6a3c9e18db48e037a0b6f",
+      "family": "battleship"
+    }
+  },
+  "checker": null,
+  "runs": [
+    {
+      "solver": "reuse",
+      "input": "/Users/msharpe/python/bsat/dataset/sat_competition2025/battleship/ed6d842f96d10f3400bce251f9e95bfb.cnf",
+      "repeat": 0,
+      "status": "SAT",
+      "verified": true,
+      "seconds": 6.211642500013113,
+      "proof_sha256": null,
+      "cpu_seconds": 6.005131,
+      "peak_rss_bytes": 32276480,
+      "par2": 6.211642500013113,
+      "stats": {
+        "Initial model": "0000000000000010000000000001000000000000100000000000100000000000000000000000010000100000000000000000000001000000000000000000001000000000000010000000000000100000001000000000000010000000000000000000000000100000000000000000000100000000000000010000100000000000000000010000000000000000000010001000000000000000000000000100000000000100000000000000000000000010000000100000000000000000000000010000100000000000000000000000000101000000000000000000000000100000000000010000000000010000000000000000000100000000",
+        "Initial solve CPU": "0.545511000",
+        "Repeated API CPU": "5.456612000",
+        "Repeated conflicts": "998659",
+        "Reused preparations": "20",
+        "API repetitions": "20"
+      },
+      "diagnostic": ""
+    },
+    {
+      "solver": "reuse",
+      "input": "/Users/msharpe/python/bsat/dataset/sat_competition2025/battleship/ed6d842f96d10f3400bce251f9e95bfb.cnf",
+      "repeat": 1,
+      "status": "SAT",
+      "verified": true,
+      "seconds": 6.1076219589449465,
+      "proof_sha256": null,
+      "cpu_seconds": 6.0581130000000005,
+      "peak_rss_bytes": 32784384,
+      "par2": 6.1076219589449465,
+      "stats": {
+        "Initial model": "0000000000000010000000000001000000000000100000000000100000000000000000000000010000100000000000000000000001000000000000000000001000000000000010000000000000100000001000000000000010000000000000000000000000100000000000000000000100000000000000010000100000000000000000010000000000000000000010001000000000000000000000000100000000000100000000000000000000000010000000100000000000000000000000010000100000000000000000000000000101000000000000000000000000100000000000010000000000010000000000000000000100000000",
+        "Initial solve CPU": "0.529369000",
+        "Repeated API CPU": "5.526684000",
+        "Repeated conflicts": "998659",
+        "Reused preparations": "20",
+        "API repetitions": "20"
+      },
+      "diagnostic": ""
+    },
+    {
+      "solver": "rebuild",
+      "input": "/Users/msharpe/python/bsat/dataset/sat_competition2025/battleship/ed6d842f96d10f3400bce251f9e95bfb.cnf",
+      "repeat": 2,
+      "status": "UNKNOWN",
+      "verified": false,
+      "seconds": 30.003729332704097,
+      "proof_sha256": null,
+      "cpu_seconds": 29.998855,
+      "peak_rss_bytes": 65257472,
+      "par2": 60.0,
+      "stats": {
+        "Initial model": "0000000000000010000000000001000000000000100000000000100000000000000000000000010000100000000000000000000001000000000000000000001000000000000010000000000000100000001000000000000010000000000000000000000000100000000000000000000100000000000000010000100000000000000000010000000000000000000010001000000000000000000000000100000000000100000000000000000000000010000000100000000000000000000000010000100000000000000000000000000101000000000000000000000000100000000000010000000000010000000000000000000100000000"
+      },
+      "diagnostic": ""
+    },
+    {
+      "solver": "rebuild",
+      "input": "/Users/msharpe/python/bsat/competition/c/tests/fixtures/incremental/assignment9.cnf",
+      "repeat": 1,
+      "status": "SAT",
+      "verified": true,
+      "seconds": 0.004970749840140343,
+      "proof_sha256": null,
+      "cpu_seconds": 0.0027790000000000002,
+      "peak_rss_bytes": 2260992,
+      "par2": 0.004970749840140343,
+      "stats": {
+        "Initial model": "111111111",
+        "Initial solve CPU": "0.000018000",
+        "Repeated API CPU": "0.001025000",
+        "Repeated conflicts": "0",
+        "Reused preparations": "0",
+        "API repetitions": "20"
+      },
+      "diagnostic": ""
+    },
+    {
+      "solver": "rebuild",
+      "input": "/Users/msharpe/python/bsat/dataset/sat_competition2025/battleship/ed6d842f96d10f3400bce251f9e95bfb.cnf",
+      "repeat": 0,
+      "status": "UNKNOWN",
+      "verified": false,
+      "seconds": 30.00701891677454,
+      "proof_sha256": null,
+      "cpu_seconds": 30.002362,
+      "peak_rss_bytes": 65191936,
+      "par2": 60.0,
+      "stats": {
+        "Initial model": "0000000000000010000000000001000000000000100000000000100000000000000000000000010000100000000000000000000001000000000000000000001000000000000010000000000000100000001000000000000010000000000000000000000000100000000000000000000100000000000000010000100000000000000000010000000000000000000010001000000000000000000000000100000000000100000000000000000000000010000000100000000000000000000000010000100000000000000000000000000101000000000000000000000000100000000000010000000000010000000000000000000100000000"
+      },
+      "diagnostic": ""
+    },
+    {
+      "solver": "reuse",
+      "input": "/Users/msharpe/python/bsat/competition/c/tests/fixtures/incremental/assignment9.cnf",
+      "repeat": 2,
+      "status": "SAT",
+      "verified": true,
+      "seconds": 0.004944167099893093,
+      "proof_sha256": null,
+      "cpu_seconds": 0.001852,
+      "peak_rss_bytes": 1835008,
+      "par2": 0.004944167099893093,
+      "stats": {
+        "Initial model": "111111111",
+        "Initial solve CPU": "0.000016000",
+        "Repeated API CPU": "0.000213000",
+        "Repeated conflicts": "0",
+        "Reused preparations": "20",
+        "API repetitions": "20"
+      },
+      "diagnostic": ""
+    },
+    {
+      "solver": "rebuild",
+      "input": "/Users/msharpe/python/bsat/competition/c/tests/fixtures/incremental/assignment9.cnf",
+      "repeat": 0,
+      "status": "SAT",
+      "verified": true,
+      "seconds": 0.0048981658183038235,
+      "proof_sha256": null,
+      "cpu_seconds": 0.0024619999999999998,
+      "peak_rss_bytes": 2195456,
+      "par2": 0.0048981658183038235,
+      "stats": {
+        "Initial model": "111111111",
+        "Initial solve CPU": "0.000023000",
+        "Repeated API CPU": "0.000899000",
+        "Repeated conflicts": "0",
+        "Reused preparations": "0",
+        "API repetitions": "20"
+      },
+      "diagnostic": ""
+    },
+    {
+      "solver": "reuse",
+      "input": "/Users/msharpe/python/bsat/dataset/sat_competition2025/battleship/ed6d842f96d10f3400bce251f9e95bfb.cnf",
+      "repeat": 2,
+      "status": "SAT",
+      "verified": true,
+      "seconds": 6.111000332981348,
+      "proof_sha256": null,
+      "cpu_seconds": 6.062995000000001,
+      "peak_rss_bytes": 32882688,
+      "par2": 6.111000332981348,
+      "stats": {
+        "Initial model": "0000000000000010000000000001000000000000100000000000100000000000000000000000010000100000000000000000000001000000000000000000001000000000000010000000000000100000001000000000000010000000000000000000000000100000000000000000000100000000000000010000100000000000000000010000000000000000000010001000000000000000000000000100000000000100000000000000000000000010000000100000000000000000000000010000100000000000000000000000000101000000000000000000000000100000000000010000000000010000000000000000000100000000",
+        "Initial solve CPU": "0.537096000",
+        "Repeated API CPU": "5.523902000",
+        "Repeated conflicts": "998659",
+        "Reused preparations": "20",
+        "API repetitions": "20"
+      },
+      "diagnostic": ""
+    },
+    {
+      "solver": "reuse",
+      "input": "/Users/msharpe/python/bsat/competition/c/tests/fixtures/incremental/assignment9.cnf",
+      "repeat": 0,
+      "status": "SAT",
+      "verified": true,
+      "seconds": 0.004952250048518181,
+      "proof_sha256": null,
+      "cpu_seconds": 0.0018379999999999998,
+      "peak_rss_bytes": 1851392,
+      "par2": 0.004952250048518181,
+      "stats": {
+        "Initial model": "111111111",
+        "Initial solve CPU": "0.000019000",
+        "Repeated API CPU": "0.000211000",
+        "Repeated conflicts": "0",
+        "Reused preparations": "20",
+        "API repetitions": "20"
+      },
+      "diagnostic": ""
+    },
+    {
+      "solver": "rebuild",
+      "input": "/Users/msharpe/python/bsat/dataset/sat_competition2025/battleship/ed6d842f96d10f3400bce251f9e95bfb.cnf",
+      "repeat": 1,
+      "status": "UNKNOWN",
+      "verified": false,
+      "seconds": 30.002681500278413,
+      "proof_sha256": null,
+      "cpu_seconds": 29.997781,
+      "peak_rss_bytes": 65208320,
+      "par2": 60.0,
+      "stats": {
+        "Initial model": "0000000000000010000000000001000000000000100000000000100000000000000000000000010000100000000000000000000001000000000000000000001000000000000010000000000000100000001000000000000010000000000000000000000000100000000000000000000100000000000000010000100000000000000000010000000000000000000010001000000000000000000000000100000000000100000000000000000000000010000000100000000000000000000000010000100000000000000000000000000101000000000000000000000000100000000000010000000000010000000000000000000100000000"
+      },
+      "diagnostic": ""
+    },
+    {
+      "solver": "rebuild",
+      "input": "/Users/msharpe/python/bsat/competition/c/tests/fixtures/incremental/assignment9.cnf",
+      "repeat": 2,
+      "status": "SAT",
+      "verified": true,
+      "seconds": 0.004903625231236219,
+      "proof_sha256": null,
+      "cpu_seconds": 0.002473,
+      "peak_rss_bytes": 2260992,
+      "par2": 0.004903625231236219,
+      "stats": {
+        "Initial model": "111111111",
+        "Initial solve CPU": "0.000018000",
+        "Repeated API CPU": "0.000927000",
+        "Repeated conflicts": "0",
+        "Reused preparations": "0",
+        "API repetitions": "20"
+      },
+      "diagnostic": ""
+    },
+    {
+      "solver": "reuse",
+      "input": "/Users/msharpe/python/bsat/competition/c/tests/fixtures/incremental/assignment9.cnf",
+      "repeat": 1,
+      "status": "SAT",
+      "verified": true,
+      "seconds": 0.0049494169652462006,
+      "proof_sha256": null,
+      "cpu_seconds": 0.001801,
+      "peak_rss_bytes": 1851392,
+      "par2": 0.0049494169652462006,
+      "stats": {
+        "Initial model": "111111111",
+        "Initial solve CPU": "0.000020000",
+        "Repeated API CPU": "0.000209000",
+        "Repeated conflicts": "0",
+        "Reused preparations": "20",
+        "API repetitions": "20"
+      },
+      "diagnostic": ""
+    }
+  ],
+  "manifest": {
+    "path": "/Users/msharpe/python/bsat/competition/c/benchmark_results/incremental-policy-v2-20260908.json",
+    "sha256": "45de86a425ca5beb19dd1ec2fb971b924d1845960eadc4045a145a2d5e077398"
+  },
+  "summary": {
+    "rebuild": {
+      "verified_runs": 3,
+      "runs": 6,
+      "mean_par2": 30.00246209014828,
+      "max_rss_bytes": 65257472,
+      "errors": 0
+    },
+    "reuse": {
+      "verified_runs": 6,
+      "runs": 6,
+      "mean_par2": 3.0741851043421775,
+      "max_rss_bytes": 32882688,
+      "errors": 0
+    }
+  }
+}

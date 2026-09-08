@@ -12,6 +12,7 @@
 bool g_verbose = false;
 bool g_debug = false;
 static bool solver_rebuild(Solver *s);
+static bool solver_prepare_next(Solver *s, double start);
 
 /*********************************************************************
  * Variable Array Growth Configuration
@@ -653,7 +654,7 @@ Var solver_new_var(Solver* s) {
         return INVALID_VAR;
     }
 
-    if (s->has_solved && !solver_rebuild(s)) return INVALID_VAR;
+    if (s->has_solved && !solver_prepare_next(s, -1)) return INVALID_VAR;
     Var v = ++s->num_vars;
 
     // Grow arrays if needed (geometric growth strategy)
@@ -780,7 +781,7 @@ bool solver_add_clause(Solver* s, const Lit* lits, uint32_t size) {
     if (!s) return false;
     if (size && !lits) { s->error=true; s->result=UNDEF; return false; }
     if (s->error || s->watches->failed) return false;
-    if (s->has_solved && !solver_rebuild(s)) return false;
+    if (s->has_solved && !solver_prepare_next(s, -1)) return false;
     ASSERT(s->decision_level == 0);
     for (uint32_t i = 0; i < size; ++i)
         if (!var(lits[i]) || var(lits[i]) > s->num_vars) { s->error = true; return false; }
@@ -2088,6 +2089,7 @@ static bool solver_rebuild_timed(Solver *s, double start_time, double max_time) 
         fresh->accounting.seconds[phase] += s->accounting.seconds[phase];
         fresh->accounting.calls[phase] += s->accounting.calls[phase];
     }
+    fresh->reused_solves=s->reused_solves;
     Solver old = *s; *s = *fresh; *fresh = old; solver_free(fresh);
     return true;
 incomplete:
@@ -2098,6 +2100,36 @@ incomplete:
 }
 
 static bool solver_rebuild(Solver *s) { return solver_rebuild_timed(s, 0, 0); }
+
+/* Fast reuse is deliberately conservative. Destructive preprocessing, local
+   search's model trail, conditional UNSAT, proofs and interrupted propagation
+   retain the established rebuild path. Learned CDCL clauses after SAT or a
+   conflict-limited search remain consequences of the permanent formula. */
+static bool solver_prepare_next(Solver *s, double start) {
+    if (s->error || s->watches->failed) return false;
+    bool reuse=s->opts.reuse_learnts && !s->proof_file && !s->opts.proof_path &&
+        !s->elim && !s->opts.elim && !s->opts.bce && !s->opts.equiv &&
+        !s->opts.congruence && !s->opts.local_search && !s->opts.inprocess &&
+        !s->interrupted && !(s->result==FALSE && s->last_assumptions);
+    if (!reuse) return start<0 ? solver_rebuild(s) : solver_rebuild_timed(s,start,s->opts.max_time);
+    bool unsat=s->result==FALSE;
+    memset(&s->stats,0,sizeof s->stats);
+    s->stats.start_time=start<0 ? (double)clock()/CLOCKS_PER_SEC : start;
+    s->work_limit=0;s->clock_initialized=false;s->clock_polls=0;
+    solver_backtrack(s,0);
+    s->qhead=0; /* Replay root assignments against retained/new watches. */
+    free(s->conflict_clause);s->conflict_clause=NULL;s->conflict_size=0;
+    uint32_t *recent=s->restart.recent_lbds;
+    memset(&s->restart,0,sizeof s->restart);
+    s->restart.recent_lbds=recent;s->restart.threshold=s->opts.restart_first;
+    if (s->lrb_last_conflict) memset(s->lrb_last_conflict,0,((size_t)s->var_capacity+1)*sizeof *s->lrb_last_conflict);
+    s->last_vivify=0;s->lbd_samples=0;s->recent_lbd_sum=0;
+    s->rephase.conflicts_since=0;s->mode_limit=1000;s->stable_mode=false;
+    s->has_solved=false;s->last_assumptions=0;s->result=unsat?FALSE:UNDEF;
+    ++s->reused_solves;
+    return true;
+}
+
 
 bool solver_check_model(const Solver *s) {
     bool satisfied = false;
@@ -2296,7 +2328,8 @@ static lbool solver_solve_at(Solver *s, const Lit *assumps, uint32_t n_assumps, 
     if (!s) return UNDEF;
     if (n_assumps && !assumps) { s->error=true; s->result=UNDEF; return UNDEF; }
     if (s->error || s->watches->failed) { s->error=true; s->result=UNDEF; return UNDEF; }
-    if (s->has_solved && !solver_rebuild(s)) return UNDEF;
+    if (start_time<0) start_time=(double)clock()/CLOCKS_PER_SEC;
+    if (s->has_solved && !solver_prepare_next(s, start_time)) return UNDEF;
     for (uint32_t i=0;i<n_assumps;++i)
         if (!var(assumps[i]) || var(assumps[i])>s->num_vars) {
             s->error=true; s->result=UNDEF; return UNDEF;
@@ -2321,7 +2354,7 @@ static lbool solver_solve_at(Solver *s, const Lit *assumps, uint32_t n_assumps, 
     s->random_state=s->opts.seed;
     install_signal_handlers();
     lbool result=solve_internal(s,assumps,n_assumps);
-    s->has_solved=true;
+    s->has_solved=true;s->last_assumptions=n_assumps;
     if (result==TRUE) {
         double started=solver_account_begin(s);
         elim_extend_model(s);

@@ -246,3 +246,8 @@ fuzzers: $(BINDIR)/fuzz_api $(BINDIR)/fuzz_dimacs
 .PHONY: fuzzers
 .SECONDARY: $(FUZZ_OBJECTS)
 -include $(FUZZ_OBJECTS:.o=.d)
+
+$(BINDIR)/incremental_benchmark_$(MODE): $(TESTDIR)/incremental_driver.c $(filter-out $(OBJDIR)/main.o,$(OBJECTS)) | dirs
+	$(CC) $(CFLAGS) -o $@ $^ -lm
+incremental-benchmark: $(BINDIR)/incremental_benchmark_$(MODE)
+.PHONY: incremental-benchmark

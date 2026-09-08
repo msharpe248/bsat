@@ -1,0 +1,295 @@
+{
+  "schema": 1,
+  "platform": "macOS-26.6.1-arm64-arm-64bit-Mach-O",
+  "machine": "arm64",
+  "revision": "46ac04ecf100ec8c2fb519c94e862f6da56e4139",
+  "dirty": true,
+  "split": "development",
+  "seed": 2026090805,
+  "timeout": 30.0,
+  "repeats": 3,
+  "solvers": {
+    "rebuild": {
+      "command": [
+        "/Users/msharpe/python/bsat/competition/c/bin/incremental_benchmark_release",
+        "{input}",
+        "0",
+        "20"
+      ],
+      "sha256": "8db2db633753ba81696794bbf44ee465c362595f8352f9df07a09b9793d422f9"
+    },
+    "reuse": {
+      "command": [
+        "/Users/msharpe/python/bsat/competition/c/bin/incremental_benchmark_release",
+        "{input}",
+        "1",
+        "20"
+      ],
+      "sha256": "8db2db633753ba81696794bbf44ee465c362595f8352f9df07a09b9793d422f9"
+    }
+  },
+  "inputs": {
+    "/Users/msharpe/python/bsat/competition/c/tests/fixtures/incremental/assignment9.cnf": {
+      "sha256": "df975dab347701044282c099142caff852338790bcf144f946345683cf9bdf9c",
+      "family": "incremental"
+    },
+    "/Users/msharpe/python/bsat/dataset/sat_competition2025/battleship/ed6d842f96d10f3400bce251f9e95bfb.cnf": {
+      "sha256": "9d586fde48ebcc533f867c06569f008a9b3f5b71dca6a3c9e18db48e037a0b6f",
+      "family": "battleship"
+    }
+  },
+  "checker": null,
+  "runs": [
+    {
+      "solver": "reuse",
+      "input": "/Users/msharpe/python/bsat/dataset/sat_competition2025/battleship/ed6d842f96d10f3400bce251f9e95bfb.cnf",
+      "repeat": 0,
+      "status": "SAT",
+      "verified": true,
+      "seconds": 5.9556461670435965,
+      "proof_sha256": null,
+      "cpu_seconds": 5.7198649999999995,
+      "peak_rss_bytes": 32604160,
+      "par2": 5.9556461670435965,
+      "stats": {
+        "Initial model": "0000000000000010000000000001000000000000100000000000100000000000000000000000010000100000000000000000000001000000000000000000001000000000000010000000000000100000001000000000000010000000000000000000000000100000000000000000000100000000000000010000100000000000000000010000000000000000000010001000000000000000000000000100000000000100000000000000000000000010000000100000000000000000000000010000100000000000000000000000000101000000000000000000000000100000000000010000000000010000000000000000000100000000",
+        "Initial solve CPU": "0.519505000",
+        "Repeated API CPU": "5.197597000",
+        "Repeated conflicts": "998659",
+        "Reused preparations": "20",
+        "API repetitions": "20"
+      },
+      "diagnostic": ""
+    },
+    {
+      "solver": "reuse",
+      "input": "/Users/msharpe/python/bsat/dataset/sat_competition2025/battleship/ed6d842f96d10f3400bce251f9e95bfb.cnf",
+      "repeat": 1,
+      "status": "SAT",
+      "verified": true,
+      "seconds": 5.925873041152954,
+      "proof_sha256": null,
+      "cpu_seconds": 5.883986999999999,
+      "peak_rss_bytes": 32866304,
+      "par2": 5.925873041152954,
+      "stats": {
+        "Initial model": "0000000000000010000000000001000000000000100000000000100000000000000000000000010000100000000000000000000001000000000000000000001000000000000010000000000000100000001000000000000010000000000000000000000000100000000000000000000100000000000000010000100000000000000000010000000000000000000010001000000000000000000000000100000000000100000000000000000000000010000000100000000000000000000000010000100000000000000000000000000101000000000000000000000000100000000000010000000000010000000000000000000100000000",
+        "Initial solve CPU": "0.515940000",
+        "Repeated API CPU": "5.365887000",
+        "Repeated conflicts": "998659",
+        "Reused preparations": "20",
+        "API repetitions": "20"
+      },
+      "diagnostic": ""
+    },
+    {
+      "solver": "rebuild",
+      "input": "/Users/msharpe/python/bsat/dataset/sat_competition2025/battleship/ed6d842f96d10f3400bce251f9e95bfb.cnf",
+      "repeat": 2,
+      "status": "UNKNOWN",
+      "verified": false,
+      "seconds": 30.00702662486583,
+      "proof_sha256": null,
+      "cpu_seconds": 30.002696,
+      "peak_rss_bytes": 65159168,
+      "par2": 60.0,
+      "stats": {},
+      "diagnostic": ""
+    },
+    {
+      "solver": "rebuild",
+      "input": "/Users/msharpe/python/bsat/competition/c/tests/fixtures/incremental/assignment9.cnf",
+      "repeat": 1,
+      "status": "SAT",
+      "verified": true,
+      "seconds": 0.004923124797642231,
+      "proof_sha256": null,
+      "cpu_seconds": 0.002453,
+      "peak_rss_bytes": 2244608,
+      "par2": 0.004923124797642231,
+      "stats": {
+        "Initial model": "111111111",
+        "Initial solve CPU": "0.000016000",
+        "Repeated API CPU": "0.000878000",
+        "Repeated conflicts": "0",
+        "Reused preparations": "0",
+        "API repetitions": "20"
+      },
+      "diagnostic": ""
+    },
+    {
+      "solver": "rebuild",
+      "input": "/Users/msharpe/python/bsat/dataset/sat_competition2025/battleship/ed6d842f96d10f3400bce251f9e95bfb.cnf",
+      "repeat": 0,
+      "status": "UNKNOWN",
+      "verified": false,
+      "seconds": 30.005792833399028,
+      "proof_sha256": null,
+      "cpu_seconds": 30.001006,
+      "peak_rss_bytes": 66551808,
+      "par2": 60.0,
+      "stats": {},
+      "diagnostic": ""
+    },
+    {
+      "solver": "reuse",
+      "input": "/Users/msharpe/python/bsat/competition/c/tests/fixtures/incremental/assignment9.cnf",
+      "repeat": 2,
+      "status": "SAT",
+      "verified": true,
+      "seconds": 0.005024583078920841,
+      "proof_sha256": null,
+      "cpu_seconds": 0.001777,
+      "peak_rss_bytes": 1769472,
+      "par2": 0.005024583078920841,
+      "stats": {
+        "Initial model": "111111111",
+        "Initial solve CPU": "0.000018000",
+        "Repeated API CPU": "0.000217000",
+        "Repeated conflicts": "0",
+        "Reused preparations": "20",
+        "API repetitions": "20"
+      },
+      "diagnostic": ""
+    },
+    {
+      "solver": "rebuild",
+      "input": "/Users/msharpe/python/bsat/competition/c/tests/fixtures/incremental/assignment9.cnf",
+      "repeat": 0,
+      "status": "SAT",
+      "verified": true,
+      "seconds": 0.0050096670165658,
+      "proof_sha256": null,
+      "cpu_seconds": 0.002476,
+      "peak_rss_bytes": 2244608,
+      "par2": 0.0050096670165658,
+      "stats": {
+        "Initial model": "111111111",
+        "Initial solve CPU": "0.000016000",
+        "Repeated API CPU": "0.000867000",
+        "Repeated conflicts": "0",
+        "Reused preparations": "0",
+        "API repetitions": "20"
+      },
+      "diagnostic": ""
+    },
+    {
+      "solver": "reuse",
+      "input": "/Users/msharpe/python/bsat/dataset/sat_competition2025/battleship/ed6d842f96d10f3400bce251f9e95bfb.cnf",
+      "repeat": 2,
+      "status": "SAT",
+      "verified": true,
+      "seconds": 6.0353454584255815,
+      "proof_sha256": null,
+      "cpu_seconds": 6.024465,
+      "peak_rss_bytes": 32849920,
+      "par2": 6.0353454584255815,
+      "stats": {
+        "Initial model": "0000000000000010000000000001000000000000100000000000100000000000000000000000010000100000000000000000000001000000000000000000001000000000000010000000000000100000001000000000000010000000000000000000000000100000000000000000000100000000000000010000100000000000000000010000000000000000000010001000000000000000000000000100000000000100000000000000000000000010000000100000000000000000000000010000100000000000000000000000000101000000000000000000000000100000000000010000000000010000000000000000000100000000",
+        "Initial solve CPU": "0.529657000",
+        "Repeated API CPU": "5.492841000",
+        "Repeated conflicts": "998659",
+        "Reused preparations": "20",
+        "API repetitions": "20"
+      },
+      "diagnostic": ""
+    },
+    {
+      "solver": "reuse",
+      "input": "/Users/msharpe/python/bsat/competition/c/tests/fixtures/incremental/assignment9.cnf",
+      "repeat": 0,
+      "status": "SAT",
+      "verified": true,
+      "seconds": 0.004865583032369614,
+      "proof_sha256": null,
+      "cpu_seconds": 0.001702,
+      "peak_rss_bytes": 1769472,
+      "par2": 0.004865583032369614,
+      "stats": {
+        "Initial model": "111111111",
+        "Initial solve CPU": "0.000021000",
+        "Repeated API CPU": "0.000203000",
+        "Repeated conflicts": "0",
+        "Reused preparations": "20",
+        "API repetitions": "20"
+      },
+      "diagnostic": ""
+    },
+    {
+      "solver": "rebuild",
+      "input": "/Users/msharpe/python/bsat/dataset/sat_competition2025/battleship/ed6d842f96d10f3400bce251f9e95bfb.cnf",
+      "repeat": 1,
+      "status": "UNKNOWN",
+      "verified": false,
+      "seconds": 30.006645417306572,
+      "proof_sha256": null,
+      "cpu_seconds": 30.002501,
+      "peak_rss_bytes": 65273856,
+      "par2": 60.0,
+      "stats": {},
+      "diagnostic": ""
+    },
+    {
+      "solver": "rebuild",
+      "input": "/Users/msharpe/python/bsat/competition/c/tests/fixtures/incremental/assignment9.cnf",
+      "repeat": 2,
+      "status": "SAT",
+      "verified": true,
+      "seconds": 0.0050135827623307705,
+      "proof_sha256": null,
+      "cpu_seconds": 0.0025979999999999996,
+      "peak_rss_bytes": 2244608,
+      "par2": 0.0050135827623307705,
+      "stats": {
+        "Initial model": "111111111",
+        "Initial solve CPU": "0.000016000",
+        "Repeated API CPU": "0.000924000",
+        "Repeated conflicts": "0",
+        "Reused preparations": "0",
+        "API repetitions": "20"
+      },
+      "diagnostic": ""
+    },
+    {
+      "solver": "reuse",
+      "input": "/Users/msharpe/python/bsat/competition/c/tests/fixtures/incremental/assignment9.cnf",
+      "repeat": 1,
+      "status": "SAT",
+      "verified": true,
+      "seconds": 0.004892666824162006,
+      "proof_sha256": null,
+      "cpu_seconds": 0.001864,
+      "peak_rss_bytes": 1785856,
+      "par2": 0.004892666824162006,
+      "stats": {
+        "Initial model": "111111111",
+        "Initial solve CPU": "0.000016000",
+        "Repeated API CPU": "0.000210000",
+        "Repeated conflicts": "0",
+        "Reused preparations": "20",
+        "API repetitions": "20"
+      },
+      "diagnostic": ""
+    }
+  ],
+  "manifest": {
+    "path": "/Users/msharpe/python/bsat/competition/c/benchmark_results/incremental-policy-20260908.json",
+    "sha256": "2f3b38f3ebe99c774c972ca1191d0473797ab51045f3e56707beb213b65fa67e"
+  },
+  "summary": {
+    "rebuild": {
+      "verified_runs": 3,
+      "runs": 6,
+      "mean_par2": 30.002491062429424,
+      "max_rss_bytes": 66551808,
+      "errors": 0
+    },
+    "reuse": {
+      "verified_runs": 6,
+      "runs": 6,
+      "mean_par2": 2.988607916592931,
+      "max_rss_bytes": 32866304,
+      "errors": 0
+    }
+  }
+}

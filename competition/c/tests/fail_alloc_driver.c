@@ -22,6 +22,7 @@ static size_t attempt(unsigned profile, bool sat, size_t cutoff) {
     o.probing=profile==1;o.elim=profile==2;o.bce=profile==2;
     o.equiv=profile==3;o.congruence=profile==3;
     o.chrono=profile==4;o.chrono_levels=0;o.vmtf=profile==4;
+    o.reuse_learnts=profile==6;
     o.lrb=profile==5;o.rephase=profile==5;
     Solver *s=solver_new_with_opts(&o);
     if (!s) { assert(failed); return calls; }
@@ -34,6 +35,8 @@ static size_t attempt(unsigned profile, bool sat, size_t cutoff) {
     { Lit a[]={mkLit(7,true),mkLit(8,false)},b[]={mkLit(7,false),mkLit(8,true)};
       solver_add_clause(s,a,2);solver_add_clause(s,b,2); }
     for(unsigned repeat=0;repeat<2;++repeat) {
+        if(profile==6 && repeat==1)
+            while(s->num_vars<130)if(!solver_new_var(s))goto done;
         lbool r=solver_solve(s);
         if(s->error || s->watches->failed) {assert(r==UNDEF);break;}
         assert(r==(sat?TRUE:FALSE));
@@ -51,12 +54,12 @@ done:
 }
 int main(void) {
     size_t injected=0;
-    for(unsigned p=0;p<6;++p)for(unsigned sat=0;sat<2;++sat) {
+    for(unsigned p=0;p<7;++p)for(unsigned sat=0;sat<2;++sat) {
         size_t count=attempt(p,sat,0);
         for(size_t i=1;i<=count;++i) {
             fprintf(stderr,"fault profile=%u sat=%u allocation=%zu/%zu\n",p,sat,i,count);
             attempt(p,sat,i);assert(failed);++injected;
         }
     }
-    printf("PASS: %zu single-allocation failures across 12 profiles/formulas and repeated solves\n",injected);
+    printf("PASS: %zu single-allocation failures across 14 profiles/formulas and repeated solves\n",injected);
 }
