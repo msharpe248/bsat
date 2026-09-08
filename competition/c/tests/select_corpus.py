@@ -25,7 +25,7 @@ def select(dataset, reports, output, families, max_bytes=0, min_bytes=0, seed=No
     if not dataset.is_dir() or not reports.is_dir():
         raise ValueError('dataset and reports must be existing directories')
     names, hashes, history = set(), set(), []
-    for report in sorted(reports.glob('*.json')):
+    for report in sorted(reports.rglob('*.json')):
         if report.resolve() == output:
             continue
         text = report.read_text()

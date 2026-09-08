@@ -1,0 +1,104 @@
+{
+  "scope": "Frozen four-way phase/factoring interaction test on a hash-verified manifest.",
+  "inputs": {
+    "/Users/msharpe/python/bsat/dataset/sat_competition2025/clique-coloring/21415e807689ea75536e846a24623de1.cnf": {
+      "sha256": "733571b8e7db55b24a62e366703e5228e8680caa495f4ce20e7c96351e3a762b",
+      "family": "clique-coloring"
+    },
+    "/Users/msharpe/python/bsat/dataset/sat_competition2025/circuit-equialence-checking/b18b24418dd863c1d631698d7d45041f.cnf": {
+      "sha256": "47627af0f6ebe8d1cb89880b0fb2c52a61539a0b97341899787887ac717d5610",
+      "family": "circuit-equialence-checking"
+    },
+    "/Users/msharpe/python/bsat/dataset/sat_competition2025/scheduling/0e1d562093d5f4fc9013cf4a14a03f70.cnf": {
+      "sha256": "41bd39956ff5bd83e3673ce990abdd27b7fe92e24c3e2f0815b02185bf77b1a1",
+      "family": "scheduling"
+    },
+    "/Users/msharpe/python/bsat/dataset/sat_competition2025/belpyramid-puzzle/6f354fbea13b25a49f3edc1cd10c48d5.cnf": {
+      "sha256": "8682818fa6509574d8ae4702a578ad392acfd4808c864ad29c39d2bdae9ec85d",
+      "family": "belpyramid-puzzle"
+    },
+    "/Users/msharpe/python/bsat/dataset/sat_competition2025/rbsat/780b0c9b5aed38a127f61c6aae7287aa.cnf": {
+      "sha256": "c1d53c534193c2400672121c250770da6d7c5b980df4fd3eea97ab79951e6b7b",
+      "family": "rbsat"
+    },
+    "/Users/msharpe/python/bsat/dataset/sat_competition2025/cryptography-simon/8af30680e9329ae30c2cdbece636c470.cnf": {
+      "sha256": "a2764eb285d8e173df1cf9a4d4fe47378ecbc2008bd56d99a9185668a38c0be3",
+      "family": "cryptography-simon"
+    },
+    "/Users/msharpe/python/bsat/dataset/sat_competition2025/argumentation/b9ed6fd14f4fc969ec966a4b54c36872.cnf": {
+      "sha256": "c46261a9a52b8080ddc040f6b58e7a48eb651993ff6f67ae78830848b8e14fb2",
+      "family": "argumentation"
+    },
+    "/Users/msharpe/python/bsat/dataset/sat_competition2025/rooks/3c0db78733bb05b9d1e9d7627b2e8f38.cnf": {
+      "sha256": "1179a183c6f8eb48d976c1aedebfc9e53c0a85c0c24f3cc2a1d3b821a02d77a2",
+      "family": "rooks"
+    }
+  },
+  "commands": {
+    "control": [
+      "/Users/msharpe/python/bsat/competition/c/bin/bsat",
+      "--chrono",
+      "--congruence",
+      "--equiv",
+      "--equiv-budget",
+      "100000000",
+      "--alternating",
+      "--binary-proof",
+      "--proof",
+      "{proof}",
+      "{input}"
+    ],
+    "no-rephase": [
+      "/Users/msharpe/python/bsat/competition/c/bin/bsat",
+      "--chrono",
+      "--congruence",
+      "--equiv",
+      "--equiv-budget",
+      "100000000",
+      "--alternating",
+      "--no-rephase",
+      "--binary-proof",
+      "--proof",
+      "{proof}",
+      "{input}"
+    ],
+    "factor": [
+      "/Users/msharpe/python/bsat/competition/c/bin/bsat",
+      "--chrono",
+      "--congruence",
+      "--equiv",
+      "--equiv-budget",
+      "100000000",
+      "--alternating",
+      "--factor",
+      "--factor-min-gain",
+      "32",
+      "--binary-proof",
+      "--proof",
+      "{proof}",
+      "{input}"
+    ],
+    "both": [
+      "/Users/msharpe/python/bsat/competition/c/bin/bsat",
+      "--chrono",
+      "--congruence",
+      "--equiv",
+      "--equiv-budget",
+      "100000000",
+      "--alternating",
+      "--no-rephase",
+      "--factor",
+      "--factor-min-gain",
+      "32",
+      "--binary-proof",
+      "--proof",
+      "{proof}",
+      "{input}"
+    ]
+  },
+  "solver_sha256": "0215b432f9dc116af16c10367fa844fc007b7a10747136aff121d2f2f594a181",
+  "wall_seconds": 10,
+  "repeats": 2,
+  "seed": 2026090831,
+  "promotion": "No correctness failures; no lost verified inputs; >=10% aggregate PAR2 improvement. A short screen alone cannot promote defaults."
+}

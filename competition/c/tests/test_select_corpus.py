@@ -28,7 +28,8 @@ class SelectionTests(unittest.TestCase):
         self.cnf('b', 'duplicate.cnf', a.read_text())
         b = self.cnf('b', 'unique.cnf', 'p cnf 1 0\n')
         # History intentionally uses a different schema and an unrelated location.
-        (self.reports/'prior.json').write_text(json.dumps({'old_command': '/old/old.cnf',
+        (self.reports/'nested').mkdir()
+        (self.reports/'nested'/'prior.json').write_text(json.dumps({'old_command': '/old/old.cnf',
                                                         'nested': {'hash': digest(old)}}))
         result = select(self.dataset,self.reports,self.output,2)
         self.assertEqual(list(result['inputs']), [str(a),str(b)])
