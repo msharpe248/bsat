@@ -27,6 +27,9 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
+      - name: Detailed search counter build and unit tests
+        if: matrix.mode == 'release' && matrix.compiler == 'gcc'
+        run: make -C competition/c -j2 MODE=diagnostic CC=gcc all test
       - name: Build independent proof checker
         run: |
           curl -Lf https://raw.githubusercontent.com/marijnheule/drat-trim/2e3b2dc0ecf938addbd779d42877b6ed69d9a985/drat-trim.c -o "$RUNNER_TEMP/drat-trim.c"

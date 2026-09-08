@@ -1,0 +1,67 @@
+{
+  "scope": "Compare deterministic fixed-conflict traces; UNKNOWN prefix equality is not a proof.",
+  "runs": [
+    {
+      "input": "dataset/sat_competition2025/random-csp/9b998be0c639d06988c4902eb125c0b7.cnf",
+      "input_sha256": "a864d5f3f6e6a0a41d64f20810a59bdd15c5bc2539e4ea5370015a158d77fa25",
+      "traces": [
+        {
+          "binary_sha256": "0215b432f9dc116af16c10367fa844fc007b7a10747136aff121d2f2f594a181",
+          "result": 0,
+          "stats": {
+            "Decisions": "2828",
+            "Propagations": "7228",
+            "Conflicts": "1000",
+            "Restarts": "9",
+            "Learned clauses": "1000"
+          },
+          "proof_sha256": "c41d3bb940f45164dfa385f04923067524e35b3bde29b12317bd22ed7848430b"
+        },
+        {
+          "binary_sha256": "e8c9a2065a2fd4547464fa0b6324cd97b7cf5a91acc951fb552e67df8a2c044b",
+          "result": 0,
+          "stats": {
+            "Decisions": "2828",
+            "Propagations": "7228",
+            "Conflicts": "1000",
+            "Restarts": "9",
+            "Learned clauses": "1000"
+          },
+          "proof_sha256": "c41d3bb940f45164dfa385f04923067524e35b3bde29b12317bd22ed7848430b"
+        }
+      ],
+      "equal": true
+    },
+    {
+      "input": "dataset/sat_competition2025/planning/16c999d046885c8e51f196e60c34d966.cnf",
+      "input_sha256": "77db4df9cc8bd8cd59dae994f24a3cf686ebd46e2aa123c534b5e3cc3a75d9b5",
+      "traces": [
+        {
+          "binary_sha256": "0215b432f9dc116af16c10367fa844fc007b7a10747136aff121d2f2f594a181",
+          "result": 0,
+          "stats": {
+            "Decisions": "18448",
+            "Propagations": "1039853",
+            "Conflicts": "1000",
+            "Restarts": "8",
+            "Learned clauses": "1000"
+          },
+          "proof_sha256": "aaca5e1d8bbf47223367b95db3514768c23f48dc0a16145ba7aacc7719373fc4"
+        },
+        {
+          "binary_sha256": "e8c9a2065a2fd4547464fa0b6324cd97b7cf5a91acc951fb552e67df8a2c044b",
+          "result": 0,
+          "stats": {
+            "Decisions": "18448",
+            "Propagations": "1039853",
+            "Conflicts": "1000",
+            "Restarts": "8",
+            "Learned clauses": "1000"
+          },
+          "proof_sha256": "aaca5e1d8bbf47223367b95db3514768c23f48dc0a16145ba7aacc7719373fc4"
+        }
+      ],
+      "equal": true
+    }
+  ]
+}

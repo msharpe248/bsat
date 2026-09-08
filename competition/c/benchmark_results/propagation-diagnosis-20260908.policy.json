@@ -1,0 +1,86 @@
+{
+  "scope": "Serial phase or propagation ablations with a frozen policy and exact input hashes.",
+  "suite": "propagation",
+  "accounting": true,
+  "commands": {
+    "control": [
+      "/Users/msharpe/python/bsat/competition/c/bin/bsat_diagnostic",
+      "--chrono",
+      "--congruence",
+      "--equiv",
+      "--equiv-budget",
+      "100000000",
+      "--alternating",
+      "--accounting",
+      "--time",
+      "8.0",
+      "--binary-proof",
+      "--proof",
+      "{proof}",
+      "{input}"
+    ],
+    "linear-watch": [
+      "/Users/msharpe/python/bsat/competition/c/bin/bsat_diagnostic",
+      "--chrono",
+      "--congruence",
+      "--equiv",
+      "--equiv-budget",
+      "100000000",
+      "--alternating",
+      "--no-circular",
+      "--accounting",
+      "--time",
+      "8.0",
+      "--binary-proof",
+      "--proof",
+      "{proof}",
+      "{input}"
+    ],
+    "dynamic-lbd": [
+      "/Users/msharpe/python/bsat/competition/c/bin/bsat_diagnostic",
+      "--chrono",
+      "--congruence",
+      "--equiv",
+      "--equiv-budget",
+      "100000000",
+      "--alternating",
+      "--dynamic-lbd",
+      "--accounting",
+      "--time",
+      "8.0",
+      "--binary-proof",
+      "--proof",
+      "{proof}",
+      "{input}"
+    ],
+    "protect-used": [
+      "/Users/msharpe/python/bsat/competition/c/bin/bsat_diagnostic",
+      "--chrono",
+      "--congruence",
+      "--equiv",
+      "--equiv-budget",
+      "100000000",
+      "--alternating",
+      "--protect-used",
+      "--accounting",
+      "--time",
+      "8.0",
+      "--binary-proof",
+      "--proof",
+      "{proof}",
+      "{input}"
+    ]
+  },
+  "solver_sha256": "86d02239f7fd2f50721e5dfcc49b523b6fb22e2074fe4e6318e5410f7286add8",
+  "inputs": {
+    "/Users/msharpe/python/bsat/dataset/sat_competition2025/planning/16c999d046885c8e51f196e60c34d966.cnf": {
+      "sha256": "77db4df9cc8bd8cd59dae994f24a3cf686ebd46e2aa123c534b5e3cc3a75d9b5"
+    },
+    "/Users/msharpe/python/bsat/dataset/sat_competition2025/planning/21b173943af57eefaac5e88bfa2662ad.cnf": {
+      "sha256": "c0391929a13777b719e8383b31cbee5904e05741e105c4c22914a2259a17ecfd"
+    }
+  },
+  "seconds": 8.0,
+  "repeats": 1,
+  "seed": 2026090832
+}

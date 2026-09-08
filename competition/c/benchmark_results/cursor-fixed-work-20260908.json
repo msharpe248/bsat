@@ -1,0 +1,224 @@
+{
+  "scope": "Compare deterministic fixed-conflict traces; UNKNOWN prefix equality is not a proof.",
+  "conflicts": 100000,
+  "repeats": 3,
+  "seed": 2026090833,
+  "runs": [
+    {
+      "input": "dataset/sat_competition2025/planning/16c999d046885c8e51f196e60c34d966.cnf",
+      "repeat": 1,
+      "input_sha256": "77db4df9cc8bd8cd59dae994f24a3cf686ebd46e2aa123c534b5e3cc3a75d9b5",
+      "traces": [
+        {
+          "binary": "competition/c/bin/bsat",
+          "seconds": 4.941120041068643,
+          "binary_sha256": "85c54cb1be749a6c90148db2b7b6829a5060bffa083327138f09e147c694989a",
+          "result": 0,
+          "stats": {
+            "Decisions": "308452",
+            "Propagations": "118025477",
+            "Conflicts": "100000",
+            "Restarts": "152",
+            "Learned clauses": "100000"
+          },
+          "proof_sha256": "fadd4ac787a3888cf56be439340b8898e1dc31480811aad97e03e8dd452f90f7"
+        },
+        {
+          "binary": "/tmp/bsat-before-cursor",
+          "seconds": 4.789290083106607,
+          "binary_sha256": "e8c9a2065a2fd4547464fa0b6324cd97b7cf5a91acc951fb552e67df8a2c044b",
+          "result": 0,
+          "stats": {
+            "Decisions": "308452",
+            "Propagations": "118025477",
+            "Conflicts": "100000",
+            "Restarts": "152",
+            "Learned clauses": "100000"
+          },
+          "proof_sha256": "fadd4ac787a3888cf56be439340b8898e1dc31480811aad97e03e8dd452f90f7"
+        }
+      ],
+      "equal": true
+    },
+    {
+      "input": "dataset/sat_competition2025/random-csp/9b998be0c639d06988c4902eb125c0b7.cnf",
+      "repeat": 0,
+      "input_sha256": "a864d5f3f6e6a0a41d64f20810a59bdd15c5bc2539e4ea5370015a158d77fa25",
+      "traces": [
+        {
+          "binary": "/tmp/bsat-before-cursor",
+          "seconds": 0.5724220420233905,
+          "binary_sha256": "e8c9a2065a2fd4547464fa0b6324cd97b7cf5a91acc951fb552e67df8a2c044b",
+          "result": 0,
+          "stats": {
+            "Decisions": "194269",
+            "Propagations": "730347",
+            "Conflicts": "100000",
+            "Restarts": "316",
+            "Learned clauses": "100000"
+          },
+          "proof_sha256": "7c6b25db8cb59a961bbe33624b62a8ce72b0f67fa1d44322927ee67d55b23b44"
+        },
+        {
+          "binary": "competition/c/bin/bsat",
+          "seconds": 0.5612084162421525,
+          "binary_sha256": "85c54cb1be749a6c90148db2b7b6829a5060bffa083327138f09e147c694989a",
+          "result": 0,
+          "stats": {
+            "Decisions": "194269",
+            "Propagations": "730347",
+            "Conflicts": "100000",
+            "Restarts": "316",
+            "Learned clauses": "100000"
+          },
+          "proof_sha256": "7c6b25db8cb59a961bbe33624b62a8ce72b0f67fa1d44322927ee67d55b23b44"
+        }
+      ],
+      "equal": true
+    },
+    {
+      "input": "dataset/sat_competition2025/planning/16c999d046885c8e51f196e60c34d966.cnf",
+      "repeat": 0,
+      "input_sha256": "77db4df9cc8bd8cd59dae994f24a3cf686ebd46e2aa123c534b5e3cc3a75d9b5",
+      "traces": [
+        {
+          "binary": "/tmp/bsat-before-cursor",
+          "seconds": 4.6308771669864655,
+          "binary_sha256": "e8c9a2065a2fd4547464fa0b6324cd97b7cf5a91acc951fb552e67df8a2c044b",
+          "result": 0,
+          "stats": {
+            "Decisions": "308452",
+            "Propagations": "118025477",
+            "Conflicts": "100000",
+            "Restarts": "152",
+            "Learned clauses": "100000"
+          },
+          "proof_sha256": "fadd4ac787a3888cf56be439340b8898e1dc31480811aad97e03e8dd452f90f7"
+        },
+        {
+          "binary": "competition/c/bin/bsat",
+          "seconds": 4.674067374784499,
+          "binary_sha256": "85c54cb1be749a6c90148db2b7b6829a5060bffa083327138f09e147c694989a",
+          "result": 0,
+          "stats": {
+            "Decisions": "308452",
+            "Propagations": "118025477",
+            "Conflicts": "100000",
+            "Restarts": "152",
+            "Learned clauses": "100000"
+          },
+          "proof_sha256": "fadd4ac787a3888cf56be439340b8898e1dc31480811aad97e03e8dd452f90f7"
+        }
+      ],
+      "equal": true
+    },
+    {
+      "input": "dataset/sat_competition2025/planning/16c999d046885c8e51f196e60c34d966.cnf",
+      "repeat": 2,
+      "input_sha256": "77db4df9cc8bd8cd59dae994f24a3cf686ebd46e2aa123c534b5e3cc3a75d9b5",
+      "traces": [
+        {
+          "binary": "/tmp/bsat-before-cursor",
+          "seconds": 4.653744917362928,
+          "binary_sha256": "e8c9a2065a2fd4547464fa0b6324cd97b7cf5a91acc951fb552e67df8a2c044b",
+          "result": 0,
+          "stats": {
+            "Decisions": "308452",
+            "Propagations": "118025477",
+            "Conflicts": "100000",
+            "Restarts": "152",
+            "Learned clauses": "100000"
+          },
+          "proof_sha256": "fadd4ac787a3888cf56be439340b8898e1dc31480811aad97e03e8dd452f90f7"
+        },
+        {
+          "binary": "competition/c/bin/bsat",
+          "seconds": 4.708839708007872,
+          "binary_sha256": "85c54cb1be749a6c90148db2b7b6829a5060bffa083327138f09e147c694989a",
+          "result": 0,
+          "stats": {
+            "Decisions": "308452",
+            "Propagations": "118025477",
+            "Conflicts": "100000",
+            "Restarts": "152",
+            "Learned clauses": "100000"
+          },
+          "proof_sha256": "fadd4ac787a3888cf56be439340b8898e1dc31480811aad97e03e8dd452f90f7"
+        }
+      ],
+      "equal": true
+    },
+    {
+      "input": "dataset/sat_competition2025/random-csp/9b998be0c639d06988c4902eb125c0b7.cnf",
+      "repeat": 1,
+      "input_sha256": "a864d5f3f6e6a0a41d64f20810a59bdd15c5bc2539e4ea5370015a158d77fa25",
+      "traces": [
+        {
+          "binary": "competition/c/bin/bsat",
+          "seconds": 0.560906124766916,
+          "binary_sha256": "85c54cb1be749a6c90148db2b7b6829a5060bffa083327138f09e147c694989a",
+          "result": 0,
+          "stats": {
+            "Decisions": "194269",
+            "Propagations": "730347",
+            "Conflicts": "100000",
+            "Restarts": "316",
+            "Learned clauses": "100000"
+          },
+          "proof_sha256": "7c6b25db8cb59a961bbe33624b62a8ce72b0f67fa1d44322927ee67d55b23b44"
+        },
+        {
+          "binary": "/tmp/bsat-before-cursor",
+          "seconds": 0.5716304583474994,
+          "binary_sha256": "e8c9a2065a2fd4547464fa0b6324cd97b7cf5a91acc951fb552e67df8a2c044b",
+          "result": 0,
+          "stats": {
+            "Decisions": "194269",
+            "Propagations": "730347",
+            "Conflicts": "100000",
+            "Restarts": "316",
+            "Learned clauses": "100000"
+          },
+          "proof_sha256": "7c6b25db8cb59a961bbe33624b62a8ce72b0f67fa1d44322927ee67d55b23b44"
+        }
+      ],
+      "equal": true
+    },
+    {
+      "input": "dataset/sat_competition2025/random-csp/9b998be0c639d06988c4902eb125c0b7.cnf",
+      "repeat": 2,
+      "input_sha256": "a864d5f3f6e6a0a41d64f20810a59bdd15c5bc2539e4ea5370015a158d77fa25",
+      "traces": [
+        {
+          "binary": "/tmp/bsat-before-cursor",
+          "seconds": 0.5718114590272307,
+          "binary_sha256": "e8c9a2065a2fd4547464fa0b6324cd97b7cf5a91acc951fb552e67df8a2c044b",
+          "result": 0,
+          "stats": {
+            "Decisions": "194269",
+            "Propagations": "730347",
+            "Conflicts": "100000",
+            "Restarts": "316",
+            "Learned clauses": "100000"
+          },
+          "proof_sha256": "7c6b25db8cb59a961bbe33624b62a8ce72b0f67fa1d44322927ee67d55b23b44"
+        },
+        {
+          "binary": "competition/c/bin/bsat",
+          "seconds": 0.5653663328848779,
+          "binary_sha256": "85c54cb1be749a6c90148db2b7b6829a5060bffa083327138f09e147c694989a",
+          "result": 0,
+          "stats": {
+            "Decisions": "194269",
+            "Propagations": "730347",
+            "Conflicts": "100000",
+            "Restarts": "316",
+            "Learned clauses": "100000"
+          },
+          "proof_sha256": "7c6b25db8cb59a961bbe33624b62a8ce72b0f67fa1d44322927ee67d55b23b44"
+        }
+      ],
+      "equal": true
+    }
+  ]
+}

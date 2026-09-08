@@ -1,0 +1,72 @@
+c BSAT Competition Solver v1.0
+c PID: 98095 (send SIGUSR1 for progress: kill -USR1 98095)
+c Reading from /Users/msharpe/python/bsat/dataset/sat_competition2025/planning/16c999d046885c8e51f196e60c34d966.cnf
+c Variables: 50277
+c Clauses:   283903
+c
+s UNKNOWN
+c
+c CPU time:         8.000 s
+c
+c ========== Statistics ==========
+c CPU time          : 8.000 s
+c Chronological backtracks: 842
+c Chronological retained assignments: 2752590
+c Chronological repaired watches: 316
+c Lower-level conflicts: 110
+c Congruence work: 6843255
+c Congruence gates: 12531
+c Congruence binary seeds: 1477
+c Congruence strengthened: 0
+c Congruence root units: 5
+c Congruence merges: 1064
+c Congruence clauses: 2129
+c Decisions         : 549827
+c Propagations      : 206756951
+c Conflicts         : 189199
+c Restarts          : 385
+c Reused levels     : 0
+c Local search calls: 0
+c Local search wins : 0
+c Local search flips: 0
+c Learned clauses   : 189199
+c Learned literals  : 29377762
+c Probing calls     : 1
+c Probing work      : 1000874
+c Deleted clauses   : 184278
+c Binary minimize checks: 0
+c Binary minimize removed: 0
+c Minimize inspections: 41190224
+c Minimize binary steps: 0
+c Minimize cache hits : 50049
+c Minimize budget hits: 30
+c Equivalence work  : 2928065
+c Substituted vars  : 2537
+c Rewritten clauses : 22526
+c SCC contradictions: 0
+c Derived binaries  : 625
+c LBD improvements  : 0
+c Deadline clock reads: 1284149
+c Target literals copied: 912773
+c Target values cleared: 1458062
+c Blocked clauses   : 0
+c Eliminated variables: 0
+c Elimination resolvents: 0
+c Elimination removed: 0
+c Subsumed clauses  : 18
+c Minimized literals: 414420
+c Glue clauses      : 1597
+c Max LBD           : 631
+c Decisions/sec     : 68728
+c Propagations/sec  : 25844577
+c Conflicts/sec     : 23650
+c Literal inspections : 1193145344
+c Garbage collections : 38
+c Reductions          : 94
+c Mode                : focused
+c Memory used       : 8.81 MB
+c Memory allocated  : 10.00 MB
+c Memory peak       : 11.63 MB
+c Memory wasted     : 1.63 MB
+c Arena growths     : 66
+c

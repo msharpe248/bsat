@@ -1,0 +1,23 @@
+{
+  "scope": "Intrusive macOS native stack sampling; no proof output and no performance ranking",
+  "command": [
+    "/Users/msharpe/python/bsat/competition/c/bin/bsat",
+    "--chrono",
+    "--congruence",
+    "--equiv",
+    "--equiv-budget",
+    "100000000",
+    "--alternating",
+    "--time",
+    "8",
+    "/Users/msharpe/python/bsat/dataset/sat_competition2025/planning/16c999d046885c8e51f196e60c34d966.cnf"
+  ],
+  "solver_sha256": "e8c9a2065a2fd4547464fa0b6324cd97b7cf5a91acc951fb552e67df8a2c044b",
+  "input_sha256": "77db4df9cc8bd8cd59dae994f24a3cf686ebd46e2aa123c534b5e3cc3a75d9b5",
+  "sample_returncode": 255,
+  "sample_stdout": "",
+  "sample_stderr": "sample[98096]: sample cannot examine process 98095 (bsat) for unknown reasons, even though it appears to exist; try running with `sudo`.\n",
+  "solver_exit": 0,
+  "duration_seconds": 3,
+  "interval_ms": 1
+}

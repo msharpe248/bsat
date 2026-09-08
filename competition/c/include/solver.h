@@ -176,8 +176,20 @@ typedef enum {
     ACCOUNT_GC, ACCOUNT_PREPROCESS, ACCOUNT_SIMPLIFY, ACCOUNT_RECONSTRUCT,
     ACCOUNT_MODEL, ACCOUNT_PROOF, ACCOUNT_SEARCH, ACCOUNT_PHASES
 } AccountPhase;
+/* Compile out detailed search counters in ordinary release/debug builds. */
+#ifdef BSAT_SEARCH_DIAGNOSTICS
+#define SEARCH_DIAGNOSTICS(s) ((s)->opts.accounting)
+#else
+#define SEARCH_DIAGNOSTICS(s) false
+#endif
+
 typedef struct SolverAccounting {
     uint64_t congruence_temporary_peak, rebuild_overlap_peak;
+    uint64_t binary_visits, long_visits, blocker_hits, first_hits;
+    uint64_t replacement_scans, replacement_moves, long_units, long_conflicts;
+    uint64_t scan_size_3, scan_size_4_8, scan_size_9_plus;
+    uint64_t learned_reason_uses, learned_reason_lbd_sum;
+    uint64_t reduced_candidates, deleted_without_analysis_use;
     double seconds[ACCOUNT_PHASES];
     uint64_t calls[ACCOUNT_PHASES];
 } SolverAccounting;

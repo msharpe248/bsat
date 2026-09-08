@@ -34,6 +34,9 @@ MODE ?= release
 ifeq ($(MODE),debug)
     CFLAGS += $(DEBUGFLAGS)
     TARGET := $(TARGET)_debug
+else ifeq ($(MODE),diagnostic)
+    CFLAGS += $(OPTFLAGS) -DBSAT_SEARCH_DIAGNOSTICS
+    TARGET := $(TARGET)_diagnostic
 else ifeq ($(MODE),tsan)
     CFLAGS += -g -O1 -fsanitize=thread
     TARGET := $(TARGET)_tsan
@@ -174,6 +177,7 @@ help:
 	@echo "  release   - Optimized build (default)"
 	@echo "  debug     - Debug build with sanitizers"
 	@echo "  profile   - Profiling build"
+	@echo "  diagnostic - Optimized build with opt-in detailed search counters"
 	@echo ""
 	@echo "Examples:"
 	@echo "  make"

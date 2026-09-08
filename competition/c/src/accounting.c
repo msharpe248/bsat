@@ -71,6 +71,18 @@ void solver_print_accounting(const Solver *s) {
             s->accounting.seconds[i],(unsigned long long)s->accounting.calls[i]);
     printf("c Temporary congruence capacity peak: %llu\n",(unsigned long long)s->accounting.congruence_temporary_peak);
     printf("c Rebuild owned capacity overlap peak: %llu\n",(unsigned long long)s->accounting.rebuild_overlap_peak);
+#ifdef BSAT_SEARCH_DIAGNOSTICS
+    puts("c Search diagnostics: compiled in; counters require --accounting");
+#else
+    puts("c Search diagnostics: disabled at build time (use MODE=diagnostic)");
+#endif
+#define PRINT_SEARCH(field) printf("c Search " #field ": %llu\n", (unsigned long long)s->accounting.field)
+    PRINT_SEARCH(binary_visits);PRINT_SEARCH(long_visits);PRINT_SEARCH(blocker_hits);PRINT_SEARCH(first_hits);
+    PRINT_SEARCH(replacement_scans);PRINT_SEARCH(replacement_moves);PRINT_SEARCH(long_units);PRINT_SEARCH(long_conflicts);
+    PRINT_SEARCH(scan_size_3);PRINT_SEARCH(scan_size_4_8);PRINT_SEARCH(scan_size_9_plus);
+    PRINT_SEARCH(learned_reason_uses);PRINT_SEARCH(learned_reason_lbd_sum);
+    PRINT_SEARCH(reduced_candidates);PRINT_SEARCH(deleted_without_analysis_use);
+#undef PRINT_SEARCH
     SolverMemory m=solver_memory(s);
 #define PRINT_MEMORY(field) printf("c Owned capacity " #field ": %llu\n",(unsigned long long)m.field)
     PRINT_MEMORY(arena);PRINT_MEMORY(watches);PRINT_MEMORY(input);PRINT_MEMORY(variables);

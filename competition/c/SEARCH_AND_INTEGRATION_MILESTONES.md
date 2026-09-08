@@ -8,7 +8,7 @@ milestone. Preserve unrelated `.zvec-grep/` state.
 
 1. Combined holdout: complete; COMBINED_HOLDOUT.md. Combined defaults rejected.
 2. Phase refresh: complete; PHASE_REFRESH.md. Tested prototypes archived without production promotion.
-3. Planning propagation: pending.
+3. Planning propagation: complete; PLANNING_PROPAGATION.md. Statistics corrected; scan prototype rejected.
 4. Differential histories and upstream client: harnesses prepared; execution pending.
 5. Service session tails: harness prepared; execution pending.
 

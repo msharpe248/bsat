@@ -1,0 +1,22 @@
+--- a/competition/c/src/solver.c
++++ b/competition/c/src/solver.c
+@@ -1080,9 +1080,8 @@
+             Level reason_level=s->opts.chrono ? s->vars[var(p)].level : s->decision_level;
+             uint32_t begin = s->opts.circular ? CLAUSE_HEADER(s->arena, cref)->search : 2;
+             if (begin < 2 || begin >= size) begin = 2;
+-            for (uint32_t offset = 0; offset < size - 2; offset++) {
+-                uint32_t k = begin + offset;
+-                if (k >= size) k = 2 + k - size;
++            uint32_t k = begin;
++            for (uint32_t remaining = size - 2; remaining; --remaining) {
+                 s->work++;
+                 if ((s->work & 1023)==0 && solver_budget_exhausted(s)) {
+                     while (i<ws->size) watches[j++]=watches[i++];
+@@ -1110,6 +1109,7 @@
+                     break;
+                 }
+                 if (s->opts.chrono) reason_level=MAX(reason_level,s->vars[v].level);
++                if (++k == size) k = 2;
+             }
+ 
+             if (found) {

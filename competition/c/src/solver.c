@@ -947,7 +947,6 @@ static CRef solver_propagate_account_impl(Solver* s) {
         uint32_t i = 0, j = 0;
 
         s->stats.propagations++;
-        s->watches->visits++;
 
 #ifdef DEBUG
         if (IS_DEBUG(s)) {
@@ -962,10 +961,12 @@ static CRef solver_propagate_account_impl(Solver* s) {
                 ws->size=j; s->qhead--; return INVALID_CLAUSE;
             }
             s->work++;
+            s->watches->visits++; // Count examined watches, including blocker hits.
             Watch w = watches[i];
 
             // Binary clause special case
             if (is_binary_watch(w) || is_arena_binary_watch(w)) {
+                if (SEARCH_DIAGNOSTICS(s)) s->accounting.binary_visits++;
                 CRef binary_reason = watch_clause(w);
                 Lit q = w.blocker;
                 Var v = var(q);
@@ -1035,6 +1036,7 @@ static CRef solver_propagate_account_impl(Solver* s) {
                 continue;
             }
 
+            if (SEARCH_DIAGNOSTICS(s)) s->accounting.long_visits++;
             // Non-binary clause
             CRef cref = w.cref;
             Lit blocker = w.blocker;
@@ -1042,6 +1044,7 @@ static CRef solver_propagate_account_impl(Solver* s) {
             // Check blocker first
             Var bv = var(blocker);
             if (s->values[bv] == (sign(blocker) ? FALSE : TRUE)) {
+                if (SEARCH_DIAGNOSTICS(s)) s->accounting.blocker_hits++;
                 // Blocker is satisfied - keep watching
                 watches[j++] = w;
                 i++;
@@ -1066,6 +1069,7 @@ static CRef solver_propagate_account_impl(Solver* s) {
 
             // If first literal is true, clause is satisfied
             if (s->values[fv] == (sign(first) ? FALSE : TRUE)) {
+                if (SEARCH_DIAGNOSTICS(s)) s->accounting.first_hits++;
                 watches[j++] = (Watch){cref, first};
                 i++;
                 continue;
@@ -1084,6 +1088,12 @@ static CRef solver_propagate_account_impl(Solver* s) {
                     while (i<ws->size) watches[j++]=watches[i++];
                     ws->size=j; s->qhead--; return INVALID_CLAUSE;
                 }
+                if (SEARCH_DIAGNOSTICS(s)) {
+                    s->accounting.replacement_scans++;
+                    if (size == 3) s->accounting.scan_size_3++;
+                    else if (size <= 8) s->accounting.scan_size_4_8++;
+                    else s->accounting.scan_size_9_plus++;
+                }
                 Lit lit = lits[k];
                 Var v = var(lit);
 
@@ -1095,6 +1105,7 @@ static CRef solver_propagate_account_impl(Solver* s) {
                     CLAUSE_HEADER(s->arena, cref)->search = k;
                     // Add new watch
                     watch_add(s->watches, lit, cref, first);
+                    if (SEARCH_DIAGNOSTICS(s)) s->accounting.replacement_moves++;
                     found = true;
                     break;
                 }
@@ -1113,6 +1124,7 @@ static CRef solver_propagate_account_impl(Solver* s) {
 
             // Check if unit or conflict
             if (s->values[fv] == UNDEF) {
+                if (SEARCH_DIAGNOSTICS(s)) s->accounting.long_units++;
                 // Unit clause - propagate
                 s->values[fv] = sign(first) ? FALSE : TRUE;
                 s->vars[fv].level = reason_level;
@@ -1126,6 +1138,7 @@ static CRef solver_propagate_account_impl(Solver* s) {
                     s->vars[fv].polarity = !sign(first);
                 }
             } else {
+                if (SEARCH_DIAGNOSTICS(s)) s->accounting.long_conflicts++;
                 // Conflict!
                 // Put remaining watches back
                 while (i < ws->size) {
@@ -1275,6 +1288,10 @@ static void solver_analyze_account_impl(Solver* s, CRef conflict, Lit* learnt, u
                 uint32_t size = CLAUSE_SIZE(s->arena, reason);
                 Lit* lits = CLAUSE_LITS(s->arena, reason);
 
+                if (SEARCH_DIAGNOSTICS(s) && clause_learned(s->arena, reason)) {
+                    s->accounting.learned_reason_uses++;
+                    s->accounting.learned_reason_lbd_sum += clause_lbd(s->arena, reason);
+                }
                 bump_clause_activity(s->arena, reason, 1.0f);
                 for (uint32_t i = 0; i < size; i++) {
                     Lit q = lits[i];
@@ -1760,10 +1777,13 @@ static void solver_reduce_db_account_impl(Solver* s) {
         if (CLAUSE_SIZE(s->arena, cr) <= 2 || clause_lbd(s->arena, cr) <= s->opts.glue_lbd || clause_locked(s, cr)) continue;
         scores[n++] = (ClauseScore){cr, clause_lbd(s->arena, cr), clause_activity(s->arena, cr)};
     }
+    if (SEARCH_DIAGNOSTICS(s)) s->accounting.reduced_candidates += n;
     qsort(scores, n, sizeof *scores, compare_clauses);
     uint32_t keep = (uint32_t)(n * s->opts.reduce_fraction);
     for (uint32_t i = 0; i < n; ++i) {
         if (i >= keep || scores[i].lbd > s->opts.max_lbd) {
+            if (SEARCH_DIAGNOSTICS(s) && scores[i].activity == 0)
+                s->accounting.deleted_without_analysis_use++;
             solver_delete_clause(s, scores[i].cref); s->stats.deleted_clauses++;
         } else CLAUSE_HEADER(s->arena, scores[i].cref)->activity *= s->opts.clause_decay;
     }
