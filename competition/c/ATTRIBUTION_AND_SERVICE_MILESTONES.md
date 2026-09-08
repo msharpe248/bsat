@@ -6,7 +6,7 @@ Authorized batch; commit and push each validated milestone. Preserve unrelated
 1. Clause attribution: complete; CLAUSE_ATTRIBUTION.md, diagnostic origin/age/reuse data.
 2. Selective strengthening: complete; HOT_CLAUSE_STRENGTHENING.md, tested prototype archived after holdout regression.
 3. Bounded portfolio: running on Linux; equal process CPU/wall/address-space and validation budgets.
-4. Checkpoint policy example: pending; changing workloads and quota headroom.
+4. Checkpoint policy example: complete; CHECKPOINT_POLICY_EXAMPLE.md, public C client and validated changing workloads.
 5. Independent incremental comparator: pending; retained second solver, larger
    additions, cancellation and checkpoint histories.
 

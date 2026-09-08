@@ -1,0 +1,2360 @@
+{
+  "scope": "Serial changing-workload example comparison, exact sampled contexts and certificates.",
+  "binary_sha256": "c3556a3de6d9ea50962adc08cc7804f2dd0bfe49fbe5098be015ee439f1eef84",
+  "queries": 64,
+  "repeats": 1,
+  "quotas": [
+    65536,
+    1048576
+  ],
+  "reserve_floor": "min(65536,quota/4)",
+  "soft_fraction": 0.25,
+  "checkpoint_cost_fraction": 0.01,
+  "converter_sha256": "9bfc20a5fa9eb2a0ffadd2b0cfc7cdd4a20f6aa9c8d7de5b6c771160b847f630",
+  "checker_sha256": "027e767e8e5543d61671c44f7475e985b7969112e6825d51f2207bf0580cbf5c",
+  "runs": [
+    {
+      "quota": 65536,
+      "repeat": 0,
+      "command": [
+        "/Users/msharpe/python/bsat/competition/c/bin/checkpoint_service_debug",
+        "64"
+      ],
+      "summary": {
+        "complete": true,
+        "fixed": false,
+        "queries": 64,
+        "checkpoints": 0,
+        "solve_cpu": 0.033563042,
+        "checkpoint_cpu": 0.0,
+        "peak_journal": 19013
+      },
+      "queries": [
+        {
+          "query": 0,
+          "regime": 1,
+          "result": 20,
+          "journal": 189,
+          "reserve": 16384,
+          "conflicts": 28
+        },
+        {
+          "query": 1,
+          "regime": 1,
+          "result": 10,
+          "journal": 189,
+          "reserve": 16384,
+          "conflicts": 0
+        },
+        {
+          "query": 2,
+          "regime": 1,
+          "result": 20,
+          "journal": 192,
+          "reserve": 16384,
+          "conflicts": 0
+        },
+        {
+          "query": 3,
+          "regime": 1,
+          "result": 10,
+          "journal": 192,
+          "reserve": 16384,
+          "conflicts": 0
+        },
+        {
+          "query": 4,
+          "regime": 1,
+          "result": 20,
+          "journal": 195,
+          "reserve": 16384,
+          "conflicts": 0
+        },
+        {
+          "query": 5,
+          "regime": 1,
+          "result": 10,
+          "journal": 195,
+          "reserve": 16384,
+          "conflicts": 0
+        },
+        {
+          "query": 6,
+          "regime": 1,
+          "result": 20,
+          "journal": 198,
+          "reserve": 16384,
+          "conflicts": 0
+        },
+        {
+          "query": 7,
+          "regime": 1,
+          "result": 10,
+          "journal": 198,
+          "reserve": 16384,
+          "conflicts": 0
+        },
+        {
+          "query": 8,
+          "regime": 1,
+          "result": 20,
+          "journal": 201,
+          "reserve": 16384,
+          "conflicts": 0
+        },
+        {
+          "query": 9,
+          "regime": 1,
+          "result": 10,
+          "journal": 201,
+          "reserve": 16384,
+          "conflicts": 0
+        },
+        {
+          "query": 10,
+          "regime": 1,
+          "result": 20,
+          "journal": 204,
+          "reserve": 16384,
+          "conflicts": 0
+        },
+        {
+          "query": 11,
+          "regime": 1,
+          "result": 10,
+          "journal": 204,
+          "reserve": 16384,
+          "conflicts": 0
+        },
+        {
+          "query": 12,
+          "regime": 1,
+          "result": 20,
+          "journal": 207,
+          "reserve": 16384,
+          "conflicts": 0
+        },
+        {
+          "query": 13,
+          "regime": 1,
+          "result": 10,
+          "journal": 207,
+          "reserve": 16384,
+          "conflicts": 0
+        },
+        {
+          "query": 14,
+          "regime": 1,
+          "result": 20,
+          "journal": 210,
+          "reserve": 16384,
+          "conflicts": 0
+        },
+        {
+          "query": 15,
+          "regime": 1,
+          "result": 10,
+          "journal": 210,
+          "reserve": 16384,
+          "conflicts": 0
+        },
+        {
+          "query": 16,
+          "regime": 2,
+          "result": 20,
+          "journal": 1549,
+          "reserve": 16384,
+          "conflicts": 138
+        },
+        {
+          "query": 17,
+          "regime": 2,
+          "result": 10,
+          "journal": 1549,
+          "reserve": 16384,
+          "conflicts": 0
+        },
+        {
+          "query": 18,
+          "regime": 2,
+          "result": 20,
+          "journal": 1553,
+          "reserve": 16384,
+          "conflicts": 0
+        },
+        {
+          "query": 19,
+          "regime": 2,
+          "result": 10,
+          "journal": 1553,
+          "reserve": 16384,
+          "conflicts": 0
+        },
+        {
+          "query": 20,
+          "regime": 2,
+          "result": 20,
+          "journal": 1557,
+          "reserve": 16384,
+          "conflicts": 0
+        },
+        {
+          "query": 21,
+          "regime": 2,
+          "result": 10,
+          "journal": 1557,
+          "reserve": 16384,
+          "conflicts": 0
+        },
+        {
+          "query": 22,
+          "regime": 2,
+          "result": 20,
+          "journal": 1561,
+          "reserve": 16384,
+          "conflicts": 0
+        },
+        {
+          "query": 23,
+          "regime": 2,
+          "result": 10,
+          "journal": 1561,
+          "reserve": 16384,
+          "conflicts": 0
+        },
+        {
+          "query": 24,
+          "regime": 2,
+          "result": 20,
+          "journal": 1565,
+          "reserve": 16384,
+          "conflicts": 0
+        },
+        {
+          "query": 25,
+          "regime": 2,
+          "result": 10,
+          "journal": 1565,
+          "reserve": 16384,
+          "conflicts": 0
+        },
+        {
+          "query": 26,
+          "regime": 2,
+          "result": 20,
+          "journal": 1569,
+          "reserve": 16384,
+          "conflicts": 0
+        },
+        {
+          "query": 27,
+          "regime": 2,
+          "result": 10,
+          "journal": 1569,
+          "reserve": 16384,
+          "conflicts": 0
+        },
+        {
+          "query": 28,
+          "regime": 2,
+          "result": 20,
+          "journal": 1573,
+          "reserve": 16384,
+          "conflicts": 0
+        },
+        {
+          "query": 29,
+          "regime": 2,
+          "result": 10,
+          "journal": 1573,
+          "reserve": 16384,
+          "conflicts": 0
+        },
+        {
+          "query": 30,
+          "regime": 2,
+          "result": 20,
+          "journal": 1577,
+          "reserve": 16384,
+          "conflicts": 0
+        },
+        {
+          "query": 31,
+          "regime": 2,
+          "result": 10,
+          "journal": 1577,
+          "reserve": 16384,
+          "conflicts": 0
+        },
+        {
+          "query": 32,
+          "regime": 3,
+          "result": 20,
+          "journal": 16445,
+          "reserve": 29736,
+          "conflicts": 665
+        },
+        {
+          "query": 33,
+          "regime": 3,
+          "result": 10,
+          "journal": 16445,
+          "reserve": 29736,
+          "conflicts": 0
+        },
+        {
+          "query": 34,
+          "regime": 3,
+          "result": 20,
+          "journal": 16451,
+          "reserve": 29736,
+          "conflicts": 0
+        },
+        {
+          "query": 35,
+          "regime": 3,
+          "result": 10,
+          "journal": 16451,
+          "reserve": 29736,
+          "conflicts": 0
+        },
+        {
+          "query": 36,
+          "regime": 3,
+          "result": 20,
+          "journal": 16457,
+          "reserve": 29736,
+          "conflicts": 0
+        },
+        {
+          "query": 37,
+          "regime": 3,
+          "result": 10,
+          "journal": 16457,
+          "reserve": 29736,
+          "conflicts": 0
+        },
+        {
+          "query": 38,
+          "regime": 3,
+          "result": 20,
+          "journal": 16463,
+          "reserve": 29736,
+          "conflicts": 0
+        },
+        {
+          "query": 39,
+          "regime": 3,
+          "result": 10,
+          "journal": 16463,
+          "reserve": 29736,
+          "conflicts": 0
+        },
+        {
+          "query": 40,
+          "regime": 3,
+          "result": 20,
+          "journal": 16469,
+          "reserve": 29736,
+          "conflicts": 0
+        },
+        {
+          "query": 41,
+          "regime": 3,
+          "result": 10,
+          "journal": 16469,
+          "reserve": 29736,
+          "conflicts": 0
+        },
+        {
+          "query": 42,
+          "regime": 3,
+          "result": 20,
+          "journal": 16475,
+          "reserve": 29736,
+          "conflicts": 0
+        },
+        {
+          "query": 43,
+          "regime": 3,
+          "result": 10,
+          "journal": 16475,
+          "reserve": 29736,
+          "conflicts": 0
+        },
+        {
+          "query": 44,
+          "regime": 3,
+          "result": 20,
+          "journal": 16481,
+          "reserve": 29736,
+          "conflicts": 0
+        },
+        {
+          "query": 45,
+          "regime": 3,
+          "result": 10,
+          "journal": 16481,
+          "reserve": 29736,
+          "conflicts": 0
+        },
+        {
+          "query": 46,
+          "regime": 3,
+          "result": 20,
+          "journal": 16487,
+          "reserve": 29736,
+          "conflicts": 0
+        },
+        {
+          "query": 47,
+          "regime": 3,
+          "result": 10,
+          "journal": 16487,
+          "reserve": 29736,
+          "conflicts": 0
+        },
+        {
+          "query": 48,
+          "regime": 4,
+          "result": 20,
+          "journal": 18957,
+          "reserve": 29736,
+          "conflicts": 140
+        },
+        {
+          "query": 49,
+          "regime": 4,
+          "result": 10,
+          "journal": 18957,
+          "reserve": 29736,
+          "conflicts": 0
+        },
+        {
+          "query": 50,
+          "regime": 4,
+          "result": 20,
+          "journal": 18965,
+          "reserve": 29736,
+          "conflicts": 0
+        },
+        {
+          "query": 51,
+          "regime": 4,
+          "result": 10,
+          "journal": 18965,
+          "reserve": 29736,
+          "conflicts": 0
+        },
+        {
+          "query": 52,
+          "regime": 4,
+          "result": 20,
+          "journal": 18973,
+          "reserve": 29736,
+          "conflicts": 0
+        },
+        {
+          "query": 53,
+          "regime": 4,
+          "result": 10,
+          "journal": 18973,
+          "reserve": 29736,
+          "conflicts": 0
+        },
+        {
+          "query": 54,
+          "regime": 4,
+          "result": 20,
+          "journal": 18981,
+          "reserve": 29736,
+          "conflicts": 0
+        },
+        {
+          "query": 55,
+          "regime": 4,
+          "result": 10,
+          "journal": 18981,
+          "reserve": 29736,
+          "conflicts": 0
+        },
+        {
+          "query": 56,
+          "regime": 4,
+          "result": 20,
+          "journal": 18989,
+          "reserve": 29736,
+          "conflicts": 0
+        },
+        {
+          "query": 57,
+          "regime": 4,
+          "result": 10,
+          "journal": 18989,
+          "reserve": 29736,
+          "conflicts": 0
+        },
+        {
+          "query": 58,
+          "regime": 4,
+          "result": 20,
+          "journal": 18997,
+          "reserve": 29736,
+          "conflicts": 0
+        },
+        {
+          "query": 59,
+          "regime": 4,
+          "result": 10,
+          "journal": 18997,
+          "reserve": 29736,
+          "conflicts": 0
+        },
+        {
+          "query": 60,
+          "regime": 4,
+          "result": 20,
+          "journal": 19005,
+          "reserve": 29736,
+          "conflicts": 0
+        },
+        {
+          "query": 61,
+          "regime": 4,
+          "result": 10,
+          "journal": 19005,
+          "reserve": 29736,
+          "conflicts": 0
+        },
+        {
+          "query": 62,
+          "regime": 4,
+          "result": 20,
+          "journal": 19013,
+          "reserve": 29736,
+          "conflicts": 0
+        },
+        {
+          "query": 63,
+          "regime": 4,
+          "result": 10,
+          "journal": 19013,
+          "reserve": 29736,
+          "conflicts": 0
+        }
+      ],
+      "exports": [
+        {
+          "query": 0,
+          "result": 20,
+          "input_sha256": "1b2caffa3b12b630e434d8646ed9d9b8a694329502fd0e5f639a65708eeb7a4f",
+          "proof_sha256": "5b53f1ab8cac5b22c5cd6bcb630d1a2085af9f201331c94d72b5a9e293031322",
+          "verified": true
+        },
+        {
+          "query": 1,
+          "result": 10,
+          "input_sha256": "b69476c98acc7a15863a45cefd85db9e525e07fc165780ed8cb0b931251d797a",
+          "verified": true
+        },
+        {
+          "query": 16,
+          "result": 20,
+          "input_sha256": "cf11c250fc14df39ec7287e2944e0b127ed6263be4c321a6225a12f91e576796",
+          "proof_sha256": "eea69f1563327cf49133f1a154306a78aabd8ade13a8afde34036461438e65fa",
+          "verified": true
+        },
+        {
+          "query": 17,
+          "result": 10,
+          "input_sha256": "e023f132e210dbf28354680d4f912f7598fcbd6224b7ced496017002a215c97a",
+          "verified": true
+        },
+        {
+          "query": 32,
+          "result": 20,
+          "input_sha256": "b9ef5f36ae55405f2af0a733a11520cf61e3fe501957969899553c4c6977327d",
+          "proof_sha256": "0b768820b070234ef9c837f538cfbf3c6f12dac01b1dfa70fae3fc50d86a6943",
+          "verified": true
+        },
+        {
+          "query": 33,
+          "result": 10,
+          "input_sha256": "49a34b9417f56c1713b09d014a64e0801aedcee64090b55aba093c3a45eeb729",
+          "verified": true
+        },
+        {
+          "query": 48,
+          "result": 20,
+          "input_sha256": "dc45b4a14d0292d15837cf567b1d869260baeddd8f8ad267c4db4c78f9b96a52",
+          "proof_sha256": "8018a3dae73c26874d9ca16f644c31017d0e05a5b3ff4ff2d6e1f7ac33a4c1ce",
+          "verified": true
+        },
+        {
+          "query": 49,
+          "result": 10,
+          "input_sha256": "4d6a99c3a847c686f9bea7f171cc314b12ef5927ddc650413b9c99731a5b7823",
+          "verified": true
+        }
+      ]
+    },
+    {
+      "quota": 65536,
+      "repeat": 0,
+      "command": [
+        "/Users/msharpe/python/bsat/competition/c/bin/checkpoint_service_debug",
+        "64",
+        "f"
+      ],
+      "summary": {
+        "complete": true,
+        "fixed": true,
+        "queries": 64,
+        "checkpoints": 8,
+        "solve_cpu": 0.262314704,
+        "checkpoint_cpu": 0.003077,
+        "peak_journal": 18583
+      },
+      "queries": [
+        {
+          "query": 0,
+          "regime": 1,
+          "result": 20,
+          "journal": 189,
+          "reserve": 16384,
+          "conflicts": 28
+        },
+        {
+          "query": 1,
+          "regime": 1,
+          "result": 10,
+          "journal": 189,
+          "reserve": 16384,
+          "conflicts": 0
+        },
+        {
+          "query": 2,
+          "regime": 1,
+          "result": 20,
+          "journal": 192,
+          "reserve": 16384,
+          "conflicts": 0
+        },
+        {
+          "query": 3,
+          "regime": 1,
+          "result": 10,
+          "journal": 192,
+          "reserve": 16384,
+          "conflicts": 0
+        },
+        {
+          "query": 4,
+          "regime": 1,
+          "result": 20,
+          "journal": 195,
+          "reserve": 16384,
+          "conflicts": 0
+        },
+        {
+          "query": 5,
+          "regime": 1,
+          "result": 10,
+          "journal": 195,
+          "reserve": 16384,
+          "conflicts": 0
+        },
+        {
+          "query": 6,
+          "regime": 1,
+          "result": 20,
+          "journal": 198,
+          "reserve": 16384,
+          "conflicts": 0
+        },
+        {
+          "query": 7,
+          "regime": 1,
+          "result": 10,
+          "journal": 198,
+          "reserve": 16384,
+          "conflicts": 0
+        },
+        {
+          "query": 8,
+          "regime": 1,
+          "result": 20,
+          "journal": 201,
+          "reserve": 16384,
+          "conflicts": 0
+        },
+        {
+          "query": 9,
+          "regime": 1,
+          "result": 10,
+          "journal": 201,
+          "reserve": 16384,
+          "conflicts": 0
+        },
+        {
+          "query": 10,
+          "regime": 1,
+          "result": 20,
+          "journal": 204,
+          "reserve": 16384,
+          "conflicts": 0
+        },
+        {
+          "query": 11,
+          "regime": 1,
+          "result": 10,
+          "journal": 204,
+          "reserve": 16384,
+          "conflicts": 0
+        },
+        {
+          "query": 12,
+          "regime": 1,
+          "result": 20,
+          "journal": 207,
+          "reserve": 16384,
+          "conflicts": 0
+        },
+        {
+          "query": 13,
+          "regime": 1,
+          "result": 10,
+          "journal": 207,
+          "reserve": 16384,
+          "conflicts": 0
+        },
+        {
+          "query": 14,
+          "regime": 1,
+          "result": 20,
+          "journal": 210,
+          "reserve": 16384,
+          "conflicts": 0
+        },
+        {
+          "query": 15,
+          "regime": 1,
+          "result": 10,
+          "journal": 210,
+          "reserve": 16384,
+          "conflicts": 0
+        },
+        {
+          "query": 16,
+          "regime": 2,
+          "result": 20,
+          "journal": 1549,
+          "reserve": 16384,
+          "conflicts": 138
+        },
+        {
+          "query": 17,
+          "regime": 2,
+          "result": 10,
+          "journal": 1549,
+          "reserve": 16384,
+          "conflicts": 0
+        },
+        {
+          "query": 18,
+          "regime": 2,
+          "result": 20,
+          "journal": 1553,
+          "reserve": 16384,
+          "conflicts": 0
+        },
+        {
+          "query": 19,
+          "regime": 2,
+          "result": 10,
+          "journal": 1553,
+          "reserve": 16384,
+          "conflicts": 0
+        },
+        {
+          "query": 20,
+          "regime": 2,
+          "result": 20,
+          "journal": 1557,
+          "reserve": 16384,
+          "conflicts": 0
+        },
+        {
+          "query": 21,
+          "regime": 2,
+          "result": 10,
+          "journal": 1557,
+          "reserve": 16384,
+          "conflicts": 0
+        },
+        {
+          "query": 22,
+          "regime": 2,
+          "result": 20,
+          "journal": 1561,
+          "reserve": 16384,
+          "conflicts": 0
+        },
+        {
+          "query": 23,
+          "regime": 2,
+          "result": 10,
+          "journal": 1561,
+          "reserve": 16384,
+          "conflicts": 0
+        },
+        {
+          "query": 24,
+          "regime": 2,
+          "result": 20,
+          "journal": 1565,
+          "reserve": 16384,
+          "conflicts": 0
+        },
+        {
+          "query": 25,
+          "regime": 2,
+          "result": 10,
+          "journal": 1565,
+          "reserve": 16384,
+          "conflicts": 0
+        },
+        {
+          "query": 26,
+          "regime": 2,
+          "result": 20,
+          "journal": 1569,
+          "reserve": 16384,
+          "conflicts": 0
+        },
+        {
+          "query": 27,
+          "regime": 2,
+          "result": 10,
+          "journal": 1569,
+          "reserve": 16384,
+          "conflicts": 0
+        },
+        {
+          "query": 28,
+          "regime": 2,
+          "result": 20,
+          "journal": 1573,
+          "reserve": 16384,
+          "conflicts": 0
+        },
+        {
+          "query": 29,
+          "regime": 2,
+          "result": 10,
+          "journal": 1573,
+          "reserve": 16384,
+          "conflicts": 0
+        },
+        {
+          "query": 30,
+          "regime": 2,
+          "result": 20,
+          "journal": 1577,
+          "reserve": 16384,
+          "conflicts": 0
+        },
+        {
+          "query": 31,
+          "regime": 2,
+          "result": 10,
+          "journal": 1577,
+          "reserve": 16384,
+          "conflicts": 0
+        },
+        {
+          "query": 32,
+          "regime": 3,
+          "result": 20,
+          "journal": 16445,
+          "reserve": 29736,
+          "conflicts": 665
+        },
+        {
+          "query": 33,
+          "regime": 3,
+          "result": 10,
+          "journal": 0,
+          "reserve": 29736,
+          "conflicts": 0
+        },
+        {
+          "query": 34,
+          "regime": 3,
+          "result": 20,
+          "journal": 18583,
+          "reserve": 37166,
+          "conflicts": 834
+        },
+        {
+          "query": 35,
+          "regime": 3,
+          "result": 10,
+          "journal": 0,
+          "reserve": 37166,
+          "conflicts": 0
+        },
+        {
+          "query": 36,
+          "regime": 3,
+          "result": 20,
+          "journal": 18583,
+          "reserve": 37166,
+          "conflicts": 834
+        },
+        {
+          "query": 37,
+          "regime": 3,
+          "result": 10,
+          "journal": 0,
+          "reserve": 37166,
+          "conflicts": 0
+        },
+        {
+          "query": 38,
+          "regime": 3,
+          "result": 20,
+          "journal": 18583,
+          "reserve": 37166,
+          "conflicts": 834
+        },
+        {
+          "query": 39,
+          "regime": 3,
+          "result": 10,
+          "journal": 0,
+          "reserve": 37166,
+          "conflicts": 0
+        },
+        {
+          "query": 40,
+          "regime": 3,
+          "result": 20,
+          "journal": 18583,
+          "reserve": 37166,
+          "conflicts": 834
+        },
+        {
+          "query": 41,
+          "regime": 3,
+          "result": 10,
+          "journal": 0,
+          "reserve": 37166,
+          "conflicts": 0
+        },
+        {
+          "query": 42,
+          "regime": 3,
+          "result": 20,
+          "journal": 18583,
+          "reserve": 37166,
+          "conflicts": 834
+        },
+        {
+          "query": 43,
+          "regime": 3,
+          "result": 10,
+          "journal": 0,
+          "reserve": 37166,
+          "conflicts": 0
+        },
+        {
+          "query": 44,
+          "regime": 3,
+          "result": 20,
+          "journal": 18583,
+          "reserve": 37166,
+          "conflicts": 834
+        },
+        {
+          "query": 45,
+          "regime": 3,
+          "result": 10,
+          "journal": 0,
+          "reserve": 37166,
+          "conflicts": 0
+        },
+        {
+          "query": 46,
+          "regime": 3,
+          "result": 20,
+          "journal": 18583,
+          "reserve": 37166,
+          "conflicts": 834
+        },
+        {
+          "query": 47,
+          "regime": 3,
+          "result": 10,
+          "journal": 0,
+          "reserve": 37166,
+          "conflicts": 0
+        },
+        {
+          "query": 48,
+          "regime": 4,
+          "result": 20,
+          "journal": 2504,
+          "reserve": 37166,
+          "conflicts": 150
+        },
+        {
+          "query": 49,
+          "regime": 4,
+          "result": 10,
+          "journal": 2504,
+          "reserve": 37166,
+          "conflicts": 0
+        },
+        {
+          "query": 50,
+          "regime": 4,
+          "result": 20,
+          "journal": 2512,
+          "reserve": 37166,
+          "conflicts": 0
+        },
+        {
+          "query": 51,
+          "regime": 4,
+          "result": 10,
+          "journal": 2512,
+          "reserve": 37166,
+          "conflicts": 0
+        },
+        {
+          "query": 52,
+          "regime": 4,
+          "result": 20,
+          "journal": 2520,
+          "reserve": 37166,
+          "conflicts": 0
+        },
+        {
+          "query": 53,
+          "regime": 4,
+          "result": 10,
+          "journal": 2520,
+          "reserve": 37166,
+          "conflicts": 0
+        },
+        {
+          "query": 54,
+          "regime": 4,
+          "result": 20,
+          "journal": 2528,
+          "reserve": 37166,
+          "conflicts": 0
+        },
+        {
+          "query": 55,
+          "regime": 4,
+          "result": 10,
+          "journal": 2528,
+          "reserve": 37166,
+          "conflicts": 0
+        },
+        {
+          "query": 56,
+          "regime": 4,
+          "result": 20,
+          "journal": 2536,
+          "reserve": 37166,
+          "conflicts": 0
+        },
+        {
+          "query": 57,
+          "regime": 4,
+          "result": 10,
+          "journal": 2536,
+          "reserve": 37166,
+          "conflicts": 0
+        },
+        {
+          "query": 58,
+          "regime": 4,
+          "result": 20,
+          "journal": 2544,
+          "reserve": 37166,
+          "conflicts": 0
+        },
+        {
+          "query": 59,
+          "regime": 4,
+          "result": 10,
+          "journal": 2544,
+          "reserve": 37166,
+          "conflicts": 0
+        },
+        {
+          "query": 60,
+          "regime": 4,
+          "result": 20,
+          "journal": 2552,
+          "reserve": 37166,
+          "conflicts": 0
+        },
+        {
+          "query": 61,
+          "regime": 4,
+          "result": 10,
+          "journal": 2552,
+          "reserve": 37166,
+          "conflicts": 0
+        },
+        {
+          "query": 62,
+          "regime": 4,
+          "result": 20,
+          "journal": 2560,
+          "reserve": 37166,
+          "conflicts": 0
+        },
+        {
+          "query": 63,
+          "regime": 4,
+          "result": 10,
+          "journal": 2560,
+          "reserve": 37166,
+          "conflicts": 0
+        }
+      ],
+      "exports": [
+        {
+          "query": 0,
+          "result": 20,
+          "input_sha256": "1b2caffa3b12b630e434d8646ed9d9b8a694329502fd0e5f639a65708eeb7a4f",
+          "proof_sha256": "5b53f1ab8cac5b22c5cd6bcb630d1a2085af9f201331c94d72b5a9e293031322",
+          "verified": true
+        },
+        {
+          "query": 1,
+          "result": 10,
+          "input_sha256": "b69476c98acc7a15863a45cefd85db9e525e07fc165780ed8cb0b931251d797a",
+          "verified": true
+        },
+        {
+          "query": 16,
+          "result": 20,
+          "input_sha256": "cf11c250fc14df39ec7287e2944e0b127ed6263be4c321a6225a12f91e576796",
+          "proof_sha256": "eea69f1563327cf49133f1a154306a78aabd8ade13a8afde34036461438e65fa",
+          "verified": true
+        },
+        {
+          "query": 17,
+          "result": 10,
+          "input_sha256": "e023f132e210dbf28354680d4f912f7598fcbd6224b7ced496017002a215c97a",
+          "verified": true
+        },
+        {
+          "query": 32,
+          "result": 20,
+          "input_sha256": "b9ef5f36ae55405f2af0a733a11520cf61e3fe501957969899553c4c6977327d",
+          "proof_sha256": "0b768820b070234ef9c837f538cfbf3c6f12dac01b1dfa70fae3fc50d86a6943",
+          "verified": true
+        },
+        {
+          "query": 33,
+          "result": 10,
+          "input_sha256": "49a34b9417f56c1713b09d014a64e0801aedcee64090b55aba093c3a45eeb729",
+          "verified": true
+        },
+        {
+          "query": 48,
+          "result": 20,
+          "input_sha256": "dc45b4a14d0292d15837cf567b1d869260baeddd8f8ad267c4db4c78f9b96a52",
+          "proof_sha256": "a7aa5caaa0605807119e5e04049a39033cc55fe233a735bd7a5b63b19505f899",
+          "verified": true
+        },
+        {
+          "query": 49,
+          "result": 10,
+          "input_sha256": "4d6a99c3a847c686f9bea7f171cc314b12ef5927ddc650413b9c99731a5b7823",
+          "verified": true
+        }
+      ]
+    },
+    {
+      "quota": 1048576,
+      "repeat": 0,
+      "command": [
+        "/Users/msharpe/python/bsat/competition/c/bin/checkpoint_service_debug",
+        "64"
+      ],
+      "summary": {
+        "complete": true,
+        "fixed": false,
+        "queries": 64,
+        "checkpoints": 0,
+        "solve_cpu": 0.029455838,
+        "checkpoint_cpu": 0.0,
+        "peak_journal": 19013
+      },
+      "queries": [
+        {
+          "query": 0,
+          "regime": 1,
+          "result": 20,
+          "journal": 189,
+          "reserve": 65536,
+          "conflicts": 28
+        },
+        {
+          "query": 1,
+          "regime": 1,
+          "result": 10,
+          "journal": 189,
+          "reserve": 65536,
+          "conflicts": 0
+        },
+        {
+          "query": 2,
+          "regime": 1,
+          "result": 20,
+          "journal": 192,
+          "reserve": 65536,
+          "conflicts": 0
+        },
+        {
+          "query": 3,
+          "regime": 1,
+          "result": 10,
+          "journal": 192,
+          "reserve": 65536,
+          "conflicts": 0
+        },
+        {
+          "query": 4,
+          "regime": 1,
+          "result": 20,
+          "journal": 195,
+          "reserve": 65536,
+          "conflicts": 0
+        },
+        {
+          "query": 5,
+          "regime": 1,
+          "result": 10,
+          "journal": 195,
+          "reserve": 65536,
+          "conflicts": 0
+        },
+        {
+          "query": 6,
+          "regime": 1,
+          "result": 20,
+          "journal": 198,
+          "reserve": 65536,
+          "conflicts": 0
+        },
+        {
+          "query": 7,
+          "regime": 1,
+          "result": 10,
+          "journal": 198,
+          "reserve": 65536,
+          "conflicts": 0
+        },
+        {
+          "query": 8,
+          "regime": 1,
+          "result": 20,
+          "journal": 201,
+          "reserve": 65536,
+          "conflicts": 0
+        },
+        {
+          "query": 9,
+          "regime": 1,
+          "result": 10,
+          "journal": 201,
+          "reserve": 65536,
+          "conflicts": 0
+        },
+        {
+          "query": 10,
+          "regime": 1,
+          "result": 20,
+          "journal": 204,
+          "reserve": 65536,
+          "conflicts": 0
+        },
+        {
+          "query": 11,
+          "regime": 1,
+          "result": 10,
+          "journal": 204,
+          "reserve": 65536,
+          "conflicts": 0
+        },
+        {
+          "query": 12,
+          "regime": 1,
+          "result": 20,
+          "journal": 207,
+          "reserve": 65536,
+          "conflicts": 0
+        },
+        {
+          "query": 13,
+          "regime": 1,
+          "result": 10,
+          "journal": 207,
+          "reserve": 65536,
+          "conflicts": 0
+        },
+        {
+          "query": 14,
+          "regime": 1,
+          "result": 20,
+          "journal": 210,
+          "reserve": 65536,
+          "conflicts": 0
+        },
+        {
+          "query": 15,
+          "regime": 1,
+          "result": 10,
+          "journal": 210,
+          "reserve": 65536,
+          "conflicts": 0
+        },
+        {
+          "query": 16,
+          "regime": 2,
+          "result": 20,
+          "journal": 1549,
+          "reserve": 65536,
+          "conflicts": 138
+        },
+        {
+          "query": 17,
+          "regime": 2,
+          "result": 10,
+          "journal": 1549,
+          "reserve": 65536,
+          "conflicts": 0
+        },
+        {
+          "query": 18,
+          "regime": 2,
+          "result": 20,
+          "journal": 1553,
+          "reserve": 65536,
+          "conflicts": 0
+        },
+        {
+          "query": 19,
+          "regime": 2,
+          "result": 10,
+          "journal": 1553,
+          "reserve": 65536,
+          "conflicts": 0
+        },
+        {
+          "query": 20,
+          "regime": 2,
+          "result": 20,
+          "journal": 1557,
+          "reserve": 65536,
+          "conflicts": 0
+        },
+        {
+          "query": 21,
+          "regime": 2,
+          "result": 10,
+          "journal": 1557,
+          "reserve": 65536,
+          "conflicts": 0
+        },
+        {
+          "query": 22,
+          "regime": 2,
+          "result": 20,
+          "journal": 1561,
+          "reserve": 65536,
+          "conflicts": 0
+        },
+        {
+          "query": 23,
+          "regime": 2,
+          "result": 10,
+          "journal": 1561,
+          "reserve": 65536,
+          "conflicts": 0
+        },
+        {
+          "query": 24,
+          "regime": 2,
+          "result": 20,
+          "journal": 1565,
+          "reserve": 65536,
+          "conflicts": 0
+        },
+        {
+          "query": 25,
+          "regime": 2,
+          "result": 10,
+          "journal": 1565,
+          "reserve": 65536,
+          "conflicts": 0
+        },
+        {
+          "query": 26,
+          "regime": 2,
+          "result": 20,
+          "journal": 1569,
+          "reserve": 65536,
+          "conflicts": 0
+        },
+        {
+          "query": 27,
+          "regime": 2,
+          "result": 10,
+          "journal": 1569,
+          "reserve": 65536,
+          "conflicts": 0
+        },
+        {
+          "query": 28,
+          "regime": 2,
+          "result": 20,
+          "journal": 1573,
+          "reserve": 65536,
+          "conflicts": 0
+        },
+        {
+          "query": 29,
+          "regime": 2,
+          "result": 10,
+          "journal": 1573,
+          "reserve": 65536,
+          "conflicts": 0
+        },
+        {
+          "query": 30,
+          "regime": 2,
+          "result": 20,
+          "journal": 1577,
+          "reserve": 65536,
+          "conflicts": 0
+        },
+        {
+          "query": 31,
+          "regime": 2,
+          "result": 10,
+          "journal": 1577,
+          "reserve": 65536,
+          "conflicts": 0
+        },
+        {
+          "query": 32,
+          "regime": 3,
+          "result": 20,
+          "journal": 16445,
+          "reserve": 65536,
+          "conflicts": 665
+        },
+        {
+          "query": 33,
+          "regime": 3,
+          "result": 10,
+          "journal": 16445,
+          "reserve": 65536,
+          "conflicts": 0
+        },
+        {
+          "query": 34,
+          "regime": 3,
+          "result": 20,
+          "journal": 16451,
+          "reserve": 65536,
+          "conflicts": 0
+        },
+        {
+          "query": 35,
+          "regime": 3,
+          "result": 10,
+          "journal": 16451,
+          "reserve": 65536,
+          "conflicts": 0
+        },
+        {
+          "query": 36,
+          "regime": 3,
+          "result": 20,
+          "journal": 16457,
+          "reserve": 65536,
+          "conflicts": 0
+        },
+        {
+          "query": 37,
+          "regime": 3,
+          "result": 10,
+          "journal": 16457,
+          "reserve": 65536,
+          "conflicts": 0
+        },
+        {
+          "query": 38,
+          "regime": 3,
+          "result": 20,
+          "journal": 16463,
+          "reserve": 65536,
+          "conflicts": 0
+        },
+        {
+          "query": 39,
+          "regime": 3,
+          "result": 10,
+          "journal": 16463,
+          "reserve": 65536,
+          "conflicts": 0
+        },
+        {
+          "query": 40,
+          "regime": 3,
+          "result": 20,
+          "journal": 16469,
+          "reserve": 65536,
+          "conflicts": 0
+        },
+        {
+          "query": 41,
+          "regime": 3,
+          "result": 10,
+          "journal": 16469,
+          "reserve": 65536,
+          "conflicts": 0
+        },
+        {
+          "query": 42,
+          "regime": 3,
+          "result": 20,
+          "journal": 16475,
+          "reserve": 65536,
+          "conflicts": 0
+        },
+        {
+          "query": 43,
+          "regime": 3,
+          "result": 10,
+          "journal": 16475,
+          "reserve": 65536,
+          "conflicts": 0
+        },
+        {
+          "query": 44,
+          "regime": 3,
+          "result": 20,
+          "journal": 16481,
+          "reserve": 65536,
+          "conflicts": 0
+        },
+        {
+          "query": 45,
+          "regime": 3,
+          "result": 10,
+          "journal": 16481,
+          "reserve": 65536,
+          "conflicts": 0
+        },
+        {
+          "query": 46,
+          "regime": 3,
+          "result": 20,
+          "journal": 16487,
+          "reserve": 65536,
+          "conflicts": 0
+        },
+        {
+          "query": 47,
+          "regime": 3,
+          "result": 10,
+          "journal": 16487,
+          "reserve": 65536,
+          "conflicts": 0
+        },
+        {
+          "query": 48,
+          "regime": 4,
+          "result": 20,
+          "journal": 18957,
+          "reserve": 65536,
+          "conflicts": 140
+        },
+        {
+          "query": 49,
+          "regime": 4,
+          "result": 10,
+          "journal": 18957,
+          "reserve": 65536,
+          "conflicts": 0
+        },
+        {
+          "query": 50,
+          "regime": 4,
+          "result": 20,
+          "journal": 18965,
+          "reserve": 65536,
+          "conflicts": 0
+        },
+        {
+          "query": 51,
+          "regime": 4,
+          "result": 10,
+          "journal": 18965,
+          "reserve": 65536,
+          "conflicts": 0
+        },
+        {
+          "query": 52,
+          "regime": 4,
+          "result": 20,
+          "journal": 18973,
+          "reserve": 65536,
+          "conflicts": 0
+        },
+        {
+          "query": 53,
+          "regime": 4,
+          "result": 10,
+          "journal": 18973,
+          "reserve": 65536,
+          "conflicts": 0
+        },
+        {
+          "query": 54,
+          "regime": 4,
+          "result": 20,
+          "journal": 18981,
+          "reserve": 65536,
+          "conflicts": 0
+        },
+        {
+          "query": 55,
+          "regime": 4,
+          "result": 10,
+          "journal": 18981,
+          "reserve": 65536,
+          "conflicts": 0
+        },
+        {
+          "query": 56,
+          "regime": 4,
+          "result": 20,
+          "journal": 18989,
+          "reserve": 65536,
+          "conflicts": 0
+        },
+        {
+          "query": 57,
+          "regime": 4,
+          "result": 10,
+          "journal": 18989,
+          "reserve": 65536,
+          "conflicts": 0
+        },
+        {
+          "query": 58,
+          "regime": 4,
+          "result": 20,
+          "journal": 18997,
+          "reserve": 65536,
+          "conflicts": 0
+        },
+        {
+          "query": 59,
+          "regime": 4,
+          "result": 10,
+          "journal": 18997,
+          "reserve": 65536,
+          "conflicts": 0
+        },
+        {
+          "query": 60,
+          "regime": 4,
+          "result": 20,
+          "journal": 19005,
+          "reserve": 65536,
+          "conflicts": 0
+        },
+        {
+          "query": 61,
+          "regime": 4,
+          "result": 10,
+          "journal": 19005,
+          "reserve": 65536,
+          "conflicts": 0
+        },
+        {
+          "query": 62,
+          "regime": 4,
+          "result": 20,
+          "journal": 19013,
+          "reserve": 65536,
+          "conflicts": 0
+        },
+        {
+          "query": 63,
+          "regime": 4,
+          "result": 10,
+          "journal": 19013,
+          "reserve": 65536,
+          "conflicts": 0
+        }
+      ],
+      "exports": [
+        {
+          "query": 0,
+          "result": 20,
+          "input_sha256": "1b2caffa3b12b630e434d8646ed9d9b8a694329502fd0e5f639a65708eeb7a4f",
+          "proof_sha256": "5b53f1ab8cac5b22c5cd6bcb630d1a2085af9f201331c94d72b5a9e293031322",
+          "verified": true
+        },
+        {
+          "query": 1,
+          "result": 10,
+          "input_sha256": "b69476c98acc7a15863a45cefd85db9e525e07fc165780ed8cb0b931251d797a",
+          "verified": true
+        },
+        {
+          "query": 16,
+          "result": 20,
+          "input_sha256": "cf11c250fc14df39ec7287e2944e0b127ed6263be4c321a6225a12f91e576796",
+          "proof_sha256": "eea69f1563327cf49133f1a154306a78aabd8ade13a8afde34036461438e65fa",
+          "verified": true
+        },
+        {
+          "query": 17,
+          "result": 10,
+          "input_sha256": "e023f132e210dbf28354680d4f912f7598fcbd6224b7ced496017002a215c97a",
+          "verified": true
+        },
+        {
+          "query": 32,
+          "result": 20,
+          "input_sha256": "b9ef5f36ae55405f2af0a733a11520cf61e3fe501957969899553c4c6977327d",
+          "proof_sha256": "0b768820b070234ef9c837f538cfbf3c6f12dac01b1dfa70fae3fc50d86a6943",
+          "verified": true
+        },
+        {
+          "query": 33,
+          "result": 10,
+          "input_sha256": "49a34b9417f56c1713b09d014a64e0801aedcee64090b55aba093c3a45eeb729",
+          "verified": true
+        },
+        {
+          "query": 48,
+          "result": 20,
+          "input_sha256": "dc45b4a14d0292d15837cf567b1d869260baeddd8f8ad267c4db4c78f9b96a52",
+          "proof_sha256": "8018a3dae73c26874d9ca16f644c31017d0e05a5b3ff4ff2d6e1f7ac33a4c1ce",
+          "verified": true
+        },
+        {
+          "query": 49,
+          "result": 10,
+          "input_sha256": "4d6a99c3a847c686f9bea7f171cc314b12ef5927ddc650413b9c99731a5b7823",
+          "verified": true
+        }
+      ]
+    },
+    {
+      "quota": 1048576,
+      "repeat": 0,
+      "command": [
+        "/Users/msharpe/python/bsat/competition/c/bin/checkpoint_service_debug",
+        "64",
+        "f"
+      ],
+      "summary": {
+        "complete": true,
+        "fixed": true,
+        "queries": 64,
+        "checkpoints": 8,
+        "solve_cpu": 0.261248546,
+        "checkpoint_cpu": 0.003215,
+        "peak_journal": 18583
+      },
+      "queries": [
+        {
+          "query": 0,
+          "regime": 1,
+          "result": 20,
+          "journal": 189,
+          "reserve": 65536,
+          "conflicts": 28
+        },
+        {
+          "query": 1,
+          "regime": 1,
+          "result": 10,
+          "journal": 189,
+          "reserve": 65536,
+          "conflicts": 0
+        },
+        {
+          "query": 2,
+          "regime": 1,
+          "result": 20,
+          "journal": 192,
+          "reserve": 65536,
+          "conflicts": 0
+        },
+        {
+          "query": 3,
+          "regime": 1,
+          "result": 10,
+          "journal": 192,
+          "reserve": 65536,
+          "conflicts": 0
+        },
+        {
+          "query": 4,
+          "regime": 1,
+          "result": 20,
+          "journal": 195,
+          "reserve": 65536,
+          "conflicts": 0
+        },
+        {
+          "query": 5,
+          "regime": 1,
+          "result": 10,
+          "journal": 195,
+          "reserve": 65536,
+          "conflicts": 0
+        },
+        {
+          "query": 6,
+          "regime": 1,
+          "result": 20,
+          "journal": 198,
+          "reserve": 65536,
+          "conflicts": 0
+        },
+        {
+          "query": 7,
+          "regime": 1,
+          "result": 10,
+          "journal": 198,
+          "reserve": 65536,
+          "conflicts": 0
+        },
+        {
+          "query": 8,
+          "regime": 1,
+          "result": 20,
+          "journal": 201,
+          "reserve": 65536,
+          "conflicts": 0
+        },
+        {
+          "query": 9,
+          "regime": 1,
+          "result": 10,
+          "journal": 201,
+          "reserve": 65536,
+          "conflicts": 0
+        },
+        {
+          "query": 10,
+          "regime": 1,
+          "result": 20,
+          "journal": 204,
+          "reserve": 65536,
+          "conflicts": 0
+        },
+        {
+          "query": 11,
+          "regime": 1,
+          "result": 10,
+          "journal": 204,
+          "reserve": 65536,
+          "conflicts": 0
+        },
+        {
+          "query": 12,
+          "regime": 1,
+          "result": 20,
+          "journal": 207,
+          "reserve": 65536,
+          "conflicts": 0
+        },
+        {
+          "query": 13,
+          "regime": 1,
+          "result": 10,
+          "journal": 207,
+          "reserve": 65536,
+          "conflicts": 0
+        },
+        {
+          "query": 14,
+          "regime": 1,
+          "result": 20,
+          "journal": 210,
+          "reserve": 65536,
+          "conflicts": 0
+        },
+        {
+          "query": 15,
+          "regime": 1,
+          "result": 10,
+          "journal": 210,
+          "reserve": 65536,
+          "conflicts": 0
+        },
+        {
+          "query": 16,
+          "regime": 2,
+          "result": 20,
+          "journal": 1549,
+          "reserve": 65536,
+          "conflicts": 138
+        },
+        {
+          "query": 17,
+          "regime": 2,
+          "result": 10,
+          "journal": 1549,
+          "reserve": 65536,
+          "conflicts": 0
+        },
+        {
+          "query": 18,
+          "regime": 2,
+          "result": 20,
+          "journal": 1553,
+          "reserve": 65536,
+          "conflicts": 0
+        },
+        {
+          "query": 19,
+          "regime": 2,
+          "result": 10,
+          "journal": 1553,
+          "reserve": 65536,
+          "conflicts": 0
+        },
+        {
+          "query": 20,
+          "regime": 2,
+          "result": 20,
+          "journal": 1557,
+          "reserve": 65536,
+          "conflicts": 0
+        },
+        {
+          "query": 21,
+          "regime": 2,
+          "result": 10,
+          "journal": 1557,
+          "reserve": 65536,
+          "conflicts": 0
+        },
+        {
+          "query": 22,
+          "regime": 2,
+          "result": 20,
+          "journal": 1561,
+          "reserve": 65536,
+          "conflicts": 0
+        },
+        {
+          "query": 23,
+          "regime": 2,
+          "result": 10,
+          "journal": 1561,
+          "reserve": 65536,
+          "conflicts": 0
+        },
+        {
+          "query": 24,
+          "regime": 2,
+          "result": 20,
+          "journal": 1565,
+          "reserve": 65536,
+          "conflicts": 0
+        },
+        {
+          "query": 25,
+          "regime": 2,
+          "result": 10,
+          "journal": 1565,
+          "reserve": 65536,
+          "conflicts": 0
+        },
+        {
+          "query": 26,
+          "regime": 2,
+          "result": 20,
+          "journal": 1569,
+          "reserve": 65536,
+          "conflicts": 0
+        },
+        {
+          "query": 27,
+          "regime": 2,
+          "result": 10,
+          "journal": 1569,
+          "reserve": 65536,
+          "conflicts": 0
+        },
+        {
+          "query": 28,
+          "regime": 2,
+          "result": 20,
+          "journal": 1573,
+          "reserve": 65536,
+          "conflicts": 0
+        },
+        {
+          "query": 29,
+          "regime": 2,
+          "result": 10,
+          "journal": 1573,
+          "reserve": 65536,
+          "conflicts": 0
+        },
+        {
+          "query": 30,
+          "regime": 2,
+          "result": 20,
+          "journal": 1577,
+          "reserve": 65536,
+          "conflicts": 0
+        },
+        {
+          "query": 31,
+          "regime": 2,
+          "result": 10,
+          "journal": 1577,
+          "reserve": 65536,
+          "conflicts": 0
+        },
+        {
+          "query": 32,
+          "regime": 3,
+          "result": 20,
+          "journal": 16445,
+          "reserve": 65536,
+          "conflicts": 665
+        },
+        {
+          "query": 33,
+          "regime": 3,
+          "result": 10,
+          "journal": 0,
+          "reserve": 65536,
+          "conflicts": 0
+        },
+        {
+          "query": 34,
+          "regime": 3,
+          "result": 20,
+          "journal": 18583,
+          "reserve": 65536,
+          "conflicts": 834
+        },
+        {
+          "query": 35,
+          "regime": 3,
+          "result": 10,
+          "journal": 0,
+          "reserve": 65536,
+          "conflicts": 0
+        },
+        {
+          "query": 36,
+          "regime": 3,
+          "result": 20,
+          "journal": 18583,
+          "reserve": 65536,
+          "conflicts": 834
+        },
+        {
+          "query": 37,
+          "regime": 3,
+          "result": 10,
+          "journal": 0,
+          "reserve": 65536,
+          "conflicts": 0
+        },
+        {
+          "query": 38,
+          "regime": 3,
+          "result": 20,
+          "journal": 18583,
+          "reserve": 65536,
+          "conflicts": 834
+        },
+        {
+          "query": 39,
+          "regime": 3,
+          "result": 10,
+          "journal": 0,
+          "reserve": 65536,
+          "conflicts": 0
+        },
+        {
+          "query": 40,
+          "regime": 3,
+          "result": 20,
+          "journal": 18583,
+          "reserve": 65536,
+          "conflicts": 834
+        },
+        {
+          "query": 41,
+          "regime": 3,
+          "result": 10,
+          "journal": 0,
+          "reserve": 65536,
+          "conflicts": 0
+        },
+        {
+          "query": 42,
+          "regime": 3,
+          "result": 20,
+          "journal": 18583,
+          "reserve": 65536,
+          "conflicts": 834
+        },
+        {
+          "query": 43,
+          "regime": 3,
+          "result": 10,
+          "journal": 0,
+          "reserve": 65536,
+          "conflicts": 0
+        },
+        {
+          "query": 44,
+          "regime": 3,
+          "result": 20,
+          "journal": 18583,
+          "reserve": 65536,
+          "conflicts": 834
+        },
+        {
+          "query": 45,
+          "regime": 3,
+          "result": 10,
+          "journal": 0,
+          "reserve": 65536,
+          "conflicts": 0
+        },
+        {
+          "query": 46,
+          "regime": 3,
+          "result": 20,
+          "journal": 18583,
+          "reserve": 65536,
+          "conflicts": 834
+        },
+        {
+          "query": 47,
+          "regime": 3,
+          "result": 10,
+          "journal": 0,
+          "reserve": 65536,
+          "conflicts": 0
+        },
+        {
+          "query": 48,
+          "regime": 4,
+          "result": 20,
+          "journal": 2504,
+          "reserve": 65536,
+          "conflicts": 150
+        },
+        {
+          "query": 49,
+          "regime": 4,
+          "result": 10,
+          "journal": 2504,
+          "reserve": 65536,
+          "conflicts": 0
+        },
+        {
+          "query": 50,
+          "regime": 4,
+          "result": 20,
+          "journal": 2512,
+          "reserve": 65536,
+          "conflicts": 0
+        },
+        {
+          "query": 51,
+          "regime": 4,
+          "result": 10,
+          "journal": 2512,
+          "reserve": 65536,
+          "conflicts": 0
+        },
+        {
+          "query": 52,
+          "regime": 4,
+          "result": 20,
+          "journal": 2520,
+          "reserve": 65536,
+          "conflicts": 0
+        },
+        {
+          "query": 53,
+          "regime": 4,
+          "result": 10,
+          "journal": 2520,
+          "reserve": 65536,
+          "conflicts": 0
+        },
+        {
+          "query": 54,
+          "regime": 4,
+          "result": 20,
+          "journal": 2528,
+          "reserve": 65536,
+          "conflicts": 0
+        },
+        {
+          "query": 55,
+          "regime": 4,
+          "result": 10,
+          "journal": 2528,
+          "reserve": 65536,
+          "conflicts": 0
+        },
+        {
+          "query": 56,
+          "regime": 4,
+          "result": 20,
+          "journal": 2536,
+          "reserve": 65536,
+          "conflicts": 0
+        },
+        {
+          "query": 57,
+          "regime": 4,
+          "result": 10,
+          "journal": 2536,
+          "reserve": 65536,
+          "conflicts": 0
+        },
+        {
+          "query": 58,
+          "regime": 4,
+          "result": 20,
+          "journal": 2544,
+          "reserve": 65536,
+          "conflicts": 0
+        },
+        {
+          "query": 59,
+          "regime": 4,
+          "result": 10,
+          "journal": 2544,
+          "reserve": 65536,
+          "conflicts": 0
+        },
+        {
+          "query": 60,
+          "regime": 4,
+          "result": 20,
+          "journal": 2552,
+          "reserve": 65536,
+          "conflicts": 0
+        },
+        {
+          "query": 61,
+          "regime": 4,
+          "result": 10,
+          "journal": 2552,
+          "reserve": 65536,
+          "conflicts": 0
+        },
+        {
+          "query": 62,
+          "regime": 4,
+          "result": 20,
+          "journal": 2560,
+          "reserve": 65536,
+          "conflicts": 0
+        },
+        {
+          "query": 63,
+          "regime": 4,
+          "result": 10,
+          "journal": 2560,
+          "reserve": 65536,
+          "conflicts": 0
+        }
+      ],
+      "exports": [
+        {
+          "query": 0,
+          "result": 20,
+          "input_sha256": "1b2caffa3b12b630e434d8646ed9d9b8a694329502fd0e5f639a65708eeb7a4f",
+          "proof_sha256": "5b53f1ab8cac5b22c5cd6bcb630d1a2085af9f201331c94d72b5a9e293031322",
+          "verified": true
+        },
+        {
+          "query": 1,
+          "result": 10,
+          "input_sha256": "b69476c98acc7a15863a45cefd85db9e525e07fc165780ed8cb0b931251d797a",
+          "verified": true
+        },
+        {
+          "query": 16,
+          "result": 20,
+          "input_sha256": "cf11c250fc14df39ec7287e2944e0b127ed6263be4c321a6225a12f91e576796",
+          "proof_sha256": "eea69f1563327cf49133f1a154306a78aabd8ade13a8afde34036461438e65fa",
+          "verified": true
+        },
+        {
+          "query": 17,
+          "result": 10,
+          "input_sha256": "e023f132e210dbf28354680d4f912f7598fcbd6224b7ced496017002a215c97a",
+          "verified": true
+        },
+        {
+          "query": 32,
+          "result": 20,
+          "input_sha256": "b9ef5f36ae55405f2af0a733a11520cf61e3fe501957969899553c4c6977327d",
+          "proof_sha256": "0b768820b070234ef9c837f538cfbf3c6f12dac01b1dfa70fae3fc50d86a6943",
+          "verified": true
+        },
+        {
+          "query": 33,
+          "result": 10,
+          "input_sha256": "49a34b9417f56c1713b09d014a64e0801aedcee64090b55aba093c3a45eeb729",
+          "verified": true
+        },
+        {
+          "query": 48,
+          "result": 20,
+          "input_sha256": "dc45b4a14d0292d15837cf567b1d869260baeddd8f8ad267c4db4c78f9b96a52",
+          "proof_sha256": "a7aa5caaa0605807119e5e04049a39033cc55fe233a735bd7a5b63b19505f899",
+          "verified": true
+        },
+        {
+          "query": 49,
+          "result": 10,
+          "input_sha256": "4d6a99c3a847c686f9bea7f171cc314b12ef5927ddc650413b9c99731a5b7823",
+          "verified": true
+        }
+      ]
+    }
+  ],
+  "complete": true
+}

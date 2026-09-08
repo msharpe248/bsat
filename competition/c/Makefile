@@ -333,3 +333,9 @@ $(BINDIR)/application_histories_$(MODE): $(TESTDIR)/application_histories.c $(LI
 	$(CC) $(CFLAGS) -o $@ $< -L$(BINDIR) -lbsat_$(MODE) -Wl,-rpath,$(abspath $(BINDIR))
 application-histories: $(BINDIR)/application_histories_$(MODE)
 .PHONY: application-histories
+
+# Public-ABI service policy example (application code, not solver internals).
+.PHONY: checkpoint-example
+checkpoint-example: $(BINDIR)/checkpoint_service_$(MODE)
+$(BINDIR)/checkpoint_service_$(MODE): examples/checkpoint_service.c examples/checkpoint_policy.h $(filter-out $(OBJDIR)/main.o,$(OBJECTS)) | dirs
+	$(CC) $(CFLAGS) -o $@ $< $(filter-out $(OBJDIR)/main.o,$(OBJECTS)) -lm
