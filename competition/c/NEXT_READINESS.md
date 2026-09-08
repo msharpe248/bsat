@@ -14,8 +14,9 @@ performance experiments are recorded without retaining regressing runtime change
    for dedicated target-hardware evidence.
 3. Simplification candidate/work selection: pending. Implement a bounded candidate
    experiment, verify certificates, and retain only supported improvements.
-4. Verified UNSAT checking: pending. Pin DRAT-to-LRAT conversion and a formally
-   verified checker, exercise valid and deliberately corrupted certificates.
+4. Verified UNSAT checking: complete. Pinned, hash-checked cake_lpr assembly
+   accepts the original CNF plus converted LRAT. Valid, corrupted, mismatched,
+   long-search and large hardware certificates exercised; see `VERIFIED_CHECKING.md`.
 5. Continuous stateful and coverage-guided fuzzing: pending. Include input/API
    sequences, bounded independent oracles, failure artifacts and replay/shrinking.
 6. Explicit GCC/Clang coverage: pending. Run both compilers on Linux in CI without

@@ -26,6 +26,8 @@ jobs:
         run: |
           curl -Lf https://raw.githubusercontent.com/marijnheule/drat-trim/2e3b2dc0ecf938addbd779d42877b6ed69d9a985/drat-trim.c -o "$RUNNER_TEMP/drat-trim.c"
           cc -O2 "$RUNNER_TEMP/drat-trim.c" -o "$RUNNER_TEMP/drat-trim"
+      - name: Build pinned verified LRAT checker
+        run: python3 competition/c/tests/build_verified_checker.py --directory "$RUNNER_TEMP/cake-lpr"
       - name: Benchmark input regressions
         run: |
           python3 competition/c/tests/test_select_corpus.py
@@ -56,6 +58,7 @@ jobs:
           python3 competition/c/tests/check_deadlines.py --solver "$binary"
           python3 competition/c/tests/check_process_failures.py --solver "$binary"
           python3 competition/c/tests/check_long_search.py --solver "$binary" --checker "$RUNNER_TEMP/drat-trim" --output "$RUNNER_TEMP/long-search.json"
+          BSAT_SOLVER="$binary" BSAT_DRAT_TRIM="$RUNNER_TEMP/drat-trim" BSAT_CAKE_LPR="$RUNNER_TEMP/cake-lpr/cake_lpr" python3 competition/c/tests/test_verified_check.py
       - uses: actions/upload-artifact@v4
         if: failure()
         with:
