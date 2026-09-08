@@ -42,3 +42,8 @@ diagnosis text-proof runs take 1.85/1.95 seconds of CPU after versus 1.70/1.66
 before, while binary/no-proof results are closer or faster. The memory reduction
 therefore carries a possible workload-dependent throughput tradeoff; it is not
 advertised as a general speed improvement.
+
+The full 120-second follow-up and 100,000-conflict proof-format comparison are
+in `FULL_SEARCH_MEMORY.md`. Retained-capacity savings persist; peak RSS is
+variable and does not support a fixed percentage reduction. The earlier large
+short text-proof timing regression does not recur at the longer work budget.

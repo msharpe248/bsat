@@ -35,3 +35,8 @@ diagnosis, further measured memory reduction, fresh factorial confirmation,
 hard histories, conditional reuse and installation/ABI/race validation. The
 historical counts and original fallback restrictions above describe the first
 batch; current reuse behavior is documented in `INCREMENTAL_REUSE.md`.
+
+The current algorithm/service batch is tracked in
+`ALGORITHM_AND_SERVICE_MILESTONES.md`, including binary/ternary factoring,
+per-query controls/IPASIR, actual retained certificates and growing
+application histories. Historical unresolved items above are not current status.

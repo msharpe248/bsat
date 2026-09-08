@@ -1,0 +1,23 @@
+{
+  "inputs": {
+    "/Users/msharpe/python/bsat/dataset/sat_competition2025/at-least-two-sol/2925ee90763e08b2f7e79c7c713c86b9.cnf": {
+      "sha256": "64bc4ebd87e3db66d2a1847c9c7cf34ce558bee3821efcd80cc5bf9c5dca33c8"
+    }
+  },
+  "binaries": {
+    "before": {
+      "path": "/tmp/bsat-next-memory-baseline",
+      "sha256": "e91f4d3cde77c5e37ff662b075435b7e20b15fa3b2c6e5493f061e8237fad249"
+    },
+    "after": {
+      "path": "/tmp/bsat-next-memory-candidate",
+      "sha256": "6c06577a2635536c183ad14063c308bc8ced06d6a97325fe805c8760bed7a492"
+    }
+  },
+  "options": "--chrono --congruence --equiv --equiv-budget 100000000 --alternating --vmtf --accounting --time 120 --binary-proof --proof {proof}",
+  "cpu_limit": 120,
+  "wall_limit": 145,
+  "repeats": 2,
+  "seed": 2026090826,
+  "scope": "full-search 622818-variable memory comparison using identical pre/post-memory executables from the earlier experiment; no concurrent local solver/build/test loads"
+}

@@ -5,7 +5,9 @@ work fixes known wrong-answer and memory-management defects and adds independent
 certificate validation. Passing these tests does not establish production
 readiness for arbitrary workloads. See [HARDENING.md](HARDENING.md) for changes,
 validation evidence, research references, and remaining limitations.
-The latest production milestones are tracked in [PRODUCTION_GAPS.md](PRODUCTION_GAPS.md).
+The latest milestones are tracked in
+[ALGORITHM_AND_SERVICE_MILESTONES.md](ALGORITHM_AND_SERVICE_MILESTONES.md);
+[PRODUCTION_GAPS.md](PRODUCTION_GAPS.md) records earlier batches.
 Earlier acceptance checks and evaluation are in [READINESS.md](READINESS.md), with executable coverage in
 [tests/FEATURE_COVERAGE.md](tests/FEATURE_COVERAGE.md).
 
@@ -40,7 +42,7 @@ checker, tries option combinations, and minimizes failing formulas.
 
 Exit codes: 10 SAT, 20 UNSAT, 0 UNKNOWN/resource limit, 1 input/internal/I/O error.
 Every returned SAT model is checked against the retained original input. Proof
-logging covers search, minimization, probing, gate congruence, equivalence substitution, BVE, BCE
+logging covers search, minimization, probing, gate congruence, equivalence substitution, bounded factoring, BVE, BCE
 deletion and vivification;
 UNSAT certificates end with an empty clause. Text and binary DRAT are supported.
 The search algorithm is the same with proof logging enabled or disabled.
@@ -271,8 +273,9 @@ measurements and the comparison with Glucose.
 
 For production embedding, include `include/bsat.h` and build with `make shared`.
 The opaque ABI-v1 interface supports independent solver instances, copied DIMACS
-clause/assumption arrays, model/core queries, resource limits and cooperative
-cancellation. `make embedding-test soak-test` exercises a dynamically linked
+clause/assumption arrays, model/core queries, per-query limits/statistics and
+cooperative cancellation. The installed `ipasir.h` supplies the IPASIR adapter;
+see [IPASIR.md](IPASIR.md). `make embedding-test soak-test` exercises a dynamically linked
 client and larger stateful histories. See [EMBEDDING.md](EMBEDDING.md) and
 [API_CONTRACT.md](API_CONTRACT.md) for ownership, error and concurrency rules.
 
@@ -282,16 +285,23 @@ time. The CLI alone handles SIGUSR1 progress requests and environment diagnostic
 
 Opt-in `BSAT_REUSE_LEARNTS` (internal `SolverOpts.reuse_learnts`) retains learned
 clauses across compatible calls, including conditional UNSAT. Entailed congruence
-additions are compatible; reconstruction, destructive preprocessing, proof and
-interruption cases use conservative rebuild fallbacks. See
+additions are compatible; reconstruction, destructive preprocessing, ordinary
+proof streams and interruption use conservative rebuild fallbacks. See
 [INCREMENTAL_REUSE.md](INCREMENTAL_REUSE.md).
 `solver.h` remains an internal development interface with no stable structure ABI.
 Allocation/argument failures poison a handle and cannot yield a conclusive answer.
 
-The internal assumptions-plus-proof call still returns UNKNOWN. For independently
-checkable conditional certificates, [certify_query.py](tests/certify_query.py)
-binds the base, exact assumptions and augmented query in a separate artifact
-bundle. See [CONDITIONAL_CERTIFICATES.md](CONDITIONAL_CERTIFICATES.md).
+`BSAT_CERTIFICATES` and `bsat_export_query` export exact query CNFs and proof
+prefixes from the actual retained session without re-solving. See
+[RETAINED_CERTIFICATES.md](RETAINED_CERTIFICATES.md). The internal ordinary
+assumptions-plus-proof-stream call still returns UNKNOWN; the CLI-oriented
+[certify_query.py](tests/certify_query.py) fresh-solve workflow remains available.
+Growing counter/configuration histories above 4,000 variables and their independent
+oracles/certificates are documented in [APPLICATION_HISTORIES.md](APPLICATION_HISTORIES.md).
+
+Opt-in `--factor` performs proof-producing binary/ternary residual factoring.
+It closes the measured reg-n development gap but regresses another workload;
+see [FACTORING.md](FACTORING.md) for scope, correctness checks and timings.
 
 ## Measure performance
 
