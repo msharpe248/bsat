@@ -1,0 +1,191 @@
+diff --git a/.github/workflows/c-solver.yml b/.github/workflows/c-solver.yml
+index 7826eba..c3c6ab8 100644
+--- a/.github/workflows/c-solver.yml
++++ b/.github/workflows/c-solver.yml
+@@ -69,6 +69,7 @@ jobs:
+           if [ '${{ matrix.mode }}' = debug ]; then binary="${binary}_debug"; fi
+           python3 competition/c/tests/validate.py --solver "$binary" --cases 100 --checker "$RUNNER_TEMP/drat-trim"
+           python3 competition/c/tests/validate_local_search.py --solver "$binary" --checker "$RUNNER_TEMP/drat-trim"
++          BSAT_DRAT_TRIM="$RUNNER_TEMP/drat-trim" BSAT_CAKE_LPR="$RUNNER_TEMP/cake-lpr/cake_lpr" python3 competition/c/tests/check_phase_certificates.py --solver "$binary" --output "$RUNNER_TEMP/phase-certificates.json"
+           python3 competition/c/tests/check_deadlines.py --solver "$binary"
+           python3 competition/c/tests/check_process_failures.py --solver "$binary"
+           python3 competition/c/tests/check_long_search.py --solver "$binary" --checker "$RUNNER_TEMP/drat-trim" --output "$RUNNER_TEMP/long-search.json"
+diff --git a/competition/c/include/solver.h b/competition/c/include/solver.h
+index 665754a..0da74d7 100644
+--- a/competition/c/include/solver.h
++++ b/competition/c/include/solver.h
+@@ -69,6 +69,8 @@ typedef struct SolverOpts {
+     bool     random_phase;       // Use random phase selection (false)
+     double   random_phase_prob;  // Probability of random phase (0.01)
+     bool     adaptive_random;    // Enable when stuck (true)
++    bool     rephase_refresh;    // Experimental: expire target after each rephase
++    bool     rephase_diversify;  // Experimental: invert saved phases every third event
+     bool     rephase;            // Enable periodic rephasing (true)
+     uint32_t rephase_interval;   // Conflicts between rephases (1000)
+ 
+diff --git a/competition/c/src/main.c b/competition/c/src/main.c
+index 6e02a57..67768da 100644
+--- a/competition/c/src/main.c
++++ b/competition/c/src/main.c
+@@ -118,6 +118,8 @@ static void print_usage(const char* program) {
+     printf("  --random-phase            Enable random phase selection (default: off)\n");
+     printf("  --no-random-phase         Disable random phase selection\n");
+     printf("  --random-prob <f>         Probability when random phases are enabled (0.01)\n");
++    printf("  --rephase-refresh         Expire target records at each rephase (experimental)\n");
++    printf("  --rephase-diversify       Refresh and invert phases every third event\n");
+     printf("  --no-rephase              Disable target phase rephasing\n");
+     printf("  --rephase-interval <n>    Conflicts between rephases (default: 1000)\n");
+     printf("\n");
+@@ -220,6 +222,8 @@ static struct option long_options[] = {
+     {"random-phase",    no_argument,       0, 0},
+     {"no-random-phase", no_argument,       0, 0},
+     {"random-prob",     required_argument, 0, 0},
++    {"rephase-refresh", no_argument,       0, 0},
++    {"rephase-diversify", no_argument,     0, 0},
+     {"no-rephase",      no_argument,       0, 0},
+     {"rephase-interval", required_argument, 0, 0},
+     {"max-lbd",         required_argument, 0, 0},
+@@ -429,6 +433,10 @@ int main(int argc, char** argv) {
+                     opts.random_phase = false;
+                 } else if (strcmp(long_options[option_index].name, "random-prob") == 0) {
+                     opts.random_phase_prob = atof(optarg);
++                } else if (strcmp(long_options[option_index].name, "rephase-refresh") == 0) {
++                    opts.rephase_refresh = true;
++                } else if (strcmp(long_options[option_index].name, "rephase-diversify") == 0) {
++                    opts.rephase_refresh = opts.rephase_diversify = true;
+                 } else if (strcmp(long_options[option_index].name, "no-rephase") == 0) {
+                     opts.rephase = false;
+                 } else if (strcmp(long_options[option_index].name, "rephase-interval") == 0) {
+diff --git a/competition/c/src/solver.c b/competition/c/src/solver.c
+index fba6207..2756b94 100644
+--- a/competition/c/src/solver.c
++++ b/competition/c/src/solver.c
+@@ -212,7 +212,7 @@ SolverOpts default_opts(void) {
+         .random_phase = false,         // Opt-in reproducible diversification
+         .random_phase_prob = 0.01,     // 1% random decisions
+         .adaptive_random = true,
+-        .rephase = true,               // Kissat-style target phase rephasing
++        .rephase = true,               // Target phase rephasing
+         .rephase_interval = 1000,      // Rephase every 1000 conflicts
+ 
+         .max_lbd = 30,
+@@ -1381,12 +1381,12 @@ bool solver_decide(Solver* s) {
+ }
+ 
+ /*********************************************************************
+- * Target Phases / Rephasing (Kissat-style)
++ * Target Phase Hints / Rephasing
+  *********************************************************************/
+ 
+ /**
+- * Save current assignment as best if we've assigned more variables than ever before.
+- * This tracks the assignment that got closest to a solution.
++ * Save a longer partial assignment than the current target record.
++ * Experimental refresh policies reset this record at rephase boundaries.
+  */
+ void solver_maybe_save_best_phases(Solver* s) {
+     if (!s->opts.rephase || !s->rephase.best_phase) return;
+@@ -1415,18 +1415,25 @@ void solver_maybe_save_best_phases(Solver* s) {
+ }
+ 
+ /**
+- * Perform rephasing: reset saved phases to best phases seen so far.
+- * This helps break out of local search areas.
++ * Reapply target hints; optional policies expire or diversify them.
+  */
+ static void solver_rephase(Solver* s) {
+     if (!s->opts.rephase || !s->rephase.best_phase) return;
+ 
+-    // Copy best phases to saved polarities
++    bool diversify = s->opts.rephase_diversify && s->rephase.rephase_count % 3 == 2;
++    // These are decision hints only; assignments and reasons are untouched.
+     for (Var v = 1; v <= s->num_vars; v++) {
+-        if (s->rephase.best_phase[v] != UNDEF)
++        if (diversify) s->vars[v].polarity = !s->vars[v].polarity;
++        else if (s->rephase.best_phase[v] != UNDEF)
+             s->vars[v].polarity = s->rephase.best_phase[v] == TRUE;
+     }
+ 
++    if (s->opts.rephase_refresh || s->opts.rephase_diversify) {
++        memset(s->rephase.best_phase, 0, (s->num_vars + 1) * sizeof *s->rephase.best_phase);
++        s->stats.target_cleared += (uint64_t)s->num_vars + 1;
++        s->rephase.best_trail_size = 0;
++        s->rephase.best_prefix_valid = false;
++    }
+     s->rephase.conflicts_since = 0;
+     s->rephase.rephase_count++;
+ 
+diff --git a/competition/c/tests/fuzz_api.c b/competition/c/tests/fuzz_api.c
+index 20da946..7e1f9d4 100644
+--- a/competition/c/tests/fuzz_api.c
++++ b/competition/c/tests/fuzz_api.c
+@@ -27,6 +27,7 @@ int LLVMFuzzerTestOneInput(const uint8_t *data,size_t size) {
+     SolverOpts o=default_opts();o.probing=data[0]&1;o.equiv=data[0]&2;
+     o.congruence=data[0]&4;o.elim=data[0]&8;o.bce=data[0]&16;
+     o.chrono=data[0]&32;o.chrono_levels=0;o.vmtf=data[0]&64;
++    o.rephase_refresh=data[1]&16;o.rephase_diversify=data[1]&32;o.rephase_interval=1;
+     o.reuse_learnts=data[2]&128;
+     o.factor=data[2]&64;
+     o.factor_min_gain=1+((data[1]>>1)&7);
+diff --git a/competition/c/tests/test_incremental_reuse.c b/competition/c/tests/test_incremental_reuse.c
+index 5e4d2ab..0f75a2f 100644
+--- a/competition/c/tests/test_incremental_reuse.c
++++ b/competition/c/tests/test_incremental_reuse.c
+@@ -70,6 +70,7 @@ int main(void) {
+     for(unsigned seed=1;seed<=128;++seed) {
+         SolverOpts o=default_opts();o.reuse_learnts=true;o.probing=seed&1;
+         o.probe_on_change=seed&64;
++        o.rephase_refresh=seed&1;o.rephase_diversify=seed&2;o.rephase_interval=1;
+         o.chrono=seed&2;o.chrono_levels=0;o.vmtf=seed&4;o.lrb=(seed&8)&&!o.vmtf;
+         if(seed&16)o.equiv=true; /* compatible state or reconstruction fallback */
+         if(seed&32)o.congruence=true;
+diff --git a/competition/c/tests/test_rephase.c b/competition/c/tests/test_rephase.c
+index 57b2b5e..d52131f 100644
+--- a/competition/c/tests/test_rephase.c
++++ b/competition/c/tests/test_rephase.c
+@@ -2,7 +2,30 @@
+ #include <assert.h>
+ #include <stdio.h>
+ 
++static void refresh_policy(void) {
++    for (unsigned diversify = 0; diversify < 2; ++diversify) {
++        SolverOpts o = default_opts();o.probing = false;o.rephase_refresh = true;
++        o.rephase_diversify = diversify;o.rephase_interval = 1;o.max_decisions = 1;
++        Solver *s = solver_new_with_opts(&o);assert(s);
++        for (unsigned v = 1; v <= 4; ++v) assert(solver_new_var(s) == v);
++        s->rephase.best_phase[1] = FALSE;s->rephase.best_trail_size = 4;
++        s->rephase.best_prefix_valid = false;s->rephase.rephase_count = 2;
++        s->stats.conflicts = 1;
++        assert(solver_solve(s) == UNDEF && !s->error);
++        assert(s->rephase.rephase_count == 3);
++        assert(s->rephase.best_trail_size < 4); // Old record no longer gates updates.
++        Var v = var(s->trail[0].lit);
++        assert(s->values[v] == (diversify ? TRUE : FALSE));
++        assert(s->vars[v].reason == INVALID_CLAUSE);
++        solver_backtrack(s, 0);
++        assert(solver_decide(s));solver_maybe_save_best_phases(s);
++        assert(s->rephase.best_trail_size == 1);
++        solver_free(s);
++    }
++}
++
+ int main(void) {
++    refresh_policy();
+     const bool initial[] = {false, false, true, true, false};
+     unsigned cases = 0;
+     for (unsigned queue = 0; queue < 2; ++queue)
+diff --git a/competition/c/tests/validate.py b/competition/c/tests/validate.py
+index 6778bce..d2ce657 100644
+--- a/competition/c/tests/validate.py
++++ b/competition/c/tests/validate.py
+@@ -238,7 +238,9 @@ def main():
+                 ['--lrb', '--reuse-trail', '--no-probing'],
+                 ['--lrb', '--equiv', '--elim', '--bce'],
+                 ['--lrb', '--alternating'], ['--lrb', '--vmtf']]
+-    configs += [['--rephase-interval', '1', '--no-probing'],
++    configs += [['--rephase-refresh', '--rephase-interval', '1', '--no-probing'],
++                ['--rephase-diversify', '--rephase-interval', '1', '--alternating', '--binary-proof'],
++                ['--rephase-interval', '1', '--no-probing'],
+                 ['--no-rephase', '--no-probing'],
+                 ['--rephase-interval', '1', '--alternating'],
+                 ['--rephase-interval', '1', '--vmtf', '--binary-proof']]
