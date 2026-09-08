@@ -351,3 +351,10 @@ $(BINDIR)/recovery_supervisor_$(MODE): examples/recovery_supervisor.c examples/r
 	$(CC) $(CFLAGS) -o $@ $< $(filter-out $(OBJDIR)/main.o,$(OBJECTS)) -lm
 recovery-example: $(BINDIR)/recovery_supervisor_$(MODE)
 .PHONY: recovery-example
+
+# Separate test facade, never linked into LIBRARY or package targets.
+DIAGNOSTIC_LIBRARY = $(subst libbsat_,libquery_diagnostics_,$(LIBRARY))
+$(DIAGNOSTIC_LIBRARY): tests/query_diagnostics.c src/bsat.c $(filter-out build/lib-$(MODE)/bsat.o,$(LIB_OBJECTS)) | dirs
+	$(CC) $(CFLAGS) -fPIC -fvisibility=hidden $(subst libbsat_,libquery_diagnostics_,$(SHARED_FLAGS)) -o $@ $< $(filter %.o,$^) -lm
+query-diagnostics: $(DIAGNOSTIC_LIBRARY)
+.PHONY: query-diagnostics

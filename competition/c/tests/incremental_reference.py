@@ -3,7 +3,7 @@ import ctypes as C
 import time
 
 class Reference:
-    def __init__(self, path):
+    def __init__(self, path, cpu_seconds=0, wall_seconds=10):
         self.lib=C.CDLL(str(path));lib=self.lib
         signatures={'init':([],C.c_void_p),'release':([C.c_void_p],None),
                     'add':([C.c_void_p,C.c_int],None),'assume':([C.c_void_p,C.c_int],None),
@@ -14,10 +14,11 @@ class Reference:
         self.s=lib.ipasir_init();assert self.s
         self.signature=lib.ipasir_signature().decode()
         self.stop=False;self.calls=0;self.deadline=0
+        self.cpu_seconds=cpu_seconds;self.wall_seconds=wall_seconds;self.cpu_deadline=0
         self.Callback=C.CFUNCTYPE(C.c_int,C.c_void_p)
         def terminate(_):
             self.calls+=1
-            return self.stop or time.monotonic()>=self.deadline
+            return self.stop or time.monotonic()>=self.deadline or (self.cpu_seconds and time.thread_time()>=self.cpu_deadline)
         self.callback=self.Callback(terminate)
         lib.ipasir_set_terminate.argtypes=[C.c_void_p,C.c_void_p,self.Callback]
         lib.ipasir_set_terminate.restype=None
@@ -26,7 +27,8 @@ class Reference:
         for lit in clause:self.lib.ipasir_add(self.s,lit)
         self.lib.ipasir_add(self.s,0)
     def solve(self,assumptions):
-        self.deadline=time.monotonic()+10
+        self.deadline=time.monotonic()+self.wall_seconds
+        self.cpu_deadline=time.thread_time()+self.cpu_seconds
         for lit in assumptions:self.lib.ipasir_assume(self.s,lit)
         return self.lib.ipasir_solve(self.s)
     def model(self,n):
