@@ -1,0 +1,222 @@
+diff --git a/competition/c/include/solver.h b/competition/c/include/solver.h
+index cf4f9ee..e577c95 100644
+--- a/competition/c/include/solver.h
++++ b/competition/c/include/solver.h
+@@ -112,0 +113 @@ typedef struct SolverOpts {
++    bool work_modes;           // Match stable work to the preceding focused phase
+@@ -224,0 +226 @@ typedef struct Solver {
++        uint64_t work_mode_switches;
+@@ -314,0 +317 @@ typedef struct Solver {
++    uint64_t mode_work_start, mode_work_limit, mode_span;
+diff --git a/competition/c/src/main.c b/competition/c/src/main.c
+index 5974adf..a5751b6 100644
+--- a/competition/c/src/main.c
++++ b/competition/c/src/main.c
+@@ -90,0 +91 @@ static void print_usage(const char* program) {
++    printf("  --work-modes             Bound stable work by prior focused work; enables alternating\n");
+@@ -183,0 +185 @@ static struct option long_options[] = {
++    {"work-modes", no_argument, 0, 0},
+@@ -279,0 +282,3 @@ int main(int argc, char** argv) {
++                } else if (strcmp(long_options[option_index].name, "work-modes") == 0) {
++                    opts.work_modes = true;
++                    opts.alternating = true;
+diff --git a/competition/c/src/solver.c b/competition/c/src/solver.c
+index ac2a95d..bba7924 100644
+--- a/competition/c/src/solver.c
++++ b/competition/c/src/solver.c
+@@ -462,0 +463 @@ Solver* solver_new_with_opts(const SolverOpts* opts) {
++    s->mode_span = 1000;
+@@ -870,0 +872 @@ void solver_print_stats(const Solver* s) {
++    printf("c Work mode switches: %llu\n", (unsigned long long)s->stats.work_mode_switches);
+@@ -1544,0 +1547,8 @@ Level solver_restart_level(Solver *s) {
++static uint64_t mode_work(const Solver *s) {
++    /* Propagations include decisions without watches. The other counters
++       account for watch scans, minimization and search-time collection. */
++    uint64_t work = s->work;
++    work += MIN(s->stats.propagations, UINT64_MAX-work);
++    return work + MIN(s->stats.minimize_inspections, UINT64_MAX-work);
++}
++
+@@ -1547,2 +1557,19 @@ bool solver_should_restart(Solver* s) {
+-    if (s->opts.alternating && s->stats.conflicts >= s->mode_limit) {
+-        s->stable_mode = !s->stable_mode;
++    bool change_mode = false;
++    if (s->opts.alternating && s->opts.work_modes) {
++        uint64_t now = mode_work(s);
++        change_mode = s->stable_mode ?
++            (s->mode_work_limit != UINT64_MAX && now >= s->mode_work_limit) :
++            (s->mode_limit != UINT64_MAX && s->stats.conflicts >= s->mode_limit);
++        if (change_mode) {
++            if (s->stable_mode) {
++                s->mode_span += MIN(s->mode_span, UINT64_MAX-s->mode_span);
++                s->mode_limit = s->stats.conflicts + MIN(s->mode_span, UINT64_MAX-s->stats.conflicts);
++            } else {
++                uint64_t span = MAX(now-s->mode_work_start, UINT64_C(1));
++                s->mode_work_limit = now + MIN(span, UINT64_MAX-now);
++            }
++            s->mode_work_start = now;
++            ++s->stats.work_mode_switches;
++        }
++    } else if (s->opts.alternating && s->stats.conflicts >= s->mode_limit) {
++        change_mode = true;
+@@ -1549,0 +1577,3 @@ bool solver_should_restart(Solver* s) {
++    }
++    if (change_mode) {
++        s->stable_mode = !s->stable_mode;
+@@ -2144,0 +2175,2 @@ static lbool solve_internal(Solver *s, const Lit *assumps, uint32_t n_assumps) {
++    /* Preprocessing work must not fund a longer first stable search phase. */
++    s->mode_work_start = mode_work(s);
+diff --git a/competition/c/tests/check_deadlines.py b/competition/c/tests/check_deadlines.py
+index ae308ca..e7cf1cf 100644
+--- a/competition/c/tests/check_deadlines.py
++++ b/competition/c/tests/check_deadlines.py
+@@ -56,0 +57,2 @@ def main():
++        modes += [(hard, ['--work-modes', '--chrono', '--binary-proof']),
++                  (empty, ['--work-modes', '--no-probing'])]
+diff --git a/competition/c/tests/validate.py b/competition/c/tests/validate.py
+index 6778bce..a33d256 100644
+--- a/competition/c/tests/validate.py
++++ b/competition/c/tests/validate.py
+@@ -263,0 +264,5 @@ def main():
++    configs += [['--work-modes'],
++                ['--work-modes', '--chrono', '--chrono-levels', '0', '--no-probing'],
++                ['--work-modes', '--chrono', '--congruence', '--equiv'],
++                ['--work-modes', '--vmtf', '--binary-proof', '--reduce-interval', '1', '--dynamic-lbd', '--protect-used'],
++                ['--work-modes', '--portfolio', '0.000000000001', '--bce', '--elim']]
+diff --git a/competition/c/tests/test_work_modes.c b/competition/c/tests/test_work_modes.c
+new file mode 100644
+index 0000000..917f89f
+--- /dev/null
++++ b/competition/c/tests/test_work_modes.c
+@@ -0,0 +1,69 @@
++#include "../include/solver.h"
++#include "../include/dimacs.h"
++#include <assert.h>
++#include <stdio.h>
++
++static void schedule(void) {
++    SolverOpts o=default_opts();assert(!o.work_modes);o.work_modes=true;o.alternating=true;
++    Solver *s=solver_new_with_opts(&o);assert(s);
++    s->work=s->mode_work_start=500000;s->stats.conflicts=999;
++    assert(!solver_should_restart(s));
++    s->stats.conflicts=1000;s->work+=100;s->stats.propagations=10;s->stats.minimize_inspections=5;
++    assert(solver_should_restart(s) && s->stable_mode && s->mode_work_limit==500230);
++    /* Stable search must ignore the old conflict threshold. Propagations with
++       no watched clauses still spend its work allowance. */
++    s->stats.conflicts=10000;s->stats.propagations=124;
++    assert(!solver_should_restart(s));
++    s->stats.propagations=125;
++    assert(solver_should_restart(s) && !s->stable_mode && s->mode_limit==12000 && s->mode_span==2000);
++    s->stats.conflicts=11999;s->work+=70;assert(!solver_should_restart(s));
++    s->stats.conflicts=12000;
++    assert(solver_should_restart(s) && s->stable_mode && s->mode_work_limit==500370);
++    s->stats.minimize_inspections+=69;assert(!solver_should_restart(s));
++    ++s->stats.minimize_inspections;
++    assert(solver_should_restart(s) && !s->stable_mode && s->mode_limit==16000 && s->mode_span==4000);
++    assert(s->stats.work_mode_switches==4);
++    s->work=UINT64_MAX-10;s->stats.propagations=s->stats.minimize_inspections=0;
++    s->mode_work_start=UINT64_MAX-20;s->stats.conflicts=s->mode_limit;
++    assert(solver_should_restart(s) && s->stable_mode && s->mode_work_limit==UINT64_MAX);
++    s->work=UINT64_MAX;assert(!solver_should_restart(s));
++    s->stable_mode=false;s->opts.restart_first=UINT32_MAX;
++    assert(!solver_should_restart(s));
++    s->opts.restart_first=100;s->mode_limit=1;s->stats.conflicts=1;
++    s->work=UINT64_MAX-10;s->stats.propagations=s->stats.minimize_inspections=20;
++    s->mode_work_start=UINT64_MAX-20;
++    assert(solver_should_restart(s) && s->mode_work_start==UINT64_MAX && s->mode_work_limit==UINT64_MAX);
++    s->work=10;s->stats.propagations=s->stats.minimize_inspections=0;
++    s->mode_work_limit=1;s->mode_span=UINT64_MAX-1;s->stats.conflicts=10;
++    assert(solver_should_restart(s) && !s->stable_mode);
++    assert(s->mode_span==UINT64_MAX && s->mode_limit==UINT64_MAX);
++    s->stats.conflicts=UINT64_MAX;assert(!solver_should_restart(s));
++    solver_free(s);
++    o.work_modes=false;s=solver_new_with_opts(&o);assert(s);
++    s->stats.conflicts=1000;assert(solver_should_restart(s) && s->stable_mode && s->mode_limit==2000);
++    s->stats.conflicts=2000;assert(solver_should_restart(s) && !s->stable_mode && s->mode_limit==4000);
++    assert(!s->stats.work_mode_switches);solver_free(s);
++}
++
++static void preprocessing(bool equiv) {
++    SolverOpts o=default_opts();o.probing=false;o.equiv=equiv;o.work_modes=true;
++    o.alternating=true;o.max_conflicts=1;
++    Solver *s=solver_new_with_opts(&o);assert(s);
++    assert(dimacs_parse_string(s,"p cnf 6 4\n-3 4 0\n3 -4 0\n5 6 2 0\n5 6 -2 0\n")==DIMACS_OK);
++    s->work=1000000;
++    assert(solver_solve(s)==UNDEF && !s->error);
++    assert(s->mode_work_start>=1000000 && s->mode_work_start<1001000);
++    assert(s->stats.equiv_variables==(equiv?1u:0u));
++    s->opts.max_conflicts=0;
++    assert(solver_solve(s)==TRUE && solver_check_model(s));
++    assert(s->mode_work_start<1000); /* Rebuilt API attempt gets a fresh baseline. */
++    Lit assumptions[]={mkLit(5,1),mkLit(6,1)};
++    assert(solver_solve_with_assumptions(s,assumptions,2)==FALSE && !s->error);
++    assert(solver_solve(s)==TRUE && solver_check_model(s));
++    solver_free(s);
++}
++
++int main(void) {
++    schedule();preprocessing(false);preprocessing(true);
++    puts("PASS: work/conflict mode boundaries, propagation/minimization costs, saturation, preprocessing exclusion and repeated SCC/assumption solves");
++}
+diff --git a/competition/c/tests/check_work_modes.py b/competition/c/tests/check_work_modes.py
+new file mode 100644
+index 0000000..75102bc
+--- /dev/null
++++ b/competition/c/tests/check_work_modes.py
+@@ -0,0 +1,56 @@
++#!/usr/bin/env python3
++"""Check certificates on exact formulas large enough to enter both search modes."""
++import argparse
++import hashlib
++import json
++from pathlib import Path
++import re
++import subprocess
++import tempfile
++from validate import checker_verified, cnf_text, model_valid
++
++
++def main():
++    parser=argparse.ArgumentParser(description=__doc__)
++    parser.add_argument('--solver',required=True,type=Path)
++    parser.add_argument('--checker',required=True,type=Path)
++    parser.add_argument('--output',required=True,type=Path)
++    args=parser.parse_args();solver=str(args.solver.resolve());checker=str(args.checker.resolve())
++    sha=lambda p:hashlib.sha256(Path(p).read_bytes()).hexdigest()
++    # Every thirteen-variable assignment is excluded; removing the all-negative
++    # clause leaves exactly the all-true assignment on those variables.
++    full=[[(-1 if bits&(1<<v) else 1)*(v+1) for v in range(13)] for bits in range(8192)]
++    alias=[[-14,15],[14,-15]];records=[]
++    with tempfile.TemporaryDirectory(prefix='bsat-work-mode-proofs-') as directory:
++        root=Path(directory);inp=root/'input.cnf';proof=root/'proof.drat'
++        for sat in (False,True):
++            clauses=(full[:-1] if sat else full)+alias;inp.write_text(cnf_text(15,clauses))
++            for binary in (False,True):
++                for equiv in (False,True):
++                    options=['--work-modes','--chrono','--chrono-levels','0','--no-probing',
++                             '--no-subsumption','--reduce-interval','32']
++                    if binary:options+=['--binary-proof']
++                    if equiv:options+=['--equiv']
++                    command=[solver,*options,'--proof',str(proof),str(inp)]
++                    run=subprocess.run(command,capture_output=True,text=True,timeout=60)
++                    assert run.returncode==(10 if sat else 20),(command,run.returncode,run.stdout,run.stderr)
++                    assert 'runtime error:' not in run.stderr and 'AddressSanitizer' not in run.stderr,run.stderr
++                    stats=dict((k.strip(),v.strip()) for k,v in re.findall(r'^c ([^:\n]+):\s*(.*)$',run.stdout,re.M))
++                    switches=int(stats['Work mode switches'])
++                    assert switches>=2,(sat,binary,equiv,switches,stats['Conflicts'])
++                    checked=None
++                    if sat:assert model_valid(clauses,run.stdout)
++                    else:
++                        checked=subprocess.run([checker,str(inp),str(proof)],capture_output=True,text=True,timeout=60)
++                        assert checker_verified(checked),(checked.returncode,checked.stdout,checked.stderr)
++                    records.append(dict(sat=sat,options=options,input_sha256=sha(inp),proof_sha256=sha(proof),
++                                        proof_bytes=proof.stat().st_size,mode_switches=switches,
++                                        solver_output=run.stdout,checker_returncode=checked.returncode if checked else None,
++                                        checker_output=checked.stdout if checked else None,verified=True))
++    args.output.write_text(json.dumps(dict(schema=1,script_sha256=sha(__file__),solver=solver,
++                                         solver_sha256=sha(solver),checker=checker,checker_sha256=sha(checker),
++                                         runs=records),indent=2)+'\n')
++    print('PASS: 8 exact SAT/model and UNSAT/certificate checks; every run switches into and out of stable mode')
++
++
++if __name__=='__main__':main()

@@ -1,0 +1,21 @@
+{
+  "schema": 1,
+  "base_revision": "498b8f5",
+  "status": "Rejected: preserving original focused intervals still gives 1/4 verified solves versus 2/4; no retained runtime change",
+  "patch": "work-modes-matched-prototype-20260907.patch",
+  "patch_sha256": "da819666c979ed368bb43dc23d384c90ccfd730b7627023e4f7b68bad5a3a764",
+  "reconstruction_verified": true,
+  "sources": {
+    "competition/c/include/solver.h": "ffd736e8adde46b09f92d97987abf6daefa4294f5bd41d638e8a918b0fbc151c",
+    "competition/c/src/solver.c": "0313bbc9b2c9a39c54b82536df734d53b9e3be9cdab98245d2f3294cda2da3cf",
+    "competition/c/src/main.c": "a32f968831df93083097994fca73b201d352b0b2536df6d18353216bf6da9526",
+    "competition/c/tests/validate.py": "1ab6b7b881278d386d9125e666490f192e50c67033636af0b1255e374a041796",
+    "competition/c/tests/check_deadlines.py": "c24e89e8d05a39408e2904d860ab18c79d9dafae9fd5d8b0a8701fc413648b5d",
+    "competition/c/tests/test_work_modes.c": "7b5bcd9957bddff371c863b7ef79c65eeef6f356f67f2c9eeb043008e00ef251",
+    "competition/c/tests/check_work_modes.py": "74405105eff560fb3e9d5906012da3fd27c142605de11a47aa5ccae87791cf7a"
+  },
+  "release_binary_sha256": "a80d16cc8740138f37cb17a0ed28249e469a497eef652c6318d617f4fc1545cd",
+  "debug_binary_sha256": "afe49ed62d9417969d201e797c39effd7fb23ea4fe9b2f12e2a5850eccd7f541",
+  "validation_record": "work-modes-matched-validation-20260907.json",
+  "performance_record": "work-modes-matched-20260907.json"
+}

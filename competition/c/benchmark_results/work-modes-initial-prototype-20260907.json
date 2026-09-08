@@ -1,0 +1,21 @@
+{
+  "schema": 1,
+  "base_revision": "498b8f5",
+  "status": "Rejected initial prototype with 2x focused growth: 1/4 verified solves versus 2/4; original-focused-growth follow-up also rejected",
+  "patch": "work-modes-initial-prototype-20260907.patch",
+  "patch_sha256": "520f27cfe34f99c5bf83b1ba09b96b317d24d09a5302d04f19444be447119b78",
+  "reconstruction_verified": true,
+  "sources": {
+    "competition/c/include/solver.h": "ffd736e8adde46b09f92d97987abf6daefa4294f5bd41d638e8a918b0fbc151c",
+    "competition/c/src/solver.c": "7ab753bd5314eb0d1a9191942c4d9ab88d60dd7acaab10b34aa0e2627f5778d6",
+    "competition/c/src/main.c": "a32f968831df93083097994fca73b201d352b0b2536df6d18353216bf6da9526",
+    "competition/c/tests/validate.py": "1ab6b7b881278d386d9125e666490f192e50c67033636af0b1255e374a041796",
+    "competition/c/tests/check_deadlines.py": "c24e89e8d05a39408e2904d860ab18c79d9dafae9fd5d8b0a8701fc413648b5d",
+    "competition/c/tests/test_work_modes.c": "32ff6193d8be58d9fa59413759fbe811b2a699a4a5574d1b1fcf2ec0cf9b04a1",
+    "competition/c/tests/check_work_modes.py": "74405105eff560fb3e9d5906012da3fd27c142605de11a47aa5ccae87791cf7a"
+  },
+  "release_binary_sha256": "af89d8b78cf0f8cc56cee5e13db4bb2adbc7e7018b2601f6dba31f22f7037a4c",
+  "debug_binary_sha256": "f800615fc6a82fe13836597e89315de7c48a54f8e7d213d44fb87f9c2bc277d4",
+  "validation_record": "work-modes-validation-20260907.json",
+  "performance_record": "work-modes-initial-20260907.json"
+}
