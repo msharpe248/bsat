@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """Record actual PMU availability, then collect CPU-clock stacks on Linux."""
-import argparse,hashlib,json,os,shutil,subprocess
+import argparse,hashlib,json,os
 from pathlib import Path
 from profile_linux import parse_perf,EVENTS
 from process_control import run_capture
@@ -27,6 +27,7 @@ try:
     except (ValueError,OSError) as e:row['hardware_unavailable']=str(e)
     if 'hardware' in row:
         assert stat.returncode in (0,10,20)
+        assert [line for line in stat.stdout.splitlines() if line.startswith('s ')] == [{0:'s UNKNOWN',10:'s SATISFIABLE',20:'s UNSATISFIABLE'}[stat.returncode]]
         if stat.returncode==10:
             _,clauses=parse_cnf(inp.read_text());assert model_valid(clauses,stat.stdout)
         elif stat.returncode==20:
@@ -37,6 +38,7 @@ try:
     row.update(record_command=cmd,record_returncode=recorded.returncode,stdout=recorded.stdout,stderr=recorded.stderr)
     if recorded.returncode not in (0,10,20):
         row['sampling_unavailable']=True;continue
+    assert [line for line in recorded.stdout.splitlines() if line.startswith('s ')] == [{0:'s UNKNOWN',10:'s SATISFIABLE',20:'s UNSATISFIABLE'}[recorded.returncode]]
     if recorded.returncode==10:
         _,clauses=parse_cnf(inp.read_text());assert model_valid(clauses,recorded.stdout)
     elif recorded.returncode==20:

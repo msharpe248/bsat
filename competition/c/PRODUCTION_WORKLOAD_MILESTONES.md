@@ -5,8 +5,11 @@ real verification circuits with retained incremental comparison; a bounded
 certified-mode simplification experiment; recoverable C service; authoritative
 production readiness documentation. Commit and push each validated milestone.
 
-1. Planning profiling/layout: in progress.
-2. Real incremental verification workloads: pending.
+1. Planning profiling/layout: complete as an evaluated experiment; compact header
+   rejected, Linux stacks collected, hosted PMU explicitly unavailable. See
+   PLANNING_LAYOUT_EXPERIMENT.md. Hardware cache/branch attribution still needs a
+   PMU-enabled Linux host.
+2. Real incremental verification workloads: in progress.
 3. Certified-mode simplification: pending.
 4. Service recovery: pending.
 5. Readiness consolidation: pending.

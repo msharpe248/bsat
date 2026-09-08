@@ -1,0 +1,226 @@
+diff --git a/competition/c/include/arena.h b/competition/c/include/arena.h
+index bf094c2..6d75a52 100644
+--- a/competition/c/include/arena.h
++++ b/competition/c/include/arena.h
+@@ -49,8 +49,19 @@ typedef struct ClauseHeader {
+ // Get clause header from CRef
+ #define CLAUSE_HEADER(arena, cref) ((ClauseHeader*)&(arena)->memory[cref])
+ 
++/* Original clauses do not participate in learned-clause LBD/activity ranking.
++   Keep only their size/flags and cursor in non-diagnostic arena records. */
++static inline uint32_t clause_header_words(bool learned) {
++#ifdef BSAT_SEARCH_DIAGNOSTICS
++    (void)learned;return sizeof(ClauseHeader)/sizeof(uint32_t);
++#else
++    return learned ? sizeof(ClauseHeader)/sizeof(uint32_t) : 2;
++#endif
++}
++#define CLAUSE_WORDS(arena, cref) (clause_header_words((CLAUSE_HEADER(arena,cref)->flags & CLAUSE_LEARNED)!=0)+CLAUSE_SIZE(arena,cref))
++
+ // Get literals array from CRef
+-#define CLAUSE_LITS(arena, cref) ((Lit*)&(arena)->memory[cref + sizeof(ClauseHeader)/sizeof(uint32_t)])
++#define CLAUSE_LITS(arena, cref) ((Lit*)&(arena)->memory[cref + clause_header_words((CLAUSE_HEADER(arena,cref)->flags & CLAUSE_LEARNED)!=0)])
+ 
+ // Get clause size from CRef
+ #define CLAUSE_SIZE(arena, cref) (CLAUSE_HEADER(arena, cref)->size)
+@@ -111,22 +122,22 @@ static inline bool clause_learned(const Arena* arena, CRef cref) {
+ 
+ // Get clause LBD
+ static inline uint32_t clause_lbd(const Arena* arena, CRef cref) {
+-    return CLAUSE_HEADER(arena, cref)->lbd;
++    return clause_learned(arena,cref) ? CLAUSE_HEADER(arena, cref)->lbd : 0;
+ }
+ 
+ // Set clause LBD
+ static inline void set_clause_lbd(Arena* arena, CRef cref, uint32_t lbd) {
+-    CLAUSE_HEADER(arena, cref)->lbd = lbd;
++    if(clause_learned(arena,cref)) CLAUSE_HEADER(arena, cref)->lbd = lbd;
+ }
+ 
+ // Get clause activity
+ static inline float clause_activity(const Arena* arena, CRef cref) {
+-    return CLAUSE_HEADER(arena, cref)->activity;
++    return clause_learned(arena,cref) ? CLAUSE_HEADER(arena, cref)->activity : 0;
+ }
+ 
+ // Bump clause activity
+ static inline void bump_clause_activity(Arena* arena, CRef cref, float inc) {
+-    CLAUSE_HEADER(arena, cref)->activity += inc;
++    if(clause_learned(arena,cref)) CLAUSE_HEADER(arena, cref)->activity += inc;
+ }
+ 
+ #endif // BSAT_ARENA_H
+\ No newline at end of file
+diff --git a/competition/c/src/accounting.c b/competition/c/src/accounting.c
+index f5905af..808e940 100644
+--- a/competition/c/src/accounting.c
++++ b/competition/c/src/accounting.c
+@@ -98,7 +98,7 @@ void solver_print_accounting(const Solver *s) {
+                 top[k]=(CRef)at;break;
+             }
+         }
+-        at+=sizeof(ClauseHeader)/sizeof(uint32_t)+h->size;
++        at+=CLAUSE_WORDS(s->arena,at);
+     }
+     for(unsigned k=0;k<10 && top[k];++k) {
+         const ClauseHeader *h=CLAUSE_HEADER(s->arena,top[k]);
+diff --git a/competition/c/src/arena.c b/competition/c/src/arena.c
+index 63a1a50..aaabb45 100644
+--- a/competition/c/src/arena.c
++++ b/competition/c/src/arena.c
+@@ -167,9 +167,9 @@ bool arena_reserve(Arena* arena, size_t min_capacity) {
+ 
+ CRef arena_alloc(Arena* arena, const Lit* lits, uint32_t size, bool learned) {
+     if (size >= (1u << 28) || arena->size > MAX_CLAUSES ||
+-        (size_t)size + sizeof(ClauseHeader)/4 > MAX_CLAUSES - arena->size) return INVALID_CLAUSE;
++        (size_t)size + clause_header_words(learned) > MAX_CLAUSES - arena->size) return INVALID_CLAUSE;
+     // Calculate space needed
+-    size_t header_words = (sizeof(ClauseHeader) + sizeof(uint32_t) - 1) / sizeof(uint32_t);
++    size_t header_words = clause_header_words(learned);
+     size_t total_words = header_words + size;
+ 
+     // Ensure we have enough space
+@@ -187,8 +187,7 @@ CRef arena_alloc(Arena* arena, const Lit* lits, uint32_t size, bool learned) {
+     header->search = 2;
+     header->size = size;
+     header->flags = learned ? CLAUSE_LEARNED : CLAUSE_ORIGINAL;
+-    header->lbd = 0;
+-    header->activity = 0.0f;
++    if(learned) {header->lbd = 0;header->activity = 0.0f;}
+ #ifdef BSAT_SEARCH_DIAGNOSTICS
+     header->born_lo = header->born_hi = 0;
+     header->scans = header->units = header->analyses = 0;
+@@ -222,7 +221,7 @@ void arena_delete(Arena* arena, CRef cref) {
+     header->flags |= CLAUSE_DELETED;
+ 
+     // Track wasted space
+-    size_t header_words = (sizeof(ClauseHeader) + sizeof(uint32_t) - 1) / sizeof(uint32_t);
++    size_t header_words = clause_header_words((header->flags & CLAUSE_LEARNED)!=0);
+     arena->wasted += header_words + header->size;
+ }
+ 
+@@ -241,7 +240,7 @@ ArenaStats arena_stats(const Arena* arena) {
+     uint32_t pos = 1;
+     while (pos < arena->size) {
+         ClauseHeader* header = (ClauseHeader*)&arena->memory[pos];
+-        size_t header_words = (sizeof(ClauseHeader) + sizeof(uint32_t) - 1) / sizeof(uint32_t);
++        size_t header_words = clause_header_words((header->flags & CLAUSE_LEARNED)!=0);
+ 
+         if (!(header->flags & CLAUSE_DELETED)) {
+             stats.num_clauses++;
+diff --git a/competition/c/src/solver.c b/competition/c/src/solver.c
+index afae5fc..7ec8986 100644
+--- a/competition/c/src/solver.c
++++ b/competition/c/src/solver.c
+@@ -1700,7 +1700,7 @@ static void solver_collect_garbage_account_impl(Solver *s) {
+     fresh->verbose=s->opts.verbose;
+     for (size_t at = 1; at < old->size;) {
+         if (solver_budget_exhausted(s)) { arena_free(fresh); return; }
+-        uint32_t words = sizeof(ClauseHeader)/sizeof(uint32_t) + CLAUSE_SIZE(old, at);
++        uint32_t words = CLAUSE_WORDS(old,at);
+         ++s->work; // Visiting a dead header also consumes bounded work.
+         if (solver_budget_exhausted(s)) { arena_free(fresh); return; }
+         if (!clause_deleted(old, at)) {
+@@ -1725,7 +1725,7 @@ static void solver_collect_garbage_account_impl(Solver *s) {
+     CRef next = 1;
+     for (size_t at = 1; at < old->size;) {
+         ClauseHeader *header = CLAUSE_HEADER(old, at);
+-        uint32_t words = sizeof(ClauseHeader)/sizeof(uint32_t) + header->size;
++        uint32_t words = CLAUSE_WORDS(old,at);
+         header->search = clause_deleted(old, at) ? INVALID_CLAUSE : next;
+         if (!clause_deleted(old, at)) next += words;
+         at += words;
+diff --git a/competition/c/tests/test_gc_budget.c b/competition/c/tests/test_gc_budget.c
+index e8bcb15..d48559a 100644
+--- a/competition/c/tests/test_gc_budget.c
++++ b/competition/c/tests/test_gc_budget.c
+@@ -15,8 +15,8 @@ static Solver *fixture(unsigned n) {
+     s->work=23;return s;
+ }
+ int main(void) {
+-    const unsigned small_work=2+sizeof(ClauseHeader)/4+65;
+-    const unsigned large_work=2+sizeof(ClauseHeader)/4+4097;
++    const unsigned small_work=2+clause_header_words(false)+65;
++    const unsigned large_work=2+clause_header_words(false)+4097;
+     for(unsigned budget=0;budget<=small_work+1;++budget) {
+         Solver *s=fixture(65);Arena *old=s->arena;size_t bytes=old->size*sizeof(uint32_t);
+         uint32_t *copy=malloc(bytes);assert(copy);memcpy(copy,old->memory,bytes);
+diff --git a/competition/c/tests/test_gc_forwarding.c b/competition/c/tests/test_gc_forwarding.c
+index ed0e500..114259e 100644
+--- a/competition/c/tests/test_gc_forwarding.c
++++ b/competition/c/tests/test_gc_forwarding.c
+@@ -22,12 +22,12 @@ int main(void) {
+             Lit *lits=CLAUSE_LITS(s->arena,refs[i]);
+             for(unsigned j=0;j<n;++j) lits[j]=mkLit(j+1,false);
+             ClauseHeader *h=CLAUSE_HEADER(s->arena,refs[i]);
+-            h->search=i%2?UINT32_MAX:i;h->lbd=i+3;h->activity=(float)i/8;
++            h->search=i%2?UINT32_MAX:i;if(learned) {h->lbd=i+3;h->activity=(float)i/8;}
+             h->flags|=CLAUSE_FROZEN;
+ #ifdef BSAT_SEARCH_DIAGNOSTICS
+             h->born_hi=1;h->born_lo=i;h->scans=i*17;h->units=i+2;h->analyses=i+9;
+ #endif
+-            memcpy(copies[i],h,(sizeof(ClauseHeader)/4+n)*sizeof(uint32_t));
++            memcpy(copies[i],h,(clause_header_words(learned)+n)*sizeof(uint32_t));
+             if(learned) s->learnts[s->num_learnts++]=refs[i];
+             else s->clauses[s->num_clauses++]=refs[i];
+             if(n>=2) {
+@@ -39,7 +39,7 @@ int main(void) {
+                 // Keep arena watches to verify that collection filters dead references.
+                 if(n==2 && !learned) watch_remove_clause(s->watches,s->arena,refs[i]);
+                 arena_delete(s->arena,refs[i]);moved[i]=INVALID_CLAUSE;
+-            } else {moved[i]=next;next+=sizeof(ClauseHeader)/4+n;}
++            } else {moved[i]=next;next+=clause_header_words(learned)+n;}
+         }
+         s->num_original=s->num_clauses;
+         s->vars[1].reason=refs[7];s->values[1]=moved[7]==INVALID_CLAUSE?UNDEF:TRUE;
+@@ -48,7 +48,7 @@ int main(void) {
+         assert(s->vars[1].reason==moved[7]);
+         unsigned orig=0,learnt=0,watch_count=0;
+         for(unsigned i=0;i<9;++i) if(moved[i]!=INVALID_CLAUSE) {
+-            assert(!memcmp(CLAUSE_HEADER(s->arena,moved[i]),copies[i],(sizeof(ClauseHeader)/4+sizes[i])*sizeof(uint32_t)));
++            assert(!memcmp(CLAUSE_HEADER(s->arena,moved[i]),copies[i],(clause_header_words(i%2 || i==8)+sizes[i])*sizeof(uint32_t)));
+             if(i%2 || i==8) assert(s->learnts[learnt++]==moved[i]);
+             else assert(s->clauses[orig++]==moved[i]);
+             if(sizes[i]>=2) ++watch_count;
+diff --git a/competition/c/tests/test_regressions.c b/competition/c/tests/test_regressions.c
+index bc1ed4c..aaf5e3e 100644
+--- a/competition/c/tests/test_regressions.c
++++ b/competition/c/tests/test_regressions.c
+@@ -185,12 +185,24 @@ static void dynamic_clause_quality(void) {
+         s->level_seen = calloc(s->levels_capacity, sizeof *s->level_seen);
+         assert(s->level_seen);
+         CRef a = s->clauses[0], b = s->clauses[1];
+-        set_clause_lbd(s->arena, a, initial_lbd);
+-        set_clause_lbd(s->arena, b, initial_lbd);
+         if (learned) {
+-            CLAUSE_HEADER(s->arena, a)->flags |= CLAUSE_LEARNED;
+-            CLAUSE_HEADER(s->arena, b)->flags |= CLAUSE_LEARNED;
++            /* Learned records have a different physical layout. */
++            for (unsigned i = 0; i < 2; ++i) {
++                CRef old = s->clauses[i];
++                Lit copy[4]; memcpy(copy, CLAUSE_LITS(s->arena, old), sizeof copy);
++                CRef fresh = arena_alloc(s->arena, copy, 4, true);
++                assert(fresh != INVALID_CLAUSE);
++                for (unsigned k = 0; k < 2 * s->watches->num_vars; ++k) {
++                    WatchList *wl = &s->watches->lists[k];
++                    for (unsigned j = 0; j < wl->size; ++j)
++                        if (wl->watches[j].cref == old) wl->watches[j].cref = fresh;
++                }
++                arena_delete(s->arena, old); s->clauses[i] = fresh;
++            }
++            a = s->clauses[0]; b = s->clauses[1];
+         }
++        set_clause_lbd(s->arena, a, initial_lbd);
++        set_clause_lbd(s->arena, b, initial_lbd);
+         /* Chosen decisions cause real propagation: 1 implies -3, then 2
+            causes the first long clause to imply 4 and the second to conflict. */
+         CRef conflict = INVALID_CLAUSE;
+@@ -211,7 +223,7 @@ static void dynamic_clause_quality(void) {
+         assert(size > 0 && learnt[0] == mkLit(2, true) && backjump == 1);
+         assert(!!(CLAUSE_HEADER(s->arena, a)->flags & CLAUSE_FROZEN) == (protect && learned && (enabled || initial_lbd <= 6)));
+         assert(!!(CLAUSE_HEADER(s->arena, b)->flags & CLAUSE_FROZEN) == (protect && learned && (enabled || initial_lbd <= 6)));
+-        unsigned expected = enabled && learned ? 2 : initial_lbd;
++        unsigned expected = learned ? (enabled ? 2 : initial_lbd) : 0;
+         assert(clause_lbd(s->arena, a) == expected && clause_lbd(s->arena, b) == expected);
+         assert(s->stats.lbd_updates == (enabled && learned ? 2u : 0u));
+         for (Var v = 1; v <= 4; ++v) assert(!s->seen[v]);

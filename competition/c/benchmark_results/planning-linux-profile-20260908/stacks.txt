@@ -1,0 +1,291 @@
+# To display the perf.data header info, please use --header/--header-only options.
+#
+#
+# Total Lost Samples: 0
+#
+# Samples: 1K of event 'cpu-clock:u'
+# Event count (approx.): 8643215000
+#
+# Overhead  Symbol                                   IPC   [IPC Coverage]
+# ........  .......................................  ....................
+#
+    70.06%  [.] solver_propagate_account_impl        -      -            
+            |          
+            |--65.70%--solver_propagate_account_impl
+            |          solver_propagate (inlined)
+            |          |          
+            |           --65.64%--solve_internal_account_impl (inlined)
+            |                     solve_internal (inlined)
+            |                     solver_solve_at
+            |                     main
+            |                     0x7f7db102a1c9
+            |                     __libc_start_main
+            |                     _start
+            |          
+            |--3.20%--var (inlined)
+            |          solver_propagate_account_impl
+            |          solver_propagate (inlined)
+            |          solve_internal_account_impl (inlined)
+            |          solve_internal (inlined)
+            |          solver_solve_at
+            |          main
+            |          0x7f7db102a1c9
+            |          __libc_start_main
+            |          _start
+            |          
+             --0.87%--watch_list (inlined)
+                       solver_propagate_account_impl
+                       solver_propagate (inlined)
+                       |          
+                        --0.81%--solve_internal_account_impl (inlined)
+                                  solve_internal (inlined)
+                                  solver_solve_at
+                                  main
+                                  0x7f7db102a1c9
+                                  __libc_start_main
+                                  _start
+
+     6.40%  [.] solver_analyze_account_impl          -      -            
+            |          
+            |--3.78%--solver_analyze_account_impl
+            |          solver_analyze (inlined)
+            |          solve_internal_account_impl (inlined)
+            |          solve_internal (inlined)
+            |          solver_solve_at
+            |          main
+            |          0x7f7db102a1c9
+            |          __libc_start_main
+            |          _start
+            |          
+            |--1.69%--heap_percolate_up (inlined)
+            |          bump_var_activity (inlined)
+            |          bump_var_activity (inlined)
+            |          solver_analyze_account_impl
+            |          solver_analyze (inlined)
+            |          solve_internal_account_impl (inlined)
+            |          solve_internal (inlined)
+            |          solver_solve_at
+            |          main
+            |          0x7f7db102a1c9
+            |          __libc_start_main
+            |          _start
+            |          
+             --0.52%--var (inlined)
+                       solver_analyze_account_impl
+                       solver_analyze (inlined)
+                       solve_internal_account_impl (inlined)
+                       solve_internal (inlined)
+                       solver_solve_at
+                       main
+                       0x7f7db102a1c9
+                       __libc_start_main
+                       _start
+
+     5.00%  [.] solver_backtrack.part.0              -      -            
+            |          
+             --4.36%--solver_backtrack (inlined)
+                       solver_backtrack (inlined)
+                       solve_internal_account_impl (inlined)
+                       solve_internal (inlined)
+                       solver_solve_at
+                       main
+                       0x7f7db102a1c9
+                       __libc_start_main
+                       _start
+
+     3.02%  [.] lit_redundant                        -      -            
+            |          
+             --2.73%--lit_redundant
+                       |          
+                       |--1.40%--lit_redundant
+                       |          |          
+                       |           --0.93%--legacy_minimize_clause (inlined)
+                       |                     solver_minimize_clause
+                       |                     solve_internal_account_impl (inlined)
+                       |                     solve_internal (inlined)
+                       |                     solver_solve_at
+                       |                     main
+                       |                     0x7f7db102a1c9
+                       |                     __libc_start_main
+                       |                     _start
+                       |          
+                        --1.34%--legacy_minimize_clause (inlined)
+                                  solver_minimize_clause
+                                  solve_internal_account_impl (inlined)
+                                  solve_internal (inlined)
+                                  solver_solve_at
+                                  main
+                                  0x7f7db102a1c9
+                                  __libc_start_main
+                                  _start
+
+     2.50%  [.] watch_add                            -      -            
+            |          
+            |--1.57%--watch_add
+            |          |          
+            |           --1.45%--solver_propagate_account_impl
+            |                     solver_propagate (inlined)
+            |                     solve_internal_account_impl (inlined)
+            |                     solve_internal (inlined)
+            |                     solver_solve_at
+            |                     main
+            |                     0x7f7db102a1c9
+            |                     __libc_start_main
+            |                     _start
+            |          
+             --0.87%--watchlist_ensure_capacity (inlined)
+                       watch_add
+                       solver_propagate_account_impl
+                       solver_propagate (inlined)
+                       solve_internal_account_impl (inlined)
+                       solve_internal (inlined)
+                       solver_solve_at
+                       main
+                       0x7f7db102a1c9
+                       __libc_start_main
+                       _start
+
+     2.03%  [.] solver_collect_garbage_account_impl  -      -            
+            |          
+            |--1.28%--solver_collect_garbage_account_impl
+            |          solver_collect_garbage (inlined)
+            |          solver_reduce_db_account_impl (inlined)
+            |          solver_reduce_db
+            |          solve_internal_account_impl (inlined)
+            |          solve_internal (inlined)
+            |          solver_solve_at
+            |          main
+            |          0x7f7db102a1c9
+            |          __libc_start_main
+            |          _start
+            |          
+             --0.76%--memcpy (inlined)
+                       solver_collect_garbage_account_impl
+                       solver_collect_garbage (inlined)
+                       solver_reduce_db_account_impl (inlined)
+                       solver_reduce_db
+                       solve_internal_account_impl (inlined)
+                       solve_internal (inlined)
+                       solver_solve_at
+                       main
+                       0x7f7db102a1c9
+                       __libc_start_main
+                       _start
+
+     1.51%  [.] heap_percolate_down                  -      -            
+            |
+            ---heap_remove (inlined)
+               heap_extract_max (inlined)
+               heap_extract_max (inlined)
+               solver_decide
+               solve_internal_account_impl (inlined)
+               solve_internal (inlined)
+               solver_solve_at
+               main
+               0x7f7db102a1c9
+               __libc_start_main
+               _start
+
+     1.05%  [.] solver_minimize_clause               -      -            
+            |          
+             --0.99%--legacy_minimize_clause (inlined)
+                       solver_minimize_clause
+                       solve_internal_account_impl (inlined)
+                       solve_internal (inlined)
+                       solver_solve_at
+                       main
+                       0x7f7db102a1c9
+                       __libc_start_main
+                       _start
+
+     0.93%  [.] elim_build_occs                      -      -            
+            |          
+             --0.64%--elim_build_occs
+                       elim_build_occs
+                       solver_collect_garbage_account_impl
+                       solver_collect_garbage (inlined)
+                       solver_reduce_db_account_impl (inlined)
+                       solver_reduce_db
+                       solve_internal_account_impl (inlined)
+                       solve_internal (inlined)
+                       solver_solve_at
+                       main
+                       0x7f7db102a1c9
+                       __libc_start_main
+                       _start
+
+     0.81%  [.] calc_lbd                             -      -            
+            |          
+             --0.76%--calc_lbd
+                       solve_internal_account_impl (inlined)
+                       solve_internal (inlined)
+                       solver_solve_at
+                       main
+                       0x7f7db102a1c9
+                       __libc_start_main
+                       _start
+
+     0.76%  [.] bump_var_activity                    -      -            
+            |          
+             --0.58%--heap_percolate_up (inlined)
+                       bump_var_activity
+                       bump_var_activity
+                       solver_analyze_account_impl
+                       solver_analyze (inlined)
+                       solve_internal_account_impl (inlined)
+                       solve_internal (inlined)
+                       solver_solve_at
+                       main
+                       0x7f7db102a1c9
+                       __libc_start_main
+                       _start
+
+     0.76%  [.] proof_binary_clause                  -      -            
+            |
+            ---proof_clause_account_impl (inlined)
+               proof_clause
+
+     0.76%  [.] solver_solve_at                      -      -            
+     0.47%  [.] solver_decide                        -      -            
+     0.41%  [.] budget_exhausted.constprop.0         -      -            
+     0.29%  [.] cell                                 -      -            
+     0.29%  [.] token.constprop.1                    -      -            
+     0.23%  [.] solver_budget_exhausted              -      -            
+     0.17%  [.] compare_clauses                      -      -            
+     0.17%  [.] realloc                              -      -            
+     0.17%  [.] solver_normalize_conflict            -      -            
+     0.17%  [.] watch_remove_clause                  -      -            
+     0.12%  [.] cli_progress                         -      -            
+     0.12%  [.] dimacs_parse_stream_account_impl     -      -            
+     0.12%  [.] solver_add_clause                    -      -            
+     0.12%  [.] solver_substitute_equivalences       -      -            
+     0.12%  [.] 0x0000000000188c85                   -      -            
+     0.12%  [.] 0x0000000000188c97                   -      -            
+     0.06%  [.] _IO_file_xsputn                      -      -            
+     0.06%  [.] _IO_fwrite                           -      -            
+     0.06%  [.] arena_alloc                          -      -            
+     0.06%  [.] cfree                                -      -            
+     0.06%  [.] proof_clause                         -      -            
+     0.06%  [.] representative                       -      -            
+     0.06%  [.] solver_account_end                   -      -            
+     0.06%  [.] solver_congruence                    -      -            
+     0.06%  [.] solver_reduce_db                     -      -            
+     0.06%  [.] 0x00000000000497bb                   -      -            
+     0.06%  [.] 0x000000000004980f                   -      -            
+     0.06%  [.] 0x0000000000049823                   -      -            
+     0.06%  [.] 0x00000000000498b4                   -      -            
+     0.06%  [.] 0x00000000000a9d2c                   -      -            
+     0.06%  [.] 0x00000000000a9d87                   -      -            
+     0.06%  [.] 0x00000000000ab2df                   -      -            
+     0.06%  [.] 0x00000000000ad10f                   -      -            
+     0.06%  [.] 0x0000000000188bc0                   -      -            
+     0.06%  [.] 0x0000000000188c59                   -      -            
+     0.06%  [.] 0x0000000000188d00                   -      -            
+     0.06%  [.] 0x0000000000188dae                   -      -            
+     0.06%  [.] 0x0000000000188e33                   -      -            
+     0.06%  [.] 0x0000000000188e3c                   -      -            
+
+
+#
+# (Cannot load tips.txt file, please install perf!)
+#
