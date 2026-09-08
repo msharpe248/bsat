@@ -1,0 +1,33 @@
+{
+  "inputs": {
+    "/Users/msharpe/python/bsat/dataset/sat_competition2025/reg-n/46355da785714f239393e7630020cae3.cnf": {
+      "sha256": "715b72da9f4c1709add9e486940d77e67d34ac5f0aa5f0ad97cd1dbe08929cae"
+    }
+  },
+  "profiles": {
+    "default": [],
+    "no-factor": [
+      "--factor=false"
+    ],
+    "no-sweep": [
+      "--sweep=false"
+    ],
+    "no-probe": [
+      "--probe=false"
+    ],
+    "no-eliminate": [
+      "--eliminate=false"
+    ],
+    "no-simplify": [
+      "--simplify=false"
+    ],
+    "plain": [
+      "--plain"
+    ]
+  },
+  "binary_sha256": "5cad8e92487416008cf8ec4573c2ab2a02b7c1927ab06e8c8cacb317908cff1f",
+  "timeout": 12,
+  "repeats": 2,
+  "seed": 2026090811,
+  "scope": "Reference feature diagnosis, not an implementation benchmark. All conclusive results require independent validation."
+}
