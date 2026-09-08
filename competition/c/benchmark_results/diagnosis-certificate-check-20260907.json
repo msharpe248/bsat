@@ -1,0 +1,101 @@
+{
+  "schema": 1,
+  "purpose": "Separate certificate verification; does not rewrite the frozen benchmark score",
+  "regeneration_report_sha256": "ecd2896819b13d192b926052bbe6754faf2097b97e72acceca364ccdde18b4e9",
+  "artifacts": "/private/tmp/bsat-diagnosis-certificate/unverified-0ivwlt6i",
+  "artifact_metadata": {
+    "schema": 1,
+    "config": {
+      "input": "/Users/msharpe/python/bsat/dataset/sat_competition2025/diagnosis/9a839badecb20dcf505ec79eedd3753a.cnf",
+      "command": [
+        "/private/tmp/kissat-8af8e56f174b778aef3aa45af9f739b2a5f492c2/build/kissat",
+        "{input}",
+        "{proof}"
+      ],
+      "timeout": 60.0,
+      "checker": "/tmp/bsat-drat-trim",
+      "check_timeout": 1.0,
+      "retain_unverified": "/private/tmp/bsat-diagnosis-certificate"
+    },
+    "executed_command": [
+      "/private/tmp/kissat-8af8e56f174b778aef3aa45af9f739b2a5f492c2/build/kissat",
+      "/Users/msharpe/python/bsat/dataset/sat_competition2025/diagnosis/9a839badecb20dcf505ec79eedd3753a.cnf",
+      "/var/folders/ts/779j13fj7_x2z167570zvv4c0000gn/T/bsat-benchmark-oxh8z95p/proof.drat"
+    ],
+    "solver_sha256": "5cad8e92487416008cf8ec4573c2ab2a02b7c1927ab06e8c8cacb317908cff1f",
+    "checker_sha256": "9bfc20a5fa9eb2a0ffadd2b0cfc7cdd4a20f6aa9c8d7de5b6c771160b847f630",
+    "result": {
+      "status": "UNSAT",
+      "verified": false,
+      "seconds": 16.831654416862875,
+      "cpu_seconds": 16.824806000000002,
+      "peak_rss_bytes": 104120320,
+      "par2": 120.0,
+      "stats": {
+        "Sun Sep 6 12": "02:44 CDT 2026 Darwin Michaels-Mini 25.6.0 arm64",
+        "opened and writing proof to DRAT file": "",
+        "opened and reading DIMACS file": "",
+        "chronological": "134                0 %  conflicts",
+        "conflicts": "809303            48101.98 per second",
+        "congruent": "39155               26 %  variables",
+        "decisions": "1317287                1.63 per conflict",
+        "eliminated": "4746                3 %  variables",
+        "factored": "16619               11 %  variables",
+        "iterations": "232                0 %  variables",
+        "propagations": "124720804          7412944    per second",
+        "reductions": "114             7099    interval",
+        "reordered": "12            67442    interval",
+        "rephased": "20            40465    interval",
+        "restarts": "27226               30    interval",
+        "strengthened": "2069                1 %  checks",
+        "substituted": "37850               25 %  variables",
+        "subsumed": "2005                1 %  checks",
+        "switched": "33            24524    interval",
+        "vivified": "36665               43 %  checks",
+        "walks": "7           115615    interval",
+        "maximum-resident-set-size": "106619207680 bytes     101680 MB",
+        "process-time": "17s              16.82 seconds"
+      },
+      "diagnostic": "proof check timed out"
+    },
+    "files": {
+      "input.cnf": {
+        "sha256": "64e6eb3f2cb7223fc90cdaf366ac0688e6a955b960b777eb921450aa864c6a2d",
+        "bytes": 12429871
+      },
+      "proof.drat": {
+        "sha256": "885281e97fc4e4867be1fe1067119d4a5218968cef4c1f01a080c8bea1600c50",
+        "bytes": 91559304
+      },
+      "out": {
+        "sha256": "1fc1b3317dfbb30c23103a10098bc37493b85eb6c180fa6a6c366ab8f003701a",
+        "bytes": 67653
+      },
+      "err": {
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "bytes": 0
+      },
+      "checker-out": {
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "bytes": 0
+      },
+      "checker-err": {
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "bytes": 0
+      }
+    }
+  },
+  "command": [
+    "/tmp/bsat-drat-trim",
+    "/private/tmp/bsat-diagnosis-certificate/unverified-0ivwlt6i/input.cnf",
+    "/private/tmp/bsat-diagnosis-certificate/unverified-0ivwlt6i/proof.drat"
+  ],
+  "checker_sha256": "9bfc20a5fa9eb2a0ffadd2b0cfc7cdd4a20f6aa9c8d7de5b6c771160b847f630",
+  "timeout_seconds": 600,
+  "wall_seconds": 161.95428325003013,
+  "returncode": 0,
+  "timed_out": false,
+  "verified": true,
+  "checker_stdout": "\nc turning on binary mode checking\n\nc parsing input formula with 151952 variables and 697321 clauses\n\nc finished parsing, read 91559304 bytes from proof file\n\nc detected empty clause; start verification via backward checking\n\nc 132947 of 697321 clauses in core                            \n\nc 769377 of 1459771 lemmas in core using 30812389 resolution steps\n\nc 17654 RAT lemmas in core; 193250 redundant literals in core lemmas\n\ns VERIFIED\n\nc verification time: 161.917 seconds\n",
+  "checker_stderr": ""
+}

@@ -304,6 +304,13 @@ unverified results receive the timeout penalty. Keep development and held-out
 families separate and avoid other workloads during timing. Synthetic cases and
 millisecond process runs establish smoke-test coverage, not industrial speedups.
 
+Use `--retain-unverified /path/to/artifacts` to keep unchecked answer evidence
+after a failed or timed-out check. Inputs, proof bytes, solver/checker output
+and hashed metadata are saved in unique directories. Retention does not mark
+an answer verified or remove its penalty. Checker acceptance requires exit
+code zero and an exact `s VERIFIED` output line. See
+[CERTIFICATE_ARTIFACTS.md](CERTIFICATE_ARTIFACTS.md).
+
 For an additional-instance screen, `tests/select_corpus.py` can exclude filenames
 and content hashes already recorded in a JSON results directory and select one
 input per family, smallest first within optional inclusive `--min-bytes` and

@@ -44,6 +44,10 @@ def truth(n, clauses):
                for bits in itertools.product((False, True), repeat=n))
 
 
+def checker_verified(result):
+    return result.returncode == 0 and 's VERIFIED' in result.stdout.splitlines()
+
+
 def model_valid(clauses, output):
     values = {}
     for line in output.splitlines():
@@ -142,7 +146,7 @@ def run_case(solver, n, clauses, options, directory, checker=None, text=None):
             verify_proof(clauses, proof.read_bytes(), '--binary-proof' in options)
             if checker:
                 checked = subprocess.run([checker, str(inp), str(proof)], capture_output=True, text=True, timeout=20)
-                assert 's VERIFIED' in checked.stdout, checked.stdout + checked.stderr
+                assert checker_verified(checked), checked.stdout + checked.stderr
     except (AssertionError, subprocess.TimeoutExpired) as exc:
         return str(exc)
     return None

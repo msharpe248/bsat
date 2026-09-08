@@ -12,6 +12,7 @@ Quote each solver template. Binaries and inputs are SHA-256 pinned in results.
 Use a separate --split heldout run after tuning. Only checked SAT models and
 verified UNSAT proofs count as solved. Timeouts, errors and unchecked answers
 receive the PAR-2 penalty. Certificate checking is outside the solver timing.
+Use --retain-unverified DIR to preserve unverified answer artifacts for retry.
 """
 import argparse
 import hashlib
@@ -27,7 +28,7 @@ import sys
 import tempfile
 import time
 from pathlib import Path
-from validate import model_valid, parse_cnf
+from validate import checker_verified, model_valid, parse_cnf
 
 
 def digest(path):
@@ -36,6 +37,27 @@ def digest(path):
         for chunk in iter(lambda: f.read(1024*1024), b''):
             h.update(chunk)
     return h.hexdigest()
+
+
+def retain_unverified(directory, config, command, temporary, result):
+    """Keep exact evidence after timing, without upgrading an unchecked answer."""
+    root = Path(directory).resolve()
+    root.mkdir(parents=True, exist_ok=True)
+    saved = Path(tempfile.mkdtemp(prefix='unverified-', dir=root))
+    files = {}
+    for name, source in [('input.cnf', Path(config['input'])),
+                         *[(name, temporary/name) for name in
+                           ('proof.drat', 'out', 'err', 'checker-out', 'checker-err')]]:
+        if source.exists():
+            target = saved/name
+            shutil.copyfile(source, target)
+            files[name] = dict(sha256=digest(target), bytes=target.stat().st_size)
+    metadata = dict(schema=1, config=config, executed_command=command,
+                    solver_sha256=digest(command[0]),
+                    checker_sha256=digest(config['checker']) if config.get('checker') else None,
+                    result=result, files=files)
+    (saved/'run.json').write_text(json.dumps(metadata, indent=2)+'\n')
+    return dict(directory=str(saved), metadata_sha256=digest(saved/'run.json'))
 
 
 def worker(config):
@@ -71,21 +93,28 @@ def worker(config):
         elif status == 'UNSAT' and config['checker'] and proof.exists():
             try:
                 checked = subprocess.run([config['checker'], config['input'], str(proof)], capture_output=True, text=True, timeout=config['check_timeout'])
-                verified = 's VERIFIED' in checked.stdout
+                (tmp/'checker-out').write_text(checked.stdout)
+                (tmp/'checker-err').write_text(checked.stderr)
+                verified = checker_verified(checked)
                 if not verified:
                     status = 'ERROR'
                     diagnostic = checked.stdout[-2000:] + checked.stderr[-2000:]
-            except subprocess.TimeoutExpired:
+            except subprocess.TimeoutExpired as error:
                 diagnostic = 'proof check timed out'
+                for name, data in [('checker-out', error.stdout), ('checker-err', error.stderr)]:
+                    (tmp/name).write_bytes(data.encode() if isinstance(data, str) else data or b'')
         stats = {}
         for line in output.splitlines():
             if line.startswith('c ') and ':' in line:
                 name, value = line[2:].split(':', 1)
                 stats[name.strip()] = value.strip()
-        return dict(status=status, verified=verified, seconds=elapsed,
+        result = dict(status=status, verified=verified, seconds=elapsed,
                     cpu_seconds=usage.ru_utime+usage.ru_stime, peak_rss_bytes=peak,
                     par2=elapsed if verified else 2*config['timeout'], stats=stats,
                     diagnostic=diagnostic or (tmp/'err').read_text(errors='replace')[-2000:])
+        if config.get('retain_unverified') and status != 'UNKNOWN' and not verified:
+            result['artifacts'] = retain_unverified(config['retain_unverified'], config, cmd, tmp, result)
+        return result
 
 
 def verified_manifest(path):
@@ -123,6 +152,7 @@ def main():
     p.add_argument('--checker', help='drat-trim executable')
     p.add_argument('--timeout', type=float, default=30)
     p.add_argument('--check-timeout', type=float, default=60)
+    p.add_argument('--retain-unverified', type=Path, help='Keep input, proof, outputs and metadata for unchecked answers/errors')
     p.add_argument('--repeats', type=int, default=3)
     p.add_argument('--seed', type=int, default=1)
     p.add_argument('--split', choices=('development','heldout'), default='development')
@@ -174,7 +204,8 @@ def main():
     args.output.parent.mkdir(parents=True, exist_ok=True)
     for name, path, repeat in jobs:
         config = dict(input=path, command=solvers[name]['command'], timeout=args.timeout,
-                      checker=checker, check_timeout=args.check_timeout)
+                      checker=checker, check_timeout=args.check_timeout,
+                      retain_unverified=str(args.retain_unverified.resolve()) if args.retain_unverified else None)
         run = subprocess.run([sys.executable, str(Path(__file__).resolve()), '--worker'],
                              input=json.dumps(config), capture_output=True, text=True)
         if run.returncode:

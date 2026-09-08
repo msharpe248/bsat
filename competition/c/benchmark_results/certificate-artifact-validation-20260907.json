@@ -1,0 +1,77 @@
+{
+  "schema": 1,
+  "base_revision": "7f7e138",
+  "purpose": "Benchmark artifact retention and strict checker acceptance; synthetic checker tests are control-flow tests, not answer certificates",
+  "sources": {
+    "tests/benchmark.py": "eb4964fd25260d85c0846150b2d4fb612381444e0d21667f3a03aa0e73211d62",
+    "tests/validate.py": "0d43e9b8029146e2ce927f7d2c3d6927a13286d57e3620256721862b27699071",
+    "tests/test_benchmark_artifacts.py": "a137fc5d13bbea158f463223f34292c14005d555dc717dd7ed48ab622ea5ec64",
+    "tests/test_benchmark_manifest.py": "7fc2d8c28e1b77d6d5b220f583f210f687a0265475d3d1ef61ef63ca796789d4"
+  },
+  "unit_command": [
+    "python3",
+    "-m",
+    "unittest",
+    "discover",
+    "-s",
+    "competition/c/tests",
+    "-p",
+    "test_benchmark*.py",
+    "-v"
+  ],
+  "unit_log": "test_checker_success_requires_exit_zero_and_exact_marker (test_benchmark_artifacts.ArtifactTests.test_checker_success_requires_exit_zero_and_exact_marker) ... ok\ntest_disabled_and_cli (test_benchmark_artifacts.ArtifactTests.test_disabled_and_cli) ... ok\ntest_invalid_model_retains_error (test_benchmark_artifacts.ArtifactTests.test_invalid_model_retains_error) ... ok\ntest_repeats_do_not_overwrite (test_benchmark_artifacts.ArtifactTests.test_repeats_do_not_overwrite) ... ok\ntest_timeout_keeps_exact_evidence_and_penalty (test_benchmark_artifacts.ArtifactTests.test_timeout_keeps_exact_evidence_and_penalty) ... ok\ntest_verified_and_unknown_do_not_retain (test_benchmark_artifacts.ArtifactTests.test_verified_and_unknown_do_not_retain) ... ok\ntest_bad_entries_and_aliases (test_benchmark_manifest.ManifestTests.test_bad_entries_and_aliases) ... ok\ntest_changed_bytes_fail_before_benchmark_output (test_benchmark_manifest.ManifestTests.test_changed_bytes_fail_before_benchmark_output) ... ok\ntest_relative_path_and_manifest_hash (test_benchmark_manifest.ManifestTests.test_relative_path_and_manifest_hash) ... ok\n\n----------------------------------------------------------------------\nRan 9 tests in 1.252s\n\nOK\n",
+  "solver_sha256": "4964e44a182fa6774635e5f930bd908556d9cc3c0bd90d2b52752e361c7a2c3d",
+  "checker_sha256": "9bfc20a5fa9eb2a0ffadd2b0cfc7cdd4a20f6aa9c8d7de5b6c771160b847f630",
+  "real_solver_and_checker_cases": [
+    {
+      "case": "unsat",
+      "options": [],
+      "passed": true
+    },
+    {
+      "case": "unsat",
+      "options": [
+        "--binary-proof"
+      ],
+      "passed": true
+    },
+    {
+      "case": "unsat",
+      "options": [
+        "--chrono",
+        "--congruence",
+        "--equiv",
+        "--reduce-interval",
+        "1",
+        "--reduce-increment",
+        "1"
+      ],
+      "passed": true
+    },
+    {
+      "case": "sat",
+      "options": [],
+      "passed": true
+    },
+    {
+      "case": "sat",
+      "options": [
+        "--binary-proof"
+      ],
+      "passed": true
+    },
+    {
+      "case": "sat",
+      "options": [
+        "--chrono",
+        "--congruence",
+        "--equiv",
+        "--reduce-interval",
+        "1",
+        "--reduce-increment",
+        "1"
+      ],
+      "passed": true
+    }
+  ]
+}

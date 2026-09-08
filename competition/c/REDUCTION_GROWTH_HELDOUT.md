@@ -5,7 +5,9 @@ solve out of six**. Growing intervals add no solves, slow the one completed
 BSAT case, and increase peak RSS on every input. The earlier hardware
 development gain does not generalize in this screen. Kissat additionally
 reports UNSAT on diagnosis, but its proof check exceeds the frozen allowance;
-that result is not counted as verified.
+that result is not counted as verified in the frozen screen. A later
+[retained-certificate check](CERTIFICATE_ARTIFACTS.md) independently confirms
+UNSAT for diagnosis in 162 seconds without changing the original score.
 
 This screen evaluates the settings committed in `54e9346` without tuning on
 the new inputs. Both BSAT profiles include the corrected LBD state and logical
@@ -62,10 +64,11 @@ Times below are whole-process CPU seconds, including parsing and proof output.
 There are no benchmark execution or invalid-answer errors. This does not
 certify the unverified diagnosis result: the external proof checker exceeded
 120 seconds, and the benchmark's temporary proof was then discarded. A separate
-certificate run with retained artifacts and a larger checking allowance is
-needed to resolve that verification gap. The recorded timed result remains
-unverified under the frozen policy; neither timeout nor an UNSAT status line
-establishes soundness.
+regeneration and retained-certificate check subsequently verified UNSAT in
+162 seconds; see [CERTIFICATE_ARTIFACTS.md](CERTIFICATE_ARTIFACTS.md). The
+recorded timed result remains unverified under the frozen policy. The later
+certificate establishes the formula's answer, while neither timeout nor an
+UNSAT status line alone establishes soundness.
 
 Mean wall PAR-2 is 59.167 seconds for fixed BSAT, 59.437 for growing BSAT and
 59.630 for Kissat. These numbers assign the full unsolved penalty to Kissat's
@@ -95,8 +98,8 @@ experimental competition profile. The opt-in control retains a documented
 hardware development use case, but this fresh screen does not support a broad
 performance improvement. Subsequent policy tuning on any of these inputs must
 label them development data. Competition performance and accuracy remain
-unproven; broader evaluation and the outstanding certificate check remain work
-to do.
+unproven; broader evaluation remains work to do. The diagnosis certificate gap
+has been resolved by the separate check described above.
 
 ## Evidence
 

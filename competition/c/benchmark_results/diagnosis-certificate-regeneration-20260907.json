@@ -1,0 +1,83 @@
+{
+  "schema": 1,
+  "platform": "macOS-26.6.1-arm64-arm-64bit-Mach-O",
+  "machine": "arm64",
+  "revision": "7f7e1384cbc757f932978ed63fad6a2c2e12e50b",
+  "dirty": true,
+  "split": "development",
+  "seed": 20261315,
+  "timeout": 60.0,
+  "repeats": 1,
+  "solvers": {
+    "kissat": {
+      "command": [
+        "/private/tmp/kissat-8af8e56f174b778aef3aa45af9f739b2a5f492c2/build/kissat",
+        "{input}",
+        "{proof}"
+      ],
+      "sha256": "5cad8e92487416008cf8ec4573c2ab2a02b7c1927ab06e8c8cacb317908cff1f"
+    }
+  },
+  "inputs": {
+    "/Users/msharpe/python/bsat/dataset/sat_competition2025/diagnosis/9a839badecb20dcf505ec79eedd3753a.cnf": {
+      "sha256": "64e6eb3f2cb7223fc90cdaf366ac0688e6a955b960b777eb921450aa864c6a2d",
+      "family": "diagnosis"
+    }
+  },
+  "checker": {
+    "path": "/tmp/bsat-drat-trim",
+    "sha256": "9bfc20a5fa9eb2a0ffadd2b0cfc7cdd4a20f6aa9c8d7de5b6c771160b847f630"
+  },
+  "runs": [
+    {
+      "solver": "kissat",
+      "input": "/Users/msharpe/python/bsat/dataset/sat_competition2025/diagnosis/9a839badecb20dcf505ec79eedd3753a.cnf",
+      "repeat": 0,
+      "status": "UNSAT",
+      "verified": false,
+      "seconds": 16.831654416862875,
+      "cpu_seconds": 16.824806000000002,
+      "peak_rss_bytes": 104120320,
+      "par2": 120.0,
+      "stats": {
+        "Sun Sep 6 12": "02:44 CDT 2026 Darwin Michaels-Mini 25.6.0 arm64",
+        "opened and writing proof to DRAT file": "",
+        "opened and reading DIMACS file": "",
+        "chronological": "134                0 %  conflicts",
+        "conflicts": "809303            48101.98 per second",
+        "congruent": "39155               26 %  variables",
+        "decisions": "1317287                1.63 per conflict",
+        "eliminated": "4746                3 %  variables",
+        "factored": "16619               11 %  variables",
+        "iterations": "232                0 %  variables",
+        "propagations": "124720804          7412944    per second",
+        "reductions": "114             7099    interval",
+        "reordered": "12            67442    interval",
+        "rephased": "20            40465    interval",
+        "restarts": "27226               30    interval",
+        "strengthened": "2069                1 %  checks",
+        "substituted": "37850               25 %  variables",
+        "subsumed": "2005                1 %  checks",
+        "switched": "33            24524    interval",
+        "vivified": "36665               43 %  checks",
+        "walks": "7           115615    interval",
+        "maximum-resident-set-size": "106619207680 bytes     101680 MB",
+        "process-time": "17s              16.82 seconds"
+      },
+      "diagnostic": "proof check timed out",
+      "artifacts": {
+        "directory": "/private/tmp/bsat-diagnosis-certificate/unverified-0ivwlt6i",
+        "metadata_sha256": "67ceca2e85cd429d8b78f30fcb6af7d292e3ab71ce4b53beb157fef3096bf9ba"
+      }
+    }
+  ],
+  "summary": {
+    "kissat": {
+      "verified_runs": 0,
+      "runs": 1,
+      "mean_par2": 120.0,
+      "max_rss_bytes": 104120320,
+      "errors": 0
+    }
+  }
+}
