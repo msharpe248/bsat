@@ -30,6 +30,12 @@ class VerifiedTests(unittest.TestCase):
                     folder=root/f'check-{i}-{binary}'
                     result=verify(cnf,proof,converter,checker,folder,30)
                     self.assertTrue(result['verified'],result)
+                    self.assertGreater(result['seconds'],0)
+                    self.assertEqual(len(result['stages']),2)
+                    for stage in result['stages']:
+                        self.assertGreater(stage['seconds'],0)
+                        self.assertGreaterEqual(stage['cpu_seconds'],0)
+                        self.assertGreater(stage['children_peak_rss_bytes'],0)
             # Directly reject an invalid LRAT derivation and a valid certificate
             # rebound to a satisfiable original input; status matching alone is insufficient.
             cnf.write_text('p cnf 2 1\n1 2 0\n');bad=root/'bad.lrat';bad.write_text('2 0 1 0\n')

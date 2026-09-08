@@ -40,3 +40,8 @@ Local validation is recorded in `verified-checking-20260907.json`:
 
 CI builds the pinned checker and runs the real positive/negative chain tests in
 every C solver platform/build configuration. Existing broader DRAT checks remain.
+
+The September 8 assurance milestone adds explicit conditional-query snapshots,
+per-stage wall/CPU costs, cumulative child RSS, and timeout-group cleanup. Three
+current BSAT industrial UNSAT certificates pass the chain; see
+`ASSURANCE_EXPANSION.md` and its hash-pinned receipts.

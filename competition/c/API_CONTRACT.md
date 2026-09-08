@@ -120,3 +120,7 @@ independent concurrent instances, application-owned signals and cancellation/ret
 `test_cancellation.c` covers callback preservation through rebuild and equivalence
 replacement, plus cancellation of cached UNSAT. Conditional proof calls on the
 internal assumptions API remain unsupported; use an explicitly augmented input.
+
+`tests/certify_query.py` now supplies an independently checked augmented-input
+workflow for conditional certificates, with exact base/query/assumption bindings;
+see `CONDITIONAL_CERTIFICATES.md`.

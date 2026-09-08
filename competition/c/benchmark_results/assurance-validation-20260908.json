@@ -1,0 +1,85 @@
+{
+  "soak_queries_per_build": 16384,
+  "soak_variables": 256,
+  "soak_sat": 9062,
+  "soak_unsat": 7322,
+  "industrial": {
+    "runs": 5,
+    "verified_unsat": 3,
+    "verified_sat": 1,
+    "unknown": 1
+  },
+  "logs": {
+    "/tmp/bsat-assurance-soak-release.log": {
+      "sha256": "b792bc19b65f0991ec62d07be16802a2b117575fd4657b96b57a4ff7489ca108",
+      "tail": [
+        "cc -std=c11 -D_POSIX_C_SOURCE=200809L -Wall -Wextra -pedantic -O3 -march=native -flto -Iinclude -o bin/embedding_soak_release tests/embedding_soak.c -Lbin -lbsat_release -Wl,-rpath,/Users/msharpe/python/bsat/competition/c/bin",
+        "bin/embedding_soak_release",
+        "PASS: 128 instances, 9062 SAT and 7322 UNSAT queries, 256 variables, independent four-model oracle"
+      ]
+    },
+    "/tmp/bsat-assurance-soak-debug.log": {
+      "sha256": "777fd64aa981db510f446f6c8abd781065e88852f95dca7b5f70a1f7a283d79c",
+      "tail": [
+        "cc -std=c11 -D_POSIX_C_SOURCE=200809L -Wall -Wextra -pedantic -g -O0 -DDEBUG -fsanitize=address -fsanitize=undefined -Iinclude -o bin/embedding_soak_debug tests/embedding_soak.c -Lbin -lbsat_debug -Wl,-rpath,/Users/msharpe/python/bsat/competition/c/bin",
+        "bin/embedding_soak_debug",
+        "PASS: 128 instances, 9062 SAT and 7322 UNSAT queries, 256 variables, independent four-model oracle"
+      ]
+    },
+    "/tmp/bsat-assurance-checks.log": {
+      "sha256": "2def5aeac6b65b2581bff5adb7c7df030d387019f3d5c82880f178c6765609c4",
+      "tail": [
+        "----------------------------------------------------------------------",
+        "Ran 2 tests in 0.153s",
+        "",
+        "OK"
+      ]
+    },
+    "/tmp/bsat-assurance-query.log": {
+      "sha256": "c3225ddfde34e105f30ecab99c3fa9e9c4702c24725636c2ec9827e8bc397d11",
+      "tail": [
+        "----------------------------------------------------------------------",
+        "Ran 1 test in 0.168s",
+        "",
+        "OK"
+      ]
+    },
+    "/tmp/bsat-assurance-query-debug.log": {
+      "sha256": "a61ee436d8630cff4bfc000a4fd2e1440e83b9ad4e7bd7218c472c634911c710",
+      "tail": [
+        "----------------------------------------------------------------------",
+        "Ran 1 test in 0.519s",
+        "",
+        "OK"
+      ]
+    },
+    "/tmp/bsat-assurance-process.log": {
+      "sha256": "c8b5a825f3e90d85e495381c5ff9738536a1ddba9e41f2f03b9001e6d4e20f11",
+      "tail": [
+        "----------------------------------------------------------------------",
+        "Ran 3 tests in 1.255s",
+        "",
+        "OK"
+      ]
+    },
+    "/tmp/bsat-assurance-artifacts.log": {
+      "sha256": "cc7cf1ceb854f010fe69b03aae136e6c780e37dedfd2ce00460d96d24698b924",
+      "tail": [
+        "----------------------------------------------------------------------",
+        "Ran 7 tests in 1.208s",
+        "",
+        "OK"
+      ]
+    },
+    "/tmp/bsat-assurance-python.log": {
+      "sha256": "86210a528ac9c969cbf6fad5c925a1c664b67c6cc5e3d6a62c8bc284f252895c",
+      "tail": [
+        "----------------------------------------------------------------------",
+        "Ran 24 tests in 2.668s",
+        "",
+        "OK"
+      ]
+    }
+  },
+  "python_regressions": 24
+}

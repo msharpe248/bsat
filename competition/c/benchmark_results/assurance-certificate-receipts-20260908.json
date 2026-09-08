@@ -1,0 +1,170 @@
+[
+  {
+    "input_sha256": "7aada02dc300ce6db773dbab34f115969174896a161b6d28ce37f5743e8fff4f",
+    "drat_sha256": "5722ef3a5abfeaa5e18b606a7a64e005ba48a89a97f6183d8d53e41e19b9c8ca",
+    "converter_sha256": "9bfc20a5fa9eb2a0ffadd2b0cfc7cdd4a20f6aa9c8d7de5b6c771160b847f630",
+    "checker_sha256": "027e767e8e5543d61671c44f7475e985b7969112e6825d51f2207bf0580cbf5c",
+    "verified": true,
+    "stages": [
+      {
+        "command": [
+          "/tmp/bsat-drat-trim",
+          "/tmp/bsat-assurance-certificates/verified-cis844lx/input.cnf",
+          "/tmp/bsat-assurance-certificates/verified-cis844lx/proof.drat",
+          "-L",
+          "/tmp/bsat-assurance-certificates/verified-cis844lx/proof.lrat"
+        ],
+        "seconds": 3.668038582894951,
+        "cpu_seconds": 3.042356,
+        "children_peak_rss_bytes": 155156480,
+        "returncode": 0,
+        "stdout_sha256": "3bf1ca58ac6d1eff0a06a9e1f8d3a47e2bc4782f9abfa49cc92d5d3536962e68",
+        "stdout_tail": [
+          "",
+          "c 0 RAT lemmas in core; 0 redundant literals in core lemmas",
+          "",
+          "s VERIFIED",
+          "",
+          "c verification time: 3.655 seconds"
+        ],
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_tail": []
+      },
+      {
+        "command": [
+          "/tmp/bsat-cake-verified-build/cake_lpr",
+          "--CML_HEAP_SIZE=512",
+          "--CML_STACK_SIZE=128",
+          "/tmp/bsat-assurance-certificates/verified-cis844lx/input.cnf",
+          "/tmp/bsat-assurance-certificates/verified-cis844lx/proof.lrat"
+        ],
+        "seconds": 0.6152562922798097,
+        "cpu_seconds": 0.6101550000000003,
+        "children_peak_rss_bytes": 542195712,
+        "returncode": 0,
+        "stdout_sha256": "c680d3bd38a04c7beee7d54999f8f00b43051f75a53cf2bd170ae0cc5f99eb5f",
+        "stdout_tail": [
+          "s VERIFIED UNSAT"
+        ],
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_tail": []
+      }
+    ],
+    "lrat_sha256": "e3de9db21afa5e166eb9298d934b6b05be5f5a8491f747c59b9f832930473884",
+    "seconds": 4.3160144169814885,
+    "rss_scope": "Cumulative child-process high-water RSS, not isolated per-stage peak",
+    "artifacts": "/tmp/bsat-assurance-certificates/verified-cis844lx"
+  },
+  {
+    "input_sha256": "28bf61a385c6a12975a45b1fe15badc282e6fb8960aa24126f38bf016bfbea08",
+    "drat_sha256": "7ceda1b6dc9cfa3a30e6f70d48e3c590d8f61bea8c4d0d970fe4b4bed6762a7d",
+    "converter_sha256": "9bfc20a5fa9eb2a0ffadd2b0cfc7cdd4a20f6aa9c8d7de5b6c771160b847f630",
+    "checker_sha256": "027e767e8e5543d61671c44f7475e985b7969112e6825d51f2207bf0580cbf5c",
+    "verified": true,
+    "stages": [
+      {
+        "command": [
+          "/tmp/bsat-drat-trim",
+          "/tmp/bsat-assurance-certificates/verified-gu192oyg/input.cnf",
+          "/tmp/bsat-assurance-certificates/verified-gu192oyg/proof.drat",
+          "-L",
+          "/tmp/bsat-assurance-certificates/verified-gu192oyg/proof.lrat"
+        ],
+        "seconds": 1.1637714998796582,
+        "cpu_seconds": 0.782824,
+        "children_peak_rss_bytes": 102023168,
+        "returncode": 0,
+        "stdout_sha256": "97b137a7c10c93135d15b0c3bf4a87317dbfe0d847ca12ff43f130b0491001c5",
+        "stdout_tail": [
+          "",
+          "c 0 RAT lemmas in core; 0 redundant literals in core lemmas",
+          "",
+          "s VERIFIED",
+          "",
+          "c verification time: 1.158 seconds"
+        ],
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_tail": []
+      },
+      {
+        "command": [
+          "/tmp/bsat-cake-verified-build/cake_lpr",
+          "--CML_HEAP_SIZE=512",
+          "--CML_STACK_SIZE=128",
+          "/tmp/bsat-assurance-certificates/verified-gu192oyg/input.cnf",
+          "/tmp/bsat-assurance-certificates/verified-gu192oyg/proof.lrat"
+        ],
+        "seconds": 0.3149027908220887,
+        "cpu_seconds": 0.3101190000000001,
+        "children_peak_rss_bytes": 539082752,
+        "returncode": 0,
+        "stdout_sha256": "c680d3bd38a04c7beee7d54999f8f00b43051f75a53cf2bd170ae0cc5f99eb5f",
+        "stdout_tail": [
+          "s VERIFIED UNSAT"
+        ],
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_tail": []
+      }
+    ],
+    "lrat_sha256": "267668a74671f0740411e92f13e96608c4f78fd58fef4b5be6f18f1b21b5f33c",
+    "seconds": 1.4878625418059528,
+    "rss_scope": "Cumulative child-process high-water RSS, not isolated per-stage peak",
+    "artifacts": "/tmp/bsat-assurance-certificates/verified-gu192oyg"
+  },
+  {
+    "input_sha256": "53d9f6fbd0a4d19d1281e79fb60b0d16284eb408b678fd932775f80629155bb2",
+    "drat_sha256": "f464bf5a075a78d2f6013316853db5757440500f6efccb0d55575a92408c38fd",
+    "converter_sha256": "9bfc20a5fa9eb2a0ffadd2b0cfc7cdd4a20f6aa9c8d7de5b6c771160b847f630",
+    "checker_sha256": "027e767e8e5543d61671c44f7475e985b7969112e6825d51f2207bf0580cbf5c",
+    "verified": true,
+    "stages": [
+      {
+        "command": [
+          "/tmp/bsat-drat-trim",
+          "/tmp/bsat-assurance-certificates/verified-ohub5924/input.cnf",
+          "/tmp/bsat-assurance-certificates/verified-ohub5924/proof.drat",
+          "-L",
+          "/tmp/bsat-assurance-certificates/verified-ohub5924/proof.lrat"
+        ],
+        "seconds": 3.034099082928151,
+        "cpu_seconds": 3.000542,
+        "children_peak_rss_bytes": 150011904,
+        "returncode": 0,
+        "stdout_sha256": "a8781b97453030c4d9dd817ce2fe71f63e8d3453910a7ff6dc702bd76de54bce",
+        "stdout_tail": [
+          "",
+          "c 0 RAT lemmas in core; 0 redundant literals in core lemmas",
+          "",
+          "s VERIFIED",
+          "",
+          "c verification time: 3.022 seconds"
+        ],
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_tail": []
+      },
+      {
+        "command": [
+          "/tmp/bsat-cake-verified-build/cake_lpr",
+          "--CML_HEAP_SIZE=512",
+          "--CML_STACK_SIZE=128",
+          "/tmp/bsat-assurance-certificates/verified-ohub5924/input.cnf",
+          "/tmp/bsat-assurance-certificates/verified-ohub5924/proof.lrat"
+        ],
+        "seconds": 0.6698729577474296,
+        "cpu_seconds": 0.664387,
+        "children_peak_rss_bytes": 542146560,
+        "returncode": 0,
+        "stdout_sha256": "c680d3bd38a04c7beee7d54999f8f00b43051f75a53cf2bd170ae0cc5f99eb5f",
+        "stdout_tail": [
+          "s VERIFIED UNSAT"
+        ],
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_tail": []
+      }
+    ],
+    "lrat_sha256": "84e90dd81112b1d17d5f3d83bb7899e183f6e674bbc82e9f6486149cd12f1d85",
+    "seconds": 3.7243051659315825,
+    "rss_scope": "Cumulative child-process high-water RSS, not isolated per-stage peak",
+    "artifacts": "/tmp/bsat-assurance-certificates/verified-ohub5924"
+  }
+]

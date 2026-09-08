@@ -275,3 +275,9 @@ embedding-test: $(BINDIR)/embedding_client_$(MODE)
 shared: $(LIBRARY)
 .PHONY: shared embedding-test
 -include $(LIB_OBJECTS:.o=.d)
+
+$(BINDIR)/embedding_soak_$(MODE): $(TESTDIR)/embedding_soak.c $(LIBRARY)
+	$(CC) $(CFLAGS) -o $@ $< -L$(BINDIR) -lbsat_$(MODE) -Wl,-rpath,$(abspath $(BINDIR))
+soak-test: $(BINDIR)/embedding_soak_$(MODE)
+	$<
+.PHONY: soak-test

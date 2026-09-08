@@ -29,6 +29,7 @@ import tempfile
 import time
 from pathlib import Path
 from validate import checker_verified, model_valid, parse_cnf
+from process_control import run_capture
 
 
 def digest(path):
@@ -83,6 +84,7 @@ def worker(config):
         output = (tmp/'out').read_text(errors='replace')
         status = 'SAT' if code == 10 else 'UNSAT' if code == 20 else 'UNKNOWN' if code == 0 else 'ERROR'
         verified = False
+        validation_start=time.perf_counter()
         diagnostic = ''
         if status == 'SAT':
             _, clauses = parse_cnf(Path(config['input']).read_text())
@@ -92,7 +94,7 @@ def worker(config):
                 diagnostic = 'invalid SAT model'
         elif status == 'UNSAT' and config['checker'] and proof.exists():
             try:
-                checked = subprocess.run([config['checker'], config['input'], str(proof)], capture_output=True, text=True, timeout=config['check_timeout'])
+                checked = run_capture([config['checker'], config['input'], str(proof)], config['check_timeout'])
                 (tmp/'checker-out').write_text(checked.stdout)
                 (tmp/'checker-err').write_text(checked.stderr)
                 verified = checker_verified(checked)
@@ -103,12 +105,14 @@ def worker(config):
                 diagnostic = 'proof check timed out'
                 for name, data in [('checker-out', error.stdout), ('checker-err', error.stderr)]:
                     (tmp/name).write_bytes(data.encode() if isinstance(data, str) else data or b'')
+        validation_seconds=time.perf_counter()-validation_start
         stats = {}
         for line in output.splitlines():
             if line.startswith('c ') and ':' in line:
                 name, value = line[2:].split(':', 1)
                 stats[name.strip()] = value.strip()
         result = dict(status=status, verified=verified, seconds=elapsed,
+                    validation_seconds=validation_seconds,end_to_end_seconds=elapsed+validation_seconds,
                     proof_sha256=digest(proof) if proof.exists() else None,
                     cpu_seconds=usage.ru_utime+usage.ru_stime, peak_rss_bytes=peak,
                     par2=elapsed if verified else 2*config['timeout'], stats=stats,

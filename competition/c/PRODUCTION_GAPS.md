@@ -17,8 +17,10 @@ stateful/certificate assurance. Commit and push each validated milestone.
 5. Embedding: opaque ABI-v1 shared library, independent instances, per-instance
    diagnostics, CLI-owned signals and cooperative cancellation implemented.
    See `API_CONTRACT.md` and `EMBEDDING.md`.
-6. Assurance: pending larger stateful histories, resource/soak tests, additional
-   industrial UNSAT checks and end-to-end verification cost measurements.
+6. Assurance: 256-variable exact-oracle histories, sanitizer soak CI, explicit
+   conditional-certificate bundles, timeout containment and verification-cost
+   reporting implemented. Three industrial UNSAT chains accepted; see
+   `ASSURANCE_EXPANSION.md` and `CONDITIONAL_CERTIFICATES.md`.
 
 Linux PMU tools already exist, but actual target measurements still require a
 Linux host. No target-server result is implied by local macOS measurements.

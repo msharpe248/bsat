@@ -6,6 +6,7 @@ against the exact snapshotted original CNF. This CLI is drat-trim-compatible for
 benchmark.py: success prints exactly 's VERIFIED' and exits zero.
 """
 import argparse
+import math
 import hashlib
 import json
 import os
@@ -14,6 +15,10 @@ import shutil
 import subprocess
 import sys
 import tempfile
+import time
+import resource
+import signal
+from process_control import run_capture, interrupt_on_term
 from validate import checker_verified
 
 
@@ -23,6 +28,7 @@ def cake_verified(run):
 
 
 def verify(cnf,drat,converter,checker,directory,timeout=600):
+    started=time.monotonic()
     directory=Path(directory);directory.mkdir(parents=True,exist_ok=True)
     sha=lambda p:hashlib.sha256(p.read_bytes()).hexdigest()
     inp=directory/'input.cnf';proof=directory/'proof.drat';lrat=directory/'proof.lrat'
@@ -35,8 +41,9 @@ def verify(cnf,drat,converter,checker,directory,timeout=600):
                   [str(checker),'--CML_HEAP_SIZE=512','--CML_STACK_SIZE=128',str(inp),str(lrat)]]
         for i,cmd in enumerate(commands):
             stage={'command':cmd};report['stages'].append(stage)
+            stage_start=time.monotonic();before=resource.getrusage(resource.RUSAGE_CHILDREN)
             try:
-                run=subprocess.run(cmd,capture_output=True,text=True,timeout=timeout)
+                run=run_capture(cmd,timeout)
             except subprocess.TimeoutExpired as error:
                 stage.update(timed_out=True,timeout=timeout,
                              stdout=(error.stdout or b'').decode(errors='replace') if isinstance(error.stdout,bytes) else error.stdout,
@@ -44,6 +51,11 @@ def verify(cnf,drat,converter,checker,directory,timeout=600):
                 raise
             except OSError as error:
                 stage['error']=str(error);raise
+            finally:
+                usage=resource.getrusage(resource.RUSAGE_CHILDREN)
+                stage['seconds']=time.monotonic()-stage_start
+                stage['cpu_seconds']=usage.ru_utime+usage.ru_stime-before.ru_utime-before.ru_stime
+                stage['children_peak_rss_bytes']=usage.ru_maxrss*(1 if sys.platform=='darwin' else 1024)
             stage.update(returncode=run.returncode,stdout=run.stdout,stderr=run.stderr)
             if i==0:
                 if not checker_verified(run) or not lrat.is_file():return report
@@ -51,6 +63,8 @@ def verify(cnf,drat,converter,checker,directory,timeout=600):
             else:report['verified']=cake_verified(run)
         return report
     finally:
+        report['seconds']=time.monotonic()-started
+        report['rss_scope']='Cumulative child-process high-water RSS, not isolated per-stage peak'
         (directory/'verification.json').write_text(json.dumps(report,indent=2)+'\n')
 
 
@@ -59,9 +73,10 @@ def main():
     p.add_argument('cnf',type=Path);p.add_argument('drat',type=Path)
     p.add_argument('--converter',default=os.getenv('BSAT_DRAT_TRIM','drat-trim'))
     p.add_argument('--cake-checker',default=os.getenv('BSAT_CAKE_LPR','cake_lpr'))
-    p.add_argument('--artifacts',type=Path);p.add_argument('--timeout',type=float,default=600)
+    p.add_argument('--artifacts',type=Path,default=os.getenv('BSAT_VERIFY_ARTIFACTS'));p.add_argument('--timeout',type=float,default=600)
     args=p.parse_args();converter=shutil.which(args.converter);checker=shutil.which(args.cake_checker)
     if not converter or not checker:p.error('converter/checker executable missing')
+    if not math.isfinite(args.timeout) or args.timeout<=0:p.error('timeout must be finite and positive')
     try:
         if args.artifacts:
             args.artifacts.mkdir(parents=True,exist_ok=True)
@@ -77,4 +92,6 @@ def main():
         print(f'c Verification failed: {error}',file=sys.stderr);return 1
 
 
-if __name__=='__main__':raise SystemExit(main())
+if __name__=='__main__':
+    signal.signal(signal.SIGTERM,interrupt_on_term)
+    raise SystemExit(main())

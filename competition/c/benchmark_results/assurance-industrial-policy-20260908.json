@@ -1,0 +1,26 @@
+{
+  "inputs": {
+    "/Users/msharpe/python/bsat/dataset/sat_competition2025/hardware-model-checking/51482a5b06b055edfdca576d654ce191.cnf": {
+      "sha256": "6598c85169bf89b7477d1e94a82c3264d0e6136c150fab7de647b9d60f9b96de"
+    },
+    "/Users/msharpe/python/bsat/dataset/sat_competition2025/hardware-model-checking/70da0b784f49350e05c0ff8434acdc15.cnf": {
+      "sha256": "28bf61a385c6a12975a45b1fe15badc282e6fb8960aa24126f38bf016bfbea08"
+    },
+    "/Users/msharpe/python/bsat/dataset/sat_competition2025/hardware-model-checking/7bdf3e5401cc263951003b569bcd689c.cnf": {
+      "sha256": "7aada02dc300ce6db773dbab34f115969174896a161b6d28ce37f5743e8fff4f"
+    },
+    "/Users/msharpe/python/bsat/dataset/sat_competition2025/hardware-model-checking/96dea3458b5470bd6db5704a0d1e9742.cnf": {
+      "sha256": "53d9f6fbd0a4d19d1281e79fb60b0d16284eb408b678fd932775f80629155bb2"
+    },
+    "/Users/msharpe/python/bsat/dataset/sat_competition2025/hardware-model-checking/546f8e069aa450002a30c9c47538fe95.cnf": {
+      "sha256": "2d3166f230aeb1d6de65b4d8edf4bde8ec88dbf6c913a41e2048ac1d26e3f6c4"
+    }
+  },
+  "selection": "Five smallest local hardware-model-checking inputs by clause count; development certificate coverage, not random/held-out evaluation",
+  "solver_sha256": "59f0e4f7ec607c00b49986e9b6490eb71b000789f10824ad4a99e5d5c51b6869",
+  "timeout": 60,
+  "repeats": 1,
+  "seed": 2026090807,
+  "options": "--chrono --congruence --equiv --equiv-budget 100000000 --alternating --vmtf --binary-proof",
+  "checker": "DRAT-to-LRAT plus pinned cake_lpr, 600 seconds per stage; enclosing timeout 1250"
+}

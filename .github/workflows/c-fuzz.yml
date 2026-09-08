@@ -43,3 +43,21 @@ jobs:
           path: |
             fuzz-artifacts/
             fuzz-corpus/${{ matrix.target }}/
+
+  soak:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build and soak public ABI under ASan/UBSan/LSan
+        shell: bash
+        run: |
+          cycles=128
+          if [ '${{ github.event_name }}' = schedule ] || [ '${{ github.event_name }}' = workflow_dispatch ]; then cycles=2048; fi
+          set -o pipefail
+          BSAT_SOAK_CYCLES="$cycles" ASAN_OPTIONS=detect_leaks=1 make -C competition/c MODE=debug CC=clang soak-test 2>&1 | tee soak.log
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: public-api-soak
+          path: soak.log

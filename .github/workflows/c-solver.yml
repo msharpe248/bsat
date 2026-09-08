@@ -38,10 +38,11 @@ jobs:
           python3 competition/c/tests/test_select_corpus.py
           python3 competition/c/tests/test_benchmark_manifest.py
           python3 competition/c/tests/test_profile_linux.py
+          python3 competition/c/tests/test_process_control.py
       - name: Certificate retention and checker compatibility regressions
         run: DRAT_TRIM="$RUNNER_TEMP/drat-trim" python3 competition/c/tests/test_benchmark_artifacts.py
       - name: Unit and API regressions
-        run: make -C competition/c all test embedding-test parse-benchmark local-search-benchmark incremental-benchmark MODE=${{ matrix.mode }} CC=${{ matrix.compiler }}
+        run: make -C competition/c all test embedding-test soak-test parse-benchmark local-search-benchmark incremental-benchmark MODE=${{ matrix.mode }} CC=${{ matrix.compiler }}
       - name: Allocation failure regressions
         run: make -C competition/c fault-test MODE=${{ matrix.mode }} CC=${{ matrix.compiler }}
       - name: Parse benchmark smoke test
@@ -69,6 +70,7 @@ jobs:
           python3 competition/c/tests/check_process_failures.py --solver "$binary"
           python3 competition/c/tests/check_long_search.py --solver "$binary" --checker "$RUNNER_TEMP/drat-trim" --output "$RUNNER_TEMP/long-search.json"
           BSAT_SOLVER="$binary" BSAT_DRAT_TRIM="$RUNNER_TEMP/drat-trim" BSAT_CAKE_LPR="$RUNNER_TEMP/cake-lpr/cake_lpr" python3 competition/c/tests/test_verified_check.py
+          BSAT_SOLVER="$binary" BSAT_DRAT_TRIM="$RUNNER_TEMP/drat-trim" BSAT_CAKE_LPR="$RUNNER_TEMP/cake-lpr/cake_lpr" python3 competition/c/tests/test_certify_query.py
       - uses: actions/upload-artifact@v4
         if: failure()
         with:
