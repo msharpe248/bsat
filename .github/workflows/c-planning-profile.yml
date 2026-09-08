@@ -26,7 +26,7 @@ jobs:
           BSAT_DRAT_TRIM: ${{ runner.temp }}/drat-trim
           BSAT_CAKE_LPR: ${{ runner.temp }}/cake-lpr/cake_lpr
         run: |
-          perf=$(find /usr/lib/linux-tools -type f -name perf | sort | tail -1)
+          perf=$(find -L /usr/lib/linux-tools -type f -name perf | sort | tail -1)
           test -n "$perf"
           sudo --preserve-env=BSAT_DRAT_TRIM,BSAT_CAKE_LPR "$(command -v python3)" competition/c/tests/planning_host_profile.py --solver competition/c/bin/bsat --perf "$perf" --output "$RUNNER_TEMP/results/profile" "$RUNNER_TEMP"/inputs/planning/*.cnf
           lscpu > "$RUNNER_TEMP/results/lscpu.txt"
