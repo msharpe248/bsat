@@ -1,0 +1,3 @@
+659c7b1f5ef578cd6cfb2f06e477368eb12e82717502e3eaf263d40c5853b233  /home/runner/work/_temp/drat-trim
+a0f239f9159768e9d302c4b7d03a2e620a26ececd1a1ccb493b5fb6f83604e99  /home/runner/work/_temp/cake-lpr/cake_lpr
+911ec7499866ffd6687df29ea80142d68137ddbcd764f499415de9703ad6a6c5  competition/c/tests/verified_check.py

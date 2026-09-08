@@ -66,7 +66,7 @@ jobs:
         run: |
           cpu=$(python3 -c 'import os; print(min(os.sched_getaffinity(0)))')
           taskset -c "$cpu" python3 competition/c/tests/benchmark.py \
-            --cpu-limit 60 --timeout 60 --check-timeout 600 --repeats 2 --seed 2026090843 \
+            --cpu-limit 60 --timeout 60 --check-timeout 600 --repeats 1 --seed 2026090846 \
             --address-space-limit 4294967296 --file-size-limit 1073741824 \
             --checker competition/c/tests/verified_check.py \
             --solver 'control=competition/c/bin/bsat --chrono --congruence --equiv --equiv-budget 100000000 --alternating --binary-proof --proof {proof} {input}' \

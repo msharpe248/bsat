@@ -1,6 +1,8 @@
 import sys
 import tempfile
 import unittest
+from unittest.mock import patch
+import time
 from pathlib import Path
 from benchmark import worker, external_wall_command
 from resource_limits import child_limits
@@ -31,6 +33,13 @@ class Limits(unittest.TestCase):
     def test_exit_marker_mismatch(self):
         row=self.run_case("import sys\nprint('s UNSATISFIABLE')\nprint('v 1 0')\nsys.exit(10)\n")
         self.assertEqual(row['status'],'ERROR');self.assertFalse(row['verified'])
+
+    def test_launch_time_is_charged(self):
+        with patch('benchmark.child_limits',return_value=lambda:time.sleep(0.15)):
+            row=self.run_case("import time\ntime.sleep(.12)\nprint('s SATISFIABLE')\nprint('v 1 0')\nraise SystemExit(10)\n",timeout=.2)
+        self.assertGreaterEqual(row['spawn_seconds'],.12)
+        self.assertTrue(row['wall_limit_hit']);self.assertFalse(row['verified'])
+        self.assertEqual(row['status'],'UNKNOWN')
 
     def test_cpu_ceiling(self):
         row=self.run_case("print('s SATISFIABLE',flush=True)\nprint('v 1 0',flush=True)\nwhile True: pass\n",timeout=5,cpu_limit=1)

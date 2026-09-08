@@ -86,8 +86,9 @@ def worker(config):
                                     preexec_fn=child_limits(config.get('address_space_limit',0),
                                                            config.get('file_size_limit',0),
                                                            config.get('cpu_limit',0)))
+            spawn_seconds=time.perf_counter()-started
             try:
-                code = proc.wait(timeout=config['timeout'])
+                code = proc.wait(timeout=max(0,config['timeout']-spawn_seconds))
             except subprocess.TimeoutExpired:
                 import signal
                 os.killpg(proc.pid, signal.SIGKILL)
@@ -100,6 +101,10 @@ def worker(config):
                     os.killpg(proc.pid, signal.SIGKILL)
                     proc.wait()
         elapsed = time.perf_counter()-started
+        # A slow launch or delayed reap cannot turn an answer observed after
+        # the total deadline into a verified timed solve.
+        if elapsed>config['timeout']:
+            wall_limit_hit=True;code=0
         usage = resource.getrusage(resource.RUSAGE_CHILDREN)
         peak = usage.ru_maxrss if sys.platform == 'darwin' else usage.ru_maxrss*1024
         output = (tmp/'out').read_text(errors='replace')
@@ -141,7 +146,7 @@ def worker(config):
                 name, value = line[2:].split(':', 1)
                 stats[name.strip()] = value.strip()
         result = dict(status=status, verified=verified, seconds=elapsed,
-                    exit_code=proc.returncode, wall_limit_hit=wall_limit_hit,cpu_limit_hit=cpu_limit_hit,
+                    exit_code=proc.returncode,spawn_seconds=spawn_seconds, wall_limit_hit=wall_limit_hit,cpu_limit_hit=cpu_limit_hit,
                     validation_seconds=validation_seconds,end_to_end_seconds=elapsed+validation_seconds,
                     proof_sha256=digest(proof) if proof.exists() else None,
                     cpu_seconds=usage.ru_utime+usage.ru_stime, peak_rss_bytes=peak,
