@@ -5,6 +5,9 @@ work fixes known wrong-answer and memory-management defects and adds independent
 certificate validation. Passing these tests does not establish production
 readiness for arbitrary workloads. See [HARDENING.md](HARDENING.md) for changes,
 validation evidence, research references, and remaining limitations.
+The current acceptance checks, API boundary and broader evaluation are tracked
+in [READINESS.md](READINESS.md), with executable coverage in
+[tests/FEATURE_COVERAGE.md](tests/FEATURE_COVERAGE.md).
 
 ## Build and verify
 

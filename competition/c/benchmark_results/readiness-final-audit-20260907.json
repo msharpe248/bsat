@@ -1,0 +1,68 @@
+{
+  "schema": 1,
+  "status": "Complete; all identified readiness milestones implemented/evaluated and tests passed. Competition readiness is not claimed.",
+  "runtime_revision": "268cebe7a9f0cc0922de7b0fe4b52e220daf5e27",
+  "ci_revision": "98fbd25f9733ba0a6ade0514e6aea0a9993d5bfb",
+  "checks": {
+    "unique_complete_run_grid": 48,
+    "families": 12,
+    "repetitions_per_solver_input": 2,
+    "frozen_input_binary_checker_hashes_match": true,
+    "summaries_recomputed": true,
+    "all_conclusive_screen_answers_independently_verified": true,
+    "screen_execution_or_invalid_answer_errors": 0,
+    "large_hardware_unsat_certificates": 2,
+    "successful_hosted_jobs": 4,
+    "runtime_source_unchanged_during_timing": true
+  },
+  "screen_summary": {
+    "bsat": {
+      "verified_runs": 2,
+      "runs": 24,
+      "mean_par2": 114.85869468228582,
+      "max_rss_bytes": 719552512,
+      "errors": 0
+    },
+    "kissat": {
+      "verified_runs": 4,
+      "runs": 24,
+      "mean_par2": 103.35334317011682,
+      "max_rss_bytes": 1032060928,
+      "errors": 0
+    }
+  },
+  "runtime_sources": {
+    "competition/c/include/arena.h": "542b90cb926e5e4a360acddeaa96347fee0ad9528b46f0e2193e54f608e6ef1f",
+    "competition/c/include/dimacs.h": "c3c7dd2937b5bf0d1d60ba4b5316f398d4f62fbc2329040919af39c6275121a6",
+    "competition/c/include/elim.h": "1cb9ba8a9b09d9d92e1522b81236ba4d763bf02b8aa6fc6c5f1c191b5504324d",
+    "competition/c/include/local_search.h": "9cda5c62369707af6204f4d8dccde6caff5f50bb379119f31c2709e6908d2ca6",
+    "competition/c/include/solver.h": "554e102c21553457f6324d12777fe4317969d5d62a73725c83baa14e051f07b9",
+    "competition/c/include/types.h": "bf57760f94c39bfe6901e2e09abd458206b36c1d289aabe54f3c288f6896bd8f",
+    "competition/c/include/watch.h": "376ba98f21f8f5e40c6e830735fa081e6fe092689bc8536da61f678bc3b2128d",
+    "competition/c/src/arena.c": "8a07d1024e9771c2e286c11738249bcf4ea0f0586a1f2e7d93053db710236b09",
+    "competition/c/src/congruence.c": "2877f52df54219eb81b488cffd836e4fde3a80493ccd4d9fdd06312ea61cf922",
+    "competition/c/src/dimacs.c": "2c9cc02f6c2af433fee32932332d9d7dff5b77fd4ba603ad1a9eac5837551967",
+    "competition/c/src/elim.c": "ae8457db6c923b5c1b35f4342cc2e34390bcc4f245bba738e0e75cdf6ea3b092",
+    "competition/c/src/equiv.c": "dab861e5d7c98b7b6cf3c56dd5a1084bae645e91ef13a530616b17cd435ae600",
+    "competition/c/src/local_search.c": "81d376ac546c27e77cf480da7e8241e9d9922a37a16c22f776bce8ee09ae86e4",
+    "competition/c/src/main.c": "3688e363e68db9adcc84f7cda8450d3f73929fabf64715a227cfc1aa68c3bee0",
+    "competition/c/src/minimize.c": "957a560e924f812c68e768b2f517ccb22f0737ddf0bf44de4b462c522e17d92f",
+    "competition/c/src/solver.c": "8de91cc2e9a45eda01ca2eab416d1617b811c3dc04ed6c50635a7cde661b7599",
+    "competition/c/src/vmtf.c": "a4f7a46094f088ddb144fbb80cacf886ed627971bd4f35ca94e6e28f394e022c",
+    "competition/c/src/watch.c": "16a673a0d8b09792bc57a8c04c12f72b73a8ef8524c5c9e2c43366b703454a42"
+  },
+  "records": {
+    "readiness-large-unsat-20260907.json": "24adbba63d0cc8ed6d23dba3b46fca15c40196f893ebbee976eb1aaa9129c1e9",
+    "readiness-profile-20260907.json": "7c6c07f808f08464b93cddba0f38aaccf92c553eb2c32eb515b395e99f42fa1e",
+    "readiness-fresh-policy-20260907.json": "4ebb4de618861e542c3d37d58c1c809b701a16f007c21ca729cb1b61c896ecd6",
+    "readiness-fresh-20260907.json": "fbadac18b86488b1aa269ad543c7d87cb79c43763584162ac3dd9dd3f83eb6ba",
+    "readiness-ci-20260907.json": "a60e8850740831710ad420fe4a2f6cda3ba81bdd20d589c012098ec60a71717c",
+    "readiness-fresh-corpus-20260907.json": "5afceeeeea355651502bc2c360840cf75c5f6dbb580023de998ea0f136f34e26"
+  },
+  "limitations": [
+    "No formal verification of the whole C solver",
+    "Constructed fault/stress tests do not exhaust allocation paths or option combinations",
+    "Twelve bounded selected families and two repetitions are not a full competition evaluation",
+    "Concurrent embedding, conditional proofs and retained learned clauses across calls remain unsupported"
+  ]
+}

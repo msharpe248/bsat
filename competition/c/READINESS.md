@@ -38,16 +38,30 @@ UNSAT certificate. UNKNOWN is unfinished, not an incorrect answer.
    Evidence: `benchmark_results/api-contract-20260907.json`. Concurrent embedding,
    conditional proofs and learned-clause reuse remain unsupported capabilities,
    rather than implied production promises.
-5. Profiling and broader frozen evaluation: profiling complete; evaluation running.
-   `READINESS_PROFILING.md` records six native profiles. The new seeded selector
-   gives families equal entry opportunities instead of preferring the smallest
-   inputs (six selector tests and three manifest tests pass). The frozen sample
-   contains twelve unused families, two repetitions per solver, equal 60-second
-   wall limits and a pinned Kissat reference. The manifest/policy are committed
-   before final results are assessed; no policy changes during execution.
+5. Profiling and broader frozen evaluation: complete. Six native profiles
+   identify propagation and proof output as substantial costs. The frozen screen
+   completed all 48 runs across twelve families, two repetitions per solver and
+   equal 60-second wall limits. BSAT verified one input twice (2/24 runs); Kissat
+   verified two inputs twice (4/24). No invalid-answer or execution errors occurred.
+   Both text/binary proofs for a separate 160,903-variable, 399,948-clause hardware
+   UNSAT case also verified after timing. See `READINESS_EVALUATION.md` and
+   `READINESS_PROFILING.md` for results, limitations and all pinned records.
 6. Coverage documentation: complete. `tests/FEATURE_COVERAGE.md` now maps
    executable checks to behavior and limits, replacing the unsupported 100%
    claim. `tests/TEST_SUMMARY.md` points to that maintained inventory.
 
 Each milestone is committed and pushed separately. Benchmark manifests and
 policies must be frozen before execution, and reused inputs are development data.
+
+## Final validation status
+
+All four hosted Linux/macOS release/sanitizer jobs passed in
+[run 34179106951](https://github.com/msharpe248/bsat/actions/runs/34179106951),
+after raising the macOS sanitizer allowance without removing coverage. The final
+integrity audit confirms the complete benchmark grid, exact frozen tool/input
+hashes, checked conclusive answers and unchanged runtime source during timing.
+
+The identified readiness work is complete. Competition performance, formal
+whole-program soundness and the unsupported embedding capabilities remain outside
+these claims. On the repeated Summle case, BSAT takes about 58.3 seconds versus
+Kissat's 9.48 seconds; that is a concrete remaining performance gap.
