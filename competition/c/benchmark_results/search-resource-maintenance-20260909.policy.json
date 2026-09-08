@@ -1,0 +1,90 @@
+{
+  "scope": "Frozen serial search ablations, with optional intrusive phase accounting.",
+  "accounting": false,
+  "solver_sha256": "d1b936cc9cc47b60cd5c2d17ea4b8b6327e9d43f29bda92a32735aade15bd53f",
+  "commands": {
+    "control": [
+      "/Users/msharpe/python/bsat/competition/c/bin/bsat",
+      "--chrono",
+      "--congruence",
+      "--equiv",
+      "--equiv-budget",
+      "100000000",
+      "--alternating",
+      "--time",
+      "12.0",
+      "--binary-proof",
+      "--proof",
+      "{proof}",
+      "{input}"
+    ],
+    "growing-reduction": [
+      "/Users/msharpe/python/bsat/competition/c/bin/bsat",
+      "--chrono",
+      "--congruence",
+      "--equiv",
+      "--equiv-budget",
+      "100000000",
+      "--alternating",
+      "--reduce-increment",
+      "1000",
+      "--time",
+      "12.0",
+      "--binary-proof",
+      "--proof",
+      "{proof}",
+      "{input}"
+    ],
+    "no-rephase": [
+      "/Users/msharpe/python/bsat/competition/c/bin/bsat",
+      "--chrono",
+      "--congruence",
+      "--equiv",
+      "--equiv-budget",
+      "100000000",
+      "--alternating",
+      "--no-rephase",
+      "--time",
+      "12.0",
+      "--binary-proof",
+      "--proof",
+      "{proof}",
+      "{input}"
+    ],
+    "walk": [
+      "/Users/msharpe/python/bsat/competition/c/bin/bsat",
+      "--chrono",
+      "--congruence",
+      "--equiv",
+      "--equiv-budget",
+      "100000000",
+      "--alternating",
+      "--local-search",
+      "--ls-save-phases",
+      "--time",
+      "12.0",
+      "--binary-proof",
+      "--proof",
+      "{proof}",
+      "{input}"
+    ]
+  },
+  "inputs": {
+    "/Users/msharpe/python/bsat/dataset/sat_competition2025/random-csp/9b998be0c639d06988c4902eb125c0b7.cnf": {
+      "sha256": "a864d5f3f6e6a0a41d64f20810a59bdd15c5bc2539e4ea5370015a158d77fa25"
+    },
+    "/Users/msharpe/python/bsat/dataset/sat_competition2025/planning/16c999d046885c8e51f196e60c34d966.cnf": {
+      "sha256": "77db4df9cc8bd8cd59dae994f24a3cf686ebd46e2aa123c534b5e3cc3a75d9b5"
+    },
+    "/Users/msharpe/python/bsat/dataset/sat_competition2025/random-csp/72a033a7a86f1b89b1bdd8e28a97ecdf.cnf": {
+      "sha256": "a8b5091ed5f9bc383b1fb68e152fe2274e90216e9f978722da30ec43ece9c74a"
+    },
+    "/Users/msharpe/python/bsat/dataset/sat_competition2025/planning/21b173943af57eefaac5e88bfa2662ad.cnf": {
+      "sha256": "c0391929a13777b719e8383b31cbee5904e05741e105c4c22914a2259a17ecfd"
+    }
+  },
+  "cpu_seconds": 12.0,
+  "outer_wall_seconds": 17.0,
+  "repeats": 1,
+  "seed": 2026090901
+}
