@@ -17,8 +17,14 @@ UNSAT certificate. UNKNOWN is unfinished, not an incorrect answer.
    The sweep exposed and fixed error clearing during repeated solves. Failed
    instances now remain poisoned; construct a new solver to retry. Evidence:
    `benchmark_results/resource-failures-20260907.json`.
-3. Long-search validation: pending. Add structured SAT/UNSAT cases and equivalent
-   variable/clause permutations with independent certificates and event coverage.
+3. Long-search validation: complete. Each build passed 24 assignment-exclusion
+   and pigeonhole cases, including signed variable permutations and reordered
+   clauses/literals. Independent models and text/binary certificates passed.
+   Per build: 215,802 conflicts, 3,834 restarts, 5,632 reductions, 2,501 garbage
+   collections and 16 substituted variables. CI now runs the suite; failures
+   preserve input/proof files. Records: `benchmark_results/long-search-*-20260907.json`.
+   These are deterministic stress cases, not exhaustive combinations or a
+   substitute for large application benchmarks.
 4. Production API contract: pending. Specify ownership, error/result lifetime,
    repeated solves, assumptions, concurrency and interruption behavior; exercise
    the supported contract. Learned-clause reuse and concurrent embedding are not

@@ -52,8 +52,11 @@ jobs:
           python3 competition/c/tests/validate_local_search.py --solver "$binary" --checker "$RUNNER_TEMP/drat-trim"
           python3 competition/c/tests/check_deadlines.py --solver "$binary"
           python3 competition/c/tests/check_process_failures.py --solver "$binary"
+          python3 competition/c/tests/check_long_search.py --solver "$binary" --checker "$RUNNER_TEMP/drat-trim" --output "$RUNNER_TEMP/long-search.json"
       - uses: actions/upload-artifact@v4
         if: failure()
         with:
           name: failures-${{ matrix.os }}-${{ matrix.mode }}
-          path: validation-failures/
+          path: |
+            validation-failures/
+            ${{ runner.temp }}/long-search.json
