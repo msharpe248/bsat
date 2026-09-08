@@ -80,9 +80,33 @@ void solver_print_accounting(const Solver *s) {
     PRINT_SEARCH(binary_visits);PRINT_SEARCH(long_visits);PRINT_SEARCH(blocker_hits);PRINT_SEARCH(first_hits);
     PRINT_SEARCH(replacement_scans);PRINT_SEARCH(replacement_moves);PRINT_SEARCH(long_units);PRINT_SEARCH(long_conflicts);
     PRINT_SEARCH(scan_size_3);PRINT_SEARCH(scan_size_4_8);PRINT_SEARCH(scan_size_9_plus);
+    PRINT_SEARCH(original_scans);PRINT_SEARCH(learned_scans);
+    PRINT_SEARCH(scan_age_0_99);PRINT_SEARCH(scan_age_100_999);PRINT_SEARCH(scan_age_1000_plus);
+    PRINT_SEARCH(scans_before_unit_or_analysis);PRINT_SEARCH(scans_after_unit_or_analysis);
     PRINT_SEARCH(learned_reason_uses);PRINT_SEARCH(learned_reason_lbd_sum);
     PRINT_SEARCH(reduced_candidates);PRINT_SEARCH(deleted_without_analysis_use);
 #undef PRINT_SEARCH
+#ifdef BSAT_SEARCH_DIAGNOSTICS
+    /* Bounded top ten live records. CRefs identify this snapshot only; GC copies
+       all metadata. Deleted records are excluded, aggregate scan counts are not. */
+    CRef top[10]={0};
+    for(size_t at=1;at<s->arena->size;) {
+        const ClauseHeader *h=CLAUSE_HEADER(s->arena,at);
+        if(!clause_deleted(s->arena,at) && h->scans) {
+            for(unsigned k=0;k<10;++k) if(!top[k] || h->scans>CLAUSE_HEADER(s->arena,top[k])->scans) {
+                for(unsigned j=9;j>k;--j) top[j]=top[j-1];
+                top[k]=(CRef)at;break;
+            }
+        }
+        at+=sizeof(ClauseHeader)/sizeof(uint32_t)+h->size;
+    }
+    for(unsigned k=0;k<10 && top[k];++k) {
+        const ClauseHeader *h=CLAUSE_HEADER(s->arena,top[k]);
+        uint64_t born=((uint64_t)h->born_hi<<32)|h->born_lo;
+        printf("c Hot live clause: cref=%u learned=%u size=%u scans=%u units=%u analyses=%u born=%llu\n",
+               top[k],clause_learned(s->arena,top[k]),h->size,h->scans,h->units,h->analyses,(unsigned long long)born);
+    }
+#endif
     SolverMemory m=solver_memory(s);
 #define PRINT_MEMORY(field) printf("c Owned capacity " #field ": %llu\n",(unsigned long long)m.field)
     PRINT_MEMORY(arena);PRINT_MEMORY(watches);PRINT_MEMORY(input);PRINT_MEMORY(variables);

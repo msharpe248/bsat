@@ -20,8 +20,8 @@ static void check(const unsigned *order, unsigned fraction, uint32_t cutoff) {
     }
     /* The original units entail every synthetic learned clause. Dead prefix
        padding forces relocation, even when reduction retains every clause. */
-    Lit padding[200];for (unsigned i = 0; i < 200; ++i) padding[i] = mkLit(9, false);
-    CRef dead = arena_alloc(s->arena, padding, 200, false);assert(dead != INVALID_CLAUSE);
+    Lit padding[1000];for (unsigned i = 0; i < 1000; ++i) padding[i] = mkLit(9, false);
+    CRef dead = arena_alloc(s->arena, padding, 1000, false);assert(dead != INVALID_CLAUSE);
     arena_delete(s->arena, dead);
     s->learnts = malloc(8 * sizeof *s->learnts);assert(s->learnts);s->learnts_size = 8;
     for (unsigned at = 0; at < 8; ++at) {

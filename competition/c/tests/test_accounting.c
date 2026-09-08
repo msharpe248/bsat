@@ -38,6 +38,9 @@ static void propagation_counters(void) {
         assert(s->accounting.blocker_hits+s->accounting.first_hits+
                s->accounting.long_units+s->accounting.long_conflicts+
                s->accounting.replacement_moves==s->accounting.long_visits);
+        assert(s->accounting.replacement_scans==s->accounting.original_scans+s->accounting.learned_scans);
+        assert(s->accounting.replacement_scans==s->accounting.scan_age_0_99+s->accounting.scan_age_100_999+s->accounting.scan_age_1000_plus);
+        assert(s->accounting.replacement_scans==s->accounting.scans_before_unit_or_analysis+s->accounting.scans_after_unit_or_analysis);
         solver_free(s);
     }
 }

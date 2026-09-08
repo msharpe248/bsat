@@ -189,6 +189,10 @@ CRef arena_alloc(Arena* arena, const Lit* lits, uint32_t size, bool learned) {
     header->flags = learned ? CLAUSE_LEARNED : CLAUSE_ORIGINAL;
     header->lbd = 0;
     header->activity = 0.0f;
+#ifdef BSAT_SEARCH_DIAGNOSTICS
+    header->born_lo = header->born_hi = 0;
+    header->scans = header->units = header->analyses = 0;
+#endif
 
     // Copy literals
     Lit* dest = CLAUSE_LITS(arena, cref);

@@ -1,0 +1,279 @@
+{
+  "scope": "Intrusive fixed-conflict attribution, preserving all hot live clause rows.",
+  "solver_sha256": "2af5bfd4fea5f534fb6e15392454e636b4bd95b52b9324344d874ac2f65e2198",
+  "conflicts": 100000,
+  "runs": [
+    {
+      "input": "/Users/msharpe/python/bsat/dataset/sat_competition2025/planning/16c999d046885c8e51f196e60c34d966.cnf",
+      "input_sha256": "77db4df9cc8bd8cd59dae994f24a3cf686ebd46e2aa123c534b5e3cc3a75d9b5",
+      "command": [
+        "/Users/msharpe/python/bsat/competition/c/bin/bsat_diagnostic",
+        "--accounting",
+        "--chrono",
+        "--congruence",
+        "--equiv",
+        "--equiv-budget",
+        "100000000",
+        "--alternating",
+        "--conflicts",
+        "100000",
+        "/Users/msharpe/python/bsat/dataset/sat_competition2025/planning/16c999d046885c8e51f196e60c34d966.cnf"
+      ],
+      "result": 0,
+      "counters": {
+        "binary_visits": 244086889,
+        "long_visits": 132445482,
+        "blocker_hits": 62947551,
+        "first_hits": 1377421,
+        "replacement_scans": 260143850,
+        "replacement_moves": 16410942,
+        "long_units": 51638801,
+        "long_conflicts": 70767,
+        "scan_size_3": 48324988,
+        "scan_size_4_8": 23490919,
+        "scan_size_9_plus": 188327943,
+        "original_scans": 103546077,
+        "learned_scans": 156597773,
+        "scan_age_0_99": 68553278,
+        "scan_age_100_999": 69775608,
+        "scan_age_1000_plus": 121814964,
+        "scans_before_unit_or_analysis": 18392908,
+        "scans_after_unit_or_analysis": 241750942,
+        "learned_reason_uses": 647126,
+        "learned_reason_lbd_sum": 7297211,
+        "reduced_candidates": 193755,
+        "deleted_without_analysis_use": 9568
+      },
+      "hot_live": [
+        {
+          "cref": 786049,
+          "learned": 0,
+          "size": 61,
+          "scans": 252444,
+          "units": 1,
+          "analyses": 0,
+          "born": 0
+        },
+        {
+          "cref": 775753,
+          "learned": 0,
+          "size": 61,
+          "scans": 231692,
+          "units": 0,
+          "analyses": 0,
+          "born": 0
+        },
+        {
+          "cref": 795101,
+          "learned": 0,
+          "size": 61,
+          "scans": 224377,
+          "units": 0,
+          "analyses": 0,
+          "born": 0
+        },
+        {
+          "cref": 799217,
+          "learned": 0,
+          "size": 61,
+          "scans": 222111,
+          "units": 0,
+          "analyses": 0,
+          "born": 0
+        },
+        {
+          "cref": 801148,
+          "learned": 0,
+          "size": 61,
+          "scans": 196379,
+          "units": 0,
+          "analyses": 0,
+          "born": 0
+        },
+        {
+          "cref": 802915,
+          "learned": 0,
+          "size": 61,
+          "scans": 163481,
+          "units": 0,
+          "analyses": 0,
+          "born": 0
+        },
+        {
+          "cref": 740659,
+          "learned": 0,
+          "size": 61,
+          "scans": 145143,
+          "units": 0,
+          "analyses": 0,
+          "born": 0
+        },
+        {
+          "cref": 765548,
+          "learned": 0,
+          "size": 61,
+          "scans": 129279,
+          "units": 0,
+          "analyses": 0,
+          "born": 0
+        },
+        {
+          "cref": 810854,
+          "learned": 0,
+          "size": 60,
+          "scans": 116115,
+          "units": 0,
+          "analyses": 0,
+          "born": 0
+        },
+        {
+          "cref": 810169,
+          "learned": 0,
+          "size": 60,
+          "scans": 115466,
+          "units": 2,
+          "analyses": 0,
+          "born": 0
+        }
+      ],
+      "stdout": "c BSAT Competition Solver v1.0\nc PID: 17209 (send SIGUSR1 for progress: kill -USR1 17209)\nc Reading from /Users/msharpe/python/bsat/dataset/sat_competition2025/planning/16c999d046885c8e51f196e60c34d966.cnf\nc Variables: 50277\nc Clauses:   283903\nc\nc Accounting checkpoint: parsed\nc Inclusive phase parse: 0.034094125 seconds, 1 calls\nc Inclusive phase propagate: 0.000000000 seconds, 0 calls\nc Inclusive phase analyze: 0.000000000 seconds, 0 calls\nc Inclusive phase reduce: 0.000000000 seconds, 0 calls\nc Inclusive phase gc: 0.000000000 seconds, 0 calls\nc Inclusive phase preprocess: 0.000000000 seconds, 0 calls\nc Inclusive phase simplify: 0.000000000 seconds, 0 calls\nc Inclusive phase reconstruct: 0.000000000 seconds, 0 calls\nc Inclusive phase model: 0.000000000 seconds, 0 calls\nc Inclusive phase proof: 0.000000000 seconds, 0 calls\nc Inclusive phase search: 0.000000000 seconds, 0 calls\nc Temporary congruence capacity peak: 0\nc Rebuild owned capacity overlap peak: 0\nc Search diagnostics: compiled in; counters require --accounting\nc Search binary_visits: 0\nc Search long_visits: 0\nc Search blocker_hits: 0\nc Search first_hits: 0\nc Search replacement_scans: 0\nc Search replacement_moves: 0\nc Search long_units: 0\nc Search long_conflicts: 0\nc Search scan_size_3: 0\nc Search scan_size_4_8: 0\nc Search scan_size_9_plus: 0\nc Search original_scans: 0\nc Search learned_scans: 0\nc Search scan_age_0_99: 0\nc Search scan_age_100_999: 0\nc Search scan_age_1000_plus: 0\nc Search scans_before_unit_or_analysis: 0\nc Search scans_after_unit_or_analysis: 0\nc Search learned_reason_uses: 0\nc Search learned_reason_lbd_sum: 0\nc Search reduced_candidates: 0\nc Search deleted_without_analysis_use: 0\nc Owned capacity arena: 13641832\nc Owned capacity watches: 8125160\nc Owned capacity input: 4194048\nc Owned capacity variables: 3866683\nc Owned capacity references: 2097152\nc Owned capacity elimination: 0\nc Owned capacity local_search: 0\nc Owned capacity other: 2008\nc Owned capacity total: 31926883\nc Owned capacity complete: yes\nc Accounting scope: inclusive intrusive CPU; retained requested capacities, not RSS or transient peaks\ns UNKNOWN\nc\nc CPU time:         5.297 s\nc\nc ========== Statistics ==========\nc CPU time          : 5.297 s\nc Chronological backtracks: 576\nc Chronological retained assignments: 1878400\nc Chronological repaired watches: 197\nc Lower-level conflicts: 73\nc Congruence work: 6843255\nc Congruence gates: 12531\nc Congruence binary seeds: 1477\nc Congruence strengthened: 0\nc Congruence root units: 5\nc Congruence merges: 1064\nc Congruence clauses: 2129\nc Decisions         : 308452\nc Propagations      : 118025477\nc Conflicts         : 100000\nc Restarts          : 152\nc Reused levels     : 0\nc Local search calls: 0\nc Local search wins : 0\nc Local search flips: 0\nc Learned clauses   : 100000\nc Learned literals  : 19128444\nc Probing calls     : 1\nc Probing work      : 1000874\nc Deleted clauses   : 96891\nc Binary minimize checks: 0\nc Binary minimize removed: 0\nc Minimize inspections: 25516030\nc Minimize binary steps: 0\nc Minimize cache hits : 26889\nc Minimize budget hits: 30\nc Equivalence work  : 2928065\nc Substituted vars  : 2537\nc Rewritten clauses : 22526\nc SCC contradictions: 0\nc Derived binaries  : 625\nc LBD improvements  : 0\nc Deadline clock reads: 0\nc Target literals copied: 841119\nc Target values cleared: 1357506\nc Blocked clauses   : 0\nc Eliminated variables: 0\nc Elimination resolvents: 0\nc Elimination removed: 0\nc Subsumed clauses  : 9\nc Minimized literals: 221865\nc Glue clauses      : 981\nc Max LBD           : 631\nc Decisions/sec     : 58229\nc Propagations/sec  : 22280625\nc Conflicts/sec     : 18878\nc Literal inspections : 711771160\nc Garbage collections : 15\nc Reductions          : 50\nc Mode                : stable\nc Memory used       : 14.10 MB\nc Memory allocated  : 17.93 MB\nc Memory peak       : 19.43 MB\nc Memory wasted     : 2.15 MB\nc Arena growths     : 38\nc\nc Accounting checkpoint: final\nc Inclusive phase parse: 0.034094125 seconds, 1 calls\nc Inclusive phase propagate: 3.876870340 seconds, 416916 calls\nc Inclusive phase analyze: 0.425402688 seconds, 100000 calls\nc Inclusive phase reduce: 0.195834171 seconds, 50 calls\nc Inclusive phase gc: 0.154992458 seconds, 50 calls\nc Inclusive phase preprocess: 0.082598458 seconds, 3 calls\nc Inclusive phase simplify: 0.000020876 seconds, 162 calls\nc Inclusive phase reconstruct: 0.000000000 seconds, 0 calls\nc Inclusive phase model: 0.000000000 seconds, 0 calls\nc Inclusive phase proof: 0.025090625 seconds, 224757 calls\nc Inclusive phase search: 5.297212375 seconds, 1 calls\nc Temporary congruence capacity peak: 17306008\nc Rebuild owned capacity overlap peak: 61556067\nc Search diagnostics: compiled in; counters require --accounting\nc Search binary_visits: 244086889\nc Search long_visits: 132445482\nc Search blocker_hits: 62947551\nc Search first_hits: 1377421\nc Search replacement_scans: 260143850\nc Search replacement_moves: 16410942\nc Search long_units: 51638801\nc Search long_conflicts: 70767\nc Search scan_size_3: 48324988\nc Search scan_size_4_8: 23490919\nc Search scan_size_9_plus: 188327943\nc Search original_scans: 103546077\nc Search learned_scans: 156597773\nc Search scan_age_0_99: 68553278\nc Search scan_age_100_999: 69775608\nc Search scan_age_1000_plus: 121814964\nc Search scans_before_unit_or_analysis: 18392908\nc Search scans_after_unit_or_analysis: 241750942\nc Search learned_reason_uses: 647126\nc Search learned_reason_lbd_sum: 7297211\nc Search reduced_candidates: 193755\nc Search deleted_without_analysis_use: 9568\nc Hot live clause: cref=786049 learned=0 size=61 scans=252444 units=1 analyses=0 born=0\nc Hot live clause: cref=775753 learned=0 size=61 scans=231692 units=0 analyses=0 born=0\nc Hot live clause: cref=795101 learned=0 size=61 scans=224377 units=0 analyses=0 born=0\nc Hot live clause: cref=799217 learned=0 size=61 scans=222111 units=0 analyses=0 born=0\nc Hot live clause: cref=801148 learned=0 size=61 scans=196379 units=0 analyses=0 born=0\nc Hot live clause: cref=802915 learned=0 size=61 scans=163481 units=0 analyses=0 born=0\nc Hot live clause: cref=740659 learned=0 size=61 scans=145143 units=0 analyses=0 born=0\nc Hot live clause: cref=765548 learned=0 size=61 scans=129279 units=0 analyses=0 born=0\nc Hot live clause: cref=810854 learned=0 size=60 scans=116115 units=0 analyses=0 born=0\nc Hot live clause: cref=810169 learned=0 size=60 scans=115466 units=2 analyses=0 born=0\nc Owned capacity arena: 18803016\nc Owned capacity watches: 11009064\nc Owned capacity input: 4194048\nc Owned capacity variables: 3866683\nc Owned capacity references: 2129920\nc Owned capacity elimination: 5817558\nc Owned capacity local_search: 0\nc Owned capacity other: 52287\nc Owned capacity total: 45872576\nc Owned capacity complete: yes\nc Accounting scope: inclusive intrusive CPU; retained requested capacities, not RSS or transient peaks\n",
+      "stderr": ""
+    },
+    {
+      "input": "/Users/msharpe/python/bsat/dataset/sat_competition2025/planning/21b173943af57eefaac5e88bfa2662ad.cnf",
+      "input_sha256": "c0391929a13777b719e8383b31cbee5904e05741e105c4c22914a2259a17ecfd",
+      "command": [
+        "/Users/msharpe/python/bsat/competition/c/bin/bsat_diagnostic",
+        "--accounting",
+        "--chrono",
+        "--congruence",
+        "--equiv",
+        "--equiv-budget",
+        "100000000",
+        "--alternating",
+        "--conflicts",
+        "100000",
+        "/Users/msharpe/python/bsat/dataset/sat_competition2025/planning/21b173943af57eefaac5e88bfa2662ad.cnf"
+      ],
+      "result": 0,
+      "counters": {
+        "binary_visits": 41798751,
+        "long_visits": 33921375,
+        "blocker_hits": 18583696,
+        "first_hits": 974023,
+        "replacement_scans": 106333326,
+        "replacement_moves": 8124252,
+        "long_units": 6165223,
+        "long_conflicts": 74181,
+        "scan_size_3": 1624679,
+        "scan_size_4_8": 12728528,
+        "scan_size_9_plus": 91980119,
+        "original_scans": 14899242,
+        "learned_scans": 91434084,
+        "scan_age_0_99": 41548177,
+        "scan_age_100_999": 40607597,
+        "scan_age_1000_plus": 24177552,
+        "scans_before_unit_or_analysis": 8713669,
+        "scans_after_unit_or_analysis": 97619657,
+        "learned_reason_uses": 662342,
+        "learned_reason_lbd_sum": 6796285,
+        "reduced_candidates": 187379,
+        "deleted_without_analysis_use": 11360
+      },
+      "hot_live": [
+        {
+          "cref": 20318,
+          "learned": 0,
+          "size": 24,
+          "scans": 121408,
+          "units": 5041,
+          "analyses": 0,
+          "born": 0
+        },
+        {
+          "cref": 89975,
+          "learned": 0,
+          "size": 24,
+          "scans": 118016,
+          "units": 4210,
+          "analyses": 1250,
+          "born": 0
+        },
+        {
+          "cref": 218686,
+          "learned": 0,
+          "size": 24,
+          "scans": 117425,
+          "units": 4970,
+          "analyses": 0,
+          "born": 0
+        },
+        {
+          "cref": 28847,
+          "learned": 0,
+          "size": 24,
+          "scans": 116409,
+          "units": 3066,
+          "analyses": 847,
+          "born": 0
+        },
+        {
+          "cref": 206126,
+          "learned": 0,
+          "size": 24,
+          "scans": 116361,
+          "units": 2933,
+          "analyses": 1113,
+          "born": 0
+        },
+        {
+          "cref": 227203,
+          "learned": 0,
+          "size": 24,
+          "scans": 106897,
+          "units": 2953,
+          "analyses": 1207,
+          "born": 0
+        },
+        {
+          "cref": 75191,
+          "learned": 0,
+          "size": 24,
+          "scans": 105442,
+          "units": 3024,
+          "analyses": 1021,
+          "born": 0
+        },
+        {
+          "cref": 137702,
+          "learned": 0,
+          "size": 24,
+          "scans": 97784,
+          "units": 2441,
+          "analyses": 1052,
+          "born": 0
+        },
+        {
+          "cref": 187497,
+          "learned": 0,
+          "size": 24,
+          "scans": 96309,
+          "units": 1762,
+          "analyses": 1001,
+          "born": 0
+        },
+        {
+          "cref": 153010,
+          "learned": 0,
+          "size": 24,
+          "scans": 93424,
+          "units": 3299,
+          "analyses": 1137,
+          "born": 0
+        }
+      ],
+      "stdout": "c BSAT Competition Solver v1.0\nc PID: 17210 (send SIGUSR1 for progress: kill -USR1 17210)\nc Reading from /Users/msharpe/python/bsat/dataset/sat_competition2025/planning/21b173943af57eefaac5e88bfa2662ad.cnf\nc Variables: 3084\nc Clauses:   26019\nc\nc Accounting checkpoint: parsed\nc Inclusive phase parse: 0.003055375 seconds, 1 calls\nc Inclusive phase propagate: 0.000000000 seconds, 0 calls\nc Inclusive phase analyze: 0.000000000 seconds, 0 calls\nc Inclusive phase reduce: 0.000000000 seconds, 0 calls\nc Inclusive phase gc: 0.000000000 seconds, 0 calls\nc Inclusive phase preprocess: 0.000000000 seconds, 0 calls\nc Inclusive phase simplify: 0.000000000 seconds, 0 calls\nc Inclusive phase reconstruct: 0.000000000 seconds, 0 calls\nc Inclusive phase model: 0.000000000 seconds, 0 calls\nc Inclusive phase proof: 0.000000000 seconds, 0 calls\nc Inclusive phase search: 0.000000000 seconds, 0 calls\nc Temporary congruence capacity peak: 0\nc Rebuild owned capacity overlap peak: 0\nc Search diagnostics: compiled in; counters require --accounting\nc Search binary_visits: 0\nc Search long_visits: 0\nc Search blocker_hits: 0\nc Search first_hits: 0\nc Search replacement_scans: 0\nc Search replacement_moves: 0\nc Search long_units: 0\nc Search long_conflicts: 0\nc Search scan_size_3: 0\nc Search scan_size_4_8: 0\nc Search scan_size_9_plus: 0\nc Search original_scans: 0\nc Search learned_scans: 0\nc Search scan_age_0_99: 0\nc Search scan_age_100_999: 0\nc Search scan_age_1000_plus: 0\nc Search scans_before_unit_or_analysis: 0\nc Search scans_after_unit_or_analysis: 0\nc Search learned_reason_uses: 0\nc Search learned_reason_lbd_sum: 0\nc Search reduced_candidates: 0\nc Search deleted_without_analysis_use: 0\nc Owned capacity arena: 1197684\nc Owned capacity watches: 643592\nc Owned capacity input: 524032\nc Owned capacity variables: 241723\nc Owned capacity references: 131072\nc Owned capacity elimination: 0\nc Owned capacity local_search: 0\nc Owned capacity other: 2008\nc Owned capacity total: 2740111\nc Owned capacity complete: yes\nc Accounting scope: inclusive intrusive CPU; retained requested capacities, not RSS or transient peaks\ns UNKNOWN\nc\nc CPU time:         1.757 s\nc\nc ========== Statistics ==========\nc CPU time          : 1.757 s\nc Chronological backtracks: 237\nc Chronological retained assignments: 13450\nc Chronological repaired watches: 13\nc Lower-level conflicts: 33\nc Congruence work: 376028\nc Congruence gates: 108\nc Congruence binary seeds: 24\nc Congruence strengthened: 0\nc Congruence root units: 0\nc Congruence merges: 0\nc Congruence clauses: 0\nc Decisions         : 294464\nc Propagations      : 14421062\nc Conflicts         : 100000\nc Restarts          : 180\nc Reused levels     : 0\nc Local search calls: 0\nc Local search wins : 0\nc Local search flips: 0\nc Learned clauses   : 100000\nc Learned literals  : 11122158\nc Probing calls     : 1\nc Probing work      : 290812\nc Deleted clauses   : 93704\nc Binary minimize checks: 0\nc Binary minimize removed: 0\nc Minimize inspections: 22552433\nc Minimize binary steps: 0\nc Minimize cache hits : 69189\nc Minimize budget hits: 41\nc Equivalence work  : 241249\nc Substituted vars  : 24\nc Rewritten clauses : 322\nc SCC contradictions: 0\nc Derived binaries  : 24\nc LBD improvements  : 0\nc Deadline clock reads: 0\nc Target literals copied: 33220\nc Target values cleared: 43190\nc Blocked clauses   : 0\nc Eliminated variables: 0\nc Elimination resolvents: 0\nc Elimination removed: 0\nc Subsumed clauses  : 106\nc Minimized literals: 595301\nc Glue clauses      : 4150\nc Max LBD           : 359\nc Decisions/sec     : 167608\nc Propagations/sec  : 8208413\nc Conflicts/sec     : 56920\nc Literal inspections : 204376259\nc Garbage collections : 46\nc Reductions          : 50\nc Mode                : stable\nc Memory used       : 1.31 MB\nc Memory allocated  : 1.31 MB\nc Memory peak       : 3.15 MB\nc Memory wasted     : 0.00 MB\nc Arena growths     : 103\nc\nc Accounting checkpoint: final\nc Inclusive phase parse: 0.003055375 seconds, 1 calls\nc Inclusive phase propagate: 1.095274749 seconds, 400257 calls\nc Inclusive phase analyze: 0.197387220 seconds, 100000 calls\nc Inclusive phase reduce: 0.077617791 seconds, 50 calls\nc Inclusive phase gc: 0.039677250 seconds, 50 calls\nc Inclusive phase preprocess: 0.007236417 seconds, 3 calls\nc Inclusive phase simplify: 0.000020039 seconds, 181 calls\nc Inclusive phase reconstruct: 0.000000000 seconds, 0 calls\nc Inclusive phase model: 0.000000000 seconds, 0 calls\nc Inclusive phase proof: 0.020678786 seconds, 194421 calls\nc Inclusive phase search: 1.756857250 seconds, 1 calls\nc Temporary congruence capacity peak: 1063476\nc Rebuild owned capacity overlap peak: 5050577\nc Search diagnostics: compiled in; counters require --accounting\nc Search binary_visits: 41798751\nc Search long_visits: 33921375\nc Search blocker_hits: 18583696\nc Search first_hits: 974023\nc Search replacement_scans: 106333326\nc Search replacement_moves: 8124252\nc Search long_units: 6165223\nc Search long_conflicts: 74181\nc Search scan_size_3: 1624679\nc Search scan_size_4_8: 12728528\nc Search scan_size_9_plus: 91980119\nc Search original_scans: 14899242\nc Search learned_scans: 91434084\nc Search scan_age_0_99: 41548177\nc Search scan_age_100_999: 40607597\nc Search scan_age_1000_plus: 24177552\nc Search scans_before_unit_or_analysis: 8713669\nc Search scans_after_unit_or_analysis: 97619657\nc Search learned_reason_uses: 662342\nc Search learned_reason_lbd_sum: 6796285\nc Search reduced_candidates: 187379\nc Search deleted_without_analysis_use: 11360\nc Hot live clause: cref=20318 learned=0 size=24 scans=121408 units=5041 analyses=0 born=0\nc Hot live clause: cref=89975 learned=0 size=24 scans=118016 units=4210 analyses=1250 born=0\nc Hot live clause: cref=218686 learned=0 size=24 scans=117425 units=4970 analyses=0 born=0\nc Hot live clause: cref=28847 learned=0 size=24 scans=116409 units=3066 analyses=847 born=0\nc Hot live clause: cref=206126 learned=0 size=24 scans=116361 units=2933 analyses=1113 born=0\nc Hot live clause: cref=227203 learned=0 size=24 scans=106897 units=2953 analyses=1207 born=0\nc Hot live clause: cref=75191 learned=0 size=24 scans=105442 units=3024 analyses=1021 born=0\nc Hot live clause: cref=137702 learned=0 size=24 scans=97784 units=2441 analyses=1052 born=0\nc Hot live clause: cref=187497 learned=0 size=24 scans=96309 units=1762 analyses=1001 born=0\nc Hot live clause: cref=153010 learned=0 size=24 scans=93424 units=3299 analyses=1137 born=0\nc Owned capacity arena: 1373540\nc Owned capacity watches: 2907240\nc Owned capacity input: 524032\nc Owned capacity variables: 241723\nc Owned capacity references: 196608\nc Owned capacity elimination: 405381\nc Owned capacity local_search: 0\nc Owned capacity other: 5094\nc Owned capacity total: 5653618\nc Owned capacity complete: yes\nc Accounting scope: inclusive intrusive CPU; retained requested capacities, not RSS or transient peaks\n",
+      "stderr": ""
+    }
+  ]
+}

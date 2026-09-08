@@ -39,6 +39,11 @@ typedef struct ClauseHeader {
     uint32_t search;         // Circular watch search cursor
     uint32_t lbd;            // Literal Block Distance score
     float    activity;       // Clause activity for deletion
+#ifdef BSAT_SEARCH_DIAGNOSTICS
+    /* Arena records are only 4-byte aligned: do not put uint64_t here. */
+    uint32_t born_lo, born_hi;
+    uint32_t scans, units, analyses;
+#endif
 } ClauseHeader;
 
 // Get clause header from CRef

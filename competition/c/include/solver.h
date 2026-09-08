@@ -187,6 +187,9 @@ typedef struct SolverAccounting {
     uint64_t congruence_temporary_peak, rebuild_overlap_peak;
     uint64_t binary_visits, long_visits, blocker_hits, first_hits;
     uint64_t replacement_scans, replacement_moves, long_units, long_conflicts;
+    uint64_t diagnostic_conflicts; /* Monotone across retained incremental queries. */
+    uint64_t original_scans, learned_scans, scan_age_0_99, scan_age_100_999, scan_age_1000_plus;
+    uint64_t scans_before_unit_or_analysis, scans_after_unit_or_analysis;
     uint64_t scan_size_3, scan_size_4_8, scan_size_9_plus;
     uint64_t learned_reason_uses, learned_reason_lbd_sum;
     uint64_t reduced_candidates, deleted_without_analysis_use;

@@ -1090,6 +1090,19 @@ static CRef solver_propagate_account_impl(Solver* s) {
                 }
                 if (SEARCH_DIAGNOSTICS(s)) {
                     s->accounting.replacement_scans++;
+#ifdef BSAT_SEARCH_DIAGNOSTICS
+                    ClauseHeader *h=CLAUSE_HEADER(s->arena,cref);
+                    if(h->scans<UINT32_MAX) ++h->scans;
+                    if(clause_learned(s->arena,cref)) ++s->accounting.learned_scans;
+                    else ++s->accounting.original_scans;
+                    uint64_t born=((uint64_t)h->born_hi<<32)|h->born_lo;
+                    uint64_t age=s->accounting.diagnostic_conflicts>=born ? s->accounting.diagnostic_conflicts-born : 0;
+                    if(age<100) ++s->accounting.scan_age_0_99;
+                    else if(age<1000) ++s->accounting.scan_age_100_999;
+                    else ++s->accounting.scan_age_1000_plus;
+                    if(h->units || h->analyses) ++s->accounting.scans_after_unit_or_analysis;
+                    else ++s->accounting.scans_before_unit_or_analysis;
+#endif
                     if (size == 3) s->accounting.scan_size_3++;
                     else if (size <= 8) s->accounting.scan_size_4_8++;
                     else s->accounting.scan_size_9_plus++;
@@ -1124,7 +1137,13 @@ static CRef solver_propagate_account_impl(Solver* s) {
 
             // Check if unit or conflict
             if (s->values[fv] == UNDEF) {
-                if (SEARCH_DIAGNOSTICS(s)) s->accounting.long_units++;
+                if (SEARCH_DIAGNOSTICS(s)) {
+                    s->accounting.long_units++;
+#ifdef BSAT_SEARCH_DIAGNOSTICS
+                    ClauseHeader *h=CLAUSE_HEADER(s->arena,cref);
+                    if(h->units<UINT32_MAX) ++h->units;
+#endif
+                }
                 // Unit clause - propagate
                 s->values[fv] = sign(first) ? FALSE : TRUE;
                 s->vars[fv].level = reason_level;
@@ -1292,6 +1311,12 @@ static void solver_analyze_account_impl(Solver* s, CRef conflict, Lit* learnt, u
                     s->accounting.learned_reason_uses++;
                     s->accounting.learned_reason_lbd_sum += clause_lbd(s->arena, reason);
                 }
+#ifdef BSAT_SEARCH_DIAGNOSTICS
+                if(SEARCH_DIAGNOSTICS(s)) {
+                    ClauseHeader *h=CLAUSE_HEADER(s->arena,reason);
+                    if(h->analyses<UINT32_MAX) ++h->analyses;
+                }
+#endif
                 bump_clause_activity(s->arena, reason, 1.0f);
                 for (uint32_t i = 0; i < size; i++) {
                     Lit q = lits[i];
@@ -1956,6 +1981,10 @@ static bool solver_simplify_account_impl(Solver *s) {
             CRef fresh = arena_alloc(s->arena, candidate, n, true);
             if (fresh == INVALID_CLAUSE) s->error = true;
             else {
+#ifdef BSAT_SEARCH_DIAGNOSTICS
+                CLAUSE_HEADER(s->arena,fresh)->born_lo=(uint32_t)s->accounting.diagnostic_conflicts;
+                CLAUSE_HEADER(s->arena,fresh)->born_hi=(uint32_t)(s->accounting.diagnostic_conflicts>>32);
+#endif
                 solver_delete_clause(s, cr); s->learnts[at] = fresh;
                 set_clause_lbd(s->arena, fresh, MIN(lbd,n));
                 if (!n) s->result = FALSE;
@@ -2265,6 +2294,7 @@ static lbool solve_internal_account_impl(Solver *s, const Lit *assumps, uint32_t
         if (s->error || s->interrupted) break;
         if (conflict != INVALID_CLAUSE) {
             s->stats.conflicts++; s->restart.conflicts_since++;
+            if(SEARCH_DIAGNOSTICS(s)) ++s->accounting.diagnostic_conflicts;
             if (s->opts.chrono && !solver_normalize_conflict(s,conflict)) {
                 if (!solver_budget_exhausted(s)) {s->base_unsat=true;result=FALSE;}
                 break;
@@ -2308,6 +2338,10 @@ static lbool solve_internal_account_impl(Solver *s, const Lit *assumps, uint32_t
                 }
                 reason=arena_alloc(s->arena,learnt,n,true);
                 if (reason==INVALID_CLAUSE) { s->error=true;break; }
+#ifdef BSAT_SEARCH_DIAGNOSTICS
+                CLAUSE_HEADER(s->arena,reason)->born_lo=(uint32_t)s->accounting.diagnostic_conflicts;
+                CLAUSE_HEADER(s->arena,reason)->born_hi=(uint32_t)(s->accounting.diagnostic_conflicts>>32);
+#endif
                 set_clause_lbd(s->arena,reason,lbd);
                 s->learnts[s->num_learnts++]=reason;
                 if (s->opts.subsumption) solver_on_the_fly_subsumption(s,learnt,n);

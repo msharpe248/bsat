@@ -13,7 +13,7 @@ int main(void) {
         Lit pad[128];for(unsigned i=0;i<128;++i) pad[i]=mkLit(1,false);
         CRef waste=arena_alloc(s->arena,pad,128,false);assert(waste!=INVALID_CLAUSE);
         arena_delete(s->arena,waste);
-        CRef refs[9],moved[9];unsigned sizes[9];uint32_t copies[9][11];
+        CRef refs[9],moved[9];unsigned sizes[9];uint32_t copies[9][sizeof(ClauseHeader)/4+7];
         CRef next=1;
         for(unsigned i=0;i<9;++i) {
             unsigned n=sizes[i]=i==8?2:i;bool learned=i%2 || i==8;
@@ -24,7 +24,10 @@ int main(void) {
             ClauseHeader *h=CLAUSE_HEADER(s->arena,refs[i]);
             h->search=i%2?UINT32_MAX:i;h->lbd=i+3;h->activity=(float)i/8;
             h->flags|=CLAUSE_FROZEN;
-            memcpy(copies[i],h,(4+n)*sizeof(uint32_t));
+#ifdef BSAT_SEARCH_DIAGNOSTICS
+            h->born_hi=1;h->born_lo=i;h->scans=i*17;h->units=i+2;h->analyses=i+9;
+#endif
+            memcpy(copies[i],h,(sizeof(ClauseHeader)/4+n)*sizeof(uint32_t));
             if(learned) s->learnts[s->num_learnts++]=refs[i];
             else s->clauses[s->num_clauses++]=refs[i];
             if(n>=2) {
@@ -36,7 +39,7 @@ int main(void) {
                 // Keep arena watches to verify that collection filters dead references.
                 if(n==2 && !learned) watch_remove_clause(s->watches,s->arena,refs[i]);
                 arena_delete(s->arena,refs[i]);moved[i]=INVALID_CLAUSE;
-            } else {moved[i]=next;next+=4+n;}
+            } else {moved[i]=next;next+=sizeof(ClauseHeader)/4+n;}
         }
         s->num_original=s->num_clauses;
         s->vars[1].reason=refs[7];s->values[1]=moved[7]==INVALID_CLAUSE?UNDEF:TRUE;
@@ -45,7 +48,7 @@ int main(void) {
         assert(s->vars[1].reason==moved[7]);
         unsigned orig=0,learnt=0,watch_count=0;
         for(unsigned i=0;i<9;++i) if(moved[i]!=INVALID_CLAUSE) {
-            assert(!memcmp(CLAUSE_HEADER(s->arena,moved[i]),copies[i],(4+sizes[i])*sizeof(uint32_t)));
+            assert(!memcmp(CLAUSE_HEADER(s->arena,moved[i]),copies[i],(sizeof(ClauseHeader)/4+sizes[i])*sizeof(uint32_t)));
             if(i%2 || i==8) assert(s->learnts[learnt++]==moved[i]);
             else assert(s->clauses[orig++]==moved[i]);
             if(sizes[i]>=2) ++watch_count;
