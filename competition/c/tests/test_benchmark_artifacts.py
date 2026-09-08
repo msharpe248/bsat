@@ -1,6 +1,8 @@
 import json
+import os
 from pathlib import Path
 import shlex
+import shutil
 import subprocess
 import sys
 import tempfile
@@ -50,10 +52,14 @@ class ArtifactTests(unittest.TestCase):
         self.assertNotEqual(a,b)
         self.assertEqual((a/'proof.drat').read_bytes(),(b/'proof.drat').read_bytes())
 
-    def test_checker_success_requires_exit_zero_and_exact_marker(self):
+    def test_checker_success_requires_recognized_exit_and_exact_marker(self):
         for code, output, expected in [(0,'s VERIFIED\n',True),(1,'s VERIFIED\n',False),
                                        (-11,'s VERIFIED\n',False),(0,'c expected s VERIFIED\n',False),
-                                       (0,'s NOT VERIFIED\n',False),(0,'',False)]:
+                                       (0,'s NOT VERIFIED\n',False),(0,'',False),
+                                       (1,'c trivial UNSAT\ns VERIFIED\n',True),
+                                       (2,'c trivial UNSAT\ns VERIFIED\n',False),
+                                       (-11,'c trivial UNSAT\ns VERIFIED\n',False),
+                                       (0,'s VERIFIED\ns NOT VERIFIED\n',False)]:
             result=subprocess.CompletedProcess([],code,stdout=output,stderr='')
             self.assertEqual(checker_verified(result),expected)
         checker=self.root/'checker'
@@ -64,6 +70,19 @@ class ArtifactTests(unittest.TestCase):
         self.assertEqual(result['par2'],10)
         saved, _=self.metadata(result)
         self.assertEqual((saved/'checker-out').read_text(),'s VERIFIED\n')
+
+    def test_real_checker_trivial_unsat(self):
+        checker=os.environ.get('DRAT_TRIM') or shutil.which('drat-trim')
+        if not checker:self.skipTest('set DRAT_TRIM to run external checker compatibility cases')
+        inputs=['p cnf 1 1\n0\n','p cnf 1 2\n1 0\n-1 0\n',
+                'p cnf 2 3\n1 0\n-1 2 0\n-2 0\n']
+        proof=self.root/'proof'
+        for text in inputs:
+            self.input.write_text(text)
+            for data in [b'0\n',b'a\x00']:
+                proof.write_bytes(data)
+                checked=subprocess.run([checker,str(self.input),str(proof)],capture_output=True,text=True,timeout=10)
+                self.assertTrue(checker_verified(checked),(checked.returncode,checked.stdout,checked.stderr))
 
     def test_verified_and_unknown_do_not_retain(self):
         self.input.write_text('p cnf 1 1\n1 0\n')

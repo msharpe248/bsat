@@ -1,0 +1,40 @@
+{
+  "schema": 1,
+  "base_revision": "2a63679",
+  "problem": "Exit-zero-only acceptance falsely rejected the pinned checker trivial-UNSAT path; no wrong C solver answer",
+  "sources": {
+    "tests/validate.py": "3ab2aa87f7f7e910b4c52c895da21d637db3608678c68bd9439b8270961013ce",
+    "tests/test_benchmark_artifacts.py": "2a6279b192d23cff4e48d6d47f5d03e73d103f166fba954bc55fad505e85d961"
+  },
+  "checker_sha256": "9bfc20a5fa9eb2a0ffadd2b0cfc7cdd4a20f6aa9c8d7de5b6c771160b847f630",
+  "reproduction": {
+    "input": "p cnf 1 1\n0\n",
+    "proof": "0\n",
+    "returncode": 1,
+    "stdout": "\nc parsing input formula with 1 variables and 1 clauses\n\nc finished parsing\n\nc trivial UNSAT\ns VERIFIED\n\nc verification time: 0.020 seconds\n",
+    "stderr": ""
+  },
+  "command": "DRAT_TRIM=/tmp/bsat-drat-trim python3 -m unittest discover -s competition/c/tests -p test_benchmark*.py -v",
+  "test_log": "test_checker_success_requires_recognized_exit_and_exact_marker (test_benchmark_artifacts.ArtifactTests.test_checker_success_requires_recognized_exit_and_exact_marker) ... ok\ntest_disabled_and_cli (test_benchmark_artifacts.ArtifactTests.test_disabled_and_cli) ... ok\ntest_invalid_model_retains_error (test_benchmark_artifacts.ArtifactTests.test_invalid_model_retains_error) ... ok\ntest_real_checker_trivial_unsat (test_benchmark_artifacts.ArtifactTests.test_real_checker_trivial_unsat) ... ok\ntest_repeats_do_not_overwrite (test_benchmark_artifacts.ArtifactTests.test_repeats_do_not_overwrite) ... ok\ntest_timeout_keeps_exact_evidence_and_penalty (test_benchmark_artifacts.ArtifactTests.test_timeout_keeps_exact_evidence_and_penalty) ... ok\ntest_verified_and_unknown_do_not_retain (test_benchmark_artifacts.ArtifactTests.test_verified_and_unknown_do_not_retain) ... ok\ntest_bad_entries_and_aliases (test_benchmark_manifest.ManifestTests.test_bad_entries_and_aliases) ... ok\ntest_changed_bytes_fail_before_benchmark_output (test_benchmark_manifest.ManifestTests.test_changed_bytes_fail_before_benchmark_output) ... ok\ntest_relative_path_and_manifest_hash (test_benchmark_manifest.ManifestTests.test_relative_path_and_manifest_hash) ... ok\n\n----------------------------------------------------------------------\nRan 10 tests in 1.355s\n\nOK\n",
+  "initial_validator_failure": {
+    "failure.json": "{\n  \"options\": [],\n  \"seed\": 20261317,\n  \"case\": 7,\n  \"failure\": \"\\nc parsing input formula with 1 variables and 1 clauses\\n\\nc finished parsing\\n\\nc trivial UNSAT\\ns VERIFIED\\n\\nc verification time: 0.018 seconds\\n\"\n}",
+    "minimized.cnf": "p cnf 1 1\n 0\n",
+    "original.cnf": "p cnf 1 1\n0\n"
+  },
+  "restored_release_validator": {
+    "command": [
+      "python3",
+      "competition/c/tests/validate.py",
+      "--solver",
+      "competition/c/bin/bsat",
+      "--checker",
+      "/tmp/bsat-drat-trim",
+      "--cases",
+      "30",
+      "--seed",
+      "20261317"
+    ],
+    "log": "PASS: 4876 solves; truth-table answers, original models, text/binary RUP proofs checked (seed 20261317)\n",
+    "checker_sha256": "9bfc20a5fa9eb2a0ffadd2b0cfc7cdd4a20f6aa9c8d7de5b6c771160b847f630"
+  }
+}

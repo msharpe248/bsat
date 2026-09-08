@@ -307,8 +307,9 @@ millisecond process runs establish smoke-test coverage, not industrial speedups.
 Use `--retain-unverified /path/to/artifacts` to keep unchecked answer evidence
 after a failed or timed-out check. Inputs, proof bytes, solver/checker output
 and hashed metadata are saved in unique directories. Retention does not mark
-an answer verified or remove its penalty. Checker acceptance requires exit
-code zero and an exact `s VERIFIED` output line. See
+an answer verified or remove its penalty. Checker acceptance requires an exact
+`s VERIFIED` line and a recognized exit status, including drat-trim's
+trivial-UNSAT exit-code-1 case. See
 [CERTIFICATE_ARTIFACTS.md](CERTIFICATE_ARTIFACTS.md).
 
 For an additional-instance screen, `tests/select_corpus.py` can exclude filenames

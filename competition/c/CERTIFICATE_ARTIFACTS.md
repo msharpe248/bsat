@@ -14,14 +14,23 @@ outside solver timing and does not change the recorded CPU, memory or PAR-2.
 Verified answers and UNKNOWN runs are not retained by this option. Storage is
 opt-in; large proofs consume disk space in the chosen directory.
 
-Both the independent validator and benchmark now require a successful checker
-exit and an exact `s VERIFIED` line. Previously, a substring anywhere in stdout
-was sufficient regardless of exit status. Failed checker processes and text
-that merely mentions the success marker no longer certify an answer.
+Both the independent validator and benchmark require an exact `s VERIFIED`
+line and a recognized checker exit. Previously, a substring anywhere in stdout
+was sufficient regardless of exit status. Exit zero is accepted; exit one is
+accepted only with the additional exact `c trivial UNSAT` marker. Other exits,
+conflicting status lines and text merely mentioning the success marker fail.
+
+The first stricter rule required exit zero exclusively. Subsequent full
+independent validation caught its false rejection of an empty input clause:
+the pinned drat-trim emits both success markers but exits one on that path.
+This is a checker compatibility correction, not a C solver wrong answer.
+Permanent regressions cover synthetic failed-process/status combinations and,
+when `DRAT_TRIM` is provided, real empty-clause, contradictory-unit and root
+propagation contradictions with text and binary proofs.
 
 ## Validation
 
-Nine harness tests cover timeout preservation, exact binary proof bytes and
+The initial retention milestone's nine harness tests cover timeout preservation, exact binary proof bytes and
 hashes after temporary cleanup, repeated-run isolation, invalid SAT models,
 disabled retention, verified/UNKNOWN behavior, CLI integration, manifest
 validation, and strict checker acceptance. Synthetic checker output in these
@@ -34,6 +43,12 @@ real drat-trim UNSAT checks pass the stricter acceptance rule. No C solver
 runtime code changes in this milestone. Commands, source/binary hashes and
 results are recorded in
 `benchmark_results/certificate-artifact-validation-20260907.json`.
+
+The checker compatibility follow-up passes ten harness tests with
+`DRAT_TRIM=/tmp/bsat-drat-trim`, including actual trivial-UNSAT proofs, and
+4,876 independent restored-release solves across 92 configurations. The
+original false rejection, checker output, source hashes and final validation
+are recorded in `benchmark_results/checker-trivial-compatibility-20260907.json`.
 
 ## Diagnosis certificate follow-up
 

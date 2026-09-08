@@ -45,7 +45,11 @@ def truth(n, clauses):
 
 
 def checker_verified(result):
-    return result.returncode == 0 and 's VERIFIED' in result.stdout.splitlines()
+    lines = result.stdout.splitlines()
+    if 's VERIFIED' not in lines or any(line.startswith('s ') and line != 's VERIFIED' for line in lines):
+        return False
+    # Some drat-trim versions return 1 on their successful trivial-UNSAT path.
+    return result.returncode == 0 or (result.returncode == 1 and 'c trivial UNSAT' in lines)
 
 
 def model_valid(clauses, output):
