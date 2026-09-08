@@ -84,7 +84,8 @@ def worker(config):
         with (tmp/'out').open('w') as out, (tmp/'err').open('w') as err:
             proc = subprocess.Popen(cmd, stdout=out, stderr=err, start_new_session=True,
                                     preexec_fn=child_limits(config.get('address_space_limit',0),
-                                                           config.get('file_size_limit',0)))
+                                                           config.get('file_size_limit',0),
+                                                           config.get('cpu_limit',0)))
             try:
                 code = proc.wait(timeout=config['timeout'])
             except subprocess.TimeoutExpired:
@@ -103,6 +104,9 @@ def worker(config):
         peak = usage.ru_maxrss if sys.platform == 'darwin' else usage.ru_maxrss*1024
         output = (tmp/'out').read_text(errors='replace')
         status = 'SAT' if code == 10 else 'UNSAT' if code == 20 else 'UNKNOWN' if code == 0 else 'ERROR'
+        import signal
+        cpu_limit_hit=bool(config.get('cpu_limit') and code == -signal.SIGXCPU)
+        if cpu_limit_hit:status='UNKNOWN'
         expected = {10:'s SATISFIABLE',20:'s UNSATISFIABLE',0:'s UNKNOWN'}.get(code)
         markers = [line for line in output.splitlines() if line.startswith('s ')]
         status_mismatch = not wall_limit_hit and code in (10,20) and markers != [expected]
@@ -137,7 +141,7 @@ def worker(config):
                 name, value = line[2:].split(':', 1)
                 stats[name.strip()] = value.strip()
         result = dict(status=status, verified=verified, seconds=elapsed,
-                    exit_code=proc.returncode, wall_limit_hit=wall_limit_hit,
+                    exit_code=proc.returncode, wall_limit_hit=wall_limit_hit,cpu_limit_hit=cpu_limit_hit,
                     validation_seconds=validation_seconds,end_to_end_seconds=elapsed+validation_seconds,
                     proof_sha256=digest(proof) if proof.exists() else None,
                     cpu_seconds=usage.ru_utime+usage.ru_stime, peak_rss_bytes=peak,
@@ -183,6 +187,7 @@ def main():
     p.add_argument('--checker', help='drat-trim executable')
     p.add_argument('--timeout', type=float, default=30)
     p.add_argument('--check-timeout', type=float, default=60)
+    p.add_argument('--cpu-limit',type=int,default=0,help='Process CPU seconds including parsing/rebuilding; soft RLIMIT_CPU, hard limit one second later')
     p.add_argument('--address-space-limit', type=int, default=0, help='Linux child virtual-memory ceiling in bytes (0 unlimited)')
     p.add_argument('--file-size-limit', type=int, default=0, help='Child per-file size ceiling in bytes (0 unlimited)')
     p.add_argument('--external-wall-only', action='store_true', help='Use one external deadline; reject known native BSAT/Kissat stop flags')
@@ -197,7 +202,7 @@ def main():
     if not math.isfinite(args.timeout) or not math.isfinite(args.check_timeout) or args.timeout <= 0 or args.check_timeout <= 0 or args.repeats < 1:
         p.error('timeouts and repeats must be positive')
     try:
-        child_limits(args.address_space_limit,args.file_size_limit)
+        child_limits(args.address_space_limit,args.file_size_limit,args.cpu_limit)
     except ValueError as error:
         p.error(str(error))
     checker = shutil.which(args.checker) if args.checker else None
@@ -239,7 +244,7 @@ def main():
     report = dict(schema=1, platform=platform.platform(), machine=platform.machine(),
                   revision=revision, dirty=dirty, split=args.split, seed=args.seed,
                   timeout=args.timeout, repeats=args.repeats, solvers=solvers, inputs=inputs,
-                  address_space_limit=args.address_space_limit,file_size_limit=args.file_size_limit,
+                  address_space_limit=args.address_space_limit,file_size_limit=args.file_size_limit,cpu_limit=args.cpu_limit,
                   clock_policy='external-wall-only' if args.external_wall_only else 'command-specific',
                   complete=False,
                   checker=dict(path=checker, sha256=digest(checker)) if checker else None, runs=[])
@@ -252,7 +257,7 @@ def main():
     for name, path, repeat in jobs:
         config = dict(input=path, command=solvers[name]['command'], timeout=args.timeout,
                       checker=checker, check_timeout=args.check_timeout,
-                      address_space_limit=args.address_space_limit,file_size_limit=args.file_size_limit,
+                      address_space_limit=args.address_space_limit,file_size_limit=args.file_size_limit,cpu_limit=args.cpu_limit,
                       retain_unverified=str(args.retain_unverified.resolve()) if args.retain_unverified else None)
         run = subprocess.run([sys.executable, str(Path(__file__).resolve()), '--worker'],
                              input=json.dumps(config), capture_output=True, text=True)
