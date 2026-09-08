@@ -50,10 +50,26 @@ static void conflict_slices(void) {
     assert(s->reused_solves==slices-1);
     solver_free(s);
 }
+static void probing_revision(void) {
+    SolverOpts o=default_opts();o.reuse_learnts=true;o.probe_on_change=true;
+    Solver *s=solver_new_with_opts(&o);assert(s);
+    for(unsigned i=0;i<3;++i)assert(solver_new_var(s));
+    Lit c[]={mkLit(1,false),mkLit(2,false)};
+    assert(solver_add_clause(s,c,2));
+    assert(solver_solve(s)==TRUE && s->stats.probing_calls==1);
+    Lit a=mkLit(1,true);
+    assert(solver_solve_with_assumptions(s,&a,1)==TRUE && !s->stats.probing_calls);
+    c[1]=mkLit(3,false);assert(solver_add_clause(s,c,2));
+    assert(solver_solve(s)==TRUE && s->stats.probing_calls==1);
+    assert(solver_solve(s)==TRUE && !s->stats.probing_calls);
+    solver_free(s);
+}
 int main(void) {
+    probing_revision();
     learned_retention();conflict_slices();unsigned solves=0;uint64_t reused=0;
     for(unsigned seed=1;seed<=128;++seed) {
         SolverOpts o=default_opts();o.reuse_learnts=true;o.probing=seed&1;
+        o.probe_on_change=seed&64;
         o.chrono=seed&2;o.chrono_levels=0;o.vmtf=seed&4;o.lrb=(seed&8)&&!o.vmtf;
         if(seed&16)o.equiv=true; /* compatible state or reconstruction fallback */
         if(seed&32)o.congruence=true;

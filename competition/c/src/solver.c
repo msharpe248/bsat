@@ -853,6 +853,8 @@ void solver_print_stats(const Solver* s) {
            (unsigned long long)(s->local_search.state ? s->local_search.state->flips : 0));
     printf("c Learned clauses   : %llu\n", (unsigned long long)s->stats.learned_clauses);
     printf("c Learned literals  : %llu\n", (unsigned long long)s->stats.learned_literals);
+    printf("c Probing calls     : %llu\n", (unsigned long long)s->stats.probing_calls);
+    printf("c Probing work      : %llu\n", (unsigned long long)s->stats.probing_work);
     printf("c Deleted clauses   : %llu\n", (unsigned long long)s->stats.deleted_clauses);
     printf("c Binary minimize checks: %llu\n", (unsigned long long)s->stats.binary_minimize_checks);
     printf("c Binary minimize removed: %llu\n", (unsigned long long)s->stats.binary_minimize_removed);
@@ -2153,7 +2155,11 @@ static lbool solve_internal_account_impl(Solver *s, const Lit *assumps, uint32_t
     if (solver_propagate(s) != INVALID_CLAUSE) {s->base_unsat=true;return FALSE;}
     if (s->error || s->interrupted) return UNDEF;
     s->work_limit = s->work + MIN(s->opts.preprocess_budget, UINT64_MAX-s->work);
-    if (s->opts.preprocess_budget && s->opts.probing && failed_literal_probing(s) < 0) { s->work_limit=0;s->base_unsat=true;return FALSE; }
+    if (s->opts.preprocess_budget && s->opts.probing &&
+        (!s->opts.probe_on_change || !s->probed_input || s->probed_input_size!=s->input_size)) {
+        s->probed_input=true;s->probed_input_size=s->input_size;
+        if (failed_literal_probing(s) < 0) { s->work_limit=0;s->base_unsat=true;return FALSE; }
+    }
     if (!n_assumps && s->opts.congruence && s->opts.congruence_budget) {
         uint64_t remaining = s->work_limit > s->work ? s->work_limit-s->work : 0;
         s->work_limit = s->work + MIN(s->opts.congruence_budget, UINT64_MAX-s->work);
@@ -2476,7 +2482,10 @@ static void proof_clause(Solver *s, const Lit *lits, uint32_t size, bool deletio
 
 static int failed_literal_probing(Solver *s) {
     double started=solver_account_begin(s);
+    uint64_t work=s->work;
+    ++s->stats.probing_calls;
     int result = failed_literal_probing_account_impl(s);
+    s->stats.probing_work+=s->work-work;
     solver_account_end(s, ACCOUNT_PREPROCESS, started);
     return result;
 }

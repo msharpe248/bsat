@@ -7,8 +7,8 @@ validated milestone. Experimental policies require measured evidence before
 promotion. Preserve independent model/certificate checks and unrelated files.
 
 1. Search diagnosis and targeted comparisons: complete; see SEARCH_RESOURCE_DIAGNOSIS.md.
-2. Incremental reuse regression: in progress.
-3. Certificate limits and bounded sessions: pending.
+2. Incremental reuse regression: complete; see PROBING_REVISIONS.md.
+3. Certificate limits and bounded sessions: in progress.
 4. Service resource limits and exhaustion tests: pending.
 5. Uniform external deadlines and Linux baseline: pending.
 6. Factoring selection and coverage: pending.

@@ -87,6 +87,7 @@ typedef struct SolverOpts {
     // Preprocessing
     bool     bce;               // Enable blocked clause elimination (true)
     bool     probing;           // Enable failed literal probing (true)
+    bool     probe_on_change;   // Reuse handles: probe once per permanent input revision
 
     // Bounded Variable Elimination (BVE) - SatELite-style preprocessing
     bool     elim;              // Enable BVE preprocessing (false - opt-in)
@@ -242,6 +243,7 @@ typedef struct Solver {
     struct {
         uint64_t decisions;
         uint64_t propagations;
+        uint64_t probing_calls, probing_work;
         uint64_t conflicts;
         uint64_t restarts;
         uint64_t reused_levels;
@@ -340,6 +342,8 @@ typedef struct Solver {
     uint32_t last_assumptions;
     Var factor_original_vars; // Auxiliary variables are discarded on rebuild
     uint64_t reused_solves;
+    size_t probed_input_size;
+    bool probed_input;
     bool internal_add, has_solved, error, interrupted;
     bool base_unsat; // Permanent root inconsistency, separate from assumption failure
     bool clock_initialized, cancelled; // Explicit cancellation is not a CPU timeout

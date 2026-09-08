@@ -8,6 +8,7 @@ bsat *bsat_create(uint32_t abi,uint32_t flags) {
     if(abi!=BSAT_ABI_VERSION || (flags & ~(BSAT_REUSE_LEARNTS|BSAT_CERTIFICATES)))return NULL;
     bsat *s=calloc(1,sizeof *s);if(!s)return NULL;
     SolverOpts o=default_opts();o.reuse_learnts=(flags&BSAT_REUSE_LEARNTS)!=0;
+    o.probe_on_change=o.reuse_learnts;
     if(flags&BSAT_CERTIFICATES) {
         /* The journal contains RUP additions only. Keep variable namespace and
            original formula intact; do not enable equisatisfiable transforms. */
