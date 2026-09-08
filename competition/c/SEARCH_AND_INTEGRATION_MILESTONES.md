@@ -25,6 +25,9 @@ Planning and a generally better phase policy remain unresolved algorithmic gaps.
 The service benchmark demonstrates a workload-specific checkpoint policy benefit.
 
 Local release/diagnostic/ASan/UBSan checks pass as recorded in the linked reports.
-Linux independent integration and coverage fuzzing pass for 15716a7. Broader
-correctness and the final service-smoke CI update are pending at this snapshot;
-two superseded pre-diagnostic correctness runs were cancelled to free capacity.
+Linux independent integration and coverage fuzzing pass for 15716a7. The f5e4349 correctness run passed Linux GCC/Clang release/debug, macOS release,
+and ThreadSanitizer, but exposed an existing macOS sanitizer application-harness
+assertion that required SAT under a 0.2-second retry budget. This is corrected and
+locally revalidated in APPLICATION_RETRY_BUDGET.md. Fresh remote correctness and
+the service-smoke update remain pending at this snapshot. Two superseded
+pre-diagnostic correctness runs were cancelled to free capacity.

@@ -8,7 +8,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <sys/stat.h>
-typedef struct {bsat *s;unsigned vars,clauses,queries;const char *kind;} History;
+typedef struct {bsat *s;unsigned vars,clauses,queries;const char *kind;double cpu_limit;unsigned conflict_limit;} History;
 static const char *certificate_directory;
 static unsigned random_state=20260908;
 static unsigned next(void){random_state=random_state*1664525u+1013904223u;return random_state;}
@@ -16,13 +16,17 @@ static void clause(History *h,const int *a,size_t n) {
     for(size_t i=0;i<n;++i){unsigned v=(unsigned)(a[i]<0?-a[i]:a[i]);if(v>h->vars)h->vars=v;}
     assert(bsat_add_clause(h->s,a,n));++h->clauses;
 }
+static void query_limits(History *h,double cpu,unsigned conflicts) {
+    assert(bsat_set_query_limits(h->s,cpu,conflicts,0));
+    h->cpu_limit=cpu;h->conflict_limit=conflicts;
+}
 static int query(History *h,const int *a,size_t n,int expected) {
     int r=bsat_solve(h->s,a,n);assert(!bsat_error(h->s));assert(r==0 || r==expected);
     bsat_stats_v1 s;assert(bsat_get_stats(h->s,&s,sizeof s));
-    printf("{\"kind\":\"%s\",\"query\":%u,\"vars\":%u,\"clauses\":%u,\"result\":%d,\"oracle\":%d,\"conflicts\":%llu,\"decisions\":%llu,\"propagations\":%llu,\"reused\":%llu,\"owned_bytes\":%llu,\"cpu_seconds\":%.9f}\n",
+    printf("{\"kind\":\"%s\",\"query\":%u,\"vars\":%u,\"clauses\":%u,\"result\":%d,\"oracle\":%d,\"conflicts\":%llu,\"decisions\":%llu,\"propagations\":%llu,\"reused\":%llu,\"owned_bytes\":%llu,\"cpu_seconds\":%.9f,\"cpu_limit\":%.9f,\"conflict_limit\":%u}\n",
         h->kind,h->queries++,h->vars,h->clauses,r,expected,(unsigned long long)s.conflicts,
         (unsigned long long)s.decisions,(unsigned long long)s.propagations,
-        (unsigned long long)s.reused_preparations,(unsigned long long)s.owned_capacity_bytes,s.cpu_seconds);
+        (unsigned long long)s.reused_preparations,(unsigned long long)s.owned_capacity_bytes,s.cpu_seconds,h->cpu_limit,h->conflict_limit);
     if(certificate_directory && r && h->vars>=4000 &&
        (!strcmp(h->kind,"bmc-counter") || r==20 || (h->queries-1)%16==0)) {
         char folder[4096],cnf[4096],proof[4096],model[4096];
@@ -49,7 +53,7 @@ static unsigned counter_value(History *h,int *bits) {
 }
 static void bmc(unsigned flags) {
     History h={.s=bsat_create(1,flags),.kind="bmc-counter"};assert(h.s);
-    assert(bsat_set_query_limits(h.s,0.2,2000,0));
+    query_limits(&h,0.2,2000);
     int state[129][16],enable[129]={0};unsigned variable=0;
     for(int b=0;b<16;++b){state[0][b]=(int)++variable;int c=-state[0][b];clause(&h,&c,1);}
     for(unsigned depth=1;depth<=128;++depth) {
@@ -72,7 +76,12 @@ static void bmc(unsigned flags) {
         }
         if(depth==64) {
             int stop=1;bsat_set_terminate(h.s,&stop,cancelled);assert(query(&h,NULL,0,10)==0);
+            /* This assertion tests recovery, not completion within 0.2 CPU
+               seconds on every sanitizer/platform. Keep a deterministic work
+               bound; the outer history runner also has a wall timeout. */
+            query_limits(&h,0,1000000);
             stop=0;assert(query(&h,NULL,0,10)==10);bsat_set_terminate(h.s,NULL,NULL);
+            query_limits(&h,0.2,2000);
         }
     }
     assert(h.vars==4112);bsat_destroy(h.s);
@@ -90,7 +99,7 @@ static int config_oracle(unsigned groups,const unsigned char *allowed,const int 
 }
 static void configuration(unsigned flags) {
     History h={.s=bsat_create(1,flags),.kind="configuration-chain"};assert(h.s);
-    assert(bsat_set_query_limits(h.s,0.2,2000,0));unsigned char allowed[512];memset(allowed,255,sizeof allowed);
+    query_limits(&h,0.2,2000);unsigned char allowed[512];memset(allowed,255,sizeof allowed);
     unsigned groups=0;
     for(unsigned batch=0;batch<8;++batch) {
         for(unsigned added=0;added<64;++added,++groups) {

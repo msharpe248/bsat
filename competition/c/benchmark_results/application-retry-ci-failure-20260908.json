@@ -1,0 +1,21 @@
+{
+  "run": "https://github.com/msharpe248/bsat/actions/runs/34269139220",
+  "revision": "f5e43493fc103faf6a29ea52ddf6c5b24df1846d",
+  "job": "macos-latest clang debug",
+  "scope": "Observed test-harness budget mismatch after cancellation; no wrong conclusive answer",
+  "last_query": {
+    "kind": "bmc-counter",
+    "query": 33,
+    "vars": 2064,
+    "clauses": 6992,
+    "result": 0,
+    "oracle": 10,
+    "conflicts": 211,
+    "decisions": 1246,
+    "propagations": 130516,
+    "reused": 32,
+    "owned_bytes": 985145,
+    "cpu_seconds": 0.200397125
+  },
+  "stderr": "Assertion failed: (query(&h,NULL,0,10)==10), function bmc, file application_histories.c, line 75.\n"
+}
