@@ -1,0 +1,10 @@
+prefix=@PREFIX@
+exec_prefix=${prefix}
+libdir=${exec_prefix}/lib
+includedir=${prefix}/include
+
+Name: bsat
+Description: BSAT C SAT solver, opaque ABI version 1
+Version: @VERSION@
+Libs: -L${libdir} -lbsat
+Cflags: -I${includedir}

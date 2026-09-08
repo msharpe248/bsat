@@ -34,6 +34,9 @@ MODE ?= release
 ifeq ($(MODE),debug)
     CFLAGS += $(DEBUGFLAGS)
     TARGET := $(TARGET)_debug
+else ifeq ($(MODE),tsan)
+    CFLAGS += -g -O1 -fsanitize=thread
+    TARGET := $(TARGET)_tsan
 else ifeq ($(MODE),profile)
     CFLAGS += $(PROFFLAGS)
     TARGET := $(TARGET)_prof
@@ -281,3 +284,33 @@ $(BINDIR)/embedding_soak_$(MODE): $(TESTDIR)/embedding_soak.c $(LIBRARY)
 soak-test: $(BINDIR)/embedding_soak_$(MODE)
 	$<
 .PHONY: soak-test
+
+# Staged installation has a stable ABI soname independent of build mode.
+PREFIX ?= /usr/local
+DESTDIR ?=
+PACKAGE_VERSION := $(shell cat VERSION)
+PACKAGE_DIR = build/package-$(MODE)
+ifeq ($(shell uname -s),Darwin)
+PACKAGE_LIBRARY = $(PACKAGE_DIR)/libbsat.1.dylib
+PACKAGE_SHARED_FLAGS = -dynamiclib -Wl,-install_name,@rpath/libbsat.1.dylib
+else
+PACKAGE_LIBRARY = $(PACKAGE_DIR)/libbsat.so.1
+PACKAGE_SHARED_FLAGS = -shared -Wl,-soname,libbsat.so.1
+endif
+$(PACKAGE_LIBRARY): $(LIB_OBJECTS)
+	@mkdir -p $(@D)
+	$(CC) $(CFLAGS) $(PACKAGE_SHARED_FLAGS) -o $@ $^ -lm
+install: all $(PACKAGE_LIBRARY)
+	install -d "$(DESTDIR)$(PREFIX)/bin" "$(DESTDIR)$(PREFIX)/lib/pkgconfig" "$(DESTDIR)$(PREFIX)/include"
+	install -m 755 $(TARGET) "$(DESTDIR)$(PREFIX)/bin/bsat"
+	install -m 755 $(PACKAGE_LIBRARY) "$(DESTDIR)$(PREFIX)/lib/$(notdir $(PACKAGE_LIBRARY))"
+	install -m 644 include/bsat.h "$(DESTDIR)$(PREFIX)/include/bsat.h"
+ifeq ($(shell uname -s),Darwin)
+	ln -sf libbsat.1.dylib "$(DESTDIR)$(PREFIX)/lib/libbsat.dylib"
+else
+	ln -sf libbsat.so.1 "$(DESTDIR)$(PREFIX)/lib/libbsat.so"
+endif
+	python3 tests/write_pkgconfig.py --template bsat.pc.in --prefix "$(PREFIX)" --version "$(PACKAGE_VERSION)" --output "$(DESTDIR)$(PREFIX)/lib/pkgconfig/bsat.pc"
+package-test:
+	python3 tests/test_install.py --cc "$(CC)" --mode "$(MODE)"
+.PHONY: install package-test
