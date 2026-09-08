@@ -1,0 +1,24 @@
+{
+  "scope": "Six fresh distinct families; 120-second equal external wall budget; two repetitions; serial BSAT versus pinned Kissat. No target-Linux inference. Corpus becomes development data after this run.",
+  "manifest_sha256": "0461b5bdca18e95ae44ecc13e3ac6f45092f2c2aee625244a481755cf3ec727b",
+  "seed": 20261336,
+  "timeout": 120,
+  "repeats": 2,
+  "check_timeout": 1250,
+  "commands": {
+    "bsat": "competition/c/bin/bsat --chrono --congruence --equiv --equiv-budget 100000000 --alternating --vmtf --binary-proof --proof {proof} {input}",
+    "kissat": "/private/tmp/kissat-8af8e56f174b778aef3aa45af9f739b2a5f492c2/build/kissat {input} {proof}"
+  },
+  "binary_sha256": {
+    "bsat": "a349a07c51b8ac4e3a7409f0b45bae0b3d4509538fe544c19af7bb49797d03ec",
+    "kissat": "5cad8e92487416008cf8ec4573c2ab2a02b7c1927ab06e8c8cacb317908cff1f"
+  },
+  "checker": "competition/c/tests/verified_check.py",
+  "checker_sha256": "79b786b73ba3029cffe20bea2dad742a63522a458e6496f4499e6d1a32c5933f",
+  "converter_sha256": "9bfc20a5fa9eb2a0ffadd2b0cfc7cdd4a20f6aa9c8d7de5b6c771160b847f630",
+  "cake_checker_sha256": "027e767e8e5543d61671c44f7475e985b7969112e6825d51f2207bf0580cbf5c",
+  "platform": "macOS-26.6.1-arm64-arm-64bit-Mach-O",
+  "compiler": "Apple clang version 21.0.0 (clang-2100.1.1.101)\nTarget: arm64-apple-darwin25.6.0\nThread model: posix\nInstalledDir: /Library/Developer/CommandLineTools/usr/bin\n",
+  "production_flags": "-std=c11 -D_POSIX_C_SOURCE=200809L -O3 -march=native -flto",
+  "retention": "Unverified answers and errors retained under /tmp/bsat-longer-unverified; UNKNOWN prefixes are not certificates."
+}

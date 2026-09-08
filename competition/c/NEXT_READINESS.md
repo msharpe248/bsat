@@ -6,10 +6,11 @@ performance experiments are recorded without retaining regressing runtime change
 
 1. Buffered binary proofs: complete. 336 encoding cases, 48 C executables and
    24 long-search certificates/models pass per release/sanitizer build. Thirty-six
-   fixed-work traces match exactly. Both Summle repetitions improve (52.0–53.4 s
-   versus 57.5–59.4 s); hardware UNSAT remains verified. See `BINARY_PROOFS.md`.
+   fixed-work runs match selected counters and proof bytes. Both Summle repetitions
+   improve (52.0–53.4 s versus 57.5–59.4 s); hardware UNSAT remains verified.
+   See `BINARY_PROOFS.md`.
 2. Propagation and search-efficiency tooling: implemented. `compare_work.py`
-   separates equal search traces from process cost; `profile_linux.py` records
+   separates matched work counters from process cost; `profile_linux.py` records
    CPU-pinned real PMU events, work counters and independent answer checks.
    The target Linux host has been requested; do not substitute hosted VM timing
    for dedicated target-hardware evidence.
@@ -22,11 +23,12 @@ performance experiments are recorded without retaining regressing runtime change
 5. Continuous stateful and coverage-guided fuzzing: implemented and locally
    exercised. Independent bounded oracles, allocation failures, nightly/PR CI,
    retained corpora and replay/minimization instructions; see `FUZZING.md`.
-6. Explicit GCC/Clang coverage: six-job matrix configured; hosted results pending.
-   Both compilers on Linux retain release/sanitizer and macOS checks.
-7. Longer evaluation: pending. Freeze a fresh multi-family corpus and longer run
-   policy after implementation; report all checked answers and timeouts. Target
-   hardware and long local runs are separate evidence scopes.
+6. Explicit GCC/Clang coverage: complete. All six hosted configurations passed
+   in run 34185746931: Linux GCC/Clang and macOS Clang, release and sanitizer.
+7. Longer local evaluation: complete. Six fresh families, 24 serial runs, twice
+   the prior wall limit, up to 622,818 variables / 2,552,775 clauses. BSAT verifies
+   4/12 runs versus Kissat 10/12, with zero errors; see `LONGER_EVALUATION.md`.
+   Dedicated Linux target measurements remain outstanding until a host is supplied.
 
 No formal verification of BSAT, exhaustive fuzz coverage or competition readiness
 is implied by completing these milestones.

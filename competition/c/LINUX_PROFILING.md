@@ -15,7 +15,8 @@ misses, cache references and cache misses, plus exact solver work. It records
 counter running percentages so multiplexed/scaled measurements remain visible.
 Unavailable counters, missing/duplicate events, denied PMU access, invalid
 statuses, timeouts and failed answer checks fail the collection. UNKNOWN is never
-a verified answer. The same solver's repetitions must preserve search/proof traces.
+a verified answer. The same solver's repetitions must match selected work counters
+and proof bytes; this is not a recording of every propagation or trail event.
 Different solver policies need not perform equal work.
 
 ```sh

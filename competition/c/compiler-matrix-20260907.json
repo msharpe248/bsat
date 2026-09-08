@@ -1,0 +1,892 @@
+{
+  "conclusion": "success",
+  "databaseId": 34185746931,
+  "headSha": "5dd699a1c01025bcd313862c9b253a28937bccb5",
+  "jobs": [
+    {
+      "completedAt": "2026-09-08T04:12:20Z",
+      "conclusion": "success",
+      "databaseId": 101933605893,
+      "name": "check (ubuntu-latest, clang, release)",
+      "startedAt": "2026-09-08T04:05:28Z",
+      "status": "completed",
+      "steps": [
+        {
+          "completedAt": "2026-09-08T04:05:29Z",
+          "conclusion": "success",
+          "name": "Set up job",
+          "number": 1,
+          "startedAt": "2026-09-08T04:05:29Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-09-08T04:05:30Z",
+          "conclusion": "success",
+          "name": "Run actions/checkout@v4",
+          "number": 2,
+          "startedAt": "2026-09-08T04:05:29Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-09-08T04:05:31Z",
+          "conclusion": "success",
+          "name": "Run actions/setup-python@v5",
+          "number": 3,
+          "startedAt": "2026-09-08T04:05:30Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-09-08T04:05:32Z",
+          "conclusion": "success",
+          "name": "Build independent proof checker",
+          "number": 4,
+          "startedAt": "2026-09-08T04:05:31Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-09-08T04:05:33Z",
+          "conclusion": "success",
+          "name": "Build pinned verified LRAT checker",
+          "number": 5,
+          "startedAt": "2026-09-08T04:05:32Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-09-08T04:05:33Z",
+          "conclusion": "success",
+          "name": "Benchmark input regressions",
+          "number": 6,
+          "startedAt": "2026-09-08T04:05:33Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-09-08T04:05:35Z",
+          "conclusion": "success",
+          "name": "Certificate retention and checker compatibility regressions",
+          "number": 7,
+          "startedAt": "2026-09-08T04:05:33Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-09-08T04:06:49Z",
+          "conclusion": "success",
+          "name": "Unit and API regressions",
+          "number": 8,
+          "startedAt": "2026-09-08T04:05:35Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-09-08T04:06:52Z",
+          "conclusion": "success",
+          "name": "Allocation failure regressions",
+          "number": 9,
+          "startedAt": "2026-09-08T04:06:49Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-09-08T04:06:52Z",
+          "conclusion": "success",
+          "name": "Parse benchmark smoke test",
+          "number": 10,
+          "startedAt": "2026-09-08T04:06:52Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-09-08T04:06:52Z",
+          "conclusion": "success",
+          "name": "Local-search benchmark smoke test",
+          "number": 11,
+          "startedAt": "2026-09-08T04:06:52Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-09-08T04:06:52Z",
+          "conclusion": "success",
+          "name": "Repeated local-search initialization smoke test",
+          "number": 12,
+          "startedAt": "2026-09-08T04:06:52Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-09-08T04:12:17Z",
+          "conclusion": "success",
+          "name": "Independent formula and certificate validation",
+          "number": 13,
+          "startedAt": "2026-09-08T04:06:52Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-09-08T04:12:17Z",
+          "conclusion": "skipped",
+          "name": "Run actions/upload-artifact@v4",
+          "number": 14,
+          "startedAt": "2026-09-08T04:12:17Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-09-08T04:12:18Z",
+          "conclusion": "success",
+          "name": "Post Run actions/setup-python@v5",
+          "number": 27,
+          "startedAt": "2026-09-08T04:12:17Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-09-08T04:12:18Z",
+          "conclusion": "success",
+          "name": "Post Run actions/checkout@v4",
+          "number": 28,
+          "startedAt": "2026-09-08T04:12:18Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-09-08T04:12:18Z",
+          "conclusion": "success",
+          "name": "Complete job",
+          "number": 29,
+          "startedAt": "2026-09-08T04:12:18Z",
+          "status": "completed"
+        }
+      ],
+      "url": "https://github.com/msharpe248/bsat/actions/runs/34185746931/job/101933605893"
+    },
+    {
+      "completedAt": "2026-09-08T04:13:41Z",
+      "conclusion": "success",
+      "databaseId": 101933605986,
+      "name": "check (ubuntu-latest, gcc, debug)",
+      "startedAt": "2026-09-08T04:05:28Z",
+      "status": "completed",
+      "steps": [
+        {
+          "completedAt": "2026-09-08T04:05:31Z",
+          "conclusion": "success",
+          "name": "Set up job",
+          "number": 1,
+          "startedAt": "2026-09-08T04:05:31Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-09-08T04:05:33Z",
+          "conclusion": "success",
+          "name": "Run actions/checkout@v4",
+          "number": 2,
+          "startedAt": "2026-09-08T04:05:31Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-09-08T04:05:33Z",
+          "conclusion": "success",
+          "name": "Run actions/setup-python@v5",
+          "number": 3,
+          "startedAt": "2026-09-08T04:05:33Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-09-08T04:05:34Z",
+          "conclusion": "success",
+          "name": "Build independent proof checker",
+          "number": 4,
+          "startedAt": "2026-09-08T04:05:33Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-09-08T04:05:34Z",
+          "conclusion": "success",
+          "name": "Build pinned verified LRAT checker",
+          "number": 5,
+          "startedAt": "2026-09-08T04:05:34Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-09-08T04:05:35Z",
+          "conclusion": "success",
+          "name": "Benchmark input regressions",
+          "number": 6,
+          "startedAt": "2026-09-08T04:05:34Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-09-08T04:05:36Z",
+          "conclusion": "success",
+          "name": "Certificate retention and checker compatibility regressions",
+          "number": 7,
+          "startedAt": "2026-09-08T04:05:35Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-09-08T04:05:58Z",
+          "conclusion": "success",
+          "name": "Unit and API regressions",
+          "number": 8,
+          "startedAt": "2026-09-08T04:05:36Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-09-08T04:06:02Z",
+          "conclusion": "success",
+          "name": "Allocation failure regressions",
+          "number": 9,
+          "startedAt": "2026-09-08T04:05:58Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-09-08T04:06:02Z",
+          "conclusion": "success",
+          "name": "Parse benchmark smoke test",
+          "number": 10,
+          "startedAt": "2026-09-08T04:06:02Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-09-08T04:06:02Z",
+          "conclusion": "success",
+          "name": "Local-search benchmark smoke test",
+          "number": 11,
+          "startedAt": "2026-09-08T04:06:02Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-09-08T04:06:03Z",
+          "conclusion": "success",
+          "name": "Repeated local-search initialization smoke test",
+          "number": 12,
+          "startedAt": "2026-09-08T04:06:02Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-09-08T04:13:38Z",
+          "conclusion": "success",
+          "name": "Independent formula and certificate validation",
+          "number": 13,
+          "startedAt": "2026-09-08T04:06:03Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-09-08T04:13:38Z",
+          "conclusion": "skipped",
+          "name": "Run actions/upload-artifact@v4",
+          "number": 14,
+          "startedAt": "2026-09-08T04:13:38Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-09-08T04:13:38Z",
+          "conclusion": "success",
+          "name": "Post Run actions/setup-python@v5",
+          "number": 27,
+          "startedAt": "2026-09-08T04:13:38Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-09-08T04:13:38Z",
+          "conclusion": "success",
+          "name": "Post Run actions/checkout@v4",
+          "number": 28,
+          "startedAt": "2026-09-08T04:13:38Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-09-08T04:13:38Z",
+          "conclusion": "success",
+          "name": "Complete job",
+          "number": 29,
+          "startedAt": "2026-09-08T04:13:38Z",
+          "status": "completed"
+        }
+      ],
+      "url": "https://github.com/msharpe248/bsat/actions/runs/34185746931/job/101933605986"
+    },
+    {
+      "completedAt": "2026-09-08T04:25:53Z",
+      "conclusion": "success",
+      "databaseId": 101933605992,
+      "name": "check (macos-latest, clang, debug)",
+      "startedAt": "2026-09-08T04:05:34Z",
+      "status": "completed",
+      "steps": [
+        {
+          "completedAt": "2026-09-08T04:05:36Z",
+          "conclusion": "success",
+          "name": "Set up job",
+          "number": 1,
+          "startedAt": "2026-09-08T04:05:34Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-09-08T04:05:38Z",
+          "conclusion": "success",
+          "name": "Run actions/checkout@v4",
+          "number": 2,
+          "startedAt": "2026-09-08T04:05:36Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-09-08T04:05:38Z",
+          "conclusion": "success",
+          "name": "Run actions/setup-python@v5",
+          "number": 3,
+          "startedAt": "2026-09-08T04:05:38Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-09-08T04:05:41Z",
+          "conclusion": "success",
+          "name": "Build independent proof checker",
+          "number": 4,
+          "startedAt": "2026-09-08T04:05:38Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-09-08T04:05:42Z",
+          "conclusion": "success",
+          "name": "Build pinned verified LRAT checker",
+          "number": 5,
+          "startedAt": "2026-09-08T04:05:41Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-09-08T04:05:43Z",
+          "conclusion": "success",
+          "name": "Benchmark input regressions",
+          "number": 6,
+          "startedAt": "2026-09-08T04:05:42Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-09-08T04:05:45Z",
+          "conclusion": "success",
+          "name": "Certificate retention and checker compatibility regressions",
+          "number": 7,
+          "startedAt": "2026-09-08T04:05:43Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-09-08T04:06:16Z",
+          "conclusion": "success",
+          "name": "Unit and API regressions",
+          "number": 8,
+          "startedAt": "2026-09-08T04:05:45Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-09-08T04:06:20Z",
+          "conclusion": "success",
+          "name": "Allocation failure regressions",
+          "number": 9,
+          "startedAt": "2026-09-08T04:06:16Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-09-08T04:06:20Z",
+          "conclusion": "success",
+          "name": "Parse benchmark smoke test",
+          "number": 10,
+          "startedAt": "2026-09-08T04:06:20Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-09-08T04:06:21Z",
+          "conclusion": "success",
+          "name": "Local-search benchmark smoke test",
+          "number": 11,
+          "startedAt": "2026-09-08T04:06:20Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-09-08T04:06:21Z",
+          "conclusion": "success",
+          "name": "Repeated local-search initialization smoke test",
+          "number": 12,
+          "startedAt": "2026-09-08T04:06:21Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-09-08T04:25:48Z",
+          "conclusion": "success",
+          "name": "Independent formula and certificate validation",
+          "number": 13,
+          "startedAt": "2026-09-08T04:06:21Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-09-08T04:25:48Z",
+          "conclusion": "skipped",
+          "name": "Run actions/upload-artifact@v4",
+          "number": 14,
+          "startedAt": "2026-09-08T04:25:48Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-09-08T04:25:49Z",
+          "conclusion": "success",
+          "name": "Post Run actions/setup-python@v5",
+          "number": 27,
+          "startedAt": "2026-09-08T04:25:48Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-09-08T04:25:49Z",
+          "conclusion": "success",
+          "name": "Post Run actions/checkout@v4",
+          "number": 28,
+          "startedAt": "2026-09-08T04:25:49Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-09-08T04:25:52Z",
+          "conclusion": "success",
+          "name": "Complete job",
+          "number": 29,
+          "startedAt": "2026-09-08T04:25:49Z",
+          "status": "completed"
+        }
+      ],
+      "url": "https://github.com/msharpe248/bsat/actions/runs/34185746931/job/101933605992"
+    },
+    {
+      "completedAt": "2026-09-08T04:12:08Z",
+      "conclusion": "success",
+      "databaseId": 101933606041,
+      "name": "check (ubuntu-latest, gcc, release)",
+      "startedAt": "2026-09-08T04:05:28Z",
+      "status": "completed",
+      "steps": [
+        {
+          "completedAt": "2026-09-08T04:05:30Z",
+          "conclusion": "success",
+          "name": "Set up job",
+          "number": 1,
+          "startedAt": "2026-09-08T04:05:29Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-09-08T04:05:31Z",
+          "conclusion": "success",
+          "name": "Run actions/checkout@v4",
+          "number": 2,
+          "startedAt": "2026-09-08T04:05:30Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-09-08T04:05:32Z",
+          "conclusion": "success",
+          "name": "Run actions/setup-python@v5",
+          "number": 3,
+          "startedAt": "2026-09-08T04:05:31Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-09-08T04:05:33Z",
+          "conclusion": "success",
+          "name": "Build independent proof checker",
+          "number": 4,
+          "startedAt": "2026-09-08T04:05:32Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-09-08T04:05:33Z",
+          "conclusion": "success",
+          "name": "Build pinned verified LRAT checker",
+          "number": 5,
+          "startedAt": "2026-09-08T04:05:33Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-09-08T04:05:34Z",
+          "conclusion": "success",
+          "name": "Benchmark input regressions",
+          "number": 6,
+          "startedAt": "2026-09-08T04:05:33Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-09-08T04:05:35Z",
+          "conclusion": "success",
+          "name": "Certificate retention and checker compatibility regressions",
+          "number": 7,
+          "startedAt": "2026-09-08T04:05:34Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-09-08T04:06:43Z",
+          "conclusion": "success",
+          "name": "Unit and API regressions",
+          "number": 8,
+          "startedAt": "2026-09-08T04:05:35Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-09-08T04:06:45Z",
+          "conclusion": "success",
+          "name": "Allocation failure regressions",
+          "number": 9,
+          "startedAt": "2026-09-08T04:06:43Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-09-08T04:06:45Z",
+          "conclusion": "success",
+          "name": "Parse benchmark smoke test",
+          "number": 10,
+          "startedAt": "2026-09-08T04:06:45Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-09-08T04:06:46Z",
+          "conclusion": "success",
+          "name": "Local-search benchmark smoke test",
+          "number": 11,
+          "startedAt": "2026-09-08T04:06:45Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-09-08T04:06:46Z",
+          "conclusion": "success",
+          "name": "Repeated local-search initialization smoke test",
+          "number": 12,
+          "startedAt": "2026-09-08T04:06:46Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-09-08T04:12:05Z",
+          "conclusion": "success",
+          "name": "Independent formula and certificate validation",
+          "number": 13,
+          "startedAt": "2026-09-08T04:06:46Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-09-08T04:12:05Z",
+          "conclusion": "skipped",
+          "name": "Run actions/upload-artifact@v4",
+          "number": 14,
+          "startedAt": "2026-09-08T04:12:05Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-09-08T04:12:05Z",
+          "conclusion": "success",
+          "name": "Post Run actions/setup-python@v5",
+          "number": 27,
+          "startedAt": "2026-09-08T04:12:05Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-09-08T04:12:05Z",
+          "conclusion": "success",
+          "name": "Post Run actions/checkout@v4",
+          "number": 28,
+          "startedAt": "2026-09-08T04:12:05Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-09-08T04:12:05Z",
+          "conclusion": "success",
+          "name": "Complete job",
+          "number": 29,
+          "startedAt": "2026-09-08T04:12:05Z",
+          "status": "completed"
+        }
+      ],
+      "url": "https://github.com/msharpe248/bsat/actions/runs/34185746931/job/101933606041"
+    },
+    {
+      "completedAt": "2026-09-08T04:10:12Z",
+      "conclusion": "success",
+      "databaseId": 101933606082,
+      "name": "check (macos-latest, clang, release)",
+      "startedAt": "2026-09-08T04:05:32Z",
+      "status": "completed",
+      "steps": [
+        {
+          "completedAt": "2026-09-08T04:05:33Z",
+          "conclusion": "success",
+          "name": "Set up job",
+          "number": 1,
+          "startedAt": "2026-09-08T04:05:32Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-09-08T04:05:35Z",
+          "conclusion": "success",
+          "name": "Run actions/checkout@v4",
+          "number": 2,
+          "startedAt": "2026-09-08T04:05:33Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-09-08T04:05:35Z",
+          "conclusion": "success",
+          "name": "Run actions/setup-python@v5",
+          "number": 3,
+          "startedAt": "2026-09-08T04:05:35Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-09-08T04:05:37Z",
+          "conclusion": "success",
+          "name": "Build independent proof checker",
+          "number": 4,
+          "startedAt": "2026-09-08T04:05:35Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-09-08T04:05:38Z",
+          "conclusion": "success",
+          "name": "Build pinned verified LRAT checker",
+          "number": 5,
+          "startedAt": "2026-09-08T04:05:37Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-09-08T04:05:39Z",
+          "conclusion": "success",
+          "name": "Benchmark input regressions",
+          "number": 6,
+          "startedAt": "2026-09-08T04:05:38Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-09-08T04:05:40Z",
+          "conclusion": "success",
+          "name": "Certificate retention and checker compatibility regressions",
+          "number": 7,
+          "startedAt": "2026-09-08T04:05:39Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-09-08T04:06:07Z",
+          "conclusion": "success",
+          "name": "Unit and API regressions",
+          "number": 8,
+          "startedAt": "2026-09-08T04:05:40Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-09-08T04:06:09Z",
+          "conclusion": "success",
+          "name": "Allocation failure regressions",
+          "number": 9,
+          "startedAt": "2026-09-08T04:06:07Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-09-08T04:06:09Z",
+          "conclusion": "success",
+          "name": "Parse benchmark smoke test",
+          "number": 10,
+          "startedAt": "2026-09-08T04:06:09Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-09-08T04:06:09Z",
+          "conclusion": "success",
+          "name": "Local-search benchmark smoke test",
+          "number": 11,
+          "startedAt": "2026-09-08T04:06:09Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-09-08T04:06:10Z",
+          "conclusion": "success",
+          "name": "Repeated local-search initialization smoke test",
+          "number": 12,
+          "startedAt": "2026-09-08T04:06:09Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-09-08T04:10:06Z",
+          "conclusion": "success",
+          "name": "Independent formula and certificate validation",
+          "number": 13,
+          "startedAt": "2026-09-08T04:06:10Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-09-08T04:10:06Z",
+          "conclusion": "skipped",
+          "name": "Run actions/upload-artifact@v4",
+          "number": 14,
+          "startedAt": "2026-09-08T04:10:06Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-09-08T04:10:06Z",
+          "conclusion": "success",
+          "name": "Post Run actions/setup-python@v5",
+          "number": 27,
+          "startedAt": "2026-09-08T04:10:06Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-09-08T04:10:07Z",
+          "conclusion": "success",
+          "name": "Post Run actions/checkout@v4",
+          "number": 28,
+          "startedAt": "2026-09-08T04:10:06Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-09-08T04:10:10Z",
+          "conclusion": "success",
+          "name": "Complete job",
+          "number": 29,
+          "startedAt": "2026-09-08T04:10:07Z",
+          "status": "completed"
+        }
+      ],
+      "url": "https://github.com/msharpe248/bsat/actions/runs/34185746931/job/101933606082"
+    },
+    {
+      "completedAt": "2026-09-08T04:13:16Z",
+      "conclusion": "success",
+      "databaseId": 101933606137,
+      "name": "check (ubuntu-latest, clang, debug)",
+      "startedAt": "2026-09-08T04:05:28Z",
+      "status": "completed",
+      "steps": [
+        {
+          "completedAt": "2026-09-08T04:05:29Z",
+          "conclusion": "success",
+          "name": "Set up job",
+          "number": 1,
+          "startedAt": "2026-09-08T04:05:28Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-09-08T04:05:30Z",
+          "conclusion": "success",
+          "name": "Run actions/checkout@v4",
+          "number": 2,
+          "startedAt": "2026-09-08T04:05:29Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-09-08T04:05:30Z",
+          "conclusion": "success",
+          "name": "Run actions/setup-python@v5",
+          "number": 3,
+          "startedAt": "2026-09-08T04:05:30Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-09-08T04:05:32Z",
+          "conclusion": "success",
+          "name": "Build independent proof checker",
+          "number": 4,
+          "startedAt": "2026-09-08T04:05:30Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-09-08T04:05:33Z",
+          "conclusion": "success",
+          "name": "Build pinned verified LRAT checker",
+          "number": 5,
+          "startedAt": "2026-09-08T04:05:32Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-09-08T04:05:33Z",
+          "conclusion": "success",
+          "name": "Benchmark input regressions",
+          "number": 6,
+          "startedAt": "2026-09-08T04:05:33Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-09-08T04:05:35Z",
+          "conclusion": "success",
+          "name": "Certificate retention and checker compatibility regressions",
+          "number": 7,
+          "startedAt": "2026-09-08T04:05:33Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-09-08T04:06:03Z",
+          "conclusion": "success",
+          "name": "Unit and API regressions",
+          "number": 8,
+          "startedAt": "2026-09-08T04:05:35Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-09-08T04:06:06Z",
+          "conclusion": "success",
+          "name": "Allocation failure regressions",
+          "number": 9,
+          "startedAt": "2026-09-08T04:06:03Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-09-08T04:06:06Z",
+          "conclusion": "success",
+          "name": "Parse benchmark smoke test",
+          "number": 10,
+          "startedAt": "2026-09-08T04:06:06Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-09-08T04:06:06Z",
+          "conclusion": "success",
+          "name": "Local-search benchmark smoke test",
+          "number": 11,
+          "startedAt": "2026-09-08T04:06:06Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-09-08T04:06:06Z",
+          "conclusion": "success",
+          "name": "Repeated local-search initialization smoke test",
+          "number": 12,
+          "startedAt": "2026-09-08T04:06:06Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-09-08T04:13:15Z",
+          "conclusion": "success",
+          "name": "Independent formula and certificate validation",
+          "number": 13,
+          "startedAt": "2026-09-08T04:06:06Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-09-08T04:13:15Z",
+          "conclusion": "skipped",
+          "name": "Run actions/upload-artifact@v4",
+          "number": 14,
+          "startedAt": "2026-09-08T04:13:15Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-09-08T04:13:15Z",
+          "conclusion": "success",
+          "name": "Post Run actions/setup-python@v5",
+          "number": 27,
+          "startedAt": "2026-09-08T04:13:15Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-09-08T04:13:15Z",
+          "conclusion": "success",
+          "name": "Post Run actions/checkout@v4",
+          "number": 28,
+          "startedAt": "2026-09-08T04:13:15Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-09-08T04:13:15Z",
+          "conclusion": "success",
+          "name": "Complete job",
+          "number": 29,
+          "startedAt": "2026-09-08T04:13:15Z",
+          "status": "completed"
+        }
+      ],
+      "url": "https://github.com/msharpe248/bsat/actions/runs/34185746931/job/101933606137"
+    }
+  ],
+  "status": "completed",
+  "url": "https://github.com/msharpe248/bsat/actions/runs/34185746931",
+  "production_solver_source_sha256": "6be7d9bb042fe83ebc200f26cd3b67b27365e783a5454ef54a8f2651c44b4dc7"
+}

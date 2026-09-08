@@ -46,5 +46,7 @@ executions without a failure (4,800,716 total). Provenance is in
 No crash minimization was needed.
 
 The correctness workflow explicitly covers Linux GCC and Clang in release and
-ASan/UBSan builds, plus macOS Clang in both modes. Hosted results must be checked
-separately; defining a matrix does not establish that every configuration passes.
+ASan/UBSan builds, plus macOS Clang in both modes. All six configurations passed in
+[run 34185746931](https://github.com/msharpe248/bsat/actions/runs/34185746931),
+on the retained production C source. `compiler-matrix-20260907.json` records the
+individual jobs and validation stages.

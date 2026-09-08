@@ -1,0 +1,26 @@
+{
+  "complete": true,
+  "run_count": 24,
+  "unique_inputs": 6,
+  "repeats_per_solver_input": 2,
+  "input_binary_checker_manifest_hashes_match": true,
+  "all_answers_verified": true,
+  "unsat_chain": "DRAT -> LRAT -> pinned cake_lpr, original CNF",
+  "summary": {
+    "bsat": {
+      "verified_runs": 4,
+      "runs": 12,
+      "mean_par2": 165.13357947576637,
+      "max_rss_bytes": 1373978624,
+      "errors": 0
+    },
+    "kissat": {
+      "verified_runs": 10,
+      "runs": 12,
+      "mean_par2": 68.34312081608611,
+      "max_rss_bytes": 875675648,
+      "errors": 0
+    }
+  },
+  "record_sha256": "21e03298ee8bde59e569f5bbafe9a7a8b1322948cc6aba55a332454f1ad23d76"
+}
