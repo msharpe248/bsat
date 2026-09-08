@@ -24,3 +24,9 @@ workspace state is preserved. Linux PMU profiling still needs a target host.
    independently checked; destructive transformations retain fallback. Repeated
    identical hard queries use roughly one tenth the CPU in the bounded protocol;
    growing histories have mixed work results. See `INCREMENTAL_REUSE.md`.
+
+Final implementation revision `caf04a7` passes all seven jobs in
+[CI run 34209432051](https://github.com/msharpe248/bsat/actions/runs/34209432051):
+GCC/Clang release and ASan/UBSan on Linux, Clang release and ASan/UBSan on macOS,
+and Linux ThreadSanitizer. The following documentation-only synchronization
+updates the API contract and README to match that tested implementation.

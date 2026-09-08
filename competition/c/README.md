@@ -281,8 +281,10 @@ The library does not install signal handlers. CPU limits use solving-thread CPU
 time. The CLI alone handles SIGUSR1 progress requests and environment diagnostics.
 
 Opt-in `BSAT_REUSE_LEARNTS` (internal `SolverOpts.reuse_learnts`) retains learned
-clauses across compatible calls; preprocessing, proof and interruption cases use
-conservative rebuild fallbacks. See [INCREMENTAL_REUSE.md](INCREMENTAL_REUSE.md).
+clauses across compatible calls, including conditional UNSAT. Entailed congruence
+additions are compatible; reconstruction, destructive preprocessing, proof and
+interruption cases use conservative rebuild fallbacks. See
+[INCREMENTAL_REUSE.md](INCREMENTAL_REUSE.md).
 `solver.h` remains an internal development interface with no stable structure ABI.
 Allocation/argument failures poison a handle and cannot yield a conclusive answer.
 

@@ -67,10 +67,12 @@ not become permanent input. Repeated and contradictory assumptions are allowed.
 By default, a subsequent solve or added input rebuilds from the original formula,
 restoring clauses removed by preprocessing. Set `opts.reuse_learnts=true` before
 construction to retain learned clauses, root consequences and activities after
-compatible SAT or conflict/decision-limited calls. Temporary assumptions are
-removed and root assignments replayed. Proofs, destructive preprocessing, local
-search, inprocessing, interrupted propagation and conditional UNSAT use the
-rebuild path. See `INCREMENTAL_REUSE.md` for the exact boundary and evidence.
+compatible SAT, conditional UNSAT or conflict/decision-limited calls. Temporary
+assumptions are removed and root assignments replayed; permanent root
+inconsistency is tracked separately. Congruence's entailed additions are
+compatible. Proofs, reconstruction state, destructive preprocessing, local
+search, inprocessing and interrupted propagation use the rebuild path. See
+`INCREMENTAL_REUSE.md` for the exact boundary and evidence.
 Repeated-solve preparation is charged to the new call's CPU limit. Do not mutate
 options or internal storage after construction.
 
