@@ -1,0 +1,30 @@
+{
+  "schema": 1,
+  "base_revision": "2a63679",
+  "status": "Rejected prototype; queue baseline solves 2/4, mode branching 1/4; hardware gain does not offset school-timetabling timeout",
+  "patch": "mode-branching-prototype-20260907.patch",
+  "patch_sha256": "6d94f09366a336ed9413778c11df79606962f83fada6389daf7705ca2a8eb194",
+  "apply_check": [
+    "git",
+    "apply",
+    "--check",
+    "--unidiff-zero",
+    "mode-branching-prototype-20260907.patch"
+  ],
+  "reconstructed_sources": {
+    "competition/c/include/solver.h": "3142b177d18c907599c48e3eb3f3dedc0c56693416167029654d1dba3561a8ca",
+    "competition/c/src/solver.c": "68021ea6a68b8a97ba48090aeab9aec11fc256d9ba98c4695c14b1da65b7e8c9",
+    "competition/c/src/main.c": "b7848a70bf691782951bc0e4b287a4a98a65c32d3d096331186c4e70acb82943",
+    "competition/c/tests/validate.py": "2974fb4802890fa46f4c94b0ee296f3d03459d501ac4117bc5e48845f69da180",
+    "competition/c/tests/check_deadlines.py": "a76a0dfa3aadbcd38b8d80a6c19b5dc221de027690fbebdf911dae379c5b5c18",
+    "competition/c/tests/test_benchmark_artifacts.py": "2a6279b192d23cff4e48d6d47f5d03e73d103f166fba954bc55fad505e85d961",
+    "competition/c/tests/test_mode_branching.c": "c1ca7a527dd2024000952bdd21a7af3c9ae8a4c7de9cf2c8c1cf92ac215b95e3",
+    "competition/c/tests/check_mode_branching.py": "5c614207972e02f2eea83188f3d6b5f2073674ba28af9ece9ee31e205e01b6f6"
+  },
+  "reconstruction_verified": true,
+  "release_binary_sha256": "a54e2ded3fb1f8f473e7e8c1d5b2c9474c02918ca2158f720343dbdbafa1cb63",
+  "debug_binary_sha256": "7db6b51c97e207afa3fed1eb1cbc5bfd5d0a64f83229c613376fc797215b8d2a",
+  "validation_record": "mode-branching-validation-20260907.json",
+  "performance_record": "mode-branching-initial-20260907.json",
+  "note": "Patch reproduces the prototype and contemporaneous checker compatibility fix against the stated base; use --unidiff-zero. Checker compatibility remains live after removing the runtime prototype."
+}

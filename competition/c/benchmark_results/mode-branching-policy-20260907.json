@@ -1,0 +1,57 @@
+{
+  "schema": 1,
+  "base_revision": "2a63679",
+  "purpose": "Frozen development comparison of queue-only versus focused queue/stable scores; no concurrent validation or profiling during timing",
+  "command": [
+    "python3",
+    "/Users/msharpe/python/bsat/competition/c/tests/benchmark.py",
+    "--checker",
+    "/tmp/bsat-drat-trim",
+    "--retain-unverified",
+    "/tmp/bsat-mode-branching-certificates",
+    "--solver",
+    "queue=/tmp/bsat-mode-branching-candidate --chrono --congruence --equiv --equiv-budget 100000000 --alternating --vmtf --time 30 --proof {proof} {input}",
+    "--solver",
+    "mode=/tmp/bsat-mode-branching-candidate --chrono --congruence --equiv --equiv-budget 100000000 --alternating --vmtf --mode-branching --time 30 --proof {proof} {input}",
+    "--timeout",
+    "35",
+    "--check-timeout",
+    "600",
+    "--repeats",
+    "1",
+    "--seed",
+    "20261318",
+    "--split",
+    "development",
+    "--output",
+    "/Users/msharpe/python/bsat/competition/c/benchmark_results/mode-branching-initial-20260907.json",
+    "/Users/msharpe/python/bsat/dataset/sat_competition2025/station-repacking/a2ca167a8fdbf165f40b5d6dee94b040.cnf",
+    "/Users/msharpe/python/bsat/dataset/sat_competition2025/diagnosis/9a839badecb20dcf505ec79eedd3753a.cnf",
+    "/Users/msharpe/python/bsat/dataset/sat_competition2025/school-timetabling/1d18837c0ced5c18a3a4693993e61728.cnf",
+    "/Users/msharpe/python/bsat/dataset/sat_competition2025/hardware-model-checking/7bdf3e5401cc263951003b569bcd689c.cnf"
+  ],
+  "profiles": {
+    "queue": "/tmp/bsat-mode-branching-candidate --chrono --congruence --equiv --equiv-budget 100000000 --alternating --vmtf --time 30 --proof {proof} {input}",
+    "mode": "/tmp/bsat-mode-branching-candidate --chrono --congruence --equiv --equiv-budget 100000000 --alternating --vmtf --mode-branching --time 30 --proof {proof} {input}"
+  },
+  "binary_sha256": "a54e2ded3fb1f8f473e7e8c1d5b2c9474c02918ca2158f720343dbdbafa1cb63",
+  "checker_sha256": "9bfc20a5fa9eb2a0ffadd2b0cfc7cdd4a20f6aa9c8d7de5b6c771160b847f630",
+  "inputs": {
+    "/Users/msharpe/python/bsat/dataset/sat_competition2025/station-repacking/a2ca167a8fdbf165f40b5d6dee94b040.cnf": {
+      "sha256": "bc053107e97fd429a204f5dbe8f7afb40dbb8c3e3592b7a716eda6f50a5a2e6a",
+      "bytes": 12344165
+    },
+    "/Users/msharpe/python/bsat/dataset/sat_competition2025/diagnosis/9a839badecb20dcf505ec79eedd3753a.cnf": {
+      "sha256": "64e6eb3f2cb7223fc90cdaf366ac0688e6a955b960b777eb921450aa864c6a2d",
+      "bytes": 12429871
+    },
+    "/Users/msharpe/python/bsat/dataset/sat_competition2025/school-timetabling/1d18837c0ced5c18a3a4693993e61728.cnf": {
+      "sha256": "25c30c0878f6bb8034445a0b5852f2b9179e1679bc6bedfddf9088f413efb8d9",
+      "bytes": 13457873
+    },
+    "/Users/msharpe/python/bsat/dataset/sat_competition2025/hardware-model-checking/7bdf3e5401cc263951003b569bcd689c.cnf": {
+      "sha256": "7aada02dc300ce6db773dbab34f115969174896a161b6d28ce37f5743e8fff4f",
+      "bytes": 8194517
+    }
+  }
+}

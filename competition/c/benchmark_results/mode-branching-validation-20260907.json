@@ -1,0 +1,2270 @@
+{
+  "schema": 1,
+  "base_revision": "2a63679",
+  "sources": {
+    "src/solver.c": "68021ea6a68b8a97ba48090aeab9aec11fc256d9ba98c4695c14b1da65b7e8c9",
+    "src/main.c": "b7848a70bf691782951bc0e4b287a4a98a65c32d3d096331186c4e70acb82943",
+    "include/solver.h": "3142b177d18c907599c48e3eb3f3dedc0c56693416167029654d1dba3561a8ca",
+    "tests/test_mode_branching.c": "c1ca7a527dd2024000952bdd21a7af3c9ae8a4c7de9cf2c8c1cf92ac215b95e3",
+    "tests/check_mode_branching.py": "5c614207972e02f2eea83188f3d6b5f2073674ba28af9ece9ee31e205e01b6f6",
+    "tests/validate.py": "2974fb4802890fa46f4c94b0ee296f3d03459d501ac4117bc5e48845f69da180",
+    "tests/check_deadlines.py": "a76a0dfa3aadbcd38b8d80a6c19b5dc221de027690fbebdf911dae379c5b5c18",
+    "tests/test_benchmark_artifacts.py": "2a6279b192d23cff4e48d6d47f5d03e73d103f166fba954bc55fad505e85d961"
+  },
+  "checker": {
+    "path": "/tmp/bsat-drat-trim",
+    "sha256": "9bfc20a5fa9eb2a0ffadd2b0cfc7cdd4a20f6aa9c8d7de5b6c771160b847f630"
+  },
+  "builds": {
+    "release": {
+      "binary_sha256": "a54e2ded3fb1f8f473e7e8c1d5b2c9474c02918ca2158f720343dbdbafa1cb63",
+      "c_test_count": 48,
+      "c_test_log": "Running unit tests...\nRunning bin/tests/release/test_arena...\n========================================\nBSAT Arena Allocator Unit Tests\n========================================\n\nTesting Arena creation and destruction... \u2705 PASS\nTesting Single clause allocation... \u2705 PASS\nTesting Learned clause allocation... \u2705 PASS\nTesting Multiple clause allocations... \u2705 PASS\nTesting LBD (Literal Block Distance) operations... \u2705 PASS\nTesting Clause activity operations... \u2705 PASS\nTesting Clause deletion... \u2705 PASS\nTesting Arena statistics... \u2705 PASS\nTesting Empty clause handling... \u2705 PASS\nTesting Large clause allocation... \u2705 PASS\nTesting Arena automatic growth... \u2705 PASS\n\n========================================\nResults: 11/11 tests passed\n========================================\nRunning bin/tests/release/test_bce_linear...\nPASS: 6561 canonical pairs, 111537 budget cutoffs, scratch cleanup and bounded BCE model reconstruction\nRunning bin/tests/release/test_binary_minimize...\nPASS: signed binary resolution, duplicate/deleted/long watches, budgets, cancellation and truth tables\nRunning bin/tests/release/test_blocker_dispatch...\nPASS: 10368 mixed implicit/tagged/long watch truth, order, reason and phase cases\nRunning bin/tests/release/test_chrono...\nPASS: 12288 exact seven-variable formula/assumption solves; 936 chronological backtracks, 883 retained assignments, 148 lower conflicts\nPASS: late implications, compacted reasons, root units, conflict watches and current-level UIP selection\nRunning bin/tests/release/test_clause_locks...\nPASS: active reason protection, every implied position, replay, GC and backtracking\nRunning bin/tests/release/test_compact_vars...\nPASS: compact variable growth/rebuild and eight VSIDS/LRB scoring/rescaling cases\nRunning bin/tests/release/test_congruence...\nPASS: 384 signed AND/XOR/ITE cases; 192 with proved aliases; every added clause truth-table checked\nPASS: 65 congruence budget cutoffs and subsequent complete solves (full work 1078)\nPASS: RUP rejection and exhausted-budget paths leave input and core unchanged\nPASS: 1152 signed binary-alias, fixed-output, fixed-input and cyclic-gate cases\nPASS: 64 signed conditional-alternative ITE cases with proved output equivalence\nPASS: 24 signed ternary/binary strengthening cases and 4 binary-unit cases\nRunning bin/tests/release/test_deadline...\nPASS: deadline poll bounds, work/minimization triggers, immediate limits and API reuse\nRunning bin/tests/release/test_dimacs...\n========================================\nBSAT DIMACS I/O Unit Tests\n========================================\n\nTesting trivial_sat.cnf... \u2705 PASS\nTesting trivial_unsat.cnf... \u2705 PASS\nTesting empty.cnf... \u2705 PASS\nTesting Parse with comments... \u2705 PASS\nTesting Parse unit clauses... \u2705 PASS\nTesting Parse with empty lines... \u2705 PASS\nTesting Malformed input error handling... \u2705 PASS\nTesting unit_propagation.cnf... \u2705 PASS\nTesting simple_sat_3.cnf... \u2705 PASS\nTesting simple_unsat_3.cnf... \u2705 PASS\nTesting horn_sat.cnf... \u2705 PASS\nTesting horn_unsat.cnf... \u2705 PASS\n\n========================================\nResults: 12/12 tests passed\n========================================\nRunning bin/tests/release/test_elim_preprocess...\nPASS: 512 BVE truth/residual-model cases and 1539 cutoff/resume cases\nRunning bin/tests/release/test_elim_records...\nPASS: 16384 multi-parent projection/model checks and minimum-word record choice\nRunning bin/tests/release/test_elim_resolution...\nPASS: 5408 projected truth-table/model checks and all resolution work cutoffs plus an internal deadline\nRunning bin/tests/release/test_elim_staging...\nPASS: pure staging deadline, 68 work boundaries, copy contract and owned-record growth\nRunning bin/tests/release/test_equiv...\nPASS: nonzero LBD and scratch ownership across SCC replacement, assumptions and repeated solves\nPASS: signed SCCs, contradiction, 10000-node cycle, budget rollback, reconstruction and API reuse\nRunning bin/tests/release/test_features...\n========================================\nBSAT Feature-Specific Tests\n========================================\n\nTesting Clause learning on pigeonhole... \u2705 PASS\nTesting Unit propagation (forces assignments)... (propagations=3, decisions=0) \u2705 PASS\nTesting VSIDS heuristic (decisions are made)... (decisions=4) \u2705 PASS\nTesting Binary clause handling (efficient storage)... (binary clauses stored efficiently) \u2705 PASS\nTesting LBD calculation (learned clauses get LBD scores)... \u2705 PASS\nTesting Restarts (search restarts occur)... (restarts=0) \u2705 PASS\nTesting BCE preprocessing (blocked clauses eliminated)... (blocked_clauses=0) \u2705 PASS\nTesting Clause minimization (learned clauses minimized)... (minimized_literals=0) \u2705 PASS\nTesting On-the-fly subsumption (subsumed clauses removed)... (subsumed=0) \u2705 PASS\nTesting Learned clauses are actually reduced... \u2705 PASS\nTesting Low-LBD learned clauses are tracked... \u2705 PASS\nTesting Failed literal probing (discovers implications)... (probing enabled, solved correctly) \u2705 PASS\nTesting MiniSat clause minimization (67%% literal reduction)... (conflicts=1, minimized=0) [minimization active] \u2705 PASS\nTesting Vivification inprocessing (clause strengthening)... (inprocess enabled, result=SAT) \u2705 PASS\n\n========================================\nResults: 14/14 tests passed\n========================================\nRunning bin/tests/release/test_gc_budget...\nPASS: 82 GC work cutoffs, exact rollback/retry and cached expired deadline\nRunning bin/tests/release/test_gc_forwarding...\nPASS: 512 GC deletion patterns and BVE occurrence relocation\nRunning bin/tests/release/test_geometric_growth...\nTesting geometric growth optimization\n=====================================\n\nInitial state:\n  num_vars: 0\n  var_capacity: 0\n\nAdding 200 variables:\n  Var# | Capacity | Growth Event\n  -----|----------|-------------\n     1 |      128 | \u2705 Grew from 0\n   129 |      256 | \u2705 Grew from 128\n\nFinal state:\n  num_vars: 200\n  var_capacity: 256\n  Reallocations: 2\n  Wasted capacity: 56 (21.9%)\n\nPerformance analysis:\n  Theoretical minimum reallocs (2x growth from 128): 2\n  Actual reallocs: 2\n  Linear growth would require: 200 reallocs\n  Improvement: 100.0x fewer reallocs\n\n\u2705 SUCCESS: Geometric growth working correctly!\nRunning bin/tests/release/test_heap...\nPASS: activity growth, heap ordering, backtracking, rescaling and API rebuild\nRunning bin/tests/release/test_input_reader...\nPASS: input refill boundaries, embedded NUL rejection, token limits and read errors\nRunning bin/tests/release/test_learned_binaries...\nPASS: compact learned binary propagation, analysis, GC, deletion and rebuilding\nRunning bin/tests/release/test_local_search_budget...\nPASS: exact walk budgets, fresh deadline checkpoints and cancellation\nRunning bin/tests/release/test_local_search_roots...\nPASS: root values override phases and remain fixed during random walks\nRunning bin/tests/release/test_local_search_scores...\nPASS: 1788 walk prefixes checked against full score recomputation\nRunning bin/tests/release/test_local_search_selection...\nPASS: 2040 walk prefixes match scan oracle across tree boundaries\nRunning bin/tests/release/test_minimize...\nPASS: 160 signed binary graph/budget cases, independent entailment, stable subsequence and cleanup\nPASS: binary/arena minimization, shared dependencies, 2000-edge chains, failure rollback, budgets and scratch cleanup\nRunning bin/tests/release/test_mode_branching...\nPASS: mode-specific decisions/bumps, queue restoration during heap backtracking, and complete repeated SCC/assumption/chronological solves\nRunning bin/tests/release/test_mode_start...\nPASS: 32 alternating boundaries, focused/target phases and disabled policies\nRunning bin/tests/release/test_model_transfer...\nPASS: complete local-search transfer metadata and subsequent API solves\nRunning bin/tests/release/test_options...\nPASS: finite clause-decay bounds, valid solver construction and repeated solves\nRunning bin/tests/release/test_phases...\nPASS: save decision phases across random overrides, target phases and backtracking\nRunning bin/tests/release/test_portfolio...\nPASS: 512 portfolio answers checked against truth tables, 439 fresh attempts\nPASS: portfolio truth tables, repeated API calls, global limits and proof reset\nRunning bin/tests/release/test_proof_encoding...\nPASS: 288 text/binary proof byte cases, numeric/chunk boundaries and disabled output\nPASS: 22 proof output cutoffs and 2 deferred-flush failures return UNKNOWN\nRunning bin/tests/release/test_reduce_growth...\nPASS: fixed/growing reduction boundaries, saturation, actual deletions, SCC, chronology, VMTF and repeated assumption solves\nRunning bin/tests/release/test_reduction_ranking...\nPASS: 51840 reduction rankings, fractions, cutoffs, protected clauses and relocated watches\nRunning bin/tests/release/test_regressions...\nPASS: parser, 800 API solves, assumptions, backjump boundaries, reduction/GC, restart regressions\nRunning bin/tests/release/test_rephase...\nPASS: 16 partial-target rephasing, disabled, boundary and stable/heap/queue cases\nRunning bin/tests/release/test_resolvent_projection...\nPASS: 2048 bounded cost/projection cases (1534 accepted, 514 rejected), collision witnesses and 84 staging cutoffs\nRunning bin/tests/release/test_restart_reuse...\nPASS: heap and queue restart prefix boundaries, fallbacks and order recovery\nRunning bin/tests/release/test_scan_work...\nPASS: 108 scan work cases, circular replacement, unit/conflict and interrupted replay\nRunning bin/tests/release/test_solver...\n========================================\nBSAT Core Solver Unit Tests\n========================================\n\nTesting Solver creation and destruction... \u2705 PASS\nTesting Add variables... \u2705 PASS\nTesting Add clause... \u2705 PASS\nTesting Empty formula is SAT... \u2705 PASS\nTesting Single unit clause... \u2705 PASS\nTesting Contradiction: (x) \u2227 (~x)... \u2705 PASS\nTesting Simple SAT: (x \u2228 y) \u2227 (~x \u2228 z)... \u2705 PASS\nTesting Statistics tracking... \u2705 PASS\nTesting Conflict limit... \u2705 PASS\nTesting Solving with assumptions... \u2705 PASS\nTesting Multiple solve calls... \u2705 PASS\n\n========================================\nResults: 11/11 tests passed\n========================================\nRunning bin/tests/release/test_targets...\nPASS: exact target phases across extensions, changed branches, restarts and API rebuilds\nRunning bin/tests/release/test_vivify_prefix...\nPASS: 2064 signed partial-deletion and failed-trial cutoff cases\nPASS: 8 long-scan vivification cutoffs, temporary-trail rollback and retry\nPASS: 4704 vivification truth-table/RUP, budget, signed implication, root, 512 exact deletion-oracle and subsequent solve cases\nRunning bin/tests/release/test_vmtf...\nPASS: VMTF order, assignment cursor, growth, stamp rollover, conflict use and API rebuild\nRunning bin/tests/release/test_walk_phase_feedback...\nPASS: 6336 feedback cases preserve assignment and keep the best phases\nRunning bin/tests/release/test_watch...\n========================================\nBSAT Watch Manager Unit Tests\n========================================\n\nTesting Watch manager creation and destruction... \u2705 PASS\nTesting Add single watch... \u2705 PASS\nTesting Add multiple watches to same literal... \u2705 PASS\nTesting Add watches to different literals... \u2705 PASS\nTesting Remove all watches for a clause... \u2705 PASS\nTesting Clear all watches... \u2705 PASS\nTesting Blocking literal optimization... \u2705 PASS\nTesting Positive and negative literal watches... \u2705 PASS\nTesting Binary clause (2 literals) watches... \u2705 PASS\nTesting Watch list automatic growth... \u2705 PASS\nTesting Watch manager in-place resize... \u2705 PASS\n\n========================================\nResults: 11/11 tests passed\n========================================\nRunning bin/tests/release/test_watch_lookahead...\nPASS: 459 mixed-watch boundary, unit and conflict cases\nAll tests passed!\n",
+      "independent_command": [
+        "python3",
+        "tests/validate.py",
+        "--solver",
+        "bin/bsat",
+        "--checker",
+        "/tmp/bsat-drat-trim",
+        "--cases",
+        "30",
+        "--seed",
+        "20261317"
+      ],
+      "independent_log": "PASS: 5141 solves; truth-table answers, original models, text/binary RUP proofs checked (seed 20261317)\n",
+      "deadline_log": "PASS: 75 short-deadline runs; maximum observed CPU overrun 0.000s\n",
+      "deadlines": {
+        "solver": "/Users/msharpe/python/bsat/competition/c/bin/bsat",
+        "runs": [
+          {
+            "input": "pigeonhole.cnf",
+            "options": [
+              "--local-search",
+              "--ls-interval",
+              "1",
+              "--no-probing"
+            ],
+            "limit": 0.001,
+            "solving_cpu": 0.001,
+            "wall_seconds": 0.0041396659798920155,
+            "status": "UNKNOWN"
+          },
+          {
+            "input": "pigeonhole.cnf",
+            "options": [
+              "--local-search",
+              "--ls-interval",
+              "1",
+              "--no-probing",
+              "--vmtf",
+              "--reuse-trail"
+            ],
+            "limit": 0.001,
+            "solving_cpu": 0.001,
+            "wall_seconds": 0.0035504158586263657,
+            "status": "UNKNOWN"
+          },
+          {
+            "input": "pigeonhole.cnf",
+            "options": [
+              "--reuse-trail"
+            ],
+            "limit": 0.001,
+            "solving_cpu": 0.001,
+            "wall_seconds": 0.003321249969303608,
+            "status": "UNKNOWN"
+          },
+          {
+            "input": "pigeonhole.cnf",
+            "options": [
+              "--reuse-trail",
+              "--vmtf"
+            ],
+            "limit": 0.001,
+            "solving_cpu": 0.001,
+            "wall_seconds": 0.0036607077345252037,
+            "status": "UNKNOWN"
+          },
+          {
+            "input": "pigeonhole.cnf",
+            "options": [],
+            "limit": 0.001,
+            "solving_cpu": 0.001,
+            "wall_seconds": 0.003707250114530325,
+            "status": "UNKNOWN"
+          },
+          {
+            "input": "pigeonhole.cnf",
+            "options": [
+              "--iterative-minimize"
+            ],
+            "limit": 0.001,
+            "solving_cpu": 0.001,
+            "wall_seconds": 0.0037842090241611004,
+            "status": "UNKNOWN"
+          },
+          {
+            "input": "pigeonhole.cnf",
+            "options": [
+              "--equiv",
+              "--elim",
+              "--bce",
+              "--dynamic-lbd",
+              "--binary-proof"
+            ],
+            "limit": 0.001,
+            "solving_cpu": 0.001,
+            "wall_seconds": 0.003507792018353939,
+            "status": "UNKNOWN"
+          },
+          {
+            "input": "empty.cnf",
+            "options": [
+              "--no-probing"
+            ],
+            "limit": 0.001,
+            "solving_cpu": 0.001,
+            "wall_seconds": 0.006038541905581951,
+            "status": "UNKNOWN"
+          },
+          {
+            "input": "pigeonhole.cnf",
+            "options": [
+              "--binary-minimize",
+              "--vmtf"
+            ],
+            "limit": 0.001,
+            "solving_cpu": 0.001,
+            "wall_seconds": 0.003424250055104494,
+            "status": "UNKNOWN"
+          },
+          {
+            "input": "pigeonhole.cnf",
+            "options": [
+              "--random-phase",
+              "--vmtf"
+            ],
+            "limit": 0.001,
+            "solving_cpu": 0.001,
+            "wall_seconds": 0.003429708071053028,
+            "status": "UNKNOWN"
+          },
+          {
+            "input": "pigeonhole.cnf",
+            "options": [
+              "--vmtf"
+            ],
+            "limit": 0.001,
+            "solving_cpu": 0.001,
+            "wall_seconds": 0.003356458153575659,
+            "status": "UNKNOWN"
+          },
+          {
+            "input": "empty.cnf",
+            "options": [
+              "--vmtf",
+              "--no-probing"
+            ],
+            "limit": 0.001,
+            "solving_cpu": 0.001,
+            "wall_seconds": 0.005132374819368124,
+            "status": "UNKNOWN"
+          },
+          {
+            "input": "pigeonhole.cnf",
+            "options": [
+              "--local-search",
+              "--ls-interval",
+              "1",
+              "--no-probing",
+              "--ls-save-phases"
+            ],
+            "limit": 0.001,
+            "solving_cpu": 0.001,
+            "wall_seconds": 0.003766291309148073,
+            "status": "UNKNOWN"
+          },
+          {
+            "input": "pigeonhole.cnf",
+            "options": [
+              "--local-search",
+              "--ls-interval",
+              "1",
+              "--no-probing",
+              "--vmtf",
+              "--reuse-trail",
+              "--ls-save-phases"
+            ],
+            "limit": 0.001,
+            "solving_cpu": 0.001,
+            "wall_seconds": 0.0038598328828811646,
+            "status": "UNKNOWN"
+          },
+          {
+            "input": "pigeonhole.cnf",
+            "options": [
+              "--portfolio",
+              "0.000000000001"
+            ],
+            "limit": 0.001,
+            "solving_cpu": 0.001,
+            "wall_seconds": 0.003782416693866253,
+            "status": "UNKNOWN"
+          },
+          {
+            "input": "pigeonhole.cnf",
+            "options": [
+              "--portfolio",
+              "0.002",
+              "--binary-proof"
+            ],
+            "limit": 0.001,
+            "solving_cpu": 0.001,
+            "wall_seconds": 0.0035874592140316963,
+            "status": "UNKNOWN"
+          },
+          {
+            "input": "empty.cnf",
+            "options": [
+              "--portfolio",
+              "0.000000000001",
+              "--no-probing"
+            ],
+            "limit": 0.001,
+            "solving_cpu": 0.001,
+            "wall_seconds": 0.0053424169309437275,
+            "status": "UNKNOWN"
+          },
+          {
+            "input": "pigeonhole.cnf",
+            "options": [
+              "--congruence",
+              "--equiv",
+              "--binary-proof"
+            ],
+            "limit": 0.001,
+            "solving_cpu": 0.001,
+            "wall_seconds": 0.003624625038355589,
+            "status": "UNKNOWN"
+          },
+          {
+            "input": "empty.cnf",
+            "options": [
+              "--congruence",
+              "--no-probing"
+            ],
+            "limit": 0.001,
+            "solving_cpu": 0.001,
+            "wall_seconds": 0.005364416632801294,
+            "status": "UNKNOWN"
+          },
+          {
+            "input": "pigeonhole.cnf",
+            "options": [
+              "--chrono",
+              "--chrono-levels",
+              "0",
+              "--binary-proof"
+            ],
+            "limit": 0.001,
+            "solving_cpu": 0.001,
+            "wall_seconds": 0.0037953341379761696,
+            "status": "UNKNOWN"
+          },
+          {
+            "input": "empty.cnf",
+            "options": [
+              "--chrono",
+              "--chrono-levels",
+              "0",
+              "--no-probing"
+            ],
+            "limit": 0.001,
+            "solving_cpu": 0.001,
+            "wall_seconds": 0.005174084100872278,
+            "status": "UNKNOWN"
+          },
+          {
+            "input": "pigeonhole.cnf",
+            "options": [
+              "--reduce-interval",
+              "1",
+              "--reduce-increment",
+              "1",
+              "--no-probing"
+            ],
+            "limit": 0.001,
+            "solving_cpu": 0.001,
+            "wall_seconds": 0.0032958751544356346,
+            "status": "UNKNOWN"
+          },
+          {
+            "input": "pigeonhole.cnf",
+            "options": [
+              "--reduce-interval",
+              "1",
+              "--reduce-increment",
+              "1",
+              "--chrono",
+              "--vmtf",
+              "--binary-proof"
+            ],
+            "limit": 0.001,
+            "solving_cpu": 0.001,
+            "wall_seconds": 0.0030776248313486576,
+            "status": "UNKNOWN"
+          },
+          {
+            "input": "pigeonhole.cnf",
+            "options": [
+              "--mode-branching",
+              "--chrono",
+              "--binary-proof"
+            ],
+            "limit": 0.001,
+            "solving_cpu": 0.001,
+            "wall_seconds": 0.0032270830124616623,
+            "status": "UNKNOWN"
+          },
+          {
+            "input": "empty.cnf",
+            "options": [
+              "--mode-branching",
+              "--no-probing"
+            ],
+            "limit": 0.001,
+            "solving_cpu": 0.001,
+            "wall_seconds": 0.0050952499732375145,
+            "status": "UNKNOWN"
+          },
+          {
+            "input": "pigeonhole.cnf",
+            "options": [
+              "--local-search",
+              "--ls-interval",
+              "1",
+              "--no-probing"
+            ],
+            "limit": 0.01,
+            "solving_cpu": 0.01,
+            "wall_seconds": 0.012805750127881765,
+            "status": "UNKNOWN"
+          },
+          {
+            "input": "pigeonhole.cnf",
+            "options": [
+              "--local-search",
+              "--ls-interval",
+              "1",
+              "--no-probing",
+              "--vmtf",
+              "--reuse-trail"
+            ],
+            "limit": 0.01,
+            "solving_cpu": 0.01,
+            "wall_seconds": 0.012571459170430899,
+            "status": "UNKNOWN"
+          },
+          {
+            "input": "pigeonhole.cnf",
+            "options": [
+              "--reuse-trail"
+            ],
+            "limit": 0.01,
+            "solving_cpu": 0.01,
+            "wall_seconds": 0.012810084037482738,
+            "status": "UNKNOWN"
+          },
+          {
+            "input": "pigeonhole.cnf",
+            "options": [
+              "--reuse-trail",
+              "--vmtf"
+            ],
+            "limit": 0.01,
+            "solving_cpu": 0.01,
+            "wall_seconds": 0.012648459058254957,
+            "status": "UNKNOWN"
+          },
+          {
+            "input": "pigeonhole.cnf",
+            "options": [],
+            "limit": 0.01,
+            "solving_cpu": 0.01,
+            "wall_seconds": 0.012897124979645014,
+            "status": "UNKNOWN"
+          },
+          {
+            "input": "pigeonhole.cnf",
+            "options": [
+              "--iterative-minimize"
+            ],
+            "limit": 0.01,
+            "solving_cpu": 0.01,
+            "wall_seconds": 0.013347500003874302,
+            "status": "UNKNOWN"
+          },
+          {
+            "input": "pigeonhole.cnf",
+            "options": [
+              "--equiv",
+              "--elim",
+              "--bce",
+              "--dynamic-lbd",
+              "--binary-proof"
+            ],
+            "limit": 0.01,
+            "solving_cpu": 0.01,
+            "wall_seconds": 0.013045832980424166,
+            "status": "UNKNOWN"
+          },
+          {
+            "input": "empty.cnf",
+            "options": [
+              "--no-probing"
+            ],
+            "limit": 0.01,
+            "solving_cpu": 0.01,
+            "wall_seconds": 0.01483325008302927,
+            "status": "UNKNOWN"
+          },
+          {
+            "input": "pigeonhole.cnf",
+            "options": [
+              "--binary-minimize",
+              "--vmtf"
+            ],
+            "limit": 0.01,
+            "solving_cpu": 0.01,
+            "wall_seconds": 0.012659790925681591,
+            "status": "UNKNOWN"
+          },
+          {
+            "input": "pigeonhole.cnf",
+            "options": [
+              "--random-phase",
+              "--vmtf"
+            ],
+            "limit": 0.01,
+            "solving_cpu": 0.01,
+            "wall_seconds": 0.012787125073373318,
+            "status": "UNKNOWN"
+          },
+          {
+            "input": "pigeonhole.cnf",
+            "options": [
+              "--vmtf"
+            ],
+            "limit": 0.01,
+            "solving_cpu": 0.01,
+            "wall_seconds": 0.012840707786381245,
+            "status": "UNKNOWN"
+          },
+          {
+            "input": "empty.cnf",
+            "options": [
+              "--vmtf",
+              "--no-probing"
+            ],
+            "limit": 0.01,
+            "solving_cpu": 0.01,
+            "wall_seconds": 0.014854291919618845,
+            "status": "UNKNOWN"
+          },
+          {
+            "input": "pigeonhole.cnf",
+            "options": [
+              "--local-search",
+              "--ls-interval",
+              "1",
+              "--no-probing",
+              "--ls-save-phases"
+            ],
+            "limit": 0.01,
+            "solving_cpu": 0.01,
+            "wall_seconds": 0.013009416870772839,
+            "status": "UNKNOWN"
+          },
+          {
+            "input": "pigeonhole.cnf",
+            "options": [
+              "--local-search",
+              "--ls-interval",
+              "1",
+              "--no-probing",
+              "--vmtf",
+              "--reuse-trail",
+              "--ls-save-phases"
+            ],
+            "limit": 0.01,
+            "solving_cpu": 0.01,
+            "wall_seconds": 0.013166457880288363,
+            "status": "UNKNOWN"
+          },
+          {
+            "input": "pigeonhole.cnf",
+            "options": [
+              "--portfolio",
+              "0.000000000001"
+            ],
+            "limit": 0.01,
+            "solving_cpu": 0.01,
+            "wall_seconds": 0.01305841701105237,
+            "status": "UNKNOWN"
+          },
+          {
+            "input": "pigeonhole.cnf",
+            "options": [
+              "--portfolio",
+              "0.002",
+              "--binary-proof"
+            ],
+            "limit": 0.01,
+            "solving_cpu": 0.01,
+            "wall_seconds": 0.012938125059008598,
+            "status": "UNKNOWN"
+          },
+          {
+            "input": "empty.cnf",
+            "options": [
+              "--portfolio",
+              "0.000000000001",
+              "--no-probing"
+            ],
+            "limit": 0.01,
+            "solving_cpu": 0.01,
+            "wall_seconds": 0.014663165900856256,
+            "status": "UNKNOWN"
+          },
+          {
+            "input": "pigeonhole.cnf",
+            "options": [
+              "--congruence",
+              "--equiv",
+              "--binary-proof"
+            ],
+            "limit": 0.01,
+            "solving_cpu": 0.01,
+            "wall_seconds": 0.01270645810291171,
+            "status": "UNKNOWN"
+          },
+          {
+            "input": "empty.cnf",
+            "options": [
+              "--congruence",
+              "--no-probing"
+            ],
+            "limit": 0.01,
+            "solving_cpu": 0.01,
+            "wall_seconds": 0.014674750156700611,
+            "status": "UNKNOWN"
+          },
+          {
+            "input": "pigeonhole.cnf",
+            "options": [
+              "--chrono",
+              "--chrono-levels",
+              "0",
+              "--binary-proof"
+            ],
+            "limit": 0.01,
+            "solving_cpu": 0.01,
+            "wall_seconds": 0.012923500034958124,
+            "status": "UNKNOWN"
+          },
+          {
+            "input": "empty.cnf",
+            "options": [
+              "--chrono",
+              "--chrono-levels",
+              "0",
+              "--no-probing"
+            ],
+            "limit": 0.01,
+            "solving_cpu": 0.01,
+            "wall_seconds": 0.015275209210813046,
+            "status": "UNKNOWN"
+          },
+          {
+            "input": "pigeonhole.cnf",
+            "options": [
+              "--reduce-interval",
+              "1",
+              "--reduce-increment",
+              "1",
+              "--no-probing"
+            ],
+            "limit": 0.01,
+            "solving_cpu": 0.01,
+            "wall_seconds": 0.013355583883821964,
+            "status": "UNKNOWN"
+          },
+          {
+            "input": "pigeonhole.cnf",
+            "options": [
+              "--reduce-interval",
+              "1",
+              "--reduce-increment",
+              "1",
+              "--chrono",
+              "--vmtf",
+              "--binary-proof"
+            ],
+            "limit": 0.01,
+            "solving_cpu": 0.01,
+            "wall_seconds": 0.013328874949365854,
+            "status": "UNKNOWN"
+          },
+          {
+            "input": "pigeonhole.cnf",
+            "options": [
+              "--mode-branching",
+              "--chrono",
+              "--binary-proof"
+            ],
+            "limit": 0.01,
+            "solving_cpu": 0.01,
+            "wall_seconds": 0.012801916804164648,
+            "status": "UNKNOWN"
+          },
+          {
+            "input": "empty.cnf",
+            "options": [
+              "--mode-branching",
+              "--no-probing"
+            ],
+            "limit": 0.01,
+            "solving_cpu": 0.01,
+            "wall_seconds": 0.014836125075817108,
+            "status": "UNKNOWN"
+          },
+          {
+            "input": "pigeonhole.cnf",
+            "options": [
+              "--local-search",
+              "--ls-interval",
+              "1",
+              "--no-probing"
+            ],
+            "limit": 0.05,
+            "solving_cpu": 0.05,
+            "wall_seconds": 0.05293708387762308,
+            "status": "UNKNOWN"
+          },
+          {
+            "input": "pigeonhole.cnf",
+            "options": [
+              "--local-search",
+              "--ls-interval",
+              "1",
+              "--no-probing",
+              "--vmtf",
+              "--reuse-trail"
+            ],
+            "limit": 0.05,
+            "solving_cpu": 0.05,
+            "wall_seconds": 0.05335737532004714,
+            "status": "UNKNOWN"
+          },
+          {
+            "input": "pigeonhole.cnf",
+            "options": [
+              "--reuse-trail"
+            ],
+            "limit": 0.05,
+            "solving_cpu": 0.05,
+            "wall_seconds": 0.053340707905590534,
+            "status": "UNKNOWN"
+          },
+          {
+            "input": "pigeonhole.cnf",
+            "options": [
+              "--reuse-trail",
+              "--vmtf"
+            ],
+            "limit": 0.05,
+            "solving_cpu": 0.05,
+            "wall_seconds": 0.05267520900815725,
+            "status": "UNKNOWN"
+          },
+          {
+            "input": "pigeonhole.cnf",
+            "options": [],
+            "limit": 0.05,
+            "solving_cpu": 0.05,
+            "wall_seconds": 0.05330825038254261,
+            "status": "UNKNOWN"
+          },
+          {
+            "input": "pigeonhole.cnf",
+            "options": [
+              "--iterative-minimize"
+            ],
+            "limit": 0.05,
+            "solving_cpu": 0.05,
+            "wall_seconds": 0.052478374913334846,
+            "status": "UNKNOWN"
+          },
+          {
+            "input": "pigeonhole.cnf",
+            "options": [
+              "--equiv",
+              "--elim",
+              "--bce",
+              "--dynamic-lbd",
+              "--binary-proof"
+            ],
+            "limit": 0.05,
+            "solving_cpu": 0.05,
+            "wall_seconds": 0.05278979102149606,
+            "status": "UNKNOWN"
+          },
+          {
+            "input": "empty.cnf",
+            "options": [
+              "--no-probing"
+            ],
+            "limit": 0.05,
+            "solving_cpu": 0.031,
+            "wall_seconds": 0.04252583393827081,
+            "status": "SATISFIABLE"
+          },
+          {
+            "input": "pigeonhole.cnf",
+            "options": [
+              "--binary-minimize",
+              "--vmtf"
+            ],
+            "limit": 0.05,
+            "solving_cpu": 0.05,
+            "wall_seconds": 0.05307420901954174,
+            "status": "UNKNOWN"
+          },
+          {
+            "input": "pigeonhole.cnf",
+            "options": [
+              "--random-phase",
+              "--vmtf"
+            ],
+            "limit": 0.05,
+            "solving_cpu": 0.05,
+            "wall_seconds": 0.05282654194161296,
+            "status": "UNKNOWN"
+          },
+          {
+            "input": "pigeonhole.cnf",
+            "options": [
+              "--vmtf"
+            ],
+            "limit": 0.05,
+            "solving_cpu": 0.05,
+            "wall_seconds": 0.05410283291712403,
+            "status": "UNKNOWN"
+          },
+          {
+            "input": "empty.cnf",
+            "options": [
+              "--vmtf",
+              "--no-probing"
+            ],
+            "limit": 0.05,
+            "solving_cpu": 0.032,
+            "wall_seconds": 0.04192695813253522,
+            "status": "SATISFIABLE"
+          },
+          {
+            "input": "pigeonhole.cnf",
+            "options": [
+              "--local-search",
+              "--ls-interval",
+              "1",
+              "--no-probing",
+              "--ls-save-phases"
+            ],
+            "limit": 0.05,
+            "solving_cpu": 0.05,
+            "wall_seconds": 0.05301012517884374,
+            "status": "UNKNOWN"
+          },
+          {
+            "input": "pigeonhole.cnf",
+            "options": [
+              "--local-search",
+              "--ls-interval",
+              "1",
+              "--no-probing",
+              "--vmtf",
+              "--reuse-trail",
+              "--ls-save-phases"
+            ],
+            "limit": 0.05,
+            "solving_cpu": 0.05,
+            "wall_seconds": 0.05285904183983803,
+            "status": "UNKNOWN"
+          },
+          {
+            "input": "pigeonhole.cnf",
+            "options": [
+              "--portfolio",
+              "0.000000000001"
+            ],
+            "limit": 0.05,
+            "solving_cpu": 0.05,
+            "wall_seconds": 0.05291683319956064,
+            "status": "UNKNOWN"
+          },
+          {
+            "input": "pigeonhole.cnf",
+            "options": [
+              "--portfolio",
+              "0.002",
+              "--binary-proof"
+            ],
+            "limit": 0.05,
+            "solving_cpu": 0.05,
+            "wall_seconds": 0.05318937497213483,
+            "status": "UNKNOWN"
+          },
+          {
+            "input": "empty.cnf",
+            "options": [
+              "--portfolio",
+              "0.000000000001",
+              "--no-probing"
+            ],
+            "limit": 0.05,
+            "solving_cpu": 0.033,
+            "wall_seconds": 0.04406629176810384,
+            "status": "SATISFIABLE"
+          },
+          {
+            "input": "pigeonhole.cnf",
+            "options": [
+              "--congruence",
+              "--equiv",
+              "--binary-proof"
+            ],
+            "limit": 0.05,
+            "solving_cpu": 0.05,
+            "wall_seconds": 0.053248667158186436,
+            "status": "UNKNOWN"
+          },
+          {
+            "input": "empty.cnf",
+            "options": [
+              "--congruence",
+              "--no-probing"
+            ],
+            "limit": 0.05,
+            "solving_cpu": 0.03,
+            "wall_seconds": 0.04145820811390877,
+            "status": "SATISFIABLE"
+          },
+          {
+            "input": "pigeonhole.cnf",
+            "options": [
+              "--chrono",
+              "--chrono-levels",
+              "0",
+              "--binary-proof"
+            ],
+            "limit": 0.05,
+            "solving_cpu": 0.05,
+            "wall_seconds": 0.05313533404842019,
+            "status": "UNKNOWN"
+          },
+          {
+            "input": "empty.cnf",
+            "options": [
+              "--chrono",
+              "--chrono-levels",
+              "0",
+              "--no-probing"
+            ],
+            "limit": 0.05,
+            "solving_cpu": 0.032,
+            "wall_seconds": 0.04333137487992644,
+            "status": "SATISFIABLE"
+          },
+          {
+            "input": "pigeonhole.cnf",
+            "options": [
+              "--reduce-interval",
+              "1",
+              "--reduce-increment",
+              "1",
+              "--no-probing"
+            ],
+            "limit": 0.05,
+            "solving_cpu": 0.05,
+            "wall_seconds": 0.05348020838573575,
+            "status": "UNKNOWN"
+          },
+          {
+            "input": "pigeonhole.cnf",
+            "options": [
+              "--reduce-interval",
+              "1",
+              "--reduce-increment",
+              "1",
+              "--chrono",
+              "--vmtf",
+              "--binary-proof"
+            ],
+            "limit": 0.05,
+            "solving_cpu": 0.05,
+            "wall_seconds": 0.05325458338484168,
+            "status": "UNKNOWN"
+          },
+          {
+            "input": "pigeonhole.cnf",
+            "options": [
+              "--mode-branching",
+              "--chrono",
+              "--binary-proof"
+            ],
+            "limit": 0.05,
+            "solving_cpu": 0.05,
+            "wall_seconds": 0.10629679169505835,
+            "status": "UNKNOWN"
+          },
+          {
+            "input": "empty.cnf",
+            "options": [
+              "--mode-branching",
+              "--no-probing"
+            ],
+            "limit": 0.05,
+            "solving_cpu": 0.031,
+            "wall_seconds": 0.042219582945108414,
+            "status": "SATISFIABLE"
+          }
+        ]
+      },
+      "mode_transition_certificates": {
+        "schema": 1,
+        "script_sha256": "5c614207972e02f2eea83188f3d6b5f2073674ba28af9ece9ee31e205e01b6f6",
+        "solver": "/Users/msharpe/python/bsat/competition/c/bin/bsat",
+        "solver_sha256": "a54e2ded3fb1f8f473e7e8c1d5b2c9474c02918ca2158f720343dbdbafa1cb63",
+        "checker": "/private/tmp/bsat-drat-trim",
+        "checker_sha256": "9bfc20a5fa9eb2a0ffadd2b0cfc7cdd4a20f6aa9c8d7de5b6c771160b847f630",
+        "runs": [
+          {
+            "sat": false,
+            "options": [
+              "--mode-branching",
+              "--chrono",
+              "--chrono-levels",
+              "0",
+              "--no-probing",
+              "--no-subsumption",
+              "--reduce-interval",
+              "32"
+            ],
+            "input_sha256": "a1da476007fef3747f81e5617411f2ee6d5fc03bbe1c261cc19d652d9f70f759",
+            "proof_sha256": "fbd4e1a37af3062e4119ad78085f48b3d921f90c76199d1908cd6b3020dc0808",
+            "proof_bytes": 32494,
+            "queue_decisions": 1002,
+            "heap_decisions": 25,
+            "solver_output": "c BSAT Competition Solver v1.0\nc PID: 48412 (send SIGUSR1 for progress: kill -USR1 48412)\nc Reading from /var/folders/ts/779j13fj7_x2z167570zvv4c0000gn/T/bsat-mode-proofs-ev5ykad7/input.cnf\nc Variables: 13\nc Clauses:   2050\nc\ns UNSATISFIABLE\nc\nc CPU time:         0.001 s\nc\nc ========== Statistics ==========\nc CPU time          : 0.001 s\nc Chronological backtracks: 8\nc Chronological retained assignments: 10\nc Chronological repaired watches: 0\nc Lower-level conflicts: 1\nc Decisions         : 1027\nc Mode queue decisions: 1002\nc Mode heap decisions: 25\nc Propagations      : 2061\nc Conflicts         : 1025\nc Restarts          : 1\nc Reused levels     : 0\nc Local search calls: 0\nc Local search wins : 0\nc Local search flips: 0\nc Learned clauses   : 1024\nc Learned literals  : 5128\nc Deleted clauses   : 948\nc Binary minimize checks: 0\nc Binary minimize removed: 0\nc Minimize inspections: 10511\nc Minimize binary steps: 0\nc Minimize cache hits : 0\nc Minimize budget hits: 0\nc Equivalence work  : 0\nc Substituted vars  : 0\nc Rewritten clauses : 0\nc SCC contradictions: 0\nc Derived binaries  : 0\nc LBD improvements  : 0\nc Deadline clock reads: 0\nc Target literals copied: 12\nc Target values cleared: 14\nc Blocked clauses   : 0\nc Eliminated variables: 0\nc Elimination resolvents: 0\nc Elimination removed: 0\nc Subsumed clauses  : 0\nc Minimized literals: 3083\nc Glue clauses      : 54\nc Max LBD           : 10\nc Decisions/sec     : 742052\nc Propagations/sec  : 1489162\nc Conflicts/sec     : 740607\nc Literal inspections : 260786\nc Garbage collections : 0\nc Reductions          : 32\nc Mode                : stable\nc Memory used       : 0.15 MB\nc Memory allocated  : 0.23 MB\nc Memory peak       : 0.15 MB\nc Memory wasted     : 0.03 MB\nc Arena growths     : 10\nc\n",
+            "checker_returncode": 0,
+            "checker_output": "\nc parsing input formula with 13 variables and 2050 clauses\n\nc finished parsing\n\nc detected empty clause; start verification via backward checking\n\nc 2048 of 2050 clauses in core                            \n\nc 1025 of 1026 lemmas in core using 7172 resolution steps\n\nc 0 RAT lemmas in core; 0 redundant literals in core lemmas\n\ns VERIFIED\n\nc verification time: 0.026 seconds\n",
+            "verified": true
+          },
+          {
+            "sat": false,
+            "options": [
+              "--mode-branching",
+              "--chrono",
+              "--chrono-levels",
+              "0",
+              "--no-probing",
+              "--no-subsumption",
+              "--reduce-interval",
+              "32",
+              "--equiv"
+            ],
+            "input_sha256": "a1da476007fef3747f81e5617411f2ee6d5fc03bbe1c261cc19d652d9f70f759",
+            "proof_sha256": "a22888fc3c70c467b31463f1acedca8207f6d3c81f75091ab11d19a74d2af481",
+            "proof_bytes": 32229,
+            "queue_decisions": 1002,
+            "heap_decisions": 24,
+            "solver_output": "c BSAT Competition Solver v1.0\nc PID: 48415 (send SIGUSR1 for progress: kill -USR1 48415)\nc Reading from /var/folders/ts/779j13fj7_x2z167570zvv4c0000gn/T/bsat-mode-proofs-ev5ykad7/input.cnf\nc Variables: 13\nc Clauses:   2050\nc\ns UNSATISFIABLE\nc\nc CPU time:         0.002 s\nc\nc ========== Statistics ==========\nc CPU time          : 0.002 s\nc Chronological backtracks: 8\nc Chronological retained assignments: 10\nc Chronological repaired watches: 0\nc Lower-level conflicts: 1\nc Decisions         : 1026\nc Mode queue decisions: 1002\nc Mode heap decisions: 24\nc Propagations      : 2057\nc Conflicts         : 1024\nc Restarts          : 1\nc Reused levels     : 0\nc Local search calls: 0\nc Local search wins : 0\nc Local search flips: 0\nc Learned clauses   : 1023\nc Learned literals  : 5126\nc Deleted clauses   : 926\nc Binary minimize checks: 0\nc Binary minimize removed: 0\nc Minimize inspections: 10513\nc Minimize binary steps: 0\nc Minimize cache hits : 0\nc Minimize budget hits: 0\nc Equivalence work  : 41106\nc Substituted vars  : 1\nc Rewritten clauses : 2\nc SCC contradictions: 0\nc Derived binaries  : 0\nc LBD improvements  : 0\nc Deadline clock reads: 0\nc Target literals copied: 11\nc Target values cleared: 14\nc Blocked clauses   : 0\nc Eliminated variables: 0\nc Elimination resolvents: 0\nc Elimination removed: 0\nc Subsumed clauses  : 0\nc Minimized literals: 3084\nc Glue clauses      : 53\nc Max LBD           : 10\nc Decisions/sec     : 620690\nc Propagations/sec  : 1244404\nc Conflicts/sec     : 619480\nc Literal inspections : 301813\nc Garbage collections : 0\nc Reductions          : 31\nc Mode                : stable\nc Memory used       : 0.15 MB\nc Memory allocated  : 0.23 MB\nc Memory peak       : 0.15 MB\nc Memory wasted     : 0.03 MB\nc Arena growths     : 10\nc\n",
+            "checker_returncode": 0,
+            "checker_output": "\nc parsing input formula with 13 variables and 2050 clauses\n\nc finished parsing\n\nc detected empty clause; start verification via backward checking\n\nc 2048 of 2050 clauses in core                            \n\nc 1024 of 1027 lemmas in core using 7162 resolution steps\n\nc 0 RAT lemmas in core; 0 redundant literals in core lemmas\n\ns VERIFIED\n\nc verification time: 0.027 seconds\n",
+            "verified": true
+          },
+          {
+            "sat": false,
+            "options": [
+              "--mode-branching",
+              "--chrono",
+              "--chrono-levels",
+              "0",
+              "--no-probing",
+              "--no-subsumption",
+              "--reduce-interval",
+              "32",
+              "--binary-proof"
+            ],
+            "input_sha256": "a1da476007fef3747f81e5617411f2ee6d5fc03bbe1c261cc19d652d9f70f759",
+            "proof_sha256": "84db06163f918fb0ab70b0a2d0f2a6d7687ce590752a539fab9ed95bcf0cb024",
+            "proof_bytes": 14038,
+            "queue_decisions": 1002,
+            "heap_decisions": 25,
+            "solver_output": "c BSAT Competition Solver v1.0\nc PID: 48418 (send SIGUSR1 for progress: kill -USR1 48418)\nc Reading from /var/folders/ts/779j13fj7_x2z167570zvv4c0000gn/T/bsat-mode-proofs-ev5ykad7/input.cnf\nc Variables: 13\nc Clauses:   2050\nc\ns UNSATISFIABLE\nc\nc CPU time:         0.001 s\nc\nc ========== Statistics ==========\nc CPU time          : 0.001 s\nc Chronological backtracks: 8\nc Chronological retained assignments: 10\nc Chronological repaired watches: 0\nc Lower-level conflicts: 1\nc Decisions         : 1027\nc Mode queue decisions: 1002\nc Mode heap decisions: 25\nc Propagations      : 2061\nc Conflicts         : 1025\nc Restarts          : 1\nc Reused levels     : 0\nc Local search calls: 0\nc Local search wins : 0\nc Local search flips: 0\nc Learned clauses   : 1024\nc Learned literals  : 5128\nc Deleted clauses   : 948\nc Binary minimize checks: 0\nc Binary minimize removed: 0\nc Minimize inspections: 10511\nc Minimize binary steps: 0\nc Minimize cache hits : 0\nc Minimize budget hits: 0\nc Equivalence work  : 0\nc Substituted vars  : 0\nc Rewritten clauses : 0\nc SCC contradictions: 0\nc Derived binaries  : 0\nc LBD improvements  : 0\nc Deadline clock reads: 0\nc Target literals copied: 12\nc Target values cleared: 14\nc Blocked clauses   : 0\nc Eliminated variables: 0\nc Elimination resolvents: 0\nc Elimination removed: 0\nc Subsumed clauses  : 0\nc Minimized literals: 3083\nc Glue clauses      : 54\nc Max LBD           : 10\nc Decisions/sec     : 686497\nc Propagations/sec  : 1377674\nc Conflicts/sec     : 685160\nc Literal inspections : 260786\nc Garbage collections : 0\nc Reductions          : 32\nc Mode                : stable\nc Memory used       : 0.15 MB\nc Memory allocated  : 0.23 MB\nc Memory peak       : 0.15 MB\nc Memory wasted     : 0.03 MB\nc Arena growths     : 10\nc\n",
+            "checker_returncode": 0,
+            "checker_output": "\nc turning on binary mode checking\n\nc parsing input formula with 13 variables and 2050 clauses\n\nc finished parsing, read 14038 bytes from proof file\n\nc detected empty clause; start verification via backward checking\n\nc 2048 of 2050 clauses in core                            \n\nc 1025 of 1026 lemmas in core using 7172 resolution steps\n\nc 0 RAT lemmas in core; 0 redundant literals in core lemmas\n\ns VERIFIED\n\nc verification time: 0.024 seconds\n",
+            "verified": true
+          },
+          {
+            "sat": false,
+            "options": [
+              "--mode-branching",
+              "--chrono",
+              "--chrono-levels",
+              "0",
+              "--no-probing",
+              "--no-subsumption",
+              "--reduce-interval",
+              "32",
+              "--binary-proof",
+              "--equiv"
+            ],
+            "input_sha256": "a1da476007fef3747f81e5617411f2ee6d5fc03bbe1c261cc19d652d9f70f759",
+            "proof_sha256": "8f30c78378bb43526563c6806d59d77d0c7a78a7f6789c62755ff63e59ac2454",
+            "proof_bytes": 13921,
+            "queue_decisions": 1002,
+            "heap_decisions": 24,
+            "solver_output": "c BSAT Competition Solver v1.0\nc PID: 48422 (send SIGUSR1 for progress: kill -USR1 48422)\nc Reading from /var/folders/ts/779j13fj7_x2z167570zvv4c0000gn/T/bsat-mode-proofs-ev5ykad7/input.cnf\nc Variables: 13\nc Clauses:   2050\nc\ns UNSATISFIABLE\nc\nc CPU time:         0.001 s\nc\nc ========== Statistics ==========\nc CPU time          : 0.001 s\nc Chronological backtracks: 8\nc Chronological retained assignments: 10\nc Chronological repaired watches: 0\nc Lower-level conflicts: 1\nc Decisions         : 1026\nc Mode queue decisions: 1002\nc Mode heap decisions: 24\nc Propagations      : 2057\nc Conflicts         : 1024\nc Restarts          : 1\nc Reused levels     : 0\nc Local search calls: 0\nc Local search wins : 0\nc Local search flips: 0\nc Learned clauses   : 1023\nc Learned literals  : 5126\nc Deleted clauses   : 926\nc Binary minimize checks: 0\nc Binary minimize removed: 0\nc Minimize inspections: 10513\nc Minimize binary steps: 0\nc Minimize cache hits : 0\nc Minimize budget hits: 0\nc Equivalence work  : 41106\nc Substituted vars  : 1\nc Rewritten clauses : 2\nc SCC contradictions: 0\nc Derived binaries  : 0\nc LBD improvements  : 0\nc Deadline clock reads: 0\nc Target literals copied: 11\nc Target values cleared: 14\nc Blocked clauses   : 0\nc Eliminated variables: 0\nc Elimination resolvents: 0\nc Elimination removed: 0\nc Subsumed clauses  : 0\nc Minimized literals: 3084\nc Glue clauses      : 53\nc Max LBD           : 10\nc Decisions/sec     : 754412\nc Propagations/sec  : 1512500\nc Conflicts/sec     : 752941\nc Literal inspections : 301813\nc Garbage collections : 0\nc Reductions          : 31\nc Mode                : stable\nc Memory used       : 0.15 MB\nc Memory allocated  : 0.23 MB\nc Memory peak       : 0.15 MB\nc Memory wasted     : 0.03 MB\nc Arena growths     : 10\nc\n",
+            "checker_returncode": 0,
+            "checker_output": "\nc turning on binary mode checking\n\nc parsing input formula with 13 variables and 2050 clauses\n\nc finished parsing, read 13921 bytes from proof file\n\nc detected empty clause; start verification via backward checking\n\nc 2048 of 2050 clauses in core                            \n\nc 1024 of 1027 lemmas in core using 7162 resolution steps\n\nc 0 RAT lemmas in core; 0 redundant literals in core lemmas\n\ns VERIFIED\n\nc verification time: 0.024 seconds\n",
+            "verified": true
+          },
+          {
+            "sat": true,
+            "options": [
+              "--mode-branching",
+              "--chrono",
+              "--chrono-levels",
+              "0",
+              "--no-probing",
+              "--no-subsumption",
+              "--reduce-interval",
+              "32"
+            ],
+            "input_sha256": "58a511fdb7b11f21fb01477e181147ea22ba9198187fa36aefce8297e7c42a99",
+            "proof_sha256": "4bbcf6c36349a07186a7e7216766ce968c65354129a8debb89c68c77f41a1e68",
+            "proof_bytes": 23212,
+            "queue_decisions": 688,
+            "heap_decisions": 0,
+            "solver_output": "c BSAT Competition Solver v1.0\nc PID: 48425 (send SIGUSR1 for progress: kill -USR1 48425)\nc Reading from /var/folders/ts/779j13fj7_x2z167570zvv4c0000gn/T/bsat-mode-proofs-ev5ykad7/input.cnf\nc Variables: 13\nc Clauses:   2049\nc\ns SATISFIABLE\nv 1 2 3 4 5 6 7 8 9 10 11 -12 -13 0\nc\nc CPU time:         0.001 s\nc\nc ========== Statistics ==========\nc CPU time          : 0.001 s\nc Chronological backtracks: 1\nc Chronological retained assignments: 0\nc Chronological repaired watches: 0\nc Lower-level conflicts: 0\nc Decisions         : 688\nc Mode queue decisions: 688\nc Mode heap decisions: 0\nc Propagations      : 1372\nc Conflicts         : 682\nc Restarts          : 0\nc Reused levels     : 0\nc Local search calls: 0\nc Local search wins : 0\nc Local search flips: 0\nc Learned clauses   : 682\nc Learned literals  : 3751\nc Deleted clauses   : 629\nc Binary minimize checks: 0\nc Binary minimize removed: 0\nc Minimize inspections: 8090\nc Minimize binary steps: 0\nc Minimize cache hits : 0\nc Minimize budget hits: 0\nc Equivalence work  : 0\nc Substituted vars  : 0\nc Rewritten clauses : 0\nc SCC contradictions: 0\nc Derived binaries  : 0\nc LBD improvements  : 0\nc Deadline clock reads: 0\nc Target literals copied: 12\nc Target values cleared: 14\nc Blocked clauses   : 0\nc Eliminated variables: 0\nc Elimination resolvents: 0\nc Elimination removed: 0\nc Subsumed clauses  : 0\nc Minimized literals: 2222\nc Glue clauses      : 11\nc Max LBD           : 10\nc Decisions/sec     : 671220\nc Propagations/sec  : 1338537\nc Conflicts/sec     : 665366\nc Literal inspections : 190908\nc Garbage collections : 0\nc Reductions          : 21\nc Mode                : focused\nc Memory used       : 0.14 MB\nc Memory allocated  : 0.15 MB\nc Memory peak       : 0.14 MB\nc Memory wasted     : 0.02 MB\nc Arena growths     : 9\nc\n",
+            "checker_returncode": null,
+            "checker_output": null,
+            "verified": true
+          },
+          {
+            "sat": true,
+            "options": [
+              "--mode-branching",
+              "--chrono",
+              "--chrono-levels",
+              "0",
+              "--no-probing",
+              "--no-subsumption",
+              "--reduce-interval",
+              "32",
+              "--equiv"
+            ],
+            "input_sha256": "58a511fdb7b11f21fb01477e181147ea22ba9198187fa36aefce8297e7c42a99",
+            "proof_sha256": "9bd1b37e5cb23dda45250c8166c8e844a8758c2b45d023ef2358c4c1d1d584eb",
+            "proof_bytes": 23230,
+            "queue_decisions": 688,
+            "heap_decisions": 0,
+            "solver_output": "c BSAT Competition Solver v1.0\nc PID: 48426 (send SIGUSR1 for progress: kill -USR1 48426)\nc Reading from /var/folders/ts/779j13fj7_x2z167570zvv4c0000gn/T/bsat-mode-proofs-ev5ykad7/input.cnf\nc Variables: 13\nc Clauses:   2049\nc\ns SATISFIABLE\nv 1 2 3 4 5 6 7 8 9 10 11 -12 -13 0\nc\nc CPU time:         0.001 s\nc\nc ========== Statistics ==========\nc CPU time          : 0.001 s\nc Chronological backtracks: 1\nc Chronological retained assignments: 0\nc Chronological repaired watches: 0\nc Lower-level conflicts: 0\nc Decisions         : 688\nc Mode queue decisions: 688\nc Mode heap decisions: 0\nc Propagations      : 1371\nc Conflicts         : 682\nc Restarts          : 0\nc Reused levels     : 0\nc Local search calls: 0\nc Local search wins : 0\nc Local search flips: 0\nc Learned clauses   : 682\nc Learned literals  : 3751\nc Deleted clauses   : 629\nc Binary minimize checks: 0\nc Binary minimize removed: 0\nc Minimize inspections: 8090\nc Minimize binary steps: 0\nc Minimize cache hits : 0\nc Minimize budget hits: 0\nc Equivalence work  : 41086\nc Substituted vars  : 1\nc Rewritten clauses : 2\nc SCC contradictions: 0\nc Derived binaries  : 0\nc LBD improvements  : 0\nc Deadline clock reads: 0\nc Target literals copied: 11\nc Target values cleared: 14\nc Blocked clauses   : 0\nc Eliminated variables: 0\nc Elimination resolvents: 0\nc Elimination removed: 0\nc Subsumed clauses  : 0\nc Minimized literals: 2222\nc Glue clauses      : 11\nc Max LBD           : 10\nc Decisions/sec     : 545166\nc Propagations/sec  : 1086371\nc Conflicts/sec     : 540412\nc Literal inspections : 231992\nc Garbage collections : 0\nc Reductions          : 21\nc Mode                : focused\nc Memory used       : 0.14 MB\nc Memory allocated  : 0.15 MB\nc Memory peak       : 0.14 MB\nc Memory wasted     : 0.02 MB\nc Arena growths     : 9\nc\n",
+            "checker_returncode": null,
+            "checker_output": null,
+            "verified": true
+          },
+          {
+            "sat": true,
+            "options": [
+              "--mode-branching",
+              "--chrono",
+              "--chrono-levels",
+              "0",
+              "--no-probing",
+              "--no-subsumption",
+              "--reduce-interval",
+              "32",
+              "--binary-proof"
+            ],
+            "input_sha256": "58a511fdb7b11f21fb01477e181147ea22ba9198187fa36aefce8297e7c42a99",
+            "proof_sha256": "e7756426873e71b07b52f880ba6157fcca36c708cdefa4277edee98bd9175210",
+            "proof_bytes": 9952,
+            "queue_decisions": 688,
+            "heap_decisions": 0,
+            "solver_output": "c BSAT Competition Solver v1.0\nc PID: 48427 (send SIGUSR1 for progress: kill -USR1 48427)\nc Reading from /var/folders/ts/779j13fj7_x2z167570zvv4c0000gn/T/bsat-mode-proofs-ev5ykad7/input.cnf\nc Variables: 13\nc Clauses:   2049\nc\ns SATISFIABLE\nv 1 2 3 4 5 6 7 8 9 10 11 -12 -13 0\nc\nc CPU time:         0.001 s\nc\nc ========== Statistics ==========\nc CPU time          : 0.001 s\nc Chronological backtracks: 1\nc Chronological retained assignments: 0\nc Chronological repaired watches: 0\nc Lower-level conflicts: 0\nc Decisions         : 688\nc Mode queue decisions: 688\nc Mode heap decisions: 0\nc Propagations      : 1372\nc Conflicts         : 682\nc Restarts          : 0\nc Reused levels     : 0\nc Local search calls: 0\nc Local search wins : 0\nc Local search flips: 0\nc Learned clauses   : 682\nc Learned literals  : 3751\nc Deleted clauses   : 629\nc Binary minimize checks: 0\nc Binary minimize removed: 0\nc Minimize inspections: 8090\nc Minimize binary steps: 0\nc Minimize cache hits : 0\nc Minimize budget hits: 0\nc Equivalence work  : 0\nc Substituted vars  : 0\nc Rewritten clauses : 0\nc SCC contradictions: 0\nc Derived binaries  : 0\nc LBD improvements  : 0\nc Deadline clock reads: 0\nc Target literals copied: 12\nc Target values cleared: 14\nc Blocked clauses   : 0\nc Eliminated variables: 0\nc Elimination resolvents: 0\nc Elimination removed: 0\nc Subsumed clauses  : 0\nc Minimized literals: 2222\nc Glue clauses      : 11\nc Max LBD           : 10\nc Decisions/sec     : 757709\nc Propagations/sec  : 1511013\nc Conflicts/sec     : 751101\nc Literal inspections : 190908\nc Garbage collections : 0\nc Reductions          : 21\nc Mode                : focused\nc Memory used       : 0.14 MB\nc Memory allocated  : 0.15 MB\nc Memory peak       : 0.14 MB\nc Memory wasted     : 0.02 MB\nc Arena growths     : 9\nc\n",
+            "checker_returncode": null,
+            "checker_output": null,
+            "verified": true
+          },
+          {
+            "sat": true,
+            "options": [
+              "--mode-branching",
+              "--chrono",
+              "--chrono-levels",
+              "0",
+              "--no-probing",
+              "--no-subsumption",
+              "--reduce-interval",
+              "32",
+              "--binary-proof",
+              "--equiv"
+            ],
+            "input_sha256": "58a511fdb7b11f21fb01477e181147ea22ba9198187fa36aefce8297e7c42a99",
+            "proof_sha256": "7aa8945a8cfe417a1408847c7c4572ba94a208d8f18da0b9a05b53a14624c4da",
+            "proof_bytes": 9960,
+            "queue_decisions": 688,
+            "heap_decisions": 0,
+            "solver_output": "c BSAT Competition Solver v1.0\nc PID: 48428 (send SIGUSR1 for progress: kill -USR1 48428)\nc Reading from /var/folders/ts/779j13fj7_x2z167570zvv4c0000gn/T/bsat-mode-proofs-ev5ykad7/input.cnf\nc Variables: 13\nc Clauses:   2049\nc\ns SATISFIABLE\nv 1 2 3 4 5 6 7 8 9 10 11 -12 -13 0\nc\nc CPU time:         0.001 s\nc\nc ========== Statistics ==========\nc CPU time          : 0.001 s\nc Chronological backtracks: 1\nc Chronological retained assignments: 0\nc Chronological repaired watches: 0\nc Lower-level conflicts: 0\nc Decisions         : 688\nc Mode queue decisions: 688\nc Mode heap decisions: 0\nc Propagations      : 1371\nc Conflicts         : 682\nc Restarts          : 0\nc Reused levels     : 0\nc Local search calls: 0\nc Local search wins : 0\nc Local search flips: 0\nc Learned clauses   : 682\nc Learned literals  : 3751\nc Deleted clauses   : 629\nc Binary minimize checks: 0\nc Binary minimize removed: 0\nc Minimize inspections: 8090\nc Minimize binary steps: 0\nc Minimize cache hits : 0\nc Minimize budget hits: 0\nc Equivalence work  : 41086\nc Substituted vars  : 1\nc Rewritten clauses : 2\nc SCC contradictions: 0\nc Derived binaries  : 0\nc LBD improvements  : 0\nc Deadline clock reads: 0\nc Target literals copied: 11\nc Target values cleared: 14\nc Blocked clauses   : 0\nc Eliminated variables: 0\nc Elimination resolvents: 0\nc Elimination removed: 0\nc Subsumed clauses  : 0\nc Minimized literals: 2222\nc Glue clauses      : 11\nc Max LBD           : 10\nc Decisions/sec     : 656489\nc Propagations/sec  : 1308206\nc Conflicts/sec     : 650763\nc Literal inspections : 231992\nc Garbage collections : 0\nc Reductions          : 21\nc Mode                : focused\nc Memory used       : 0.14 MB\nc Memory allocated  : 0.15 MB\nc Memory peak       : 0.14 MB\nc Memory wasted     : 0.02 MB\nc Arena growths     : 9\nc\n",
+            "checker_returncode": null,
+            "checker_output": null,
+            "verified": true
+          }
+        ]
+      }
+    },
+    "debug": {
+      "binary_sha256": "7db6b51c97e207afa3fed1eb1cbc5bfd5d0a64f83229c613376fc797215b8d2a",
+      "c_test_count": 48,
+      "c_test_log": "cc -std=c11 -D_POSIX_C_SOURCE=200809L -Wall -Wextra -pedantic -g -O0 -DDEBUG -fsanitize=address -fsanitize=undefined -Iinclude -MMD -MP -c -o build/debug/congruence.o src/congruence.c\ncc -std=c11 -D_POSIX_C_SOURCE=200809L -Wall -Wextra -pedantic -g -O0 -DDEBUG -fsanitize=address -fsanitize=undefined -Iinclude -MMD -MP -c -o build/debug/dimacs.o src/dimacs.c\ncc -std=c11 -D_POSIX_C_SOURCE=200809L -Wall -Wextra -pedantic -g -O0 -DDEBUG -fsanitize=address -fsanitize=undefined -Iinclude -MMD -MP -c -o build/debug/elim.o src/elim.c\ncc -std=c11 -D_POSIX_C_SOURCE=200809L -Wall -Wextra -pedantic -g -O0 -DDEBUG -fsanitize=address -fsanitize=undefined -Iinclude -MMD -MP -c -o build/debug/equiv.o src/equiv.c\ncc -std=c11 -D_POSIX_C_SOURCE=200809L -Wall -Wextra -pedantic -g -O0 -DDEBUG -fsanitize=address -fsanitize=undefined -Iinclude -MMD -MP -c -o build/debug/local_search.o src/local_search.c\ncc -std=c11 -D_POSIX_C_SOURCE=200809L -Wall -Wextra -pedantic -g -O0 -DDEBUG -fsanitize=address -fsanitize=undefined -Iinclude -MMD -MP -c -o build/debug/main.o src/main.c\ncc -std=c11 -D_POSIX_C_SOURCE=200809L -Wall -Wextra -pedantic -g -O0 -DDEBUG -fsanitize=address -fsanitize=undefined -Iinclude -MMD -MP -c -o build/debug/minimize.o src/minimize.c\ncc -std=c11 -D_POSIX_C_SOURCE=200809L -Wall -Wextra -pedantic -g -O0 -DDEBUG -fsanitize=address -fsanitize=undefined -Iinclude -MMD -MP -c -o build/debug/solver.o src/solver.c\ncc -std=c11 -D_POSIX_C_SOURCE=200809L -Wall -Wextra -pedantic -g -O0 -DDEBUG -fsanitize=address -fsanitize=undefined -Iinclude -MMD -MP -c -o build/debug/vmtf.o src/vmtf.c\ncc -std=c11 -D_POSIX_C_SOURCE=200809L -Wall -Wextra -pedantic -g -O0 -DDEBUG -fsanitize=address -fsanitize=undefined -Iinclude -o bin/bsat_debug build/debug/arena.o build/debug/congruence.o build/debug/dimacs.o build/debug/elim.o build/debug/equiv.o build/debug/local_search.o build/debug/main.o build/debug/minimize.o build/debug/solver.o build/debug/vmtf.o build/debug/watch.o -lm\ncc -std=c11 -D_POSIX_C_SOURCE=200809L -Wall -Wextra -pedantic -g -O0 -DDEBUG -fsanitize=address -fsanitize=undefined -Iinclude -o bin/tests/debug/test_arena tests/test_arena.c build/debug/arena.o build/debug/congruence.o build/debug/dimacs.o build/debug/elim.o build/debug/equiv.o build/debug/local_search.o build/debug/minimize.o build/debug/solver.o build/debug/vmtf.o build/debug/watch.o -lm\ncc -std=c11 -D_POSIX_C_SOURCE=200809L -Wall -Wextra -pedantic -g -O0 -DDEBUG -fsanitize=address -fsanitize=undefined -Iinclude -o bin/tests/debug/test_bce_linear tests/test_bce_linear.c build/debug/arena.o build/debug/congruence.o build/debug/dimacs.o build/debug/elim.o build/debug/equiv.o build/debug/local_search.o build/debug/minimize.o build/debug/solver.o build/debug/vmtf.o build/debug/watch.o -lm\ncc -std=c11 -D_POSIX_C_SOURCE=200809L -Wall -Wextra -pedantic -g -O0 -DDEBUG -fsanitize=address -fsanitize=undefined -Iinclude -o bin/tests/debug/test_binary_minimize tests/test_binary_minimize.c build/debug/arena.o build/debug/congruence.o build/debug/dimacs.o build/debug/elim.o build/debug/equiv.o build/debug/local_search.o build/debug/minimize.o build/debug/solver.o build/debug/vmtf.o build/debug/watch.o -lm\ncc -std=c11 -D_POSIX_C_SOURCE=200809L -Wall -Wextra -pedantic -g -O0 -DDEBUG -fsanitize=address -fsanitize=undefined -Iinclude -o bin/tests/debug/test_blocker_dispatch tests/test_blocker_dispatch.c build/debug/arena.o build/debug/congruence.o build/debug/dimacs.o build/debug/elim.o build/debug/equiv.o build/debug/local_search.o build/debug/minimize.o build/debug/solver.o build/debug/vmtf.o build/debug/watch.o -lm\ncc -std=c11 -D_POSIX_C_SOURCE=200809L -Wall -Wextra -pedantic -g -O0 -DDEBUG -fsanitize=address -fsanitize=undefined -Iinclude -o bin/tests/debug/test_chrono tests/test_chrono.c build/debug/arena.o build/debug/congruence.o build/debug/dimacs.o build/debug/elim.o build/debug/equiv.o build/debug/local_search.o build/debug/minimize.o build/debug/solver.o build/debug/vmtf.o build/debug/watch.o -lm\ncc -std=c11 -D_POSIX_C_SOURCE=200809L -Wall -Wextra -pedantic -g -O0 -DDEBUG -fsanitize=address -fsanitize=undefined -Iinclude -o bin/tests/debug/test_clause_locks tests/test_clause_locks.c build/debug/arena.o build/debug/congruence.o build/debug/dimacs.o build/debug/elim.o build/debug/equiv.o build/debug/local_search.o build/debug/minimize.o build/debug/solver.o build/debug/vmtf.o build/debug/watch.o -lm\ncc -std=c11 -D_POSIX_C_SOURCE=200809L -Wall -Wextra -pedantic -g -O0 -DDEBUG -fsanitize=address -fsanitize=undefined -Iinclude -o bin/tests/debug/test_compact_vars tests/test_compact_vars.c build/debug/arena.o build/debug/congruence.o build/debug/dimacs.o build/debug/elim.o build/debug/equiv.o build/debug/local_search.o build/debug/minimize.o build/debug/solver.o build/debug/vmtf.o build/debug/watch.o -lm\ncc -std=c11 -D_POSIX_C_SOURCE=200809L -Wall -Wextra -pedantic -g -O0 -DDEBUG -fsanitize=address -fsanitize=undefined -Iinclude -o bin/tests/debug/test_congruence tests/test_congruence.c build/debug/arena.o build/debug/congruence.o build/debug/dimacs.o build/debug/elim.o build/debug/equiv.o build/debug/local_search.o build/debug/minimize.o build/debug/solver.o build/debug/vmtf.o build/debug/watch.o -lm\ncc -std=c11 -D_POSIX_C_SOURCE=200809L -Wall -Wextra -pedantic -g -O0 -DDEBUG -fsanitize=address -fsanitize=undefined -Iinclude -o bin/tests/debug/test_deadline tests/test_deadline.c build/debug/arena.o build/debug/congruence.o build/debug/dimacs.o build/debug/elim.o build/debug/equiv.o build/debug/local_search.o build/debug/minimize.o build/debug/solver.o build/debug/vmtf.o build/debug/watch.o -lm\ncc -std=c11 -D_POSIX_C_SOURCE=200809L -Wall -Wextra -pedantic -g -O0 -DDEBUG -fsanitize=address -fsanitize=undefined -Iinclude -o bin/tests/debug/test_dimacs tests/test_dimacs.c build/debug/arena.o build/debug/congruence.o build/debug/dimacs.o build/debug/elim.o build/debug/equiv.o build/debug/local_search.o build/debug/minimize.o build/debug/solver.o build/debug/vmtf.o build/debug/watch.o -lm\ncc -std=c11 -D_POSIX_C_SOURCE=200809L -Wall -Wextra -pedantic -g -O0 -DDEBUG -fsanitize=address -fsanitize=undefined -Iinclude -o bin/tests/debug/test_elim_preprocess tests/test_elim_preprocess.c build/debug/arena.o build/debug/congruence.o build/debug/dimacs.o build/debug/elim.o build/debug/equiv.o build/debug/local_search.o build/debug/minimize.o build/debug/solver.o build/debug/vmtf.o build/debug/watch.o -lm\ncc -std=c11 -D_POSIX_C_SOURCE=200809L -Wall -Wextra -pedantic -g -O0 -DDEBUG -fsanitize=address -fsanitize=undefined -Iinclude -o bin/tests/debug/test_elim_records tests/test_elim_records.c build/debug/arena.o build/debug/congruence.o build/debug/dimacs.o build/debug/elim.o build/debug/equiv.o build/debug/local_search.o build/debug/minimize.o build/debug/solver.o build/debug/vmtf.o build/debug/watch.o -lm\ncc -std=c11 -D_POSIX_C_SOURCE=200809L -Wall -Wextra -pedantic -g -O0 -DDEBUG -fsanitize=address -fsanitize=undefined -Iinclude -o bin/tests/debug/test_elim_resolution tests/test_elim_resolution.c build/debug/arena.o build/debug/congruence.o build/debug/dimacs.o build/debug/elim.o build/debug/equiv.o build/debug/local_search.o build/debug/minimize.o build/debug/solver.o build/debug/vmtf.o build/debug/watch.o -lm\ncc -std=c11 -D_POSIX_C_SOURCE=200809L -Wall -Wextra -pedantic -g -O0 -DDEBUG -fsanitize=address -fsanitize=undefined -Iinclude -o bin/tests/debug/test_elim_staging tests/test_elim_staging.c build/debug/arena.o build/debug/congruence.o build/debug/dimacs.o build/debug/elim.o build/debug/equiv.o build/debug/local_search.o build/debug/minimize.o build/debug/solver.o build/debug/vmtf.o build/debug/watch.o -lm\ncc -std=c11 -D_POSIX_C_SOURCE=200809L -Wall -Wextra -pedantic -g -O0 -DDEBUG -fsanitize=address -fsanitize=undefined -Iinclude -o bin/tests/debug/test_equiv tests/test_equiv.c build/debug/arena.o build/debug/congruence.o build/debug/dimacs.o build/debug/elim.o build/debug/equiv.o build/debug/local_search.o build/debug/minimize.o build/debug/solver.o build/debug/vmtf.o build/debug/watch.o -lm\ncc -std=c11 -D_POSIX_C_SOURCE=200809L -Wall -Wextra -pedantic -g -O0 -DDEBUG -fsanitize=address -fsanitize=undefined -Iinclude -o bin/tests/debug/test_features tests/test_features.c build/debug/arena.o build/debug/congruence.o build/debug/dimacs.o build/debug/elim.o build/debug/equiv.o build/debug/local_search.o build/debug/minimize.o build/debug/solver.o build/debug/vmtf.o build/debug/watch.o -lm\ncc -std=c11 -D_POSIX_C_SOURCE=200809L -Wall -Wextra -pedantic -g -O0 -DDEBUG -fsanitize=address -fsanitize=undefined -Iinclude -o bin/tests/debug/test_gc_budget tests/test_gc_budget.c build/debug/arena.o build/debug/congruence.o build/debug/dimacs.o build/debug/elim.o build/debug/equiv.o build/debug/local_search.o build/debug/minimize.o build/debug/solver.o build/debug/vmtf.o build/debug/watch.o -lm\ncc -std=c11 -D_POSIX_C_SOURCE=200809L -Wall -Wextra -pedantic -g -O0 -DDEBUG -fsanitize=address -fsanitize=undefined -Iinclude -o bin/tests/debug/test_gc_forwarding tests/test_gc_forwarding.c build/debug/arena.o build/debug/congruence.o build/debug/dimacs.o build/debug/elim.o build/debug/equiv.o build/debug/local_search.o build/debug/minimize.o build/debug/solver.o build/debug/vmtf.o build/debug/watch.o -lm\ncc -std=c11 -D_POSIX_C_SOURCE=200809L -Wall -Wextra -pedantic -g -O0 -DDEBUG -fsanitize=address -fsanitize=undefined -Iinclude -o bin/tests/debug/test_geometric_growth tests/test_geometric_growth.c build/debug/arena.o build/debug/congruence.o build/debug/dimacs.o build/debug/elim.o build/debug/equiv.o build/debug/local_search.o build/debug/minimize.o build/debug/solver.o build/debug/vmtf.o build/debug/watch.o -lm\ncc -std=c11 -D_POSIX_C_SOURCE=200809L -Wall -Wextra -pedantic -g -O0 -DDEBUG -fsanitize=address -fsanitize=undefined -Iinclude -o bin/tests/debug/test_heap tests/test_heap.c build/debug/arena.o build/debug/congruence.o build/debug/dimacs.o build/debug/elim.o build/debug/equiv.o build/debug/local_search.o build/debug/minimize.o build/debug/solver.o build/debug/vmtf.o build/debug/watch.o -lm\ncc -std=c11 -D_POSIX_C_SOURCE=200809L -Wall -Wextra -pedantic -g -O0 -DDEBUG -fsanitize=address -fsanitize=undefined -Iinclude -o bin/tests/debug/test_input_reader tests/test_input_reader.c build/debug/arena.o build/debug/congruence.o build/debug/dimacs.o build/debug/elim.o build/debug/equiv.o build/debug/local_search.o build/debug/minimize.o build/debug/solver.o build/debug/vmtf.o build/debug/watch.o -lm\ncc -std=c11 -D_POSIX_C_SOURCE=200809L -Wall -Wextra -pedantic -g -O0 -DDEBUG -fsanitize=address -fsanitize=undefined -Iinclude -o bin/tests/debug/test_learned_binaries tests/test_learned_binaries.c build/debug/arena.o build/debug/congruence.o build/debug/dimacs.o build/debug/elim.o build/debug/equiv.o build/debug/local_search.o build/debug/minimize.o build/debug/solver.o build/debug/vmtf.o build/debug/watch.o -lm\ncc -std=c11 -D_POSIX_C_SOURCE=200809L -Wall -Wextra -pedantic -g -O0 -DDEBUG -fsanitize=address -fsanitize=undefined -Iinclude -o bin/tests/debug/test_local_search_budget tests/test_local_search_budget.c build/debug/arena.o build/debug/congruence.o build/debug/dimacs.o build/debug/elim.o build/debug/equiv.o build/debug/local_search.o build/debug/minimize.o build/debug/solver.o build/debug/vmtf.o build/debug/watch.o -lm\ncc -std=c11 -D_POSIX_C_SOURCE=200809L -Wall -Wextra -pedantic -g -O0 -DDEBUG -fsanitize=address -fsanitize=undefined -Iinclude -o bin/tests/debug/test_local_search_roots tests/test_local_search_roots.c build/debug/arena.o build/debug/congruence.o build/debug/dimacs.o build/debug/elim.o build/debug/equiv.o build/debug/local_search.o build/debug/minimize.o build/debug/solver.o build/debug/vmtf.o build/debug/watch.o -lm\ncc -std=c11 -D_POSIX_C_SOURCE=200809L -Wall -Wextra -pedantic -g -O0 -DDEBUG -fsanitize=address -fsanitize=undefined -Iinclude -o bin/tests/debug/test_local_search_scores tests/test_local_search_scores.c build/debug/arena.o build/debug/congruence.o build/debug/dimacs.o build/debug/elim.o build/debug/equiv.o build/debug/local_search.o build/debug/minimize.o build/debug/solver.o build/debug/vmtf.o build/debug/watch.o -lm\ncc -std=c11 -D_POSIX_C_SOURCE=200809L -Wall -Wextra -pedantic -g -O0 -DDEBUG -fsanitize=address -fsanitize=undefined -Iinclude -o bin/tests/debug/test_local_search_selection tests/test_local_search_selection.c build/debug/arena.o build/debug/congruence.o build/debug/dimacs.o build/debug/elim.o build/debug/equiv.o build/debug/local_search.o build/debug/minimize.o build/debug/solver.o build/debug/vmtf.o build/debug/watch.o -lm\ncc -std=c11 -D_POSIX_C_SOURCE=200809L -Wall -Wextra -pedantic -g -O0 -DDEBUG -fsanitize=address -fsanitize=undefined -Iinclude -o bin/tests/debug/test_minimize tests/test_minimize.c build/debug/arena.o build/debug/congruence.o build/debug/dimacs.o build/debug/elim.o build/debug/equiv.o build/debug/local_search.o build/debug/minimize.o build/debug/solver.o build/debug/vmtf.o build/debug/watch.o -lm\ncc -std=c11 -D_POSIX_C_SOURCE=200809L -Wall -Wextra -pedantic -g -O0 -DDEBUG -fsanitize=address -fsanitize=undefined -Iinclude -o bin/tests/debug/test_mode_branching tests/test_mode_branching.c build/debug/arena.o build/debug/congruence.o build/debug/dimacs.o build/debug/elim.o build/debug/equiv.o build/debug/local_search.o build/debug/minimize.o build/debug/solver.o build/debug/vmtf.o build/debug/watch.o -lm\ncc -std=c11 -D_POSIX_C_SOURCE=200809L -Wall -Wextra -pedantic -g -O0 -DDEBUG -fsanitize=address -fsanitize=undefined -Iinclude -o bin/tests/debug/test_mode_start tests/test_mode_start.c build/debug/arena.o build/debug/congruence.o build/debug/dimacs.o build/debug/elim.o build/debug/equiv.o build/debug/local_search.o build/debug/minimize.o build/debug/solver.o build/debug/vmtf.o build/debug/watch.o -lm\ncc -std=c11 -D_POSIX_C_SOURCE=200809L -Wall -Wextra -pedantic -g -O0 -DDEBUG -fsanitize=address -fsanitize=undefined -Iinclude -o bin/tests/debug/test_model_transfer tests/test_model_transfer.c build/debug/arena.o build/debug/congruence.o build/debug/dimacs.o build/debug/elim.o build/debug/equiv.o build/debug/local_search.o build/debug/minimize.o build/debug/solver.o build/debug/vmtf.o build/debug/watch.o -lm\ncc -std=c11 -D_POSIX_C_SOURCE=200809L -Wall -Wextra -pedantic -g -O0 -DDEBUG -fsanitize=address -fsanitize=undefined -Iinclude -o bin/tests/debug/test_options tests/test_options.c build/debug/arena.o build/debug/congruence.o build/debug/dimacs.o build/debug/elim.o build/debug/equiv.o build/debug/local_search.o build/debug/minimize.o build/debug/solver.o build/debug/vmtf.o build/debug/watch.o -lm\ncc -std=c11 -D_POSIX_C_SOURCE=200809L -Wall -Wextra -pedantic -g -O0 -DDEBUG -fsanitize=address -fsanitize=undefined -Iinclude -o bin/tests/debug/test_phases tests/test_phases.c build/debug/arena.o build/debug/congruence.o build/debug/dimacs.o build/debug/elim.o build/debug/equiv.o build/debug/local_search.o build/debug/minimize.o build/debug/solver.o build/debug/vmtf.o build/debug/watch.o -lm\ncc -std=c11 -D_POSIX_C_SOURCE=200809L -Wall -Wextra -pedantic -g -O0 -DDEBUG -fsanitize=address -fsanitize=undefined -Iinclude -o bin/tests/debug/test_portfolio tests/test_portfolio.c build/debug/arena.o build/debug/congruence.o build/debug/dimacs.o build/debug/elim.o build/debug/equiv.o build/debug/local_search.o build/debug/minimize.o build/debug/solver.o build/debug/vmtf.o build/debug/watch.o -lm\ncc -std=c11 -D_POSIX_C_SOURCE=200809L -Wall -Wextra -pedantic -g -O0 -DDEBUG -fsanitize=address -fsanitize=undefined -Iinclude -o bin/tests/debug/test_proof_encoding tests/test_proof_encoding.c build/debug/arena.o build/debug/congruence.o build/debug/dimacs.o build/debug/elim.o build/debug/equiv.o build/debug/local_search.o build/debug/minimize.o build/debug/solver.o build/debug/vmtf.o build/debug/watch.o -lm\ncc -std=c11 -D_POSIX_C_SOURCE=200809L -Wall -Wextra -pedantic -g -O0 -DDEBUG -fsanitize=address -fsanitize=undefined -Iinclude -o bin/tests/debug/test_reduce_growth tests/test_reduce_growth.c build/debug/arena.o build/debug/congruence.o build/debug/dimacs.o build/debug/elim.o build/debug/equiv.o build/debug/local_search.o build/debug/minimize.o build/debug/solver.o build/debug/vmtf.o build/debug/watch.o -lm\ncc -std=c11 -D_POSIX_C_SOURCE=200809L -Wall -Wextra -pedantic -g -O0 -DDEBUG -fsanitize=address -fsanitize=undefined -Iinclude -o bin/tests/debug/test_reduction_ranking tests/test_reduction_ranking.c build/debug/arena.o build/debug/congruence.o build/debug/dimacs.o build/debug/elim.o build/debug/equiv.o build/debug/local_search.o build/debug/minimize.o build/debug/solver.o build/debug/vmtf.o build/debug/watch.o -lm\ncc -std=c11 -D_POSIX_C_SOURCE=200809L -Wall -Wextra -pedantic -g -O0 -DDEBUG -fsanitize=address -fsanitize=undefined -Iinclude -o bin/tests/debug/test_regressions tests/test_regressions.c build/debug/arena.o build/debug/congruence.o build/debug/dimacs.o build/debug/elim.o build/debug/equiv.o build/debug/local_search.o build/debug/minimize.o build/debug/solver.o build/debug/vmtf.o build/debug/watch.o -lm\ncc -std=c11 -D_POSIX_C_SOURCE=200809L -Wall -Wextra -pedantic -g -O0 -DDEBUG -fsanitize=address -fsanitize=undefined -Iinclude -o bin/tests/debug/test_rephase tests/test_rephase.c build/debug/arena.o build/debug/congruence.o build/debug/dimacs.o build/debug/elim.o build/debug/equiv.o build/debug/local_search.o build/debug/minimize.o build/debug/solver.o build/debug/vmtf.o build/debug/watch.o -lm\ncc -std=c11 -D_POSIX_C_SOURCE=200809L -Wall -Wextra -pedantic -g -O0 -DDEBUG -fsanitize=address -fsanitize=undefined -Iinclude -o bin/tests/debug/test_resolvent_projection tests/test_resolvent_projection.c build/debug/arena.o build/debug/congruence.o build/debug/dimacs.o build/debug/elim.o build/debug/equiv.o build/debug/local_search.o build/debug/minimize.o build/debug/solver.o build/debug/vmtf.o build/debug/watch.o -lm\ncc -std=c11 -D_POSIX_C_SOURCE=200809L -Wall -Wextra -pedantic -g -O0 -DDEBUG -fsanitize=address -fsanitize=undefined -Iinclude -o bin/tests/debug/test_restart_reuse tests/test_restart_reuse.c build/debug/arena.o build/debug/congruence.o build/debug/dimacs.o build/debug/elim.o build/debug/equiv.o build/debug/local_search.o build/debug/minimize.o build/debug/solver.o build/debug/vmtf.o build/debug/watch.o -lm\ncc -std=c11 -D_POSIX_C_SOURCE=200809L -Wall -Wextra -pedantic -g -O0 -DDEBUG -fsanitize=address -fsanitize=undefined -Iinclude -o bin/tests/debug/test_scan_work tests/test_scan_work.c build/debug/arena.o build/debug/congruence.o build/debug/dimacs.o build/debug/elim.o build/debug/equiv.o build/debug/local_search.o build/debug/minimize.o build/debug/solver.o build/debug/vmtf.o build/debug/watch.o -lm\ncc -std=c11 -D_POSIX_C_SOURCE=200809L -Wall -Wextra -pedantic -g -O0 -DDEBUG -fsanitize=address -fsanitize=undefined -Iinclude -o bin/tests/debug/test_solver tests/test_solver.c build/debug/arena.o build/debug/congruence.o build/debug/dimacs.o build/debug/elim.o build/debug/equiv.o build/debug/local_search.o build/debug/minimize.o build/debug/solver.o build/debug/vmtf.o build/debug/watch.o -lm\ncc -std=c11 -D_POSIX_C_SOURCE=200809L -Wall -Wextra -pedantic -g -O0 -DDEBUG -fsanitize=address -fsanitize=undefined -Iinclude -o bin/tests/debug/test_targets tests/test_targets.c build/debug/arena.o build/debug/congruence.o build/debug/dimacs.o build/debug/elim.o build/debug/equiv.o build/debug/local_search.o build/debug/minimize.o build/debug/solver.o build/debug/vmtf.o build/debug/watch.o -lm\ncc -std=c11 -D_POSIX_C_SOURCE=200809L -Wall -Wextra -pedantic -g -O0 -DDEBUG -fsanitize=address -fsanitize=undefined -Iinclude -o bin/tests/debug/test_vivify_prefix tests/test_vivify_prefix.c build/debug/arena.o build/debug/congruence.o build/debug/dimacs.o build/debug/elim.o build/debug/equiv.o build/debug/local_search.o build/debug/minimize.o build/debug/solver.o build/debug/vmtf.o build/debug/watch.o -lm\ncc -std=c11 -D_POSIX_C_SOURCE=200809L -Wall -Wextra -pedantic -g -O0 -DDEBUG -fsanitize=address -fsanitize=undefined -Iinclude -o bin/tests/debug/test_vmtf tests/test_vmtf.c build/debug/arena.o build/debug/congruence.o build/debug/dimacs.o build/debug/elim.o build/debug/equiv.o build/debug/local_search.o build/debug/minimize.o build/debug/solver.o build/debug/vmtf.o build/debug/watch.o -lm\ncc -std=c11 -D_POSIX_C_SOURCE=200809L -Wall -Wextra -pedantic -g -O0 -DDEBUG -fsanitize=address -fsanitize=undefined -Iinclude -o bin/tests/debug/test_walk_phase_feedback tests/test_walk_phase_feedback.c build/debug/arena.o build/debug/congruence.o build/debug/dimacs.o build/debug/elim.o build/debug/equiv.o build/debug/local_search.o build/debug/minimize.o build/debug/solver.o build/debug/vmtf.o build/debug/watch.o -lm\ncc -std=c11 -D_POSIX_C_SOURCE=200809L -Wall -Wextra -pedantic -g -O0 -DDEBUG -fsanitize=address -fsanitize=undefined -Iinclude -o bin/tests/debug/test_watch tests/test_watch.c build/debug/arena.o build/debug/congruence.o build/debug/dimacs.o build/debug/elim.o build/debug/equiv.o build/debug/local_search.o build/debug/minimize.o build/debug/solver.o build/debug/vmtf.o build/debug/watch.o -lm\ncc -std=c11 -D_POSIX_C_SOURCE=200809L -Wall -Wextra -pedantic -g -O0 -DDEBUG -fsanitize=address -fsanitize=undefined -Iinclude -o bin/tests/debug/test_watch_lookahead tests/test_watch_lookahead.c build/debug/arena.o build/debug/congruence.o build/debug/dimacs.o build/debug/elim.o build/debug/equiv.o build/debug/local_search.o build/debug/minimize.o build/debug/solver.o build/debug/vmtf.o build/debug/watch.o -lm\nRunning unit tests...\nRunning bin/tests/debug/test_arena...\n========================================\nBSAT Arena Allocator Unit Tests\n========================================\n\nTesting Arena creation and destruction... \u2705 PASS\nTesting Single clause allocation... \u2705 PASS\nTesting Learned clause allocation... \u2705 PASS\nTesting Multiple clause allocations... \u2705 PASS\nTesting LBD (Literal Block Distance) operations... \u2705 PASS\nTesting Clause activity operations... \u2705 PASS\nTesting Clause deletion... \u2705 PASS\nTesting Arena statistics... \u2705 PASS\nTesting Empty clause handling... \u2705 PASS\nTesting Large clause allocation... \u2705 PASS\nTesting Arena automatic growth... \u2705 PASS\n\n========================================\nResults: 11/11 tests passed\n========================================\nRunning bin/tests/debug/test_bce_linear...\nPASS: 6561 canonical pairs, 111537 budget cutoffs, scratch cleanup and bounded BCE model reconstruction\nRunning bin/tests/debug/test_binary_minimize...\nPASS: signed binary resolution, duplicate/deleted/long watches, budgets, cancellation and truth tables\nRunning bin/tests/debug/test_blocker_dispatch...\nPASS: 10368 mixed implicit/tagged/long watch truth, order, reason and phase cases\nRunning bin/tests/debug/test_chrono...\nPASS: 12288 exact seven-variable formula/assumption solves; 936 chronological backtracks, 883 retained assignments, 148 lower conflicts\nPASS: late implications, compacted reasons, root units, conflict watches and current-level UIP selection\nRunning bin/tests/debug/test_clause_locks...\nPASS: active reason protection, every implied position, replay, GC and backtracking\nRunning bin/tests/debug/test_compact_vars...\nPASS: compact variable growth/rebuild and eight VSIDS/LRB scoring/rescaling cases\nRunning bin/tests/debug/test_congruence...\nPASS: 384 signed AND/XOR/ITE cases; 192 with proved aliases; every added clause truth-table checked\nPASS: 65 congruence budget cutoffs and subsequent complete solves (full work 1078)\nPASS: RUP rejection and exhausted-budget paths leave input and core unchanged\nPASS: 1152 signed binary-alias, fixed-output, fixed-input and cyclic-gate cases\nPASS: 64 signed conditional-alternative ITE cases with proved output equivalence\nPASS: 24 signed ternary/binary strengthening cases and 4 binary-unit cases\nRunning bin/tests/debug/test_deadline...\nPASS: deadline poll bounds, work/minimization triggers, immediate limits and API reuse\nRunning bin/tests/debug/test_dimacs...\n========================================\nBSAT DIMACS I/O Unit Tests\n========================================\n\nTesting trivial_sat.cnf... \u2705 PASS\nTesting trivial_unsat.cnf... \u2705 PASS\nTesting empty.cnf... \u2705 PASS\nTesting Parse with comments... \u2705 PASS\nTesting Parse unit clauses... \u2705 PASS\nTesting Parse with empty lines... \u2705 PASS\nTesting Malformed input error handling... \u2705 PASS\nTesting unit_propagation.cnf... \u2705 PASS\nTesting simple_sat_3.cnf... \u2705 PASS\nTesting simple_unsat_3.cnf... \u2705 PASS\nTesting horn_sat.cnf... \u2705 PASS\nTesting horn_unsat.cnf... \u2705 PASS\n\n========================================\nResults: 12/12 tests passed\n========================================\nRunning bin/tests/debug/test_elim_preprocess...\nPASS: 512 BVE truth/residual-model cases and 1539 cutoff/resume cases\nRunning bin/tests/debug/test_elim_records...\nPASS: 16384 multi-parent projection/model checks and minimum-word record choice\nRunning bin/tests/debug/test_elim_resolution...\nPASS: 5408 projected truth-table/model checks and all resolution work cutoffs plus an internal deadline\nRunning bin/tests/debug/test_elim_staging...\nPASS: pure staging deadline, 68 work boundaries, copy contract and owned-record growth\nRunning bin/tests/debug/test_equiv...\nPASS: nonzero LBD and scratch ownership across SCC replacement, assumptions and repeated solves\nPASS: signed SCCs, contradiction, 10000-node cycle, budget rollback, reconstruction and API reuse\nRunning bin/tests/debug/test_features...\n========================================\nBSAT Feature-Specific Tests\n========================================\n\nTesting Clause learning on pigeonhole... \u2705 PASS\nTesting Unit propagation (forces assignments)... (propagations=3, decisions=0) \u2705 PASS\nTesting VSIDS heuristic (decisions are made)... (decisions=4) \u2705 PASS\nTesting Binary clause handling (efficient storage)... (binary clauses stored efficiently) \u2705 PASS\nTesting LBD calculation (learned clauses get LBD scores)... \u2705 PASS\nTesting Restarts (search restarts occur)... (restarts=0) \u2705 PASS\nTesting BCE preprocessing (blocked clauses eliminated)... (blocked_clauses=0) \u2705 PASS\nTesting Clause minimization (learned clauses minimized)... (minimized_literals=0) \u2705 PASS\nTesting On-the-fly subsumption (subsumed clauses removed)... (subsumed=0) \u2705 PASS\nTesting Learned clauses are actually reduced... \u2705 PASS\nTesting Low-LBD learned clauses are tracked... \u2705 PASS\nTesting Failed literal probing (discovers implications)... (probing enabled, solved correctly) \u2705 PASS\nTesting MiniSat clause minimization (67%% literal reduction)... (conflicts=1, minimized=0) [minimization active] \u2705 PASS\nTesting Vivification inprocessing (clause strengthening)... (inprocess enabled, result=SAT) \u2705 PASS\n\n========================================\nResults: 14/14 tests passed\n========================================\nRunning bin/tests/debug/test_gc_budget...\nPASS: 82 GC work cutoffs, exact rollback/retry and cached expired deadline\nRunning bin/tests/debug/test_gc_forwarding...\nPASS: 512 GC deletion patterns and BVE occurrence relocation\nRunning bin/tests/debug/test_geometric_growth...\nTesting geometric growth optimization\n=====================================\n\nInitial state:\n  num_vars: 0\n  var_capacity: 0\n\nAdding 200 variables:\n  Var# | Capacity | Growth Event\n  -----|----------|-------------\n     1 |      128 | \u2705 Grew from 0\n   129 |      256 | \u2705 Grew from 128\n\nFinal state:\n  num_vars: 200\n  var_capacity: 256\n  Reallocations: 2\n  Wasted capacity: 56 (21.9%)\n\nPerformance analysis:\n  Theoretical minimum reallocs (2x growth from 128): 2\n  Actual reallocs: 2\n  Linear growth would require: 200 reallocs\n  Improvement: 100.0x fewer reallocs\n\n\u2705 SUCCESS: Geometric growth working correctly!\nRunning bin/tests/debug/test_heap...\nPASS: activity growth, heap ordering, backtracking, rescaling and API rebuild\nRunning bin/tests/debug/test_input_reader...\nPASS: input refill boundaries, embedded NUL rejection, token limits and read errors\nRunning bin/tests/debug/test_learned_binaries...\nPASS: compact learned binary propagation, analysis, GC, deletion and rebuilding\nRunning bin/tests/debug/test_local_search_budget...\nPASS: exact walk budgets, fresh deadline checkpoints and cancellation\nRunning bin/tests/debug/test_local_search_roots...\nPASS: root values override phases and remain fixed during random walks\nRunning bin/tests/debug/test_local_search_scores...\nPASS: 1788 walk prefixes checked against full score recomputation\nRunning bin/tests/debug/test_local_search_selection...\nPASS: 2040 walk prefixes match scan oracle across tree boundaries\nRunning bin/tests/debug/test_minimize...\nPASS: 160 signed binary graph/budget cases, independent entailment, stable subsequence and cleanup\nPASS: binary/arena minimization, shared dependencies, 2000-edge chains, failure rollback, budgets and scratch cleanup\nRunning bin/tests/debug/test_mode_branching...\nPASS: mode-specific decisions/bumps, queue restoration during heap backtracking, and complete repeated SCC/assumption/chronological solves\nRunning bin/tests/debug/test_mode_start...\nPASS: 32 alternating boundaries, focused/target phases and disabled policies\nRunning bin/tests/debug/test_model_transfer...\nPASS: complete local-search transfer metadata and subsequent API solves\nRunning bin/tests/debug/test_options...\nPASS: finite clause-decay bounds, valid solver construction and repeated solves\nRunning bin/tests/debug/test_phases...\nPASS: save decision phases across random overrides, target phases and backtracking\nRunning bin/tests/debug/test_portfolio...\nPASS: 512 portfolio answers checked against truth tables, 468 fresh attempts\nPASS: portfolio truth tables, repeated API calls, global limits and proof reset\nRunning bin/tests/debug/test_proof_encoding...\nPASS: 288 text/binary proof byte cases, numeric/chunk boundaries and disabled output\nPASS: 22 proof output cutoffs and 2 deferred-flush failures return UNKNOWN\nRunning bin/tests/debug/test_reduce_growth...\nPASS: fixed/growing reduction boundaries, saturation, actual deletions, SCC, chronology, VMTF and repeated assumption solves\nRunning bin/tests/debug/test_reduction_ranking...\nPASS: 51840 reduction rankings, fractions, cutoffs, protected clauses and relocated watches\nRunning bin/tests/debug/test_regressions...\nPASS: parser, 800 API solves, assumptions, backjump boundaries, reduction/GC, restart regressions\nRunning bin/tests/debug/test_rephase...\nPASS: 16 partial-target rephasing, disabled, boundary and stable/heap/queue cases\nRunning bin/tests/debug/test_resolvent_projection...\nPASS: 2048 bounded cost/projection cases (1534 accepted, 514 rejected), collision witnesses and 84 staging cutoffs\nRunning bin/tests/debug/test_restart_reuse...\nPASS: heap and queue restart prefix boundaries, fallbacks and order recovery\nRunning bin/tests/debug/test_scan_work...\nPASS: 108 scan work cases, circular replacement, unit/conflict and interrupted replay\nRunning bin/tests/debug/test_solver...\n========================================\nBSAT Core Solver Unit Tests\n========================================\n\nTesting Solver creation and destruction... \u2705 PASS\nTesting Add variables... \u2705 PASS\nTesting Add clause... \u2705 PASS\nTesting Empty formula is SAT... \u2705 PASS\nTesting Single unit clause... \u2705 PASS\nTesting Contradiction: (x) \u2227 (~x)... \u2705 PASS\nTesting Simple SAT: (x \u2228 y) \u2227 (~x \u2228 z)... \u2705 PASS\nTesting Statistics tracking... \u2705 PASS\nTesting Conflict limit... \u2705 PASS\nTesting Solving with assumptions... \u2705 PASS\nTesting Multiple solve calls... \u2705 PASS\n\n========================================\nResults: 11/11 tests passed\n========================================\nRunning bin/tests/debug/test_targets...\nPASS: exact target phases across extensions, changed branches, restarts and API rebuilds\nRunning bin/tests/debug/test_vivify_prefix...\nPASS: 2064 signed partial-deletion and failed-trial cutoff cases\nPASS: 8 long-scan vivification cutoffs, temporary-trail rollback and retry\nPASS: 4704 vivification truth-table/RUP, budget, signed implication, root, 512 exact deletion-oracle and subsequent solve cases\nRunning bin/tests/debug/test_vmtf...\nPASS: VMTF order, assignment cursor, growth, stamp rollover, conflict use and API rebuild\nRunning bin/tests/debug/test_walk_phase_feedback...\nPASS: 6336 feedback cases preserve assignment and keep the best phases\nRunning bin/tests/debug/test_watch...\n========================================\nBSAT Watch Manager Unit Tests\n========================================\n\nTesting Watch manager creation and destruction... \u2705 PASS\nTesting Add single watch... \u2705 PASS\nTesting Add multiple watches to same literal... \u2705 PASS\nTesting Add watches to different literals... \u2705 PASS\nTesting Remove all watches for a clause... \u2705 PASS\nTesting Clear all watches... \u2705 PASS\nTesting Blocking literal optimization... \u2705 PASS\nTesting Positive and negative literal watches... \u2705 PASS\nTesting Binary clause (2 literals) watches... \u2705 PASS\nTesting Watch list automatic growth... \u2705 PASS\nTesting Watch manager in-place resize... \u2705 PASS\n\n========================================\nResults: 11/11 tests passed\n========================================\nRunning bin/tests/debug/test_watch_lookahead...\nPASS: 459 mixed-watch boundary, unit and conflict cases\nAll tests passed!\n",
+      "independent_command": [
+        "python3",
+        "tests/validate.py",
+        "--solver",
+        "bin/bsat_debug",
+        "--checker",
+        "/tmp/bsat-drat-trim",
+        "--cases",
+        "30",
+        "--seed",
+        "20261317"
+      ],
+      "independent_log": "PASS: 5141 solves; truth-table answers, original models, text/binary RUP proofs checked (seed 20261317)\n",
+      "deadline_log": "PASS: 75 short-deadline runs; maximum observed CPU overrun 0.001s\n",
+      "deadlines": {
+        "solver": "/Users/msharpe/python/bsat/competition/c/bin/bsat_debug",
+        "runs": [
+          {
+            "input": "pigeonhole.cnf",
+            "options": [
+              "--local-search",
+              "--ls-interval",
+              "1",
+              "--no-probing"
+            ],
+            "limit": 0.001,
+            "solving_cpu": 0.001,
+            "wall_seconds": 0.05986491730436683,
+            "status": "UNKNOWN"
+          },
+          {
+            "input": "pigeonhole.cnf",
+            "options": [
+              "--local-search",
+              "--ls-interval",
+              "1",
+              "--no-probing",
+              "--vmtf",
+              "--reuse-trail"
+            ],
+            "limit": 0.001,
+            "solving_cpu": 0.001,
+            "wall_seconds": 0.05841800011694431,
+            "status": "UNKNOWN"
+          },
+          {
+            "input": "pigeonhole.cnf",
+            "options": [
+              "--reuse-trail"
+            ],
+            "limit": 0.001,
+            "solving_cpu": 0.001,
+            "wall_seconds": 0.061726999934762716,
+            "status": "UNKNOWN"
+          },
+          {
+            "input": "pigeonhole.cnf",
+            "options": [
+              "--reuse-trail",
+              "--vmtf"
+            ],
+            "limit": 0.001,
+            "solving_cpu": 0.001,
+            "wall_seconds": 0.0631201658397913,
+            "status": "UNKNOWN"
+          },
+          {
+            "input": "pigeonhole.cnf",
+            "options": [],
+            "limit": 0.001,
+            "solving_cpu": 0.001,
+            "wall_seconds": 0.06275024963542819,
+            "status": "UNKNOWN"
+          },
+          {
+            "input": "pigeonhole.cnf",
+            "options": [
+              "--iterative-minimize"
+            ],
+            "limit": 0.001,
+            "solving_cpu": 0.001,
+            "wall_seconds": 0.0628969999961555,
+            "status": "UNKNOWN"
+          },
+          {
+            "input": "pigeonhole.cnf",
+            "options": [
+              "--equiv",
+              "--elim",
+              "--bce",
+              "--dynamic-lbd",
+              "--binary-proof"
+            ],
+            "limit": 0.001,
+            "solving_cpu": 0.001,
+            "wall_seconds": 0.06325408397242427,
+            "status": "UNKNOWN"
+          },
+          {
+            "input": "empty.cnf",
+            "options": [
+              "--no-probing"
+            ],
+            "limit": 0.001,
+            "solving_cpu": 0.001,
+            "wall_seconds": 0.08776975004002452,
+            "status": "UNKNOWN"
+          },
+          {
+            "input": "pigeonhole.cnf",
+            "options": [
+              "--binary-minimize",
+              "--vmtf"
+            ],
+            "limit": 0.001,
+            "solving_cpu": 0.001,
+            "wall_seconds": 0.06333616701886058,
+            "status": "UNKNOWN"
+          },
+          {
+            "input": "pigeonhole.cnf",
+            "options": [
+              "--random-phase",
+              "--vmtf"
+            ],
+            "limit": 0.001,
+            "solving_cpu": 0.001,
+            "wall_seconds": 0.06842879205942154,
+            "status": "UNKNOWN"
+          },
+          {
+            "input": "pigeonhole.cnf",
+            "options": [
+              "--vmtf"
+            ],
+            "limit": 0.001,
+            "solving_cpu": 0.001,
+            "wall_seconds": 0.06678650015965104,
+            "status": "UNKNOWN"
+          },
+          {
+            "input": "empty.cnf",
+            "options": [
+              "--vmtf",
+              "--no-probing"
+            ],
+            "limit": 0.001,
+            "solving_cpu": 0.001,
+            "wall_seconds": 0.08698858274146914,
+            "status": "UNKNOWN"
+          },
+          {
+            "input": "pigeonhole.cnf",
+            "options": [
+              "--local-search",
+              "--ls-interval",
+              "1",
+              "--no-probing",
+              "--ls-save-phases"
+            ],
+            "limit": 0.001,
+            "solving_cpu": 0.001,
+            "wall_seconds": 0.07000966602936387,
+            "status": "UNKNOWN"
+          },
+          {
+            "input": "pigeonhole.cnf",
+            "options": [
+              "--local-search",
+              "--ls-interval",
+              "1",
+              "--no-probing",
+              "--vmtf",
+              "--reuse-trail",
+              "--ls-save-phases"
+            ],
+            "limit": 0.001,
+            "solving_cpu": 0.001,
+            "wall_seconds": 0.06940291682258248,
+            "status": "UNKNOWN"
+          },
+          {
+            "input": "pigeonhole.cnf",
+            "options": [
+              "--portfolio",
+              "0.000000000001"
+            ],
+            "limit": 0.001,
+            "solving_cpu": 0.001,
+            "wall_seconds": 0.07389058312401175,
+            "status": "UNKNOWN"
+          },
+          {
+            "input": "pigeonhole.cnf",
+            "options": [
+              "--portfolio",
+              "0.002",
+              "--binary-proof"
+            ],
+            "limit": 0.001,
+            "solving_cpu": 0.001,
+            "wall_seconds": 0.0725624579936266,
+            "status": "UNKNOWN"
+          },
+          {
+            "input": "empty.cnf",
+            "options": [
+              "--portfolio",
+              "0.000000000001",
+              "--no-probing"
+            ],
+            "limit": 0.001,
+            "solving_cpu": 0.001,
+            "wall_seconds": 0.08509637461975217,
+            "status": "UNKNOWN"
+          },
+          {
+            "input": "pigeonhole.cnf",
+            "options": [
+              "--congruence",
+              "--equiv",
+              "--binary-proof"
+            ],
+            "limit": 0.001,
+            "solving_cpu": 0.001,
+            "wall_seconds": 0.07292479230090976,
+            "status": "UNKNOWN"
+          },
+          {
+            "input": "empty.cnf",
+            "options": [
+              "--congruence",
+              "--no-probing"
+            ],
+            "limit": 0.001,
+            "solving_cpu": 0.001,
+            "wall_seconds": 0.08603774989023805,
+            "status": "UNKNOWN"
+          },
+          {
+            "input": "pigeonhole.cnf",
+            "options": [
+              "--chrono",
+              "--chrono-levels",
+              "0",
+              "--binary-proof"
+            ],
+            "limit": 0.001,
+            "solving_cpu": 0.001,
+            "wall_seconds": 0.07127979164943099,
+            "status": "UNKNOWN"
+          },
+          {
+            "input": "empty.cnf",
+            "options": [
+              "--chrono",
+              "--chrono-levels",
+              "0",
+              "--no-probing"
+            ],
+            "limit": 0.001,
+            "solving_cpu": 0.001,
+            "wall_seconds": 0.08719479199498892,
+            "status": "UNKNOWN"
+          },
+          {
+            "input": "pigeonhole.cnf",
+            "options": [
+              "--reduce-interval",
+              "1",
+              "--reduce-increment",
+              "1",
+              "--no-probing"
+            ],
+            "limit": 0.001,
+            "solving_cpu": 0.001,
+            "wall_seconds": 0.071750707924366,
+            "status": "UNKNOWN"
+          },
+          {
+            "input": "pigeonhole.cnf",
+            "options": [
+              "--reduce-interval",
+              "1",
+              "--reduce-increment",
+              "1",
+              "--chrono",
+              "--vmtf",
+              "--binary-proof"
+            ],
+            "limit": 0.001,
+            "solving_cpu": 0.001,
+            "wall_seconds": 0.07163029117509723,
+            "status": "UNKNOWN"
+          },
+          {
+            "input": "pigeonhole.cnf",
+            "options": [
+              "--mode-branching",
+              "--chrono",
+              "--binary-proof"
+            ],
+            "limit": 0.001,
+            "solving_cpu": 0.001,
+            "wall_seconds": 0.07083862461149693,
+            "status": "UNKNOWN"
+          },
+          {
+            "input": "empty.cnf",
+            "options": [
+              "--mode-branching",
+              "--no-probing"
+            ],
+            "limit": 0.001,
+            "solving_cpu": 0.002,
+            "wall_seconds": 0.09070124989375472,
+            "status": "UNKNOWN"
+          },
+          {
+            "input": "pigeonhole.cnf",
+            "options": [
+              "--local-search",
+              "--ls-interval",
+              "1",
+              "--no-probing"
+            ],
+            "limit": 0.01,
+            "solving_cpu": 0.01,
+            "wall_seconds": 0.08095674961805344,
+            "status": "UNKNOWN"
+          },
+          {
+            "input": "pigeonhole.cnf",
+            "options": [
+              "--local-search",
+              "--ls-interval",
+              "1",
+              "--no-probing",
+              "--vmtf",
+              "--reuse-trail"
+            ],
+            "limit": 0.01,
+            "solving_cpu": 0.01,
+            "wall_seconds": 0.08632762497290969,
+            "status": "UNKNOWN"
+          },
+          {
+            "input": "pigeonhole.cnf",
+            "options": [
+              "--reuse-trail"
+            ],
+            "limit": 0.01,
+            "solving_cpu": 0.01,
+            "wall_seconds": 0.09640608308836818,
+            "status": "UNKNOWN"
+          },
+          {
+            "input": "pigeonhole.cnf",
+            "options": [
+              "--reuse-trail",
+              "--vmtf"
+            ],
+            "limit": 0.01,
+            "solving_cpu": 0.01,
+            "wall_seconds": 0.08711025025695562,
+            "status": "UNKNOWN"
+          },
+          {
+            "input": "pigeonhole.cnf",
+            "options": [],
+            "limit": 0.01,
+            "solving_cpu": 0.01,
+            "wall_seconds": 0.07839866681024432,
+            "status": "UNKNOWN"
+          },
+          {
+            "input": "pigeonhole.cnf",
+            "options": [
+              "--iterative-minimize"
+            ],
+            "limit": 0.01,
+            "solving_cpu": 0.01,
+            "wall_seconds": 0.07873291708528996,
+            "status": "UNKNOWN"
+          },
+          {
+            "input": "pigeonhole.cnf",
+            "options": [
+              "--equiv",
+              "--elim",
+              "--bce",
+              "--dynamic-lbd",
+              "--binary-proof"
+            ],
+            "limit": 0.01,
+            "solving_cpu": 0.01,
+            "wall_seconds": 0.07403683429583907,
+            "status": "UNKNOWN"
+          },
+          {
+            "input": "empty.cnf",
+            "options": [
+              "--no-probing"
+            ],
+            "limit": 0.01,
+            "solving_cpu": 0.01,
+            "wall_seconds": 0.09788725012913346,
+            "status": "UNKNOWN"
+          },
+          {
+            "input": "pigeonhole.cnf",
+            "options": [
+              "--binary-minimize",
+              "--vmtf"
+            ],
+            "limit": 0.01,
+            "solving_cpu": 0.01,
+            "wall_seconds": 0.08094729110598564,
+            "status": "UNKNOWN"
+          },
+          {
+            "input": "pigeonhole.cnf",
+            "options": [
+              "--random-phase",
+              "--vmtf"
+            ],
+            "limit": 0.01,
+            "solving_cpu": 0.01,
+            "wall_seconds": 0.08070083381608129,
+            "status": "UNKNOWN"
+          },
+          {
+            "input": "pigeonhole.cnf",
+            "options": [
+              "--vmtf"
+            ],
+            "limit": 0.01,
+            "solving_cpu": 0.01,
+            "wall_seconds": 0.07681779190897942,
+            "status": "UNKNOWN"
+          },
+          {
+            "input": "empty.cnf",
+            "options": [
+              "--vmtf",
+              "--no-probing"
+            ],
+            "limit": 0.01,
+            "solving_cpu": 0.01,
+            "wall_seconds": 0.09939066600054502,
+            "status": "UNKNOWN"
+          },
+          {
+            "input": "pigeonhole.cnf",
+            "options": [
+              "--local-search",
+              "--ls-interval",
+              "1",
+              "--no-probing",
+              "--ls-save-phases"
+            ],
+            "limit": 0.01,
+            "solving_cpu": 0.01,
+            "wall_seconds": 0.08359645772725344,
+            "status": "UNKNOWN"
+          },
+          {
+            "input": "pigeonhole.cnf",
+            "options": [
+              "--local-search",
+              "--ls-interval",
+              "1",
+              "--no-probing",
+              "--vmtf",
+              "--reuse-trail",
+              "--ls-save-phases"
+            ],
+            "limit": 0.01,
+            "solving_cpu": 0.01,
+            "wall_seconds": 0.08384183328598738,
+            "status": "UNKNOWN"
+          },
+          {
+            "input": "pigeonhole.cnf",
+            "options": [
+              "--portfolio",
+              "0.000000000001"
+            ],
+            "limit": 0.01,
+            "solving_cpu": 0.01,
+            "wall_seconds": 0.08669437514618039,
+            "status": "UNKNOWN"
+          },
+          {
+            "input": "pigeonhole.cnf",
+            "options": [
+              "--portfolio",
+              "0.002",
+              "--binary-proof"
+            ],
+            "limit": 0.01,
+            "solving_cpu": 0.01,
+            "wall_seconds": 0.08492300007492304,
+            "status": "UNKNOWN"
+          },
+          {
+            "input": "empty.cnf",
+            "options": [
+              "--portfolio",
+              "0.000000000001",
+              "--no-probing"
+            ],
+            "limit": 0.01,
+            "solving_cpu": 0.011,
+            "wall_seconds": 0.10234195785596967,
+            "status": "UNKNOWN"
+          },
+          {
+            "input": "pigeonhole.cnf",
+            "options": [
+              "--congruence",
+              "--equiv",
+              "--binary-proof"
+            ],
+            "limit": 0.01,
+            "solving_cpu": 0.01,
+            "wall_seconds": 0.08754562493413687,
+            "status": "UNKNOWN"
+          },
+          {
+            "input": "empty.cnf",
+            "options": [
+              "--congruence",
+              "--no-probing"
+            ],
+            "limit": 0.01,
+            "solving_cpu": 0.01,
+            "wall_seconds": 0.10042216582223773,
+            "status": "UNKNOWN"
+          },
+          {
+            "input": "pigeonhole.cnf",
+            "options": [
+              "--chrono",
+              "--chrono-levels",
+              "0",
+              "--binary-proof"
+            ],
+            "limit": 0.01,
+            "solving_cpu": 0.01,
+            "wall_seconds": 0.08419991610571742,
+            "status": "UNKNOWN"
+          },
+          {
+            "input": "empty.cnf",
+            "options": [
+              "--chrono",
+              "--chrono-levels",
+              "0",
+              "--no-probing"
+            ],
+            "limit": 0.01,
+            "solving_cpu": 0.01,
+            "wall_seconds": 0.0990034593269229,
+            "status": "UNKNOWN"
+          },
+          {
+            "input": "pigeonhole.cnf",
+            "options": [
+              "--reduce-interval",
+              "1",
+              "--reduce-increment",
+              "1",
+              "--no-probing"
+            ],
+            "limit": 0.01,
+            "solving_cpu": 0.01,
+            "wall_seconds": 0.08077145833522081,
+            "status": "UNKNOWN"
+          },
+          {
+            "input": "pigeonhole.cnf",
+            "options": [
+              "--reduce-interval",
+              "1",
+              "--reduce-increment",
+              "1",
+              "--chrono",
+              "--vmtf",
+              "--binary-proof"
+            ],
+            "limit": 0.01,
+            "solving_cpu": 0.01,
+            "wall_seconds": 0.09050012473016977,
+            "status": "UNKNOWN"
+          },
+          {
+            "input": "pigeonhole.cnf",
+            "options": [
+              "--mode-branching",
+              "--chrono",
+              "--binary-proof"
+            ],
+            "limit": 0.01,
+            "solving_cpu": 0.01,
+            "wall_seconds": 0.09063362469896674,
+            "status": "UNKNOWN"
+          },
+          {
+            "input": "empty.cnf",
+            "options": [
+              "--mode-branching",
+              "--no-probing"
+            ],
+            "limit": 0.01,
+            "solving_cpu": 0.01,
+            "wall_seconds": 0.09958325000479817,
+            "status": "UNKNOWN"
+          },
+          {
+            "input": "pigeonhole.cnf",
+            "options": [
+              "--local-search",
+              "--ls-interval",
+              "1",
+              "--no-probing"
+            ],
+            "limit": 0.05,
+            "solving_cpu": 0.05,
+            "wall_seconds": 0.12333824997767806,
+            "status": "UNKNOWN"
+          },
+          {
+            "input": "pigeonhole.cnf",
+            "options": [
+              "--local-search",
+              "--ls-interval",
+              "1",
+              "--no-probing",
+              "--vmtf",
+              "--reuse-trail"
+            ],
+            "limit": 0.05,
+            "solving_cpu": 0.05,
+            "wall_seconds": 0.12845279136672616,
+            "status": "UNKNOWN"
+          },
+          {
+            "input": "pigeonhole.cnf",
+            "options": [
+              "--reuse-trail"
+            ],
+            "limit": 0.05,
+            "solving_cpu": 0.05,
+            "wall_seconds": 0.20176783297210932,
+            "status": "UNKNOWN"
+          },
+          {
+            "input": "pigeonhole.cnf",
+            "options": [
+              "--reuse-trail",
+              "--vmtf"
+            ],
+            "limit": 0.05,
+            "solving_cpu": 0.05,
+            "wall_seconds": 0.200571957975626,
+            "status": "UNKNOWN"
+          },
+          {
+            "input": "pigeonhole.cnf",
+            "options": [],
+            "limit": 0.05,
+            "solving_cpu": 0.05,
+            "wall_seconds": 0.20145079167559743,
+            "status": "UNKNOWN"
+          },
+          {
+            "input": "pigeonhole.cnf",
+            "options": [
+              "--iterative-minimize"
+            ],
+            "limit": 0.05,
+            "solving_cpu": 0.05,
+            "wall_seconds": 0.18051591701805592,
+            "status": "UNKNOWN"
+          },
+          {
+            "input": "pigeonhole.cnf",
+            "options": [
+              "--equiv",
+              "--elim",
+              "--bce",
+              "--dynamic-lbd",
+              "--binary-proof"
+            ],
+            "limit": 0.05,
+            "solving_cpu": 0.05,
+            "wall_seconds": 0.12484024977311492,
+            "status": "UNKNOWN"
+          },
+          {
+            "input": "empty.cnf",
+            "options": [
+              "--no-probing"
+            ],
+            "limit": 0.05,
+            "solving_cpu": 0.05,
+            "wall_seconds": 0.14048212487250566,
+            "status": "UNKNOWN"
+          },
+          {
+            "input": "pigeonhole.cnf",
+            "options": [
+              "--binary-minimize",
+              "--vmtf"
+            ],
+            "limit": 0.05,
+            "solving_cpu": 0.05,
+            "wall_seconds": 0.11652745911851525,
+            "status": "UNKNOWN"
+          },
+          {
+            "input": "pigeonhole.cnf",
+            "options": [
+              "--random-phase",
+              "--vmtf"
+            ],
+            "limit": 0.05,
+            "solving_cpu": 0.05,
+            "wall_seconds": 0.12417429219931364,
+            "status": "UNKNOWN"
+          },
+          {
+            "input": "pigeonhole.cnf",
+            "options": [
+              "--vmtf"
+            ],
+            "limit": 0.05,
+            "solving_cpu": 0.05,
+            "wall_seconds": 0.1232967502437532,
+            "status": "UNKNOWN"
+          },
+          {
+            "input": "empty.cnf",
+            "options": [
+              "--vmtf",
+              "--no-probing"
+            ],
+            "limit": 0.05,
+            "solving_cpu": 0.05,
+            "wall_seconds": 0.1386552918702364,
+            "status": "UNKNOWN"
+          },
+          {
+            "input": "pigeonhole.cnf",
+            "options": [
+              "--local-search",
+              "--ls-interval",
+              "1",
+              "--no-probing",
+              "--ls-save-phases"
+            ],
+            "limit": 0.05,
+            "solving_cpu": 0.05,
+            "wall_seconds": 0.12023712508380413,
+            "status": "UNKNOWN"
+          },
+          {
+            "input": "pigeonhole.cnf",
+            "options": [
+              "--local-search",
+              "--ls-interval",
+              "1",
+              "--no-probing",
+              "--vmtf",
+              "--reuse-trail",
+              "--ls-save-phases"
+            ],
+            "limit": 0.05,
+            "solving_cpu": 0.05,
+            "wall_seconds": 0.11992458393797278,
+            "status": "UNKNOWN"
+          },
+          {
+            "input": "pigeonhole.cnf",
+            "options": [
+              "--portfolio",
+              "0.000000000001"
+            ],
+            "limit": 0.05,
+            "solving_cpu": 0.05,
+            "wall_seconds": 0.12440233305096626,
+            "status": "UNKNOWN"
+          },
+          {
+            "input": "pigeonhole.cnf",
+            "options": [
+              "--portfolio",
+              "0.002",
+              "--binary-proof"
+            ],
+            "limit": 0.05,
+            "solving_cpu": 0.05,
+            "wall_seconds": 0.12206174992024899,
+            "status": "UNKNOWN"
+          },
+          {
+            "input": "empty.cnf",
+            "options": [
+              "--portfolio",
+              "0.000000000001",
+              "--no-probing"
+            ],
+            "limit": 0.05,
+            "solving_cpu": 0.05,
+            "wall_seconds": 0.1396518750116229,
+            "status": "UNKNOWN"
+          },
+          {
+            "input": "pigeonhole.cnf",
+            "options": [
+              "--congruence",
+              "--equiv",
+              "--binary-proof"
+            ],
+            "limit": 0.05,
+            "solving_cpu": 0.05,
+            "wall_seconds": 0.1318553746677935,
+            "status": "UNKNOWN"
+          },
+          {
+            "input": "empty.cnf",
+            "options": [
+              "--congruence",
+              "--no-probing"
+            ],
+            "limit": 0.05,
+            "solving_cpu": 0.05,
+            "wall_seconds": 0.1439676252193749,
+            "status": "UNKNOWN"
+          },
+          {
+            "input": "pigeonhole.cnf",
+            "options": [
+              "--chrono",
+              "--chrono-levels",
+              "0",
+              "--binary-proof"
+            ],
+            "limit": 0.05,
+            "solving_cpu": 0.05,
+            "wall_seconds": 0.1306352922692895,
+            "status": "UNKNOWN"
+          },
+          {
+            "input": "empty.cnf",
+            "options": [
+              "--chrono",
+              "--chrono-levels",
+              "0",
+              "--no-probing"
+            ],
+            "limit": 0.05,
+            "solving_cpu": 0.05,
+            "wall_seconds": 0.1479969583451748,
+            "status": "UNKNOWN"
+          },
+          {
+            "input": "pigeonhole.cnf",
+            "options": [
+              "--reduce-interval",
+              "1",
+              "--reduce-increment",
+              "1",
+              "--no-probing"
+            ],
+            "limit": 0.05,
+            "solving_cpu": 0.05,
+            "wall_seconds": 0.12665916699916124,
+            "status": "UNKNOWN"
+          },
+          {
+            "input": "pigeonhole.cnf",
+            "options": [
+              "--reduce-interval",
+              "1",
+              "--reduce-increment",
+              "1",
+              "--chrono",
+              "--vmtf",
+              "--binary-proof"
+            ],
+            "limit": 0.05,
+            "solving_cpu": 0.05,
+            "wall_seconds": 0.12404979206621647,
+            "status": "UNKNOWN"
+          },
+          {
+            "input": "pigeonhole.cnf",
+            "options": [
+              "--mode-branching",
+              "--chrono",
+              "--binary-proof"
+            ],
+            "limit": 0.05,
+            "solving_cpu": 0.05,
+            "wall_seconds": 0.13125237496569753,
+            "status": "UNKNOWN"
+          },
+          {
+            "input": "empty.cnf",
+            "options": [
+              "--mode-branching",
+              "--no-probing"
+            ],
+            "limit": 0.05,
+            "solving_cpu": 0.05,
+            "wall_seconds": 0.14557041693478823,
+            "status": "UNKNOWN"
+          }
+        ]
+      },
+      "mode_transition_certificates": {
+        "schema": 1,
+        "script_sha256": "5c614207972e02f2eea83188f3d6b5f2073674ba28af9ece9ee31e205e01b6f6",
+        "solver": "/Users/msharpe/python/bsat/competition/c/bin/bsat_debug",
+        "solver_sha256": "7db6b51c97e207afa3fed1eb1cbc5bfd5d0a64f83229c613376fc797215b8d2a",
+        "checker": "/private/tmp/bsat-drat-trim",
+        "checker_sha256": "9bfc20a5fa9eb2a0ffadd2b0cfc7cdd4a20f6aa9c8d7de5b6c771160b847f630",
+        "runs": [
+          {
+            "sat": false,
+            "options": [
+              "--mode-branching",
+              "--chrono",
+              "--chrono-levels",
+              "0",
+              "--no-probing",
+              "--no-subsumption",
+              "--reduce-interval",
+              "32"
+            ],
+            "input_sha256": "a1da476007fef3747f81e5617411f2ee6d5fc03bbe1c261cc19d652d9f70f759",
+            "proof_sha256": "fbd4e1a37af3062e4119ad78085f48b3d921f90c76199d1908cd6b3020dc0808",
+            "proof_bytes": 32494,
+            "queue_decisions": 1002,
+            "heap_decisions": 25,
+            "solver_output": "c BSAT Competition Solver v1.0\nc PID: 48413 (send SIGUSR1 for progress: kill -USR1 48413)\nc Reading from /var/folders/ts/779j13fj7_x2z167570zvv4c0000gn/T/bsat-mode-proofs-l5sgw7n9/input.cnf\nc Variables: 13\nc Clauses:   2050\nc\ns UNSATISFIABLE\nc\nc CPU time:         0.019 s\nc\nc ========== Statistics ==========\nc CPU time          : 0.019 s\nc Chronological backtracks: 8\nc Chronological retained assignments: 10\nc Chronological repaired watches: 0\nc Lower-level conflicts: 1\nc Decisions         : 1027\nc Mode queue decisions: 1002\nc Mode heap decisions: 25\nc Propagations      : 2061\nc Conflicts         : 1025\nc Restarts          : 1\nc Reused levels     : 0\nc Local search calls: 0\nc Local search wins : 0\nc Local search flips: 0\nc Learned clauses   : 1024\nc Learned literals  : 5128\nc Deleted clauses   : 948\nc Binary minimize checks: 0\nc Binary minimize removed: 0\nc Minimize inspections: 10511\nc Minimize binary steps: 0\nc Minimize cache hits : 0\nc Minimize budget hits: 0\nc Equivalence work  : 0\nc Substituted vars  : 0\nc Rewritten clauses : 0\nc SCC contradictions: 0\nc Derived binaries  : 0\nc LBD improvements  : 0\nc Deadline clock reads: 0\nc Target literals copied: 12\nc Target values cleared: 14\nc Blocked clauses   : 0\nc Eliminated variables: 0\nc Elimination resolvents: 0\nc Elimination removed: 0\nc Subsumed clauses  : 0\nc Minimized literals: 3083\nc Glue clauses      : 54\nc Max LBD           : 10\nc Decisions/sec     : 53826\nc Propagations/sec  : 108019\nc Conflicts/sec     : 53721\nc Literal inspections : 260786\nc Garbage collections : 0\nc Reductions          : 32\nc Mode                : stable\nc Memory used       : 0.15 MB\nc Memory allocated  : 0.23 MB\nc Memory peak       : 0.15 MB\nc Memory wasted     : 0.03 MB\nc Arena growths     : 10\nc\n",
+            "checker_returncode": 0,
+            "checker_output": "\nc parsing input formula with 13 variables and 2050 clauses\n\nc finished parsing\n\nc detected empty clause; start verification via backward checking\n\nc 2048 of 2050 clauses in core                            \n\nc 1025 of 1026 lemmas in core using 7172 resolution steps\n\nc 0 RAT lemmas in core; 0 redundant literals in core lemmas\n\ns VERIFIED\n\nc verification time: 0.023 seconds\n",
+            "verified": true
+          },
+          {
+            "sat": false,
+            "options": [
+              "--mode-branching",
+              "--chrono",
+              "--chrono-levels",
+              "0",
+              "--no-probing",
+              "--no-subsumption",
+              "--reduce-interval",
+              "32",
+              "--equiv"
+            ],
+            "input_sha256": "a1da476007fef3747f81e5617411f2ee6d5fc03bbe1c261cc19d652d9f70f759",
+            "proof_sha256": "a22888fc3c70c467b31463f1acedca8207f6d3c81f75091ab11d19a74d2af481",
+            "proof_bytes": 32229,
+            "queue_decisions": 1002,
+            "heap_decisions": 24,
+            "solver_output": "c BSAT Competition Solver v1.0\nc PID: 48424 (send SIGUSR1 for progress: kill -USR1 48424)\nc Reading from /var/folders/ts/779j13fj7_x2z167570zvv4c0000gn/T/bsat-mode-proofs-l5sgw7n9/input.cnf\nc Variables: 13\nc Clauses:   2050\nc\ns UNSATISFIABLE\nc\nc CPU time:         0.022 s\nc\nc ========== Statistics ==========\nc CPU time          : 0.022 s\nc Chronological backtracks: 8\nc Chronological retained assignments: 10\nc Chronological repaired watches: 0\nc Lower-level conflicts: 1\nc Decisions         : 1026\nc Mode queue decisions: 1002\nc Mode heap decisions: 24\nc Propagations      : 2057\nc Conflicts         : 1024\nc Restarts          : 1\nc Reused levels     : 0\nc Local search calls: 0\nc Local search wins : 0\nc Local search flips: 0\nc Learned clauses   : 1023\nc Learned literals  : 5126\nc Deleted clauses   : 926\nc Binary minimize checks: 0\nc Binary minimize removed: 0\nc Minimize inspections: 10513\nc Minimize binary steps: 0\nc Minimize cache hits : 0\nc Minimize budget hits: 0\nc Equivalence work  : 41106\nc Substituted vars  : 1\nc Rewritten clauses : 2\nc SCC contradictions: 0\nc Derived binaries  : 0\nc LBD improvements  : 0\nc Deadline clock reads: 0\nc Target literals copied: 11\nc Target values cleared: 14\nc Blocked clauses   : 0\nc Eliminated variables: 0\nc Elimination resolvents: 0\nc Elimination removed: 0\nc Subsumed clauses  : 0\nc Minimized literals: 3084\nc Glue clauses      : 53\nc Max LBD           : 10\nc Decisions/sec     : 45746\nc Propagations/sec  : 91716\nc Conflicts/sec     : 45657\nc Literal inspections : 301813\nc Garbage collections : 0\nc Reductions          : 31\nc Mode                : stable\nc Memory used       : 0.15 MB\nc Memory allocated  : 0.23 MB\nc Memory peak       : 0.15 MB\nc Memory wasted     : 0.03 MB\nc Arena growths     : 10\nc\n",
+            "checker_returncode": 0,
+            "checker_output": "\nc parsing input formula with 13 variables and 2050 clauses\n\nc finished parsing\n\nc detected empty clause; start verification via backward checking\n\nc 2048 of 2050 clauses in core                            \n\nc 1024 of 1027 lemmas in core using 7162 resolution steps\n\nc 0 RAT lemmas in core; 0 redundant literals in core lemmas\n\ns VERIFIED\n\nc verification time: 0.027 seconds\n",
+            "verified": true
+          },
+          {
+            "sat": false,
+            "options": [
+              "--mode-branching",
+              "--chrono",
+              "--chrono-levels",
+              "0",
+              "--no-probing",
+              "--no-subsumption",
+              "--reduce-interval",
+              "32",
+              "--binary-proof"
+            ],
+            "input_sha256": "a1da476007fef3747f81e5617411f2ee6d5fc03bbe1c261cc19d652d9f70f759",
+            "proof_sha256": "84db06163f918fb0ab70b0a2d0f2a6d7687ce590752a539fab9ed95bcf0cb024",
+            "proof_bytes": 14038,
+            "queue_decisions": 1002,
+            "heap_decisions": 25,
+            "solver_output": "c BSAT Competition Solver v1.0\nc PID: 48432 (send SIGUSR1 for progress: kill -USR1 48432)\nc Reading from /var/folders/ts/779j13fj7_x2z167570zvv4c0000gn/T/bsat-mode-proofs-l5sgw7n9/input.cnf\nc Variables: 13\nc Clauses:   2050\nc\ns UNSATISFIABLE\nc\nc CPU time:         0.020 s\nc\nc ========== Statistics ==========\nc CPU time          : 0.020 s\nc Chronological backtracks: 8\nc Chronological retained assignments: 10\nc Chronological repaired watches: 0\nc Lower-level conflicts: 1\nc Decisions         : 1027\nc Mode queue decisions: 1002\nc Mode heap decisions: 25\nc Propagations      : 2061\nc Conflicts         : 1025\nc Restarts          : 1\nc Reused levels     : 0\nc Local search calls: 0\nc Local search wins : 0\nc Local search flips: 0\nc Learned clauses   : 1024\nc Learned literals  : 5128\nc Deleted clauses   : 948\nc Binary minimize checks: 0\nc Binary minimize removed: 0\nc Minimize inspections: 10511\nc Minimize binary steps: 0\nc Minimize cache hits : 0\nc Minimize budget hits: 0\nc Equivalence work  : 0\nc Substituted vars  : 0\nc Rewritten clauses : 0\nc SCC contradictions: 0\nc Derived binaries  : 0\nc LBD improvements  : 0\nc Deadline clock reads: 0\nc Target literals copied: 12\nc Target values cleared: 14\nc Blocked clauses   : 0\nc Eliminated variables: 0\nc Elimination resolvents: 0\nc Elimination removed: 0\nc Subsumed clauses  : 0\nc Minimized literals: 3083\nc Glue clauses      : 54\nc Max LBD           : 10\nc Decisions/sec     : 50729\nc Propagations/sec  : 101803\nc Conflicts/sec     : 50630\nc Literal inspections : 260786\nc Garbage collections : 0\nc Reductions          : 32\nc Mode                : stable\nc Memory used       : 0.15 MB\nc Memory allocated  : 0.23 MB\nc Memory peak       : 0.15 MB\nc Memory wasted     : 0.03 MB\nc Arena growths     : 10\nc\n",
+            "checker_returncode": 0,
+            "checker_output": "\nc turning on binary mode checking\n\nc parsing input formula with 13 variables and 2050 clauses\n\nc finished parsing, read 14038 bytes from proof file\n\nc detected empty clause; start verification via backward checking\n\nc 2048 of 2050 clauses in core                            \n\nc 1025 of 1026 lemmas in core using 7172 resolution steps\n\nc 0 RAT lemmas in core; 0 redundant literals in core lemmas\n\ns VERIFIED\n\nc verification time: 0.026 seconds\n",
+            "verified": true
+          },
+          {
+            "sat": false,
+            "options": [
+              "--mode-branching",
+              "--chrono",
+              "--chrono-levels",
+              "0",
+              "--no-probing",
+              "--no-subsumption",
+              "--reduce-interval",
+              "32",
+              "--binary-proof",
+              "--equiv"
+            ],
+            "input_sha256": "a1da476007fef3747f81e5617411f2ee6d5fc03bbe1c261cc19d652d9f70f759",
+            "proof_sha256": "8f30c78378bb43526563c6806d59d77d0c7a78a7f6789c62755ff63e59ac2454",
+            "proof_bytes": 13921,
+            "queue_decisions": 1002,
+            "heap_decisions": 24,
+            "solver_output": "c BSAT Competition Solver v1.0\nc PID: 48438 (send SIGUSR1 for progress: kill -USR1 48438)\nc Reading from /var/folders/ts/779j13fj7_x2z167570zvv4c0000gn/T/bsat-mode-proofs-l5sgw7n9/input.cnf\nc Variables: 13\nc Clauses:   2050\nc\ns UNSATISFIABLE\nc\nc CPU time:         0.025 s\nc\nc ========== Statistics ==========\nc CPU time          : 0.025 s\nc Chronological backtracks: 8\nc Chronological retained assignments: 10\nc Chronological repaired watches: 0\nc Lower-level conflicts: 1\nc Decisions         : 1026\nc Mode queue decisions: 1002\nc Mode heap decisions: 24\nc Propagations      : 2057\nc Conflicts         : 1024\nc Restarts          : 1\nc Reused levels     : 0\nc Local search calls: 0\nc Local search wins : 0\nc Local search flips: 0\nc Learned clauses   : 1023\nc Learned literals  : 5126\nc Deleted clauses   : 926\nc Binary minimize checks: 0\nc Binary minimize removed: 0\nc Minimize inspections: 10513\nc Minimize binary steps: 0\nc Minimize cache hits : 0\nc Minimize budget hits: 0\nc Equivalence work  : 41106\nc Substituted vars  : 1\nc Rewritten clauses : 2\nc SCC contradictions: 0\nc Derived binaries  : 0\nc LBD improvements  : 0\nc Deadline clock reads: 0\nc Target literals copied: 11\nc Target values cleared: 14\nc Blocked clauses   : 0\nc Eliminated variables: 0\nc Elimination resolvents: 0\nc Elimination removed: 0\nc Subsumed clauses  : 0\nc Minimized literals: 3084\nc Glue clauses      : 53\nc Max LBD           : 10\nc Decisions/sec     : 41145\nc Propagations/sec  : 82491\nc Conflicts/sec     : 41065\nc Literal inspections : 301813\nc Garbage collections : 0\nc Reductions          : 31\nc Mode                : stable\nc Memory used       : 0.15 MB\nc Memory allocated  : 0.23 MB\nc Memory peak       : 0.15 MB\nc Memory wasted     : 0.03 MB\nc Arena growths     : 10\nc\n",
+            "checker_returncode": 0,
+            "checker_output": "\nc turning on binary mode checking\n\nc parsing input formula with 13 variables and 2050 clauses\n\nc finished parsing, read 13921 bytes from proof file\n\nc detected empty clause; start verification via backward checking\n\nc 2048 of 2050 clauses in core                            \n\nc 1024 of 1027 lemmas in core using 7162 resolution steps\n\nc 0 RAT lemmas in core; 0 redundant literals in core lemmas\n\ns VERIFIED\n\nc verification time: 0.025 seconds\n",
+            "verified": true
+          },
+          {
+            "sat": true,
+            "options": [
+              "--mode-branching",
+              "--chrono",
+              "--chrono-levels",
+              "0",
+              "--no-probing",
+              "--no-subsumption",
+              "--reduce-interval",
+              "32"
+            ],
+            "input_sha256": "58a511fdb7b11f21fb01477e181147ea22ba9198187fa36aefce8297e7c42a99",
+            "proof_sha256": "4bbcf6c36349a07186a7e7216766ce968c65354129a8debb89c68c77f41a1e68",
+            "proof_bytes": 23212,
+            "queue_decisions": 688,
+            "heap_decisions": 0,
+            "solver_output": "c BSAT Competition Solver v1.0\nc PID: 48442 (send SIGUSR1 for progress: kill -USR1 48442)\nc Reading from /var/folders/ts/779j13fj7_x2z167570zvv4c0000gn/T/bsat-mode-proofs-l5sgw7n9/input.cnf\nc Variables: 13\nc Clauses:   2049\nc\ns SATISFIABLE\nv 1 2 3 4 5 6 7 8 9 10 11 -12 -13 0\nc\nc CPU time:         0.017 s\nc\nc ========== Statistics ==========\nc CPU time          : 0.017 s\nc Chronological backtracks: 1\nc Chronological retained assignments: 0\nc Chronological repaired watches: 0\nc Lower-level conflicts: 0\nc Decisions         : 688\nc Mode queue decisions: 688\nc Mode heap decisions: 0\nc Propagations      : 1372\nc Conflicts         : 682\nc Restarts          : 0\nc Reused levels     : 0\nc Local search calls: 0\nc Local search wins : 0\nc Local search flips: 0\nc Learned clauses   : 682\nc Learned literals  : 3751\nc Deleted clauses   : 629\nc Binary minimize checks: 0\nc Binary minimize removed: 0\nc Minimize inspections: 8090\nc Minimize binary steps: 0\nc Minimize cache hits : 0\nc Minimize budget hits: 0\nc Equivalence work  : 0\nc Substituted vars  : 0\nc Rewritten clauses : 0\nc SCC contradictions: 0\nc Derived binaries  : 0\nc LBD improvements  : 0\nc Deadline clock reads: 0\nc Target literals copied: 12\nc Target values cleared: 14\nc Blocked clauses   : 0\nc Eliminated variables: 0\nc Elimination resolvents: 0\nc Elimination removed: 0\nc Subsumed clauses  : 0\nc Minimized literals: 2222\nc Glue clauses      : 11\nc Max LBD           : 10\nc Decisions/sec     : 39702\nc Propagations/sec  : 79174\nc Conflicts/sec     : 39356\nc Literal inspections : 190908\nc Garbage collections : 0\nc Reductions          : 21\nc Mode                : focused\nc Memory used       : 0.14 MB\nc Memory allocated  : 0.15 MB\nc Memory peak       : 0.14 MB\nc Memory wasted     : 0.02 MB\nc Arena growths     : 9\nc\n",
+            "checker_returncode": null,
+            "checker_output": null,
+            "verified": true
+          },
+          {
+            "sat": true,
+            "options": [
+              "--mode-branching",
+              "--chrono",
+              "--chrono-levels",
+              "0",
+              "--no-probing",
+              "--no-subsumption",
+              "--reduce-interval",
+              "32",
+              "--equiv"
+            ],
+            "input_sha256": "58a511fdb7b11f21fb01477e181147ea22ba9198187fa36aefce8297e7c42a99",
+            "proof_sha256": "9bd1b37e5cb23dda45250c8166c8e844a8758c2b45d023ef2358c4c1d1d584eb",
+            "proof_bytes": 23230,
+            "queue_decisions": 688,
+            "heap_decisions": 0,
+            "solver_output": "c BSAT Competition Solver v1.0\nc PID: 48445 (send SIGUSR1 for progress: kill -USR1 48445)\nc Reading from /var/folders/ts/779j13fj7_x2z167570zvv4c0000gn/T/bsat-mode-proofs-l5sgw7n9/input.cnf\nc Variables: 13\nc Clauses:   2049\nc\ns SATISFIABLE\nv 1 2 3 4 5 6 7 8 9 10 11 -12 -13 0\nc\nc CPU time:         0.019 s\nc\nc ========== Statistics ==========\nc CPU time          : 0.019 s\nc Chronological backtracks: 1\nc Chronological retained assignments: 0\nc Chronological repaired watches: 0\nc Lower-level conflicts: 0\nc Decisions         : 688\nc Mode queue decisions: 688\nc Mode heap decisions: 0\nc Propagations      : 1371\nc Conflicts         : 682\nc Restarts          : 0\nc Reused levels     : 0\nc Local search calls: 0\nc Local search wins : 0\nc Local search flips: 0\nc Learned clauses   : 682\nc Learned literals  : 3751\nc Deleted clauses   : 629\nc Binary minimize checks: 0\nc Binary minimize removed: 0\nc Minimize inspections: 8090\nc Minimize binary steps: 0\nc Minimize cache hits : 0\nc Minimize budget hits: 0\nc Equivalence work  : 41086\nc Substituted vars  : 1\nc Rewritten clauses : 2\nc SCC contradictions: 0\nc Derived binaries  : 0\nc LBD improvements  : 0\nc Deadline clock reads: 0\nc Target literals copied: 11\nc Target values cleared: 14\nc Blocked clauses   : 0\nc Eliminated variables: 0\nc Elimination resolvents: 0\nc Elimination removed: 0\nc Subsumed clauses  : 0\nc Minimized literals: 2222\nc Glue clauses      : 11\nc Max LBD           : 10\nc Decisions/sec     : 35535\nc Propagations/sec  : 70812\nc Conflicts/sec     : 35225\nc Literal inspections : 231992\nc Garbage collections : 0\nc Reductions          : 21\nc Mode                : focused\nc Memory used       : 0.14 MB\nc Memory allocated  : 0.15 MB\nc Memory peak       : 0.14 MB\nc Memory wasted     : 0.02 MB\nc Arena growths     : 9\nc\n",
+            "checker_returncode": null,
+            "checker_output": null,
+            "verified": true
+          },
+          {
+            "sat": true,
+            "options": [
+              "--mode-branching",
+              "--chrono",
+              "--chrono-levels",
+              "0",
+              "--no-probing",
+              "--no-subsumption",
+              "--reduce-interval",
+              "32",
+              "--binary-proof"
+            ],
+            "input_sha256": "58a511fdb7b11f21fb01477e181147ea22ba9198187fa36aefce8297e7c42a99",
+            "proof_sha256": "e7756426873e71b07b52f880ba6157fcca36c708cdefa4277edee98bd9175210",
+            "proof_bytes": 9952,
+            "queue_decisions": 688,
+            "heap_decisions": 0,
+            "solver_output": "c BSAT Competition Solver v1.0\nc PID: 48448 (send SIGUSR1 for progress: kill -USR1 48448)\nc Reading from /var/folders/ts/779j13fj7_x2z167570zvv4c0000gn/T/bsat-mode-proofs-l5sgw7n9/input.cnf\nc Variables: 13\nc Clauses:   2049\nc\ns SATISFIABLE\nv 1 2 3 4 5 6 7 8 9 10 11 -12 -13 0\nc\nc CPU time:         0.017 s\nc\nc ========== Statistics ==========\nc CPU time          : 0.017 s\nc Chronological backtracks: 1\nc Chronological retained assignments: 0\nc Chronological repaired watches: 0\nc Lower-level conflicts: 0\nc Decisions         : 688\nc Mode queue decisions: 688\nc Mode heap decisions: 0\nc Propagations      : 1372\nc Conflicts         : 682\nc Restarts          : 0\nc Reused levels     : 0\nc Local search calls: 0\nc Local search wins : 0\nc Local search flips: 0\nc Learned clauses   : 682\nc Learned literals  : 3751\nc Deleted clauses   : 629\nc Binary minimize checks: 0\nc Binary minimize removed: 0\nc Minimize inspections: 8090\nc Minimize binary steps: 0\nc Minimize cache hits : 0\nc Minimize budget hits: 0\nc Equivalence work  : 0\nc Substituted vars  : 0\nc Rewritten clauses : 0\nc SCC contradictions: 0\nc Derived binaries  : 0\nc LBD improvements  : 0\nc Deadline clock reads: 0\nc Target literals copied: 12\nc Target values cleared: 14\nc Blocked clauses   : 0\nc Eliminated variables: 0\nc Elimination resolvents: 0\nc Elimination removed: 0\nc Subsumed clauses  : 0\nc Minimized literals: 2222\nc Glue clauses      : 11\nc Max LBD           : 10\nc Decisions/sec     : 40449\nc Propagations/sec  : 80663\nc Conflicts/sec     : 40096\nc Literal inspections : 190908\nc Garbage collections : 0\nc Reductions          : 21\nc Mode                : focused\nc Memory used       : 0.14 MB\nc Memory allocated  : 0.15 MB\nc Memory peak       : 0.14 MB\nc Memory wasted     : 0.02 MB\nc Arena growths     : 9\nc\n",
+            "checker_returncode": null,
+            "checker_output": null,
+            "verified": true
+          },
+          {
+            "sat": true,
+            "options": [
+              "--mode-branching",
+              "--chrono",
+              "--chrono-levels",
+              "0",
+              "--no-probing",
+              "--no-subsumption",
+              "--reduce-interval",
+              "32",
+              "--binary-proof",
+              "--equiv"
+            ],
+            "input_sha256": "58a511fdb7b11f21fb01477e181147ea22ba9198187fa36aefce8297e7c42a99",
+            "proof_sha256": "7aa8945a8cfe417a1408847c7c4572ba94a208d8f18da0b9a05b53a14624c4da",
+            "proof_bytes": 9960,
+            "queue_decisions": 688,
+            "heap_decisions": 0,
+            "solver_output": "c BSAT Competition Solver v1.0\nc PID: 48451 (send SIGUSR1 for progress: kill -USR1 48451)\nc Reading from /var/folders/ts/779j13fj7_x2z167570zvv4c0000gn/T/bsat-mode-proofs-l5sgw7n9/input.cnf\nc Variables: 13\nc Clauses:   2049\nc\ns SATISFIABLE\nv 1 2 3 4 5 6 7 8 9 10 11 -12 -13 0\nc\nc CPU time:         0.020 s\nc\nc ========== Statistics ==========\nc CPU time          : 0.020 s\nc Chronological backtracks: 1\nc Chronological retained assignments: 0\nc Chronological repaired watches: 0\nc Lower-level conflicts: 0\nc Decisions         : 688\nc Mode queue decisions: 688\nc Mode heap decisions: 0\nc Propagations      : 1371\nc Conflicts         : 682\nc Restarts          : 0\nc Reused levels     : 0\nc Local search calls: 0\nc Local search wins : 0\nc Local search flips: 0\nc Learned clauses   : 682\nc Learned literals  : 3751\nc Deleted clauses   : 629\nc Binary minimize checks: 0\nc Binary minimize removed: 0\nc Minimize inspections: 8090\nc Minimize binary steps: 0\nc Minimize cache hits : 0\nc Minimize budget hits: 0\nc Equivalence work  : 41086\nc Substituted vars  : 1\nc Rewritten clauses : 2\nc SCC contradictions: 0\nc Derived binaries  : 0\nc LBD improvements  : 0\nc Deadline clock reads: 0\nc Target literals copied: 11\nc Target values cleared: 14\nc Blocked clauses   : 0\nc Eliminated variables: 0\nc Elimination resolvents: 0\nc Elimination removed: 0\nc Subsumed clauses  : 0\nc Minimized literals: 2222\nc Glue clauses      : 11\nc Max LBD           : 10\nc Decisions/sec     : 34188\nc Propagations/sec  : 68128\nc Conflicts/sec     : 33890\nc Literal inspections : 231992\nc Garbage collections : 0\nc Reductions          : 21\nc Mode                : focused\nc Memory used       : 0.14 MB\nc Memory allocated  : 0.15 MB\nc Memory peak       : 0.14 MB\nc Memory wasted     : 0.02 MB\nc Arena growths     : 9\nc\n",
+            "checker_returncode": null,
+            "checker_output": null,
+            "verified": true
+          }
+        ]
+      }
+    }
+  },
+  "mutations": {
+    "path": "/Users/msharpe/python/bsat/competition/c/benchmark_results/mode-branching-mutations-20260907.json",
+    "sha256": "604e515b9f8b680ff8c7b25c6dd05b9330d1395f6948561dbd3b5b2072ab90e4"
+  },
+  "default-traces": {
+    "path": "/Users/msharpe/python/bsat/competition/c/benchmark_results/mode-branching-default-traces-20260907.json",
+    "sha256": "5a822f6948c1f07e38f473ffa258bedae096a8c5b5fc8c6f3b3c885949e9b76d"
+  }
+}

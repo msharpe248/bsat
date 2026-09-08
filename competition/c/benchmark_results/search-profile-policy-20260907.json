@@ -1,0 +1,65 @@
+{
+  "schema": 1,
+  "revision": "2a63679",
+  "purpose": "Frozen development comparison: default versus experimental search alone versus search plus congruence/SCC; no tuning during execution",
+  "profiles": {
+    "default": "/Users/msharpe/python/bsat/competition/c/bin/bsat --time 30 --proof {proof} {input}",
+    "search": "/Users/msharpe/python/bsat/competition/c/bin/bsat --chrono --alternating --vmtf --time 30 --proof {proof} {input}",
+    "full": "/Users/msharpe/python/bsat/competition/c/bin/bsat --chrono --congruence --equiv --equiv-budget 100000000 --alternating --vmtf --time 30 --proof {proof} {input}"
+  },
+  "command": [
+    "python3",
+    "/Users/msharpe/python/bsat/competition/c/tests/benchmark.py",
+    "--checker",
+    "/tmp/bsat-drat-trim",
+    "--retain-unverified",
+    "/tmp/bsat-profile-certificates",
+    "--solver",
+    "default=/Users/msharpe/python/bsat/competition/c/bin/bsat --time 30 --proof {proof} {input}",
+    "--solver",
+    "search=/Users/msharpe/python/bsat/competition/c/bin/bsat --chrono --alternating --vmtf --time 30 --proof {proof} {input}",
+    "--solver",
+    "full=/Users/msharpe/python/bsat/competition/c/bin/bsat --chrono --congruence --equiv --equiv-budget 100000000 --alternating --vmtf --time 30 --proof {proof} {input}",
+    "--timeout",
+    "35",
+    "--check-timeout",
+    "600",
+    "--repeats",
+    "1",
+    "--seed",
+    "20261316",
+    "--split",
+    "development",
+    "--output",
+    "/Users/msharpe/python/bsat/competition/c/benchmark_results/search-profile-diagnosis-20260907.json",
+    "/Users/msharpe/python/bsat/dataset/sat_competition2025/station-repacking/a2ca167a8fdbf165f40b5d6dee94b040.cnf",
+    "/Users/msharpe/python/bsat/dataset/sat_competition2025/diagnosis/9a839badecb20dcf505ec79eedd3753a.cnf",
+    "/Users/msharpe/python/bsat/dataset/sat_competition2025/school-timetabling/1d18837c0ced5c18a3a4693993e61728.cnf"
+  ],
+  "binary_sha256": "4964e44a182fa6774635e5f930bd908556d9cc3c0bd90d2b52752e361c7a2c3d",
+  "checker_sha256": "9bfc20a5fa9eb2a0ffadd2b0cfc7cdd4a20f6aa9c8d7de5b6c771160b847f630",
+  "inputs": {
+    "/Users/msharpe/python/bsat/dataset/sat_competition2025/station-repacking/a2ca167a8fdbf165f40b5d6dee94b040.cnf": {
+      "sha256": "bc053107e97fd429a204f5dbe8f7afb40dbb8c3e3592b7a716eda6f50a5a2e6a",
+      "family": "station-repacking",
+      "bytes": 12344165,
+      "variables": 31263,
+      "clauses": 799432
+    },
+    "/Users/msharpe/python/bsat/dataset/sat_competition2025/diagnosis/9a839badecb20dcf505ec79eedd3753a.cnf": {
+      "sha256": "64e6eb3f2cb7223fc90cdaf366ac0688e6a955b960b777eb921450aa864c6a2d",
+      "family": "diagnosis",
+      "bytes": 12429871,
+      "variables": 151952,
+      "clauses": 697321
+    },
+    "/Users/msharpe/python/bsat/dataset/sat_competition2025/school-timetabling/1d18837c0ced5c18a3a4693993e61728.cnf": {
+      "sha256": "25c30c0878f6bb8034445a0b5852f2b9179e1679bc6bedfddf9088f413efb8d9",
+      "family": "school-timetabling",
+      "bytes": 13457873,
+      "variables": 213083,
+      "clauses": 668213
+    }
+  },
+  "execution": "Serial, no concurrent heavy work; proof checks outside timing; previously held-out inputs now development"
+}

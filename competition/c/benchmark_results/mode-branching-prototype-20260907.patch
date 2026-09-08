@@ -1,0 +1,261 @@
+diff --git a/competition/c/include/solver.h b/competition/c/include/solver.h
+index cf4f9ee..88e0413 100644
+--- a/competition/c/include/solver.h
++++ b/competition/c/include/solver.h
+@@ -33,0 +34 @@ typedef struct SolverOpts {
++    bool     mode_branching;    // Queue focused, activity heap stable when alternating
+@@ -221,0 +223 @@ typedef struct Solver {
++        uint64_t mode_queue_decisions, mode_heap_decisions;
+@@ -325,0 +328,5 @@ typedef struct Solver {
++static inline bool solver_uses_queue(const Solver *s) {
++    if (s->opts.mode_branching && s->opts.alternating) return !s->stable_mode;
++    return s->opts.vmtf;
++}
++
+diff --git a/competition/c/src/main.c b/competition/c/src/main.c
+index 5974adf..3e9219f 100644
+--- a/competition/c/src/main.c
++++ b/competition/c/src/main.c
+@@ -62,0 +63 @@ static void print_usage(const char* program) {
++    printf("  --mode-branching         Queue focused, scores stable; enables alternating\n");
+@@ -161,0 +163 @@ static struct option long_options[] = {
++    {"mode-branching", no_argument, 0, 0},
+@@ -342,0 +345,3 @@ int main(int argc, char** argv) {
++                } else if (strcmp(long_options[option_index].name, "mode-branching") == 0) {
++                    opts.mode_branching = true;
++                    opts.alternating = true;
+diff --git a/competition/c/src/solver.c b/competition/c/src/solver.c
+index ac2a95d..77c0562 100644
+--- a/competition/c/src/solver.c
++++ b/competition/c/src/solver.c
+@@ -190,0 +191 @@ SolverOpts default_opts(void) {
++        .mode_branching = false,
+@@ -364 +365 @@ static void bump_var_activity(Solver* s, Var v, double inc) {
+-    if (s->opts.vmtf) {
++    if (solver_uses_queue(s)) {
+@@ -411 +412 @@ static void decay_var_inc(Solver* s) {
+-    if (s->opts.vmtf) return;
++    if (solver_uses_queue(s)) return;
+@@ -724 +725 @@ void solver_backtrack(Solver* s, Level level) {
+-                if (s->opts.vmtf) solver_vmtf_unassign(s,v);
++                if (s->opts.vmtf || s->opts.mode_branching) solver_vmtf_unassign(s,v);
+@@ -740 +741 @@ void solver_backtrack(Solver* s, Level level) {
+-        if (s->opts.vmtf) solver_vmtf_unassign(s, v);
++        if (s->opts.vmtf || s->opts.mode_branching) solver_vmtf_unassign(s, v);
+@@ -867,0 +869,2 @@ void solver_print_stats(const Solver* s) {
++    printf("c Mode queue decisions: %llu\n", (unsigned long long)s->stats.mode_queue_decisions);
++    printf("c Mode heap decisions: %llu\n", (unsigned long long)s->stats.mode_heap_decisions);
+@@ -1324 +1327 @@ void solver_analyze(Solver* s, CRef conflict, Lit* learnt, uint32_t* learnt_size
+-    if (s->opts.vmtf)
++    if (solver_uses_queue(s))
+@@ -1345 +1348 @@ bool solver_decide(Solver* s) {
+-    if (s->opts.vmtf) next = solver_vmtf_pick(s);
++    if (solver_uses_queue(s)) next = solver_vmtf_pick(s);
+@@ -1378,0 +1382,4 @@ bool solver_decide(Solver* s) {
++    if (s->opts.mode_branching && s->opts.alternating) {
++        if (solver_uses_queue(s)) ++s->stats.mode_queue_decisions;
++        else ++s->stats.mode_heap_decisions;
++    }
+@@ -1518 +1525 @@ Level solver_restart_level(Solver *s) {
+-    if (s->opts.vmtf) next = solver_vmtf_pick(s);
++    if (solver_uses_queue(s)) next = solver_vmtf_pick(s);
+@@ -1537 +1544 @@ Level solver_restart_level(Solver *s) {
+-        if (s->opts.vmtf) {
++        if (solver_uses_queue(s)) {
+diff --git a/competition/c/tests/check_deadlines.py b/competition/c/tests/check_deadlines.py
+index ae308ca..9c94370 100644
+--- a/competition/c/tests/check_deadlines.py
++++ b/competition/c/tests/check_deadlines.py
+@@ -56,0 +57,2 @@ def main():
++        modes += [(hard, ['--mode-branching', '--chrono', '--binary-proof']),
++                  (empty, ['--mode-branching', '--no-probing'])]
+diff --git a/competition/c/tests/test_benchmark_artifacts.py b/competition/c/tests/test_benchmark_artifacts.py
+index a144da8..dcd18df 100644
+--- a/competition/c/tests/test_benchmark_artifacts.py
++++ b/competition/c/tests/test_benchmark_artifacts.py
+@@ -1,0 +2 @@ import json
++import os
+@@ -3,0 +5 @@ import shlex
++import shutil
+@@ -53 +55 @@ class ArtifactTests(unittest.TestCase):
+-    def test_checker_success_requires_exit_zero_and_exact_marker(self):
++    def test_checker_success_requires_recognized_exit_and_exact_marker(self):
+@@ -56 +58,5 @@ class ArtifactTests(unittest.TestCase):
+-                                       (0,'s NOT VERIFIED\n',False),(0,'',False)]:
++                                       (0,'s NOT VERIFIED\n',False),(0,'',False),
++                                       (1,'c trivial UNSAT\ns VERIFIED\n',True),
++                                       (2,'c trivial UNSAT\ns VERIFIED\n',False),
++                                       (-11,'c trivial UNSAT\ns VERIFIED\n',False),
++                                       (0,'s VERIFIED\ns NOT VERIFIED\n',False)]:
+@@ -67,0 +74,13 @@ class ArtifactTests(unittest.TestCase):
++    def test_real_checker_trivial_unsat(self):
++        checker=os.environ.get('DRAT_TRIM') or shutil.which('drat-trim')
++        if not checker:self.skipTest('set DRAT_TRIM to run external checker compatibility cases')
++        inputs=['p cnf 1 1\n0\n','p cnf 1 2\n1 0\n-1 0\n',
++                'p cnf 2 3\n1 0\n-1 2 0\n-2 0\n']
++        proof=self.root/'proof'
++        for text in inputs:
++            self.input.write_text(text)
++            for data in [b'0\n',b'a\x00']:
++                proof.write_bytes(data)
++                checked=subprocess.run([checker,str(self.input),str(proof)],capture_output=True,text=True,timeout=10)
++                self.assertTrue(checker_verified(checked),(checked.returncode,checked.stdout,checked.stderr))
++
+diff --git a/competition/c/tests/validate.py b/competition/c/tests/validate.py
+index b622ffb..56b320d 100644
+--- a/competition/c/tests/validate.py
++++ b/competition/c/tests/validate.py
+@@ -48 +48,5 @@ def checker_verified(result):
+-    return result.returncode == 0 and 's VERIFIED' in result.stdout.splitlines()
++    lines = result.stdout.splitlines()
++    if 's VERIFIED' not in lines or any(line.startswith('s ') and line != 's VERIFIED' for line in lines):
++        return False
++    # Some drat-trim versions return 1 on their successful trivial-UNSAT path.
++    return result.returncode == 0 or (result.returncode == 1 and 'c trivial UNSAT' in lines)
+@@ -259,0 +264,5 @@ def main():
++    configs += [['--mode-branching'],
++                ['--mode-branching', '--chrono', '--chrono-levels', '0', '--no-probing'],
++                ['--mode-branching', '--chrono', '--congruence', '--equiv'],
++                ['--mode-branching', '--vmtf', '--binary-proof', '--reduce-interval', '1', '--dynamic-lbd', '--protect-used'],
++                ['--mode-branching', '--portfolio', '0.000000000001', '--bce', '--elim']]
+diff --git a/competition/c/tests/test_mode_branching.c b/competition/c/tests/test_mode_branching.c
+new file mode 100644
+index 0000000..760d4e4
+--- /dev/null
++++ b/competition/c/tests/test_mode_branching.c
+@@ -0,0 +1,72 @@
++#include "../include/solver.h"
++#include <assert.h>
++#include <stdio.h>
++
++static Solver *empty(unsigned n) {
++    SolverOpts o=default_opts();o.mode_branching=true;o.alternating=true;o.probing=false;
++    Solver *s=solver_new_with_opts(&o);assert(s);
++    for(unsigned v=0;v<n;++v)assert(solver_new_var(s));
++    return s;
++}
++
++static void transitions(bool chrono) {
++    Solver *s=empty(8);s->opts.chrono=chrono;
++    assert(solver_uses_queue(s));
++    assert(solver_decide(s) && var(s->trail[0].lit)==8);
++    assert(solver_decide(s) && var(s->trail[1].lit)==7);
++    assert(s->vmtf.search==7);
++    s->stable_mode=true;assert(!solver_uses_queue(s));
++    assert(solver_decide(s) && var(s->trail[2].lit)==1);
++    /* Unassigning the focused decisions while in heap mode must restore the
++       queue cursor. Otherwise the next focused choice silently skips 8. */
++    solver_backtrack(s,0);assert(s->vmtf.search==8);
++    s->stable_mode=false;
++    assert(solver_decide(s) && var(s->trail[0].lit)==8);
++    assert(s->stats.mode_queue_decisions==3 && s->stats.mode_heap_decisions==1);
++    solver_backtrack(s,0);
++    s->opts.alternating=false;
++    assert(!solver_uses_queue(s));s->opts.vmtf=true;assert(solver_uses_queue(s));
++    solver_free(s);
++}
++
++static void exclude_all(Solver *s,unsigned n) {
++    for(unsigned bits=0;bits<(1u<<n);++bits) {
++        Lit clause[11];for(unsigned v=0;v<n;++v)clause[v]=mkLit(v+1,(bits>>v)&1);
++        assert(solver_add_clause(s,clause,n));
++    }
++}
++
++static void activity(bool stable) {
++    Solver *s=empty(3);s->stable_mode=stable;s->opts.vmtf=true;s->opts.max_conflicts=1;
++    exclude_all(s,3);assert(solver_solve(s)==UNDEF && !s->error);
++    bool scored=false;for(unsigned v=1;v<=3;++v)scored|=s->vars[v].activity>0;
++    assert(scored==stable);
++    if(stable)assert(!s->vmtf.count && s->order.var_inc>s->opts.var_inc);
++    else assert(s->vmtf.stamp>s->num_vars && s->order.var_inc==s->opts.var_inc);
++    solver_free(s);
++}
++
++static void complete(unsigned mask) {
++    Solver *s=empty(13);s->opts.chrono=mask&1;s->opts.chrono_levels=0;
++    s->opts.equiv=mask&2;s->opts.reduce_interval=32;
++    s->opts.subsumption=false;
++    exclude_all(s,11);
++    Lit a[]={mkLit(12,1),mkLit(13,0)},b[]={mkLit(12,0),mkLit(13,1)};
++    assert(solver_add_clause(s,a,2) && solver_add_clause(s,b,2));
++    for(unsigned repeat=0;repeat<3;++repeat) {
++        Lit assumption=mkLit(12,0);
++        lbool result=repeat==1?solver_solve_with_assumptions(s,&assumption,1):solver_solve(s);
++        assert(result==FALSE && !s->error);
++        assert(s->stats.mode_queue_decisions && s->stats.mode_heap_decisions);
++        assert(s->stats.mode_queue_decisions+s->stats.mode_heap_decisions==s->stats.decisions);
++        assert(s->stats.deleted_clauses && s->stats.reduces);
++        assert(s->stats.equiv_variables==((mask&2) && repeat!=1?1u:0u));
++    }
++    solver_free(s);
++}
++
++int main(void) {
++    transitions(false);transitions(true);activity(false);activity(true);
++    for(unsigned mask=0;mask<4;++mask)complete(mask);
++    puts("PASS: mode-specific decisions/bumps, queue restoration during heap backtracking, and complete repeated SCC/assumption/chronological solves");
++}
+diff --git a/competition/c/tests/check_mode_branching.py b/competition/c/tests/check_mode_branching.py
+new file mode 100644
+index 0000000..04eaf03
+--- /dev/null
++++ b/competition/c/tests/check_mode_branching.py
+@@ -0,0 +1,57 @@
++#!/usr/bin/env python3
++"""Check certificates on exact formulas large enough to enter both search modes."""
++import argparse
++import hashlib
++import json
++from pathlib import Path
++import re
++import subprocess
++import tempfile
++from validate import checker_verified, cnf_text, model_valid
++
++
++def main():
++    parser=argparse.ArgumentParser(description=__doc__)
++    parser.add_argument('--solver',required=True,type=Path)
++    parser.add_argument('--checker',required=True,type=Path)
++    parser.add_argument('--output',required=True,type=Path)
++    args=parser.parse_args();solver=str(args.solver.resolve());checker=str(args.checker.resolve())
++    sha=lambda p:hashlib.sha256(Path(p).read_bytes()).hexdigest()
++    # Every eleven-variable assignment is excluded; removing the all-negative
++    # clause leaves exactly the all-true assignment on those variables.
++    full=[[(-1 if bits&(1<<v) else 1)*(v+1) for v in range(11)] for bits in range(2048)]
++    alias=[[-12,13],[12,-13]];records=[]
++    with tempfile.TemporaryDirectory(prefix='bsat-mode-proofs-') as directory:
++        root=Path(directory);inp=root/'input.cnf';proof=root/'proof.drat'
++        for sat in (False,True):
++            clauses=(full[:-1] if sat else full)+alias;inp.write_text(cnf_text(13,clauses))
++            for binary in (False,True):
++                for equiv in (False,True):
++                    options=['--mode-branching','--chrono','--chrono-levels','0','--no-probing',
++                             '--no-subsumption','--reduce-interval','32']
++                    if binary:options+=['--binary-proof']
++                    if equiv:options+=['--equiv']
++                    command=[solver,*options,'--proof',str(proof),str(inp)]
++                    run=subprocess.run(command,capture_output=True,text=True,timeout=60)
++                    assert run.returncode==(10 if sat else 20),(command,run.returncode,run.stdout,run.stderr)
++                    assert 'runtime error:' not in run.stderr and 'AddressSanitizer' not in run.stderr,run.stderr
++                    stats=dict((k.strip(),v.strip()) for k,v in re.findall(r'^c ([^:\n]+):\s*(.*)$',run.stdout,re.M))
++                    queue=int(stats['Mode queue decisions']);heap=int(stats['Mode heap decisions'])
++                    assert queue+heap==int(stats['Decisions'])
++                    checked=None
++                    if sat:assert model_valid(clauses,run.stdout)
++                    else:
++                        assert queue and heap,'UNSAT proof must exercise both modes'
++                        checked=subprocess.run([checker,str(inp),str(proof)],capture_output=True,text=True,timeout=60)
++                        assert checker_verified(checked),(checked.returncode,checked.stdout,checked.stderr)
++                    records.append(dict(sat=sat,options=options,input_sha256=sha(inp),proof_sha256=sha(proof),
++                                        proof_bytes=proof.stat().st_size,queue_decisions=queue,heap_decisions=heap,
++                                        solver_output=run.stdout,checker_returncode=checked.returncode if checked else None,
++                                        checker_output=checked.stdout if checked else None,verified=True))
++    args.output.write_text(json.dumps(dict(schema=1,script_sha256=sha(__file__),solver=solver,
++                                         solver_sha256=sha(solver),checker=checker,checker_sha256=sha(checker),
++                                         runs=records),indent=2)+'\n')
++    print('PASS: 8 exact SAT/model and UNSAT/certificate checks; every UNSAT proof exercises both modes')
++
++
++if __name__=='__main__':main()
