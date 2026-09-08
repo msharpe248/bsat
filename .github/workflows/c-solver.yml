@@ -48,7 +48,12 @@ jobs:
       - name: Unit and API regressions
         run: make -C competition/c all test embedding-test soak-test package-test application-histories query-certificate-driver parse-benchmark local-search-benchmark incremental-benchmark MODE=${{ matrix.mode }} CC=${{ matrix.compiler }}
       - name: Allocation failure regressions
-        run: make -C competition/c fault-test MODE=${{ matrix.mode }} CC=${{ matrix.compiler }}
+        run: make -C competition/c fault-test recovery-fault-test recovery-example MODE=${{ matrix.mode }} CC=${{ matrix.compiler }}
+      - name: Killed-worker and certified replay recovery
+        env:
+          BSAT_DRAT_TRIM: ${{ runner.temp }}/drat-trim
+          BSAT_CAKE_LPR: ${{ runner.temp }}/cake-lpr/cake_lpr
+        run: python3 competition/c/tests/check_recovery_supervisor.py --binary competition/c/bin/recovery_supervisor_${{ matrix.mode }} --output "$RUNNER_TEMP/recovery-supervisor.json"
       - name: Application-shaped incremental histories
         run: python3 competition/c/tests/benchmark_app_histories.py --driver competition/c/bin/application_histories_${{ matrix.mode }} --repeats 1 --output "$RUNNER_TEMP/application-histories.json"
       - name: Parse benchmark smoke test

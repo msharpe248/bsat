@@ -15,8 +15,10 @@ production readiness documentation. Commit and push each validated milestone.
 3. Certified-mode simplification: complete as an evaluated experiment. Bounded
    RUP probing validated but rejected for mixed timing and larger proof growth.
    See CERTIFIED_SIMPLIFICATION_EXPERIMENT.md; production defaults unchanged.
-4. Service recovery: in progress.
-5. Readiness consolidation: pending.
+4. Service recovery: complete. Public-ABI retained-input replay, 131 allocation
+   cutoffs, quota/cancellation boundaries and killed-child replacement with
+   independent certificates pass in release/sanitizer builds. See SERVICE_RECOVERY.md.
+5. Readiness consolidation: in progress.
 
 Timed runs are serial, without concurrent local builds/tests. Preserve negative
 results and unavailable counters; never substitute software events for PMU data.

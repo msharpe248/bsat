@@ -1,0 +1,68 @@
+{
+  "complete": true,
+  "binary_sha256": "03774ad2ce076505b44bea3d401e5cddad938402162cebef1708579415452ab5",
+  "checks": [
+    {
+      "query": 0,
+      "input_sha256": "bc9655f3fb51b9271a40406ced7abd3bbb710a5fbfa3c78c5e5e0f8d92ab8d2b",
+      "proof_sha256": "c7ff697428069fbccf654030de01fca6aba6f75d322e4d665de1f96d628460fe",
+      "verification": {
+        "input_sha256": "bc9655f3fb51b9271a40406ced7abd3bbb710a5fbfa3c78c5e5e0f8d92ab8d2b",
+        "drat_sha256": "c7ff697428069fbccf654030de01fca6aba6f75d322e4d665de1f96d628460fe",
+        "converter_sha256": "9bfc20a5fa9eb2a0ffadd2b0cfc7cdd4a20f6aa9c8d7de5b6c771160b847f630",
+        "checker_sha256": "027e767e8e5543d61671c44f7475e985b7969112e6825d51f2207bf0580cbf5c",
+        "verified": true,
+        "stages": [
+          {
+            "command": [
+              "/tmp/bsat-drat-trim",
+              "/var/folders/ts/779j13fj7_x2z167570zvv4c0000gn/T/bsat-recovery-oc5rurd5/check/input.cnf",
+              "/var/folders/ts/779j13fj7_x2z167570zvv4c0000gn/T/bsat-recovery-oc5rurd5/check/proof.drat",
+              "-L",
+              "/var/folders/ts/779j13fj7_x2z167570zvv4c0000gn/T/bsat-recovery-oc5rurd5/check/proof.lrat"
+            ],
+            "seconds": 0.0219177077524364,
+            "cpu_seconds": 0.020606999999999997,
+            "children_peak_rss_bytes": 46006272,
+            "returncode": 0,
+            "stdout": "\nc turning on binary mode checking\n\nc parsing input formula with 7 variables and 65 clauses\n\nc finished parsing, read 85 bytes from proof file\n\nc detected empty clause; start verification via backward checking\n\nc 33 of 65 clauses in core                            \n\nc 16 of 19 lemmas in core using 80 resolution steps\n\nc 0 RAT lemmas in core; 15 redundant literals in core lemmas\n\ns VERIFIED\n\nc verification time: 0.019 seconds\n",
+            "stderr": ""
+          },
+          {
+            "command": [
+              "/tmp/bsat-cake-verified-build/cake_lpr",
+              "--CML_HEAP_SIZE=512",
+              "--CML_STACK_SIZE=128",
+              "/var/folders/ts/779j13fj7_x2z167570zvv4c0000gn/T/bsat-recovery-oc5rurd5/check/input.cnf",
+              "/var/folders/ts/779j13fj7_x2z167570zvv4c0000gn/T/bsat-recovery-oc5rurd5/check/proof.lrat"
+            ],
+            "seconds": 0.0028135422617197037,
+            "cpu_seconds": 0.0017970000000000035,
+            "children_peak_rss_bytes": 46006272,
+            "returncode": 0,
+            "stdout": "s VERIFIED UNSAT\n",
+            "stderr": ""
+          }
+        ],
+        "lrat_sha256": "55bcf1162037289b6fc5aebba32053730f10ef5ac03e67b29015abb9f82d0e08",
+        "seconds": 0.025732333306223154,
+        "rss_scope": "Cumulative child-process high-water RSS, not isolated per-stage peak"
+      },
+      "verified": true
+    },
+    {
+      "query": 1,
+      "input_sha256": "cd410668d40b87eb7ad5baf7a96b8c5e387286b848f3e52a62359a84c4930d94",
+      "proof_sha256": "e0cb363e9c8349a61fbb744e9c4e829b34459e477753848d4798f3f96d9c1a07",
+      "verified": true
+    }
+  ],
+  "supervisor": {
+    "complete": true,
+    "killed_workers": 1,
+    "accepted_attempt": 1,
+    "cancelled_replays": 1,
+    "quota_recoveries": 1,
+    "queries": 2
+  }
+}

@@ -71,7 +71,7 @@ $(OBJDIR)/%.o: $(SRCDIR)/%.c | dirs
 # Test binaries (match only test_* files to avoid conflict with main solver)
 $(TEST_BINDIR)/test_%: $(TESTDIR)/test_%.c $(filter-out $(OBJDIR)/main.o,$(OBJECTS))
 	@mkdir -p $(TEST_BINDIR)
-	$(CC) $(CFLAGS) -o $@ $^ -lm
+	$(CC) $(CFLAGS) -o $@ $(filter %.c %.o,$^) -lm
 
 # Build all tests
 tests: dirs $(TEST_BINARIES)
@@ -339,3 +339,15 @@ application-histories: $(BINDIR)/application_histories_$(MODE)
 checkpoint-example: $(BINDIR)/checkpoint_service_$(MODE)
 $(BINDIR)/checkpoint_service_$(MODE): examples/checkpoint_service.c examples/checkpoint_policy.h $(filter-out $(OBJDIR)/main.o,$(OBJECTS)) | dirs
 	$(CC) $(CFLAGS) -o $@ $< $(filter-out $(OBJDIR)/main.o,$(OBJECTS)) -lm
+
+$(BINDIR)/recovery_fault_$(MODE): $(TESTDIR)/recovery_fault_driver.c examples/recoverable_service.h $(FAULT_OBJECTS) | dirs
+	$(CC) $(CFLAGS) -o $@ $< $(FAULT_OBJECTS) -lm
+recovery-fault-test: $(BINDIR)/recovery_fault_$(MODE)
+	$<
+.PHONY: recovery-fault-test
+$(TEST_BINDIR)/test_recovery_service: examples/recoverable_service.h
+
+$(BINDIR)/recovery_supervisor_$(MODE): examples/recovery_supervisor.c examples/recoverable_service.h $(filter-out $(OBJDIR)/main.o,$(OBJECTS)) | dirs
+	$(CC) $(CFLAGS) -o $@ $< $(filter-out $(OBJDIR)/main.o,$(OBJECTS)) -lm
+recovery-example: $(BINDIR)/recovery_supervisor_$(MODE)
+.PHONY: recovery-example
