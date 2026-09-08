@@ -79,9 +79,9 @@ static void limits(void) {
     }
     for (unsigned mode = 0; mode < 3; ++mode) {
         Solver *s = pigeonhole();s->opts.max_time = 0.01;
-        double start = (double)clock()/CLOCKS_PER_SEC;
+        double start = solver_cpu_time();
         assert(solver_solve_portfolio(s,mode ? 0.001 : 1) == UNDEF);
-        double elapsed = (double)clock()/CLOCKS_PER_SEC-start;
+        double elapsed = solver_cpu_time()-start;
         assert(s->interrupted && !s->error && elapsed >= 0.01 && elapsed < 0.2);
         assert(s->opts.max_time == 0.01);
         if (!mode) assert(s->portfolio_attempts == 1);
@@ -101,9 +101,9 @@ static void limits(void) {
         solver_free(s);
     }
     Solver *s = pigeonhole();s->opts.max_time = 0.03;
-    double start = (double)clock()/CLOCKS_PER_SEC;
+    double start = solver_cpu_time();
     assert(solver_solve_portfolio(s,0.02) == UNDEF && s->interrupted);
-    double elapsed = (double)clock()/CLOCKS_PER_SEC-start;
+    double elapsed = solver_cpu_time()-start;
     assert(s->portfolio_attempts == 2 && elapsed >= 0.03 && elapsed < 0.045);
     solver_free(s); // Refreshing the full deadline would take at least 0.05 s.
 }

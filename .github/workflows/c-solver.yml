@@ -41,7 +41,7 @@ jobs:
       - name: Certificate retention and checker compatibility regressions
         run: DRAT_TRIM="$RUNNER_TEMP/drat-trim" python3 competition/c/tests/test_benchmark_artifacts.py
       - name: Unit and API regressions
-        run: make -C competition/c all test parse-benchmark local-search-benchmark incremental-benchmark MODE=${{ matrix.mode }} CC=${{ matrix.compiler }}
+        run: make -C competition/c all test embedding-test parse-benchmark local-search-benchmark incremental-benchmark MODE=${{ matrix.mode }} CC=${{ matrix.compiler }}
       - name: Allocation failure regressions
         run: make -C competition/c fault-test MODE=${{ matrix.mode }} CC=${{ matrix.compiler }}
       - name: Parse benchmark smoke test

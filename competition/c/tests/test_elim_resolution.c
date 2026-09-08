@@ -31,7 +31,7 @@ static void expired_during_pair(void) {
     assert(solver_add_clause(s,clause,n));clause[0]=neg(clause[0]);
     assert(solver_add_clause(s,clause,n));free(clause);
     elim_build_occs(s);assert(s->elim->occs_complete);
-    s->opts.max_time=0.001;s->stats.start_time=(double)clock()/CLOCKS_PER_SEC-1.0;
+    s->opts.max_time=0.001;s->stats.start_time=solver_cpu_time()-1.0;
     s->clock_initialized=true;s->clock_polls=0;
     s->clock_work=s->work;s->clock_minimize=s->stats.minimize_inspections;
     uint64_t before=s->work,clocks=s->stats.clock_checks;

@@ -8,7 +8,7 @@ static void scheduling(void) {
     for (unsigned i = 0; i < 256; ++i) assert(!solver_budget_exhausted(s));
     assert(s->stats.clock_checks == 0); // No clock reads without a CPU limit.
     s->opts.max_time = 1000000;
-    s->stats.start_time = (double)clock()/CLOCKS_PER_SEC;
+    s->stats.start_time = solver_cpu_time();
     assert(!solver_budget_exhausted(s) && s->stats.clock_checks == 1);
     for (unsigned i = 0; i < 127; ++i) assert(!solver_budget_exhausted(s));
     assert(s->stats.clock_checks == 1);
@@ -32,7 +32,7 @@ static void scheduling(void) {
 static void expiration(void) {
     for (unsigned mode = 0; mode < 3; ++mode) {
         Solver *s = solver_new();assert(s);
-        s->opts.max_time = 1;s->stats.start_time = (double)clock()/CLOCKS_PER_SEC;
+        s->opts.max_time = 1;s->stats.start_time = solver_cpu_time();
         assert(!solver_budget_exhausted(s));
         s->stats.start_time -= 2; // Expired since the cached reading.
         if (mode == 0) {
@@ -55,7 +55,7 @@ static void empty_watch_search(bool rephase) {
     // Early interruption is valid; completing every decision would miss polling.
     assert(s->stats.decisions < s->num_vars);
     assert(s->work == 0 && s->stats.clock_checks > 1);
-    double elapsed = (double)clock()/CLOCKS_PER_SEC - s->stats.start_time;
+    double elapsed = solver_cpu_time() - s->stats.start_time;
     assert(elapsed < 1); // Broad guard against lost deadline polling.
     s->opts.max_time = 0;s->opts.rephase = false;
     assert(solver_solve(s) == TRUE && solver_check_model(s));

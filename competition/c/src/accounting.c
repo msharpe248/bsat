@@ -6,11 +6,11 @@
    caller. Timings are intrusive diagnostics, never additive benchmark scores. */
 double solver_account_begin(const Solver *s) {
     if (!s || !s->opts.accounting) return -1;
-    return (double)clock()/CLOCKS_PER_SEC;
+    return solver_cpu_time();
 }
 void solver_account_end(Solver *s, AccountPhase phase, double start) {
     if (start < 0) return;
-    double end=(double)clock()/CLOCKS_PER_SEC;
+    double end=solver_cpu_time();
     s->accounting.seconds[phase] += end-start;
     s->accounting.calls[phase]++;
 }

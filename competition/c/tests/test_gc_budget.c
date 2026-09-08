@@ -46,7 +46,7 @@ int main(void) {
         free(copy);solver_free(s);
     }
     Solver *s=fixture(65);Arena *old=s->arena;
-    s->opts.max_time=0.001;s->stats.start_time=(double)clock()/CLOCKS_PER_SEC-1;
+    s->opts.max_time=0.001;s->stats.start_time=solver_cpu_time()-1;
     s->clock_initialized=true;s->clock_work=s->work;s->clock_polls=0;
     uint64_t clocks=s->stats.clock_checks;
     solver_collect_garbage(s);

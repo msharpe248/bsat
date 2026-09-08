@@ -124,10 +124,9 @@ typedef struct SolverOpts {
 // Get default options
 SolverOpts default_opts(void);
 
-// Convenience macros for verbose/debug output (now use global flags)
-// Note: 's' parameter maintained for backward compatibility but not used
-#define IS_VERBOSE(s) (g_verbose)
-#define IS_DEBUG(s) (g_debug)
+// Diagnostics belong to each instance.
+#define IS_VERBOSE(s) ((s)->opts.verbose)
+#define IS_DEBUG(s) ((s)->opts.debug)
 
 /*********************************************************************
  * Variable Information
@@ -295,6 +294,8 @@ typedef struct Solver {
 
     // Options
     SolverOpts opts;
+    int (*terminate)(void *);
+    void *terminate_state;
 
     // Variable Elimination (BVE)
     ElimState* elim;          // Elimination state (NULL if not using BVE)
@@ -404,6 +405,9 @@ void solver_print_stats(const Solver* s);
  * Internal Functions (for testing/debugging)
  *********************************************************************/
 
+/* Callbacks execute synchronously on the solving thread; never reenter. */
+void solver_set_terminate(Solver *s, void *state, int (*terminate)(void *));
+double solver_cpu_time(void);
 bool solver_budget_exhausted(Solver* s);
 /* Fresh CPU reading for callers that already throttle expensive checkpoints. */
 bool solver_budget_exhausted_now(Solver* s);

@@ -162,13 +162,13 @@ static void deadline_polls(void) {
     SolverOpts o = default_opts();o.vmtf = true;o.max_time = 0.001;
     Solver *s = solver_new_with_opts(&o);assert(s);
     for (Var v = 1; v <= 1000; ++v) assert(solver_new_var(s) == v);
-    s->stats.start_time = (double)clock()/CLOCKS_PER_SEC - 1;
+    s->stats.start_time = solver_cpu_time() - 1;
     assert(solver_vmtf_pick(s) == INVALID_VAR && s->interrupted && !s->error);
     o.max_time = s->opts.max_time = 0;s->interrupted = false;
     assert(solver_vmtf_pick(s) == 1000);
     for (Var v = 1; v <= 1000; ++v) s->values[v] = TRUE;
     s->opts.max_time = 0.001;s->clock_initialized = false;
-    s->stats.start_time = (double)clock()/CLOCKS_PER_SEC - 1;
+    s->stats.start_time = solver_cpu_time() - 1;
     assert(solver_vmtf_pick(s) == INVALID_VAR && s->interrupted && !s->error);
     solver_free(s);
     s = solver_new_with_opts(&o);assert(s);

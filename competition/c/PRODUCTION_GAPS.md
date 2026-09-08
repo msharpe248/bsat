@@ -14,8 +14,9 @@ stateful/certificate assurance. Commit and push each validated milestone.
 4. Incremental reuse: opt-in conservative fast path implemented; incompatible
    transformations and interrupted/conditional-UNSAT states rebuild. See
    `INCREMENTAL_REUSE.md` for stateful, allocation and timing evidence.
-5. Embedding: pending per-instance diagnostics, CLI-owned signals, cancellation,
-   independent instances, and an opaque versioned interface.
+5. Embedding: opaque ABI-v1 shared library, independent instances, per-instance
+   diagnostics, CLI-owned signals and cooperative cancellation implemented.
+   See `API_CONTRACT.md` and `EMBEDDING.md`.
 6. Assurance: pending larger stateful histories, resource/soak tests, additional
    industrial UNSAT checks and end-to-end verification cost measurements.
 

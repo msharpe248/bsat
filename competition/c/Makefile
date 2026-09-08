@@ -99,6 +99,7 @@ pgo: pgo-generate pgo-train pgo-merge pgo-use
 pgo-generate: clean dirs
 	@echo "Building with profile instrumentation..."
 	$(CC) $(CFLAGS) -O3 -march=native -fprofile-instr-generate -c -o $(OBJDIR)/accounting.o $(SRCDIR)/accounting.c
+	$(CC) $(CFLAGS) -O3 -march=native -fprofile-instr-generate -c -o $(OBJDIR)/bsat.o $(SRCDIR)/bsat.c
 	$(CC) $(CFLAGS) -O3 -march=native -fprofile-instr-generate -c -o $(OBJDIR)/arena.o $(SRCDIR)/arena.c
 	$(CC) $(CFLAGS) -O3 -march=native -fprofile-instr-generate -c -o $(OBJDIR)/dimacs.o $(SRCDIR)/dimacs.c
 	$(CC) $(CFLAGS) -O3 -march=native -fprofile-instr-generate -c -o $(OBJDIR)/congruence.o $(SRCDIR)/congruence.c
@@ -133,6 +134,7 @@ pgo-merge:
 pgo-use: dirs
 	@echo "Building with profile optimization..."
 	$(CC) $(CFLAGS) -O3 -march=native -flto -fprofile-instr-use=pgo_data/default.profdata -c -o $(OBJDIR)/accounting.o $(SRCDIR)/accounting.c
+	$(CC) $(CFLAGS) -O3 -march=native -flto -fprofile-instr-use=pgo_data/default.profdata -c -o $(OBJDIR)/bsat.o $(SRCDIR)/bsat.c
 	$(CC) $(CFLAGS) -O3 -march=native -flto -fprofile-instr-use=pgo_data/default.profdata -c -o $(OBJDIR)/arena.o $(SRCDIR)/arena.c
 	$(CC) $(CFLAGS) -O3 -march=native -flto -fprofile-instr-use=pgo_data/default.profdata -c -o $(OBJDIR)/dimacs.o $(SRCDIR)/dimacs.c
 	$(CC) $(CFLAGS) -O3 -march=native -flto -fprofile-instr-use=pgo_data/default.profdata -c -o $(OBJDIR)/congruence.o $(SRCDIR)/congruence.c
@@ -251,3 +253,25 @@ $(BINDIR)/incremental_benchmark_$(MODE): $(TESTDIR)/incremental_driver.c $(filte
 	$(CC) $(CFLAGS) -o $@ $^ -lm
 incremental-benchmark: $(BINDIR)/incremental_benchmark_$(MODE)
 .PHONY: incremental-benchmark
+
+# Opaque ABI only: hide internal Solver symbols from the shared library.
+LIB_OBJECTS = $(patsubst $(SRCDIR)/%.c,build/lib-$(MODE)/%.o,$(filter-out $(SRCDIR)/main.c,$(SOURCES)))
+ifeq ($(shell uname -s),Darwin)
+LIBRARY = $(BINDIR)/libbsat_$(MODE).dylib
+SHARED_FLAGS = -dynamiclib -Wl,-install_name,@rpath/libbsat_$(MODE).dylib
+else
+LIBRARY = $(BINDIR)/libbsat_$(MODE).so
+SHARED_FLAGS = -shared -Wl,-soname,libbsat_$(MODE).so
+endif
+build/lib-$(MODE)/%.o: $(SRCDIR)/%.c
+	@mkdir -p $(@D)
+	$(CC) $(CFLAGS) -fPIC -fvisibility=hidden -MMD -MP -c -o $@ $<
+$(LIBRARY): $(LIB_OBJECTS) | dirs
+	$(CC) $(CFLAGS) $(SHARED_FLAGS) -o $@ $^ -lm
+$(BINDIR)/embedding_client_$(MODE): $(TESTDIR)/embedding_client.c $(LIBRARY)
+	$(CC) $(CFLAGS) -pthread -o $@ $< -L$(BINDIR) -lbsat_$(MODE) -Wl,-rpath,$(abspath $(BINDIR))
+embedding-test: $(BINDIR)/embedding_client_$(MODE)
+	$<
+shared: $(LIBRARY)
+.PHONY: shared embedding-test
+-include $(LIB_OBJECTS:.o=.d)

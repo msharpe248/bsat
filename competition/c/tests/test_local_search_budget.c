@@ -21,7 +21,7 @@ int main(void) {
     assert(s->stats.clock_checks==0);
     /* An already-throttled caller must not reuse a stale cached CPU reading. */
     s->opts.max_time=1;
-    s->stats.start_time=(double)clock()/CLOCKS_PER_SEC;
+    s->stats.start_time=solver_cpu_time();
     assert(!solver_budget_exhausted(s));
     assert(s->stats.clock_checks==1);
     s->stats.start_time-=2;
@@ -37,7 +37,7 @@ int main(void) {
     assert(!local_search_run(s,ls,1,0.5));
     assert(ls->flips==1);
     s->opts.max_time=3600;
-    s->stats.start_time=(double)clock()/CLOCKS_PER_SEC;
+    s->stats.start_time=solver_cpu_time();
     uint64_t checks=s->stats.clock_checks;
     ls->flips=0;
     assert(!local_search_run(s,ls,100000,0.5));

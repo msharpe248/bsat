@@ -150,7 +150,7 @@ static void legacy_limits(void) {
     assert(s->stats.minimize_inspections==before);clean(s);
     /* A deadline reached inside the recursive traversal must unwind safely. */
     s->interrupted=false;s->opts.max_time=0.001;
-    s->stats.start_time=(double)clock()/CLOCKS_PER_SEC-1.0;
+    s->stats.start_time=solver_cpu_time()-1.0;
     s->stats.minimize_inspections=1000; // Check after descending through several reasons.
     assert(!solver_minimize_clause(s,source,&n) && n==4 && s->interrupted);
     assert(s->stats.minimize_inspections==1024);clean(s);solver_free(s);

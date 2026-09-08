@@ -7,10 +7,8 @@
 #include <string.h>
 #include <stdio.h>
 #include <math.h>
-#include <signal.h>
 
-bool g_verbose = false;
-bool g_debug = false;
+
 static bool solver_rebuild(Solver *s);
 static bool solver_prepare_next(Solver *s, double start);
 
@@ -28,50 +26,6 @@ static bool solver_prepare_next(Solver *s, double start);
 #ifndef VAR_GROWTH_FACTOR
 #define VAR_GROWTH_FACTOR 2
 #endif
-
-/*********************************************************************
- * Signal Handling for Progress Monitoring
- *********************************************************************/
-
-// Global flag to request statistics dump (set by signal handler)
-static volatile sig_atomic_t print_stats_requested = 0;
-
-// Signal handler for SIGUSR1 - request statistics dump
-static void sigusr1_handler(int signum) {
-    (void)signum;  // Unused parameter
-    print_stats_requested = 1;
-}
-
-// Install signal handler
-static void install_signal_handlers(void) {
-    struct sigaction sa;
-    sa.sa_handler = sigusr1_handler;
-    sigemptyset(&sa.sa_mask);
-    sa.sa_flags = 0;
-    sigaction(SIGUSR1, &sa, NULL);
-}
-
-// Print progress statistics (safe to call from main loop)
-static void print_progress_stats(const Solver* s) {
-    double elapsed = (double)clock() / CLOCKS_PER_SEC - s->stats.start_time;
-    fprintf(stderr, "\n");
-    fprintf(stderr, "c ========== Progress Update ==========\n");
-    fprintf(stderr, "c Elapsed time     : %.3f s\n", elapsed);
-    fprintf(stderr, "c Decisions        : %llu\n", (unsigned long long)s->stats.decisions);
-    fprintf(stderr, "c Propagations     : %llu\n", (unsigned long long)s->stats.propagations);
-    fprintf(stderr, "c Conflicts        : %llu\n", (unsigned long long)s->stats.conflicts);
-    fprintf(stderr, "c Restarts         : %llu\n", (unsigned long long)s->stats.restarts);
-    fprintf(stderr, "c Learned clauses  : %llu\n", (unsigned long long)s->stats.learned_clauses);
-    fprintf(stderr, "c Decision level   : %u\n", s->decision_level);
-    fprintf(stderr, "c Trail size       : %u\n", s->trail_size);
-    if (elapsed > 0) {
-        fprintf(stderr, "c Conflicts/sec    : %.0f\n", s->stats.conflicts / elapsed);
-        fprintf(stderr, "c Decisions/sec    : %.0f\n", s->stats.decisions / elapsed);
-    }
-    fprintf(stderr, "c ======================================\n");
-    fprintf(stderr, "\n");
-    fflush(stderr);
-}
 
 /*********************************************************************
  * DRAT Proof Logging
@@ -156,13 +110,15 @@ static void check_cpu_deadline(Solver *s) {
     s->clock_polls = 0;
     s->clock_work = s->work;
     s->clock_minimize = s->stats.minimize_inspections;
-    if ((double)clock()/CLOCKS_PER_SEC - s->stats.start_time >= s->opts.max_time)
-        s->interrupted = true;
+    double now=solver_cpu_time();
+    if (!isfinite(now)) s->error=true;
+    else if (now - s->stats.start_time >= s->opts.max_time) s->interrupted = true;
 }
 
 static bool budget_exhausted(Solver *s, bool force_clock) {
     if (s->watches->failed) s->error = true;
     if (s->error || s->interrupted) return true;
+    if (s->terminate && s->terminate(s->terminate_state)) { s->interrupted=true;return true; }
     /* Avoid a system clock read at every cheap decision/preprocessing poll.
        Long inner loops already poll every 1024 inspections: either work counter
        reaching that interval must force a read, without a second throttle. */
@@ -276,14 +232,6 @@ SolverOpts default_opts(void) {
         .quiet = false,
         .stats = true
     };
-
-    // Override from environment variables
-    if (getenv("BSAT_VERBOSE")) {
-        opts.verbose = true;
-    }
-    if (getenv("DEBUG_CDCL")) {
-        opts.debug = true;
-    }
 
     return opts;
 }
@@ -463,6 +411,7 @@ Solver* solver_new_with_opts(const SolverOpts* opts) {
     // Initialize core structures
     s->arena = arena_init(0);
     if (!s->arena) goto error;
+    s->arena->verbose=opts->verbose;
 
     s->watches = watch_init(0);  // Will grow as variables are added
     if (!s->watches) goto error;
@@ -493,7 +442,8 @@ Solver* solver_new_with_opts(const SolverOpts* opts) {
     }
 
     // Set start time
-    s->stats.start_time = (double)clock() / CLOCKS_PER_SEC;
+    s->stats.start_time = solver_cpu_time();
+    if(!isfinite(s->stats.start_time)) goto error;
 
     // Initialize BVE state (will be allocated on demand)
     s->elim = NULL;
@@ -859,7 +809,7 @@ lbool solver_model_value(const Solver* s, Var v) {
  *********************************************************************/
 
 void solver_print_stats(const Solver* s) {
-    double cpu_time = (double)clock() / CLOCKS_PER_SEC - s->stats.start_time;
+    double cpu_time = solver_cpu_time() - s->stats.start_time;
 
     printf("c\n");
     printf("c ========== Statistics ==========\n");
@@ -1677,6 +1627,7 @@ static void solver_collect_garbage_account_impl(Solver *s) {
     Arena *old = s->arena;
     Arena *fresh = arena_init(MAX((size_t)1024, old->size - old->wasted + 1));
     if (!fresh) return;
+    fresh->verbose=s->opts.verbose;
     for (size_t at = 1; at < old->size;) {
         if (solver_budget_exhausted(s)) { arena_free(fresh); return; }
         uint32_t words = sizeof(ClauseHeader)/sizeof(uint32_t) + CLAUSE_SIZE(old, at);
@@ -2055,6 +2006,7 @@ static bool solver_rebuild_timed(Solver *s, double start_time, double max_time) 
     opts.proof_path = NULL;
     Solver *fresh = solver_new_with_opts(&opts);
     if (!fresh) { s->error = true; return false; }
+    fresh->terminate=s->terminate;fresh->terminate_state=s->terminate_state;
     fresh->opts.proof_path = path;
     fresh->stats.start_time = start_time;
     fresh->opts.max_time = max_time;
@@ -2114,7 +2066,7 @@ static bool solver_prepare_next(Solver *s, double start) {
     if (!reuse) return start<0 ? solver_rebuild(s) : solver_rebuild_timed(s,start,s->opts.max_time);
     bool unsat=s->result==FALSE;
     memset(&s->stats,0,sizeof s->stats);
-    s->stats.start_time=start<0 ? (double)clock()/CLOCKS_PER_SEC : start;
+    s->stats.start_time=start<0 ? solver_cpu_time() : start;
     s->work_limit=0;s->clock_initialized=false;s->clock_polls=0;
     solver_backtrack(s,0);
     s->qhead=0; /* Replay root assignments against retained/new watches. */
@@ -2221,7 +2173,6 @@ static lbool solve_internal_account_impl(Solver *s, const Lit *assumps, uint32_t
     s->reduce_span = s->opts.reduce_interval;
     s->reduce_limit = s->stats.conflicts + MIN(s->reduce_span, UINT64_MAX-s->stats.conflicts);
     for (;;) {
-        if (print_stats_requested) { print_stats_requested=0; print_progress_stats(s); }
         if (solver_budget_exhausted(s)) break;
         CRef conflict=solver_propagate(s);
         if (s->error || s->interrupted) break;
@@ -2328,7 +2279,8 @@ static lbool solver_solve_at(Solver *s, const Lit *assumps, uint32_t n_assumps, 
     if (!s) return UNDEF;
     if (n_assumps && !assumps) { s->error=true; s->result=UNDEF; return UNDEF; }
     if (s->error || s->watches->failed) { s->error=true; s->result=UNDEF; return UNDEF; }
-    if (start_time<0) start_time=(double)clock()/CLOCKS_PER_SEC;
+    if (start_time<0) start_time=solver_cpu_time();
+    if (!isfinite(start_time)) {s->error=true;s->result=UNDEF;return UNDEF;}
     if (s->has_solved && !solver_prepare_next(s, start_time)) return UNDEF;
     for (uint32_t i=0;i<n_assumps;++i)
         if (!var(assumps[i]) || var(assumps[i])>s->num_vars) {
@@ -2348,11 +2300,10 @@ static lbool solver_solve_at(Solver *s, const Lit *assumps, uint32_t n_assumps, 
         if (!p) { s->error=true;return UNDEF; }
         free(s->level_seen);s->level_seen=p;s->levels_capacity=levels;
     }
-    s->stats.start_time=start_time < 0 ? (double)clock()/CLOCKS_PER_SEC : start_time;
+    s->stats.start_time=start_time < 0 ? solver_cpu_time() : start_time;
     s->work_limit=0;s->interrupted=false;
     s->clock_initialized=false;s->clock_polls=0;
     s->random_state=s->opts.seed;
-    install_signal_handlers();
     lbool result=solve_internal(s,assumps,n_assumps);
     s->has_solved=true;s->last_assumptions=n_assumps;
     if (result==TRUE) {
@@ -2381,6 +2332,7 @@ static lbool solver_solve_at(Solver *s, const Lit *assumps, uint32_t n_assumps, 
     /* Cached polls must not permit a completed result after the CPU deadline,
        including time spent reconstructing/checking models or flushing proofs. */
     check_cpu_deadline(s);
+    if (s->terminate && s->terminate(s->terminate_state)) s->interrupted=true;
     if (s->error || s->interrupted) result=UNDEF;
     s->result=result;
     return result;
@@ -2394,7 +2346,7 @@ lbool solver_solve_portfolio(Solver *s, double focused_seconds) {
     if (!s || !isfinite(focused_seconds) || focused_seconds <= 0 || s->error ||
         (s->proof_file && !s->opts.proof_path)) return UNDEF;
     SolverOpts saved = s->opts;
-    double start = (double)clock()/CLOCKS_PER_SEC;
+    double start = solver_cpu_time();
     lbool result = UNDEF;
     unsigned attempts = 0;
     uint64_t first_conflicts = 0, first_decisions = 0;
@@ -2407,7 +2359,7 @@ lbool solver_solve_portfolio(Solver *s, double focused_seconds) {
     if (result != UNDEF || s->error || !s->interrupted) goto done;
     /* Only expiration of the private first slice authorizes a second attempt.
        Global conflict/decision limits must never be refreshed by rebuilding. */
-    double elapsed = (double)clock()/CLOCKS_PER_SEC - start;
+    double elapsed = solver_cpu_time() - start;
     if (elapsed < focused_seconds || (saved.max_time > 0 && elapsed >= saved.max_time) ||
         (saved.max_conflicts && s->stats.conflicts >= saved.max_conflicts) ||
         (saved.max_decisions && s->stats.decisions >= saved.max_decisions)) goto done;
@@ -2493,4 +2445,14 @@ static lbool solve_internal(Solver *s, const Lit *assumps, uint32_t n_assumps) {
     lbool result = solve_internal_account_impl(s, assumps, n_assumps);
     solver_account_end(s, ACCOUNT_SEARCH, started);
     return result;
+}
+
+void solver_set_terminate(Solver *s, void *state, int (*terminate)(void *)) {
+    if(s) {s->terminate=terminate;s->terminate_state=state;}
+}
+
+double solver_cpu_time(void) {
+    struct timespec ts;
+    if (clock_gettime(CLOCK_THREAD_CPUTIME_ID,&ts)) return NAN;
+    return (double)ts.tv_sec+1e-9*(double)ts.tv_nsec;
 }

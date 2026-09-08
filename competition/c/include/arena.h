@@ -17,6 +17,7 @@
  *********************************************************************/
 
 typedef struct Arena {
+    bool verbose;
     uint32_t* memory;      // Contiguous memory block
     size_t    size;        // Current size in uint32_t units
     size_t    capacity;    // Total capacity in uint32_t units

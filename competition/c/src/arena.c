@@ -66,6 +66,7 @@ Arena* arena_init(size_t initial_capacity) {
     arena->capacity = initial_capacity;
     arena->wasted = 0;
     arena->num_growths = 0;
+    arena->verbose = false;
     arena->peak_size = 1;
 
     // Initialize first word to prevent CRef 0 from being valid
@@ -108,8 +109,8 @@ static bool arena_grow(Arena* arena, size_t needed) {
     arena->capacity = new_capacity;
     arena->num_growths++;
 
-    // Log growth if verbose (use global flag)
-    if (g_verbose) {
+    // Per-arena diagnostics
+    if (arena->verbose) {
         fprintf(stderr, "c [Arena] Grew from %zu to %zu words (%.1f KB -> %.1f KB) [growth #%u]\n",
                 old_capacity, new_capacity,
                 old_capacity * sizeof(uint32_t) / 1024.0,
@@ -152,7 +153,7 @@ bool arena_reserve(Arena* arena, size_t min_capacity) {
     arena->capacity = new_capacity;
 
     // Log reservation if verbose
-    if (g_verbose) {
+    if (arena->verbose) {
         fprintf(stderr, "c [Arena] Reserved %zu words (%.1f MB) based on problem size\n",
                 new_capacity, new_capacity * sizeof(uint32_t) / (1024.0 * 1024.0));
         fprintf(stderr, "c [Arena] Growth from %zu to %zu words (%.1f KB -> %.1f KB)\n",

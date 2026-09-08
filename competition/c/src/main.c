@@ -13,6 +13,56 @@
 #include <errno.h>
 #include <math.h>
 #include <sys/stat.h>
+#include <signal.h>
+
+/*********************************************************************
+ * Signal Handling for Progress Monitoring
+ *********************************************************************/
+
+// Global flag to request statistics dump (set by signal handler)
+static volatile sig_atomic_t print_stats_requested = 0;
+
+// Signal handler for SIGUSR1 - request statistics dump
+static void sigusr1_handler(int signum) {
+    (void)signum;  // Unused parameter
+    print_stats_requested = 1;
+}
+
+// Install signal handler
+static void install_signal_handlers(void) {
+    struct sigaction sa;
+    sa.sa_handler = sigusr1_handler;
+    sigemptyset(&sa.sa_mask);
+    sa.sa_flags = 0;
+    sigaction(SIGUSR1, &sa, NULL);
+}
+
+// Print progress statistics (safe to call from main loop)
+static void print_progress_stats(const Solver* s) {
+    double elapsed = solver_cpu_time() - s->stats.start_time;
+    fprintf(stderr, "\n");
+    fprintf(stderr, "c ========== Progress Update ==========\n");
+    fprintf(stderr, "c Elapsed time     : %.3f s\n", elapsed);
+    fprintf(stderr, "c Decisions        : %llu\n", (unsigned long long)s->stats.decisions);
+    fprintf(stderr, "c Propagations     : %llu\n", (unsigned long long)s->stats.propagations);
+    fprintf(stderr, "c Conflicts        : %llu\n", (unsigned long long)s->stats.conflicts);
+    fprintf(stderr, "c Restarts         : %llu\n", (unsigned long long)s->stats.restarts);
+    fprintf(stderr, "c Learned clauses  : %llu\n", (unsigned long long)s->stats.learned_clauses);
+    fprintf(stderr, "c Decision level   : %u\n", s->decision_level);
+    fprintf(stderr, "c Trail size       : %u\n", s->trail_size);
+    if (elapsed > 0) {
+        fprintf(stderr, "c Conflicts/sec    : %.0f\n", s->stats.conflicts / elapsed);
+        fprintf(stderr, "c Decisions/sec    : %.0f\n", s->stats.decisions / elapsed);
+    }
+    fprintf(stderr, "c ======================================\n");
+    fprintf(stderr, "\n");
+    fflush(stderr);
+}
+
+static int cli_progress(void *state) {
+    if(print_stats_requested) {print_stats_requested=0;print_progress_stats(state);}
+    return 0;
+}
 
 /*********************************************************************
  * Usage Information
@@ -217,6 +267,15 @@ static struct option long_options[] = {
 int main(int argc, char** argv) {
     // Default options
     SolverOpts opts = default_opts();
+    // Override from environment variables
+    if (getenv("BSAT_VERBOSE")) {
+        opts.verbose = true;
+    }
+    if (getenv("DEBUG_CDCL")) {
+        opts.debug = true;
+    }
+
+
     double portfolio_seconds = 0;
 
     // Parse command line options
@@ -441,9 +500,6 @@ int main(int argc, char** argv) {
         input_stat.st_dev==proof_stat.st_dev && input_stat.st_ino==proof_stat.st_ino) {
         fprintf(stderr,"Error: input and proof must be different files\n");return 1;
     }
-    // Initialize global output control flags from options
-    g_verbose = opts.verbose;
-    g_debug = opts.debug;
 
     // Print header
     if (!opts.quiet) {
@@ -478,6 +534,9 @@ int main(int argc, char** argv) {
         solver_print_accounting(solver);
     }
 
+    // The executable owns its progress signal; the library never installs it.
+    install_signal_handlers();
+    solver_set_terminate(solver,solver,cli_progress);
     // Solve
     double start_time = (double)clock() / CLOCKS_PER_SEC;
     lbool result = portfolio_seconds ? solver_solve_portfolio(solver, portfolio_seconds) : solver_solve(solver);

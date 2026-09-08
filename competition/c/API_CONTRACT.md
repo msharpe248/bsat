@@ -1,8 +1,20 @@
 # Supported C embedding contract
 
-BSAT currently supports a synchronous, single-threaded C11/POSIX API. This
-contract defines the supported boundary; it does not claim ABI stability,
-concurrent embedding. Learned-clause retention is an opt-in capability described below.
+The supported public embedding interface is the opaque ABI-v1 `include/bsat.h`.
+`make shared embedding-test` builds the shared library and an external client.
+The internal `solver.h` remains available for development, but its exposed
+structures are not ABI-stable. Linux and macOS C11/POSIX are supported targets.
+
+Public callers pass `BSAT_ABI_VERSION` and supported flags to `bsat_create`;
+unknown versions/flags fail construction. Signed DIMACS arrays are copied during
+calls, variables grow automatically, and zero is invalid inside a literal array.
+Empty clauses are accepted input. Assumptions must reference existing variables.
+Set limits before input/solving. Only the
+latest SAT result permits model reads; mutation/solve invalidates that lifetime.
+Errors poison a handle. Destroy it exactly once; destroying NULL is valid.
+The public facade does not expose proof paths or mutable solver options.
+
+The following details additionally describe the internal C interface.
 
 ## Ownership and construction
 
@@ -71,12 +83,21 @@ solve return; durable storage across power loss is the application's responsibil
 
 ## Threads, signals and cancellation
 
-Serialize all BSAT calls, including calls on different instances. The library
-uses process-wide diagnostic flags and installs a SIGUSR1 progress handler when
-solving; embedding applications must reserve that signal. It does not restore
-the previous handler. There is no supported asynchronous cancellation callback
-or concurrent access to a Solver. Do not change its fields from another thread
-or a signal handler. Use configured synchronous budgets or process isolation.
+Calls on one handle must be serialized. Distinct instances may solve on different
+threads; diagnostics and search state belong to the instance. Environment-based
+diagnostic defaults and SIGUSR1 handling belong only to the executable. The core
+never installs or changes signal handlers. CPU deadlines and phase accounting use
+`CLOCK_THREAD_CPUTIME_ID`, so another solving thread does not spend this call's
+CPU budget. Wall limits still require an application deadline/cancellation policy.
+
+`bsat_set_terminate` (internal: `solver_set_terminate`) installs a borrowed state
+pointer and callback. Polls run synchronously at existing bounded-work checks and
+before accepting a result. Nonzero produces UNKNOWN without poisoning the handle.
+The callback survives rebuilding/equivalence replacement. Disable/reset the
+request before retrying. It may inspect an application-owned atomic flag updated
+by another thread; never reenter/mutate the handle from a callback, other thread
+or signal handler. Polling is cooperative: allocation, I/O, model reconstruction
+and other operations between polls are not hard real-time cancellation points.
 
 The CLI retains normal POSIX SIGINT/SIGTERM termination. A killed process may
 leave a partial proof and no status line; consumers must never treat that as a
@@ -94,6 +115,8 @@ checks API sequences against a small independent truth-table oracle.
 `check_process_failures.py` checks actual process termination and exhausted proof
 files. These tests run in release and sanitizer CI builds.
 
-Concurrent embedding, callbacks, stable ABI and conditional proofs require
-separate designs and tests before they can be advertised. Applications
-requiring those capabilities cannot yet use this API as their production contract.
+`embedding_client.c` dynamically links using only the public header, exercises
+independent concurrent instances, application-owned signals and cancellation/retry.
+`test_cancellation.c` covers callback preservation through rebuild and equivalence
+replacement, plus cancellation of cached UNSAT. Conditional proof calls on the
+internal assumptions API remain unsupported; use an explicitly augmented input.

@@ -142,6 +142,8 @@ uint32_t solver_substitute_equivalences(Solver *s) {
     opts.proof_path = NULL; // Never reopen/truncate the caller's proof stream.
     fresh = solver_new_with_opts(&opts);
     if (!fresh) { s->error = true; goto done; }
+    fresh->terminate=s->terminate;fresh->terminate_state=s->terminate_state;
+    fresh->reused_solves=s->reused_solves;
     for (Var v = 1; v <= s->num_vars; ++v) {
         if (!tick(s)) goto done;
         if (!solver_new_var(fresh)) { s->error = true; goto done; }

@@ -41,3 +41,7 @@ not a performance score. On the largest at-least-two-sol input:
 The temporary structures and reconstruction overlap are concrete targets for
 memory work. Watch storage is the largest retained category in this sample.
 Actual Linux PMU attribution still needs a target host.
+
+After the embedding milestone, clocks use `CLOCK_THREAD_CPUTIME_ID`. Earlier
+recorded single-thread measurements used process CPU; artifacts retain their
+original provenance.

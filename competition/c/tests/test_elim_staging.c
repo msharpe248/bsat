@@ -19,7 +19,7 @@ static void unchanged(Solver *s) {
 }
 static void pure_deadline(void) {
     Solver *s=pure(5000);
-    s->opts.max_time=0.001;s->stats.start_time=(double)clock()/CLOCKS_PER_SEC-1.0;
+    s->opts.max_time=0.001;s->stats.start_time=solver_cpu_time()-1.0;
     s->clock_initialized=true;s->clock_polls=0;
     s->clock_work=s->work;s->clock_minimize=s->stats.minimize_inspections;
     uint64_t before=s->work,clocks=s->stats.clock_checks;

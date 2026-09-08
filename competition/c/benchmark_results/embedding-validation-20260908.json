@@ -1,0 +1,78 @@
+{
+  "unit_executables_per_build": 52,
+  "allocation_failures_per_build": 2016,
+  "shared_client_queries_per_build": 12000,
+  "deadline_cases": 69,
+  "process_failure_cases": 6,
+  "long_search_cases": 24,
+  "logs": {
+    "/tmp/bsat-embedding-release.log": {
+      "sha256": "b2fc620dd48746c41a82e503ca503e0284e28564b2125d7842e09944240c4327",
+      "tail": [
+        "Running bin/tests/release/test_watch_lookahead...",
+        "PASS: 459 mixed-watch boundary, unit and conflict cases",
+        "All tests passed!"
+      ]
+    },
+    "/tmp/bsat-embedding-debug.log": {
+      "sha256": "724f7bf2bf2efe928941970ce9a01ac14e4027f6efa7faae920a962ab6c22777",
+      "tail": [
+        "Running bin/tests/debug/test_watch_lookahead...",
+        "PASS: 459 mixed-watch boundary, unit and conflict cases",
+        "All tests passed!"
+      ]
+    },
+    "/tmp/bsat-embedding-client-release.log": {
+      "sha256": "95d0b05e6a3c2730771662ee408f99e8211f83a8316e54b075e49e8fd9767585",
+      "tail": [
+        "cc -std=c11 -D_POSIX_C_SOURCE=200809L -Wall -Wextra -pedantic -O3 -march=native -flto -Iinclude -pthread -o bin/embedding_client_release tests/embedding_client.c -Lbin -lbsat_release -Wl,-rpath,/Users/msharpe/python/bsat/competition/c/bin",
+        "bin/embedding_client_release",
+        "PASS: opaque shared ABI, 12000 queries across four threads, signals, atomic cancellation/retry, invalid input"
+      ]
+    },
+    "/tmp/bsat-embedding-client-debug.log": {
+      "sha256": "dfadf7c23c8852e481d7a04b23de8052f8096225fa47c67027db77fef41b9c3b",
+      "tail": [
+        "cc -std=c11 -D_POSIX_C_SOURCE=200809L -Wall -Wextra -pedantic -g -O0 -DDEBUG -fsanitize=address -fsanitize=undefined -Iinclude -pthread -o bin/embedding_client_debug tests/embedding_client.c -Lbin -lbsat_debug -Wl,-rpath,/Users/msharpe/python/bsat/competition/c/bin",
+        "bin/embedding_client_debug",
+        "PASS: opaque shared ABI, 12000 queries across four threads, signals, atomic cancellation/retry, invalid input"
+      ]
+    },
+    "/tmp/bsat-embedding-final-release.log": {
+      "sha256": "fdc0ee8b83dd8cb4835b5cff2171170e7b79ba6e9306c2867ddcf747afa71659",
+      "tail": [
+        "cc -std=c11 -D_POSIX_C_SOURCE=200809L -Wall -Wextra -pedantic -O3 -march=native -flto -Iinclude -pthread -o bin/embedding_client_release tests/embedding_client.c -Lbin -lbsat_release -Wl,-rpath,/Users/msharpe/python/bsat/competition/c/bin",
+        "bin/embedding_client_release",
+        "PASS: opaque shared ABI, 12000 queries across four threads, signals, atomic cancellation/retry, invalid input"
+      ]
+    },
+    "/tmp/bsat-embedding-final-debug.log": {
+      "sha256": "62291fb6aa9f131a6407ec92dd35c7ab44e3be4ae2924202428bb1d3f4506a08",
+      "tail": [
+        "cc -std=c11 -D_POSIX_C_SOURCE=200809L -Wall -Wextra -pedantic -g -O0 -DDEBUG -fsanitize=address -fsanitize=undefined -Iinclude -pthread -o bin/embedding_client_debug tests/embedding_client.c -Lbin -lbsat_debug -Wl,-rpath,/Users/msharpe/python/bsat/competition/c/bin",
+        "bin/embedding_client_debug",
+        "PASS: opaque shared ABI, 12000 queries across four threads, signals, atomic cancellation/retry, invalid input"
+      ]
+    },
+    "/tmp/bsat-embedding-deadlines.log": {
+      "sha256": "4c896aa007735db21a6dcc1f6f0109111fc67b70af34d5d0e9357bf43919be4a",
+      "tail": [
+        "PASS: 69 short-deadline runs; maximum observed CPU overrun 0.000s"
+      ]
+    },
+    "/tmp/bsat-embedding-process.log": {
+      "sha256": "d5a976c6626438584450dc7cd6d78f50a6065a55a855f29bb0cc419825478f10",
+      "tail": [
+        "PASS: 2 proof-file exhaustion and 4 SIGINT/SIGTERM cases; no conclusive failed answers"
+      ]
+    },
+    "/tmp/bsat-embedding-long.log": {
+      "sha256": "7288c7dfa7c5a61eac72246681684315131c959c66e99b2029702daa146d11dc",
+      "tail": [
+        "PASS profile=2 variant=1 SAT=False conflicts=15019",
+        "PASS profile=2 variant=1 SAT=True conflicts=6",
+        "PASS: 24 structured/metamorphic cases with verified models/proofs and search-event coverage"
+      ]
+    }
+  }
+}
