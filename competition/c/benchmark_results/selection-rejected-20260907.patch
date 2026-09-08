@@ -1,0 +1,31 @@
+diff --git a/competition/c/src/solver.c b/competition/c/src/solver.c
+index b7e5345..0e96b44 100644
+--- a/competition/c/src/solver.c
++++ b/competition/c/src/solver.c
+@@ -1927,9 +1927,25 @@ bool solver_simplify(Solver *s) {
+     s->last_vivify = s->stats.conflicts;
+     s->work_limit = s->work + MIN(s->opts.preprocess_budget, UINT64_MAX-s->work);
+     uint32_t count = MIN(s->num_learnts, 100u);
+-    for (uint32_t k = 0; k < count && !solver_budget_exhausted(s); ++k) {
++    /* Keep the rotating window bounded; spend its work on shorter clauses
++       first, with lower LBD breaking size ties. Stable insertion order gives
++       deterministic ties without sorting the whole learned database. */
++    uint32_t candidates[100], scores[100];
++    for (uint32_t k = 0; k < count; ++k) {
+         uint32_t at = s->vivify_cursor++ % s->num_learnts;
+         CRef cr = s->learnts[at];
++        uint32_t n = CLAUSE_SIZE(s->arena, cr);
++        uint32_t score = (clause_deleted(s->arena, cr) || n <= 2 || n > 64)
++                       ? UINT32_MAX : n * 65u + MIN(clause_lbd(s->arena, cr), 64u);
++        uint32_t j = k;
++        while (j && scores[j-1] > score) {
++            candidates[j] = candidates[j-1]; scores[j] = scores[j-1]; --j;
++        }
++        candidates[j] = at; scores[j] = score;
++    }
++    for (uint32_t k = 0; k < count && !solver_budget_exhausted(s); ++k) {
++        uint32_t at = candidates[k];
++        CRef cr = s->learnts[at];
+         if (clause_deleted(s->arena, cr) || clause_locked(s, cr)) continue;
+         uint32_t n = CLAUSE_SIZE(s->arena, cr);
+         if (n <= 2 || n > 64) continue;

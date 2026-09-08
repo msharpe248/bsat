@@ -40,7 +40,10 @@ we built the runtime from the official LLVM compiler-rt 21.1.8 release's
 `FUZZ_ENGINE='/tmp/bsat-libfuzzer/libFuzzer.a -lc++'` overrides only the runtime
 link. Linux CI uses its installed Clang runtime. Initial local 61-second campaigns
 completed 60,156 API and 409,846 parser executions with no sanitizer/oracle failure;
-provenance is in `fuzzing-20260907.json`. No crash minimization was needed.
+the subsequent 601-second campaigns added 407,661 API and 3,923,053 parser
+executions without a failure (4,800,716 total). Provenance is in
+`fuzzing-20260907.json`. Hosted Linux fuzzing also passed in run 34184991907.
+No crash minimization was needed.
 
 The correctness workflow explicitly covers Linux GCC and Clang in release and
 ASan/UBSan builds, plus macOS Clang in both modes. Hosted results must be checked

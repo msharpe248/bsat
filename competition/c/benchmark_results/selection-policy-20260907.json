@@ -1,0 +1,43 @@
+{
+  "scope": "Development comparison; bounded short/low-LBD ordering in current 100-clause vivification window. Retain only if no lost verified solves and favorable repeated aggregate timing.",
+  "baseline_revision": "dcc0bfa",
+  "candidate_source_sha256": "9e594cb3045820ae4412db4965ad98ccaa71c9eccc4831996f64e5c6cb50e45c",
+  "baseline_sha256": "a349a07c51b8ac4e3a7409f0b45bae0b3d4509538fe544c19af7bb49797d03ec",
+  "candidate_sha256": "d4bc1319e3715b1cf8bf34f1d13d69091d00d0ad8e8a3db06841d2c77f4ba164",
+  "inputs": {
+    "/Users/msharpe/python/bsat/dataset/sat_competition2025/battleship/ed6d842f96d10f3400bce251f9e95bfb.cnf": {
+      "sha256": "9d586fde48ebcc533f867c06569f008a9b3f5b71dca6a3c9e18db48e037a0b6f",
+      "family": "battleship"
+    },
+    "/Users/msharpe/python/bsat/dataset/sat_competition2025/belpyramid-puzzle/5831f35622f3e6c666f0cee6cac60e4c.cnf": {
+      "sha256": "e73caf0c3d62cfa5ce1b8c80c83c30df50c7e99275f1f43f69acdd043f050735",
+      "family": "belpyramid-puzzle"
+    },
+    "/Users/msharpe/python/bsat/dataset/sat_competition2025/hamiltonian/a497d784c61c330f012dcd80d44dcd43.cnf": {
+      "sha256": "92e5fa675073ba9aad91afa4b81129fed5757ea37872fc2dbc3bd4ba0d720a4c",
+      "family": "hamiltonian"
+    },
+    "/Users/msharpe/python/bsat/dataset/sat_competition2025/hardware-verification/d672bdbca3b1fb26d585e78add79537e.cnf": {
+      "sha256": "7b715a14a0044105a7593f2eb8fafe039ac7888ae48993dc8303cd6f546d84e3",
+      "family": "hardware-verification"
+    },
+    "/Users/msharpe/python/bsat/dataset/sat_competition2025/ktf/86173292a2c6a506acf27a81db853bb5.cnf": {
+      "sha256": "a8aea7e4da078513ac5af84fc390d3ab27f8bd26ee7eced9fac2589d18504d1f",
+      "family": "ktf"
+    }
+  },
+  "repeats": 2,
+  "timeout": 20,
+  "cpu_limit": 15,
+  "seed": 20261335,
+  "checker": "/tmp/bsat-drat-trim",
+  "options": [
+    "--inprocess",
+    "--time",
+    "15",
+    "--binary-proof",
+    "--proof",
+    "{proof}",
+    "{input}"
+  ]
+}
