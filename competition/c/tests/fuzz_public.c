@@ -41,10 +41,14 @@ int LLVMFuzzerTestOneInput(const uint8_t *data,size_t size) {
             for(unsigned i=0;i<n;++i)a[i]=literal(data[at++]);
             bool expected=oracle(cs,count,a,n);int r;
             if(ip){for(unsigned i=0;i<n;++i)ipasir_assume(adapter,a[i]);r=ipasir_solve(adapter);}
-            else {bsat_set_query_limits(s,0,(data[0]&8)?1:0,0);r=bsat_solve(s,a,n);}
+            else {
+                bsat_set_query_limits(s,0,(data[0]&8)?1:0,0);
+                if(data[0]&64)bsat_set_service_limits(s,(data[at-1]&1)?1e-12:0,0);
+                r=bsat_solve(s,a,n);
+            }
             if(fuzz_alloc_failed()){assert(!r);break;}
             if(s && bsat_error(s)){assert(!r);break;}
-            if(!r){assert(!ip && (data[0]&8));continue;}
+            if(!r){assert(!ip && (data[0]&(8|64)));continue;}
             assert(r==(expected?10:20));
             if(r==10) {
                 unsigned bits=0;for(int v=1;v<=6;++v)if((ip?ipasir_val(adapter,v):bsat_value(s,v))>0)bits|=1u<<(v-1);

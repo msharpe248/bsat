@@ -39,6 +39,7 @@ jobs:
           python3 competition/c/tests/test_benchmark_manifest.py
           python3 competition/c/tests/test_profile_linux.py
           python3 competition/c/tests/test_process_control.py
+          python3 competition/c/tests/test_resource_limits.py
       - name: Certificate retention and checker compatibility regressions
         run: DRAT_TRIM="$RUNNER_TEMP/drat-trim" python3 competition/c/tests/test_benchmark_artifacts.py
       - name: Unit and API regressions

@@ -17,6 +17,7 @@ Use --retain-unverified DIR to preserve unverified answer artifacts for retry.
 import argparse
 import hashlib
 import json
+import math
 import os
 import platform
 import random
@@ -30,6 +31,7 @@ import time
 from pathlib import Path
 from validate import checker_verified, model_valid, parse_cnf
 from process_control import run_capture
+from resource_limits import child_limits
 
 
 def digest(path):
@@ -69,8 +71,11 @@ def worker(config):
         if not any('{input}' in s for s in config['command']):
             cmd.append(config['input'])
         started = time.perf_counter()
+        wall_limit_hit = False
         with (tmp/'out').open('w') as out, (tmp/'err').open('w') as err:
-            proc = subprocess.Popen(cmd, stdout=out, stderr=err, start_new_session=True)
+            proc = subprocess.Popen(cmd, stdout=out, stderr=err, start_new_session=True,
+                                    preexec_fn=child_limits(config.get('address_space_limit',0),
+                                                           config.get('file_size_limit',0)))
             try:
                 code = proc.wait(timeout=config['timeout'])
             except subprocess.TimeoutExpired:
@@ -78,14 +83,25 @@ def worker(config):
                 os.killpg(proc.pid, signal.SIGKILL)
                 proc.wait()
                 code = 0
+                wall_limit_hit = True
+            finally:
+                if proc.poll() is None:
+                    import signal
+                    os.killpg(proc.pid, signal.SIGKILL)
+                    proc.wait()
         elapsed = time.perf_counter()-started
         usage = resource.getrusage(resource.RUSAGE_CHILDREN)
         peak = usage.ru_maxrss if sys.platform == 'darwin' else usage.ru_maxrss*1024
         output = (tmp/'out').read_text(errors='replace')
         status = 'SAT' if code == 10 else 'UNSAT' if code == 20 else 'UNKNOWN' if code == 0 else 'ERROR'
+        expected = {10:'s SATISFIABLE',20:'s UNSATISFIABLE',0:'s UNKNOWN'}.get(code)
+        markers = [line for line in output.splitlines() if line.startswith('s ')]
+        status_mismatch = not wall_limit_hit and code in (10,20) and markers != [expected]
+        if status_mismatch:
+            status = 'ERROR'
         verified = False
         validation_start=time.perf_counter()
-        diagnostic = ''
+        diagnostic = 'solver status/exit mismatch' if status_mismatch else ''
         if status == 'SAT':
             _, clauses = parse_cnf(Path(config['input']).read_text())
             verified = model_valid(clauses, output)
@@ -112,6 +128,7 @@ def worker(config):
                 name, value = line[2:].split(':', 1)
                 stats[name.strip()] = value.strip()
         result = dict(status=status, verified=verified, seconds=elapsed,
+                    exit_code=proc.returncode, wall_limit_hit=wall_limit_hit,
                     validation_seconds=validation_seconds,end_to_end_seconds=elapsed+validation_seconds,
                     proof_sha256=digest(proof) if proof.exists() else None,
                     cpu_seconds=usage.ru_utime+usage.ru_stime, peak_rss_bytes=peak,
@@ -157,6 +174,8 @@ def main():
     p.add_argument('--checker', help='drat-trim executable')
     p.add_argument('--timeout', type=float, default=30)
     p.add_argument('--check-timeout', type=float, default=60)
+    p.add_argument('--address-space-limit', type=int, default=0, help='Linux child virtual-memory ceiling in bytes (0 unlimited)')
+    p.add_argument('--file-size-limit', type=int, default=0, help='Child per-file size ceiling in bytes (0 unlimited)')
     p.add_argument('--retain-unverified', type=Path, help='Keep input, proof, outputs and metadata for unchecked answers/errors')
     p.add_argument('--repeats', type=int, default=3)
     p.add_argument('--seed', type=int, default=1)
@@ -165,8 +184,12 @@ def main():
     p.add_argument('--manifest', type=Path, help='Hash-verified input manifest, instead of positional inputs')
     p.add_argument('inputs', nargs='*', type=Path)
     args = p.parse_args()
-    if args.timeout <= 0 or args.check_timeout <= 0 or args.repeats < 1:
+    if not math.isfinite(args.timeout) or not math.isfinite(args.check_timeout) or args.timeout <= 0 or args.check_timeout <= 0 or args.repeats < 1:
         p.error('timeouts and repeats must be positive')
+    try:
+        child_limits(args.address_space_limit,args.file_size_limit)
+    except ValueError as error:
+        p.error(str(error))
     checker = shutil.which(args.checker) if args.checker else None
     if args.checker and not checker:
         p.error('checker not found')
@@ -201,6 +224,7 @@ def main():
     report = dict(schema=1, platform=platform.platform(), machine=platform.machine(),
                   revision=revision, dirty=dirty, split=args.split, seed=args.seed,
                   timeout=args.timeout, repeats=args.repeats, solvers=solvers, inputs=inputs,
+                  address_space_limit=args.address_space_limit,file_size_limit=args.file_size_limit,
                   checker=dict(path=checker, sha256=digest(checker)) if checker else None, runs=[])
     if manifest_info:
         report['manifest'] = manifest_info
@@ -210,6 +234,7 @@ def main():
     for name, path, repeat in jobs:
         config = dict(input=path, command=solvers[name]['command'], timeout=args.timeout,
                       checker=checker, check_timeout=args.check_timeout,
+                      address_space_limit=args.address_space_limit,file_size_limit=args.file_size_limit,
                       retain_unverified=str(args.retain_unverified.resolve()) if args.retain_unverified else None)
         run = subprocess.run([sys.executable, str(Path(__file__).resolve()), '--worker'],
                              input=json.dumps(config), capture_output=True, text=True)

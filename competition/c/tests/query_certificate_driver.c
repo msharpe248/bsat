@@ -40,6 +40,9 @@ int main(int argc,char **argv) {
         for(int k=0;k<i;++k)for(int j=0;j<holes;++j){int d[]={-guard,-(1+i*holes+j),-(1+k*holes+j)};assert(bsat_add_clause(s,d,3));}
     }
     int a=guard,b=-guard;
+    assert(bsat_set_service_limits(s,1e-12,0));query(s,&a,1,0,guard);
+    assert(bsat_service_limit_hit(s)==BSAT_SERVICE_WALL);
+    assert(bsat_set_service_limits(s,0,0));
     assert(bsat_set_query_limits(s,0,1,0));query(s,&a,1,0,guard);
     assert(bsat_set_query_limits(s,0,0,0));query(s,&a,1,20,guard);query(s,&b,1,10,guard);
     for(int i=0;i<4;++i){int dup[]={guard,guard};query(s,dup,2,20,guard);query(s,&b,1,10,guard);}

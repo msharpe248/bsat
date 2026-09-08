@@ -2,7 +2,41 @@
 #include "solver.h"
 #include <math.h>
 #include <sys/types.h>
-struct bsat { Solver *core; int result; bool started; bsat_stats_v1 stats; FILE *journal; Lit *query; size_t query_count; off_t journal_end; };
+struct bsat {
+    Solver *core; int result; bool started; bsat_stats_v1 stats;
+    FILE *journal; Lit *query; size_t query_count; off_t journal_end;
+    double wall_limit, wall_start; uint64_t capacity_limit;
+    unsigned resource_polls; int service_hit; bool active;
+    void *user_state; int (*user_terminate)(void *);
+};
+static double wall_time(bsat *s) {
+    struct timespec t;
+    if(clock_gettime(CLOCK_MONOTONIC,&t)){s->core->error=true;return 0;}
+    return (double)t.tv_sec+(double)t.tv_nsec*1e-9;
+}
+static bool service_exhausted(bsat *s,bool force) {
+    if(s->service_hit)return true;
+    if(!force && ++s->resource_polls<1024)return false;
+    s->resource_polls=0;
+    if(s->active && s->wall_limit && wall_time(s)-s->wall_start>=s->wall_limit)
+        s->service_hit=BSAT_SERVICE_WALL;
+    if(s->capacity_limit && solver_memory(s->core).total>s->capacity_limit)
+        s->service_hit=BSAT_SERVICE_CAPACITY;
+    return s->service_hit!=0;
+}
+static int terminate_service(void *state) {
+    bsat *s=state;
+    if(s->user_terminate && s->user_terminate(s->user_state))return 1;
+    return service_exhausted(s,false);
+}
+static void install_terminate(bsat *s) {
+    solver_set_terminate(s->core,s,
+        s->user_terminate || s->wall_limit || s->capacity_limit ? terminate_service : NULL);
+}
+static void begin_service(bsat *s) {
+    s->service_hit=0;s->resource_polls=1024;s->active=true;
+    if(s->wall_limit)s->wall_start=wall_time(s);
+}
 uint32_t bsat_abi_version(void) { return BSAT_ABI_VERSION; }
 bsat *bsat_create(uint32_t abi,uint32_t flags) {
     if(abi!=BSAT_ABI_VERSION || (flags & ~(BSAT_REUSE_LEARNTS|BSAT_CERTIFICATES)))return NULL;
@@ -32,6 +66,12 @@ int bsat_set_query_limits(bsat *s,double cpu,uint32_t conflicts,uint32_t decisio
     if(!isfinite(cpu) || cpu<0){s->core->error=true;return 0;}
     s->core->opts.max_time=cpu;s->core->opts.max_conflicts=conflicts;s->core->opts.max_decisions=decisions;return 1;
 }
+int bsat_set_service_limits(bsat *s,double wall,uint64_t capacity) {
+    if(bsat_error(s))return 0;
+    if(!isfinite(wall) || wall<0){s->core->error=true;return 0;}
+    s->wall_limit=wall;s->capacity_limit=capacity;install_terminate(s);return 1;
+}
+int bsat_service_limit_hit(const bsat *s) {return s?s->service_hit:BSAT_SERVICE_NONE;}
 int bsat_get_stats(const bsat *s,bsat_stats_v1 *out,size_t size) {
     if(bsat_error(s) || !out || size<sizeof *out || !s->stats.version)return 0;
     *out=s->stats;return 1;
@@ -45,7 +85,11 @@ static Lit *translate(bsat *s,const int *lits,size_t count,bool grow) {
         if(v>largest)largest=(Var)v;
     }
     if(!grow && largest>s->core->num_vars)goto bad;
-    while(s->core->num_vars<largest)if(!solver_new_var(s->core))goto bad;
+    while(s->core->num_vars<largest) {
+        uint32_t capacity=s->core->var_capacity;
+        if(!solver_new_var(s->core))goto bad;
+        if(s->capacity_limit && capacity!=s->core->var_capacity && service_exhausted(s,true))goto bad;
+    }
     Lit *out=count?malloc(count*sizeof *out):NULL;
     if(count&&!out)goto bad;
     for(size_t i=0;i<count;++i)out[i]=fromDimacs(lits[i]);
@@ -54,14 +98,19 @@ bad:s->core->error=true;return NULL;
 }
 int bsat_add_clause(bsat *s,const int *lits,size_t count) {
     if(bsat_error(s))return 0;
+    s->service_hit=0;
+    if(service_exhausted(s,true)){s->core->error=true;return 0;}
     s->started=true;s->result=BSAT_UNKNOWN;free(s->query);s->query=NULL;s->query_count=0;
     Lit *a=translate(s,lits,count,true);if(bsat_error(s)){free(a);return 0;}
-    solver_add_clause(s->core,a,(uint32_t)count);free(a);return !bsat_error(s);
+    solver_add_clause(s->core,a,(uint32_t)count);free(a);
+    if(service_exhausted(s,true))s->core->error=true;
+    return !bsat_error(s);
 }
 int bsat_solve(bsat *s,const int *assumptions,size_t count) {
     if(bsat_error(s))return BSAT_UNKNOWN;
+    begin_service(s);
     s->started=true;s->result=BSAT_UNKNOWN;free(s->query);s->query=NULL;s->query_count=0;
-    Lit *a=translate(s,assumptions,count,false);if(bsat_error(s)){free(a);return BSAT_UNKNOWN;}
+    Lit *a=translate(s,assumptions,count,false);if(bsat_error(s)){free(a);s->active=false;return BSAT_UNKNOWN;}
     double start=solver_cpu_time();
     lbool r=solver_solve_with_assumptions(s->core,a,(uint32_t)count);
     if(s->journal) {
@@ -71,7 +120,10 @@ int bsat_solve(bsat *s,const int *assumptions,size_t count) {
     uint64_t owned=solver_memory(s->core).total;
     /* Snapshot collection and journal positioning are part of the solve call.
        Recheck its deadline/callback before exposing a conclusive facade result. */
-    if(solver_budget_exhausted_now(s->core)) {r=UNDEF;s->core->result=UNDEF;}
+    if(solver_budget_exhausted_now(s->core) || service_exhausted(s,true)) {
+        r=UNDEF;s->core->result=UNDEF;s->core->interrupted=true;
+    }
+    s->active=false;
     s->result=r==TRUE?BSAT_SAT:r==FALSE?BSAT_UNSAT:BSAT_UNKNOWN;
     bool searched=s->core->stats.start_time>=start;
     s->stats=(bsat_stats_v1){.version=1,.result=s->result,
@@ -94,7 +146,7 @@ int bsat_failed(const bsat *s,int assumption) {
     return 0;
 }
 void bsat_set_terminate(bsat *s,void *state,int (*callback)(void *)) {
-    if(s)solver_set_terminate(s->core,state,callback);
+    if(s){s->user_state=state;s->user_terminate=callback;install_terminate(s);}
 }
 
 int bsat_get_journal_bytes(const bsat *s,uint64_t *bytes) {
@@ -107,18 +159,20 @@ int bsat_set_journal_limit(bsat *s,uint64_t bytes) {
 }
 int bsat_checkpoint(bsat *s) {
     if(bsat_error(s))return 0;
+    begin_service(s);
     s->result=BSAT_UNKNOWN;memset(&s->stats,0,sizeof s->stats);
     free(s->query);s->query=NULL;s->query_count=0;
     FILE *next=s->journal?tmpfile():NULL;
-    if(s->journal && !next){s->core->error=true;return 0;}
-    if(!solver_reset_learning(s->core)){if(next)fclose(next);return 0;}
+    if(s->journal && !next){s->core->error=true;s->active=false;return 0;}
+    if(!solver_reset_learning(s->core)){if(next)fclose(next);s->active=false;return 0;}
     if(s->journal) {
         int failed=fclose(s->journal);
         s->journal=next;s->core->proof_journal=next;
         s->core->journal_bytes=0;s->journal_end=0;
-        if(failed){s->core->error=true;return 0;}
+        if(failed){s->core->error=true;s->active=false;return 0;}
     }
-    return 1;
+    bool exhausted=service_exhausted(s,true);s->active=false;
+    return !exhausted && !bsat_error(s);
 }
 
 int bsat_export_query(bsat *s,const char *cnf_path,const char *proof_path) {
