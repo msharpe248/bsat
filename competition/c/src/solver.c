@@ -630,6 +630,7 @@ static bool grow_var_arrays(Solver* s, uint32_t new_capacity) {
 }
 
 Var solver_new_var(Solver* s) {
+    if (!s || s->error || s->watches->failed) return INVALID_VAR;
     if (s->num_vars >= MAX_VARS) {
         return INVALID_VAR;
     }
@@ -759,6 +760,7 @@ static int compare_lits(const void *a, const void *b) {
 
 bool solver_add_clause(Solver* s, const Lit* lits, uint32_t size) {
     if (!s || (size && !lits)) return false;
+    if (s->error || s->watches->failed) return false;
     if (s->has_solved && !solver_rebuild(s)) return false;
     ASSERT(s->decision_level == 0);
     for (uint32_t i = 0; i < size; ++i)
@@ -2023,6 +2025,7 @@ static int failed_literal_probing(Solver *s) {
  *********************************************************************/
 
 static bool solver_rebuild_timed(Solver *s, double start_time, double max_time) {
+    if (s->error || s->watches->failed) return false;
     /* Restore input after destructive preprocessing or an assumption solve.
        This deliberately sacrifices learned-clause reuse for a simple, safe API. */
     SolverOpts opts = s->opts;
@@ -2252,6 +2255,7 @@ done:
 
 static lbool solver_solve_at(Solver *s, const Lit *assumps, uint32_t n_assumps, double start_time) {
     if (!s || (n_assumps && !assumps)) return UNDEF;
+    if (s->error || s->watches->failed) { s->error=true; s->result=UNDEF; return UNDEF; }
     if (s->has_solved && !solver_rebuild(s)) return UNDEF;
     for (uint32_t i=0;i<n_assumps;++i)
         if (!var(assumps[i]) || var(assumps[i])>s->num_vars) return UNDEF;

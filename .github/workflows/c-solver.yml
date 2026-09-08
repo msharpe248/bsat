@@ -31,6 +31,8 @@ jobs:
         run: DRAT_TRIM="$RUNNER_TEMP/drat-trim" python3 competition/c/tests/test_benchmark_artifacts.py
       - name: Unit and API regressions
         run: make -C competition/c all test parse-benchmark local-search-benchmark MODE=${{ matrix.mode }}
+      - name: Allocation failure regressions
+        run: make -C competition/c fault-test MODE=${{ matrix.mode }}
       - name: Parse benchmark smoke test
         run: python3 competition/c/tests/benchmark_parse.py --parser current=competition/c/bin/parse_benchmark_${{ matrix.mode }} --repeats 1 --output "$RUNNER_TEMP/parse.json" competition/tests/fixtures/unit/trivial_sat.cnf
       - name: Local-search benchmark smoke test
@@ -49,6 +51,7 @@ jobs:
           python3 competition/c/tests/validate.py --solver "$binary" --cases 100 --checker "$RUNNER_TEMP/drat-trim"
           python3 competition/c/tests/validate_local_search.py --solver "$binary" --checker "$RUNNER_TEMP/drat-trim"
           python3 competition/c/tests/check_deadlines.py --solver "$binary"
+          python3 competition/c/tests/check_process_failures.py --solver "$binary"
       - uses: actions/upload-artifact@v4
         if: failure()
         with:

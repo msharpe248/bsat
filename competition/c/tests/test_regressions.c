@@ -48,6 +48,19 @@ static void assumptions(void) {
     Lit unit=mkLit(3,true);assert(solver_add_clause(s,&unit,1));
     assert(solver_solve(s)==TRUE);assert(solver_model_value(s,3)==FALSE);solver_free(s);
 }
+static void persistent_errors(void) {
+    for(unsigned watch=0;watch<2;++watch) {
+        Solver *s=formula("p cnf 1 1\n1 0\n");
+        assert(solver_solve(s)==TRUE);
+        if(watch)s->watches->failed=true;else s->error=true;
+        Lit unit=mkLit(1,true);
+        assert(solver_new_var(s)==INVALID_VAR);
+        assert(!solver_add_clause(s,&unit,1));
+        assert(solver_solve(s)==UNDEF && s->error && s->result==UNDEF);
+        assert(solver_solve(s)==UNDEF && s->error);
+        solver_free(s);
+    }
+}
 static unsigned rng=19;
 static unsigned next(void) { rng=rng*1664525u+1013904223u;return rng; }
 static void api_fuzz(void) {
@@ -357,7 +370,7 @@ static void proof_export(void) {
     }
 }
 int main(void) {
-    parser();assumptions();api_fuzz();backtrack();assignment_growth();circular_scan_order();dynamic_clause_quality();used_clause_lifecycle();clause_normalization_boundaries();reduction_and_gc();restart();proof_export();
+    parser();assumptions();persistent_errors();api_fuzz();backtrack();assignment_growth();circular_scan_order();dynamic_clause_quality();used_clause_lifecycle();clause_normalization_boundaries();reduction_and_gc();restart();proof_export();
     puts("PASS: parser, 800 API solves, assumptions, backjump boundaries, reduction/GC, restart regressions");
     return 0;
 }

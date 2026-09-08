@@ -9,10 +9,14 @@ UNSAT certificate. UNKNOWN is unfinished, not an incorrect answer.
 1. CI certificate regressions: complete. The Linux/macOS release/debug workflow
    now runs `test_benchmark_artifacts.py` with its pinned external checker.
    Local validation: all seven tests pass with `/tmp/bsat-drat-trim`.
-2. Resource failures and interruption: in progress. Existing
+2. Resource failures and interruption: complete. Existing
    `test_proof_encoding.c` already covers 22 short-write cutoffs and two deferred
    flush failures; the earlier gap assessment understated that coverage.
-   Add systematic allocator failure injection and process-interruption checks.
+   Release and sanitizer builds each pass 1,868 injected allocation failures,
+   six process failure cases, 47 C test executables and 3,956 independent solves.
+   The sweep exposed and fixed error clearing during repeated solves. Failed
+   instances now remain poisoned; construct a new solver to retry. Evidence:
+   `benchmark_results/resource-failures-20260907.json`.
 3. Long-search validation: pending. Add structured SAT/UNSAT cases and equivalent
    variable/clause permutations with independent certificates and event coverage.
 4. Production API contract: pending. Specify ownership, error/result lifetime,

@@ -217,3 +217,15 @@ $(GC_DRIVER): $(TESTDIR)/gc_driver.c $(filter-out $(OBJDIR)/main.o,$(OBJECTS))
 	$(CC) $(CFLAGS) -o $@ $^ -lm
 
 .PHONY: gc-driver
+
+# Allocation injection is confined to separate objects; normal binaries have no hook.
+FAULT_OBJECTS = $(patsubst $(SRCDIR)/%.c,build/fault-$(MODE)/%.o,$(filter-out $(SRCDIR)/main.c,$(SOURCES)))
+build/fault-$(MODE)/%.o: $(SRCDIR)/%.c $(TESTDIR)/fail_alloc.h
+	@mkdir -p $(@D)
+	$(CC) $(CFLAGS) -include $(TESTDIR)/fail_alloc.h -MMD -MP -c -o $@ $<
+$(BINDIR)/fail_alloc_$(MODE): $(TESTDIR)/fail_alloc_driver.c $(FAULT_OBJECTS) | dirs
+	$(CC) $(CFLAGS) -o $@ $^ -lm
+fault-test: $(BINDIR)/fail_alloc_$(MODE)
+	$<
+.PHONY: fault-test
+-include $(FAULT_OBJECTS:.o=.d)
