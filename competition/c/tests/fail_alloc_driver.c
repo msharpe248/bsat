@@ -99,6 +99,7 @@ static size_t certificate_attempt(bool reuse,size_t cutoff) {
     for(unsigned i=0;i<4;++i) {
         int r=bsat_solve(s,i&1?NULL:&unit,i&1?0:1);
         assert(r==(failed?0:i&1?10:20));
+        if(i==1){int completed=bsat_checkpoint(s);assert(completed==!failed);}
     }
     bsat_destroy(s);return calls;
 }

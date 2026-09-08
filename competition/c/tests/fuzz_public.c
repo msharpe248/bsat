@@ -22,11 +22,13 @@ int LLVMFuzzerTestOneInput(const uint8_t *data,size_t size) {
     bool ip=data[0]&4;bsat *s=NULL;void *adapter=NULL;
     if(ip)adapter=ipasir_init();else s=bsat_create(1,data[0]&3);
     if(!s && !adapter)return 0;
+    if(s && (data[0]&32) && (data[0]&2))bsat_set_journal_limit(s,32);
     Clause cs[32];unsigned count=0;
     /* Introduce the allowed namespace without constraining any model. */
     if(ip){ipasir_add(adapter,6);ipasir_add(adapter,-6);ipasir_add(adapter,0);}
     else {int t[]={6,-6};bsat_add_clause(s,t,2);}
     for(size_t at=2;at<size && count<32;) {
+        if(s && (data[0]&16) && !(at&7))bsat_checkpoint(s);
         unsigned op=data[at++]%4;
         if(op==0) {
             if(at==size)break;Clause c={.n=data[at++]%4};if(size-at<c.n)break;
@@ -41,6 +43,7 @@ int LLVMFuzzerTestOneInput(const uint8_t *data,size_t size) {
             if(ip){for(unsigned i=0;i<n;++i)ipasir_assume(adapter,a[i]);r=ipasir_solve(adapter);}
             else {bsat_set_query_limits(s,0,(data[0]&8)?1:0,0);r=bsat_solve(s,a,n);}
             if(fuzz_alloc_failed()){assert(!r);break;}
+            if(s && bsat_error(s)){assert(!r);break;}
             if(!r){assert(!ip && (data[0]&8));continue;}
             assert(r==(expected?10:20));
             if(r==10) {

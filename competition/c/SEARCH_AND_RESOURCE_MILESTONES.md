@@ -8,8 +8,8 @@ promotion. Preserve independent model/certificate checks and unrelated files.
 
 1. Search diagnosis and targeted comparisons: complete; see SEARCH_RESOURCE_DIAGNOSIS.md.
 2. Incremental reuse regression: complete; see PROBING_REVISIONS.md.
-3. Certificate limits and bounded sessions: in progress.
-4. Service resource limits and exhaustion tests: pending.
+3. Certificate limits and bounded sessions: complete; see JOURNAL_LIMITS.md.
+4. Service resource limits and exhaustion tests: in progress.
 5. Uniform external deadlines and Linux baseline: pending.
 6. Factoring selection and coverage: pending.
 

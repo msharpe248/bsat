@@ -38,7 +38,9 @@ static bool solver_prepare_next(Solver *s, double start);
    semantics remain intact. A short write invalidates the solve certificate. */
 static FILE *proof_stream(const Solver *s) { return s->proof_file?s->proof_file:s->proof_journal; }
 static bool proof_write(Solver *s, const void *buffer, uint32_t size) {
-    if (fwrite(buffer, 1, size, proof_stream(s)) == size) return true;
+    size_t written=fwrite(buffer, 1, size, proof_stream(s));
+    if (!s->proof_file && s->proof_journal) s->journal_bytes+=written;
+    if (written == size) return true;
     s->error = true;
     return false;
 }
@@ -94,6 +96,21 @@ static void proof_binary_clause(Solver *s, const Lit *lits, uint32_t size, bool 
 static void proof_clause(Solver *s, const Lit *lits, uint32_t size, bool deletion);
 static void proof_clause_account_impl(Solver *s, const Lit *lits, uint32_t size, bool deletion) {
     if (!proof_stream(s) || (deletion && !s->proof_file)) return;
+    if (!s->proof_file && s->proof_journal) {
+        if (s->error) return;
+        /* Reserve a whole record before writing any of it. A refused addition
+           invalidates the handle, so no dependent learning can be exported. */
+        uint64_t bytes=2;
+        for (uint32_t i=0;i<size;++i) {
+            uint32_t x=s->opts.binary_proof?lits[i]:var(lits[i]);
+            if (s->opts.binary_proof) {do {++bytes;x>>=7;} while(x);}
+            else {bytes+=1+(sign(lits[i]) && x);do {++bytes;x/=10;} while(x);}
+        }
+        if (bytes>UINT64_MAX-s->journal_bytes ||
+            (s->journal_limit && (s->journal_bytes>s->journal_limit || bytes>s->journal_limit-s->journal_bytes))) {
+            s->error=true;return;
+        }
+    }
     if (s->opts.binary_proof) {
         proof_binary_clause(s,lits,size,deletion);
     } else {
@@ -2017,6 +2034,7 @@ static bool solver_rebuild_timed(Solver *s, double start_time, double max_time) 
     Solver *fresh = solver_new_with_opts(&opts);
     if (!fresh) { s->error = true; return false; }
     fresh->proof_journal=s->proof_journal;
+    fresh->journal_bytes=s->journal_bytes;fresh->journal_limit=s->journal_limit;
     fresh->terminate=s->terminate;fresh->terminate_state=s->terminate_state;
     fresh->learn_callback=s->learn_callback;fresh->learn_state=s->learn_state;fresh->learn_max_length=s->learn_max_length;
     fresh->opts.proof_path = path;
@@ -2071,6 +2089,10 @@ incomplete:
 }
 
 static bool solver_rebuild(Solver *s) { return solver_rebuild_timed(s, 0, 0); }
+bool solver_reset_learning(Solver *s) {
+    if (!s || s->error || s->watches->failed) return false;
+    return solver_rebuild_timed(s,solver_cpu_time(),s->opts.max_time);
+}
 
 /* Fast reuse is deliberately conservative. Reconstruction state, destructive
    preprocessing modes, local search's model trail, proofs and interrupted

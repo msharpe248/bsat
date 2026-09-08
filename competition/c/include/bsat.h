@@ -46,6 +46,17 @@ BSAT_API int bsat_solve(bsat *s, const int *assumptions, size_t count);
    query-local empty clause. Does not solve again. Both paths must be new files;
    failure returns 0 and can leave incomplete outputs. Check independently. */
 BSAT_API int bsat_export_query(bsat *s, const char *cnf_path, const char *proof_path);
+/* Certified handles: exact accepted journal bytes, also readable after error.
+   Zero limit means unlimited; a limit below existing bytes is rejected without
+   changing state. Exhaustion poisons the handle and cannot produce an answer.
+   The limit covers the journal, not CNF/export copies or filesystem overhead. */
+BSAT_API int bsat_get_journal_bytes(const bsat *s, uint64_t *bytes);
+BSAT_API int bsat_set_journal_limit(bsat *s, uint64_t bytes);
+/* Rebuild permanent input and discard all learning. Certified handles start a
+   new empty journal only after successful rebuild. Invalidates answer/stats.
+   Respects CPU limit and cancellation; return 0 means not completed. A failed
+   handle cannot be recovered. Checkpoint proactively before exhausting quotas. */
+BSAT_API int bsat_checkpoint(bsat *s);
 /* Latest SAT: returns lit if true, -lit if false, 0 if unavailable. */
 BSAT_API int bsat_value(const bsat *s, int lit);
 /* Latest UNSAT: membership in a sufficient, possibly nonminimal assumption core. */

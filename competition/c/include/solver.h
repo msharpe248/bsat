@@ -313,6 +313,7 @@ typedef struct Solver {
     // DRAT Proof Logging
     FILE* proof_file;         // Owned ordinary proof output
     FILE* proof_journal;      // Borrowed append-only RUP journal; no deletions
+    uint64_t journal_bytes, journal_limit;
 
     // Rephasing state (Kissat-style target phases)
     struct {
@@ -380,6 +381,8 @@ Solver* solver_new_with_opts(const SolverOpts* opts);
 
 // Free solver and all resources
 void solver_free(Solver* s);
+/* Discard derived state by rebuilding permanent input, respecting cancellation. */
+bool solver_reset_learning(Solver *s);
 
 // Add a variable (returns variable index)
 Var solver_new_var(Solver* s);

@@ -97,6 +97,30 @@ void bsat_set_terminate(bsat *s,void *state,int (*callback)(void *)) {
     if(s)solver_set_terminate(s->core,state,callback);
 }
 
+int bsat_get_journal_bytes(const bsat *s,uint64_t *bytes) {
+    if(!s || !s->journal || !bytes)return 0;
+    *bytes=s->core->journal_bytes;return 1;
+}
+int bsat_set_journal_limit(bsat *s,uint64_t bytes) {
+    if(bsat_error(s) || !s->journal || (bytes && bytes<s->core->journal_bytes))return 0;
+    s->core->journal_limit=bytes;return 1;
+}
+int bsat_checkpoint(bsat *s) {
+    if(bsat_error(s))return 0;
+    s->result=BSAT_UNKNOWN;memset(&s->stats,0,sizeof s->stats);
+    free(s->query);s->query=NULL;s->query_count=0;
+    FILE *next=s->journal?tmpfile():NULL;
+    if(s->journal && !next){s->core->error=true;return 0;}
+    if(!solver_reset_learning(s->core)){if(next)fclose(next);return 0;}
+    if(s->journal) {
+        int failed=fclose(s->journal);
+        s->journal=next;s->core->proof_journal=next;
+        s->core->journal_bytes=0;s->journal_end=0;
+        if(failed){s->core->error=true;return 0;}
+    }
+    return 1;
+}
+
 int bsat_export_query(bsat *s,const char *cnf_path,const char *proof_path) {
     if(bsat_error(s) || !s->journal || (s->result!=10 && s->result!=20) ||
        !cnf_path || !proof_path || !strcmp(cnf_path,proof_path))return 0;

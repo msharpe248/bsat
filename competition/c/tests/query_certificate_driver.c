@@ -33,6 +33,7 @@ int main(int argc,char **argv) {
         bsat_destroy(s);
     }
     bsat *s=bsat_create(1,BSAT_CERTIFICATES|BSAT_REUSE_LEARNTS);assert(s);
+    assert(bsat_set_journal_limit(s,100000));
     const int holes=6,pigeons=7,guard=43;
     for(int i=0;i<pigeons;++i) {
         int c[7];c[0]=-guard;for(int j=0;j<holes;++j)c[j+1]=1+i*holes+j;assert(bsat_add_clause(s,c,7));
@@ -42,6 +43,9 @@ int main(int argc,char **argv) {
     assert(bsat_set_query_limits(s,0,1,0));query(s,&a,1,0,guard);
     assert(bsat_set_query_limits(s,0,0,0));query(s,&a,1,20,guard);query(s,&b,1,10,guard);
     for(int i=0;i<4;++i){int dup[]={guard,guard};query(s,dup,2,20,guard);query(s,&b,1,10,guard);}
+    uint64_t bytes;assert(bsat_get_journal_bytes(s,&bytes)&&bytes>0);
+    assert(bsat_checkpoint(s));assert(bsat_get_journal_bytes(s,&bytes)&&bytes==0);
+    query(s,&a,1,20,guard);query(s,&b,1,10,guard);
     int cancel=1;bsat_set_terminate(s,&cancel,stop);query(s,&a,1,0,guard);cancel=0;query(s,&a,1,20,guard);
     int unit=130;assert(bsat_add_clause(s,&unit,1));assert(!bsat_export_query(s,"/nonexistent/query","/nonexistent/proof"));
     query(s,&b,1,10,130);query(s,&a,1,20,130);

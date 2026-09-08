@@ -33,8 +33,9 @@ solve budgets; application supervision is needed for wall-time or disk quotas.
 A successful close is not a power-loss durability guarantee.
 
 The tradeoff is storage and checking cost: the append-only journal grows over
-the session, and each export copies its full prefix. There is no compaction,
-checkpoint protocol or constant-size per-query proof claim. The existing
+the session, and each export copies its full prefix. Optional checkpoints now
+discard learning before resetting that prefix; there is no compaction preserving
+learning or constant-size per-query proof claim. The existing
 `tests/certify_query.py` fresh-solve wrapper remains available for CLI workflows.
 
 Release and ASan/UBSan validation each checks 51 exported queries (27 UNSAT,
@@ -53,3 +54,6 @@ The public-facade/IPASIR ASan/UBSan fuzzer completes 347,903 executions in
 121 seconds without a finding, followed by 48,570 executions in 31 seconds
 after final deadline handling changes. Export flush-failure tests preserve
 the solver and successfully retry into new output files.
+
+Bounded-session extension: see [JOURNAL_LIMITS.md](JOURNAL_LIMITS.md) for exact
+journal quotas and checkpoints that discard learning before resetting the proof.
