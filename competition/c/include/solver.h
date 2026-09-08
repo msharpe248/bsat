@@ -331,6 +331,7 @@ typedef struct Solver {
     uint32_t last_assumptions;
     uint64_t reused_solves;
     bool internal_add, has_solved, error, interrupted;
+    bool base_unsat; // Permanent root inconsistency, separate from assumption failure
     bool clock_initialized, cancelled; // Explicit cancellation is not a CPU timeout
     uint32_t clock_polls;
     uint64_t clock_work, clock_minimize;

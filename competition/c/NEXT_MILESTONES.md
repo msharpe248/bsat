@@ -20,3 +20,7 @@ workspace state is preserved. Linux PMU profiling still needs a target host.
    in run 34207651049 at `092b1b5`; compiler/platform CI continues separately.
 5. Fresh profile confirmation complete: 64 audited factorial runs on eight new
    inputs; no-VMTF wins on two inputs from two families. See `PROFILE_CONFIRMATION.md`.
+6. Conditional-UNSAT and compatible-preprocessing reuse is implemented and
+   independently checked; destructive transformations retain fallback. Repeated
+   identical hard queries use roughly one tenth the CPU in the bounded protocol;
+   growing histories have mixed work results. See `INCREMENTAL_REUSE.md`.

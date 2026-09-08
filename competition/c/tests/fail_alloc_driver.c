@@ -41,6 +41,12 @@ static size_t attempt(unsigned profile, bool sat, size_t cutoff) {
         if(s->error || s->watches->failed) {assert(r==UNDEF);break;}
         assert(r==(sat?TRUE:FALSE));
         if(sat) for(unsigned v=1;v<=6;++v)assert(solver_model_value(s,v)==TRUE);
+        if(profile==6 && sat && repeat==0) {
+            Lit assumption=mkLit(1,true);
+            r=solver_solve_with_assumptions(s,&assumption,1);
+            if(s->error || s->watches->failed){assert(r==UNDEF);break;}
+            assert(r==FALSE); /* Next growth/solve must clear only conditional UNSAT. */
+        }
     }
 done:
     if(s->error || s->watches->failed) {

@@ -29,3 +29,9 @@ Linux host. No target-server result is implied by local macOS measurements.
 
 A post-milestone audit additionally fixes one-shot portfolio cancellation and
 terminal callback deadline accounting; see `CANCELLATION_BOUNDARIES.md`.
+
+The next authorized batch is recorded in `NEXT_MILESTONES.md`: reg-n factoring
+diagnosis, further measured memory reduction, fresh factorial confirmation,
+hard histories, conditional reuse and installation/ABI/race validation. The
+historical counts and original fallback restrictions above describe the first
+batch; current reuse behavior is documented in `INCREMENTAL_REUSE.md`.

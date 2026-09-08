@@ -1,0 +1,8 @@
+{
+  "binary_sha256": "7a88c05fc84aa18ee6c11a1fec01639979195284333f8b55babb226b24175c80",
+  "driver_sha256": "8b272e3909390d6c39d0dbe2e5bc304231cbdb86a464bbad8730aa441bf6269e",
+  "scope": "73-variable guarded PHP(9,8), ten conditional UNSAT/base SAT pairs, independent structural oracle and original-input model checks; opt-in reuse vs rebuild in same binary",
+  "repeats": 2,
+  "seed": 2026090816,
+  "timeout": 120
+}

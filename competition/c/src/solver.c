@@ -771,7 +771,7 @@ bool solver_add_clause(Solver* s, const Lit* lits, uint32_t size) {
     }
     s->clauses[s->num_clauses++] = cr;
     s->num_original = s->num_clauses;
-    if (!n) { s->result = FALSE; if (tmp != small) free(tmp); return false; }
+    if (!n) { s->base_unsat=true;s->result = FALSE; if (tmp != small) free(tmp); return false; }
     Lit *cl = CLAUSE_LITS(s->arena, cr);
     uint32_t alive = 0;
     for (uint32_t i = 0; i < n; ++i) {
@@ -786,7 +786,7 @@ bool solver_add_clause(Solver* s, const Lit* lits, uint32_t size) {
         watch_add(s->watches, cl[0], cr, cl[1]);
         watch_add(s->watches, cl[1], cr, cl[0]);
     }
-    if (!alive) s->result = FALSE;
+    if (!alive) {s->base_unsat=true;s->result = FALSE;}
     else if (alive == 1 && s->values[var(cl[0])] == UNDEF) {
         push_trail(s, cl[0]);
         s->vars[var(cl[0])].reason = cr;
@@ -2059,18 +2059,19 @@ incomplete:
 
 static bool solver_rebuild(Solver *s) { return solver_rebuild_timed(s, 0, 0); }
 
-/* Fast reuse is deliberately conservative. Destructive preprocessing, local
-   search's model trail, conditional UNSAT, proofs and interrupted propagation
-   retain the established rebuild path. Learned CDCL clauses after SAT or a
-   conflict-limited search remain consequences of the permanent formula. */
+/* Fast reuse is deliberately conservative. Reconstruction state, destructive
+   preprocessing modes, local search's model trail, proofs and interrupted
+   propagation retain the rebuild path. CDCL learning treats assumptions as
+   decisions, so learned clauses remain consequences of the permanent formula
+   even after conditional UNSAT. Congruence's entailed additions are compatible;
+   actual equivalence substitution records reconstruction state and falls back. */
 static bool solver_prepare_next(Solver *s, double start) {
     if (s->error || s->watches->failed) return false;
     bool reuse=s->opts.reuse_learnts && !s->proof_file && !s->opts.proof_path &&
-        !s->elim && !s->opts.elim && !s->opts.bce && !s->opts.equiv &&
-        !s->opts.congruence && !s->opts.local_search && !s->opts.inprocess &&
-        !s->interrupted && !(s->result==FALSE && s->last_assumptions);
+        !s->elim && !s->opts.elim && !s->opts.bce && !s->opts.local_search && !s->opts.inprocess &&
+        !s->interrupted;
     if (!reuse) return start<0 ? solver_rebuild(s) : solver_rebuild_timed(s,start,s->opts.max_time);
-    bool unsat=s->result==FALSE;
+    bool unsat=s->base_unsat || (s->result==FALSE && !s->last_assumptions);
     memset(&s->stats,0,sizeof s->stats);
     s->stats.start_time=start<0 ? solver_cpu_time() : start;
     s->work_limit=0;s->clock_initialized=false;s->clock_polls=0;
@@ -2134,11 +2135,11 @@ bool solver_normalize_conflict(Solver *s, CRef conflict) {
 
 static lbool solve_internal(Solver *s, const Lit *assumps, uint32_t n_assumps);
 static lbool solve_internal_account_impl(Solver *s, const Lit *assumps, uint32_t n_assumps) {
-    if (s->result == FALSE) return FALSE;
-    if (solver_propagate(s) != INVALID_CLAUSE) return FALSE;
+    if (s->result == FALSE) {s->base_unsat=true;return FALSE;}
+    if (solver_propagate(s) != INVALID_CLAUSE) {s->base_unsat=true;return FALSE;}
     if (s->error || s->interrupted) return UNDEF;
     s->work_limit = s->work + MIN(s->opts.preprocess_budget, UINT64_MAX-s->work);
-    if (s->opts.preprocess_budget && s->opts.probing && failed_literal_probing(s) < 0) { s->work_limit=0; return FALSE; }
+    if (s->opts.preprocess_budget && s->opts.probing && failed_literal_probing(s) < 0) { s->work_limit=0;s->base_unsat=true;return FALSE; }
     if (!n_assumps && s->opts.congruence && s->opts.congruence_budget) {
         uint64_t remaining = s->work_limit > s->work ? s->work_limit-s->work : 0;
         s->work_limit = s->work + MIN(s->opts.congruence_budget, UINT64_MAX-s->work);
@@ -2147,7 +2148,7 @@ static lbool solve_internal_account_impl(Solver *s, const Lit *assumps, uint32_t
         solver_account_end(s,ACCOUNT_PREPROCESS,started);
         s->work_limit = 0;
         if (s->error || s->interrupted) return UNDEF;
-        if (s->result == FALSE || solver_propagate(s) != INVALID_CLAUSE) return FALSE;
+        if (s->result == FALSE || solver_propagate(s) != INVALID_CLAUSE) {s->base_unsat=true;return FALSE;}
         s->work_limit = s->work + MIN(remaining, UINT64_MAX-s->work);
     }
     if (!n_assumps && s->opts.equiv && s->opts.equiv_budget) {
@@ -2158,7 +2159,7 @@ static lbool solve_internal_account_impl(Solver *s, const Lit *assumps, uint32_t
         solver_account_end(s,ACCOUNT_PREPROCESS,started);
         s->work_limit = 0;
         if (s->error || s->interrupted) return UNDEF;
-        if (s->result == FALSE || solver_propagate(s) != INVALID_CLAUSE) return FALSE;
+        if (s->result == FALSE || solver_propagate(s) != INVALID_CLAUSE) {s->base_unsat=true;return FALSE;}
         s->work_limit = s->work + MIN(remaining, UINT64_MAX-s->work);
     }
     if (s->opts.preprocess_budget && !n_assumps && s->opts.bce && !solver_budget_exhausted(s))
@@ -2170,7 +2171,7 @@ static lbool solve_internal_account_impl(Solver *s, const Lit *assumps, uint32_t
     }
     s->work_limit = 0;
     if (s->error || s->interrupted) return UNDEF;
-    if (s->result == FALSE) return FALSE;
+    if (s->result == FALSE) {s->base_unsat=true;return FALSE;}
     Lit *learnt = malloc((s->num_vars+1)*sizeof *learnt);
     if (!learnt) { s->error=true; return UNDEF; }
     lbool result=UNDEF;
@@ -2185,10 +2186,10 @@ static lbool solve_internal_account_impl(Solver *s, const Lit *assumps, uint32_t
         if (conflict != INVALID_CLAUSE) {
             s->stats.conflicts++; s->restart.conflicts_since++;
             if (s->opts.chrono && !solver_normalize_conflict(s,conflict)) {
-                if (!solver_budget_exhausted(s)) result=FALSE;
+                if (!solver_budget_exhausted(s)) {s->base_unsat=true;result=FALSE;}
                 break;
             }
-            if (!s->decision_level) { result=FALSE; break; }
+            if (!s->decision_level) {s->base_unsat=true;result=FALSE;break;}
             uint32_t n; Level backtrack;
             solver_analyze(s, conflict, learnt, &n, &backtrack);
             s->stats.minimized_literals += solver_minimize_clause(s,learnt,&n);
@@ -2244,7 +2245,7 @@ static lbool solve_internal_account_impl(Solver *s, const Lit *assumps, uint32_t
                 if (s->qhead<s->trail_size) continue;
             }
             if (!s->decision_level) {
-                if (!solver_simplify(s)) { result=FALSE;break; }
+                if (!solver_simplify(s)) {s->base_unsat=true;result=FALSE;break;}
                 if (s->qhead<s->trail_size) continue;
             }
             if (s->opts.rephase && s->stats.conflicts >= s->rephase.conflicts_since+s->opts.rephase_interval) {

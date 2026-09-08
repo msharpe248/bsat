@@ -7,14 +7,19 @@ failed-assumption result and resets per-call budgets and restart bookkeeping.
 Input growth and new clauses use the same preparation. Assumptions remain
 one-call decisions; their learned consequences are entailed by permanent input.
 
-The fast path requires no proof, elimination state, BVE, BCE, equivalence rewrite,
-congruence, local search or inprocessing; it also requires no interruption and
-no previous UNSAT result under assumptions. Those cases rebuild from original
-input. Errors remain poisoned. Unconditional UNSAT may be cached. Portfolio
+The fast path requires no proof, elimination state, BVE, BCE, local search or
+inprocessing; it also requires no interruption. Those cases rebuild from original
+input. Congruence's entailed additions are compatible. Enabling equivalence
+processing is compatible only until an actual rewrite creates reconstruction
+state, which forces a rebuild. Conditional UNSAT now retains entailed learned
+clauses: a separate permanent-root-inconsistency flag prevents confusing a
+failed assumption with a base-formula contradiction. Errors remain poisoned.
+Unconditional UNSAT may be cached. Portfolio
 solves retain their established rebuild policy. This is a scoped opt-in API
 feature, not transparent reuse across every preprocessing combination.
 
-Validation on macOS ARM64 / Apple Clang:
+Initial implementation validation on macOS ARM64 / Apple Clang (before the
+conditional-UNSAT extension):
 
 - All 51 C test executables pass in release and ASan/UBSan builds.
 - Each build checks 8,192 stateful eight-variable queries against an independent
@@ -43,3 +48,42 @@ RSS across the protocol is 32.9 MB versus rebuild's 65.3 MB. The tiny fixture's
 sub-millisecond repeated-query times are below a useful general speed claim.
 Timeouts are UNKNOWN, not independently verified answers. These two workloads
 do not establish industrial incremental performance generally.
+
+## Conditional UNSAT and compatible preprocessing
+
+The extension passes all 55 C test executables in release and ASan/UBSan builds.
+The eight-variable stateful oracle checks 8,192 queries per build with 8,007
+fast preparations, now mixing congruence and equivalence options. Focused
+tests cover permanent empty clauses, root contradictions, conditional failure,
+truth-table queries after actual congruence additions, and reconstruction
+fallback after actual equivalence substitution.
+
+Both builds pass 2,583 injected allocation failures, 12,000 concurrent opaque-ABI
+queries and 16,384 public-API soak queries. All 69 short-deadline cases pass.
+The hard growing histories pass with 360 non-cancellation queries, 296 UNKNOWN
+slices, 1,925,176 conflicts and 59,898 reductions. They use slightly more total
+conflicts than the pre-extension baseline: retaining state changes later search
+and is not guaranteed to improve every history. Two representative 456-variable
+conditional UNSAT queries also pass the independent LRAT/CakeML chain; a SAT
+query passes original-query model validation. Reproduce those checks with
+`tests/check_hard_certificates.py`; hashes and results are recorded in
+`benchmark_results/hard-query-certificates-20260908.json`.
+
+A 121-second ASan/UBSan API campaign completes 70,345 executions without a
+finding, including compatible congruence/equivalence reuse and allocation
+failure paths (peak fuzzer RSS 511 MiB).
+
+The frozen repeated-query comparison uses a 73-variable guarded PHP(9,8)
+formula, ten conditional-UNSAT/base-SAT pairs, two repetitions and the same
+binary with reuse disabled/enabled. Every answer has a structural oracle and
+every returned base model is scanned against the original clauses. Rebuild
+uses 253,510 conflicts and 1.943/1.946 seconds CPU per process; reuse uses
+25,351 conflicts and 0.193/0.193 seconds, retaining state for 19 preparations.
+This roughly 10x result is specific to repeating the same hard query. It is
+not a general incremental speed claim. Driver, binary and policy hashes are
+in `benchmark_results/conditional-reuse-policy-20260908.json`; complete rows
+are in `conditional-reuse-20260908.json`.
+Twelve additional single-query runs at 20,000 conflicts preserve the pre-extension
+status, selected search counters and binary/text proof bytes; see
+`benchmark_results/reuse-single-query-trace-20260908.json`. UNKNOWN prefixes
+are used only for these trace comparisons.

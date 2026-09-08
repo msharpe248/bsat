@@ -33,7 +33,7 @@ static void learned_retention(void) {
     assert(solver_solve(s)==TRUE && solver_model_value(s,9)==FALSE);
     Lit bad=mkLit(1,true);assert(solver_solve_with_assumptions(s,&bad,1)==FALSE);
     uint64_t before=s->reused_solves;
-    assert(solver_solve(s)==TRUE);assert(s->reused_solves==before); /* conditional UNSAT rebuild */
+    assert(solver_solve(s)==TRUE);assert(s->reused_solves==before+1); /* conditional UNSAT retains entailed clauses */
     solver_free(s);
 }
 static void conflict_slices(void) {
@@ -55,7 +55,8 @@ int main(void) {
     for(unsigned seed=1;seed<=128;++seed) {
         SolverOpts o=default_opts();o.reuse_learnts=true;o.probing=seed&1;
         o.chrono=seed&2;o.chrono_levels=0;o.vmtf=seed&4;o.lrb=(seed&8)&&!o.vmtf;
-        if(seed&16)o.equiv=true; /* exercise conservative fallback */
+        if(seed&16)o.equiv=true; /* compatible state or reconstruction fallback */
+        if(seed&32)o.congruence=true;
         Solver *s=solver_new_with_opts(&o);assert(s);
         for(unsigned v=0;v<8;++v)assert(solver_new_var(s));
         Clause cs[32];unsigned count=0,state=seed;

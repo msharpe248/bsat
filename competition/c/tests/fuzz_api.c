@@ -28,10 +28,11 @@ int LLVMFuzzerTestOneInput(const uint8_t *data,size_t size) {
     o.congruence=data[0]&4;o.elim=data[0]&8;o.bce=data[0]&16;
     o.chrono=data[0]&32;o.chrono_levels=0;o.vmtf=data[0]&64;
     o.reuse_learnts=data[2]&128;
-    /* Half of reuse inputs exercise its compatible fast path; others retain
-       feature combinations that must conservatively rebuild. */
+    /* Half of reuse inputs permit compatible preprocessing reuse; actual
+       equivalence reconstruction still falls back. Others enable destructive
+       modes and exercise the conservative rebuild path. */
     if (o.reuse_learnts && (data[1]&1))
-        o.equiv=o.congruence=o.elim=o.bce=false;
+        o.elim=o.bce=false;
     o.reduce_interval=2;o.inprocess=!(o.reuse_learnts && (data[1]&1));o.inprocess_interval=2;
     o.preprocess_budget=10000;o.equiv_budget=10000;o.congruence_budget=10000;
     Solver *s=solver_new_with_opts(&o);if(!s){assert(fuzz_alloc_failed());return 0;}

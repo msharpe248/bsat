@@ -311,6 +311,6 @@ else
 	ln -sf libbsat.so.1 "$(DESTDIR)$(PREFIX)/lib/libbsat.so"
 endif
 	python3 tests/write_pkgconfig.py --template bsat.pc.in --prefix "$(PREFIX)" --version "$(PACKAGE_VERSION)" --output "$(DESTDIR)$(PREFIX)/lib/pkgconfig/bsat.pc"
-package-test:
+package-test: all $(PACKAGE_LIBRARY)
 	python3 tests/test_install.py --cc "$(CC)" --mode "$(MODE)"
 .PHONY: install package-test

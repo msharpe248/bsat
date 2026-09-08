@@ -1,0 +1,167 @@
+{
+  "scope": "Independently certify representative queries from the hard history formula.",
+  "variables": 456,
+  "base_clauses": 1632,
+  "queries": [
+    {
+      "schema": 1,
+      "scope": "base formula AND exact assumption units",
+      "base_sha256": "445febf5abc58eff9e4eebb054217084d1aa23fc51ea3052c61940cc528450bb",
+      "assumptions": [
+        1
+      ],
+      "query_sha256": "4d93707824d3dcb1bd035a3f336be82d15fd2240658aa32e8ca3988589eb58cb",
+      "solver_sha256": "24e001ac302fc95bf60591cf2e4419dd946d28eb15b44844e27c97634e40e073",
+      "status": "UNSAT",
+      "verified": true,
+      "command": [
+        "/Users/msharpe/python/bsat/competition/c/bin/bsat",
+        "--binary-proof",
+        "--proof",
+        "/var/folders/ts/779j13fj7_x2z167570zvv4c0000gn/T/bsat-hard-cert-yjpsy9r4/0/proof.drat",
+        "/var/folders/ts/779j13fj7_x2z167570zvv4c0000gn/T/bsat-hard-cert-yjpsy9r4/0/query.cnf"
+      ],
+      "solver_seconds": 0.1455913749523461,
+      "returncode": 20,
+      "proof_sha256": "3a487c31d41c5b0e61a1dfe34e90d2d05a500e9bff273ccb9e50dcb82488fc52",
+      "verification": {
+        "input_sha256": "4d93707824d3dcb1bd035a3f336be82d15fd2240658aa32e8ca3988589eb58cb",
+        "drat_sha256": "3a487c31d41c5b0e61a1dfe34e90d2d05a500e9bff273ccb9e50dcb82488fc52",
+        "converter_sha256": "9bfc20a5fa9eb2a0ffadd2b0cfc7cdd4a20f6aa9c8d7de5b6c771160b847f630",
+        "checker_sha256": "027e767e8e5543d61671c44f7475e985b7969112e6825d51f2207bf0580cbf5c",
+        "verified": true,
+        "stages": [
+          {
+            "command": [
+              "/private/tmp/bsat-drat-trim",
+              "/var/folders/ts/779j13fj7_x2z167570zvv4c0000gn/T/bsat-hard-cert-yjpsy9r4/0/verification/input.cnf",
+              "/var/folders/ts/779j13fj7_x2z167570zvv4c0000gn/T/bsat-hard-cert-yjpsy9r4/0/verification/proof.drat",
+              "-L",
+              "/var/folders/ts/779j13fj7_x2z167570zvv4c0000gn/T/bsat-hard-cert-yjpsy9r4/0/verification/proof.lrat"
+            ],
+            "seconds": 0.03828125027939677,
+            "cpu_seconds": 0.036925999999999994,
+            "children_peak_rss_bytes": 51871744,
+            "returncode": 0,
+            "stdout": "\nc turning on binary mode checking\n\nc parsing input formula with 456 variables and 1633 clauses\n\nc finished parsing, read 79867 bytes from proof file\n\nc detected empty clause; start verification via backward checking\n\nc 205 of 1633 clauses in core                            \n\nc 2839 of 3108 lemmas in core using 42595 resolution steps\n\nc 0 RAT lemmas in core; 0 redundant literals in core lemmas\n\ns VERIFIED\n\nc verification time: 0.036 seconds\n",
+            "stderr": ""
+          },
+          {
+            "command": [
+              "/private/tmp/bsat-cake-verified-build/cake_lpr",
+              "--CML_HEAP_SIZE=512",
+              "--CML_STACK_SIZE=128",
+              "/var/folders/ts/779j13fj7_x2z167570zvv4c0000gn/T/bsat-hard-cert-yjpsy9r4/0/verification/input.cnf",
+              "/var/folders/ts/779j13fj7_x2z167570zvv4c0000gn/T/bsat-hard-cert-yjpsy9r4/0/verification/proof.lrat"
+            ],
+            "seconds": 0.012856374960392714,
+            "cpu_seconds": 0.011320000000000002,
+            "children_peak_rss_bytes": 51871744,
+            "returncode": 0,
+            "stdout": "s VERIFIED UNSAT\n",
+            "stderr": ""
+          }
+        ],
+        "lrat_sha256": "bd5beb1a226b52e9e7b68df705689afa00ef8f54c5350bc7024aaf94fd2ff5e5",
+        "seconds": 0.0522285420447588,
+        "rss_scope": "Cumulative child-process high-water RSS, not isolated per-stage peak"
+      },
+      "end_to_end_seconds": 0.1986507917754352
+    },
+    {
+      "schema": 1,
+      "scope": "base formula AND exact assumption units",
+      "base_sha256": "445febf5abc58eff9e4eebb054217084d1aa23fc51ea3052c61940cc528450bb",
+      "assumptions": [
+        400
+      ],
+      "query_sha256": "7dfcbd79936cb94c6c4fe8bd7e8d7b9c5d653e9bf70e413ad03ab786cb774b4a",
+      "solver_sha256": "24e001ac302fc95bf60591cf2e4419dd946d28eb15b44844e27c97634e40e073",
+      "status": "UNSAT",
+      "verified": true,
+      "command": [
+        "/Users/msharpe/python/bsat/competition/c/bin/bsat",
+        "--binary-proof",
+        "--proof",
+        "/var/folders/ts/779j13fj7_x2z167570zvv4c0000gn/T/bsat-hard-cert-yjpsy9r4/1/proof.drat",
+        "/var/folders/ts/779j13fj7_x2z167570zvv4c0000gn/T/bsat-hard-cert-yjpsy9r4/1/query.cnf"
+      ],
+      "solver_seconds": 0.02127745933830738,
+      "returncode": 20,
+      "proof_sha256": "9bb666bd76d5ffa5dba5cf76758f5f8d851a2675f54cfd41915566b3a988d218",
+      "verification": {
+        "input_sha256": "7dfcbd79936cb94c6c4fe8bd7e8d7b9c5d653e9bf70e413ad03ab786cb774b4a",
+        "drat_sha256": "9bb666bd76d5ffa5dba5cf76758f5f8d851a2675f54cfd41915566b3a988d218",
+        "converter_sha256": "9bfc20a5fa9eb2a0ffadd2b0cfc7cdd4a20f6aa9c8d7de5b6c771160b847f630",
+        "checker_sha256": "027e767e8e5543d61671c44f7475e985b7969112e6825d51f2207bf0580cbf5c",
+        "verified": true,
+        "stages": [
+          {
+            "command": [
+              "/private/tmp/bsat-drat-trim",
+              "/var/folders/ts/779j13fj7_x2z167570zvv4c0000gn/T/bsat-hard-cert-yjpsy9r4/1/verification/input.cnf",
+              "/var/folders/ts/779j13fj7_x2z167570zvv4c0000gn/T/bsat-hard-cert-yjpsy9r4/1/verification/proof.drat",
+              "-L",
+              "/var/folders/ts/779j13fj7_x2z167570zvv4c0000gn/T/bsat-hard-cert-yjpsy9r4/1/verification/proof.lrat"
+            ],
+            "seconds": 0.03794262511655688,
+            "cpu_seconds": 0.03673,
+            "children_peak_rss_bytes": 51871744,
+            "returncode": 0,
+            "stdout": "\nc turning on binary mode checking\n\nc parsing input formula with 456 variables and 1633 clauses\n\nc finished parsing, read 144882 bytes from proof file\n\nc detected empty clause; start verification via backward checking\n\nc 205 of 1633 clauses in core                            \n\nc 2732 of 2912 lemmas in core using 39140 resolution steps\n\nc 0 RAT lemmas in core; 0 redundant literals in core lemmas\n\ns VERIFIED\n\nc verification time: 0.035 seconds\n",
+            "stderr": ""
+          },
+          {
+            "command": [
+              "/private/tmp/bsat-cake-verified-build/cake_lpr",
+              "--CML_HEAP_SIZE=512",
+              "--CML_STACK_SIZE=128",
+              "/var/folders/ts/779j13fj7_x2z167570zvv4c0000gn/T/bsat-hard-cert-yjpsy9r4/1/verification/input.cnf",
+              "/var/folders/ts/779j13fj7_x2z167570zvv4c0000gn/T/bsat-hard-cert-yjpsy9r4/1/verification/proof.lrat"
+            ],
+            "seconds": 0.011862208135426044,
+            "cpu_seconds": 0.010817999999999987,
+            "children_peak_rss_bytes": 51871744,
+            "returncode": 0,
+            "stdout": "s VERIFIED UNSAT\n",
+            "stderr": ""
+          }
+        ],
+        "lrat_sha256": "2914588fd0e17a0e5c6182e0975b06e3e39b7adabc7346350254549ddaf65740",
+        "seconds": 0.05085816606879234,
+        "rss_scope": "Cumulative child-process high-water RSS, not isolated per-stage peak"
+      },
+      "end_to_end_seconds": 0.07279908284544945
+    },
+    {
+      "schema": 1,
+      "scope": "base formula AND exact assumption units",
+      "base_sha256": "445febf5abc58eff9e4eebb054217084d1aa23fc51ea3052c61940cc528450bb",
+      "assumptions": [
+        -1,
+        -58,
+        -115,
+        -172,
+        -229,
+        -286,
+        -343,
+        -400
+      ],
+      "query_sha256": "4fb17df31df4ae50d7f378b520c6d3f53dd09231df54b33f86377dea28faf4d2",
+      "solver_sha256": "24e001ac302fc95bf60591cf2e4419dd946d28eb15b44844e27c97634e40e073",
+      "status": "SAT",
+      "verified": true,
+      "command": [
+        "/Users/msharpe/python/bsat/competition/c/bin/bsat",
+        "--binary-proof",
+        "--proof",
+        "/var/folders/ts/779j13fj7_x2z167570zvv4c0000gn/T/bsat-hard-cert-yjpsy9r4/2/proof.drat",
+        "/var/folders/ts/779j13fj7_x2z167570zvv4c0000gn/T/bsat-hard-cert-yjpsy9r4/2/query.cnf"
+      ],
+      "solver_seconds": 0.0026165423914790154,
+      "returncode": 10,
+      "proof_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "end_to_end_seconds": 0.003255208022892475
+    }
+  ]
+}
