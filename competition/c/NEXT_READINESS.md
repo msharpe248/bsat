@@ -1,5 +1,9 @@
 # Performance and assurance follow-up
 
+> Historical milestone report. Its claims apply to the recorded revisions. Use
+> [PRODUCTION_READINESS.md](PRODUCTION_READINESS.md) for current capabilities,
+> evidence limits and release gates.
+
 This tracker covers the authorized follow-up to `READINESS.md`. Each milestone
 is implemented, checked and measured before being committed and pushed. Negative
 performance experiments are recorded without retaining regressing runtime changes.

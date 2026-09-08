@@ -4,10 +4,12 @@ The maintained coverage inventory and reproducible commands are in
 [FEATURE_COVERAGE.md](FEATURE_COVERAGE.md). The previous 2025 feature-count and
 percentage summary was stale and has been replaced.
 
-The readiness work currently has 48 C test executables per release/sanitizer
-build, isolated allocation-failure injection, independent model/proof validation,
-24 long-search/metamorphic cases, deadline/process checks and benchmark-harness
-regressions. Counts describe exercised cases, not a correctness percentage.
+The Makefile discovers `test_*.c` automatically, with separate release/sanitizer
+builds. Coverage includes allocation-failure injection, model/proof validation,
+stateful and real-circuit histories, resource controls, worker recovery, ABI and
+threading checks, and benchmark-harness regressions. Counts describe exercised
+cases, not a correctness percentage.
 
-See [READINESS.md](../READINESS.md) for pinned validation records, benchmark
-results, API limitations and remaining evidence gaps.
+See [Production readiness](../PRODUCTION_READINESS.md) for the authoritative
+capability matrix, current evidence limits and release gates. Earlier reports
+retain their historical counts and measurements.

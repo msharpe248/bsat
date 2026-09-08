@@ -2,8 +2,9 @@
 
 This matrix describes checked behavior, not a percentage of solver correctness.
 The former “100% of directly testable features” claim and 2025 test counts were
-outdated. As of the readiness milestones, the default Makefile discovers **48 C
-test executables per build**. Release and ASan/UBSan use separate object directories.
+outdated. The Makefile discovers `test_*.c` automatically (64 C executables as of
+2026-09-08). Release and ASan/UBSan use separate object directories. The authoritative
+capability and release-gate summary is [Production readiness](../PRODUCTION_READINESS.md).
 
 | Area | Executable evidence | Boundary |
 | --- | --- | --- |
@@ -15,11 +16,17 @@ test executables per build**. Release and ASan/UBSan use separate object directo
 | Search policies | `test_heap`, `test_vmtf`, `test_phases`, `test_rephase`, `test_portfolio`, `test_restart_reuse` | Specific policy/state invariants, not proof of performance gains |
 | Local search | `test_local_search_*`, `test_walk_phase_feedback`, `validate_local_search.py` | Model checks, initialization, counters, root assignments and budgets |
 | API | `test_api_contract`, `test_options`, `test_regressions` | Supported synchronous contract, invalid arguments, repeated calls and truth-table comparisons |
-| Allocation failures | `make fault-test` | 1,868 single failures over twelve deterministic paths; not every possible allocation sequence |
+| Allocation failures | `make fault-test recovery-fault-test` | Deterministic ENOMEM sweeps, including 131 recovery cutoffs; not every possible allocation sequence |
 | Proof I/O | `test_proof_encoding`, `check_process_failures.py` | Text/binary bytes, short writes, deferred flush failures, file-size limits and signals |
 | Independent answers | `validate.py` with pinned drat-trim | Small truth tables, original models, RUP checks and external UNSAT certificates across option combinations |
 | Long search | `check_long_search.py` | 24 assignment-exclusion/pigeonhole cases with renamed variables and reordered literals/clauses; counter gates require real restarts, reductions, GC and SCC substitution |
 | Measurement integrity | `test_select_corpus.py`, `test_benchmark_manifest.py`, `test_benchmark_artifacts.py` | History exclusion, frozen hashes, certificate retention and checker exit/status handling |
+| Retained incremental reference | `differential_histories.py`, `incremental_reference.py` | Persistent CaDiCaL plus fresh Kissat; additions, assumptions, cancellation and checkpoints |
+| Real verification circuits | `test_aag_history.py`, `industrial_histories.py` | Pinned AIGER input, growing CNF, independent circuit simulation and checked proofs; bounded safety queries |
+| Certified journals | `test_proof_journal`, `test_query_export`, `test_journal_limits`, `check_retained_certificates.py` | Exact query context, RUP journal, quota and I/O failures; independent checker required |
+| Service recovery | `test_recovery_service`, `make recovery-fault-test`, `check_recovery_supervisor.py` | Retained input replay, ENOMEM, killed child, cancellation and quota; parent durability outside example |
+| Service limits | `test_service_limits`, `test_query_controls`, `test_resource_limits.py` | Cooperative API limits and isolated OS process limits; owned capacity is not RSS |
+| IPASIR/ABI/concurrency | `test_ipasir`, `make embedding-test package-test soak-test` | Installed/frozen consumers, independent instances and callbacks; same-handle calls serialized |
 
 ## Reproduce
 

@@ -1,5 +1,9 @@
 # Attribution, bounded search and service integration
 
+> Historical milestone report. Its claims apply to the recorded revisions. Use
+> [PRODUCTION_READINESS.md](PRODUCTION_READINESS.md) for current capabilities,
+> evidence limits and release gates.
+
 Authorized batch; commit and push each validated milestone. Preserve unrelated
 `.zvec-grep/`. Timed workloads run serially without concurrent local builds/tests.
 

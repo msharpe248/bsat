@@ -1,5 +1,8 @@
 # Installing the C solver
 
+Installation support is separate from production acceptance; see the current
+[capabilities and release gates](PRODUCTION_READINESS.md).
+
 Build and stage a release with `make CC=clang` followed by
 `make install PREFIX=/opt/bsat DESTDIR=/path/to/staging`. Omit `DESTDIR` to
 install directly into a writable prefix. Installation provides `bin/bsat`,

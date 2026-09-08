@@ -1,5 +1,9 @@
 # Next production implementation batch
 
+> Historical milestone report. Its claims apply to the recorded revisions. Use
+> [PRODUCTION_READINESS.md](PRODUCTION_READINESS.md) for current capabilities,
+> evidence limits and release gates.
+
 Authorized order: diagnose reg-n, reduce large-input memory, confirm the faster
 profile on additional inputs, exercise hard incremental histories, extend safe
 reuse, and finish release packaging/ABI/race checks. Commit and push each milestone.

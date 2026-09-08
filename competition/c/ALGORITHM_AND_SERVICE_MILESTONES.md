@@ -1,5 +1,9 @@
 # Algorithm and service batch
 
+> Historical milestone report. Its claims apply to the recorded revisions. Use
+> [PRODUCTION_READINESS.md](PRODUCTION_READINESS.md) for current capabilities,
+> evidence limits and release gates.
+
 Authorized scopes: proof-producing factoring; longer stratified industrial
 evaluation; full-search memory/speed tradeoffs; application-shaped incremental
 histories; per-query embedding budgets/statistics and IPASIR; certificates over

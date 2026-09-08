@@ -3,14 +3,12 @@
 BSAT is a CDCL solver under active development. The September 2026 hardening
 work fixes known wrong-answer and memory-management defects and adds independent
 certificate validation. Passing these tests does not establish production
-readiness for arbitrary workloads. See [HARDENING.md](HARDENING.md) for changes,
-validation evidence, research references, and remaining limitations.
-The latest milestones are tracked in
-[SEARCH_AND_INTEGRATION_MILESTONES.md](SEARCH_AND_INTEGRATION_MILESTONES.md);
-[SEARCH_AND_RESOURCE_MILESTONES.md](SEARCH_AND_RESOURCE_MILESTONES.md),
-[ALGORITHM_AND_SERVICE_MILESTONES.md](ALGORITHM_AND_SERVICE_MILESTONES.md) and
-[PRODUCTION_GAPS.md](PRODUCTION_GAPS.md) records earlier batches.
-Earlier acceptance checks and evaluation are in [READINESS.md](READINESS.md), with executable coverage in
+readiness for arbitrary workloads. Start with
+[Production readiness](PRODUCTION_READINESS.md), the authoritative capability
+matrix, evidence limits and release gates. The current batch is recorded in
+[PRODUCTION_WORKLOAD_MILESTONES.md](PRODUCTION_WORKLOAD_MILESTONES.md).
+[HARDENING.md](HARDENING.md) and earlier milestone reports preserve historical
+changes and measurements. Reproducible checks are indexed in
 [tests/FEATURE_COVERAGE.md](tests/FEATURE_COVERAGE.md).
 
 ## Build and verify

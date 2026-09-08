@@ -1,5 +1,8 @@
 # Opaque shared-library embedding
 
+Current capability and release status: [PRODUCTION_READINESS.md](PRODUCTION_READINESS.md).
+Validation counts and timings below describe this feature's original milestone.
+
 `include/bsat.h` defines ABI version 1 without exposing solver layouts. Build with
 `make shared`; run `make embedding-test` for a client linked to that library using
 only the public header. Shared exports carry explicit visibility; internal solver

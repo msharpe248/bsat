@@ -1,5 +1,8 @@
 # Supported C embedding contract
 
+For the overall capability matrix, evidence limits and release gates, see
+[PRODUCTION_READINESS.md](PRODUCTION_READINESS.md). This document defines API behavior.
+
 The supported public embedding interface is the opaque ABI-v1 `include/bsat.h`.
 `make shared embedding-test` builds the shared library and an external client.
 The internal `solver.h` remains available for development, but its exposed
@@ -11,7 +14,8 @@ calls, variables grow automatically, and zero is invalid inside a literal array.
 Empty clauses are accepted input. Assumptions must reference existing variables.
 Use `bsat_set_limits` before input, or `bsat_set_query_limits` between queries.
 `bsat_get_stats` returns a stable latest-query snapshot; see `IPASIR.md`. Only the
-latest SAT result permits model reads; mutation/solve invalidates that lifetime.
+latest SAT result permits model reads; additions, checkpoints and new solves
+invalidate that lifetime. Changing query/service limits preserves the latest answer.
 Errors poison a handle. Destroy it exactly once; destroying NULL is valid.
 `BSAT_CERTIFICATES` enables query-scoped exports over retained learning; see
 `RETAINED_CERTIFICATES.md`. Other internal options remain private.

@@ -1,6 +1,10 @@
 # Native profiles of three unsolved development workloads
 
-The current `268cebe` release binary was sampled on diagnosis, scheduling and
+Historical profile of revision `268cebe`; later proof buffering and Linux planning
+profiles supersede its implementation-specific observations. Current status:
+[PRODUCTION_READINESS.md](PRODUCTION_READINESS.md).
+
+The `268cebe` release binary was sampled on diagnosis, scheduling and
 station repacking, with the chronology/congruence/SCC/alternating/VMTF profile.
 Each input was run with text and binary proofs. Native macOS `sample` observed
 five seconds from startup at a requested 1 ms interval; BSAT had a 12-second

@@ -1,4 +1,4 @@
-> Historical development snapshot. Current behavior and validation status are documented in [HARDENING.md](HARDENING.md) and [README.md](README.md); older defaults and production-readiness claims below are not current.
+> Historical development snapshot. Current behavior and validation status are documented in [PRODUCTION_READINESS.md](PRODUCTION_READINESS.md); older defaults and production-readiness claims below are not current.
 
 # BSAT C Solver - Feature Implementation Summary
 

@@ -18,7 +18,10 @@ production readiness documentation. Commit and push each validated milestone.
 4. Service recovery: complete. Public-ABI retained-input replay, 131 allocation
    cutoffs, quota/cancellation boundaries and killed-child replacement with
    independent certificates pass in release/sanitizer builds. See SERVICE_RECOVERY.md.
-5. Readiness consolidation: in progress.
+5. Readiness consolidation: complete. PRODUCTION_READINESS.md is authoritative;
+   README/API/install/coverage documents link to it and old milestone reports
+   identify their historical scope. Release gates distinguish repository evidence
+   from target-workload, hardware and deployment acceptance.
 
 Timed runs are serial, without concurrent local builds/tests. Preserve negative
 results and unavailable counters; never substitute software events for PMU data.

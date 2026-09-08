@@ -1,5 +1,9 @@
 # Search and resource batch
 
+> Historical milestone report. Its claims apply to the recorded revisions. Use
+> [PRODUCTION_READINESS.md](PRODUCTION_READINESS.md) for current capabilities,
+> evidence limits and release gates.
+
 Authorized: diagnose industrial search gaps; improve incremental reuse; bound
 certificate growth; strengthen service resource controls; comparable Linux
 performance evidence; improve factoring selection. Commit and push each

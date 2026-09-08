@@ -1,11 +1,11 @@
-# Production readiness work
+# Archived production readiness work
 
-September 8 update: embedding, conservative learned reuse, conditional-certificate
-bundles and broader assurance now have implementations and validation recorded in
-[PRODUCTION_GAPS.md](PRODUCTION_GAPS.md). Capability limits below describe this
-earlier milestone where they conflict with the current API contract.
+This is a historical milestone report. Its test counts, performance observations
+and unsupported-capability list describe the recorded revisions. For current
+support, evidence limits and release gates, use
+[PRODUCTION_READINESS.md](PRODUCTION_READINESS.md).
 
-This is the current work tracker, not a claim of production or competition readiness.
+This report is not a claim of production or competition readiness.
 Completed answers must have an independently checked original-input model or
 UNSAT certificate. UNKNOWN is unfinished, not an incorrect answer.
 

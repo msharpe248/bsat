@@ -1,5 +1,9 @@
 # Next production milestones
 
+> Historical milestone report. Its claims apply to the recorded revisions. Use
+> [PRODUCTION_READINESS.md](PRODUCTION_READINESS.md) for current capabilities,
+> evidence limits and release gates.
+
 Authorized scope: phase/memory diagnosis, measured memory reduction, controlled
 search-policy ablations, safe incremental reuse, service embedding, and broader
 stateful/certificate assurance. Commit and push each validated milestone.

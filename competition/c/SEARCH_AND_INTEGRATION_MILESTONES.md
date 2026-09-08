@@ -1,5 +1,9 @@
 # Search and integration batch
 
+> Historical milestone report. Its claims apply to the recorded revisions. Use
+> [PRODUCTION_READINESS.md](PRODUCTION_READINESS.md) for current capabilities,
+> evidence limits and release gates.
+
 Authorized: evaluate combined phase/factoring policies on fresh inputs; test
 bounded target refresh and diversification; measure planning propagation/search
 bottlenecks; independent incremental differential histories and an upstream IPASIR

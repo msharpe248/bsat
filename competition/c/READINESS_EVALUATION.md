@@ -1,5 +1,9 @@
 # Broader repeated evaluation of the hardened C solver
 
+> Historical milestone report. Its claims apply to the recorded revisions. Use
+> [PRODUCTION_READINESS.md](PRODUCTION_READINESS.md) for current capabilities,
+> evidence limits and release gates.
+
 September 8 update: embedding, conservative learned reuse, conditional-certificate
 bundles and broader assurance now have implementations and validation recorded in
 [PRODUCTION_GAPS.md](PRODUCTION_GAPS.md). Capability limits below describe this
