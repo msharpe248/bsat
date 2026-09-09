@@ -929,6 +929,7 @@ void solver_print_stats(const Solver* s) {
  * Unit Propagation (Two-Watched Literals)
  *********************************************************************/
 
+static bool clause_locked(Solver *s, CRef cr);
 static CRef solver_propagate_account_impl(Solver* s) {
     while (s->qhead < s->trail_size) {
         if ((s->work & 1023) == 0 && solver_budget_exhausted(s)) return INVALID_CLAUSE;
@@ -1093,7 +1094,14 @@ static CRef solver_propagate_account_impl(Solver* s) {
 #ifdef BSAT_SEARCH_DIAGNOSTICS
                     ClauseHeader *h=CLAUSE_HEADER(s->arena,cref);
                     if(h->scans<UINT32_MAX) ++h->scans;
-                    if(clause_learned(s->arena,cref)) ++s->accounting.learned_scans;
+                    if(clause_learned(s->arena,cref)) {
+                        ++s->accounting.learned_scans;
+                        if(size<=64) {
+                            ++s->accounting.learned_scans_eligible_size;
+                            if(!clause_locked(s,cref)) ++s->accounting.learned_scans_unlocked;
+                        } else ++s->accounting.learned_scans_oversize;
+                        if(h->strengthened) ++s->accounting.strengthened_scans;
+                    }
                     else ++s->accounting.original_scans;
                     uint64_t born=((uint64_t)h->born_hi<<32)|h->born_lo;
                     uint64_t age=s->accounting.diagnostic_conflicts>=born ? s->accounting.diagnostic_conflicts-born : 0;
@@ -1966,6 +1974,10 @@ static bool solver_simplify_account_impl(Solver *s) {
         if (!candidate) continue;
         memcpy(candidate, CLAUSE_LITS(s->arena, cr), n * sizeof *candidate);
         uint32_t old_n = n;
+#ifdef BSAT_SEARCH_DIAGNOSTICS
+        uint64_t trial_start_work=s->work;
+        if(SEARCH_DIAGNOSTICS(s)) ++s->accounting.vivify_attempts;
+#endif
         for (uint32_t i = 0; i < n && !solver_budget_exhausted(s);) {
             Lit removed = candidate[i];
             memmove(candidate+i, candidate+i+1, (n-i-1)*sizeof *candidate);
@@ -1984,6 +1996,11 @@ static bool solver_simplify_account_impl(Solver *s) {
 #ifdef BSAT_SEARCH_DIAGNOSTICS
                 CLAUSE_HEADER(s->arena,fresh)->born_lo=(uint32_t)s->accounting.diagnostic_conflicts;
                 CLAUSE_HEADER(s->arena,fresh)->born_hi=(uint32_t)(s->accounting.diagnostic_conflicts>>32);
+                CLAUSE_HEADER(s->arena,fresh)->strengthened=1;
+                if(SEARCH_DIAGNOSTICS(s)) {
+                    ++s->accounting.vivify_replaced;
+                    s->accounting.vivify_removed_literals+=old_n-n;
+                }
 #endif
                 solver_delete_clause(s, cr); s->learnts[at] = fresh;
                 set_clause_lbd(s->arena, fresh, MIN(lbd,n));
@@ -2002,6 +2019,9 @@ static bool solver_simplify_account_impl(Solver *s) {
                 s->stats.minimized_literals += old_n-n;
             }
         }
+#ifdef BSAT_SEARCH_DIAGNOSTICS
+        if(SEARCH_DIAGNOSTICS(s)) s->accounting.vivify_work+=s->work-trial_start_work;
+#endif
         free(candidate);
         if (s->result == FALSE || s->error) break;
         /* Complete root propagation before the next temporary RUP check. */

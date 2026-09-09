@@ -43,4 +43,8 @@ repeated tuning against these inputs may be described as fresh confirmation.
 Deployment latency/memory/durability SLOs require an actual application envelope;
 the numerical limits here are experiment gates only.
 
-Status: selection frozen; remaining measurements and investigations pending.
+1. Complete: frozen inputs and checked large-CNF baseline; see EXPANDED_HOLDOUT_BASELINE.md.
+2. Complete: eligibility/payback measurements and corrected prior-experiment
+   review; retain diagnostics, no speculative selector. See LEARNED_CLAUSE_ELIGIBILITY.md.
+3. Structural comparison in progress.
+4. Expanded certified history validation pending.

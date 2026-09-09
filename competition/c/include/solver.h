@@ -193,6 +193,11 @@ typedef struct SolverAccounting {
     uint64_t scan_size_3, scan_size_4_8, scan_size_9_plus;
     uint64_t learned_reason_uses, learned_reason_lbd_sum;
     uint64_t reduced_candidates, deleted_without_analysis_use;
+#ifdef BSAT_SEARCH_DIAGNOSTICS
+    uint64_t learned_scans_eligible_size, learned_scans_oversize, learned_scans_unlocked;
+    uint64_t vivify_attempts, vivify_replaced, vivify_removed_literals, vivify_work;
+    uint64_t strengthened_scans;
+#endif
     double seconds[ACCOUNT_PHASES];
     uint64_t calls[ACCOUNT_PHASES];
 } SolverAccounting;

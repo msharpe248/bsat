@@ -1,5 +1,9 @@
 # Planning search comparison — 2026-09-08
 
+Follow-up: [eligibility investigation](LEARNED_CLAUSE_ELIGIBILITY.md) corrects
+this report's proposed hot-clause selection experiment: that policy had already
+been tested and rejected. The new measurements explain its limited size coverage.
+
 The two frozen planning instances remain UNKNOWN for BSAT and Kissat under the
 same external CPU and wall limits. BSAT reaches 100,000 conflicts faster than
 Kissat on both, but performs different search and simplification work. These

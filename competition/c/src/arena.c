@@ -192,6 +192,7 @@ CRef arena_alloc(Arena* arena, const Lit* lits, uint32_t size, bool learned) {
 #ifdef BSAT_SEARCH_DIAGNOSTICS
     header->born_lo = header->born_hi = 0;
     header->scans = header->units = header->analyses = 0;
+    header->strengthened = 0;
 #endif
 
     // Copy literals

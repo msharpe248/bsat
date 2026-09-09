@@ -85,6 +85,12 @@ void solver_print_accounting(const Solver *s) {
     PRINT_SEARCH(scans_before_unit_or_analysis);PRINT_SEARCH(scans_after_unit_or_analysis);
     PRINT_SEARCH(learned_reason_uses);PRINT_SEARCH(learned_reason_lbd_sum);
     PRINT_SEARCH(reduced_candidates);PRINT_SEARCH(deleted_without_analysis_use);
+#ifdef BSAT_SEARCH_DIAGNOSTICS
+    PRINT_SEARCH(learned_scans_eligible_size);PRINT_SEARCH(learned_scans_oversize);
+    PRINT_SEARCH(learned_scans_unlocked);PRINT_SEARCH(vivify_attempts);
+    PRINT_SEARCH(vivify_replaced);PRINT_SEARCH(vivify_removed_literals);
+    PRINT_SEARCH(vivify_work);PRINT_SEARCH(strengthened_scans);
+#endif
 #undef PRINT_SEARCH
 #ifdef BSAT_SEARCH_DIAGNOSTICS
     /* Bounded top ten live records. CRefs identify this snapshot only; GC copies

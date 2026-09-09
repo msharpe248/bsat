@@ -45,6 +45,9 @@ static bool rup(const Solver *s, const Lit *lits, unsigned n) {
 static Solver *fixture(const Lit *lits, unsigned n, unsigned budget) {
     SolverOpts o=default_opts();o.inprocess=true;o.inprocess_interval=1;
     o.preprocess_budget=budget;o.probing=false;
+#ifdef BSAT_SEARCH_DIAGNOSTICS
+    o.accounting=true;
+#endif
     Solver *s=solver_new_with_opts(&o);assert(s);
     for (unsigned v=0;v<6;++v) assert(solver_new_var(s));
     assert(solver_add_clause(s,lits,n));
@@ -72,6 +75,13 @@ static void check(Solver *s, bool exact) {
     bool okay=solver_simplify(s), sat=false;
     assert(!s->error && !s->interrupted && !s->decision_level && !s->work_limit);
     CRef cr=s->learnts[0];unsigned n=CLAUSE_SIZE(s->arena,cr);
+#ifdef BSAT_SEARCH_DIAGNOSTICS
+    assert(s->accounting.vivify_replaced<=s->accounting.vivify_attempts);
+    if(s->accounting.vivify_replaced) {
+        assert(CLAUSE_HEADER(s->arena,cr)->strengthened);
+        assert(s->accounting.vivify_removed_literals>0);
+    }
+#endif
     const Lit *lits=CLAUSE_LITS(s->arena,cr);
     assert(rup(s,lits,n));
     if(exact) {

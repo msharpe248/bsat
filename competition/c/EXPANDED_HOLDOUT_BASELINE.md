@@ -22,7 +22,7 @@ CPU PAR-2 charges unfinished or over-budget runs 20 seconds; wall PAR-2 charges
 them 30. CPU uses measured child-process CPU, including parse and output. These
 different timeout penalties must not be mixed when comparing prior reports.
 
-Both solvers solve the selected scheduling instance. BSAT additionally solves
+Both solvers solve the selected hardware-model-checking instance. BSAT additionally solves
 the larger planning case: **611,755 variables and 10,974,540 clauses**, in 6.118
 and 6.103 CPU seconds; Kissat reaches its external CPU ceiling in both trials.
 BSAT's original-model checks take another 9.50 and 9.60 wall seconds outside

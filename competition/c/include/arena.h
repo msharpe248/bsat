@@ -43,6 +43,7 @@ typedef struct ClauseHeader {
     /* Arena records are only 4-byte aligned: do not put uint64_t here. */
     uint32_t born_lo, born_hi;
     uint32_t scans, units, analyses;
+    uint32_t strengthened; /* Diagnostic lineage, preserved by arena GC. */
 #endif
 } ClauseHeader;
 
