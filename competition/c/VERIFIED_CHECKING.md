@@ -45,3 +45,10 @@ The September 8 assurance milestone adds explicit conditional-query snapshots,
 per-stage wall/CPU costs, cumulative child RSS, and timeout-group cleanup. Three
 current BSAT industrial UNSAT certificates pass the chain; see
 `ASSURANCE_EXPANSION.md` and its hash-pinned receipts.
+# Larger certificates
+
+The defaults remain a 512 MB CakeML heap and 128 MB stack. Larger certificates
+can require more of both. Use explicit `--checker-heap-mb` /
+`--checker-stack-mb` settings (or `BSAT_CAKE_HEAP_MB` / `BSAT_CAKE_STACK_MB` for
+the CLI wrapper), preserve verification failures, and budget checker resources
+separately from solving. See [the reproduced resource limit and fix](CHECKER_RESOURCE_SCALING.md).

@@ -8,6 +8,7 @@ import math
 import os
 from pathlib import Path
 import platform
+import shutil
 import subprocess
 import tempfile
 import time
@@ -37,6 +38,12 @@ def main():
     p.add_argument('--profile',choices=['control','no-rephase','alternating','chrono','growing-reduce','probe-default-budget','journal-off'],help='Requires separate test diagnostic library')
     p.add_argument('--accounting',action='store_true',help='Intrusive per-query phase timers, not timing scores')
     p.add_argument('--snapshots',type=Path,help='Retain exact CNFs for one-shot comparisons')
+    p.add_argument('--checkpoint-every',type=int,default=0,help='Checkpoint after each N completed queries, before the next solve; 0 disables')
+    p.add_argument('--fresh-wall',type=float,default=10,help='Validation-only fresh Kissat wall limit')
+    p.add_argument('--checker-wall',type=float,default=60,help='Validation-only per-stage checker wall limit')
+    p.add_argument('--checker-heap-mb',type=int,default=512,help='Explicit CakeML heap size; larger proofs may need more than the default')
+    p.add_argument('--checker-stack-mb',type=int,default=128,help='Explicit CakeML stack size')
+    p.add_argument('--retain-unverified',type=Path,help='Retain failed checker inputs/proofs/logs under this directory')
     a = p.parse_args()
     depths = sorted(set(map(int, a.depths.split(','))))
     flags_list = list(map(int, a.flags.split(',')))
@@ -45,6 +52,8 @@ def main():
         p.error('invalid query limits')
     if a.accounting and not a.profile:p.error('accounting requires a diagnostic profile')
     if any(f not in (0,1,2,3,6,7) for f in flags_list) or not flags_list:p.error('invalid flags')
+    if a.checkpoint_every<0 or any(not math.isfinite(x) or x<=0 for x in (a.fresh_wall,a.checker_wall)):p.error('invalid checkpoint/validation limits')
+    if a.checker_heap_mb<=0 or a.checker_stack_mb<=0:p.error('checker heap and stack must be positive')
     if a.profile=='journal-off' and any(not f&2 for f in flags_list):p.error('journal-off requires certificate flags')
     lib = library(a.library.resolve())
     if a.profile:
@@ -64,7 +73,9 @@ def main():
                   circuits=manifest, library_sha256=sha(a.library), reference_sha256=sha(a.reference),
                   incremental_reference_sha256=sha(a.incremental_reference),
                   converter_sha256=sha(converter), checker_sha256=sha(checker), runs=[],
-                  limits=dict(bsat_cpu=a.cpu, bsat_conflicts=a.conflicts,cadical_thread_cpu=a.reference_cpu,cadical_cooperative_wall=a.reference_wall, kissat_wall=10, checker_stage_wall=60),
+                  limits=dict(bsat_cpu=a.cpu, bsat_conflicts=a.conflicts,cadical_thread_cpu=a.reference_cpu,cadical_cooperative_wall=a.reference_wall, kissat_wall=a.fresh_wall, checker_stage_wall=a.checker_wall),
+                  checkpoint_every=a.checkpoint_every,
+                  checker_heap_mb=a.checker_heap_mb,checker_stack_mb=a.checker_stack_mb,harness_sha256=sha(Path(__file__)),
                   diagnostic_profile=a.profile,accounting=a.accounting,
                   timing_scope='Serial API query process CPU excludes encoding, additions, export and checking; repeated modes alternate order.')
     a.output.parent.mkdir(parents=True, exist_ok=True)
@@ -80,7 +91,7 @@ def main():
                     if a.profile:assert lib.bsat_diagnostic_configure(s,a.profile.encode(),a.accounting)
                     inc = Reference(a.incremental_reference.resolve(),a.reference_cpu,a.reference_wall)
                     report['incremental_signature'] = inc.signature
-                    clauses = []; frame = 0
+                    clauses = []; frame = 0; query_index = 0
                     try:
                         for depth in depths:
                             start = time.process_time()
@@ -97,6 +108,17 @@ def main():
                                 assumptions = [polarity*circuit.literal(circuit.output, depth)]
                                 exact = clauses+[[v] for v in assumptions]
                                 arr = literals(assumptions)
+                                checkpoint = None
+                                if a.checkpoint_every and query_index and query_index%a.checkpoint_every==0:
+                                    before=C.c_uint64();after=C.c_uint64()
+                                    if flags&2:assert lib.bsat_get_journal_bytes(s,C.byref(before))
+                                    start=time.process_time();assert lib.bsat_checkpoint(s)
+                                    cost=time.process_time()-start
+                                    assert not lib.bsat_value(s,1) and not lib.bsat_error(s)
+                                    if flags&2:
+                                        assert lib.bsat_get_journal_bytes(s,C.byref(after)) and after.value==0
+                                    checkpoint=dict(cpu_seconds=cost,journal_before=before.value,journal_after=after.value)
+                                query_index+=1
                                 assert lib.bsat_set_query_limits(s, a.cpu, a.conflicts, 0)
                                 if a.profile:lib.bsat_diagnostic_begin_query(s)
                                 start = time.process_time(); result = lib.bsat_solve(s, arr, len(arr))
@@ -111,6 +133,7 @@ def main():
                                            incremental_result=reference, cpu_seconds=cpu, incremental_cpu_seconds=inc_cpu,
                                            additions_both_solvers_cpu=add_cpu if polarity == 1 else 0,
                                            assumptions=assumptions)
+                                if checkpoint is not None:row['checkpoint']=checkpoint
                                 row['bsat_cpu_overshoot_seconds']=max(0,cpu-a.cpu)
                                 row['reference_cpu_overshoot_seconds']=max(0,inc_cpu-a.reference_cpu) if a.reference_cpu else 0
                                 # Keep actual conclusive answers for validation, but never
@@ -137,6 +160,25 @@ def main():
                                     check_model(inc.model(n)); row['incremental_model_and_simulation'] = True
                                 with tempfile.TemporaryDirectory(prefix='bsat-industrial-') as tmp:
                                     root = Path(tmp); cnf = root/'input.cnf'; proof = root/'proof.drat'
+                                    def check_certificate(input_path,proof_path,tag):
+                                        failure=None;folder=root/tag
+                                        try:
+                                            checked=verify(input_path,proof_path,converter,checker,folder,a.checker_wall,a.checker_heap_mb,a.checker_stack_mb)
+                                        except (OSError,subprocess.TimeoutExpired) as error:
+                                            failure=error
+                                            log=folder/'verification.json'
+                                            checked=json.loads(log.read_text()) if log.exists() else dict(verified=False,error=repr(error))
+                                        row.setdefault('certificate_checks',{})[tag]=checked
+                                        if not checked['verified']:
+                                            if a.retain_unverified and folder.exists():
+                                                a.retain_unverified.mkdir(parents=True,exist_ok=True)
+                                                target=Path(tempfile.mkdtemp(prefix=tag+'-',dir=a.retain_unverified))
+                                                shutil.copytree(folder,target,dirs_exist_ok=True)
+                                                row['unverified_artifacts']=str(target.resolve())
+                                            save()
+                                            if failure is not None:raise failure
+                                            raise AssertionError(f'{tag}: certificate check failed; see certificate_checks in report')
+                                        return checked
                                     cnf.write_text(f'p cnf {n} {len(exact)}\n'+''.join(' '.join(map(str,c))+' 0\n' for c in exact))
                                     if a.profile:
                                         diagnostic=root/'diagnostic.json'
@@ -149,7 +191,7 @@ def main():
                                         else:target.write_bytes(cnf.read_bytes())
                                     row['input_sha256'] = sha(cnf)
                                     try:
-                                        fresh = run_capture([str(a.reference.resolve()), str(cnf), str(proof)], 10)
+                                        fresh = run_capture([str(a.reference.resolve()), str(cnf), str(proof)], a.fresh_wall)
                                         row['fresh_result'] = fresh.returncode
                                         assert fresh.returncode in (0, 10, 20), fresh.stderr
                                     except subprocess.TimeoutExpired:
@@ -160,7 +202,7 @@ def main():
                                     if fresh_result == 10:
                                         check_model(fresh.stdout); row['fresh_model_and_simulation'] = True
                                     elif fresh_result == 20:
-                                        checked = verify(cnf, proof, converter, checker, root/'fresh-check', 60)
+                                        checked = check_certificate(cnf, proof, 'fresh-check')
                                         assert checked['verified']; row['fresh_proof_sha256'] = checked['drat_sha256']
                                     if result and flags & 2 and a.profile!='journal-off':
                                         export, journal = root/'export.cnf', root/'export.drat'
@@ -169,7 +211,7 @@ def main():
                                         row['export_cpu_seconds'] = time.process_time()-start
                                         _, exported = parse_cnf(export.read_text()); assert exported == exact
                                         if result == 20:
-                                            checked = verify(export, journal, converter, checker, root/'bsat-check', 60)
+                                            checked = check_certificate(export, journal, 'bsat-check')
                                             assert checked['verified']; row['bsat_proof_sha256'] = checked['drat_sha256']
                                         else: assert model_valid(exported, model)
                                     # A lone uncertified UNSAT is not accepted as validated.

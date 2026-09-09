@@ -23,6 +23,7 @@ capability and release-gate summary is [Production readiness](../PRODUCTION_READ
 | Measurement integrity | `test_select_corpus.py`, `test_benchmark_manifest.py`, `test_benchmark_artifacts.py` | History exclusion, frozen hashes, certificate retention and checker exit/status handling |
 | Retained incremental reference | `differential_histories.py`, `incremental_reference.py` | Persistent CaDiCaL plus fresh Kissat; additions, assumptions, cancellation and checkpoints |
 | Real verification circuits | `test_aag_history.py`, `industrial_histories.py` | Pinned AIGER input, growing CNF, independent circuit simulation and checked proofs; bounded safety queries |
+| Expanded circuit/checkpoint histories | `expanded_industrial_aig.json`, `industrial_histories.py --checkpoint-every`, `test_expanded_probing.py` | Larger pinned sources, checkpoint invalidation and journal reset, paired CPU/UNKNOWN accounting |
 | Certified journals | `test_proof_journal`, `test_query_export`, `test_journal_limits`, `check_retained_certificates.py` | Exact query context, RUP journal, quota and I/O failures; independent checker required |
 | Certified probing | `test_certified_probing`, public flags 6/7 in `industrial_histories.py` and `differential_histories.py` | 4,096 oracle queries per C build, assumption-safe RUP units, future additions, cancellation and journal quotas |
 | Service recovery | `test_recovery_service`, `make recovery-fault-test`, `check_recovery_supervisor.py` | Retained input replay, ENOMEM, killed child, cancellation and quota; parent durability outside example |

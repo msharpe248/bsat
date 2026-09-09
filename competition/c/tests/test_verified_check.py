@@ -7,6 +7,27 @@ from verified_check import cake_verified, verify
 
 
 class VerifiedTests(unittest.TestCase):
+    def test_invalid_heap_is_rejected_before_io(self):
+        for size in (0,-1,1.5,True):
+            with self.assertRaises(ValueError):verify(None,None,None,None,None,heap_mb=size)
+            with self.assertRaises(ValueError):verify(None,None,None,None,None,stack_mb=size)
+
+    def test_heap_limit_forwarded_and_resource_failure_rejected(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root=Path(tmp);cnf=root/'in.cnf';proof=root/'in.drat'
+            cnf.write_text('p cnf 0 1\n0\n');proof.write_text('0\n')
+            converter=root/'converter';checker=root/'checker'
+            converter.write_text('#!/bin/sh\nprintf "1 0 0\\n" > "$4"\nprintf "s VERIFIED\\n"\n')
+            checker.write_text('#!/bin/sh\necho "CakeML heap space exhausted." >&2\nexit 1\n')
+            converter.chmod(0o755);checker.chmod(0o755)
+            result=verify(cnf,proof,converter,checker,root/'check',heap_mb=2048,stack_mb=512)
+            self.assertFalse(result['verified'])
+            self.assertEqual(result['checker_heap_mb'],2048)
+            self.assertIn('--CML_HEAP_SIZE=2048',result['stages'][1]['command'])
+            self.assertIn('--CML_STACK_SIZE=512',result['stages'][1]['command'])
+            self.assertIn('heap space exhausted',result['stages'][1]['stderr'])
+            self.assertTrue((root/'check'/'verification.json').is_file())
+
     def test_status_gate(self):
         for code,out,ok in [(0,'s VERIFIED UNSAT\n',True),(1,'s VERIFIED UNSAT\n',False),
                             (0,'c s VERIFIED UNSAT\n',False),(0,'s VERIFIED UNSAT\ns INVALID\n',False),

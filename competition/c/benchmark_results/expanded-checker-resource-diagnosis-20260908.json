@@ -1,0 +1,80 @@
+{
+  "scope": "Exact same CNF/LRAT; fixed checker heap/stack failure reproduced then resolved without changing certificate",
+  "converter_and_initial_check": {
+    "input_sha256": "1840379cffdfa2b869827c051f270284bd3d7fda052d8e702d2db2744815814b",
+    "drat_sha256": "3f62964a81199bfcc116b9bfa0bbf34e7af4ef2e6d9725e0718f24394003fd3d",
+    "converter_sha256": "9bfc20a5fa9eb2a0ffadd2b0cfc7cdd4a20f6aa9c8d7de5b6c771160b847f630",
+    "checker_sha256": "027e767e8e5543d61671c44f7475e985b7969112e6825d51f2207bf0580cbf5c",
+    "verified": false,
+    "stages": [
+      {
+        "command": [
+          "/tmp/bsat-drat-trim",
+          "/tmp/bsat-expanded-validation-failure/check-512/input.cnf",
+          "/tmp/bsat-expanded-validation-failure/check-512/proof.drat",
+          "-L",
+          "/tmp/bsat-expanded-validation-failure/check-512/proof.lrat"
+        ],
+        "seconds": 39.211124499794096,
+        "cpu_seconds": 39.195002,
+        "children_peak_rss_bytes": 633208832,
+        "returncode": 0,
+        "stdout": "\nc turning on binary mode checking\n\nc parsing input formula with 730151 variables and 1960297 clauses\n\nc finished parsing, read 104145095 bytes from proof file\n\nc detected empty clause; start verification via backward checking\n\nc 95145 of 1960297 clauses in core                            \n\nc 188639 of 3298609 lemmas in core using 12770427 resolution steps\n\nc 928 RAT lemmas in core; 0 redundant literals in core lemmas\n\ns VERIFIED\n\nc verification time: 39.174 seconds\n",
+        "stderr": ""
+      },
+      {
+        "command": [
+          "/tmp/bsat-cake-verified-build/cake_lpr",
+          "--CML_HEAP_SIZE=512",
+          "--CML_STACK_SIZE=128",
+          "/tmp/bsat-expanded-validation-failure/check-512/input.cnf",
+          "/tmp/bsat-expanded-validation-failure/check-512/proof.lrat"
+        ],
+        "seconds": 2.2044250410981476,
+        "cpu_seconds": 2.1986209999999966,
+        "children_peak_rss_bytes": 633208832,
+        "returncode": 1,
+        "stdout": "",
+        "stderr": "CakeML heap space exhausted.\n"
+      }
+    ],
+    "lrat_sha256": "bb6b0e5729edc6e205eae68410504fb44cc5ae5d7216b593015a6e93b2b58c8e",
+    "seconds": 41.57296316605061,
+    "rss_scope": "Cumulative child-process high-water RSS, not isolated per-stage peak"
+  },
+  "heap_only_retry": {
+    "command": [
+      "/tmp/bsat-cake-verified-build/cake_lpr",
+      "--CML_HEAP_SIZE=2048",
+      "--CML_STACK_SIZE=128",
+      "/tmp/bsat-expanded-validation-failure/check-512/input.cnf",
+      "/tmp/bsat-expanded-validation-failure/check-512/proof.lrat"
+    ],
+    "returncode": 2,
+    "stdout": "",
+    "stderr": "CakeML stack space exhausted.\n",
+    "seconds": 1.5318511249497533,
+    "cpu_seconds": 1.524551,
+    "peak_rss_bytes": 2283454464,
+    "input_sha256": "1840379cffdfa2b869827c051f270284bd3d7fda052d8e702d2db2744815814b",
+    "lrat_sha256": "bb6b0e5729edc6e205eae68410504fb44cc5ae5d7216b593015a6e93b2b58c8e"
+  },
+  "heap_and_stack_retry": {
+    "command": [
+      "/tmp/bsat-cake-verified-build/cake_lpr",
+      "--CML_HEAP_SIZE=2048",
+      "--CML_STACK_SIZE=512",
+      "/tmp/bsat-expanded-validation-failure/check-512/input.cnf",
+      "/tmp/bsat-expanded-validation-failure/check-512/proof.lrat"
+    ],
+    "returncode": 0,
+    "stdout": "s VERIFIED UNSAT\n",
+    "stderr": "",
+    "seconds": 3.9895310825668275,
+    "cpu_seconds": 3.981109,
+    "peak_rss_bytes": 2283585536,
+    "input_sha256": "1840379cffdfa2b869827c051f270284bd3d7fda052d8e702d2db2744815814b",
+    "lrat_sha256": "bb6b0e5729edc6e205eae68410504fb44cc5ae5d7216b593015a6e93b2b58c8e"
+  },
+  "verified": true
+}

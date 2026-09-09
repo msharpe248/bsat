@@ -27,7 +27,9 @@ def cake_verified(run):
     return run.returncode==0 and statuses==['s VERIFIED UNSAT']
 
 
-def verify(cnf,drat,converter,checker,directory,timeout=600):
+def verify(cnf,drat,converter,checker,directory,timeout=600,heap_mb=512,stack_mb=128):
+    if any(not isinstance(n,int) or isinstance(n,bool) or n<=0 for n in (heap_mb,stack_mb)):
+        raise ValueError('checker heap_mb and stack_mb must be positive integers')
     started=time.monotonic()
     directory=Path(directory);directory.mkdir(parents=True,exist_ok=True)
     sha=lambda p:hashlib.sha256(p.read_bytes()).hexdigest()
@@ -35,10 +37,10 @@ def verify(cnf,drat,converter,checker,directory,timeout=600):
     shutil.copyfile(cnf,inp);shutil.copyfile(drat,proof)
     report={'input_sha256':sha(inp),'drat_sha256':sha(proof),
             'converter_sha256':sha(Path(converter)),'checker_sha256':sha(Path(checker)),
-            'verified':False,'stages':[]}
+            'verified':False,'checker_heap_mb':heap_mb,'checker_stack_mb':stack_mb,'stages':[]}
     try:
         commands=[[str(converter),str(inp),str(proof),'-L',str(lrat)],
-                  [str(checker),'--CML_HEAP_SIZE=512','--CML_STACK_SIZE=128',str(inp),str(lrat)]]
+                  [str(checker),f'--CML_HEAP_SIZE={heap_mb}',f'--CML_STACK_SIZE={stack_mb}',str(inp),str(lrat)]]
         for i,cmd in enumerate(commands):
             stage={'command':cmd};report['stages'].append(stage)
             stage_start=time.monotonic();before=resource.getrusage(resource.RUSAGE_CHILDREN)
@@ -73,19 +75,22 @@ def main():
     p.add_argument('cnf',type=Path);p.add_argument('drat',type=Path)
     p.add_argument('--converter',default=os.getenv('BSAT_DRAT_TRIM','drat-trim'))
     p.add_argument('--cake-checker',default=os.getenv('BSAT_CAKE_LPR','cake_lpr'))
+    p.add_argument('--checker-heap-mb',type=int,default=os.getenv('BSAT_CAKE_HEAP_MB','512'))
+    p.add_argument('--checker-stack-mb',type=int,default=os.getenv('BSAT_CAKE_STACK_MB','128'))
     p.add_argument('--artifacts',type=Path,default=os.getenv('BSAT_VERIFY_ARTIFACTS'));p.add_argument('--timeout',type=float,default=600)
     args=p.parse_args();converter=shutil.which(args.converter);checker=shutil.which(args.cake_checker)
     if not converter or not checker:p.error('converter/checker executable missing')
     if not math.isfinite(args.timeout) or args.timeout<=0:p.error('timeout must be finite and positive')
+    if args.checker_heap_mb<=0 or args.checker_stack_mb<=0:p.error('checker heap and stack must be positive')
     try:
         if args.artifacts:
             args.artifacts.mkdir(parents=True,exist_ok=True)
             folder=tempfile.mkdtemp(prefix='verified-',dir=args.artifacts)
-            result=verify(args.cnf,args.drat,converter,checker,folder,args.timeout)
+            result=verify(args.cnf,args.drat,converter,checker,folder,args.timeout,args.checker_heap_mb,args.checker_stack_mb)
             print(f'c Verification artifacts: {folder}')
         else:
             with tempfile.TemporaryDirectory(prefix='bsat-verified-') as folder:
-                result=verify(args.cnf,args.drat,converter,checker,folder,args.timeout)
+                result=verify(args.cnf,args.drat,converter,checker,folder,args.timeout,args.checker_heap_mb,args.checker_stack_mb)
         if result['verified']:print('s VERIFIED');return 0
         print('c Verified-checker chain rejected the certificate',file=sys.stderr);return 1
     except (OSError,subprocess.TimeoutExpired) as error:
