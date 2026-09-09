@@ -310,6 +310,8 @@ $(PACKAGE_LIBRARY): $(LIB_OBJECTS)
 	$(CC) $(CFLAGS) $(PACKAGE_SHARED_FLAGS) -o $@ $^ -lm
 install: all $(PACKAGE_LIBRARY)
 	install -d "$(DESTDIR)$(PREFIX)/bin" "$(DESTDIR)$(PREFIX)/lib/pkgconfig" "$(DESTDIR)$(PREFIX)/include"
+	install -d "$(DESTDIR)$(PREFIX)/share/doc/bsat"
+	install -m 644 THIRD_PARTY_NOTICES "$(DESTDIR)$(PREFIX)/share/doc/bsat/THIRD_PARTY_NOTICES"
 	install -m 755 $(TARGET) "$(DESTDIR)$(PREFIX)/bin/bsat"
 	install -m 755 $(PACKAGE_LIBRARY) "$(DESTDIR)$(PREFIX)/lib/$(notdir $(PACKAGE_LIBRARY))"
 	install -m 644 include/bsat.h "$(DESTDIR)$(PREFIX)/include/bsat.h"

@@ -1,0 +1,38 @@
+name: C solver portable reduction candidate
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  compare:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Build baseline, candidate and checker
+        run: |
+          make -C competition/c -j2 OPTFLAGS='-O3 -flto' all
+          make -C competition/c -j2 MODE=portable TARGET=bin/bsat_portable OPTFLAGS='-O3 -flto -DBSAT_PORTABLE_REDUCTION_SORT' all test
+          make -C competition/c -j2 MODE=portable_trace TARGET=bin/bsat_portable_trace OPTFLAGS='-O3 -flto -DBSAT_PORTABLE_REDUCTION_SORT -DBSAT_REDUCTION_TRACE' all
+          curl -Lf https://raw.githubusercontent.com/marijnheule/drat-trim/2e3b2dc0ecf938addbd779d42877b6ed69d9a985/drat-trim.c -o "$RUNNER_TEMP/drat-trim.c"
+          cc -O2 "$RUNNER_TEMP/drat-trim.c" -o "$RUNNER_TEMP/drat-trim"
+          python3 competition/c/tests/build_verified_checker.py --directory "$RUNNER_TEMP/cake-lpr"
+      - name: Compare fixed work and checked solves
+        env:
+          BSAT_DRAT_TRIM: ${{ runner.temp }}/drat-trim
+          BSAT_CAKE_LPR: ${{ runner.temp }}/cake-lpr/cake_lpr
+          BSAT_CAKE_HEAP_MB: '2048'
+          BSAT_CAKE_STACK_MB: '512'
+        run: |
+          python3 competition/c/tests/reduction_host_trace.py --solver competition/c/bin/bsat_portable_trace --output "$RUNNER_TEMP/results/traces"
+          python3 -c 'import gzip,pathlib,os;pathlib.Path(os.environ["RUNNER_TEMP"],"query.cnf").write_bytes(gzip.decompress(pathlib.Path("competition/c/tests/fixtures/acceptance/cal3-query.cnf.gz").read_bytes()))'
+          python3 competition/c/tests/benchmark.py --solver 'baseline=competition/c/bin/bsat --binary-proof --proof {proof} {input}' --solver 'portable=competition/c/bin/bsat_portable --binary-proof --proof {proof} {input}' --checker competition/c/tests/verified_check.py --cpu-limit 60 --timeout 90 --check-timeout 600 --external-wall-only --repeats 2 --seed 2026090907 --output "$RUNNER_TEMP/results/timing.json" --retain-unverified "$RUNNER_TEMP/results/unverified" "$RUNNER_TEMP/query.cnf"
+          lscpu > "$RUNNER_TEMP/results/lscpu.txt"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: portable-reduction-candidate
+          path: ${{ runner.temp }}/results

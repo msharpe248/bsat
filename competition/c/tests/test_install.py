@@ -13,6 +13,7 @@ def main():
     with tempfile.TemporaryDirectory(prefix='bsat-install-') as tmp:
         stage=Path(tmp);prefix=stage/'opt/bsat'
         subprocess.run(['make','-C',str(root),'install',f'CC={a.cc}',f'MODE={a.mode}','PREFIX=/opt/bsat',f'DESTDIR={stage}'],check=True)
+        assert (prefix/'share/doc/bsat/THIRD_PARTY_NOTICES').read_bytes()==(root/'THIRD_PARTY_NOTICES').read_bytes()
         env=dict(os.environ,PKG_CONFIG_PATH=str(prefix/'lib/pkgconfig'))
         pkg=['pkg-config',f'--define-variable=prefix={prefix}']
         version=subprocess.check_output([*pkg,'--modversion','bsat'],env=env,text=True).strip()
