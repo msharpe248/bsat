@@ -1,0 +1,42 @@
+name: C solver matched cal3 host comparison
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  compare:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Build pinned solvers and checkers
+        run: |
+          make -C competition/c -j2 OPTFLAGS='-O3 -flto' all
+          curl -Lf https://github.com/arminbiere/kissat/archive/8af8e56f174b778aef3aa45af9f739b2a5f492c2.tar.gz -o "$RUNNER_TEMP/kissat.tar.gz"
+          tar -xzf "$RUNNER_TEMP/kissat.tar.gz" -C "$RUNNER_TEMP"
+          (cd "$RUNNER_TEMP/kissat-8af8e56f174b778aef3aa45af9f739b2a5f492c2" && ./configure --no-embedded -flto && make -j2)
+          git init "$RUNNER_TEMP/cadical"
+          git -C "$RUNNER_TEMP/cadical" remote add origin https://github.com/arminbiere/cadical.git
+          git -C "$RUNNER_TEMP/cadical" fetch --depth 1 origin c60730422e758ef1cebe7aeddf2dda31c996bf04
+          git -C "$RUNNER_TEMP/cadical" checkout --detach FETCH_HEAD
+          (cd "$RUNNER_TEMP/cadical" && ./configure -shared && make -j2)
+          curl -Lf https://raw.githubusercontent.com/marijnheule/drat-trim/2e3b2dc0ecf938addbd779d42877b6ed69d9a985/drat-trim.c -o "$RUNNER_TEMP/drat-trim.c"
+          cc -O2 "$RUNNER_TEMP/drat-trim.c" -o "$RUNNER_TEMP/drat-trim"
+          python3 competition/c/tests/build_verified_checker.py --directory "$RUNNER_TEMP/cake-lpr"
+      - name: Run matched serial comparison
+        env:
+          BSAT_DRAT_TRIM: ${{ runner.temp }}/drat-trim
+          BSAT_CAKE_LPR: ${{ runner.temp }}/cake-lpr/cake_lpr
+          BSAT_CAKE_HEAP_MB: '2048'
+          BSAT_CAKE_STACK_MB: '512'
+        run: |
+          python3 competition/c/tests/benchmark_cal3_host.py --bsat competition/c/bin/bsat --cadical "$RUNNER_TEMP/cadical/build/cadical" --kissat "$RUNNER_TEMP/kissat-8af8e56f174b778aef3aa45af9f739b2a5f492c2/build/kissat" --output "$RUNNER_TEMP/results"
+          lscpu > "$RUNNER_TEMP/results/lscpu.txt"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: cal3-host-comparison
+          path: ${{ runner.temp }}/results
