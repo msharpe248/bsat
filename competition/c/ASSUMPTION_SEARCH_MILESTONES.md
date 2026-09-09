@@ -23,4 +23,6 @@
    instead of changing defaults without checked gains. Update docs, commit and
    push each milestone. Prior runtime CI (365b574) is fully green.
 
-Status: frozen comparison and diagnosis harness preparation.
+Status: Linux run 34370117115 is measuring the frozen comparison.
+[Fresh query diagnosis](QUERY_CONTEXT_DIAGNOSIS.md) is complete; the bounded
+assumption-level LBD scoring prototype is next.

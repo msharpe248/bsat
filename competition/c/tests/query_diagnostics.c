@@ -35,6 +35,27 @@ BSAT_API int bsat_diagnostic_write(bsat *s,const char *path) {
     COUNT(binary_visits);COUNT(long_visits);COUNT(blocker_hits);COUNT(replacement_scans);
     COUNT(original_scans);COUNT(learned_scans);COUNT(scan_size_9_plus);
 #undef COUNT
+    /* Post-query database inspection only; it is outside measured solving CPU.
+       Guarded clauses remain globally entailed; the count is not a proof claim. */
+    uint64_t live=0,guarded=0,guarded_lbd3=0,fixed=0,fixed_lbd3=0;
+    for(uint32_t i=0;i<core->num_learnts;++i) {
+        CRef cr=core->learnts[i];if(clause_deleted(core->arena,cr))continue;
+        ++live;bool guard=false,has_fixed=false;
+        Lit *lits=CLAUSE_LITS(core->arena,cr);
+        for(uint32_t j=0;j<CLAUSE_SIZE(core->arena,cr)&&!guard;++j)
+            for(size_t k=0;k<s->query_count;++k)
+                if(lits[j]==neg(s->query[k])){guard=true;break;}
+        if(guard){++guarded;if(clause_lbd(core->arena,cr)==3)++guarded_lbd3;}
+        for(uint32_t j=0;j<CLAUSE_SIZE(core->arena,cr)&&!has_fixed;++j) {
+            Var v=var(lits[j]);Level level=core->vars[v].level;
+            has_fixed=core->values[v]!=UNDEF && level && level<=s->query_count;
+        }
+        if(has_fixed){++fixed;if(clause_lbd(core->arena,cr)==3)++fixed_lbd3;}
+    }
+    fprintf(f,"\"live_learned\":%llu,\"query_guarded_learned\":%llu,\"query_guarded_lbd3\":%llu,",
+            (unsigned long long)live,(unsigned long long)guarded,(unsigned long long)guarded_lbd3);
+    fprintf(f,"\"query_fixed_learned\":%llu,\"query_fixed_lbd3\":%llu,",
+            (unsigned long long)fixed,(unsigned long long)fixed_lbd3);
     fputs("\"phase_seconds\":[",f);
     for(unsigned i=0;i<ACCOUNT_PHASES;++i)fprintf(f,"%s%.9f",i?",":"",core->accounting.seconds[i]);
     fputs("]}\n",f);int okay=!ferror(f);if(fclose(f))okay=0;return okay;
