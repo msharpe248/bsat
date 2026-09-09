@@ -44,3 +44,12 @@ All 53 retained certificates per build pass after a wall-cancel/retry prefix.
 Public API fuzzing completes 43,895 runs in 31 seconds without a finding. Python
 worker, artifact and manifest checks pass; the Linux-only allocation test is
 explicitly skipped locally and included in Linux CI.
+
+## Complete Linux worker and checker containment
+
+The [Linux acceptance harness](LINUX_TRANSACTION_ACCEPTANCE.md) additionally
+exercises aggregate worker/checker memory and CPU supervision, private temporary
+storage, and checked replay after five failure modes. It passed provisional
+Ubuntu limits; the earlier per-process benchmark controls above retain their
+narrower scope. Deployment SLOs, supervisor durability and polling overshoot
+remain explicit application responsibilities.

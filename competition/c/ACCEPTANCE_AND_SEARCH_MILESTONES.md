@@ -32,4 +32,5 @@ Linux execution may overlap local work on the separate macOS host. Every result
 records tool/input hashes, host and limits. Finite provisional gates cannot
 certify an unspecified application's semantics, durability or service SLOs.
 
-Status: policy frozen; implementation and measurements pending.
+Status: [complete Linux acceptance](LINUX_TRANSACTION_ACCEPTANCE.md) passes the
+provisional gates. Learning ablations and longer-subset measurements are pending.

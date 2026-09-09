@@ -27,6 +27,7 @@ capability and release-gate summary is [Production readiness](../PRODUCTION_READ
 | Certified journals | `test_proof_journal`, `test_query_export`, `test_journal_limits`, `check_retained_certificates.py` | Exact query context, RUP journal, quota and I/O failures; independent checker required |
 | Certified probing | `test_certified_probing`, public flags 6/7 in `industrial_histories.py` and `differential_histories.py` | 4,096 oracle queries per C build, assumption-safe RUP units, future additions, cancellation and journal quotas |
 | Service recovery | `test_recovery_service`, `make recovery-fault-test`, `check_recovery_supervisor.py` | Retained input replay, ENOMEM, killed child, cancellation and quota; parent durability outside example |
+| Complete Linux acceptance | `linux_acceptance.py`, manual `c-linux-acceptance.yml` | Cgroup/private-tmpfs worker and checker containment, five failures and checked replay; provisional hosted limits, supervisor outside |
 | Service limits | `test_service_limits`, `test_query_controls`, `test_resource_limits.py` | Cooperative API limits and isolated OS process limits; owned capacity is not RSS |
 | IPASIR/ABI/concurrency | `test_ipasir`, `make embedding-test package-test soak-test` | Installed/frozen consumers, independent instances and callbacks; same-handle calls serialized |
 

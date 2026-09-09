@@ -29,7 +29,7 @@ Passing finite tests is not a formal proof of the complete C implementation.
 | Service wall/capacity controls | Cooperative per-query/checkpoint limits | [Resources](SERVICE_RESOURCES.md); capacity estimate excludes transient memory, facade, allocator and RSS; polling can overshoot |
 | Journal quota and checkpoint | Exact accepted journal-byte ceiling; proactive rebuild discards learning | [Checkpoint policy](CHECKPOINT_POLICY_EXAMPLE.md); exhausted journal poisons a handle, checkpoint invalidates prior answers |
 | Failed-worker recovery | Application examples retain input, recreate/replay, reject partial recovery and stale answers | [Recovery](SERVICE_RECOVERY.md); tested ENOMEM and SIGKILL worker loss, not a durable application transaction service |
-| Hard external containment | Isolated process group, CPU, Linux address-space and per-file limits in harness | [Resource controls](SERVICE_RESOURCES.md); deployment must provide its own aggregate RSS/storage isolation |
+| Hard external containment | Linux acceptance harness: cgroup memory/CPU supervision and private tmpfs covering worker/checkers | [Complete transactions](LINUX_TRANSACTION_ACCEPTANCE.md); hosted provisional limits pass, deployment-specific policy still required |
 | Independent UNSAT acceptance | DRAT-to-LRAT conversion followed by pinned CakeML `cake_lpr` | [Verified checking](VERIFIED_CHECKING.md); checker verifies the exact CNF, not the application's upstream encoding intent |
 | Stateful industrial validation | Four published verification circuits, retained CaDiCaL and fresh Kissat | [Circuit histories](INDUSTRIAL_CIRCUIT_HISTORIES.md); bounded preprocessed circuits, not unbounded safety or customer trace coverage |
 | Profiling and optimization evidence | Optional diagnostics, Linux software stacks, frozen serial benchmark reports | [Planning/layout](PLANNING_LAYOUT_EXPERIMENT.md); tested VM lacks hardware PMU, compact-header candidate rejected |
@@ -58,7 +58,13 @@ circuits; they do not represent every deployment's latency or proof-growth tails
 The recovery milestone adds 131 deterministic ENOMEM cutoffs per release/sanitizer
 build, interrupted replay and journal-quota tests, and a killed-child replacement
 with checked SAT/UNSAT snapshots. Parent-process/power-loss durability and a deployed
-supervisor's cgroup/storage policy remain application work.
+supervisor's deployment policy remain application work. The new
+[Linux transaction acceptance](LINUX_TRANSACTION_ACCEPTANCE.md) passes provisional
+cgroup/private-tmpfs gates, including all five injected failures and checked replay.
+Normal gen23 transactions take 2.49–2.52 wall seconds end to end, versus about
+0.23 seconds in solving; peak aggregate memory is about 660 MiB. UNKNOWN stays
+unaccepted. CPU/wall termination is polled and may overshoot; the supervisor and
+durable application storage are outside this measured worker/checker envelope.
 
 Linux planning sampling attributes about 70% of samples to propagation. Hardware
 cache/branch events are unsupported on the tested hosted machine; target-server
@@ -129,7 +135,7 @@ those requirements and the exact-candidate checks are satisfied.
 
 ## Where to look
 
-- [Current batch and outcomes](SEARCH_QUALITY_MILESTONES.md)
+- [Current batch and outcomes](ACCEPTANCE_AND_SEARCH_MILESTONES.md)
 - [Public ABI and lifetime contract](API_CONTRACT.md), [build/install](INSTALLING.md)
 - [Executable coverage and reproduction](tests/FEATURE_COVERAGE.md)
 - [Correctness CI](../../.github/workflows/c-solver.yml), [independent integration](../../.github/workflows/c-integration.yml), [fuzz CI](../../.github/workflows/c-fuzz.yml)
