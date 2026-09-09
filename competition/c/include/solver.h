@@ -364,6 +364,9 @@ typedef struct Solver {
     size_t input_size, input_capacity;
     uint32_t input_clauses, clauses_capacity;
     uint32_t last_assumptions;
+#ifdef BSAT_ASSUMPTION_LBD
+    uint32_t lbd_assumption_levels; /* Experimental transient scoring boundary. */
+#endif
     Var factor_original_vars; // Auxiliary variables are discarded on rebuild
     uint64_t reused_solves;
     size_t probed_input_size;

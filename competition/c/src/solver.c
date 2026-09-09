@@ -1195,7 +1195,11 @@ static uint32_t calc_lbd(Solver* s, const Lit* lits, uint32_t size) {
     // Track which levels we've seen
     for (uint32_t i = 0; i < size; i++) {
         Level level = s->vars[var(lits[i])].level;
+#ifdef BSAT_ASSUMPTION_LBD
+        if (level <= s->lbd_assumption_levels) continue;
+#else
         if (level == 0) continue;  // Level 0 doesn't count for LBD
+#endif
         if (level < s->levels_capacity && !s->level_seen[level]) {
             s->level_seen[level] = 1;
             lbd++;
@@ -2444,7 +2448,13 @@ static lbool solver_solve_at(Solver *s, const Lit *assumps, uint32_t n_assumps, 
     s->work_limit=0;s->interrupted=false;s->cancelled=false;
     s->clock_initialized=false;s->clock_polls=0;
     s->random_state=s->opts.seed;
+#ifdef BSAT_ASSUMPTION_LBD
+    s->lbd_assumption_levels=s->opts.restart_assumptions ? n_assumps : 0;
+#endif
     lbool result=solve_internal(s,assumps,n_assumps);
+#ifdef BSAT_ASSUMPTION_LBD
+    s->lbd_assumption_levels=0;
+#endif
     s->has_solved=true;s->last_assumptions=n_assumps;
     if (result==TRUE) {
         double started=solver_account_begin(s);

@@ -1,0 +1,21 @@
+{
+  "scope": "Gated candidate confirmation build; ordinary default runtime unchanged",
+  "candidate_base_revision": "dd41fc3",
+  "macro": "BSAT_ASSUMPTION_LBD",
+  "tests": {
+    "release": {
+      "executables": 66,
+      "passed": true
+    },
+    "debug": {
+      "executables": 66,
+      "passed": true
+    },
+    "default": {
+      "executables": 66,
+      "passed": true
+    }
+  },
+  "ordinary_library_byte_identical": false,
+  "candidate_library_sha256": "9e73af9fbca2f95cc8c0968fc6062da7df13c3850f6e301c605b207fea128362"
+}

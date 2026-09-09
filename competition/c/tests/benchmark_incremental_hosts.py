@@ -9,9 +9,10 @@ import sys
 p=argparse.ArgumentParser(description=__doc__)
 for name in ('baseline','candidate','reference','incremental-reference','original','expanded','output'):
     p.add_argument('--'+name,required=True,type=Path)
+p.add_argument('--baseline-revision',default='d6601b90183d186185eb7d091235145f5f189264')
 a=p.parse_args()
 a.output.mkdir(parents=True,exist_ok=True)
-policy=dict(baseline_revision='d6601b90183d186185eb7d091235145f5f189264',
+policy=dict(baseline_revision=a.baseline_revision,
             order=['baseline','candidate','candidate','baseline'],flags=3,
             original=dict(depths='0,1,2,4,8,16',cpu=60),
             expanded=dict(depths='0,2,4,8',cpu=10),

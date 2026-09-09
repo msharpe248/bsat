@@ -1,0 +1,10 @@
+{
+  "scope": "Assumption-level LBD prototype, pre-timing validation",
+  "base_revision": "dd41fc3",
+  "macro": "BSAT_ASSUMPTION_LBD",
+  "release_tests": 66,
+  "debug_tests": 66,
+  "release_pass": true,
+  "debug_pass": true,
+  "library_sha256": "951c86b5a027b9ab2798eeaa80c6316849d74be77c8a9f50b4b009c86052e9cc"
+}
