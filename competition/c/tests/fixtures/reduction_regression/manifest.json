@@ -1,0 +1,77 @@
+{
+  "scope": "Frozen existing-dataset Linux regression screen. Name/size selection before timing; not a pristine holdout.",
+  "inputs": [
+    {
+      "file": "d88c6afc13cdad0e2c8371a879692b39.cnf.gz",
+      "family": "battleship",
+      "source": "dataset/sat_competition2025/battleship/d88c6afc13cdad0e2c8371a879692b39.cnf",
+      "sha256": "19dd9305587ecbb694f8ebd1685af6eeab8e046d3dfa6384cbfde7ac2810dff4",
+      "compressed_sha256": "0d0d8c3b82650b15fb891343c3ae753a1c08055e1236b3fe05e7a42bc17ec1bb",
+      "bytes": 18609,
+      "compressed_bytes": 5200
+    },
+    {
+      "file": "09cd83e233380d0ba1fc56cee88367b1.cnf.gz",
+      "family": "belpyramid-puzzle",
+      "source": "dataset/sat_competition2025/belpyramid-puzzle/09cd83e233380d0ba1fc56cee88367b1.cnf",
+      "sha256": "04ce53ff1a1c3b7285f4c99be56d8fed5e042cdaf5e946e7e23e732faef9ad68",
+      "compressed_sha256": "ab1fd7224096f7278fb8312b7fbc3e5af3a0114ea1c966e67614d8297e51676a",
+      "bytes": 790385,
+      "compressed_bytes": 238569
+    },
+    {
+      "file": "22df1827e3253fc824cc7ce806d75e0a.cnf.gz",
+      "family": "hamiltonian",
+      "source": "dataset/sat_competition2025/hamiltonian/22df1827e3253fc824cc7ce806d75e0a.cnf",
+      "sha256": "582a4c071196570e817d16ea8c108dc7a9634af5a5b8d455936cf4502b3158ed",
+      "compressed_sha256": "7e56bc99587706260a30f2346de66cffbb52b4c62919f7b086f029d52b9f1bd8",
+      "bytes": 55783,
+      "compressed_bytes": 12937
+    },
+    {
+      "file": "08d56c03e6561f6b9bec2e3f344ea3de.cnf.gz",
+      "family": "coloring",
+      "source": "dataset/sat_competition2025/coloring/08d56c03e6561f6b9bec2e3f344ea3de.cnf",
+      "sha256": "efb7e17df494bfa073e839056a7263cceec6269cf8c1c6cef03c6da5a7ae0973",
+      "compressed_sha256": "60ae36b2445d40d0dae3a90d4a84d2f777a4d20c30d603d5cdc2f47c2c4ffbe0",
+      "bytes": 286332,
+      "compressed_bytes": 54601
+    },
+    {
+      "file": "99718c1729a8de3347a9946f1836421d.cnf.gz",
+      "family": "cryptography",
+      "source": "dataset/sat_competition2025/cryptography/99718c1729a8de3347a9946f1836421d.cnf",
+      "sha256": "fbf923ffc448f1283dbdc4d8c1991d95d7baa0768ac83226ac968641ccac2df8",
+      "compressed_sha256": "8946fb7477a9a0d72f4a1b59a4270c404a4bf915e257b042ea7899f247a1bfb9",
+      "bytes": 109311,
+      "compressed_bytes": 20094
+    },
+    {
+      "file": "00d5a43a481477fa4d56a2ce152a6cfb.cnf.gz",
+      "family": "argumentation",
+      "source": "dataset/sat_competition2025/argumentation/00d5a43a481477fa4d56a2ce152a6cfb.cnf",
+      "sha256": "03633885a7b17597738c2947ab2fbc3c19f0e0121c6ea46dbcfea8e4138b8a9a",
+      "compressed_sha256": "02073df2527ef6700ad3ed71024a14cb6b94287e5ca7491794a9b929f317fa84",
+      "bytes": 1318246,
+      "compressed_bytes": 383132
+    },
+    {
+      "file": "081f111af59344b61346367a930e24f6.cnf.gz",
+      "family": "scheduling",
+      "source": "dataset/sat_competition2025/scheduling/081f111af59344b61346367a930e24f6.cnf",
+      "sha256": "5b874afeed91345a786ac4345c97aa3e617c57f748570be83421d149b34abebc",
+      "compressed_sha256": "09807b1c59651bd22d5d769728f72ed0aaad8002cd775d69d0a4b7ab54f1e9dc",
+      "bytes": 12989,
+      "compressed_bytes": 3420
+    },
+    {
+      "file": "42f1311ce504db8cc0cb590a568da20a.cnf.gz",
+      "family": "tseitin-formulas",
+      "source": "dataset/sat_competition2025/tseitin-formulas/42f1311ce504db8cc0cb590a568da20a.cnf",
+      "sha256": "9e4c57b9739f39a924d03267f05542831dc87fec9e9e2238f5e4ba11886378f4",
+      "compressed_sha256": "477d80921ff2c229b39c7b01ed51c8c2f521cdbdbd4687c01aec800b1a765b74",
+      "bytes": 10806,
+      "compressed_bytes": 2960
+    }
+  ]
+}

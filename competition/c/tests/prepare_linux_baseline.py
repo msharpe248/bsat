@@ -1,12 +1,14 @@
-"""Verify and unpack the two pinned industrial development inputs for Linux CI."""
+"""Verify and unpack a pinned industrial corpus for Linux CI."""
 import argparse
 import gzip
 import hashlib
 import json
 from pathlib import Path
 
-p=argparse.ArgumentParser(description=__doc__);p.add_argument('output',type=Path);a=p.parse_args()
-source=Path(__file__).parent/'fixtures/linux_baseline';manifest=json.loads((source/'manifest.json').read_text())
+p=argparse.ArgumentParser(description=__doc__);p.add_argument('output',type=Path)
+p.add_argument('--source',type=Path,default=Path(__file__).parent/'fixtures/linux_baseline')
+a=p.parse_args()
+source=a.source;manifest=json.loads((source/'manifest.json').read_text())
 a.output.mkdir(parents=True,exist_ok=False);inputs={}
 for row in manifest['inputs']:
     packed=(source/row['file']).read_bytes();assert hashlib.sha256(packed).hexdigest()==row['compressed_sha256']
