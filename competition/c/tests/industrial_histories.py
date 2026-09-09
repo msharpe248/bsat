@@ -37,6 +37,8 @@ def main():
     p.add_argument('--conflicts',type=int,default=0)
     p.add_argument('--profile',choices=['control','no-rephase','alternating','chrono','growing-reduce','probe-default-budget','journal-off'],help='Requires separate test diagnostic library')
     p.add_argument('--accounting',action='store_true',help='Intrusive per-query phase timers, not timing scores')
+    p.add_argument('--reference-statistics',action='store_true',help='Require optional pinned CaDiCaL diagnostic extension; reads outside solve timing')
+    p.add_argument('--retain-certified',type=Path,help='Retain exact conclusive BSAT exports for proof-cost experiments')
     p.add_argument('--snapshots',type=Path,help='Retain exact CNFs for one-shot comparisons')
     p.add_argument('--checkpoint-every',type=int,default=0,help='Checkpoint after each N completed queries, before the next solve; 0 disables')
     p.add_argument('--fresh-wall',type=float,default=10,help='Validation-only fresh Kissat wall limit')
@@ -121,18 +123,24 @@ def main():
                                 query_index+=1
                                 assert lib.bsat_set_query_limits(s, a.cpu, a.conflicts, 0)
                                 if a.profile:lib.bsat_diagnostic_begin_query(s)
+                                query_wall_start=time.monotonic()
                                 start = time.process_time(); result = lib.bsat_solve(s, arr, len(arr))
                                 cpu = time.process_time()-start
                                 assert result in (0, 10, 20) and not lib.bsat_error(s)
+                                bsat_wall=time.monotonic()-query_wall_start
+                                reference_before=inc.statistics() if a.reference_statistics else None
                                 start = time.process_time(); reference = inc.solve(assumptions)
                                 inc_cpu = time.process_time()-start
+                                reference_after=inc.statistics() if a.reference_statistics else None
                                 assert reference in (0, 10, 20)
                                 assert not result or not reference or result == reference
                                 row = dict(circuit=item['file'], repeat=repeat, flags=flags, depth=depth,
                                            polarity=polarity, variables=n, clauses=len(clauses), result=result,
                                            incremental_result=reference, cpu_seconds=cpu, incremental_cpu_seconds=inc_cpu,
                                            additions_both_solvers_cpu=add_cpu if polarity == 1 else 0,
-                                           assumptions=assumptions)
+                                           assumptions=assumptions,solve_wall_seconds=bsat_wall)
+                                if reference_after is not None:
+                                    row['reference_statistics']={'before':reference_before,'after':reference_after,'delta':{k:reference_after[k]-reference_before[k] for k in ('conflicts','decisions','propagations')},'scope':'CaDiCaL public cumulative counters sampled outside query timing; propagation means search propagation only'}
                                 if checkpoint is not None:row['checkpoint']=checkpoint
                                 row['bsat_cpu_overshoot_seconds']=max(0,cpu-a.cpu)
                                 row['reference_cpu_overshoot_seconds']=max(0,inc_cpu-a.reference_cpu) if a.reference_cpu else 0
@@ -209,6 +217,11 @@ def main():
                                         start = time.process_time()
                                         assert lib.bsat_export_query(s, os.fsencode(export), os.fsencode(journal))
                                         row['export_cpu_seconds'] = time.process_time()-start
+                                        row['export_proof_bytes']=journal.stat().st_size
+                                        if a.retain_certified:
+                                            folder=a.retain_certified/f'{source.stem}-r{repeat}-f{flags}-d{depth}-p{polarity}'
+                                            folder.mkdir(parents=True,exist_ok=False)
+                                            shutil.copyfile(export,folder/'input.cnf');shutil.copyfile(journal,folder/'proof.drat')
                                         _, exported = parse_cnf(export.read_text()); assert exported == exact
                                         if result == 20:
                                             checked = check_certificate(export, journal, 'bsat-check')
@@ -217,6 +230,8 @@ def main():
                                     # A lone uncertified UNSAT is not accepted as validated.
                                     if result == 20 or reference == 20:
                                         assert row.get('fresh_proof_sha256') or row.get('bsat_proof_sha256')
+                                row['query_validation_wall_seconds']=time.monotonic()-query_wall_start
+                                row['query_validation_scope']='BSAT solve, retained reference solve, model/simulation, fresh reference, export and proof checks; excludes encoding/additions'
                                 row['validated'] = True; save()
                             print(item['file'], 'flags', flags, 'depth', depth, 'checked', flush=True)
                     finally:

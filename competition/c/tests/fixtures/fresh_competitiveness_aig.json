@@ -1,0 +1,42 @@
+{
+  "revision": "7df3ce27c569615bdd205dbd6b473ab2c33953a7",
+  "selection": {
+    "seed": 2026090952,
+    "minimum_bytes": 30000,
+    "maximum_bytes": 180000,
+    "tree_sha256": "1c894d23868525b4e70ab2064738595b7ea2d7cfdae74fcaae7a05ec7bc4a1cb",
+    "policy": "Sorted paths, independent seeded shuffle per prefix; first not already in fixture manifests. 2020 opensource pool because the 2019 size-filtered pool is exhausted. No solving before selection. Related upstream families are not independent distributions.",
+    "prefixes": [
+      "benchmarks_aig/aig_inputs/hwmcc19_fold_fraigy_orchestrate/aig/beem/",
+      "benchmarks_aig/aig_inputs/hwmcc19_fold_fraigy_orchestrate/aig/goel/industry/",
+      "benchmarks_aig/aig_inputs/hwmcc20_fold_fraigy_orchestrate/aig/2019/goel/opensource/",
+      "benchmarks_aig/aig_inputs/hwmcc19_fold_fraigy_orchestrate/aig/wolf/"
+    ]
+  },
+  "inputs": [
+    {
+      "url": "https://raw.githubusercontent.com/TechnionFV/CAV_2025_artifact/7df3ce27c569615bdd205dbd6b473ab2c33953a7/benchmarks_aig/aig_inputs/hwmcc19_fold_fraigy_orchestrate/aig/beem/pgm_protocol.4.prop2-func-interl.aig",
+      "file": "pgm_protocol.4.prop2-func-interl.aig",
+      "sha256": "1394276a1a351b14843814b08d1befd5cca87210a6e561c50984c40ca446167d",
+      "bytes": 60387
+    },
+    {
+      "url": "https://raw.githubusercontent.com/TechnionFV/CAV_2025_artifact/7df3ce27c569615bdd205dbd6b473ab2c33953a7/benchmarks_aig/aig_inputs/hwmcc19_fold_fraigy_orchestrate/aig/goel/industry/cal162/cal162.aig",
+      "file": "cal162.aig",
+      "sha256": "a6e6df5054416120df09dbde6a5d833e9d9466e9bcd133dd626217edc1099da0",
+      "bytes": 83699
+    },
+    {
+      "url": "https://raw.githubusercontent.com/TechnionFV/CAV_2025_artifact/7df3ce27c569615bdd205dbd6b473ab2c33953a7/benchmarks_aig/aig_inputs/hwmcc20_fold_fraigy_orchestrate/aig/2019/goel/opensource/vcegar_QF_BV_ar/vcegar_QF_BV_ar.aig",
+      "file": "vcegar_QF_BV_ar.aig",
+      "sha256": "352e70cdbbd0756a3c0e5149fd1f971678f0fdb4231d77d4dca9253347258ed2",
+      "bytes": 124711
+    },
+    {
+      "url": "https://raw.githubusercontent.com/TechnionFV/CAV_2025_artifact/7df3ce27c569615bdd205dbd6b473ab2c33953a7/benchmarks_aig/aig_inputs/hwmcc19_fold_fraigy_orchestrate/aig/wolf/2019A/picorv32_mutAX_nomem-p8.aig",
+      "file": "picorv32_mutAX_nomem-p8.aig",
+      "sha256": "0644b7f8a87efc627bbff914c886084ec1f4432fc905eef287bad5e14f2fc0ef",
+      "bytes": 176458
+    }
+  ]
+}

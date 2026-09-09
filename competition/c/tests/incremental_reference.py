@@ -11,6 +11,9 @@ class Reference:
                     'failed':([C.c_void_p,C.c_int],C.c_int),'signature':([],C.c_char_p)}
         for name,(args,result) in signatures.items():
             f=getattr(lib,'ipasir_'+name);f.argtypes=args;f.restype=result
+        self.statistic=getattr(lib,'bsat_reference_statistic',None)
+        if self.statistic:
+            self.statistic.argtypes=[C.c_void_p,C.c_char_p];self.statistic.restype=C.c_int64
         self.s=lib.ipasir_init();assert self.s
         self.signature=lib.ipasir_signature().decode()
         self.stop=False;self.calls=0;self.deadline=0
@@ -31,6 +34,11 @@ class Reference:
         self.cpu_deadline=time.thread_time()+self.cpu_seconds
         for lit in assumptions:self.lib.ipasir_assume(self.s,lit)
         return self.lib.ipasir_solve(self.s)
+    def statistics(self):
+        if not self.statistic:raise RuntimeError('reference library has no diagnostic statistics extension')
+        values={k:self.statistic(self.s,k.encode()) for k in ('conflicts','decisions','propagations','redundant','irredundant','fixed','eliminated')}
+        assert all(v>=0 for v in values.values()),values
+        return values
     def model(self,n):
         return 'v '+' '.join(str(self.lib.ipasir_val(self.s,v) or v) for v in range(1,n+1))+' 0\n'
     def close(self):

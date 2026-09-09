@@ -1,0 +1,1545 @@
+{
+  "complete": true,
+  "queries": 128,
+  "model_and_core_parity": true,
+  "baseline_sha256": "0a4ffe327470abc9de9d7f19c8da5fda44487d914e3ca0cd74999b196453f395",
+  "diagnostic_sha256": "ba6f9a531af9512dbd6a8d142d310bb512d191401584e5abbc666d7f208b4a38",
+  "runs": [
+    {
+      "result": 10,
+      "statistics": {
+        "conflicts": 0,
+        "decisions": 0,
+        "propagations": 0,
+        "redundant": 0,
+        "irredundant": 1,
+        "fixed": 0,
+        "eliminated": 0
+      }
+    },
+    {
+      "result": 10,
+      "statistics": {
+        "conflicts": 0,
+        "decisions": 0,
+        "propagations": 0,
+        "redundant": 0,
+        "irredundant": 2,
+        "fixed": 0,
+        "eliminated": 0
+      }
+    },
+    {
+      "result": 10,
+      "statistics": {
+        "conflicts": 0,
+        "decisions": 0,
+        "propagations": 0,
+        "redundant": 0,
+        "irredundant": 3,
+        "fixed": 0,
+        "eliminated": 0
+      }
+    },
+    {
+      "result": 20,
+      "statistics": {
+        "conflicts": 0,
+        "decisions": 0,
+        "propagations": 0,
+        "redundant": 0,
+        "irredundant": 4,
+        "fixed": 0,
+        "eliminated": 0
+      }
+    },
+    {
+      "result": 10,
+      "statistics": {
+        "conflicts": 0,
+        "decisions": 0,
+        "propagations": 0,
+        "redundant": 0,
+        "irredundant": 5,
+        "fixed": 0,
+        "eliminated": 0
+      }
+    },
+    {
+      "result": 10,
+      "statistics": {
+        "conflicts": 0,
+        "decisions": 0,
+        "propagations": 0,
+        "redundant": 0,
+        "irredundant": 6,
+        "fixed": 0,
+        "eliminated": 0
+      }
+    },
+    {
+      "result": 10,
+      "statistics": {
+        "conflicts": 0,
+        "decisions": 0,
+        "propagations": 0,
+        "redundant": 0,
+        "irredundant": 7,
+        "fixed": 0,
+        "eliminated": 0
+      }
+    },
+    {
+      "result": 10,
+      "statistics": {
+        "conflicts": 0,
+        "decisions": 0,
+        "propagations": 0,
+        "redundant": 0,
+        "irredundant": 8,
+        "fixed": 0,
+        "eliminated": 0
+      }
+    },
+    {
+      "result": 10,
+      "statistics": {
+        "conflicts": 0,
+        "decisions": 0,
+        "propagations": 0,
+        "redundant": 0,
+        "irredundant": 9,
+        "fixed": 0,
+        "eliminated": 0
+      }
+    },
+    {
+      "result": 10,
+      "statistics": {
+        "conflicts": 0,
+        "decisions": 0,
+        "propagations": 0,
+        "redundant": 0,
+        "irredundant": 10,
+        "fixed": 0,
+        "eliminated": 0
+      }
+    },
+    {
+      "result": 10,
+      "statistics": {
+        "conflicts": 0,
+        "decisions": 0,
+        "propagations": 0,
+        "redundant": 0,
+        "irredundant": 11,
+        "fixed": 0,
+        "eliminated": 0
+      }
+    },
+    {
+      "result": 10,
+      "statistics": {
+        "conflicts": 0,
+        "decisions": 0,
+        "propagations": 0,
+        "redundant": 0,
+        "irredundant": 12,
+        "fixed": 0,
+        "eliminated": 0
+      }
+    },
+    {
+      "result": 10,
+      "statistics": {
+        "conflicts": 0,
+        "decisions": 0,
+        "propagations": 0,
+        "redundant": 0,
+        "irredundant": 13,
+        "fixed": 0,
+        "eliminated": 0
+      }
+    },
+    {
+      "result": 10,
+      "statistics": {
+        "conflicts": 0,
+        "decisions": 0,
+        "propagations": 0,
+        "redundant": 0,
+        "irredundant": 14,
+        "fixed": 0,
+        "eliminated": 0
+      }
+    },
+    {
+      "result": 10,
+      "statistics": {
+        "conflicts": 0,
+        "decisions": 0,
+        "propagations": 0,
+        "redundant": 0,
+        "irredundant": 15,
+        "fixed": 0,
+        "eliminated": 0
+      }
+    },
+    {
+      "result": 10,
+      "statistics": {
+        "conflicts": 0,
+        "decisions": 0,
+        "propagations": 0,
+        "redundant": 0,
+        "irredundant": 16,
+        "fixed": 0,
+        "eliminated": 0
+      }
+    },
+    {
+      "result": 10,
+      "statistics": {
+        "conflicts": 0,
+        "decisions": 0,
+        "propagations": 0,
+        "redundant": 0,
+        "irredundant": 17,
+        "fixed": 0,
+        "eliminated": 0
+      }
+    },
+    {
+      "result": 10,
+      "statistics": {
+        "conflicts": 0,
+        "decisions": 0,
+        "propagations": 0,
+        "redundant": 0,
+        "irredundant": 18,
+        "fixed": 0,
+        "eliminated": 0
+      }
+    },
+    {
+      "result": 10,
+      "statistics": {
+        "conflicts": 0,
+        "decisions": 0,
+        "propagations": 0,
+        "redundant": 0,
+        "irredundant": 19,
+        "fixed": 0,
+        "eliminated": 0
+      }
+    },
+    {
+      "result": 10,
+      "statistics": {
+        "conflicts": 0,
+        "decisions": 0,
+        "propagations": 0,
+        "redundant": 0,
+        "irredundant": 20,
+        "fixed": 0,
+        "eliminated": 0
+      }
+    },
+    {
+      "result": 10,
+      "statistics": {
+        "conflicts": 0,
+        "decisions": 0,
+        "propagations": 0,
+        "redundant": 0,
+        "irredundant": 21,
+        "fixed": 0,
+        "eliminated": 0
+      }
+    },
+    {
+      "result": 10,
+      "statistics": {
+        "conflicts": 0,
+        "decisions": 0,
+        "propagations": 0,
+        "redundant": 0,
+        "irredundant": 22,
+        "fixed": 0,
+        "eliminated": 0
+      }
+    },
+    {
+      "result": 10,
+      "statistics": {
+        "conflicts": 0,
+        "decisions": 0,
+        "propagations": 0,
+        "redundant": 0,
+        "irredundant": 23,
+        "fixed": 0,
+        "eliminated": 0
+      }
+    },
+    {
+      "result": 10,
+      "statistics": {
+        "conflicts": 0,
+        "decisions": 0,
+        "propagations": 0,
+        "redundant": 0,
+        "irredundant": 23,
+        "fixed": 0,
+        "eliminated": 0
+      }
+    },
+    {
+      "result": 10,
+      "statistics": {
+        "conflicts": 0,
+        "decisions": 0,
+        "propagations": 0,
+        "redundant": 0,
+        "irredundant": 24,
+        "fixed": 0,
+        "eliminated": 0
+      }
+    },
+    {
+      "result": 10,
+      "statistics": {
+        "conflicts": 0,
+        "decisions": 0,
+        "propagations": 0,
+        "redundant": 0,
+        "irredundant": 25,
+        "fixed": 0,
+        "eliminated": 0
+      }
+    },
+    {
+      "result": 10,
+      "statistics": {
+        "conflicts": 0,
+        "decisions": 0,
+        "propagations": 0,
+        "redundant": 0,
+        "irredundant": 26,
+        "fixed": 0,
+        "eliminated": 0
+      }
+    },
+    {
+      "result": 10,
+      "statistics": {
+        "conflicts": 0,
+        "decisions": 0,
+        "propagations": 0,
+        "redundant": 0,
+        "irredundant": 27,
+        "fixed": 0,
+        "eliminated": 0
+      }
+    },
+    {
+      "result": 10,
+      "statistics": {
+        "conflicts": 0,
+        "decisions": 0,
+        "propagations": 0,
+        "redundant": 0,
+        "irredundant": 28,
+        "fixed": 0,
+        "eliminated": 0
+      }
+    },
+    {
+      "result": 10,
+      "statistics": {
+        "conflicts": 0,
+        "decisions": 0,
+        "propagations": 0,
+        "redundant": 0,
+        "irredundant": 29,
+        "fixed": 0,
+        "eliminated": 0
+      }
+    },
+    {
+      "result": 10,
+      "statistics": {
+        "conflicts": 0,
+        "decisions": 0,
+        "propagations": 0,
+        "redundant": 0,
+        "irredundant": 30,
+        "fixed": 0,
+        "eliminated": 0
+      }
+    },
+    {
+      "result": 10,
+      "statistics": {
+        "conflicts": 0,
+        "decisions": 0,
+        "propagations": 0,
+        "redundant": 0,
+        "irredundant": 31,
+        "fixed": 0,
+        "eliminated": 0
+      }
+    },
+    {
+      "result": 10,
+      "statistics": {
+        "conflicts": 0,
+        "decisions": 0,
+        "propagations": 0,
+        "redundant": 0,
+        "irredundant": 32,
+        "fixed": 0,
+        "eliminated": 0
+      }
+    },
+    {
+      "result": 10,
+      "statistics": {
+        "conflicts": 0,
+        "decisions": 0,
+        "propagations": 0,
+        "redundant": 0,
+        "irredundant": 33,
+        "fixed": 0,
+        "eliminated": 0
+      }
+    },
+    {
+      "result": 10,
+      "statistics": {
+        "conflicts": 0,
+        "decisions": 0,
+        "propagations": 0,
+        "redundant": 0,
+        "irredundant": 34,
+        "fixed": 0,
+        "eliminated": 0
+      }
+    },
+    {
+      "result": 10,
+      "statistics": {
+        "conflicts": 0,
+        "decisions": 0,
+        "propagations": 0,
+        "redundant": 0,
+        "irredundant": 35,
+        "fixed": 0,
+        "eliminated": 0
+      }
+    },
+    {
+      "result": 10,
+      "statistics": {
+        "conflicts": 0,
+        "decisions": 0,
+        "propagations": 0,
+        "redundant": 0,
+        "irredundant": 36,
+        "fixed": 0,
+        "eliminated": 0
+      }
+    },
+    {
+      "result": 10,
+      "statistics": {
+        "conflicts": 0,
+        "decisions": 0,
+        "propagations": 0,
+        "redundant": 0,
+        "irredundant": 37,
+        "fixed": 0,
+        "eliminated": 0
+      }
+    },
+    {
+      "result": 10,
+      "statistics": {
+        "conflicts": 0,
+        "decisions": 0,
+        "propagations": 0,
+        "redundant": 0,
+        "irredundant": 38,
+        "fixed": 0,
+        "eliminated": 0
+      }
+    },
+    {
+      "result": 10,
+      "statistics": {
+        "conflicts": 0,
+        "decisions": 0,
+        "propagations": 0,
+        "redundant": 0,
+        "irredundant": 39,
+        "fixed": 0,
+        "eliminated": 0
+      }
+    },
+    {
+      "result": 10,
+      "statistics": {
+        "conflicts": 0,
+        "decisions": 0,
+        "propagations": 0,
+        "redundant": 0,
+        "irredundant": 40,
+        "fixed": 0,
+        "eliminated": 0
+      }
+    },
+    {
+      "result": 10,
+      "statistics": {
+        "conflicts": 0,
+        "decisions": 0,
+        "propagations": 0,
+        "redundant": 0,
+        "irredundant": 41,
+        "fixed": 0,
+        "eliminated": 0
+      }
+    },
+    {
+      "result": 10,
+      "statistics": {
+        "conflicts": 0,
+        "decisions": 0,
+        "propagations": 0,
+        "redundant": 0,
+        "irredundant": 42,
+        "fixed": 0,
+        "eliminated": 0
+      }
+    },
+    {
+      "result": 10,
+      "statistics": {
+        "conflicts": 0,
+        "decisions": 0,
+        "propagations": 0,
+        "redundant": 0,
+        "irredundant": 43,
+        "fixed": 0,
+        "eliminated": 0
+      }
+    },
+    {
+      "result": 10,
+      "statistics": {
+        "conflicts": 0,
+        "decisions": 0,
+        "propagations": 0,
+        "redundant": 0,
+        "irredundant": 44,
+        "fixed": 0,
+        "eliminated": 0
+      }
+    },
+    {
+      "result": 10,
+      "statistics": {
+        "conflicts": 0,
+        "decisions": 0,
+        "propagations": 0,
+        "redundant": 0,
+        "irredundant": 45,
+        "fixed": 0,
+        "eliminated": 0
+      }
+    },
+    {
+      "result": 10,
+      "statistics": {
+        "conflicts": 0,
+        "decisions": 0,
+        "propagations": 0,
+        "redundant": 0,
+        "irredundant": 46,
+        "fixed": 0,
+        "eliminated": 0
+      }
+    },
+    {
+      "result": 20,
+      "statistics": {
+        "conflicts": 0,
+        "decisions": 0,
+        "propagations": 0,
+        "redundant": 0,
+        "irredundant": 47,
+        "fixed": 0,
+        "eliminated": 0
+      }
+    },
+    {
+      "result": 10,
+      "statistics": {
+        "conflicts": 0,
+        "decisions": 0,
+        "propagations": 0,
+        "redundant": 0,
+        "irredundant": 48,
+        "fixed": 0,
+        "eliminated": 0
+      }
+    },
+    {
+      "result": 10,
+      "statistics": {
+        "conflicts": 0,
+        "decisions": 0,
+        "propagations": 0,
+        "redundant": 0,
+        "irredundant": 49,
+        "fixed": 0,
+        "eliminated": 0
+      }
+    },
+    {
+      "result": 10,
+      "statistics": {
+        "conflicts": 0,
+        "decisions": 0,
+        "propagations": 0,
+        "redundant": 0,
+        "irredundant": 50,
+        "fixed": 0,
+        "eliminated": 0
+      }
+    },
+    {
+      "result": 10,
+      "statistics": {
+        "conflicts": 0,
+        "decisions": 0,
+        "propagations": 0,
+        "redundant": 0,
+        "irredundant": 51,
+        "fixed": 0,
+        "eliminated": 0
+      }
+    },
+    {
+      "result": 10,
+      "statistics": {
+        "conflicts": 0,
+        "decisions": 0,
+        "propagations": 0,
+        "redundant": 0,
+        "irredundant": 52,
+        "fixed": 0,
+        "eliminated": 0
+      }
+    },
+    {
+      "result": 10,
+      "statistics": {
+        "conflicts": 0,
+        "decisions": 0,
+        "propagations": 0,
+        "redundant": 0,
+        "irredundant": 53,
+        "fixed": 0,
+        "eliminated": 0
+      }
+    },
+    {
+      "result": 10,
+      "statistics": {
+        "conflicts": 0,
+        "decisions": 0,
+        "propagations": 0,
+        "redundant": 0,
+        "irredundant": 54,
+        "fixed": 0,
+        "eliminated": 0
+      }
+    },
+    {
+      "result": 20,
+      "statistics": {
+        "conflicts": 0,
+        "decisions": 0,
+        "propagations": 0,
+        "redundant": 0,
+        "irredundant": 55,
+        "fixed": 0,
+        "eliminated": 0
+      }
+    },
+    {
+      "result": 10,
+      "statistics": {
+        "conflicts": 0,
+        "decisions": 0,
+        "propagations": 0,
+        "redundant": 0,
+        "irredundant": 56,
+        "fixed": 0,
+        "eliminated": 0
+      }
+    },
+    {
+      "result": 10,
+      "statistics": {
+        "conflicts": 0,
+        "decisions": 0,
+        "propagations": 0,
+        "redundant": 0,
+        "irredundant": 57,
+        "fixed": 0,
+        "eliminated": 0
+      }
+    },
+    {
+      "result": 10,
+      "statistics": {
+        "conflicts": 0,
+        "decisions": 0,
+        "propagations": 0,
+        "redundant": 0,
+        "irredundant": 58,
+        "fixed": 0,
+        "eliminated": 0
+      }
+    },
+    {
+      "result": 10,
+      "statistics": {
+        "conflicts": 0,
+        "decisions": 0,
+        "propagations": 0,
+        "redundant": 0,
+        "irredundant": 59,
+        "fixed": 0,
+        "eliminated": 0
+      }
+    },
+    {
+      "result": 10,
+      "statistics": {
+        "conflicts": 0,
+        "decisions": 0,
+        "propagations": 0,
+        "redundant": 0,
+        "irredundant": 60,
+        "fixed": 0,
+        "eliminated": 0
+      }
+    },
+    {
+      "result": 10,
+      "statistics": {
+        "conflicts": 0,
+        "decisions": 0,
+        "propagations": 0,
+        "redundant": 0,
+        "irredundant": 61,
+        "fixed": 0,
+        "eliminated": 0
+      }
+    },
+    {
+      "result": 10,
+      "statistics": {
+        "conflicts": 0,
+        "decisions": 0,
+        "propagations": 0,
+        "redundant": 0,
+        "irredundant": 62,
+        "fixed": 0,
+        "eliminated": 0
+      }
+    },
+    {
+      "result": 10,
+      "statistics": {
+        "conflicts": 0,
+        "decisions": 0,
+        "propagations": 0,
+        "redundant": 0,
+        "irredundant": 63,
+        "fixed": 0,
+        "eliminated": 0
+      }
+    },
+    {
+      "result": 10,
+      "statistics": {
+        "conflicts": 0,
+        "decisions": 0,
+        "propagations": 0,
+        "redundant": 0,
+        "irredundant": 64,
+        "fixed": 0,
+        "eliminated": 0
+      }
+    },
+    {
+      "result": 10,
+      "statistics": {
+        "conflicts": 0,
+        "decisions": 0,
+        "propagations": 0,
+        "redundant": 0,
+        "irredundant": 65,
+        "fixed": 0,
+        "eliminated": 0
+      }
+    },
+    {
+      "result": 10,
+      "statistics": {
+        "conflicts": 0,
+        "decisions": 0,
+        "propagations": 0,
+        "redundant": 0,
+        "irredundant": 66,
+        "fixed": 0,
+        "eliminated": 0
+      }
+    },
+    {
+      "result": 10,
+      "statistics": {
+        "conflicts": 0,
+        "decisions": 0,
+        "propagations": 0,
+        "redundant": 0,
+        "irredundant": 67,
+        "fixed": 0,
+        "eliminated": 0
+      }
+    },
+    {
+      "result": 10,
+      "statistics": {
+        "conflicts": 0,
+        "decisions": 0,
+        "propagations": 0,
+        "redundant": 0,
+        "irredundant": 68,
+        "fixed": 0,
+        "eliminated": 0
+      }
+    },
+    {
+      "result": 10,
+      "statistics": {
+        "conflicts": 0,
+        "decisions": 0,
+        "propagations": 0,
+        "redundant": 0,
+        "irredundant": 69,
+        "fixed": 0,
+        "eliminated": 0
+      }
+    },
+    {
+      "result": 10,
+      "statistics": {
+        "conflicts": 0,
+        "decisions": 0,
+        "propagations": 0,
+        "redundant": 0,
+        "irredundant": 70,
+        "fixed": 0,
+        "eliminated": 0
+      }
+    },
+    {
+      "result": 10,
+      "statistics": {
+        "conflicts": 0,
+        "decisions": 0,
+        "propagations": 0,
+        "redundant": 0,
+        "irredundant": 71,
+        "fixed": 0,
+        "eliminated": 0
+      }
+    },
+    {
+      "result": 10,
+      "statistics": {
+        "conflicts": 0,
+        "decisions": 0,
+        "propagations": 0,
+        "redundant": 0,
+        "irredundant": 71,
+        "fixed": 0,
+        "eliminated": 0
+      }
+    },
+    {
+      "result": 10,
+      "statistics": {
+        "conflicts": 0,
+        "decisions": 0,
+        "propagations": 0,
+        "redundant": 0,
+        "irredundant": 71,
+        "fixed": 0,
+        "eliminated": 0
+      }
+    },
+    {
+      "result": 10,
+      "statistics": {
+        "conflicts": 0,
+        "decisions": 0,
+        "propagations": 0,
+        "redundant": 0,
+        "irredundant": 72,
+        "fixed": 0,
+        "eliminated": 0
+      }
+    },
+    {
+      "result": 20,
+      "statistics": {
+        "conflicts": 0,
+        "decisions": 0,
+        "propagations": 0,
+        "redundant": 0,
+        "irredundant": 73,
+        "fixed": 0,
+        "eliminated": 0
+      }
+    },
+    {
+      "result": 10,
+      "statistics": {
+        "conflicts": 0,
+        "decisions": 0,
+        "propagations": 0,
+        "redundant": 0,
+        "irredundant": 74,
+        "fixed": 0,
+        "eliminated": 0
+      }
+    },
+    {
+      "result": 10,
+      "statistics": {
+        "conflicts": 0,
+        "decisions": 0,
+        "propagations": 0,
+        "redundant": 0,
+        "irredundant": 75,
+        "fixed": 0,
+        "eliminated": 0
+      }
+    },
+    {
+      "result": 10,
+      "statistics": {
+        "conflicts": 0,
+        "decisions": 0,
+        "propagations": 0,
+        "redundant": 0,
+        "irredundant": 76,
+        "fixed": 0,
+        "eliminated": 0
+      }
+    },
+    {
+      "result": 10,
+      "statistics": {
+        "conflicts": 0,
+        "decisions": 0,
+        "propagations": 0,
+        "redundant": 0,
+        "irredundant": 77,
+        "fixed": 0,
+        "eliminated": 0
+      }
+    },
+    {
+      "result": 10,
+      "statistics": {
+        "conflicts": 0,
+        "decisions": 0,
+        "propagations": 0,
+        "redundant": 0,
+        "irredundant": 78,
+        "fixed": 0,
+        "eliminated": 0
+      }
+    },
+    {
+      "result": 10,
+      "statistics": {
+        "conflicts": 0,
+        "decisions": 0,
+        "propagations": 0,
+        "redundant": 0,
+        "irredundant": 79,
+        "fixed": 0,
+        "eliminated": 0
+      }
+    },
+    {
+      "result": 10,
+      "statistics": {
+        "conflicts": 0,
+        "decisions": 0,
+        "propagations": 0,
+        "redundant": 0,
+        "irredundant": 80,
+        "fixed": 0,
+        "eliminated": 0
+      }
+    },
+    {
+      "result": 10,
+      "statistics": {
+        "conflicts": 0,
+        "decisions": 0,
+        "propagations": 0,
+        "redundant": 0,
+        "irredundant": 81,
+        "fixed": 0,
+        "eliminated": 0
+      }
+    },
+    {
+      "result": 10,
+      "statistics": {
+        "conflicts": 0,
+        "decisions": 0,
+        "propagations": 0,
+        "redundant": 0,
+        "irredundant": 82,
+        "fixed": 0,
+        "eliminated": 0
+      }
+    },
+    {
+      "result": 10,
+      "statistics": {
+        "conflicts": 0,
+        "decisions": 0,
+        "propagations": 0,
+        "redundant": 0,
+        "irredundant": 83,
+        "fixed": 0,
+        "eliminated": 0
+      }
+    },
+    {
+      "result": 10,
+      "statistics": {
+        "conflicts": 0,
+        "decisions": 0,
+        "propagations": 0,
+        "redundant": 0,
+        "irredundant": 84,
+        "fixed": 0,
+        "eliminated": 0
+      }
+    },
+    {
+      "result": 10,
+      "statistics": {
+        "conflicts": 0,
+        "decisions": 0,
+        "propagations": 0,
+        "redundant": 0,
+        "irredundant": 85,
+        "fixed": 0,
+        "eliminated": 0
+      }
+    },
+    {
+      "result": 10,
+      "statistics": {
+        "conflicts": 0,
+        "decisions": 0,
+        "propagations": 0,
+        "redundant": 0,
+        "irredundant": 85,
+        "fixed": 0,
+        "eliminated": 0
+      }
+    },
+    {
+      "result": 10,
+      "statistics": {
+        "conflicts": 0,
+        "decisions": 0,
+        "propagations": 0,
+        "redundant": 0,
+        "irredundant": 86,
+        "fixed": 0,
+        "eliminated": 0
+      }
+    },
+    {
+      "result": 10,
+      "statistics": {
+        "conflicts": 0,
+        "decisions": 0,
+        "propagations": 0,
+        "redundant": 0,
+        "irredundant": 87,
+        "fixed": 0,
+        "eliminated": 0
+      }
+    },
+    {
+      "result": 20,
+      "statistics": {
+        "conflicts": 5,
+        "decisions": 5,
+        "propagations": 60,
+        "redundant": 4,
+        "irredundant": 88,
+        "fixed": 0,
+        "eliminated": 0
+      }
+    },
+    {
+      "result": 10,
+      "statistics": {
+        "conflicts": 5,
+        "decisions": 5,
+        "propagations": 60,
+        "redundant": 4,
+        "irredundant": 89,
+        "fixed": 0,
+        "eliminated": 0
+      }
+    },
+    {
+      "result": 10,
+      "statistics": {
+        "conflicts": 5,
+        "decisions": 5,
+        "propagations": 60,
+        "redundant": 4,
+        "irredundant": 90,
+        "fixed": 0,
+        "eliminated": 0
+      }
+    },
+    {
+      "result": 10,
+      "statistics": {
+        "conflicts": 5,
+        "decisions": 5,
+        "propagations": 60,
+        "redundant": 4,
+        "irredundant": 90,
+        "fixed": 0,
+        "eliminated": 0
+      }
+    },
+    {
+      "result": 10,
+      "statistics": {
+        "conflicts": 5,
+        "decisions": 5,
+        "propagations": 60,
+        "redundant": 4,
+        "irredundant": 91,
+        "fixed": 0,
+        "eliminated": 0
+      }
+    },
+    {
+      "result": 10,
+      "statistics": {
+        "conflicts": 5,
+        "decisions": 5,
+        "propagations": 60,
+        "redundant": 4,
+        "irredundant": 92,
+        "fixed": 0,
+        "eliminated": 0
+      }
+    },
+    {
+      "result": 10,
+      "statistics": {
+        "conflicts": 5,
+        "decisions": 5,
+        "propagations": 60,
+        "redundant": 4,
+        "irredundant": 93,
+        "fixed": 0,
+        "eliminated": 0
+      }
+    },
+    {
+      "result": 10,
+      "statistics": {
+        "conflicts": 5,
+        "decisions": 5,
+        "propagations": 60,
+        "redundant": 4,
+        "irredundant": 94,
+        "fixed": 0,
+        "eliminated": 0
+      }
+    },
+    {
+      "result": 10,
+      "statistics": {
+        "conflicts": 5,
+        "decisions": 5,
+        "propagations": 60,
+        "redundant": 4,
+        "irredundant": 95,
+        "fixed": 0,
+        "eliminated": 0
+      }
+    },
+    {
+      "result": 10,
+      "statistics": {
+        "conflicts": 5,
+        "decisions": 5,
+        "propagations": 60,
+        "redundant": 4,
+        "irredundant": 96,
+        "fixed": 0,
+        "eliminated": 0
+      }
+    },
+    {
+      "result": 10,
+      "statistics": {
+        "conflicts": 5,
+        "decisions": 5,
+        "propagations": 60,
+        "redundant": 4,
+        "irredundant": 96,
+        "fixed": 0,
+        "eliminated": 0
+      }
+    },
+    {
+      "result": 10,
+      "statistics": {
+        "conflicts": 5,
+        "decisions": 5,
+        "propagations": 60,
+        "redundant": 4,
+        "irredundant": 97,
+        "fixed": 0,
+        "eliminated": 0
+      }
+    },
+    {
+      "result": 20,
+      "statistics": {
+        "conflicts": 10,
+        "decisions": 9,
+        "propagations": 109,
+        "redundant": 9,
+        "irredundant": 98,
+        "fixed": 0,
+        "eliminated": 0
+      }
+    },
+    {
+      "result": 10,
+      "statistics": {
+        "conflicts": 10,
+        "decisions": 9,
+        "propagations": 109,
+        "redundant": 9,
+        "irredundant": 99,
+        "fixed": 0,
+        "eliminated": 0
+      }
+    },
+    {
+      "result": 10,
+      "statistics": {
+        "conflicts": 10,
+        "decisions": 9,
+        "propagations": 109,
+        "redundant": 9,
+        "irredundant": 100,
+        "fixed": 0,
+        "eliminated": 0
+      }
+    },
+    {
+      "result": 10,
+      "statistics": {
+        "conflicts": 10,
+        "decisions": 9,
+        "propagations": 109,
+        "redundant": 9,
+        "irredundant": 101,
+        "fixed": 0,
+        "eliminated": 0
+      }
+    },
+    {
+      "result": 10,
+      "statistics": {
+        "conflicts": 10,
+        "decisions": 9,
+        "propagations": 109,
+        "redundant": 9,
+        "irredundant": 102,
+        "fixed": 0,
+        "eliminated": 0
+      }
+    },
+    {
+      "result": 10,
+      "statistics": {
+        "conflicts": 10,
+        "decisions": 9,
+        "propagations": 109,
+        "redundant": 9,
+        "irredundant": 103,
+        "fixed": 0,
+        "eliminated": 0
+      }
+    },
+    {
+      "result": 10,
+      "statistics": {
+        "conflicts": 10,
+        "decisions": 9,
+        "propagations": 109,
+        "redundant": 9,
+        "irredundant": 104,
+        "fixed": 0,
+        "eliminated": 0
+      }
+    },
+    {
+      "result": 10,
+      "statistics": {
+        "conflicts": 10,
+        "decisions": 9,
+        "propagations": 109,
+        "redundant": 9,
+        "irredundant": 105,
+        "fixed": 0,
+        "eliminated": 0
+      }
+    },
+    {
+      "result": 10,
+      "statistics": {
+        "conflicts": 10,
+        "decisions": 9,
+        "propagations": 109,
+        "redundant": 9,
+        "irredundant": 106,
+        "fixed": 0,
+        "eliminated": 0
+      }
+    },
+    {
+      "result": 10,
+      "statistics": {
+        "conflicts": 10,
+        "decisions": 16,
+        "propagations": 141,
+        "redundant": 9,
+        "irredundant": 107,
+        "fixed": 0,
+        "eliminated": 0
+      }
+    },
+    {
+      "result": 20,
+      "statistics": {
+        "conflicts": 12,
+        "decisions": 17,
+        "propagations": 173,
+        "redundant": 10,
+        "irredundant": 108,
+        "fixed": 1,
+        "eliminated": 0
+      }
+    },
+    {
+      "result": 10,
+      "statistics": {
+        "conflicts": 16,
+        "decisions": 27,
+        "propagations": 242,
+        "redundant": 13,
+        "irredundant": 109,
+        "fixed": 1,
+        "eliminated": 0
+      }
+    },
+    {
+      "result": 10,
+      "statistics": {
+        "conflicts": 22,
+        "decisions": 39,
+        "propagations": 347,
+        "redundant": 17,
+        "irredundant": 110,
+        "fixed": 1,
+        "eliminated": 0
+      }
+    },
+    {
+      "result": 10,
+      "statistics": {
+        "conflicts": 22,
+        "decisions": 46,
+        "propagations": 378,
+        "redundant": 17,
+        "irredundant": 111,
+        "fixed": 1,
+        "eliminated": 0
+      }
+    },
+    {
+      "result": 20,
+      "statistics": {
+        "conflicts": 26,
+        "decisions": 49,
+        "propagations": 424,
+        "redundant": 20,
+        "irredundant": 112,
+        "fixed": 2,
+        "eliminated": 0
+      }
+    },
+    {
+      "result": 20,
+      "statistics": {
+        "conflicts": 29,
+        "decisions": 51,
+        "propagations": 458,
+        "redundant": 22,
+        "irredundant": 112,
+        "fixed": 4,
+        "eliminated": 0
+      }
+    },
+    {
+      "result": 20,
+      "statistics": {
+        "conflicts": 32,
+        "decisions": 53,
+        "propagations": 511,
+        "redundant": 24,
+        "irredundant": 113,
+        "fixed": 4,
+        "eliminated": 0
+      }
+    },
+    {
+      "result": 10,
+      "statistics": {
+        "conflicts": 32,
+        "decisions": 53,
+        "propagations": 511,
+        "redundant": 24,
+        "irredundant": 114,
+        "fixed": 4,
+        "eliminated": 0
+      }
+    },
+    {
+      "result": 10,
+      "statistics": {
+        "conflicts": 32,
+        "decisions": 53,
+        "propagations": 511,
+        "redundant": 24,
+        "irredundant": 115,
+        "fixed": 4,
+        "eliminated": 0
+      }
+    },
+    {
+      "result": 10,
+      "statistics": {
+        "conflicts": 32,
+        "decisions": 53,
+        "propagations": 511,
+        "redundant": 24,
+        "irredundant": 115,
+        "fixed": 4,
+        "eliminated": 0
+      }
+    },
+    {
+      "result": 20,
+      "statistics": {
+        "conflicts": 32,
+        "decisions": 53,
+        "propagations": 511,
+        "redundant": 24,
+        "irredundant": 116,
+        "fixed": 5,
+        "eliminated": 0
+      }
+    },
+    {
+      "result": 10,
+      "statistics": {
+        "conflicts": 33,
+        "decisions": 53,
+        "propagations": 511,
+        "redundant": 24,
+        "irredundant": 116,
+        "fixed": 7,
+        "eliminated": 0
+      }
+    },
+    {
+      "result": 20,
+      "statistics": {
+        "conflicts": 37,
+        "decisions": 55,
+        "propagations": 531,
+        "redundant": 26,
+        "irredundant": 117,
+        "fixed": 10,
+        "eliminated": 0
+      }
+    },
+    {
+      "result": 20,
+      "statistics": {
+        "conflicts": 38,
+        "decisions": 55,
+        "propagations": 531,
+        "redundant": 25,
+        "irredundant": 118,
+        "fixed": 19,
+        "eliminated": 0
+      }
+    },
+    {
+      "result": 20,
+      "statistics": {
+        "conflicts": 38,
+        "decisions": 55,
+        "propagations": 531,
+        "redundant": 25,
+        "irredundant": 118,
+        "fixed": 19,
+        "eliminated": 0
+      }
+    }
+  ]
+}
