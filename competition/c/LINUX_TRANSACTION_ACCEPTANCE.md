@@ -1,5 +1,8 @@
 # Complete Linux transaction acceptance — 2026-09-08
 
+Historical envelope. See [hard-query acceptance](HARD_TRANSACTION_ACCEPTANCE.md)
+for the current runtime, explicit larger envelope and successful hard cal3 transactions.
+
 The provisional Ubuntu acceptance passes, including independently checked answers
 and recovery from worker death, memory, CPU, wall and temporary-storage exhaustion.
 This validates the supplied harness on a hosted runner; it is not certification

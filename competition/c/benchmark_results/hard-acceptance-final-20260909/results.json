@@ -1,0 +1,1742 @@
+{
+  "complete": true,
+  "scope": "Provisional hosted Linux acceptance, not deployment certification",
+  "resource_scope": "Worker and checker process tree; lightweight supervisor outside cgroup",
+  "storage_scope": "Configured tmpfs hard capacity; 20 ms sampled occupancy is a lower bound on peak",
+  "policy": {
+    "query_cpu": 60.0,
+    "hard_query_cpu": 60.0,
+    "journal_mb": 256,
+    "checker_wall": 60.0,
+    "checker_heap_mb": 2048,
+    "checker_stack_mb": 512,
+    "wall": 180.0,
+    "aggregate_cpu": 120.0,
+    "memory_mb": 4096,
+    "storage": 1073741824
+  },
+  "platform": "Linux-6.17.0-1022-azure-x86_64-with-glibc2.39",
+  "revision": "5fe7630fc11b7ad3df18c4288cb9c143ee970f2b",
+  "hashes": {
+    "library": "4edceed8576884c4a23c988393be246a02a4825d551038bcf590b72756fabeac",
+    "converter": "659c7b1f5ef578cd6cfb2f06e477368eb12e82717502e3eaf263d40c5853b233",
+    "checker": "a0f239f9159768e9d302c4b7d03a2e620a26ececd1a1ccb493b5fb6f83604e99",
+    "manifest": "9a894a9769816148dfea6e70c9a14bfa8527e2714a0733e649ad47f1ce171d28"
+  },
+  "runs": [
+    {
+      "name": "normal-0",
+      "case": "gen23",
+      "fault": "none",
+      "returncode": 0,
+      "wall_seconds": 2.398889022999981,
+      "stop": null,
+      "limits": {
+        "memory_bytes": 4294967296,
+        "wall_seconds": 180.0,
+        "aggregate_cpu_seconds": 120.0,
+        "storage_bytes": 1073741824
+      },
+      "temporary_sampled_peak_bytes": 10498048,
+      "storage_sample_interval_seconds": 0.02,
+      "memory_peak_bytes": 706248704,
+      "memory_events": {
+        "low": 0,
+        "high": 0,
+        "max": 0,
+        "oom": 0,
+        "oom_kill": 0,
+        "oom_group_kill": 0
+      },
+      "cpu": {
+        "usage_usec": 2348410,
+        "user_usec": 2156213,
+        "system_usec": 192197,
+        "nice_usec": 0,
+        "core_sched.force_idle_usec": 0
+      },
+      "stderr": "",
+      "within_limits": true,
+      "transaction": {
+        "complete": true,
+        "case": "gen23",
+        "source_sha256": "a5aada5abe85d9491ba13ddd98120f35d962f8fe1282548e7a920f4c4ed765a7",
+        "answers": [
+          {
+            "result": 20,
+            "assumption": 78957,
+            "accepted": true,
+            "verification": {
+              "input_sha256": "a386b79c249b29e1fd0aad16072d12f09810ada0a71e5abe29f75fc5ad844253",
+              "drat_sha256": "c0103feec160e1770f34464ca6a3004a1779c9022a4ac5a4d11d73e4df283204",
+              "converter_sha256": "659c7b1f5ef578cd6cfb2f06e477368eb12e82717502e3eaf263d40c5853b233",
+              "checker_sha256": "a0f239f9159768e9d302c4b7d03a2e620a26ececd1a1ccb493b5fb6f83604e99",
+              "verified": true,
+              "checker_heap_mb": 2048,
+              "checker_stack_mb": 512,
+              "stages": [
+                {
+                  "command": [
+                    "/home/runner/work/_temp/drat-trim",
+                    "/tmp/tmpxnfio99q/check/input.cnf",
+                    "/tmp/tmpxnfio99q/check/proof.drat",
+                    "-L",
+                    "/tmp/tmpxnfio99q/check/proof.lrat"
+                  ],
+                  "seconds": 0.21694311800001742,
+                  "cpu_seconds": 0.21661499999999997,
+                  "children_peak_rss_bytes": 149704704,
+                  "returncode": 0,
+                  "stdout": "\nc turning on binary mode checking\n\nc parsing input formula with 83701 variables and 206921 clauses\n\nc finished parsing, read 180873 bytes from proof file\n\nc detected empty clause; start verification via backward checking\n\nc 18293 of 206921 clauses in core                            \n\nc 394 of 430 lemmas in core using 206473 resolution steps\n\nc 0 RAT lemmas in core; 3597 redundant literals in core lemmas\n\ns VERIFIED\n\nc verification time: 0.211 seconds\n",
+                  "stderr": ""
+                },
+                {
+                  "command": [
+                    "/home/runner/work/_temp/cake-lpr/cake_lpr",
+                    "--CML_HEAP_SIZE=2048",
+                    "--CML_STACK_SIZE=512",
+                    "/tmp/tmpxnfio99q/check/input.cnf",
+                    "/tmp/tmpxnfio99q/check/proof.lrat"
+                  ],
+                  "seconds": 0.3380568320000066,
+                  "cpu_seconds": 0.337732,
+                  "children_peak_rss_bytes": 566210560,
+                  "returncode": 0,
+                  "stdout": "s VERIFIED UNSAT\n",
+                  "stderr": ""
+                }
+              ],
+              "lrat_sha256": "b0fdce439986ca24ea6eeea78deaf800aea8bf82449a52e9b16798466971ee07",
+              "seconds": 0.5631690910000202,
+              "rss_scope": "Cumulative child-process high-water RSS, not isolated per-stage peak"
+            },
+            "input_sha256": "a386b79c249b29e1fd0aad16072d12f09810ada0a71e5abe29f75fc5ad844253",
+            "proof_sha256": "c0103feec160e1770f34464ca6a3004a1779c9022a4ac5a4d11d73e4df283204",
+            "checkpoint_cpu_budget": 60.0
+          },
+          {
+            "result": 10,
+            "assumption": -78957,
+            "accepted": true,
+            "input_sha256": "604cb16d920d1d0080bbd86f0d146937f587f390cba657cfe85307f5957878ea",
+            "proof_sha256": "c0acc2d8f22c673f85d0d8adecc748331d3fdcf620bfec9ecd0d80594c986412",
+            "checkpoint_cpu_budget": 60.0
+          }
+        ],
+        "stages": [
+          {
+            "name": "decompress",
+            "wall_seconds": 0.013805253000043649,
+            "cpu_seconds": 0.013804975999999997
+          },
+          {
+            "name": "parse",
+            "wall_seconds": 0.2344342979999965,
+            "cpu_seconds": 0.23439296800000003
+          },
+          {
+            "name": "load",
+            "wall_seconds": 0.32466273099998944,
+            "cpu_seconds": 0.324634802
+          },
+          {
+            "name": "solve",
+            "wall_seconds": 0.1350954360000287,
+            "cpu_seconds": 0.13508435200000002
+          },
+          {
+            "name": "export",
+            "wall_seconds": 0.02643088299998908,
+            "cpu_seconds": 0.026432437000000086
+          },
+          {
+            "name": "validate",
+            "wall_seconds": 0.855745316000025,
+            "cpu_seconds": 0.30172796700000004
+          },
+          {
+            "name": "checkpoint",
+            "wall_seconds": 0.02897721600004388,
+            "cpu_seconds": 0.028978595999999968
+          },
+          {
+            "name": "solve",
+            "wall_seconds": 0.06624052899996968,
+            "cpu_seconds": 0.06622128800000016
+          },
+          {
+            "name": "export",
+            "wall_seconds": 0.026150901000050908,
+            "cpu_seconds": 0.026151688999999978
+          },
+          {
+            "name": "validate",
+            "wall_seconds": 0.5211162229999786,
+            "cpu_seconds": 0.520986591
+          },
+          {
+            "name": "checkpoint",
+            "wall_seconds": 0.02366911600000776,
+            "cpu_seconds": 0.023669938000000057
+          }
+        ],
+        "storage_failure": null,
+        "transaction_seconds": 2.2779259980000006,
+        "temporary_bytes_used": 0,
+        "temporary_capacity_bytes": 1073741824
+      }
+    },
+    {
+      "name": "normal-1",
+      "case": "gen23",
+      "fault": "none",
+      "returncode": 0,
+      "wall_seconds": 2.346122878000017,
+      "stop": null,
+      "limits": {
+        "memory_bytes": 4294967296,
+        "wall_seconds": 180.0,
+        "aggregate_cpu_seconds": 120.0,
+        "storage_bytes": 1073741824
+      },
+      "temporary_sampled_peak_bytes": 10498048,
+      "storage_sample_interval_seconds": 0.02,
+      "memory_peak_bytes": 707772416,
+      "memory_events": {
+        "low": 0,
+        "high": 0,
+        "max": 0,
+        "oom": 0,
+        "oom_kill": 0,
+        "oom_group_kill": 0
+      },
+      "cpu": {
+        "usage_usec": 2329926,
+        "user_usec": 2148854,
+        "system_usec": 181072,
+        "nice_usec": 0,
+        "core_sched.force_idle_usec": 0
+      },
+      "stderr": "",
+      "within_limits": true,
+      "transaction": {
+        "complete": true,
+        "case": "gen23",
+        "source_sha256": "a5aada5abe85d9491ba13ddd98120f35d962f8fe1282548e7a920f4c4ed765a7",
+        "answers": [
+          {
+            "result": 20,
+            "assumption": 78957,
+            "accepted": true,
+            "verification": {
+              "input_sha256": "a386b79c249b29e1fd0aad16072d12f09810ada0a71e5abe29f75fc5ad844253",
+              "drat_sha256": "c0103feec160e1770f34464ca6a3004a1779c9022a4ac5a4d11d73e4df283204",
+              "converter_sha256": "659c7b1f5ef578cd6cfb2f06e477368eb12e82717502e3eaf263d40c5853b233",
+              "checker_sha256": "a0f239f9159768e9d302c4b7d03a2e620a26ececd1a1ccb493b5fb6f83604e99",
+              "verified": true,
+              "checker_heap_mb": 2048,
+              "checker_stack_mb": 512,
+              "stages": [
+                {
+                  "command": [
+                    "/home/runner/work/_temp/drat-trim",
+                    "/tmp/tmpkcs5dykd/check/input.cnf",
+                    "/tmp/tmpkcs5dykd/check/proof.drat",
+                    "-L",
+                    "/tmp/tmpkcs5dykd/check/proof.lrat"
+                  ],
+                  "seconds": 0.21195197800000187,
+                  "cpu_seconds": 0.21167399999999997,
+                  "children_peak_rss_bytes": 151650304,
+                  "returncode": 0,
+                  "stdout": "\nc turning on binary mode checking\n\nc parsing input formula with 83701 variables and 206921 clauses\n\nc finished parsing, read 180873 bytes from proof file\n\nc detected empty clause; start verification via backward checking\n\nc 18293 of 206921 clauses in core                            \n\nc 394 of 430 lemmas in core using 206473 resolution steps\n\nc 0 RAT lemmas in core; 3597 redundant literals in core lemmas\n\ns VERIFIED\n\nc verification time: 0.207 seconds\n",
+                  "stderr": ""
+                },
+                {
+                  "command": [
+                    "/home/runner/work/_temp/cake-lpr/cake_lpr",
+                    "--CML_HEAP_SIZE=2048",
+                    "--CML_STACK_SIZE=512",
+                    "/tmp/tmpkcs5dykd/check/input.cnf",
+                    "/tmp/tmpkcs5dykd/check/proof.lrat"
+                  ],
+                  "seconds": 0.33412088799997264,
+                  "cpu_seconds": 0.33372999999999997,
+                  "children_peak_rss_bytes": 566083584,
+                  "returncode": 0,
+                  "stdout": "s VERIFIED UNSAT\n",
+                  "stderr": ""
+                }
+              ],
+              "lrat_sha256": "b0fdce439986ca24ea6eeea78deaf800aea8bf82449a52e9b16798466971ee07",
+              "seconds": 0.5542374269999755,
+              "rss_scope": "Cumulative child-process high-water RSS, not isolated per-stage peak"
+            },
+            "input_sha256": "a386b79c249b29e1fd0aad16072d12f09810ada0a71e5abe29f75fc5ad844253",
+            "proof_sha256": "c0103feec160e1770f34464ca6a3004a1779c9022a4ac5a4d11d73e4df283204",
+            "checkpoint_cpu_budget": 60.0
+          },
+          {
+            "result": 10,
+            "assumption": -78957,
+            "accepted": true,
+            "input_sha256": "604cb16d920d1d0080bbd86f0d146937f587f390cba657cfe85307f5957878ea",
+            "proof_sha256": "c0acc2d8f22c673f85d0d8adecc748331d3fdcf620bfec9ecd0d80594c986412",
+            "checkpoint_cpu_budget": 60.0
+          }
+        ],
+        "stages": [
+          {
+            "name": "decompress",
+            "wall_seconds": 0.014111253999999462,
+            "cpu_seconds": 0.014111185999999998
+          },
+          {
+            "name": "parse",
+            "wall_seconds": 0.23324178799998663,
+            "cpu_seconds": 0.233244456
+          },
+          {
+            "name": "load",
+            "wall_seconds": 0.3263324370000191,
+            "cpu_seconds": 0.326309239
+          },
+          {
+            "name": "solve",
+            "wall_seconds": 0.13588124200003904,
+            "cpu_seconds": 0.13588405199999998
+          },
+          {
+            "name": "export",
+            "wall_seconds": 0.02619093300000941,
+            "cpu_seconds": 0.026192016999999956
+          },
+          {
+            "name": "validate",
+            "wall_seconds": 0.8393506639999941,
+            "cpu_seconds": 0.2942384789999999
+          },
+          {
+            "name": "checkpoint",
+            "wall_seconds": 0.028042957000025126,
+            "cpu_seconds": 0.02804460600000014
+          },
+          {
+            "name": "solve",
+            "wall_seconds": 0.06571780399997351,
+            "cpu_seconds": 0.06571949600000004
+          },
+          {
+            "name": "export",
+            "wall_seconds": 0.0261748789999956,
+            "cpu_seconds": 0.026164701999999984
+          },
+          {
+            "name": "validate",
+            "wall_seconds": 0.5196724520000089,
+            "cpu_seconds": 0.51962446
+          },
+          {
+            "name": "checkpoint",
+            "wall_seconds": 0.023688262999996823,
+            "cpu_seconds": 0.023689332999999868
+          }
+        ],
+        "storage_failure": null,
+        "transaction_seconds": 2.260032937999995,
+        "temporary_bytes_used": 0,
+        "temporary_capacity_bytes": 1073741824
+      }
+    },
+    {
+      "name": "hard-0",
+      "case": "cal3",
+      "fault": "none",
+      "returncode": 0,
+      "wall_seconds": 93.88761657500004,
+      "stop": null,
+      "limits": {
+        "memory_bytes": 4294967296,
+        "wall_seconds": 180.0,
+        "aggregate_cpu_seconds": 120.0,
+        "storage_bytes": 1073741824
+      },
+      "temporary_sampled_peak_bytes": 679534592,
+      "storage_sample_interval_seconds": 0.02,
+      "memory_peak_bytes": 2864058368,
+      "memory_events": {
+        "low": 0,
+        "high": 0,
+        "max": 0,
+        "oom": 0,
+        "oom_kill": 0,
+        "oom_group_kill": 0
+      },
+      "cpu": {
+        "usage_usec": 93849013,
+        "user_usec": 92232168,
+        "system_usec": 1616845,
+        "nice_usec": 0,
+        "core_sched.force_idle_usec": 0
+      },
+      "stderr": "",
+      "within_limits": true,
+      "transaction": {
+        "complete": true,
+        "case": "cal3",
+        "source_sha256": "72e4a8cee8b37d18e7d54b4e4944008f99a9954f8f6b19b5438303631246778d",
+        "answers": [
+          {
+            "result": 20,
+            "assumption": 8715,
+            "accepted": true,
+            "verification": {
+              "input_sha256": "6bbfa3e0109b277412f4bf0edc157670859943a2e914c2d16f27346acc1b9e98",
+              "drat_sha256": "4ebd3c82a350c1921762081fc880dfb67de75546bd56a35cc17a9f55bae80c57",
+              "converter_sha256": "659c7b1f5ef578cd6cfb2f06e477368eb12e82717502e3eaf263d40c5853b233",
+              "checker_sha256": "a0f239f9159768e9d302c4b7d03a2e620a26ececd1a1ccb493b5fb6f83604e99",
+              "verified": true,
+              "checker_heap_mb": 2048,
+              "checker_stack_mb": 512,
+              "stages": [
+                {
+                  "command": [
+                    "/home/runner/work/_temp/drat-trim",
+                    "/tmp/tmp6vjoppag/check/input.cnf",
+                    "/tmp/tmp6vjoppag/check/proof.drat",
+                    "-L",
+                    "/tmp/tmp6vjoppag/check/proof.lrat"
+                  ],
+                  "seconds": 34.63662640900009,
+                  "cpu_seconds": 34.632827999999996,
+                  "children_peak_rss_bytes": 520617984,
+                  "returncode": 0,
+                  "stdout": "\nc turning on binary mode checking\n\nc parsing input formula with 9028 variables and 23881 clauses\n\nc finished parsing, read 172165409 bytes from proof file\n\nc detected empty clause; start verification via backward checking\n\nc 13158 of 23881 clauses in core                            \n\nc 55805 of 681573 lemmas in core using 24400495 resolution steps\n\nc 0 RAT lemmas in core; 1833465 redundant literals in core lemmas\n\ns VERIFIED\n\nc verification time: 34.630 seconds\n",
+                  "stderr": ""
+                },
+                {
+                  "command": [
+                    "/home/runner/work/_temp/cake-lpr/cake_lpr",
+                    "--CML_HEAP_SIZE=2048",
+                    "--CML_STACK_SIZE=512",
+                    "/tmp/tmp6vjoppag/check/input.cnf",
+                    "/tmp/tmp6vjoppag/check/proof.lrat"
+                  ],
+                  "seconds": 6.01789825700007,
+                  "cpu_seconds": 6.016808000000005,
+                  "children_peak_rss_bytes": 2151530496,
+                  "returncode": 0,
+                  "stdout": "s VERIFIED UNSAT\n",
+                  "stderr": ""
+                }
+              ],
+              "lrat_sha256": "a72bcf7c32a4097a504e802a8519dbedf6feaac0196add22ea879ffff7f597d4",
+              "seconds": 41.028566017,
+              "rss_scope": "Cumulative child-process high-water RSS, not isolated per-stage peak"
+            },
+            "input_sha256": "6bbfa3e0109b277412f4bf0edc157670859943a2e914c2d16f27346acc1b9e98",
+            "proof_sha256": "4ebd3c82a350c1921762081fc880dfb67de75546bd56a35cc17a9f55bae80c57",
+            "checkpoint_cpu_budget": 60.0
+          },
+          {
+            "result": 10,
+            "assumption": -8715,
+            "accepted": true,
+            "input_sha256": "66a2c215e71b0a6e0491b41f0176deaf6f6b7feada3e16f0e1785b01587fb08a",
+            "proof_sha256": "d9d49a9de3fe30a543cf7131a29b39a0b32b8f2b7d0a0e675dd0654a6c68afdf",
+            "checkpoint_cpu_budget": 60.0
+          }
+        ],
+        "stages": [
+          {
+            "name": "decompress",
+            "wall_seconds": 0.0018067940000037197,
+            "cpu_seconds": 0.0018064360000000015
+          },
+          {
+            "name": "parse",
+            "wall_seconds": 0.02453429199999846,
+            "cpu_seconds": 0.024536688999999993
+          },
+          {
+            "name": "load",
+            "wall_seconds": 0.038506648000009136,
+            "cpu_seconds": 0.038508389000000004
+          },
+          {
+            "name": "solve",
+            "wall_seconds": 52.340590494000026,
+            "cpu_seconds": 52.334313832
+          },
+          {
+            "name": "export",
+            "wall_seconds": 0.07246856100005061,
+            "cpu_seconds": 0.0724583129999985
+          },
+          {
+            "name": "validate",
+            "wall_seconds": 41.05540632899999,
+            "cpu_seconds": 0.4019448809999986
+          },
+          {
+            "name": "checkpoint",
+            "wall_seconds": 0.014723725999942872,
+            "cpu_seconds": 0.014556346000006215
+          },
+          {
+            "name": "solve",
+            "wall_seconds": 0.006356617000051301,
+            "cpu_seconds": 0.00635745299999968
+          },
+          {
+            "name": "export",
+            "wall_seconds": 0.003206843000043591,
+            "cpu_seconds": 0.003167214999997725
+          },
+          {
+            "name": "validate",
+            "wall_seconds": 0.05154646500000126,
+            "cpu_seconds": 0.051548816000000386
+          },
+          {
+            "name": "checkpoint",
+            "wall_seconds": 0.0031984760000796086,
+            "cpu_seconds": 0.0031987719999975184
+          }
+        ],
+        "storage_failure": null,
+        "transaction_seconds": 93.80318731700004,
+        "temporary_bytes_used": 0,
+        "temporary_capacity_bytes": 1073741824
+      }
+    },
+    {
+      "name": "hard-1",
+      "case": "cal3",
+      "fault": "none",
+      "returncode": 0,
+      "wall_seconds": 94.35093541699996,
+      "stop": null,
+      "limits": {
+        "memory_bytes": 4294967296,
+        "wall_seconds": 180.0,
+        "aggregate_cpu_seconds": 120.0,
+        "storage_bytes": 1073741824
+      },
+      "temporary_sampled_peak_bytes": 679534592,
+      "storage_sample_interval_seconds": 0.02,
+      "memory_peak_bytes": 2864562176,
+      "memory_events": {
+        "low": 0,
+        "high": 0,
+        "max": 0,
+        "oom": 0,
+        "oom_kill": 0,
+        "oom_group_kill": 0
+      },
+      "cpu": {
+        "usage_usec": 94310928,
+        "user_usec": 92706100,
+        "system_usec": 1604828,
+        "nice_usec": 0,
+        "core_sched.force_idle_usec": 0
+      },
+      "stderr": "",
+      "within_limits": true,
+      "transaction": {
+        "complete": true,
+        "case": "cal3",
+        "source_sha256": "72e4a8cee8b37d18e7d54b4e4944008f99a9954f8f6b19b5438303631246778d",
+        "answers": [
+          {
+            "result": 20,
+            "assumption": 8715,
+            "accepted": true,
+            "verification": {
+              "input_sha256": "6bbfa3e0109b277412f4bf0edc157670859943a2e914c2d16f27346acc1b9e98",
+              "drat_sha256": "4ebd3c82a350c1921762081fc880dfb67de75546bd56a35cc17a9f55bae80c57",
+              "converter_sha256": "659c7b1f5ef578cd6cfb2f06e477368eb12e82717502e3eaf263d40c5853b233",
+              "checker_sha256": "a0f239f9159768e9d302c4b7d03a2e620a26ececd1a1ccb493b5fb6f83604e99",
+              "verified": true,
+              "checker_heap_mb": 2048,
+              "checker_stack_mb": 512,
+              "stages": [
+                {
+                  "command": [
+                    "/home/runner/work/_temp/drat-trim",
+                    "/tmp/tmpfdrrb4t3/check/input.cnf",
+                    "/tmp/tmpfdrrb4t3/check/proof.drat",
+                    "-L",
+                    "/tmp/tmpfdrrb4t3/check/proof.lrat"
+                  ],
+                  "seconds": 34.24365357599993,
+                  "cpu_seconds": 34.233198,
+                  "children_peak_rss_bytes": 519954432,
+                  "returncode": 0,
+                  "stdout": "\nc turning on binary mode checking\n\nc parsing input formula with 9028 variables and 23881 clauses\n\nc finished parsing, read 172165409 bytes from proof file\n\nc detected empty clause; start verification via backward checking\n\nc 13158 of 23881 clauses in core                            \n\nc 55805 of 681573 lemmas in core using 24400495 resolution steps\n\nc 0 RAT lemmas in core; 1833465 redundant literals in core lemmas\n\ns VERIFIED\n\nc verification time: 34.238 seconds\n",
+                  "stderr": ""
+                },
+                {
+                  "command": [
+                    "/home/runner/work/_temp/cake-lpr/cake_lpr",
+                    "--CML_HEAP_SIZE=2048",
+                    "--CML_STACK_SIZE=512",
+                    "/tmp/tmpfdrrb4t3/check/input.cnf",
+                    "/tmp/tmpfdrrb4t3/check/proof.lrat"
+                  ],
+                  "seconds": 6.062086116000046,
+                  "cpu_seconds": 6.0607359999999995,
+                  "children_peak_rss_bytes": 2151526400,
+                  "returncode": 0,
+                  "stdout": "s VERIFIED UNSAT\n",
+                  "stderr": ""
+                }
+              ],
+              "lrat_sha256": "a72bcf7c32a4097a504e802a8519dbedf6feaac0196add22ea879ffff7f597d4",
+              "seconds": 40.681196106000016,
+              "rss_scope": "Cumulative child-process high-water RSS, not isolated per-stage peak"
+            },
+            "input_sha256": "6bbfa3e0109b277412f4bf0edc157670859943a2e914c2d16f27346acc1b9e98",
+            "proof_sha256": "4ebd3c82a350c1921762081fc880dfb67de75546bd56a35cc17a9f55bae80c57",
+            "checkpoint_cpu_budget": 60.0
+          },
+          {
+            "result": 10,
+            "assumption": -8715,
+            "accepted": true,
+            "input_sha256": "66a2c215e71b0a6e0491b41f0176deaf6f6b7feada3e16f0e1785b01587fb08a",
+            "proof_sha256": "d9d49a9de3fe30a543cf7131a29b39a0b32b8f2b7d0a0e675dd0654a6c68afdf",
+            "checkpoint_cpu_budget": 60.0
+          }
+        ],
+        "stages": [
+          {
+            "name": "decompress",
+            "wall_seconds": 0.001723185000059857,
+            "cpu_seconds": 0.001722590000000003
+          },
+          {
+            "name": "parse",
+            "wall_seconds": 0.024483820000000378,
+            "cpu_seconds": 0.024486257000000004
+          },
+          {
+            "name": "load",
+            "wall_seconds": 0.03755841400004556,
+            "cpu_seconds": 0.03754164800000001
+          },
+          {
+            "name": "solve",
+            "wall_seconds": 53.15784134900002,
+            "cpu_seconds": 53.149818651
+          },
+          {
+            "name": "export",
+            "wall_seconds": 0.07252006700002767,
+            "cpu_seconds": 0.0725071909999997
+          },
+          {
+            "name": "validate",
+            "wall_seconds": 40.707592471,
+            "cpu_seconds": 0.402914219000003
+          },
+          {
+            "name": "checkpoint",
+            "wall_seconds": 0.015495618000045397,
+            "cpu_seconds": 0.01496884499999851
+          },
+          {
+            "name": "solve",
+            "wall_seconds": 0.006197853000003306,
+            "cpu_seconds": 0.006198601000001247
+          },
+          {
+            "name": "export",
+            "wall_seconds": 0.0031792849999874306,
+            "cpu_seconds": 0.0031722330000008014
+          },
+          {
+            "name": "validate",
+            "wall_seconds": 0.05174150799996369,
+            "cpu_seconds": 0.051713997000000234
+          },
+          {
+            "name": "checkpoint",
+            "wall_seconds": 0.0033123660000455857,
+            "cpu_seconds": 0.0033131490000002373
+          }
+        ],
+        "storage_failure": null,
+        "transaction_seconds": 94.27396474800003,
+        "temporary_bytes_used": 0,
+        "temporary_capacity_bytes": 1073741824
+      }
+    },
+    {
+      "name": "unknown",
+      "case": "cal3",
+      "fault": "none",
+      "returncode": 0,
+      "wall_seconds": 0.22010985399992933,
+      "stop": null,
+      "limits": {
+        "memory_bytes": 4294967296,
+        "wall_seconds": 180.0,
+        "aggregate_cpu_seconds": 120.0,
+        "storage_bytes": 1073741824
+      },
+      "temporary_sampled_peak_bytes": 360448,
+      "storage_sample_interval_seconds": 0.02,
+      "memory_peak_bytes": 25505792,
+      "memory_events": {
+        "low": 0,
+        "high": 0,
+        "max": 0,
+        "oom": 0,
+        "oom_kill": 0,
+        "oom_group_kill": 0
+      },
+      "cpu": {
+        "usage_usec": 197575,
+        "user_usec": 181610,
+        "system_usec": 15965,
+        "nice_usec": 0,
+        "core_sched.force_idle_usec": 0
+      },
+      "stderr": "",
+      "within_limits": true,
+      "transaction": {
+        "complete": true,
+        "case": "cal3",
+        "source_sha256": "72e4a8cee8b37d18e7d54b4e4944008f99a9954f8f6b19b5438303631246778d",
+        "answers": [
+          {
+            "result": 0,
+            "assumption": 8715,
+            "accepted": false,
+            "checkpoint_cpu_budget": 60.0
+          },
+          {
+            "result": 10,
+            "assumption": -8715,
+            "accepted": true,
+            "input_sha256": "66a2c215e71b0a6e0491b41f0176deaf6f6b7feada3e16f0e1785b01587fb08a",
+            "proof_sha256": "d9d49a9de3fe30a543cf7131a29b39a0b32b8f2b7d0a0e675dd0654a6c68afdf",
+            "checkpoint_cpu_budget": 60.0
+          }
+        ],
+        "stages": [
+          {
+            "name": "decompress",
+            "wall_seconds": 0.0017137750000983942,
+            "cpu_seconds": 0.001713184999999999
+          },
+          {
+            "name": "parse",
+            "wall_seconds": 0.02507510500004173,
+            "cpu_seconds": 0.025078399999999994
+          },
+          {
+            "name": "load",
+            "wall_seconds": 0.0396876740001062,
+            "cpu_seconds": 0.039690931
+          },
+          {
+            "name": "solve",
+            "wall_seconds": 5.697999995391001e-05,
+            "cpu_seconds": 5.686900000000106e-05
+          },
+          {
+            "name": "checkpoint",
+            "wall_seconds": 0.003591390999986288,
+            "cpu_seconds": 0.0035929430000000012
+          },
+          {
+            "name": "solve",
+            "wall_seconds": 0.005976984000085395,
+            "cpu_seconds": 0.005977974000000011
+          },
+          {
+            "name": "export",
+            "wall_seconds": 0.003194071000052645,
+            "cpu_seconds": 0.00319354899999999
+          },
+          {
+            "name": "validate",
+            "wall_seconds": 0.05359581400000479,
+            "cpu_seconds": 0.053585469
+          },
+          {
+            "name": "checkpoint",
+            "wall_seconds": 0.0036118900000019494,
+            "cpu_seconds": 0.0036126939999999996
+          }
+        ],
+        "storage_failure": null,
+        "transaction_seconds": 0.139189416000022,
+        "temporary_bytes_used": 0,
+        "temporary_capacity_bytes": 1073741824
+      }
+    },
+    {
+      "name": "kill",
+      "case": "gen23",
+      "fault": "kill",
+      "returncode": -9,
+      "wall_seconds": 0.6484333509999942,
+      "stop": null,
+      "limits": {
+        "memory_bytes": 4294967296,
+        "wall_seconds": 180.0,
+        "aggregate_cpu_seconds": 120.0,
+        "storage_bytes": 1073741824
+      },
+      "temporary_sampled_peak_bytes": 0,
+      "storage_sample_interval_seconds": 0.02,
+      "memory_peak_bytes": 85913600,
+      "memory_events": {
+        "low": 0,
+        "high": 0,
+        "max": 0,
+        "oom": 0,
+        "oom_kill": 0,
+        "oom_group_kill": 0
+      },
+      "cpu": {
+        "usage_usec": 630640,
+        "user_usec": 591600,
+        "system_usec": 39039,
+        "nice_usec": 0,
+        "core_sched.force_idle_usec": 0
+      },
+      "stderr": "",
+      "within_limits": true,
+      "recovery_total_seconds": 3.0254412240000192
+    },
+    {
+      "name": "kill-replay",
+      "case": "gen23",
+      "fault": "none",
+      "returncode": 0,
+      "wall_seconds": 2.3759729850000895,
+      "stop": null,
+      "limits": {
+        "memory_bytes": 4294967296,
+        "wall_seconds": 180.0,
+        "aggregate_cpu_seconds": 120.0,
+        "storage_bytes": 1073741824
+      },
+      "temporary_sampled_peak_bytes": 10498048,
+      "storage_sample_interval_seconds": 0.02,
+      "memory_peak_bytes": 707268608,
+      "memory_events": {
+        "low": 0,
+        "high": 0,
+        "max": 0,
+        "oom": 0,
+        "oom_kill": 0,
+        "oom_group_kill": 0
+      },
+      "cpu": {
+        "usage_usec": 2345893,
+        "user_usec": 2152819,
+        "system_usec": 193073,
+        "nice_usec": 0,
+        "core_sched.force_idle_usec": 0
+      },
+      "stderr": "",
+      "within_limits": true,
+      "transaction": {
+        "complete": true,
+        "case": "gen23",
+        "source_sha256": "a5aada5abe85d9491ba13ddd98120f35d962f8fe1282548e7a920f4c4ed765a7",
+        "answers": [
+          {
+            "result": 20,
+            "assumption": 78957,
+            "accepted": true,
+            "verification": {
+              "input_sha256": "a386b79c249b29e1fd0aad16072d12f09810ada0a71e5abe29f75fc5ad844253",
+              "drat_sha256": "c0103feec160e1770f34464ca6a3004a1779c9022a4ac5a4d11d73e4df283204",
+              "converter_sha256": "659c7b1f5ef578cd6cfb2f06e477368eb12e82717502e3eaf263d40c5853b233",
+              "checker_sha256": "a0f239f9159768e9d302c4b7d03a2e620a26ececd1a1ccb493b5fb6f83604e99",
+              "verified": true,
+              "checker_heap_mb": 2048,
+              "checker_stack_mb": 512,
+              "stages": [
+                {
+                  "command": [
+                    "/home/runner/work/_temp/drat-trim",
+                    "/tmp/tmpaanlii64/check/input.cnf",
+                    "/tmp/tmpaanlii64/check/proof.drat",
+                    "-L",
+                    "/tmp/tmpaanlii64/check/proof.lrat"
+                  ],
+                  "seconds": 0.21603408900000431,
+                  "cpu_seconds": 0.215686,
+                  "children_peak_rss_bytes": 151171072,
+                  "returncode": 0,
+                  "stdout": "\nc turning on binary mode checking\n\nc parsing input formula with 83701 variables and 206921 clauses\n\nc finished parsing, read 180873 bytes from proof file\n\nc detected empty clause; start verification via backward checking\n\nc 18293 of 206921 clauses in core                            \n\nc 394 of 430 lemmas in core using 206473 resolution steps\n\nc 0 RAT lemmas in core; 3597 redundant literals in core lemmas\n\ns VERIFIED\n\nc verification time: 0.210 seconds\n",
+                  "stderr": ""
+                },
+                {
+                  "command": [
+                    "/home/runner/work/_temp/cake-lpr/cake_lpr",
+                    "--CML_HEAP_SIZE=2048",
+                    "--CML_STACK_SIZE=512",
+                    "/tmp/tmpaanlii64/check/input.cnf",
+                    "/tmp/tmpaanlii64/check/proof.lrat"
+                  ],
+                  "seconds": 0.33642256899997847,
+                  "cpu_seconds": 0.33609,
+                  "children_peak_rss_bytes": 566214656,
+                  "returncode": 0,
+                  "stdout": "s VERIFIED UNSAT\n",
+                  "stderr": ""
+                }
+              ],
+              "lrat_sha256": "b0fdce439986ca24ea6eeea78deaf800aea8bf82449a52e9b16798466971ee07",
+              "seconds": 0.5605927139999949,
+              "rss_scope": "Cumulative child-process high-water RSS, not isolated per-stage peak"
+            },
+            "input_sha256": "a386b79c249b29e1fd0aad16072d12f09810ada0a71e5abe29f75fc5ad844253",
+            "proof_sha256": "c0103feec160e1770f34464ca6a3004a1779c9022a4ac5a4d11d73e4df283204",
+            "checkpoint_cpu_budget": 60.0
+          },
+          {
+            "result": 10,
+            "assumption": -78957,
+            "accepted": true,
+            "input_sha256": "604cb16d920d1d0080bbd86f0d146937f587f390cba657cfe85307f5957878ea",
+            "proof_sha256": "c0acc2d8f22c673f85d0d8adecc748331d3fdcf620bfec9ecd0d80594c986412",
+            "checkpoint_cpu_budget": 60.0
+          }
+        ],
+        "stages": [
+          {
+            "name": "decompress",
+            "wall_seconds": 0.013850823999973727,
+            "cpu_seconds": 0.013851262999999996
+          },
+          {
+            "name": "parse",
+            "wall_seconds": 0.2336396910000076,
+            "cpu_seconds": 0.23362749100000002
+          },
+          {
+            "name": "load",
+            "wall_seconds": 0.32482057200002146,
+            "cpu_seconds": 0.324781095
+          },
+          {
+            "name": "solve",
+            "wall_seconds": 0.13440247400001226,
+            "cpu_seconds": 0.13439287599999994
+          },
+          {
+            "name": "export",
+            "wall_seconds": 0.026582500000017717,
+            "cpu_seconds": 0.026584280999999987
+          },
+          {
+            "name": "validate",
+            "wall_seconds": 0.8496691459999965,
+            "cpu_seconds": 0.29818964699999995
+          },
+          {
+            "name": "checkpoint",
+            "wall_seconds": 0.028027327000017976,
+            "cpu_seconds": 0.0280283830000001
+          },
+          {
+            "name": "solve",
+            "wall_seconds": 0.06608919099994637,
+            "cpu_seconds": 0.06609114399999982
+          },
+          {
+            "name": "export",
+            "wall_seconds": 0.026197831000104088,
+            "cpu_seconds": 0.026199431999999856
+          },
+          {
+            "name": "validate",
+            "wall_seconds": 0.5246088580000787,
+            "cpu_seconds": 0.524509532
+          },
+          {
+            "name": "checkpoint",
+            "wall_seconds": 0.02419532400006119,
+            "cpu_seconds": 0.024196738000000106
+          }
+        ],
+        "storage_failure": null,
+        "transaction_seconds": 2.2746255979999432,
+        "temporary_bytes_used": 0,
+        "temporary_capacity_bytes": 1073741824
+      }
+    },
+    {
+      "name": "memory",
+      "case": "gen23",
+      "fault": "memory",
+      "returncode": -9,
+      "wall_seconds": 0.3144427089999908,
+      "stop": null,
+      "limits": {
+        "memory_bytes": 67108864,
+        "wall_seconds": 180.0,
+        "aggregate_cpu_seconds": 120.0,
+        "storage_bytes": 1073741824
+      },
+      "temporary_sampled_peak_bytes": 0,
+      "storage_sample_interval_seconds": 0.02,
+      "memory_peak_bytes": 67108864,
+      "memory_events": {
+        "low": 0,
+        "high": 0,
+        "max": 37,
+        "oom": 1,
+        "oom_kill": 2,
+        "oom_group_kill": 1
+      },
+      "cpu": {
+        "usage_usec": 296800,
+        "user_usec": 260703,
+        "system_usec": 36097,
+        "nice_usec": 0,
+        "core_sched.force_idle_usec": 0
+      },
+      "stderr": "",
+      "within_limits": true,
+      "recovery_total_seconds": 2.707681235999985
+    },
+    {
+      "name": "memory-replay",
+      "case": "gen23",
+      "fault": "none",
+      "returncode": 0,
+      "wall_seconds": 2.3922375500000044,
+      "stop": null,
+      "limits": {
+        "memory_bytes": 4294967296,
+        "wall_seconds": 180.0,
+        "aggregate_cpu_seconds": 120.0,
+        "storage_bytes": 1073741824
+      },
+      "temporary_sampled_peak_bytes": 10498048,
+      "storage_sample_interval_seconds": 0.02,
+      "memory_peak_bytes": 705744896,
+      "memory_events": {
+        "low": 0,
+        "high": 0,
+        "max": 0,
+        "oom": 0,
+        "oom_kill": 0,
+        "oom_group_kill": 0
+      },
+      "cpu": {
+        "usage_usec": 2361862,
+        "user_usec": 2172793,
+        "system_usec": 189069,
+        "nice_usec": 0,
+        "core_sched.force_idle_usec": 0
+      },
+      "stderr": "",
+      "within_limits": true,
+      "transaction": {
+        "complete": true,
+        "case": "gen23",
+        "source_sha256": "a5aada5abe85d9491ba13ddd98120f35d962f8fe1282548e7a920f4c4ed765a7",
+        "answers": [
+          {
+            "result": 20,
+            "assumption": 78957,
+            "accepted": true,
+            "verification": {
+              "input_sha256": "a386b79c249b29e1fd0aad16072d12f09810ada0a71e5abe29f75fc5ad844253",
+              "drat_sha256": "c0103feec160e1770f34464ca6a3004a1779c9022a4ac5a4d11d73e4df283204",
+              "converter_sha256": "659c7b1f5ef578cd6cfb2f06e477368eb12e82717502e3eaf263d40c5853b233",
+              "checker_sha256": "a0f239f9159768e9d302c4b7d03a2e620a26ececd1a1ccb493b5fb6f83604e99",
+              "verified": true,
+              "checker_heap_mb": 2048,
+              "checker_stack_mb": 512,
+              "stages": [
+                {
+                  "command": [
+                    "/home/runner/work/_temp/drat-trim",
+                    "/tmp/tmpqug5mufc/check/input.cnf",
+                    "/tmp/tmpqug5mufc/check/proof.drat",
+                    "-L",
+                    "/tmp/tmpqug5mufc/check/proof.lrat"
+                  ],
+                  "seconds": 0.21421191900003578,
+                  "cpu_seconds": 0.213839,
+                  "children_peak_rss_bytes": 149319680,
+                  "returncode": 0,
+                  "stdout": "\nc turning on binary mode checking\n\nc parsing input formula with 83701 variables and 206921 clauses\n\nc finished parsing, read 180873 bytes from proof file\n\nc detected empty clause; start verification via backward checking\n\nc 18293 of 206921 clauses in core                            \n\nc 394 of 430 lemmas in core using 206473 resolution steps\n\nc 0 RAT lemmas in core; 3597 redundant literals in core lemmas\n\ns VERIFIED\n\nc verification time: 0.208 seconds\n",
+                  "stderr": ""
+                },
+                {
+                  "command": [
+                    "/home/runner/work/_temp/cake-lpr/cake_lpr",
+                    "--CML_HEAP_SIZE=2048",
+                    "--CML_STACK_SIZE=512",
+                    "/tmp/tmpqug5mufc/check/input.cnf",
+                    "/tmp/tmpqug5mufc/check/proof.lrat"
+                  ],
+                  "seconds": 0.34009796800000913,
+                  "cpu_seconds": 0.339722,
+                  "children_peak_rss_bytes": 566075392,
+                  "returncode": 0,
+                  "stdout": "s VERIFIED UNSAT\n",
+                  "stderr": ""
+                }
+              ],
+              "lrat_sha256": "b0fdce439986ca24ea6eeea78deaf800aea8bf82449a52e9b16798466971ee07",
+              "seconds": 0.5625180079999836,
+              "rss_scope": "Cumulative child-process high-water RSS, not isolated per-stage peak"
+            },
+            "input_sha256": "a386b79c249b29e1fd0aad16072d12f09810ada0a71e5abe29f75fc5ad844253",
+            "proof_sha256": "c0103feec160e1770f34464ca6a3004a1779c9022a4ac5a4d11d73e4df283204",
+            "checkpoint_cpu_budget": 60.0
+          },
+          {
+            "result": 10,
+            "assumption": -78957,
+            "accepted": true,
+            "input_sha256": "604cb16d920d1d0080bbd86f0d146937f587f390cba657cfe85307f5957878ea",
+            "proof_sha256": "c0acc2d8f22c673f85d0d8adecc748331d3fdcf620bfec9ecd0d80594c986412",
+            "checkpoint_cpu_budget": 60.0
+          }
+        ],
+        "stages": [
+          {
+            "name": "decompress",
+            "wall_seconds": 0.013952209999956722,
+            "cpu_seconds": 0.013943109000000002
+          },
+          {
+            "name": "parse",
+            "wall_seconds": 0.23516660600000705,
+            "cpu_seconds": 0.235150366
+          },
+          {
+            "name": "load",
+            "wall_seconds": 0.3270773609999651,
+            "cpu_seconds": 0.327029312
+          },
+          {
+            "name": "solve",
+            "wall_seconds": 0.1348384510000642,
+            "cpu_seconds": 0.13484112399999992
+          },
+          {
+            "name": "export",
+            "wall_seconds": 0.026760861999946428,
+            "cpu_seconds": 0.02676204900000001
+          },
+          {
+            "name": "validate",
+            "wall_seconds": 0.8598533780000253,
+            "cpu_seconds": 0.306498226
+          },
+          {
+            "name": "checkpoint",
+            "wall_seconds": 0.027951093999945442,
+            "cpu_seconds": 0.027952060000000056
+          },
+          {
+            "name": "solve",
+            "wall_seconds": 0.06489902999999231,
+            "cpu_seconds": 0.06488968300000009
+          },
+          {
+            "name": "export",
+            "wall_seconds": 0.02622681000002558,
+            "cpu_seconds": 0.026227420999999973
+          },
+          {
+            "name": "validate",
+            "wall_seconds": 0.5276836269999876,
+            "cpu_seconds": 0.5276011600000001
+          },
+          {
+            "name": "checkpoint",
+            "wall_seconds": 0.023698509000041668,
+            "cpu_seconds": 0.023700095000000143
+          }
+        ],
+        "storage_failure": null,
+        "transaction_seconds": 2.2900396750000027,
+        "temporary_bytes_used": 0,
+        "temporary_capacity_bytes": 1073741824
+      }
+    },
+    {
+      "name": "cpu",
+      "case": "gen23",
+      "fault": "cpu",
+      "returncode": -9,
+      "wall_seconds": 1.03252148699994,
+      "stop": "cpu",
+      "limits": {
+        "memory_bytes": 4294967296,
+        "wall_seconds": 180.0,
+        "aggregate_cpu_seconds": 1,
+        "storage_bytes": 1073741824
+      },
+      "temporary_sampled_peak_bytes": 0,
+      "storage_sample_interval_seconds": 0.02,
+      "memory_peak_bytes": 84860928,
+      "memory_events": {
+        "low": 0,
+        "high": 0,
+        "max": 0,
+        "oom": 0,
+        "oom_kill": 0,
+        "oom_group_kill": 0
+      },
+      "cpu": {
+        "usage_usec": 1020109,
+        "user_usec": 980105,
+        "system_usec": 40004,
+        "nice_usec": 0,
+        "core_sched.force_idle_usec": 0
+      },
+      "stderr": "",
+      "within_limits": false,
+      "recovery_total_seconds": 3.4059328970000706
+    },
+    {
+      "name": "cpu-replay",
+      "case": "gen23",
+      "fault": "none",
+      "returncode": 0,
+      "wall_seconds": 2.3727279180000096,
+      "stop": null,
+      "limits": {
+        "memory_bytes": 4294967296,
+        "wall_seconds": 180.0,
+        "aggregate_cpu_seconds": 120.0,
+        "storage_bytes": 1073741824
+      },
+      "temporary_sampled_peak_bytes": 10498048,
+      "storage_sample_interval_seconds": 0.02,
+      "memory_peak_bytes": 707747840,
+      "memory_events": {
+        "low": 0,
+        "high": 0,
+        "max": 0,
+        "oom": 0,
+        "oom_kill": 0,
+        "oom_group_kill": 0
+      },
+      "cpu": {
+        "usage_usec": 2354323,
+        "user_usec": 2145295,
+        "system_usec": 209028,
+        "nice_usec": 0,
+        "core_sched.force_idle_usec": 0
+      },
+      "stderr": "",
+      "within_limits": true,
+      "transaction": {
+        "complete": true,
+        "case": "gen23",
+        "source_sha256": "a5aada5abe85d9491ba13ddd98120f35d962f8fe1282548e7a920f4c4ed765a7",
+        "answers": [
+          {
+            "result": 20,
+            "assumption": 78957,
+            "accepted": true,
+            "verification": {
+              "input_sha256": "a386b79c249b29e1fd0aad16072d12f09810ada0a71e5abe29f75fc5ad844253",
+              "drat_sha256": "c0103feec160e1770f34464ca6a3004a1779c9022a4ac5a4d11d73e4df283204",
+              "converter_sha256": "659c7b1f5ef578cd6cfb2f06e477368eb12e82717502e3eaf263d40c5853b233",
+              "checker_sha256": "a0f239f9159768e9d302c4b7d03a2e620a26ececd1a1ccb493b5fb6f83604e99",
+              "verified": true,
+              "checker_heap_mb": 2048,
+              "checker_stack_mb": 512,
+              "stages": [
+                {
+                  "command": [
+                    "/home/runner/work/_temp/drat-trim",
+                    "/tmp/tmpqn3j7c5_/check/input.cnf",
+                    "/tmp/tmpqn3j7c5_/check/proof.drat",
+                    "-L",
+                    "/tmp/tmpqn3j7c5_/check/proof.lrat"
+                  ],
+                  "seconds": 0.21155172900000707,
+                  "cpu_seconds": 0.211267,
+                  "children_peak_rss_bytes": 151523328,
+                  "returncode": 0,
+                  "stdout": "\nc turning on binary mode checking\n\nc parsing input formula with 83701 variables and 206921 clauses\n\nc finished parsing, read 180873 bytes from proof file\n\nc detected empty clause; start verification via backward checking\n\nc 18293 of 206921 clauses in core                            \n\nc 394 of 430 lemmas in core using 206473 resolution steps\n\nc 0 RAT lemmas in core; 3597 redundant literals in core lemmas\n\ns VERIFIED\n\nc verification time: 0.206 seconds\n",
+                  "stderr": ""
+                },
+                {
+                  "command": [
+                    "/home/runner/work/_temp/cake-lpr/cake_lpr",
+                    "--CML_HEAP_SIZE=2048",
+                    "--CML_STACK_SIZE=512",
+                    "/tmp/tmpqn3j7c5_/check/input.cnf",
+                    "/tmp/tmpqn3j7c5_/check/proof.lrat"
+                  ],
+                  "seconds": 0.33823123599995597,
+                  "cpu_seconds": 0.33778299999999994,
+                  "children_peak_rss_bytes": 566071296,
+                  "returncode": 0,
+                  "stdout": "s VERIFIED UNSAT\n",
+                  "stderr": ""
+                }
+              ],
+              "lrat_sha256": "b0fdce439986ca24ea6eeea78deaf800aea8bf82449a52e9b16798466971ee07",
+              "seconds": 0.557949686000029,
+              "rss_scope": "Cumulative child-process high-water RSS, not isolated per-stage peak"
+            },
+            "input_sha256": "a386b79c249b29e1fd0aad16072d12f09810ada0a71e5abe29f75fc5ad844253",
+            "proof_sha256": "c0103feec160e1770f34464ca6a3004a1779c9022a4ac5a4d11d73e4df283204",
+            "checkpoint_cpu_budget": 60.0
+          },
+          {
+            "result": 10,
+            "assumption": -78957,
+            "accepted": true,
+            "input_sha256": "604cb16d920d1d0080bbd86f0d146937f587f390cba657cfe85307f5957878ea",
+            "proof_sha256": "c0acc2d8f22c673f85d0d8adecc748331d3fdcf620bfec9ecd0d80594c986412",
+            "checkpoint_cpu_budget": 60.0
+          }
+        ],
+        "stages": [
+          {
+            "name": "decompress",
+            "wall_seconds": 0.013954624999996668,
+            "cpu_seconds": 0.013954612000000005
+          },
+          {
+            "name": "parse",
+            "wall_seconds": 0.2335870709999881,
+            "cpu_seconds": 0.233561453
+          },
+          {
+            "name": "load",
+            "wall_seconds": 0.32928702399999565,
+            "cpu_seconds": 0.329244221
+          },
+          {
+            "name": "solve",
+            "wall_seconds": 0.1360117030000083,
+            "cpu_seconds": 0.136001296
+          },
+          {
+            "name": "export",
+            "wall_seconds": 0.027037100000029568,
+            "cpu_seconds": 0.02703840099999999
+          },
+          {
+            "name": "validate",
+            "wall_seconds": 0.8521288829999776,
+            "cpu_seconds": 0.3032745539999999
+          },
+          {
+            "name": "checkpoint",
+            "wall_seconds": 0.028419410999958927,
+            "cpu_seconds": 0.028420581
+          },
+          {
+            "name": "solve",
+            "wall_seconds": 0.06582035099995664,
+            "cpu_seconds": 0.0658078230000001
+          },
+          {
+            "name": "export",
+            "wall_seconds": 0.026978507000080754,
+            "cpu_seconds": 0.026980348000000154
+          },
+          {
+            "name": "validate",
+            "wall_seconds": 0.5248728130000018,
+            "cpu_seconds": 0.5247877320000001
+          },
+          {
+            "name": "checkpoint",
+            "wall_seconds": 0.0237683670000024,
+            "cpu_seconds": 0.02377003599999994
+          }
+        ],
+        "storage_failure": null,
+        "transaction_seconds": 2.2840471529999604,
+        "temporary_bytes_used": 0,
+        "temporary_capacity_bytes": 1073741824
+      }
+    },
+    {
+      "name": "wall",
+      "case": "gen23",
+      "fault": "wall",
+      "returncode": -9,
+      "wall_seconds": 1.016549333999933,
+      "stop": "wall",
+      "limits": {
+        "memory_bytes": 4294967296,
+        "wall_seconds": 1,
+        "aggregate_cpu_seconds": 120.0,
+        "storage_bytes": 1073741824
+      },
+      "temporary_sampled_peak_bytes": 0,
+      "storage_sample_interval_seconds": 0.02,
+      "memory_peak_bytes": 83963904,
+      "memory_events": {
+        "low": 0,
+        "high": 0,
+        "max": 0,
+        "oom": 0,
+        "oom_kill": 0,
+        "oom_group_kill": 0
+      },
+      "cpu": {
+        "usage_usec": 634880,
+        "user_usec": 585889,
+        "system_usec": 48990,
+        "nice_usec": 0,
+        "core_sched.force_idle_usec": 0
+      },
+      "stderr": "",
+      "within_limits": false,
+      "recovery_total_seconds": 3.3911162850000665
+    },
+    {
+      "name": "wall-replay",
+      "case": "gen23",
+      "fault": "none",
+      "returncode": 0,
+      "wall_seconds": 2.3737147529999447,
+      "stop": null,
+      "limits": {
+        "memory_bytes": 4294967296,
+        "wall_seconds": 180.0,
+        "aggregate_cpu_seconds": 120.0,
+        "storage_bytes": 1073741824
+      },
+      "temporary_sampled_peak_bytes": 10498048,
+      "storage_sample_interval_seconds": 0.02,
+      "memory_peak_bytes": 707092480,
+      "memory_events": {
+        "low": 0,
+        "high": 0,
+        "max": 0,
+        "oom": 0,
+        "oom_kill": 0,
+        "oom_group_kill": 0
+      },
+      "cpu": {
+        "usage_usec": 2355282,
+        "user_usec": 2171338,
+        "system_usec": 183943,
+        "nice_usec": 0,
+        "core_sched.force_idle_usec": 0
+      },
+      "stderr": "",
+      "within_limits": true,
+      "transaction": {
+        "complete": true,
+        "case": "gen23",
+        "source_sha256": "a5aada5abe85d9491ba13ddd98120f35d962f8fe1282548e7a920f4c4ed765a7",
+        "answers": [
+          {
+            "result": 20,
+            "assumption": 78957,
+            "accepted": true,
+            "verification": {
+              "input_sha256": "a386b79c249b29e1fd0aad16072d12f09810ada0a71e5abe29f75fc5ad844253",
+              "drat_sha256": "c0103feec160e1770f34464ca6a3004a1779c9022a4ac5a4d11d73e4df283204",
+              "converter_sha256": "659c7b1f5ef578cd6cfb2f06e477368eb12e82717502e3eaf263d40c5853b233",
+              "checker_sha256": "a0f239f9159768e9d302c4b7d03a2e620a26ececd1a1ccb493b5fb6f83604e99",
+              "verified": true,
+              "checker_heap_mb": 2048,
+              "checker_stack_mb": 512,
+              "stages": [
+                {
+                  "command": [
+                    "/home/runner/work/_temp/drat-trim",
+                    "/tmp/tmpxk3lr9sd/check/input.cnf",
+                    "/tmp/tmpxk3lr9sd/check/proof.drat",
+                    "-L",
+                    "/tmp/tmpxk3lr9sd/check/proof.lrat"
+                  ],
+                  "seconds": 0.21702208799990785,
+                  "cpu_seconds": 0.21672399999999997,
+                  "children_peak_rss_bytes": 151068672,
+                  "returncode": 0,
+                  "stdout": "\nc turning on binary mode checking\n\nc parsing input formula with 83701 variables and 206921 clauses\n\nc finished parsing, read 180873 bytes from proof file\n\nc detected empty clause; start verification via backward checking\n\nc 18293 of 206921 clauses in core                            \n\nc 394 of 430 lemmas in core using 206473 resolution steps\n\nc 0 RAT lemmas in core; 3597 redundant literals in core lemmas\n\ns VERIFIED\n\nc verification time: 0.211 seconds\n",
+                  "stderr": ""
+                },
+                {
+                  "command": [
+                    "/home/runner/work/_temp/cake-lpr/cake_lpr",
+                    "--CML_HEAP_SIZE=2048",
+                    "--CML_STACK_SIZE=512",
+                    "/tmp/tmpxk3lr9sd/check/input.cnf",
+                    "/tmp/tmpxk3lr9sd/check/proof.lrat"
+                  ],
+                  "seconds": 0.3376492290000215,
+                  "cpu_seconds": 0.337314,
+                  "children_peak_rss_bytes": 566079488,
+                  "returncode": 0,
+                  "stdout": "s VERIFIED UNSAT\n",
+                  "stderr": ""
+                }
+              ],
+              "lrat_sha256": "b0fdce439986ca24ea6eeea78deaf800aea8bf82449a52e9b16798466971ee07",
+              "seconds": 0.5630418900000222,
+              "rss_scope": "Cumulative child-process high-water RSS, not isolated per-stage peak"
+            },
+            "input_sha256": "a386b79c249b29e1fd0aad16072d12f09810ada0a71e5abe29f75fc5ad844253",
+            "proof_sha256": "c0103feec160e1770f34464ca6a3004a1779c9022a4ac5a4d11d73e4df283204",
+            "checkpoint_cpu_budget": 60.0
+          },
+          {
+            "result": 10,
+            "assumption": -78957,
+            "accepted": true,
+            "input_sha256": "604cb16d920d1d0080bbd86f0d146937f587f390cba657cfe85307f5957878ea",
+            "proof_sha256": "c0acc2d8f22c673f85d0d8adecc748331d3fdcf620bfec9ecd0d80594c986412",
+            "checkpoint_cpu_budget": 60.0
+          }
+        ],
+        "stages": [
+          {
+            "name": "decompress",
+            "wall_seconds": 0.014162608999981785,
+            "cpu_seconds": 0.014118400000000003
+          },
+          {
+            "name": "parse",
+            "wall_seconds": 0.23762442899999314,
+            "cpu_seconds": 0.23762787400000002
+          },
+          {
+            "name": "load",
+            "wall_seconds": 0.32649518000005173,
+            "cpu_seconds": 0.326455141
+          },
+          {
+            "name": "solve",
+            "wall_seconds": 0.1364364270000351,
+            "cpu_seconds": 0.136429189
+          },
+          {
+            "name": "export",
+            "wall_seconds": 0.026287259000014274,
+            "cpu_seconds": 0.026272482999999958
+          },
+          {
+            "name": "validate",
+            "wall_seconds": 0.8555258989999857,
+            "cpu_seconds": 0.301797969
+          },
+          {
+            "name": "checkpoint",
+            "wall_seconds": 0.027372700000000805,
+            "cpu_seconds": 0.027373420000000204
+          },
+          {
+            "name": "solve",
+            "wall_seconds": 0.06559403699998256,
+            "cpu_seconds": 0.06558404899999992
+          },
+          {
+            "name": "export",
+            "wall_seconds": 0.02640524399998867,
+            "cpu_seconds": 0.026406870999999832
+          },
+          {
+            "name": "validate",
+            "wall_seconds": 0.5227017140000498,
+            "cpu_seconds": 0.5226800900000002
+          },
+          {
+            "name": "checkpoint",
+            "wall_seconds": 0.02385669600005258,
+            "cpu_seconds": 0.02385793599999997
+          }
+        ],
+        "storage_failure": null,
+        "transaction_seconds": 2.2848504749999847,
+        "temporary_bytes_used": 0,
+        "temporary_capacity_bytes": 1073741824
+      }
+    },
+    {
+      "name": "storage",
+      "case": "gen23",
+      "fault": "storage",
+      "returncode": 0,
+      "wall_seconds": 3.181042537000053,
+      "stop": null,
+      "limits": {
+        "memory_bytes": 4294967296,
+        "wall_seconds": 180.0,
+        "aggregate_cpu_seconds": 120.0,
+        "storage_bytes": 1073741824
+      },
+      "temporary_sampled_peak_bytes": 1073741824,
+      "storage_sample_interval_seconds": 0.02,
+      "memory_peak_bytes": 1162788864,
+      "memory_events": {
+        "low": 0,
+        "high": 0,
+        "max": 0,
+        "oom": 0,
+        "oom_kill": 0,
+        "oom_group_kill": 0
+      },
+      "cpu": {
+        "usage_usec": 3163169,
+        "user_usec": 2636974,
+        "system_usec": 526194,
+        "nice_usec": 0,
+        "core_sched.force_idle_usec": 0
+      },
+      "stderr": "",
+      "within_limits": true,
+      "transaction": {
+        "complete": true,
+        "case": "gen23",
+        "source_sha256": "a5aada5abe85d9491ba13ddd98120f35d962f8fe1282548e7a920f4c4ed765a7",
+        "answers": [
+          {
+            "result": 20,
+            "assumption": 78957,
+            "accepted": true,
+            "verification": {
+              "input_sha256": "a386b79c249b29e1fd0aad16072d12f09810ada0a71e5abe29f75fc5ad844253",
+              "drat_sha256": "c0103feec160e1770f34464ca6a3004a1779c9022a4ac5a4d11d73e4df283204",
+              "converter_sha256": "659c7b1f5ef578cd6cfb2f06e477368eb12e82717502e3eaf263d40c5853b233",
+              "checker_sha256": "a0f239f9159768e9d302c4b7d03a2e620a26ececd1a1ccb493b5fb6f83604e99",
+              "verified": true,
+              "checker_heap_mb": 2048,
+              "checker_stack_mb": 512,
+              "stages": [
+                {
+                  "command": [
+                    "/home/runner/work/_temp/drat-trim",
+                    "/tmp/tmpua2gwemr/check/input.cnf",
+                    "/tmp/tmpua2gwemr/check/proof.drat",
+                    "-L",
+                    "/tmp/tmpua2gwemr/check/proof.lrat"
+                  ],
+                  "seconds": 0.21335351899995203,
+                  "cpu_seconds": 0.21294699999999997,
+                  "children_peak_rss_bytes": 150265856,
+                  "returncode": 0,
+                  "stdout": "\nc turning on binary mode checking\n\nc parsing input formula with 83701 variables and 206921 clauses\n\nc finished parsing, read 180873 bytes from proof file\n\nc detected empty clause; start verification via backward checking\n\nc 18293 of 206921 clauses in core                            \n\nc 394 of 430 lemmas in core using 206473 resolution steps\n\nc 0 RAT lemmas in core; 3597 redundant literals in core lemmas\n\ns VERIFIED\n\nc verification time: 0.208 seconds\n",
+                  "stderr": ""
+                },
+                {
+                  "command": [
+                    "/home/runner/work/_temp/cake-lpr/cake_lpr",
+                    "--CML_HEAP_SIZE=2048",
+                    "--CML_STACK_SIZE=512",
+                    "/tmp/tmpua2gwemr/check/input.cnf",
+                    "/tmp/tmpua2gwemr/check/proof.lrat"
+                  ],
+                  "seconds": 0.33469945000001644,
+                  "cpu_seconds": 0.334332,
+                  "children_peak_rss_bytes": 566210560,
+                  "returncode": 0,
+                  "stdout": "s VERIFIED UNSAT\n",
+                  "stderr": ""
+                }
+              ],
+              "lrat_sha256": "b0fdce439986ca24ea6eeea78deaf800aea8bf82449a52e9b16798466971ee07",
+              "seconds": 0.5564271579999058,
+              "rss_scope": "Cumulative child-process high-water RSS, not isolated per-stage peak"
+            },
+            "input_sha256": "a386b79c249b29e1fd0aad16072d12f09810ada0a71e5abe29f75fc5ad844253",
+            "proof_sha256": "c0103feec160e1770f34464ca6a3004a1779c9022a4ac5a4d11d73e4df283204",
+            "checkpoint_cpu_budget": 60.0
+          },
+          {
+            "result": 10,
+            "assumption": -78957,
+            "accepted": true,
+            "input_sha256": "604cb16d920d1d0080bbd86f0d146937f587f390cba657cfe85307f5957878ea",
+            "proof_sha256": "c0acc2d8f22c673f85d0d8adecc748331d3fdcf620bfec9ecd0d80594c986412",
+            "checkpoint_cpu_budget": 60.0
+          }
+        ],
+        "stages": [
+          {
+            "name": "decompress",
+            "wall_seconds": 0.013884838999956628,
+            "cpu_seconds": 0.013895810000000001
+          },
+          {
+            "name": "parse",
+            "wall_seconds": 0.24315726600002563,
+            "cpu_seconds": 0.243124091
+          },
+          {
+            "name": "load",
+            "wall_seconds": 0.3282291109999278,
+            "cpu_seconds": 0.32820300399999996
+          },
+          {
+            "name": "storage_replay",
+            "wall_seconds": 0.33248989300000176,
+            "cpu_seconds": 0.33149286499999997
+          },
+          {
+            "name": "solve",
+            "wall_seconds": 0.13298633599993082,
+            "cpu_seconds": 0.13298921000000008
+          },
+          {
+            "name": "export",
+            "wall_seconds": 0.029003709999983585,
+            "cpu_seconds": 0.029005654999999964
+          },
+          {
+            "name": "validate",
+            "wall_seconds": 0.849184598000079,
+            "cpu_seconds": 0.3021800910000001
+          },
+          {
+            "name": "checkpoint",
+            "wall_seconds": 0.02721536499996091,
+            "cpu_seconds": 0.027216553000000143
+          },
+          {
+            "name": "solve",
+            "wall_seconds": 0.0666971470000135,
+            "cpu_seconds": 0.06668660299999996
+          },
+          {
+            "name": "export",
+            "wall_seconds": 0.026630986999975903,
+            "cpu_seconds": 0.026617780000000035
+          },
+          {
+            "name": "validate",
+            "wall_seconds": 0.5284218510000755,
+            "cpu_seconds": 0.5283567230000004
+          },
+          {
+            "name": "checkpoint",
+            "wall_seconds": 0.023189022999986264,
+            "cpu_seconds": 0.023189545000000145
+          }
+        ],
+        "storage_failure": {
+          "bytes_written": 1073741824,
+          "result": 0,
+          "error": true
+        },
+        "transaction_seconds": 3.0927134070000193,
+        "temporary_bytes_used": 0,
+        "temporary_capacity_bytes": 1073741824
+      },
+      "recovery_total_seconds": 3.1814847569999074
+    }
+  ]
+}

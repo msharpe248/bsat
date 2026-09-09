@@ -70,3 +70,11 @@ CPU budgets; strict summary and independent checking pass. See FRESH_COMPETITIVE
 Retained cal3/cal100 work diagnosis complete; see RETAINED_SEARCH_WORK.md. The
 failure-cache prototype passes 66 release/sanitizer executables, focused entailment
 and cleanup cases, and 53 independent certificates per build; target timing pending.
+
+
+Hard Linux acceptance complete in 34389473487 at the unchanged frozen envelope;
+see HARD_TRANSACTION_ACCEPTANCE.md. All five failures and checked replay pass.
+The failure-cache experiment is rejected: 36 checked candidate queries preserve
+all conflicts, proof streams and minimization inspections. Runtime source restored.
+Separate per-solver embedding-process RSS follow-up runs in 34390131562; it excludes
+checker processes and identifies Python/encoding overhead explicitly.

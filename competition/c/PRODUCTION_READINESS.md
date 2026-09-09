@@ -172,6 +172,13 @@ regress. Full query checking remains outside solve timing. The scoring change
 preserves all learned literals and query context; it does not establish a general
 soundness proof or deployment readiness.
 
+The [hard transaction follow-up](HARD_TRANSACTION_ACCEPTANCE.md) now passes two
+fresh checked cal3 transactions at about 94 seconds end to end, with about 2.67 GiB
+cgroup peak memory and 648 MiB sampled temporary storage. All five fault/replay
+scenarios pass within the frozen provisional envelope. The deliberately interrupted
+checkpoint sequence was corrected to restore its ordinary CPU budget. This remains
+hosted public-workload acceptance; customer traces and deployment SLOs are missing.
+
 ## Release gates
 
 A production release needs a concrete target workload and deployment envelope.
@@ -195,7 +202,7 @@ those requirements and the exact-candidate checks are satisfied.
 
 ## Where to look
 
-- [Current batch and outcomes](ASSUMPTION_SEARCH_MILESTONES.md)
+- [Current batch and outcomes](COMPETITIVENESS_MILESTONES.md)
 - [Public ABI and lifetime contract](API_CONTRACT.md), [build/install](INSTALLING.md)
 - [Executable coverage and reproduction](tests/FEATURE_COVERAGE.md)
 - [Correctness CI](../../.github/workflows/c-solver.yml), [independent integration](../../.github/workflows/c-integration.yml), [fuzz CI](../../.github/workflows/c-fuzz.yml)
