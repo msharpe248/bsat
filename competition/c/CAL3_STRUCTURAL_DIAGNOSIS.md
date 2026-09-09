@@ -1,5 +1,10 @@
 # cal3 structural ablations — 2026-09-08
 
+Follow-up: [learning-policy ablations](CAL3_LEARNING_DIAGNOSIS.md) audit the
+counters and existing minimization/retention options; [longer runs](LONGER_DEVELOPMENT_SUBSET.md)
+prove this one-shot BSAT query with a larger CPU allowance. Measurements below
+retain their original five-second scope.
+
 BSAT's existing structural options do not resolve the exact depth-16 positive
 query within five process-CPU seconds. CaDiCaL resolves it even with its internal
 preprocessing disabled. The evidence therefore does not support treating a
@@ -59,7 +64,10 @@ by its 10,000-conflict stop; its simplification schedule and allowances differ.
 It records 144,054 learned literals in default mode and 326,777 in plain mode,
 versus BSAT default's 766,096. That is consistent with a learned-clause quality
 hypothesis, but differing counting conventions, formulas and trajectories prevent
-treating the totals as a matched comparison of minimization algorithms.
+treating the totals as a matched comparison of minimization algorithms. The
+follow-up source audit establishes the exact counter distinction: CaDiCaL
+increments `learned.literals` before shrinking/minimization, whereas BSAT
+increments `learned_literals` after its minimization passes.
 These observations narrow the diagnosis without identifying a sound default
 change. The follow-up is `cal3-structural-fixed-work-20260908.json` and its policy;
 reproduce by adding `--conflicts 10000` to the driver.

@@ -1,5 +1,8 @@
 # Search quality and expanded validation — 2026-09-08
 
+This completed batch is followed by [Linux acceptance, learning ablations and
+longer measurements](ACCEPTANCE_AND_SEARCH_MILESTONES.md).
+
 Authorized: complete all four recommended work items, commit and push each
 validated milestone. Freeze this policy before new solves or candidate edits.
 

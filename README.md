@@ -2,6 +2,12 @@
 
 A Python package for learning and solving Boolean satisfiability (SAT) problems using Conjunctive Normal Form (CNF).
 
+The actively developed [C implementation](competition/c/README.md) has an opaque
+embedding API, incremental certificates and independent validation. See its
+[production-readiness gates](competition/c/PRODUCTION_READINESS.md) and
+[current milestones](competition/c/ACCEPTANCE_AND_SEARCH_MILESTONES.md); its
+`1.0.0-dev` designation does not claim deployment certification.
+
 ## Features
 
 ### Production Solvers

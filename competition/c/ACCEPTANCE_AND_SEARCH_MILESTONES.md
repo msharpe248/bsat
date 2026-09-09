@@ -35,7 +35,9 @@ certify an unspecified application's semantics, durability or service SLOs.
 Status: [complete Linux acceptance](LINUX_TRANSACTION_ACCEPTANCE.md) passes the
 provisional gates. The [longer subset](LONGER_DEVELOPMENT_SUBSET.md) is complete:
 both solvers check 4/8 runs; BSAT one-shot cal3 finishes, while planning/scheduling
-remain UNKNOWN. Learning ablations are pending.
+remain UNKNOWN. The [learning diagnosis](CAL3_LEARNING_DIAGNOSIS.md) completes
+52 runs, including source/counter auditing; no BSAT ablation adds a ten-second
+solve, so defaults remain unchanged. All three scoped workstreams are complete.
 
 The learning matrix is frozen in `tests/benchmark_cal3_learning.py`: BSAT
 default, no minimization, iterative, binary, combined, retention fraction 0.9,

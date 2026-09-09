@@ -6,7 +6,7 @@ certificate validation. Passing these tests does not establish production
 readiness for arbitrary workloads. Start with
 [Production readiness](PRODUCTION_READINESS.md), the authoritative capability
 matrix, evidence limits and release gates. The current batch is recorded in
-[SEARCH_QUALITY_MILESTONES.md](SEARCH_QUALITY_MILESTONES.md).
+[ACCEPTANCE_AND_SEARCH_MILESTONES.md](ACCEPTANCE_AND_SEARCH_MILESTONES.md).
 [HARDENING.md](HARDENING.md) and earlier milestone reports preserve historical
 changes and measurements. Reproducible checks are indexed in
 [tests/FEATURE_COVERAGE.md](tests/FEATURE_COVERAGE.md).

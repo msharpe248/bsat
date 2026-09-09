@@ -1,0 +1,552 @@
+{
+  "timed": {
+    "bsat-default": {
+      "checked": 0,
+      "cpu_median": 10.0129835,
+      "peak_rss_bytes": 23658496,
+      "proof_prefixes_repeat": false
+    },
+    "bsat-no-minimize": {
+      "checked": 0,
+      "cpu_median": 10.016510499999999,
+      "peak_rss_bytes": 31997952,
+      "proof_prefixes_repeat": false
+    },
+    "bsat-iterative": {
+      "checked": 0,
+      "cpu_median": 10.0059705,
+      "peak_rss_bytes": 12435456,
+      "proof_prefixes_repeat": false
+    },
+    "bsat-binary": {
+      "checked": 0,
+      "cpu_median": 10.013475,
+      "peak_rss_bytes": 20004864,
+      "proof_prefixes_repeat": false
+    },
+    "bsat-combined": {
+      "checked": 0,
+      "cpu_median": 10.007055000000001,
+      "peak_rss_bytes": 13287424,
+      "proof_prefixes_repeat": false
+    },
+    "bsat-retain-more": {
+      "checked": 0,
+      "cpu_median": 10.0196815,
+      "peak_rss_bytes": 85508096,
+      "proof_prefixes_repeat": false
+    },
+    "bsat-no-reduction": {
+      "checked": 0,
+      "cpu_median": 10.009896,
+      "peak_rss_bytes": 85377024,
+      "proof_prefixes_repeat": false
+    },
+    "cadical-default": {
+      "checked": 2,
+      "cpu_median": 0.70007,
+      "peak_rss_bytes": 19103744,
+      "proof_prefixes_repeat": true
+    },
+    "cadical-plain": {
+      "checked": 2,
+      "cpu_median": 2.592583,
+      "peak_rss_bytes": 16056320,
+      "proof_prefixes_repeat": true
+    },
+    "cadical-plain-no-minimize": {
+      "checked": 2,
+      "cpu_median": 2.8877755,
+      "peak_rss_bytes": 18939904,
+      "proof_prefixes_repeat": true
+    },
+    "cadical-plain-no-shrink": {
+      "checked": 2,
+      "cpu_median": 2.341115,
+      "peak_rss_bytes": 17940480,
+      "proof_prefixes_repeat": true
+    },
+    "cadical-plain-no-minimize-no-shrink": {
+      "checked": 2,
+      "cpu_median": 3.146186,
+      "peak_rss_bytes": 23183360,
+      "proof_prefixes_repeat": true
+    },
+    "cadical-plain-no-reduction": {
+      "checked": 2,
+      "cpu_median": 2.9499845000000002,
+      "peak_rss_bytes": 18710528,
+      "proof_prefixes_repeat": true
+    }
+  },
+  "fixed": {
+    "bsat-default": {
+      "checked": 0,
+      "cpu_median": 0.42244649999999995,
+      "peak_rss_bytes": 12451840,
+      "proof_prefixes_repeat": true,
+      "counters": {
+        "Conflicts": [
+          "10000",
+          "10000"
+        ],
+        "Learned literals": [
+          "766096",
+          "766096"
+        ],
+        "Minimized literals": [
+          "36401",
+          "36401"
+        ],
+        "Deleted clauses": [
+          "7526",
+          "7526"
+        ],
+        "Reductions": [
+          "5",
+          "5"
+        ],
+        "Binary minimize removed": [
+          "0",
+          "0"
+        ],
+        "Minimize binary steps": [
+          "0",
+          "0"
+        ]
+      }
+    },
+    "bsat-no-minimize": {
+      "checked": 0,
+      "cpu_median": 0.4100235,
+      "peak_rss_bytes": 10059776,
+      "proof_prefixes_repeat": true,
+      "counters": {
+        "Conflicts": [
+          "10000",
+          "10000"
+        ],
+        "Learned literals": [
+          "731636",
+          "731636"
+        ],
+        "Minimized literals": [
+          "0",
+          "0"
+        ],
+        "Deleted clauses": [
+          "7456",
+          "7456"
+        ],
+        "Reductions": [
+          "5",
+          "5"
+        ],
+        "Binary minimize removed": [
+          "0",
+          "0"
+        ],
+        "Minimize binary steps": [
+          "0",
+          "0"
+        ]
+      }
+    },
+    "bsat-iterative": {
+      "checked": 0,
+      "cpu_median": 0.5077045,
+      "peak_rss_bytes": 8978432,
+      "proof_prefixes_repeat": true,
+      "counters": {
+        "Conflicts": [
+          "10000",
+          "10000"
+        ],
+        "Learned literals": [
+          "258674",
+          "258674"
+        ],
+        "Minimized literals": [
+          "275073",
+          "275073"
+        ],
+        "Deleted clauses": [
+          "7500",
+          "7500"
+        ],
+        "Reductions": [
+          "5",
+          "5"
+        ],
+        "Binary minimize removed": [
+          "0",
+          "0"
+        ],
+        "Minimize binary steps": [
+          "2057673",
+          "2057673"
+        ]
+      }
+    },
+    "bsat-binary": {
+      "checked": 0,
+      "cpu_median": 0.40017149999999996,
+      "peak_rss_bytes": 11485184,
+      "proof_prefixes_repeat": true,
+      "counters": {
+        "Conflicts": [
+          "10000",
+          "10000"
+        ],
+        "Learned literals": [
+          "664695",
+          "664695"
+        ],
+        "Minimized literals": [
+          "29080",
+          "29080"
+        ],
+        "Deleted clauses": [
+          "7427",
+          "7427"
+        ],
+        "Reductions": [
+          "5",
+          "5"
+        ],
+        "Binary minimize removed": [
+          "128",
+          "128"
+        ],
+        "Minimize binary steps": [
+          "0",
+          "0"
+        ]
+      }
+    },
+    "bsat-combined": {
+      "checked": 0,
+      "cpu_median": 0.458514,
+      "peak_rss_bytes": 9175040,
+      "proof_prefixes_repeat": true,
+      "counters": {
+        "Conflicts": [
+          "10000",
+          "10000"
+        ],
+        "Learned literals": [
+          "260388",
+          "260388"
+        ],
+        "Minimized literals": [
+          "229939",
+          "229939"
+        ],
+        "Deleted clauses": [
+          "7513",
+          "7513"
+        ],
+        "Reductions": [
+          "5",
+          "5"
+        ],
+        "Binary minimize removed": [
+          "192",
+          "192"
+        ],
+        "Minimize binary steps": [
+          "2126790",
+          "2126790"
+        ]
+      }
+    },
+    "bsat-retain-more": {
+      "checked": 0,
+      "cpu_median": 0.487245,
+      "peak_rss_bytes": 16629760,
+      "proof_prefixes_repeat": true,
+      "counters": {
+        "Conflicts": [
+          "10000",
+          "10000"
+        ],
+        "Learned literals": [
+          "860016",
+          "860016"
+        ],
+        "Minimized literals": [
+          "52960",
+          "52960"
+        ],
+        "Deleted clauses": [
+          "2419",
+          "2419"
+        ],
+        "Reductions": [
+          "5",
+          "5"
+        ],
+        "Binary minimize removed": [
+          "0",
+          "0"
+        ],
+        "Minimize binary steps": [
+          "0",
+          "0"
+        ]
+      }
+    },
+    "bsat-no-reduction": {
+      "checked": 0,
+      "cpu_median": 0.45328599999999997,
+      "peak_rss_bytes": 13156352,
+      "proof_prefixes_repeat": true,
+      "counters": {
+        "Conflicts": [
+          "10000",
+          "10000"
+        ],
+        "Learned literals": [
+          "759877",
+          "759877"
+        ],
+        "Minimized literals": [
+          "36316",
+          "36316"
+        ],
+        "Deleted clauses": [
+          "0",
+          "0"
+        ],
+        "Reductions": [
+          "0",
+          "0"
+        ],
+        "Binary minimize removed": [
+          "0",
+          "0"
+        ],
+        "Minimize binary steps": [
+          "0",
+          "0"
+        ]
+      }
+    },
+    "cadical-default": {
+      "checked": 0,
+      "cpu_median": 0.2663405,
+      "peak_rss_bytes": 18006016,
+      "proof_prefixes_repeat": true,
+      "counters": {
+        "conflicts": [
+          "10000     38492.04    per second",
+          "10000     38859.40    per second"
+        ],
+        "learned_lits": [
+          "144054       100.00 %  learned literals",
+          "144054       100.00 %  learned literals"
+        ],
+        "minimized": [
+          "0         0.00 %  learned literals",
+          "0         0.00 %  learned literals"
+        ],
+        "shrunken": [
+          "15246        10.58 %  learned literals",
+          "15246        10.58 %  learned literals"
+        ],
+        "minishrunken": [
+          "22600        15.69 %  learned literals",
+          "22600        15.69 %  learned literals"
+        ],
+        "reduced": [
+          "3307        33.07 %  per conflict",
+          "3307        33.07 %  per conflict"
+        ],
+        "otfs": [
+          "261         2.61 %  of conflict",
+          "261         2.61 %  of conflict"
+        ]
+      }
+    },
+    "cadical-plain": {
+      "checked": 0,
+      "cpu_median": 0.5225264999999999,
+      "peak_rss_bytes": 14548992,
+      "proof_prefixes_repeat": true,
+      "counters": {
+        "conflicts": [
+          "10001     19802.08    per second",
+          "10001     19102.36    per second"
+        ],
+        "learned_lits": [
+          "326777       100.00 %  learned literals",
+          "326777       100.00 %  learned literals"
+        ],
+        "minimized": [
+          "0         0.00 %  learned literals",
+          "0         0.00 %  learned literals"
+        ],
+        "shrunken": [
+          "87325        26.72 %  learned literals",
+          "87325        26.72 %  learned literals"
+        ],
+        "minishrunken": [
+          "71323        21.83 %  learned literals",
+          "71323        21.83 %  learned literals"
+        ],
+        "reduced": [
+          "5064        50.63 %  per conflict",
+          "5064        50.63 %  per conflict"
+        ],
+        "otfs": [
+          "49         0.49 %  of conflict",
+          "49         0.49 %  of conflict"
+        ]
+      }
+    },
+    "cadical-plain-no-minimize": {
+      "checked": 0,
+      "cpu_median": 0.5231405,
+      "peak_rss_bytes": 13320192,
+      "proof_prefixes_repeat": true,
+      "counters": {
+        "conflicts": [
+          "10001     19097.61    per second",
+          "10001     19753.23    per second"
+        ],
+        "learned_lits": [
+          "440951       100.00 %  learned literals",
+          "440951       100.00 %  learned literals"
+        ],
+        "minimized": [
+          "0         0.00 %  learned literals",
+          "0         0.00 %  learned literals"
+        ],
+        "shrunken": [
+          "122892        27.87 %  learned literals",
+          "122892        27.87 %  learned literals"
+        ],
+        "minishrunken": [
+          "0         0.00 %  learned literals",
+          "0         0.00 %  learned literals"
+        ],
+        "reduced": [
+          "5269        52.68 %  per conflict",
+          "5269        52.68 %  per conflict"
+        ],
+        "otfs": [
+          "170         1.70 %  of conflict",
+          "170         1.70 %  of conflict"
+        ]
+      }
+    },
+    "cadical-plain-no-shrink": {
+      "checked": 0,
+      "cpu_median": 0.516329,
+      "peak_rss_bytes": 11763712,
+      "proof_prefixes_repeat": true,
+      "counters": {
+        "conflicts": [
+          "10001     19622.08    per second",
+          "10001     19755.22    per second"
+        ],
+        "learned_lits": [
+          "341147       100.00 %  learned literals",
+          "341147       100.00 %  learned literals"
+        ],
+        "minimized": [
+          "140717        41.25 %  learned literals",
+          "140717        41.25 %  learned literals"
+        ],
+        "shrunken": [
+          "0         0.00 %  learned literals",
+          "0         0.00 %  learned literals"
+        ],
+        "minishrunken": [
+          "0         0.00 %  learned literals",
+          "0         0.00 %  learned literals"
+        ],
+        "reduced": [
+          "5522        55.21 %  per conflict",
+          "5522        55.21 %  per conflict"
+        ],
+        "otfs": [
+          "72         0.72 %  of conflict",
+          "72         0.72 %  of conflict"
+        ]
+      }
+    },
+    "cadical-plain-no-minimize-no-shrink": {
+      "checked": 0,
+      "cpu_median": 0.37263599999999997,
+      "peak_rss_bytes": 12009472,
+      "proof_prefixes_repeat": true,
+      "counters": {
+        "conflicts": [
+          "10001     27676.46    per second",
+          "10001     27217.01    per second"
+        ],
+        "learned_lits": [
+          "364399       100.00 %  learned literals",
+          "364399       100.00 %  learned literals"
+        ],
+        "minimized": [
+          "0         0.00 %  learned literals",
+          "0         0.00 %  learned literals"
+        ],
+        "shrunken": [
+          "0         0.00 %  learned literals",
+          "0         0.00 %  learned literals"
+        ],
+        "minishrunken": [
+          "0         0.00 %  learned literals",
+          "0         0.00 %  learned literals"
+        ],
+        "reduced": [
+          "5177        51.76 %  per conflict",
+          "5177        51.76 %  per conflict"
+        ],
+        "otfs": [
+          "387         3.87 %  of conflict",
+          "387         3.87 %  of conflict"
+        ]
+      }
+    },
+    "cadical-plain-no-reduction": {
+      "checked": 0,
+      "cpu_median": 0.5429709999999999,
+      "peak_rss_bytes": 9797632,
+      "proof_prefixes_repeat": true,
+      "counters": {
+        "conflicts": [
+          "10000     18854.41    per second",
+          "10000     18553.01    per second"
+        ],
+        "learned_lits": [
+          "363794       100.00 %  learned literals",
+          "363794       100.00 %  learned literals"
+        ],
+        "minimized": [
+          "0         0.00 %  learned literals",
+          "0         0.00 %  learned literals"
+        ],
+        "shrunken": [
+          "82877        22.78 %  learned literals",
+          "82877        22.78 %  learned literals"
+        ],
+        "minishrunken": [
+          "82806        22.76 %  learned literals",
+          "82806        22.76 %  learned literals"
+        ],
+        "reduced": [
+          null,
+          null
+        ],
+        "otfs": [
+          "50         0.50 %  of conflict",
+          "50         0.50 %  of conflict"
+        ]
+      }
+    }
+  }
+}

@@ -119,6 +119,14 @@ maximization in 56.9 seconds (Kissat 24.5). Both leave the selected planning and
 scheduling inputs UNKNOWN. This does not resolve retained-query performance or
 establish a default improvement; cal3 proof checking adds another 7.8 wall seconds.
 
+The [learning-policy diagnosis](CAL3_LEARNING_DIAGNOSIS.md) adds 52 controlled
+runs. All 14 BSAT ten-second ablations remain UNKNOWN; all 12 timed CaDiCaL runs
+check UNSAT, including disabling both minimization and shrinking. Iterative
+BSAT produces 66% fewer learned literals at 10,000 conflicts without adding a
+solve, and retaining more raises memory usage. No default is promoted. CaDiCaL
+and BSAT learned-literal counters are explicitly distinguished before/after
+minimization; raw totals are not matched quality measurements.
+
 ## Release gates
 
 A production release needs a concrete target workload and deployment envelope.

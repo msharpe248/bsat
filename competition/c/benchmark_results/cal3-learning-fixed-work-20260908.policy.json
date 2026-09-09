@@ -1,0 +1,145 @@
+{
+  "scope": "Frozen cal3 learning-policy ablations; no default promotion evidence.",
+  "cpu_seconds": 10,
+  "wall_seconds": 15,
+  "repeats": 2,
+  "seed": 2026090869,
+  "fixed_conflicts": 10000,
+  "commands": {
+    "bsat-default": [
+      "/Users/msharpe/python/bsat/competition/c/bin/bsat",
+      "--conflicts",
+      "10000",
+      "--binary-proof",
+      "--proof",
+      "{proof}",
+      "{input}"
+    ],
+    "bsat-no-minimize": [
+      "/Users/msharpe/python/bsat/competition/c/bin/bsat",
+      "--no-minimize",
+      "--conflicts",
+      "10000",
+      "--binary-proof",
+      "--proof",
+      "{proof}",
+      "{input}"
+    ],
+    "bsat-iterative": [
+      "/Users/msharpe/python/bsat/competition/c/bin/bsat",
+      "--iterative-minimize",
+      "--conflicts",
+      "10000",
+      "--binary-proof",
+      "--proof",
+      "{proof}",
+      "{input}"
+    ],
+    "bsat-binary": [
+      "/Users/msharpe/python/bsat/competition/c/bin/bsat",
+      "--binary-minimize",
+      "--conflicts",
+      "10000",
+      "--binary-proof",
+      "--proof",
+      "{proof}",
+      "{input}"
+    ],
+    "bsat-combined": [
+      "/Users/msharpe/python/bsat/competition/c/bin/bsat",
+      "--iterative-minimize",
+      "--binary-minimize",
+      "--conflicts",
+      "10000",
+      "--binary-proof",
+      "--proof",
+      "{proof}",
+      "{input}"
+    ],
+    "bsat-retain-more": [
+      "/Users/msharpe/python/bsat/competition/c/bin/bsat",
+      "--reduce-fraction",
+      "0.9",
+      "--conflicts",
+      "10000",
+      "--binary-proof",
+      "--proof",
+      "{proof}",
+      "{input}"
+    ],
+    "bsat-no-reduction": [
+      "/Users/msharpe/python/bsat/competition/c/bin/bsat",
+      "--reduce-interval",
+      "1000000000",
+      "--conflicts",
+      "10000",
+      "--binary-proof",
+      "--proof",
+      "{proof}",
+      "{input}"
+    ],
+    "cadical-default": [
+      "/private/tmp/bsat-cadical-reference/build/cadical",
+      "-c",
+      "10000",
+      "{input}",
+      "{proof}"
+    ],
+    "cadical-plain": [
+      "/private/tmp/bsat-cadical-reference/build/cadical",
+      "--plain",
+      "-c",
+      "10000",
+      "{input}",
+      "{proof}"
+    ],
+    "cadical-plain-no-minimize": [
+      "/private/tmp/bsat-cadical-reference/build/cadical",
+      "--plain",
+      "--no-minimize",
+      "-c",
+      "10000",
+      "{input}",
+      "{proof}"
+    ],
+    "cadical-plain-no-shrink": [
+      "/private/tmp/bsat-cadical-reference/build/cadical",
+      "--plain",
+      "--shrink=0",
+      "-c",
+      "10000",
+      "{input}",
+      "{proof}"
+    ],
+    "cadical-plain-no-minimize-no-shrink": [
+      "/private/tmp/bsat-cadical-reference/build/cadical",
+      "--plain",
+      "--no-minimize",
+      "--shrink=0",
+      "-c",
+      "10000",
+      "{input}",
+      "{proof}"
+    ],
+    "cadical-plain-no-reduction": [
+      "/private/tmp/bsat-cadical-reference/build/cadical",
+      "--plain",
+      "--no-reduce",
+      "-c",
+      "10000",
+      "{input}",
+      "{proof}"
+    ]
+  },
+  "cadical_revision": "c60730422e758ef1cebe7aeddf2dda31c996bf04",
+  "boundary": "Permanent-unit query snapshot; development ablations with different search trajectories",
+  "binaries": {
+    "/Users/msharpe/python/bsat/competition/c/bin/bsat": "0444e19c256fa3be362b990cc29e7f45b558c28ea58b688c405bc5505b73dc55",
+    "/private/tmp/bsat-cadical-reference/build/cadical": "053c58487356bd7fcce4f028d99da021ba9f7d69448c7997cc6a1901c33109ef"
+  },
+  "inputs": {
+    "/private/tmp/bsat-target-snapshots/cal3-depth16-polarity1.cnf": {
+      "sha256": "6bbfa3e0109b277412f4bf0edc157670859943a2e914c2d16f27346acc1b9e98"
+    }
+  }
+}
