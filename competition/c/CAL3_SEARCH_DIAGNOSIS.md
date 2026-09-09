@@ -1,5 +1,8 @@
 # cal3 retained-query investigation — 2026-09-08
 
+Historical measurements below predate portable reduction. See the
+[updated 60-second incremental investigation](CAL3_INCREMENTAL_FOLLOWUP.md).
+
 The depth-16 positive-output query remains unresolved by BSAT. Equal CPU budgets
 confirm a real gap: retained CaDiCaL proves the query within a second, while BSAT
 does not finish in 30 seconds. The tested existing search switches do not close it.

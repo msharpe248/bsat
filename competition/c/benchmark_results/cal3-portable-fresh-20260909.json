@@ -1,0 +1,242 @@
+{
+  "scope": "Growing BMC histories from real upstream circuits, with independent witnesses.",
+  "complete": true,
+  "platform": "macOS-26.6.1-arm64-arm-64bit-Mach-O",
+  "circuits": {
+    "revision": "7df3ce27c569615bdd205dbd6b473ab2c33953a7",
+    "inputs": [
+      {
+        "url": "https://raw.githubusercontent.com/TechnionFV/CAV_2025_artifact/7df3ce27c569615bdd205dbd6b473ab2c33953a7/benchmarks_aig/aig_inputs/hwmcc19_fold_fraigy_orchestrate/aig/goel/industry/cal3/cal3.aig",
+        "file": "cal3.aig",
+        "sha256": "c1948e7c2757b3d9c9cd22d492f1ee03528dbf9ba7c855af19d0f61568101eae",
+        "bytes": 1477,
+        "aag": "cal3.aag",
+        "aag_sha256": "178eb62256e68a589343fefe070d7717cf9ac5176f0f96dd2337f848890fda4c",
+        "inputs": 55,
+        "latches": 23,
+        "gates": 453
+      }
+    ],
+    "aigtoaig_sha256": "f465b2c03dbc1f1a39996103f9543d884261f4b6eefd7cac1f2c90562b6faa79",
+    "aiger_revision": "039ec1a2cc37d3093ac35c4b6df65336b346f409",
+    "aiger_revision_scope": "Reproduction build pin; supplied executable identified separately by SHA-256."
+  },
+  "library_sha256": "87e3b2dad4c943ec20454061ab8c5ac2bea989ad6b161f60fe1524359c2266cc",
+  "reference_sha256": "5cad8e92487416008cf8ec4573c2ab2a02b7c1927ab06e8c8cacb317908cff1f",
+  "incremental_reference_sha256": "0a4ffe327470abc9de9d7f19c8da5fda44487d914e3ca0cd74999b196453f395",
+  "converter_sha256": "9bfc20a5fa9eb2a0ffadd2b0cfc7cdd4a20f6aa9c8d7de5b6c771160b847f630",
+  "checker_sha256": "027e767e8e5543d61671c44f7475e985b7969112e6825d51f2207bf0580cbf5c",
+  "runs": [
+    {
+      "circuit": "cal3.aig",
+      "repeat": 0,
+      "flags": 3,
+      "depth": 16,
+      "polarity": 1,
+      "variables": 9028,
+      "clauses": 23880,
+      "result": 0,
+      "incremental_result": 20,
+      "cpu_seconds": 60.000043,
+      "incremental_cpu_seconds": 0.6212129999999974,
+      "additions_both_solvers_cpu": 0.04419999999999999,
+      "assumptions": [
+        8715
+      ],
+      "bsat_cpu_overshoot_seconds": 4.299999999801685e-05,
+      "reference_cpu_overshoot_seconds": 0,
+      "within_cpu_budget": false,
+      "reference_within_cpu_budget": true,
+      "stats": {
+        "version": 1,
+        "result": 0,
+        "conflicts": 1623424,
+        "decisions": 3127585,
+        "propagations": 1027386189,
+        "reused_preparations": 0,
+        "owned_capacity_bytes": 7481542,
+        "cpu_seconds": 60.0000255
+      },
+      "journal_bytes": 365741814,
+      "diagnostic": {
+        "conflicts": 1623424,
+        "decisions": 3127585,
+        "propagations": 1027386189,
+        "restarts": 9623,
+        "reduces": 811,
+        "learned_clauses": 1623424,
+        "learned_literals": 174766350,
+        "deleted_clauses": 1616870,
+        "minimized_literals": 19002879,
+        "minimize_inspections": 1035487973,
+        "minimize_budget_hits": 0,
+        "glue_clauses": 2981,
+        "max_lbd": 139,
+        "literal_inspections": 6287448064,
+        "garbage_collections": 810,
+        "binary_visits": 0,
+        "long_visits": 0,
+        "blocker_hits": 0,
+        "replacement_scans": 0,
+        "original_scans": 0,
+        "learned_scans": 0,
+        "scan_size_9_plus": 0,
+        "phase_seconds": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ]
+      },
+      "input_sha256": "6bbfa3e0109b277412f4bf0edc157670859943a2e914c2d16f27346acc1b9e98",
+      "fresh_result": 20,
+      "certificate_checks": {
+        "fresh-check": {
+          "input_sha256": "6bbfa3e0109b277412f4bf0edc157670859943a2e914c2d16f27346acc1b9e98",
+          "drat_sha256": "52285c102917890585c81c1517b90fee00a0534fc1dc24f0a3b1ca19d9544176",
+          "converter_sha256": "9bfc20a5fa9eb2a0ffadd2b0cfc7cdd4a20f6aa9c8d7de5b6c771160b847f630",
+          "checker_sha256": "027e767e8e5543d61671c44f7475e985b7969112e6825d51f2207bf0580cbf5c",
+          "verified": true,
+          "checker_heap_mb": 2048,
+          "checker_stack_mb": 512,
+          "stages": [
+            {
+              "command": [
+                "/tmp/bsat-drat-trim",
+                "/var/folders/ts/779j13fj7_x2z167570zvv4c0000gn/T/bsat-industrial-d0ysnxnr/fresh-check/input.cnf",
+                "/var/folders/ts/779j13fj7_x2z167570zvv4c0000gn/T/bsat-industrial-d0ysnxnr/fresh-check/proof.drat",
+                "-L",
+                "/var/folders/ts/779j13fj7_x2z167570zvv4c0000gn/T/bsat-industrial-d0ysnxnr/fresh-check/proof.lrat"
+              ],
+              "seconds": 0.188400000333786,
+              "cpu_seconds": 0.18612299999999987,
+              "children_peak_rss_bytes": 62898176,
+              "returncode": 0,
+              "stdout": "\nc turning on binary mode checking\n\nc parsing input formula with 9028 variables and 23881 clauses\n\nc finished parsing, read 3057244 bytes from proof file\n\nc detected empty clause; start verification via backward checking\n\nc 13098 of 23881 clauses in core                            \n\nc 23391 of 71960 lemmas in core using 373118 resolution steps\n\nc 139 RAT lemmas in core; 2 redundant literals in core lemmas\n\ns VERIFIED\n\nc verification time: 0.184 seconds\n",
+              "stderr": ""
+            },
+            {
+              "command": [
+                "/tmp/bsat-cake-verified-build/cake_lpr",
+                "--CML_HEAP_SIZE=2048",
+                "--CML_STACK_SIZE=512",
+                "/var/folders/ts/779j13fj7_x2z167570zvv4c0000gn/T/bsat-industrial-d0ysnxnr/fresh-check/input.cnf",
+                "/var/folders/ts/779j13fj7_x2z167570zvv4c0000gn/T/bsat-industrial-d0ysnxnr/fresh-check/proof.lrat"
+              ],
+              "seconds": 0.08831008290871978,
+              "cpu_seconds": 0.08529300000000004,
+              "children_peak_rss_bytes": 170246144,
+              "returncode": 0,
+              "stdout": "s VERIFIED UNSAT\n",
+              "stderr": ""
+            }
+          ],
+          "lrat_sha256": "cc4af712bfd6f6666cddcb46bafa0e6e46491dc6c3563b32887133b1c7975242",
+          "seconds": 0.28099579084664583,
+          "rss_scope": "Cumulative child-process high-water RSS, not isolated per-stage peak"
+        }
+      },
+      "fresh_proof_sha256": "52285c102917890585c81c1517b90fee00a0534fc1dc24f0a3b1ca19d9544176",
+      "validated": true
+    },
+    {
+      "circuit": "cal3.aig",
+      "repeat": 0,
+      "flags": 3,
+      "depth": 16,
+      "polarity": -1,
+      "variables": 9028,
+      "clauses": 23880,
+      "result": 10,
+      "incremental_result": 10,
+      "cpu_seconds": 0.005231999999999459,
+      "incremental_cpu_seconds": 0.00037499999999823785,
+      "additions_both_solvers_cpu": 0,
+      "assumptions": [
+        -8715
+      ],
+      "bsat_cpu_overshoot_seconds": 0,
+      "reference_cpu_overshoot_seconds": 0,
+      "within_cpu_budget": true,
+      "reference_within_cpu_budget": true,
+      "stats": {
+        "version": 1,
+        "result": 10,
+        "conflicts": 142,
+        "decisions": 4013,
+        "propagations": 80465,
+        "reused_preparations": 0,
+        "owned_capacity_bytes": 3616170,
+        "cpu_seconds": 0.005216249999996592
+      },
+      "journal_bytes": 365744579,
+      "bsat_model_and_simulation": true,
+      "incremental_model_and_simulation": true,
+      "diagnostic": {
+        "conflicts": 142,
+        "decisions": 4013,
+        "propagations": 80465,
+        "restarts": 1,
+        "reduces": 0,
+        "learned_clauses": 142,
+        "learned_literals": 1233,
+        "deleted_clauses": 0,
+        "minimized_literals": 6,
+        "minimize_inspections": 381,
+        "minimize_budget_hits": 0,
+        "glue_clauses": 36,
+        "max_lbd": 14,
+        "literal_inspections": 233251,
+        "garbage_collections": 0,
+        "binary_visits": 0,
+        "long_visits": 0,
+        "blocker_hits": 0,
+        "replacement_scans": 0,
+        "original_scans": 0,
+        "learned_scans": 0,
+        "scan_size_9_plus": 0,
+        "phase_seconds": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ]
+      },
+      "input_sha256": "66a2c215e71b0a6e0491b41f0176deaf6f6b7feada3e16f0e1785b01587fb08a",
+      "fresh_result": 10,
+      "fresh_model_and_simulation": true,
+      "export_cpu_seconds": 0.06437599999999577,
+      "validated": true
+    }
+  ],
+  "limits": {
+    "bsat_cpu": 60.0,
+    "bsat_conflicts": 0,
+    "cadical_thread_cpu": 60.0,
+    "cadical_cooperative_wall": 90.0,
+    "kissat_wall": 90.0,
+    "checker_stage_wall": 600.0
+  },
+  "checkpoint_every": 0,
+  "checker_heap_mb": 2048,
+  "checker_stack_mb": 512,
+  "harness_sha256": "e926be2521ef080ac90d3faf0fe6892f176563bdbe63cd9d8dad76d943f0ca68",
+  "diagnostic_profile": "control",
+  "accounting": false,
+  "timing_scope": "Serial API query process CPU excludes encoding, additions, export and checking; repeated modes alternate order.",
+  "incremental_signature": "cadical-3.0.1-c607304"
+}

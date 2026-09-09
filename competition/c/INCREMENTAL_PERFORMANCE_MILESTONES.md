@@ -27,3 +27,20 @@ push each milestone.
    do not change defaults merely to complete the milestone.
 
 Status: corpus/harness preparation and retained baseline in progress.
+
+## Bounded implementation experiment (frozen before candidate timing)
+
+The retained certified control executes 10,049 restarts in its 60-second query.
+The search loop currently backtracks every assumption restart to level zero,
+then reapplies the same assumption prefix. Test preserving the established
+prefix, capped at the current decision level and number of assumptions. Ordinary
+conflict backjumps remain unrestricted and new queries still backtrack to zero.
+This may avoid repeated propagation, but changes saved-phase/watch behavior and
+therefore needs measured search and correctness checks, not a presumed speedup.
+
+Use a separate compile-time experimental build. Require release/sanitizer and
+independently checked retained certificates before timing. Test the same retained
+cal3 history with the same 60-second allowance first. If it adds no checked solve,
+reject it for this target; if it succeeds, confirm repeated cal3 and all four
+pinned industrial circuit histories before any default promotion. Preserve the
+baseline and archive a rejected patch instead of leaving an unused switch.
