@@ -1,0 +1,25 @@
+{
+  "scope": "Frozen development confirmation before portable-sort timing; three previously solved families, cal3 and larger planning stress case. No fresh-holdout claim.",
+  "cpu_seconds": 60,
+  "wall_seconds": 90,
+  "repeats": 2,
+  "seed": 2026090908,
+  "gate": "No checked solve loss; matching completed proof hashes where applicable and <=5% aggregate CPU PAR-2 regression; compare Linux separately",
+  "inputs": {
+    "/Users/msharpe/python/bsat/dataset/sat_competition2025/battleship/ed6d842f96d10f3400bce251f9e95bfb.cnf": {
+      "sha256": "9d586fde48ebcc533f867c06569f008a9b3f5b71dca6a3c9e18db48e037a0b6f"
+    },
+    "/Users/msharpe/python/bsat/dataset/sat_competition2025/belpyramid-puzzle/5831f35622f3e6c666f0cee6cac60e4c.cnf": {
+      "sha256": "e73caf0c3d62cfa5ce1b8c80c83c30df50c7e99275f1f43f69acdd043f050735"
+    },
+    "/Users/msharpe/python/bsat/dataset/sat_competition2025/hamiltonian/a497d784c61c330f012dcd80d44dcd43.cnf": {
+      "sha256": "92e5fa675073ba9aad91afa4b81129fed5757ea37872fc2dbc3bd4ba0d720a4c"
+    },
+    "/private/tmp/bsat-target-snapshots/cal3-depth16-polarity1.cnf": {
+      "sha256": "6bbfa3e0109b277412f4bf0edc157670859943a2e914c2d16f27346acc1b9e98"
+    },
+    "/Users/msharpe/python/bsat/dataset/sat_competition2025/planning/2e058841373f34cc47d8dec927fd1796.cnf": {
+      "sha256": "4e195070a2566f32773662e8c31baf40e40571d690696102fd2ebc9c72d388a2"
+    }
+  }
+}

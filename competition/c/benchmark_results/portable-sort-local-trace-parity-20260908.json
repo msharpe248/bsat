@@ -1,0 +1,109 @@
+{
+  "scope": "Portable candidate vs original Mac control, two repetitions per stop/profile; proof prefixes only",
+  "matching": true,
+  "runs": [
+    {
+      "name": "default-1999-0",
+      "proof_sha256": "46128c9cb9b2cfd8bb695b6f4d7080705f2cf7f8bd1f77585e4cb86e303596fe",
+      "equal": true
+    },
+    {
+      "name": "default-1999-1",
+      "proof_sha256": "46128c9cb9b2cfd8bb695b6f4d7080705f2cf7f8bd1f77585e4cb86e303596fe",
+      "equal": true
+    },
+    {
+      "name": "default-2000-0",
+      "proof_sha256": "60c3e8607030acb2284c5e467a4c26f883ef95e64b250ef9f35e727b51c533d4",
+      "equal": true
+    },
+    {
+      "name": "default-2000-1",
+      "proof_sha256": "60c3e8607030acb2284c5e467a4c26f883ef95e64b250ef9f35e727b51c533d4",
+      "equal": true
+    },
+    {
+      "name": "default-2001-0",
+      "proof_sha256": "65a85752e86770430e6b5bc2c3e5849777d7786c8a2c9923bc5192ca122fdc12",
+      "equal": true
+    },
+    {
+      "name": "default-2001-1",
+      "proof_sha256": "65a85752e86770430e6b5bc2c3e5849777d7786c8a2c9923bc5192ca122fdc12",
+      "equal": true
+    },
+    {
+      "name": "default-4001-0",
+      "proof_sha256": "f927319832ef940f63e1691d5cac30ba8a80606033639eb9cef9a3d18931455e",
+      "equal": true
+    },
+    {
+      "name": "default-4001-1",
+      "proof_sha256": "f927319832ef940f63e1691d5cac30ba8a80606033639eb9cef9a3d18931455e",
+      "equal": true
+    },
+    {
+      "name": "default-10000-0",
+      "proof_sha256": "1b0d585ea797fd86243b41fe9f927265242dca5196ebd9272a516e9ff528f281",
+      "equal": true
+    },
+    {
+      "name": "default-10000-1",
+      "proof_sha256": "1b0d585ea797fd86243b41fe9f927265242dca5196ebd9272a516e9ff528f281",
+      "equal": true
+    },
+    {
+      "name": "no-reduction-1999-0",
+      "proof_sha256": "46128c9cb9b2cfd8bb695b6f4d7080705f2cf7f8bd1f77585e4cb86e303596fe",
+      "equal": true
+    },
+    {
+      "name": "no-reduction-1999-1",
+      "proof_sha256": "46128c9cb9b2cfd8bb695b6f4d7080705f2cf7f8bd1f77585e4cb86e303596fe",
+      "equal": true
+    },
+    {
+      "name": "no-reduction-2000-0",
+      "proof_sha256": "5ce2e88d3d7e2aef77e19f979444ecc11533645af77c76a52c961417ab3daa4c",
+      "equal": true
+    },
+    {
+      "name": "no-reduction-2000-1",
+      "proof_sha256": "5ce2e88d3d7e2aef77e19f979444ecc11533645af77c76a52c961417ab3daa4c",
+      "equal": true
+    },
+    {
+      "name": "no-reduction-2001-0",
+      "proof_sha256": "fbac3ec142982a5b1cc880b3fb775c8c6a0c6978e280ad9f0664186a14b876ba",
+      "equal": true
+    },
+    {
+      "name": "no-reduction-2001-1",
+      "proof_sha256": "fbac3ec142982a5b1cc880b3fb775c8c6a0c6978e280ad9f0664186a14b876ba",
+      "equal": true
+    },
+    {
+      "name": "no-reduction-4001-0",
+      "proof_sha256": "f3197f273063f52b79e0b48e1f15c16b5a01a2d0143bb40e3d7901f8da5ad517",
+      "equal": true
+    },
+    {
+      "name": "no-reduction-4001-1",
+      "proof_sha256": "f3197f273063f52b79e0b48e1f15c16b5a01a2d0143bb40e3d7901f8da5ad517",
+      "equal": true
+    },
+    {
+      "name": "no-reduction-10000-0",
+      "proof_sha256": "50bc8f8e5f984d79a6b29bfb61ac9a1f1a26cba00c08fb68c6cf43b123999d10",
+      "equal": true
+    },
+    {
+      "name": "no-reduction-10000-1",
+      "proof_sha256": "50bc8f8e5f984d79a6b29bfb61ac9a1f1a26cba00c08fb68c6cf43b123999d10",
+      "equal": true
+    }
+  ],
+  "baseline_binary_sha256": "986f541ed457ad2ef74edbee0a0cb2263f820d14df95098bf6beba015d22d1ea",
+  "candidate_binary_sha256": "a07932c6b2c87ec1781e118fda83f8c774266f272f0ba79b4acdca8ee81a3db9",
+  "input_sha256": "6bbfa3e0109b277412f4bf0edc157670859943a2e914c2d16f27346acc1b9e98"
+}

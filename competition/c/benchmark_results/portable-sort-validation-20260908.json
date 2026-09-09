@@ -1,0 +1,17 @@
+{
+  "release_tests": "All tests passed!",
+  "sanitizer_tests": "All tests passed!",
+  "executables_per_build": 66,
+  "sort_cases": {
+    "golden_shapes": 192,
+    "forced_depth_cases": 384
+  },
+  "independent_release": "PASS: 3036 solves; truth-table answers, original models, text/binary RUP proofs checked (seed 2026090906)\n",
+  "source_pin": "Apple Libc 71bbe350ab79eef58113991d817ccc6165061a64 stdlib/FreeBSD/qsort.c",
+  "upstream_sha256": "0f4692a3a9177e1dcd35f5a73552359e644ff13489896fe2309840048b7f575e",
+  "binaries": {
+    "/tmp/bsat-reduction-before": "0444e19c256fa3be362b990cc29e7f45b558c28ea58b688c405bc5505b73dc55",
+    "competition/c/bin/bsat_portable": "2b5d2e85d09c86afec398dcb34a1ec99d4dc7800479a432144b8f26252eed6f3",
+    "competition/c/bin/bsat_portable_debug": "9a2992c95b0fb9de2d995c7d71926084e201d442928c97337842695d7fe842f7"
+  }
+}
