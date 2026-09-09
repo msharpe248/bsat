@@ -112,6 +112,13 @@ invalidation, zeroed journals and subsequent checked answers. Neither finite
 validation nor a configurable checker resource envelope establishes application
 SLOs or general solver competitiveness.
 
+The [longer fixed development subset](LONGER_DEVELOPMENT_SUBSET.md) uses 60 CPU
+seconds and 90 wall seconds. Each solver checks 4/8 runs. BSAT now proves the
+fresh one-shot cal3 snapshot in 22.7 CPU seconds (Kissat 1.05), and solves influence
+maximization in 56.9 seconds (Kissat 24.5). Both leave the selected planning and
+scheduling inputs UNKNOWN. This does not resolve retained-query performance or
+establish a default improvement; cal3 proof checking adds another 7.8 wall seconds.
+
 ## Release gates
 
 A production release needs a concrete target workload and deployment envelope.

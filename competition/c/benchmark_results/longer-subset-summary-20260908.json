@@ -1,0 +1,166 @@
+{
+  "scope": "CPU PAR-2 uses 120-second penalty; worker wall PAR-2 uses 180 seconds. Checking excluded from solver timing.",
+  "source": "longer-subset-20260908.json",
+  "solvers": {
+    "bsat": {
+      "checked": 4,
+      "runs": 8,
+      "cpu_par2": 79.89885212499999,
+      "wall_par2": 110.74206884379964,
+      "errors": 0
+    },
+    "kissat": {
+      "checked": 4,
+      "runs": 8,
+      "cpu_par2": 66.387668125,
+      "wall_par2": 96.42538602586137,
+      "errors": 0
+    }
+  },
+  "inputs": [
+    {
+      "input": "/Users/msharpe/python/bsat/dataset/sat_competition2025/planning/16c999d046885c8e51f196e60c34d966.cnf",
+      "solver": "bsat",
+      "outcomes": [
+        "UNKNOWN",
+        "UNKNOWN"
+      ],
+      "cpu_median": 60.143572999999996,
+      "validation_wall_median": 1.7711427062749863e-06,
+      "proof_hashes": [
+        "3043650a1e87e76c8ddf96a9d2c5c5e25038bbd6ca3dc0cd0323801c5d31d0c9",
+        "f5d441b834571913325e0c21a65a7a277262bca8d9855e9e4b687cb8148eb1c6"
+      ],
+      "cpu_each": [
+        60.141479,
+        60.145666999999996
+      ]
+    },
+    {
+      "input": "/Users/msharpe/python/bsat/dataset/sat_competition2025/planning/16c999d046885c8e51f196e60c34d966.cnf",
+      "solver": "kissat",
+      "outcomes": [
+        "UNKNOWN",
+        "UNKNOWN"
+      ],
+      "cpu_median": 60.040174,
+      "validation_wall_median": 2.353917807340622e-06,
+      "proof_hashes": [
+        "10e6702b57378e754a99434ac34893893481f5056e060eb28c75496e49386114",
+        "a82e5ca6c114723b7a782f1af240a5f418f454079488f7e35c0e52c6e2271136"
+      ],
+      "cpu_each": [
+        60.039023,
+        60.041325
+      ]
+    },
+    {
+      "input": "/private/tmp/bsat-target-snapshots/cal3-depth16-polarity1.cnf",
+      "solver": "bsat",
+      "outcomes": [
+        "UNSAT",
+        "UNSAT"
+      ],
+      "cpu_median": 22.703055499999998,
+      "validation_wall_median": 7.765772458165884,
+      "proof_hashes": [
+        "137f999e21671406ae2e4f16a5f950197146ef51128cc70c06d4219d62882608",
+        "137f999e21671406ae2e4f16a5f950197146ef51128cc70c06d4219d62882608"
+      ],
+      "cpu_each": [
+        22.677877,
+        22.728234
+      ]
+    },
+    {
+      "input": "/private/tmp/bsat-target-snapshots/cal3-depth16-polarity1.cnf",
+      "solver": "kissat",
+      "outcomes": [
+        "UNSAT",
+        "UNSAT"
+      ],
+      "cpu_median": 1.0542475000000002,
+      "validation_wall_median": 0.5922466665506363,
+      "proof_hashes": [
+        "52285c102917890585c81c1517b90fee00a0534fc1dc24f0a3b1ca19d9544176",
+        "52285c102917890585c81c1517b90fee00a0534fc1dc24f0a3b1ca19d9544176"
+      ],
+      "cpu_each": [
+        1.0515150000000002,
+        1.05698
+      ]
+    },
+    {
+      "input": "/Users/msharpe/python/bsat/dataset/sat_competition2025/influence-maximization/931621d9964e9d0cd1c4001822015c92.cnf",
+      "solver": "bsat",
+      "outcomes": [
+        "SAT",
+        "SAT"
+      ],
+      "cpu_median": 56.892353,
+      "validation_wall_median": 0.13324429164640605,
+      "proof_hashes": [
+        "f4bc73a700c12975cded0af15187287a4f34bf3089d550118b40966c0d165d4e",
+        "f4bc73a700c12975cded0af15187287a4f34bf3089d550118b40966c0d165d4e"
+      ],
+      "cpu_each": [
+        56.719035,
+        57.065670999999995
+      ]
+    },
+    {
+      "input": "/Users/msharpe/python/bsat/dataset/sat_competition2025/influence-maximization/931621d9964e9d0cd1c4001822015c92.cnf",
+      "solver": "kissat",
+      "outcomes": [
+        "SAT",
+        "SAT"
+      ],
+      "cpu_median": 24.496425000000002,
+      "validation_wall_median": 0.11982279131188989,
+      "proof_hashes": [
+        "96442e2bad31c9774cd2db642598a5e598da432edafc880e960ffc397b7e4f08",
+        "96442e2bad31c9774cd2db642598a5e598da432edafc880e960ffc397b7e4f08"
+      ],
+      "cpu_each": [
+        24.531599,
+        24.461251
+      ]
+    },
+    {
+      "input": "/Users/msharpe/python/bsat/dataset/sat_competition2025/scheduling/c05d4d3ecd06a2e3942fea09159dd27b.cnf",
+      "solver": "bsat",
+      "outcomes": [
+        "UNKNOWN",
+        "UNKNOWN"
+      ],
+      "cpu_median": 60.249776999999995,
+      "validation_wall_median": 1.3955868780612946e-06,
+      "proof_hashes": [
+        "b2a75249b50287601ab930843bff949fd9edb7383bf06e48553d89de2c0c5b5f",
+        "cf5f0340780660e9613942e830a0fd5fead45b6edcabcef1113d5cc8a34a7790"
+      ],
+      "cpu_each": [
+        60.25053,
+        60.249024
+      ]
+    },
+    {
+      "input": "/Users/msharpe/python/bsat/dataset/sat_competition2025/scheduling/c05d4d3ecd06a2e3942fea09159dd27b.cnf",
+      "solver": "kissat",
+      "outcomes": [
+        "UNKNOWN",
+        "UNKNOWN"
+      ],
+      "cpu_median": 60.060222499999995,
+      "validation_wall_median": 2.0202714949846268e-06,
+      "proof_hashes": [
+        "233aceef4d0e1cd16bcba031a24f722ca88d8961f9629ce742f5cb9833746f0f",
+        "233aceef4d0e1cd16bcba031a24f722ca88d8961f9629ce742f5cb9833746f0f"
+      ],
+      "cpu_each": [
+        60.059262,
+        60.061183
+      ]
+    }
+  ]
+}

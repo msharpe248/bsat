@@ -33,7 +33,9 @@ records tool/input hashes, host and limits. Finite provisional gates cannot
 certify an unspecified application's semantics, durability or service SLOs.
 
 Status: [complete Linux acceptance](LINUX_TRANSACTION_ACCEPTANCE.md) passes the
-provisional gates. Learning ablations and longer-subset measurements are pending.
+provisional gates. The [longer subset](LONGER_DEVELOPMENT_SUBSET.md) is complete:
+both solvers check 4/8 runs; BSAT one-shot cal3 finishes, while planning/scheduling
+remain UNKNOWN. Learning ablations are pending.
 
 The learning matrix is frozen in `tests/benchmark_cal3_learning.py`: BSAT
 default, no minimization, iterative, binary, combined, retention fraction 0.9,
