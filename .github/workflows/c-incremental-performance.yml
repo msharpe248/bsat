@@ -1,0 +1,66 @@
+name: C solver certified incremental performance
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  compare:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Build public library and fetch pinned independent sources
+        run: |
+          git fetch --depth 1 origin d6601b90183d186185eb7d091235145f5f189264
+          mkdir -p "$RUNNER_TEMP/baseline"
+          git archive d6601b90183d186185eb7d091235145f5f189264 competition/c/src competition/c/include competition/c/Makefile competition/c/VERSION | tar -x -C "$RUNNER_TEMP/baseline"
+          make -C "$RUNNER_TEMP/baseline/competition/c" -j2 OPTFLAGS='-O3 -flto' shared
+          make -C competition/c -j2 OPTFLAGS='-O3 -flto' shared
+          curl -Lf https://github.com/arminbiere/kissat/archive/8af8e56f174b778aef3aa45af9f739b2a5f492c2.tar.gz -o "$RUNNER_TEMP/kissat.tar.gz"
+          tar -xzf "$RUNNER_TEMP/kissat.tar.gz" -C "$RUNNER_TEMP"
+          git init "$RUNNER_TEMP/cadical"
+          git -C "$RUNNER_TEMP/cadical" remote add origin https://github.com/arminbiere/cadical.git
+          git -C "$RUNNER_TEMP/cadical" fetch --depth 1 origin c60730422e758ef1cebe7aeddf2dda31c996bf04
+          git -C "$RUNNER_TEMP/cadical" checkout --detach FETCH_HEAD
+      - name: Build retained incremental reference
+        working-directory: ${{ runner.temp }}/cadical
+        run: |
+          ./configure -shared
+          make -j2
+      - name: Build reference solver
+        working-directory: ${{ runner.temp }}/kissat-8af8e56f174b778aef3aa45af9f739b2a5f492c2
+        run: |
+          ./configure --no-embedded -flto
+          make -j2
+      - name: Build independent certificate chain
+        run: |
+          curl -Lf https://raw.githubusercontent.com/marijnheule/drat-trim/2e3b2dc0ecf938addbd779d42877b6ed69d9a985/drat-trim.c -o "$RUNNER_TEMP/drat-trim.c"
+          cc -O2 "$RUNNER_TEMP/drat-trim.c" -o "$RUNNER_TEMP/drat-trim"
+          python3 competition/c/tests/build_verified_checker.py --directory "$RUNNER_TEMP/cake-lpr"
+      - name: Prepare pinned circuit sets
+        run: |
+          git init "$RUNNER_TEMP/aiger"
+          git -C "$RUNNER_TEMP/aiger" remote add origin https://github.com/arminbiere/aiger.git
+          git -C "$RUNNER_TEMP/aiger" fetch --depth 1 origin 039ec1a2cc37d3093ac35c4b6df65336b346f409
+          git -C "$RUNNER_TEMP/aiger" checkout --detach FETCH_HEAD
+          (cd "$RUNNER_TEMP/aiger" && ./configure.sh && make -j2 aigtoaig)
+          python3 competition/c/tests/prepare_industrial_aig.py --aigtoaig "$RUNNER_TEMP/aiger/aigtoaig" --output "$RUNNER_TEMP/original"
+          python3 competition/c/tests/prepare_industrial_aig.py --aigtoaig "$RUNNER_TEMP/aiger/aigtoaig" --output "$RUNNER_TEMP/expanded" --manifest competition/c/tests/fixtures/expanded_industrial_aig.json
+          mkdir -p "$RUNNER_TEMP/results"
+          lscpu > "$RUNNER_TEMP/results/lscpu.txt"
+          cc --version > "$RUNNER_TEMP/results/compiler.txt"
+          git rev-parse HEAD > "$RUNNER_TEMP/results/revision.txt"
+      - name: Serial matched-host certified histories
+        env:
+          BSAT_DRAT_TRIM: ${{ runner.temp }}/drat-trim
+          BSAT_CAKE_LPR: ${{ runner.temp }}/cake-lpr/cake_lpr
+        run: |
+          python3 competition/c/tests/benchmark_incremental_hosts.py --baseline "$RUNNER_TEMP/baseline/competition/c/bin/libbsat_release.so" --candidate competition/c/bin/libbsat_release.so --reference "$RUNNER_TEMP/kissat-8af8e56f174b778aef3aa45af9f739b2a5f492c2/build/kissat" --incremental-reference "$RUNNER_TEMP/cadical/build/libcadical.so" --original "$RUNNER_TEMP/original" --expanded "$RUNNER_TEMP/expanded" --output "$RUNNER_TEMP/results"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: certified-incremental-performance
+          path: ${{ runner.temp }}/results
