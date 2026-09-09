@@ -1,0 +1,42 @@
+{
+  "decision": "reject automatic pre-trimming: no meaningful cal3 gain and cal100 total verification CPU regresses",
+  "cpu_scope": "Parent orchestration plus converter/checker children; includes copying/hashing and extra trimming pass",
+  "targets": {
+    "cal3": {
+      "modes": {
+        "direct": {
+          "mean_total_cpu_seconds": 21.927420500000004,
+          "mean_children_cpu_seconds": 21.682994000000004,
+          "mean_wall_seconds": 21.948671124642715,
+          "bytes": 131133017
+        },
+        "trim": {
+          "mean_total_cpu_seconds": 21.920203999999995,
+          "mean_children_cpu_seconds": 21.851877499999993,
+          "mean_wall_seconds": 21.943373895948753,
+          "bytes": 16077483
+        }
+      },
+      "cpu_relative_change": -0.000329108478583251,
+      "bytes_relative_change": -0.8773956142563242
+    },
+    "cal100": {
+      "modes": {
+        "direct": {
+          "mean_total_cpu_seconds": 7.742031999999999,
+          "mean_children_cpu_seconds": 7.614108499999999,
+          "mean_wall_seconds": 7.754209895385429,
+          "bytes": 69158596
+        },
+        "trim": {
+          "mean_total_cpu_seconds": 10.268345500000002,
+          "mean_children_cpu_seconds": 10.184665,
+          "mean_wall_seconds": 10.283101083477959,
+          "bytes": 28303751
+        }
+      },
+      "cpu_relative_change": 0.32631142573422633,
+      "bytes_relative_change": -0.5907413880987404
+    }
+  }
+}

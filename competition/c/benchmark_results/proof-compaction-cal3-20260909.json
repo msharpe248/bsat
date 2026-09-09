@@ -1,0 +1,261 @@
+{
+  "input_sha256": "6bbfa3e0109b277412f4bf0edc157670859943a2e914c2d16f27346acc1b9e98",
+  "proof_sha256": "05d9caa3865a07f1e23991ba324d64520d4652a481f3a6cd7f90d8d28cb01dfa",
+  "input_proof_bytes": 131133017,
+  "policy": "direct,trim,trim,direct; independently check against unchanged exact query; include trim cost",
+  "stage_timeout": 600,
+  "checker_heap_mb": 2048,
+  "checker_stack_mb": 512,
+  "complete": true,
+  "runs": [
+    {
+      "mode": "direct",
+      "verified": true,
+      "check": {
+        "input_sha256": "6bbfa3e0109b277412f4bf0edc157670859943a2e914c2d16f27346acc1b9e98",
+        "drat_sha256": "05d9caa3865a07f1e23991ba324d64520d4652a481f3a6cd7f90d8d28cb01dfa",
+        "converter_sha256": "9bfc20a5fa9eb2a0ffadd2b0cfc7cdd4a20f6aa9c8d7de5b6c771160b847f630",
+        "checker_sha256": "027e767e8e5543d61671c44f7475e985b7969112e6825d51f2207bf0580cbf5c",
+        "verified": true,
+        "checker_heap_mb": 2048,
+        "checker_stack_mb": 512,
+        "stages": [
+          {
+            "command": [
+              "/private/tmp/bsat-drat-trim",
+              "/tmp/bsat-proof-compaction-cal3-total/0/check/input.cnf",
+              "/tmp/bsat-proof-compaction-cal3-total/0/check/proof.drat",
+              "-L",
+              "/tmp/bsat-proof-compaction-cal3-total/0/check/proof.lrat"
+            ],
+            "seconds": 17.619180417153984,
+            "cpu_seconds": 17.607377,
+            "children_peak_rss_bytes": 481263616,
+            "returncode": 0,
+            "stdout": "\nc turning on binary mode checking\n\nc parsing input formula with 9028 variables and 23881 clauses\n\nc finished parsing, read 131133017 bytes from proof file\n\nc detected empty clause; start verification via backward checking\n\nc 13443 of 23881 clauses in core                            \n\nc 57793 of 486350 lemmas in core using 26554071 resolution steps\n\nc 0 RAT lemmas in core; 2049658 redundant literals in core lemmas\n\ns VERIFIED\n\nc verification time: 17.611 seconds\n",
+            "stderr": ""
+          },
+          {
+            "command": [
+              "/private/tmp/bsat-cake-verified-build/cake_lpr",
+              "--CML_HEAP_SIZE=2048",
+              "--CML_STACK_SIZE=512",
+              "/tmp/bsat-proof-compaction-cal3-total/0/check/input.cnf",
+              "/tmp/bsat-proof-compaction-cal3-total/0/check/proof.lrat"
+            ],
+            "seconds": 4.101000875234604,
+            "cpu_seconds": 4.088937000000002,
+            "children_peak_rss_bytes": 2150039552,
+            "returncode": 0,
+            "stdout": "s VERIFIED UNSAT\n",
+            "stderr": ""
+          }
+        ],
+        "lrat_sha256": "fc21cea4e16882324d979f6f874a747cf8d6d83615c729db05337d4ce4faed79",
+        "seconds": 21.889752791728824,
+        "rss_scope": "Cumulative child-process high-water RSS, not isolated per-stage peak"
+      },
+      "proof_sha256": "05d9caa3865a07f1e23991ba324d64520d4652a481f3a6cd7f90d8d28cb01dfa",
+      "proof_bytes": 131133017,
+      "wall_seconds": 21.95843254122883,
+      "children_cpu_seconds": 21.696314,
+      "children_cumulative_peak_rss_bytes": 2150039552,
+      "parent_cpu_seconds": 0.24103799999999997,
+      "total_cpu_seconds": 21.937352
+    },
+    {
+      "mode": "trim",
+      "trim": {
+        "command": [
+          "/private/tmp/bsat-drat-trim",
+          "/private/tmp/bsat-proof-cost-cal3/cal3-r0-f3-d16-p1/input.cnf",
+          "/private/tmp/bsat-proof-cost-cal3/cal3-r0-f3-d16-p1/proof.drat",
+          "-l",
+          "/private/tmp/bsat-proof-compaction-cal3-total/1/compact.drat",
+          "-C"
+        ],
+        "seconds": 15.854237749706954,
+        "stdout": "\nc turning on binary mode checking\n\nc parsing input formula with 9028 variables and 23881 clauses\n\nc finished parsing, read 131133017 bytes from proof file\n\nc detected empty clause; start verification via backward checking\n\nc 13443 of 23881 clauses in core                            \n\nc 57793 of 486350 lemmas in core using 26554071 resolution steps\n\nc 0 RAT lemmas in core; 2558183 redundant literals in core lemmas\n\ns VERIFIED\n\nc verification time: 15.848 seconds\n",
+        "stderr": "",
+        "returncode": 0
+      },
+      "verified": true,
+      "check": {
+        "input_sha256": "6bbfa3e0109b277412f4bf0edc157670859943a2e914c2d16f27346acc1b9e98",
+        "drat_sha256": "abc5f2f5d1ff26122529f4a970fe7f95d44a489d927f45dc89a40ea4fec86354",
+        "converter_sha256": "9bfc20a5fa9eb2a0ffadd2b0cfc7cdd4a20f6aa9c8d7de5b6c771160b847f630",
+        "checker_sha256": "027e767e8e5543d61671c44f7475e985b7969112e6825d51f2207bf0580cbf5c",
+        "verified": true,
+        "checker_heap_mb": 2048,
+        "checker_stack_mb": 512,
+        "stages": [
+          {
+            "command": [
+              "/private/tmp/bsat-drat-trim",
+              "/tmp/bsat-proof-compaction-cal3-total/1/check/input.cnf",
+              "/tmp/bsat-proof-compaction-cal3-total/1/check/proof.drat",
+              "-L",
+              "/tmp/bsat-proof-compaction-cal3-total/1/check/proof.lrat"
+            ],
+            "seconds": 3.86707366630435,
+            "cpu_seconds": 3.862000000000007,
+            "children_peak_rss_bytes": 2150039552,
+            "returncode": 0,
+            "stdout": "\nc turning on binary mode checking\n\nc parsing input formula with 9028 variables and 23881 clauses\n\nc finished parsing, read 16077483 bytes from proof file\n\nc detected empty clause; start verification via backward checking\n\nc 13399 of 23881 clauses in core                            \n\nc 50778 of 57794 lemmas in core using 11443116 resolution steps\n\nc 0 RAT lemmas in core; 25772 redundant literals in core lemmas\n\ns VERIFIED\n\nc verification time: 3.862 seconds\n",
+            "stderr": ""
+          },
+          {
+            "command": [
+              "/private/tmp/bsat-cake-verified-build/cake_lpr",
+              "--CML_HEAP_SIZE=2048",
+              "--CML_STACK_SIZE=512",
+              "/tmp/bsat-proof-compaction-cal3-total/1/check/input.cnf",
+              "/tmp/bsat-proof-compaction-cal3-total/1/check/proof.lrat"
+            ],
+            "seconds": 2.1481327922083437,
+            "cpu_seconds": 2.137098999999994,
+            "children_peak_rss_bytes": 2150055936,
+            "returncode": 0,
+            "stdout": "s VERIFIED UNSAT\n",
+            "stderr": ""
+          }
+        ],
+        "lrat_sha256": "eaf6ab4bbe7081d1aafdc899fbfa594f1018afc5addc4e72d420951b1480c800",
+        "seconds": 6.069585124962032,
+        "rss_scope": "Cumulative child-process high-water RSS, not isolated per-stage peak"
+      },
+      "proof_sha256": "abc5f2f5d1ff26122529f4a970fe7f95d44a489d927f45dc89a40ea4fec86354",
+      "proof_bytes": 16077483,
+      "wall_seconds": 21.932788582984358,
+      "children_cpu_seconds": 21.842940999999996,
+      "children_cumulative_peak_rss_bytes": 2150055936,
+      "parent_cpu_seconds": 0.06768199999999996,
+      "total_cpu_seconds": 21.910622999999998
+    },
+    {
+      "mode": "trim",
+      "trim": {
+        "command": [
+          "/private/tmp/bsat-drat-trim",
+          "/private/tmp/bsat-proof-cost-cal3/cal3-r0-f3-d16-p1/input.cnf",
+          "/private/tmp/bsat-proof-cost-cal3/cal3-r0-f3-d16-p1/proof.drat",
+          "-l",
+          "/private/tmp/bsat-proof-compaction-cal3-total/2/compact.drat",
+          "-C"
+        ],
+        "seconds": 15.889082749839872,
+        "stdout": "\nc turning on binary mode checking\n\nc parsing input formula with 9028 variables and 23881 clauses\n\nc finished parsing, read 131133017 bytes from proof file\n\nc detected empty clause; start verification via backward checking\n\nc 13443 of 23881 clauses in core                            \n\nc 57793 of 486350 lemmas in core using 26554071 resolution steps\n\nc 0 RAT lemmas in core; 2558183 redundant literals in core lemmas\n\ns VERIFIED\n\nc verification time: 15.883 seconds\n",
+        "stderr": "",
+        "returncode": 0
+      },
+      "verified": true,
+      "check": {
+        "input_sha256": "6bbfa3e0109b277412f4bf0edc157670859943a2e914c2d16f27346acc1b9e98",
+        "drat_sha256": "abc5f2f5d1ff26122529f4a970fe7f95d44a489d927f45dc89a40ea4fec86354",
+        "converter_sha256": "9bfc20a5fa9eb2a0ffadd2b0cfc7cdd4a20f6aa9c8d7de5b6c771160b847f630",
+        "checker_sha256": "027e767e8e5543d61671c44f7475e985b7969112e6825d51f2207bf0580cbf5c",
+        "verified": true,
+        "checker_heap_mb": 2048,
+        "checker_stack_mb": 512,
+        "stages": [
+          {
+            "command": [
+              "/private/tmp/bsat-drat-trim",
+              "/tmp/bsat-proof-compaction-cal3-total/2/check/input.cnf",
+              "/tmp/bsat-proof-compaction-cal3-total/2/check/proof.drat",
+              "-L",
+              "/tmp/bsat-proof-compaction-cal3-total/2/check/proof.lrat"
+            ],
+            "seconds": 3.856282541062683,
+            "cpu_seconds": 3.8530279999999957,
+            "children_peak_rss_bytes": 2150055936,
+            "returncode": 0,
+            "stdout": "\nc turning on binary mode checking\n\nc parsing input formula with 9028 variables and 23881 clauses\n\nc finished parsing, read 16077483 bytes from proof file\n\nc detected empty clause; start verification via backward checking\n\nc 13399 of 23881 clauses in core                            \n\nc 50778 of 57794 lemmas in core using 11443116 resolution steps\n\nc 0 RAT lemmas in core; 25772 redundant literals in core lemmas\n\ns VERIFIED\n\nc verification time: 3.851 seconds\n",
+            "stderr": ""
+          },
+          {
+            "command": [
+              "/private/tmp/bsat-cake-verified-build/cake_lpr",
+              "--CML_HEAP_SIZE=2048",
+              "--CML_STACK_SIZE=512",
+              "/tmp/bsat-proof-compaction-cal3-total/2/check/input.cnf",
+              "/tmp/bsat-proof-compaction-cal3-total/2/check/proof.lrat"
+            ],
+            "seconds": 2.144127707928419,
+            "cpu_seconds": 2.133068999999991,
+            "children_peak_rss_bytes": 2150055936,
+            "returncode": 0,
+            "stdout": "s VERIFIED UNSAT\n",
+            "stderr": ""
+          }
+        ],
+        "lrat_sha256": "eaf6ab4bbe7081d1aafdc899fbfa594f1018afc5addc4e72d420951b1480c800",
+        "seconds": 6.055930625181645,
+        "rss_scope": "Cumulative child-process high-water RSS, not isolated per-stage peak"
+      },
+      "proof_sha256": "abc5f2f5d1ff26122529f4a970fe7f95d44a489d927f45dc89a40ea4fec86354",
+      "proof_bytes": 16077483,
+      "wall_seconds": 21.953959208913147,
+      "children_cpu_seconds": 21.86081399999999,
+      "children_cumulative_peak_rss_bytes": 2150055936,
+      "parent_cpu_seconds": 0.068971,
+      "total_cpu_seconds": 21.929784999999992
+    },
+    {
+      "mode": "direct",
+      "verified": true,
+      "check": {
+        "input_sha256": "6bbfa3e0109b277412f4bf0edc157670859943a2e914c2d16f27346acc1b9e98",
+        "drat_sha256": "05d9caa3865a07f1e23991ba324d64520d4652a481f3a6cd7f90d8d28cb01dfa",
+        "converter_sha256": "9bfc20a5fa9eb2a0ffadd2b0cfc7cdd4a20f6aa9c8d7de5b6c771160b847f630",
+        "checker_sha256": "027e767e8e5543d61671c44f7475e985b7969112e6825d51f2207bf0580cbf5c",
+        "verified": true,
+        "checker_heap_mb": 2048,
+        "checker_stack_mb": 512,
+        "stages": [
+          {
+            "command": [
+              "/private/tmp/bsat-drat-trim",
+              "/tmp/bsat-proof-compaction-cal3-total/3/check/input.cnf",
+              "/tmp/bsat-proof-compaction-cal3-total/3/check/proof.drat",
+              "-L",
+              "/tmp/bsat-proof-compaction-cal3-total/3/check/proof.lrat"
+            ],
+            "seconds": 17.60904266592115,
+            "cpu_seconds": 17.594749,
+            "children_peak_rss_bytes": 2150055936,
+            "returncode": 0,
+            "stdout": "\nc turning on binary mode checking\n\nc parsing input formula with 9028 variables and 23881 clauses\n\nc finished parsing, read 131133017 bytes from proof file\n\nc detected empty clause; start verification via backward checking\n\nc 13443 of 23881 clauses in core                            \n\nc 57793 of 486350 lemmas in core using 26554071 resolution steps\n\nc 0 RAT lemmas in core; 2049658 redundant literals in core lemmas\n\ns VERIFIED\n\nc verification time: 17.601 seconds\n",
+            "stderr": ""
+          },
+          {
+            "command": [
+              "/private/tmp/bsat-cake-verified-build/cake_lpr",
+              "--CML_HEAP_SIZE=2048",
+              "--CML_STACK_SIZE=512",
+              "/tmp/bsat-proof-compaction-cal3-total/3/check/input.cnf",
+              "/tmp/bsat-proof-compaction-cal3-total/3/check/proof.lrat"
+            ],
+            "seconds": 4.084449917078018,
+            "cpu_seconds": 4.074925000000004,
+            "children_peak_rss_bytes": 2150055936,
+            "returncode": 0,
+            "stdout": "s VERIFIED UNSAT\n",
+            "stderr": ""
+          }
+        ],
+        "lrat_sha256": "fc21cea4e16882324d979f6f874a747cf8d6d83615c729db05337d4ce4faed79",
+        "seconds": 21.87043399969116,
+        "rss_scope": "Cumulative child-process high-water RSS, not isolated per-stage peak"
+      },
+      "proof_sha256": "05d9caa3865a07f1e23991ba324d64520d4652a481f3a6cd7f90d8d28cb01dfa",
+      "proof_bytes": 131133017,
+      "wall_seconds": 21.9389097080566,
+      "children_cpu_seconds": 21.669674000000008,
+      "children_cumulative_peak_rss_bytes": 2150055936,
+      "parent_cpu_seconds": 0.24781499999999995,
+      "total_cpu_seconds": 21.917489000000007
+    }
+  ],
+  "measured_harness_sha256": "a41c8f26c0d56ee2881a96c9ca43b1fac2d123587146bb45c133048f87af0dfd"
+}

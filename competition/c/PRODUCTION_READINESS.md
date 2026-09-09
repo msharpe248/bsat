@@ -179,6 +179,12 @@ scenarios pass within the frozen provisional envelope. The deliberately interrup
 checkpoint sequence was corrected to restore its ordinary CPU budget. This remains
 hosted public-workload acceptance; customer traces and deployment SLOs are missing.
 
+The [complete proof-cost experiment](PROOF_COMPACTION_EXPERIMENT.md) rejects an
+automatic DRAT pre-trimming pass: artifact size falls substantially, but total
+verification CPU is unchanged on cal3 and 32.6% worse on cal100. The bounded
+failed-minimization cache also preserves all target work and is removed. These
+negative results narrow future work without introducing unmeasured defaults.
+
 ## Release gates
 
 A production release needs a concrete target workload and deployment envelope.

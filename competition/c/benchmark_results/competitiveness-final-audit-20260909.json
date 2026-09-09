@@ -1,0 +1,76 @@
+{
+  "recorded_at": "2026-09-09T18:46:10.061699+00:00",
+  "runtime_revision": "c6b4ac84c94e231983886828d3100495a49545c6",
+  "runtime_source_unchanged": true,
+  "runtime_ci": "correctness, independent integration and fuzz successful on c6b4ac8",
+  "campaign_correctness": {
+    "conclusion": "",
+    "jobs": [
+      {
+        "conclusion": "success",
+        "name": "thread-sanitizer",
+        "status": "completed"
+      },
+      {
+        "conclusion": "success",
+        "name": "check (ubuntu-latest, clang, debug)",
+        "status": "completed"
+      },
+      {
+        "conclusion": "success",
+        "name": "check (ubuntu-latest, clang, release)",
+        "status": "completed"
+      },
+      {
+        "conclusion": "success",
+        "name": "check (macos-latest, clang, release)",
+        "status": "completed"
+      },
+      {
+        "conclusion": "",
+        "name": "check (macos-latest, clang, debug)",
+        "status": "in_progress"
+      },
+      {
+        "conclusion": "success",
+        "name": "check (ubuntu-latest, gcc, debug)",
+        "status": "completed"
+      },
+      {
+        "conclusion": "success",
+        "name": "check (ubuntu-latest, gcc, release)",
+        "status": "completed"
+      }
+    ],
+    "status": "in_progress"
+  },
+  "campaign_integration_run": 34388655574,
+  "campaign_integration_status": "success",
+  "campaign_fuzz_run": 34388655634,
+  "campaign_fuzz_status": "success",
+  "manual_workflows": {
+    "fresh_baseline": {
+      "run": 34388664761,
+      "status": "success"
+    },
+    "hard_acceptance": {
+      "run": 34389473487,
+      "status": "success"
+    },
+    "isolated_memory": {
+      "run": 34390131562,
+      "status": "success"
+    }
+  },
+  "local_checks": {
+    "summary_integrity_tests": 6,
+    "reference_parity_queries": 128,
+    "checkpoint_budget_recovery": "passed",
+    "candidate_c_tests_per_build": 66,
+    "candidate_independent_certificates_per_build": 53,
+    "candidate_focused_entailment_and_cleanup": "passed",
+    "candidate_checked_target_queries": 36,
+    "final_independent_proof_cost_paths": 8
+  },
+  "limits": "Public-workload hosted acceptance only; no supplied customer traces, deployment host or SLOs. Negative experiments archived; no runtime/default changes."
+}
