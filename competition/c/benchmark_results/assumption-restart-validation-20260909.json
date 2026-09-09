@@ -1,0 +1,10 @@
+{
+  "scope": "Compile-time assumption-prefix restart prototype; pre-timing validation",
+  "base_revision": "d6601b9",
+  "macro": "BSAT_RESTART_ASSUMPTIONS",
+  "release_tests": 66,
+  "debug_tests": 66,
+  "release_pass": true,
+  "debug_pass": true,
+  "library_sha256": "5d8a0251017c08b658e6a8ec34f13b04f99395405870d7dd1dc7ff15818bf0e7"
+}

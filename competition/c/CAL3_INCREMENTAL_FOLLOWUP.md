@@ -1,5 +1,8 @@
 # Certified incremental cal3 follow-up — 2026-09-09
 
+These baseline measurements predate the
+[certified assumption-prefix improvement](ASSUMPTION_RESTART_PREFIX.md).
+
 The portable reduction default does not close the certified incremental gap.
 The updated serial Mac measurements use the public facade through the existing
 test diagnostic library (control changes no options; phase accounting disabled),
@@ -32,7 +35,7 @@ independently confirmed; this finite validation is not a general soundness proof
 
 A bounded restart-prefix implementation experiment is specified in
 [the current milestones](INCREMENTAL_PERFORMANCE_MILESTONES.md). It targets
-repeated assumption propagation; no default change is yet justified.
+repeated assumption propagation; the resulting certified-only change and validation are recorded there.
 
 Raw evidence under `benchmark_results/`:
 `cal3-portable-retained-20260909.json`, `cal3-portable-fresh-20260909.json`,

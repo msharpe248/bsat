@@ -77,8 +77,44 @@ static void assumptions(void) {
     solver_free(s);
 }
 
+/* Activated pigeonhole modules force real restarts below many dummy assumption
+   levels. Conditional UNSAT must leave the permanent formula satisfiable. */
+static void assumption_prefixes(void) {
+    for(unsigned profile=0;profile<4;++profile) {
+        SolverOpts o=default_opts();o.probing=false;o.reuse_learnts=true;o.restart_assumptions=true;
+        o.luby_restart=true;o.luby_unit=1;o.chrono=profile&1;
+        o.chrono_levels=0;o.vmtf=profile&2;
+        Solver *s=solver_new_with_opts(&o);assert(s);
+        const unsigned holes=4,pigeons=5;const Var guard=21;
+        while(s->num_vars<guard)assert(solver_new_var(s));
+        for(unsigned p=0;p<pigeons;++p) {
+            Lit c[5];c[0]=mkLit(guard,true);
+            for(unsigned h=0;h<holes;++h)c[h+1]=mkLit(1+p*holes+h,false);
+            assert(solver_add_clause(s,c,5));
+            for(unsigned q=0;q<p;++q)for(unsigned h=0;h<holes;++h) {
+                Lit d[]={mkLit(guard,true),mkLit(1+p*holes+h,true),mkLit(1+q*holes+h,true)};
+                assert(solver_add_clause(s,d,3));
+            }
+        }
+        Lit repeated[300];for(unsigned i=0;i<300;++i)repeated[i]=mkLit(guard,false);
+        assert(solver_solve_with_assumptions(s,repeated,300)==FALSE);
+        assert(!s->base_unsat && s->stats.restarts && s->stats.reused_levels);
+        uint32_t count=0;const Lit *core=solver_conflict(s,&count);
+        assert(core && count==300);
+        for(unsigned i=0;i<count;++i)assert(core[i]==neg(repeated[i]));
+        Lit negative=mkLit(guard,true);
+        assert(solver_solve_with_assumptions(s,&negative,1)==TRUE);
+        assert(solver_model_value(s,guard)==FALSE && solver_check_model(s));
+        assert(solver_solve(s)==TRUE && solver_check_model(s));
+        /* Adding the previously temporary guard makes the contradiction permanent. */
+        solver_add_clause(s,repeated,1); /* A known root contradiction returns false. */
+        assert(solver_solve(s)==FALSE && !s->error);
+        solver_free(s);
+    }
+}
+
 int main(void) {
-    prefixes(false);prefixes(true);implications();assumptions();
+    prefixes(false);prefixes(true);implications();assumptions();assumption_prefixes();
     puts("PASS: heap and queue restart prefix boundaries, fallbacks and order recovery");
     return 0;
 }

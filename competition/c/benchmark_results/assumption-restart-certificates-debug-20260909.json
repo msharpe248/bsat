@@ -1,0 +1,1768 @@
+{
+  "scope": "Independently verify certificates exported from retained incremental histories.",
+  "runs": [
+    {
+      "query": 0,
+      "result": 20,
+      "reused_preparations": 0,
+      "conflicts": 1,
+      "input_sha256": "6eebc32a1df91c986410a9382c8c18e11b4f1d627b004e1fb4ca793424105f03",
+      "proof_sha256": "2c20db52c804d611e1a5bf79c5a113574a6724985a681ca8741261a8f545ae43",
+      "proof_bytes": 8,
+      "validation": {
+        "input_sha256": "6eebc32a1df91c986410a9382c8c18e11b4f1d627b004e1fb4ca793424105f03",
+        "drat_sha256": "2c20db52c804d611e1a5bf79c5a113574a6724985a681ca8741261a8f545ae43",
+        "converter_sha256": "9bfc20a5fa9eb2a0ffadd2b0cfc7cdd4a20f6aa9c8d7de5b6c771160b847f630",
+        "checker_sha256": "027e767e8e5543d61671c44f7475e985b7969112e6825d51f2207bf0580cbf5c",
+        "verified": true,
+        "checker_heap_mb": 512,
+        "checker_stack_mb": 128,
+        "stages": [
+          {
+            "command": [
+              "/tmp/bsat-drat-trim",
+              "/var/folders/ts/779j13fj7_x2z167570zvv4c0000gn/T/bsat-retained-cert-o9ddshsz/query-0/check/input.cnf",
+              "/var/folders/ts/779j13fj7_x2z167570zvv4c0000gn/T/bsat-retained-cert-o9ddshsz/query-0/check/proof.drat",
+              "-L",
+              "/var/folders/ts/779j13fj7_x2z167570zvv4c0000gn/T/bsat-retained-cert-o9ddshsz/query-0/check/proof.lrat"
+            ],
+            "seconds": 0.019555208273231983,
+            "cpu_seconds": 0.01827699999999998,
+            "children_peak_rss_bytes": 45842432,
+            "returncode": 0,
+            "stdout": "\nc turning on binary mode checking\n\nc parsing input formula with 2 variables and 3 clauses\n\nc finished parsing, read 8 bytes from proof file\n\nc UNSAT via unit propagation on the input instance\n\nc 3 of 3 clauses in core                            \n\nc 1 of 4 lemmas in core using 3 resolution steps\n\nc 0 RAT lemmas in core; 0 redundant literals in core lemmas\n\ns VERIFIED\n\nc verification time: 0.017 seconds\n",
+            "stderr": ""
+          },
+          {
+            "command": [
+              "/tmp/bsat-cake-verified-build/cake_lpr",
+              "--CML_HEAP_SIZE=512",
+              "--CML_STACK_SIZE=128",
+              "/var/folders/ts/779j13fj7_x2z167570zvv4c0000gn/T/bsat-retained-cert-o9ddshsz/query-0/check/input.cnf",
+              "/var/folders/ts/779j13fj7_x2z167570zvv4c0000gn/T/bsat-retained-cert-o9ddshsz/query-0/check/proof.lrat"
+            ],
+            "seconds": 0.002555999904870987,
+            "cpu_seconds": 0.0016409999999999897,
+            "children_peak_rss_bytes": 45842432,
+            "returncode": 0,
+            "stdout": "s VERIFIED UNSAT\n",
+            "stderr": ""
+          }
+        ],
+        "lrat_sha256": "5098b30da40a6dacb890249944d0872845a220a3f8dcbd3ff09cdb03d558b98c",
+        "seconds": 0.023040208034217358,
+        "rss_scope": "Cumulative child-process high-water RSS, not isolated per-stage peak"
+      },
+      "verified": true
+    },
+    {
+      "query": 1,
+      "result": 10,
+      "reused_preparations": 0,
+      "conflicts": 0,
+      "input_sha256": "c723087c6c5f7c739aa6f938795f888f96ddff55f6ff620953f14fb726660296",
+      "proof_sha256": "f532693ccda4873edd319995f7260a07f7697d30bfea135b2056cc61af687fe7",
+      "proof_bytes": 6,
+      "verified": true
+    },
+    {
+      "query": 2,
+      "result": 20,
+      "reused_preparations": 0,
+      "conflicts": 1,
+      "input_sha256": "6eebc32a1df91c986410a9382c8c18e11b4f1d627b004e1fb4ca793424105f03",
+      "proof_sha256": "8e2ebe4bc7974791b8a8e0440a7c699967058ce2968ad012cdad6073b077d6a6",
+      "proof_bytes": 14,
+      "validation": {
+        "input_sha256": "6eebc32a1df91c986410a9382c8c18e11b4f1d627b004e1fb4ca793424105f03",
+        "drat_sha256": "8e2ebe4bc7974791b8a8e0440a7c699967058ce2968ad012cdad6073b077d6a6",
+        "converter_sha256": "9bfc20a5fa9eb2a0ffadd2b0cfc7cdd4a20f6aa9c8d7de5b6c771160b847f630",
+        "checker_sha256": "027e767e8e5543d61671c44f7475e985b7969112e6825d51f2207bf0580cbf5c",
+        "verified": true,
+        "checker_heap_mb": 512,
+        "checker_stack_mb": 128,
+        "stages": [
+          {
+            "command": [
+              "/tmp/bsat-drat-trim",
+              "/var/folders/ts/779j13fj7_x2z167570zvv4c0000gn/T/bsat-retained-cert-o9ddshsz/query-2/check/input.cnf",
+              "/var/folders/ts/779j13fj7_x2z167570zvv4c0000gn/T/bsat-retained-cert-o9ddshsz/query-2/check/proof.drat",
+              "-L",
+              "/var/folders/ts/779j13fj7_x2z167570zvv4c0000gn/T/bsat-retained-cert-o9ddshsz/query-2/check/proof.lrat"
+            ],
+            "seconds": 0.019706707913428545,
+            "cpu_seconds": 0.018671000000000007,
+            "children_peak_rss_bytes": 45842432,
+            "returncode": 0,
+            "stdout": "\nc turning on binary mode checking\n\nc parsing input formula with 2 variables and 3 clauses\n\nc finished parsing, read 14 bytes from proof file\n\nc UNSAT via unit propagation on the input instance\n\nc 3 of 3 clauses in core                            \n\nc 1 of 6 lemmas in core using 3 resolution steps\n\nc 0 RAT lemmas in core; 0 redundant literals in core lemmas\n\ns VERIFIED\n\nc verification time: 0.017 seconds\n",
+            "stderr": ""
+          },
+          {
+            "command": [
+              "/tmp/bsat-cake-verified-build/cake_lpr",
+              "--CML_HEAP_SIZE=512",
+              "--CML_STACK_SIZE=128",
+              "/var/folders/ts/779j13fj7_x2z167570zvv4c0000gn/T/bsat-retained-cert-o9ddshsz/query-2/check/input.cnf",
+              "/var/folders/ts/779j13fj7_x2z167570zvv4c0000gn/T/bsat-retained-cert-o9ddshsz/query-2/check/proof.lrat"
+            ],
+            "seconds": 0.0023139589466154575,
+            "cpu_seconds": 0.0013350000000000098,
+            "children_peak_rss_bytes": 45842432,
+            "returncode": 0,
+            "stdout": "s VERIFIED UNSAT\n",
+            "stderr": ""
+          }
+        ],
+        "lrat_sha256": "75657f1863ad45dcd281e00ec46cd02246bbabedae18d87a61ca0f7eea512483",
+        "seconds": 0.022777125239372253,
+        "rss_scope": "Cumulative child-process high-water RSS, not isolated per-stage peak"
+      },
+      "verified": true
+    },
+    {
+      "query": 3,
+      "result": 10,
+      "reused_preparations": 0,
+      "conflicts": 0,
+      "input_sha256": "c723087c6c5f7c739aa6f938795f888f96ddff55f6ff620953f14fb726660296",
+      "proof_sha256": "d98c409271c16090482ef1cc95563dcb0b1e16ff3579248f671556e7c344f05c",
+      "proof_bytes": 12,
+      "verified": true
+    },
+    {
+      "query": 4,
+      "result": 20,
+      "reused_preparations": 0,
+      "conflicts": 1,
+      "input_sha256": "6eebc32a1df91c986410a9382c8c18e11b4f1d627b004e1fb4ca793424105f03",
+      "proof_sha256": "bd6e039f798e75fb5a4f06a2259d46cac940139206f70784aea983a0d418bc7d",
+      "proof_bytes": 20,
+      "validation": {
+        "input_sha256": "6eebc32a1df91c986410a9382c8c18e11b4f1d627b004e1fb4ca793424105f03",
+        "drat_sha256": "bd6e039f798e75fb5a4f06a2259d46cac940139206f70784aea983a0d418bc7d",
+        "converter_sha256": "9bfc20a5fa9eb2a0ffadd2b0cfc7cdd4a20f6aa9c8d7de5b6c771160b847f630",
+        "checker_sha256": "027e767e8e5543d61671c44f7475e985b7969112e6825d51f2207bf0580cbf5c",
+        "verified": true,
+        "checker_heap_mb": 512,
+        "checker_stack_mb": 128,
+        "stages": [
+          {
+            "command": [
+              "/tmp/bsat-drat-trim",
+              "/var/folders/ts/779j13fj7_x2z167570zvv4c0000gn/T/bsat-retained-cert-o9ddshsz/query-4/check/input.cnf",
+              "/var/folders/ts/779j13fj7_x2z167570zvv4c0000gn/T/bsat-retained-cert-o9ddshsz/query-4/check/proof.drat",
+              "-L",
+              "/var/folders/ts/779j13fj7_x2z167570zvv4c0000gn/T/bsat-retained-cert-o9ddshsz/query-4/check/proof.lrat"
+            ],
+            "seconds": 0.01944429101422429,
+            "cpu_seconds": 0.018344,
+            "children_peak_rss_bytes": 45842432,
+            "returncode": 0,
+            "stdout": "\nc turning on binary mode checking\n\nc parsing input formula with 2 variables and 3 clauses\n\nc finished parsing, read 20 bytes from proof file\n\nc UNSAT via unit propagation on the input instance\n\nc 3 of 3 clauses in core                            \n\nc 1 of 8 lemmas in core using 3 resolution steps\n\nc 0 RAT lemmas in core; 0 redundant literals in core lemmas\n\ns VERIFIED\n\nc verification time: 0.017 seconds\n",
+            "stderr": ""
+          },
+          {
+            "command": [
+              "/tmp/bsat-cake-verified-build/cake_lpr",
+              "--CML_HEAP_SIZE=512",
+              "--CML_STACK_SIZE=128",
+              "/var/folders/ts/779j13fj7_x2z167570zvv4c0000gn/T/bsat-retained-cert-o9ddshsz/query-4/check/input.cnf",
+              "/var/folders/ts/779j13fj7_x2z167570zvv4c0000gn/T/bsat-retained-cert-o9ddshsz/query-4/check/proof.lrat"
+            ],
+            "seconds": 0.002466666977852583,
+            "cpu_seconds": 0.0013810000000000003,
+            "children_peak_rss_bytes": 45842432,
+            "returncode": 0,
+            "stdout": "s VERIFIED UNSAT\n",
+            "stderr": ""
+          }
+        ],
+        "lrat_sha256": "5c5cdbabc6c189046150c935c2616bff5aa5d8ad3018edf5d1ce271bd46bb202",
+        "seconds": 0.02264308277517557,
+        "rss_scope": "Cumulative child-process high-water RSS, not isolated per-stage peak"
+      },
+      "verified": true
+    },
+    {
+      "query": 5,
+      "result": 10,
+      "reused_preparations": 0,
+      "conflicts": 0,
+      "input_sha256": "c723087c6c5f7c739aa6f938795f888f96ddff55f6ff620953f14fb726660296",
+      "proof_sha256": "d62206611db2a0f1b2b67fc49b4e1f015607f9fa4df94ffef90e1cfe23179612",
+      "proof_bytes": 18,
+      "verified": true
+    },
+    {
+      "query": 6,
+      "result": 20,
+      "reused_preparations": 0,
+      "conflicts": 1,
+      "input_sha256": "6eebc32a1df91c986410a9382c8c18e11b4f1d627b004e1fb4ca793424105f03",
+      "proof_sha256": "bf9776180fa2ae62dae84d9ae78095fbf8fee6f3a55cef75d8b5ad11fa26780b",
+      "proof_bytes": 26,
+      "validation": {
+        "input_sha256": "6eebc32a1df91c986410a9382c8c18e11b4f1d627b004e1fb4ca793424105f03",
+        "drat_sha256": "bf9776180fa2ae62dae84d9ae78095fbf8fee6f3a55cef75d8b5ad11fa26780b",
+        "converter_sha256": "9bfc20a5fa9eb2a0ffadd2b0cfc7cdd4a20f6aa9c8d7de5b6c771160b847f630",
+        "checker_sha256": "027e767e8e5543d61671c44f7475e985b7969112e6825d51f2207bf0580cbf5c",
+        "verified": true,
+        "checker_heap_mb": 512,
+        "checker_stack_mb": 128,
+        "stages": [
+          {
+            "command": [
+              "/tmp/bsat-drat-trim",
+              "/var/folders/ts/779j13fj7_x2z167570zvv4c0000gn/T/bsat-retained-cert-o9ddshsz/query-6/check/input.cnf",
+              "/var/folders/ts/779j13fj7_x2z167570zvv4c0000gn/T/bsat-retained-cert-o9ddshsz/query-6/check/proof.drat",
+              "-L",
+              "/var/folders/ts/779j13fj7_x2z167570zvv4c0000gn/T/bsat-retained-cert-o9ddshsz/query-6/check/proof.lrat"
+            ],
+            "seconds": 0.018432624638080597,
+            "cpu_seconds": 0.017360999999999988,
+            "children_peak_rss_bytes": 45842432,
+            "returncode": 0,
+            "stdout": "\nc turning on binary mode checking\n\nc parsing input formula with 2 variables and 3 clauses\n\nc finished parsing, read 26 bytes from proof file\n\nc UNSAT via unit propagation on the input instance\n\nc 3 of 3 clauses in core                            \n\nc 1 of 10 lemmas in core using 3 resolution steps\n\nc 0 RAT lemmas in core; 0 redundant literals in core lemmas\n\ns VERIFIED\n\nc verification time: 0.016 seconds\n",
+            "stderr": ""
+          },
+          {
+            "command": [
+              "/tmp/bsat-cake-verified-build/cake_lpr",
+              "--CML_HEAP_SIZE=512",
+              "--CML_STACK_SIZE=128",
+              "/var/folders/ts/779j13fj7_x2z167570zvv4c0000gn/T/bsat-retained-cert-o9ddshsz/query-6/check/input.cnf",
+              "/var/folders/ts/779j13fj7_x2z167570zvv4c0000gn/T/bsat-retained-cert-o9ddshsz/query-6/check/proof.lrat"
+            ],
+            "seconds": 0.002401541918516159,
+            "cpu_seconds": 0.001453999999999983,
+            "children_peak_rss_bytes": 45842432,
+            "returncode": 0,
+            "stdout": "s VERIFIED UNSAT\n",
+            "stderr": ""
+          }
+        ],
+        "lrat_sha256": "d752cb89c9e3c2e2a42d522580bd29dfe6ee2e36ef4219f508483940bdf8c06b",
+        "seconds": 0.021573416888713837,
+        "rss_scope": "Cumulative child-process high-water RSS, not isolated per-stage peak"
+      },
+      "verified": true
+    },
+    {
+      "query": 7,
+      "result": 10,
+      "reused_preparations": 0,
+      "conflicts": 0,
+      "input_sha256": "c723087c6c5f7c739aa6f938795f888f96ddff55f6ff620953f14fb726660296",
+      "proof_sha256": "bddc69ab28037bb3f6dcdea24a9d8d386bb0176cc1b08be2f59cd5b98f8974f6",
+      "proof_bytes": 24,
+      "verified": true
+    },
+    {
+      "query": 8,
+      "result": 20,
+      "reused_preparations": 0,
+      "conflicts": 1,
+      "input_sha256": "6eebc32a1df91c986410a9382c8c18e11b4f1d627b004e1fb4ca793424105f03",
+      "proof_sha256": "c871c5c98df98f28663bc3439757f776c63f56bf115e334e1f891df297cc5e09",
+      "proof_bytes": 32,
+      "validation": {
+        "input_sha256": "6eebc32a1df91c986410a9382c8c18e11b4f1d627b004e1fb4ca793424105f03",
+        "drat_sha256": "c871c5c98df98f28663bc3439757f776c63f56bf115e334e1f891df297cc5e09",
+        "converter_sha256": "9bfc20a5fa9eb2a0ffadd2b0cfc7cdd4a20f6aa9c8d7de5b6c771160b847f630",
+        "checker_sha256": "027e767e8e5543d61671c44f7475e985b7969112e6825d51f2207bf0580cbf5c",
+        "verified": true,
+        "checker_heap_mb": 512,
+        "checker_stack_mb": 128,
+        "stages": [
+          {
+            "command": [
+              "/tmp/bsat-drat-trim",
+              "/var/folders/ts/779j13fj7_x2z167570zvv4c0000gn/T/bsat-retained-cert-o9ddshsz/query-8/check/input.cnf",
+              "/var/folders/ts/779j13fj7_x2z167570zvv4c0000gn/T/bsat-retained-cert-o9ddshsz/query-8/check/proof.drat",
+              "-L",
+              "/var/folders/ts/779j13fj7_x2z167570zvv4c0000gn/T/bsat-retained-cert-o9ddshsz/query-8/check/proof.lrat"
+            ],
+            "seconds": 0.01993570802733302,
+            "cpu_seconds": 0.018740999999999994,
+            "children_peak_rss_bytes": 45842432,
+            "returncode": 0,
+            "stdout": "\nc turning on binary mode checking\n\nc parsing input formula with 2 variables and 3 clauses\n\nc finished parsing, read 32 bytes from proof file\n\nc UNSAT via unit propagation on the input instance\n\nc 3 of 3 clauses in core                            \n\nc 1 of 12 lemmas in core using 3 resolution steps\n\nc 0 RAT lemmas in core; 0 redundant literals in core lemmas\n\ns VERIFIED\n\nc verification time: 0.018 seconds\n",
+            "stderr": ""
+          },
+          {
+            "command": [
+              "/tmp/bsat-cake-verified-build/cake_lpr",
+              "--CML_HEAP_SIZE=512",
+              "--CML_STACK_SIZE=128",
+              "/var/folders/ts/779j13fj7_x2z167570zvv4c0000gn/T/bsat-retained-cert-o9ddshsz/query-8/check/input.cnf",
+              "/var/folders/ts/779j13fj7_x2z167570zvv4c0000gn/T/bsat-retained-cert-o9ddshsz/query-8/check/proof.lrat"
+            ],
+            "seconds": 0.00253083324059844,
+            "cpu_seconds": 0.001480000000000023,
+            "children_peak_rss_bytes": 45842432,
+            "returncode": 0,
+            "stdout": "s VERIFIED UNSAT\n",
+            "stderr": ""
+          }
+        ],
+        "lrat_sha256": "b2c2b07bb33562ebb8e4da250ae97d792edbfa1bfe98917813d986d8facc7fdc",
+        "seconds": 0.023236041888594627,
+        "rss_scope": "Cumulative child-process high-water RSS, not isolated per-stage peak"
+      },
+      "verified": true
+    },
+    {
+      "query": 9,
+      "result": 10,
+      "reused_preparations": 0,
+      "conflicts": 0,
+      "input_sha256": "c723087c6c5f7c739aa6f938795f888f96ddff55f6ff620953f14fb726660296",
+      "proof_sha256": "79b24b3797be44ba25085f385d14caa453cf1ac20ff419a13c3125b0ab41c612",
+      "proof_bytes": 30,
+      "verified": true
+    },
+    {
+      "query": 10,
+      "result": 20,
+      "reused_preparations": 0,
+      "conflicts": 1,
+      "input_sha256": "6eebc32a1df91c986410a9382c8c18e11b4f1d627b004e1fb4ca793424105f03",
+      "proof_sha256": "09687b91fcd140b37a546c2d7572127af6ecf8745abe95d83ee10e41b388eb26",
+      "proof_bytes": 38,
+      "validation": {
+        "input_sha256": "6eebc32a1df91c986410a9382c8c18e11b4f1d627b004e1fb4ca793424105f03",
+        "drat_sha256": "09687b91fcd140b37a546c2d7572127af6ecf8745abe95d83ee10e41b388eb26",
+        "converter_sha256": "9bfc20a5fa9eb2a0ffadd2b0cfc7cdd4a20f6aa9c8d7de5b6c771160b847f630",
+        "checker_sha256": "027e767e8e5543d61671c44f7475e985b7969112e6825d51f2207bf0580cbf5c",
+        "verified": true,
+        "checker_heap_mb": 512,
+        "checker_stack_mb": 128,
+        "stages": [
+          {
+            "command": [
+              "/tmp/bsat-drat-trim",
+              "/var/folders/ts/779j13fj7_x2z167570zvv4c0000gn/T/bsat-retained-cert-o9ddshsz/query-10/check/input.cnf",
+              "/var/folders/ts/779j13fj7_x2z167570zvv4c0000gn/T/bsat-retained-cert-o9ddshsz/query-10/check/proof.drat",
+              "-L",
+              "/var/folders/ts/779j13fj7_x2z167570zvv4c0000gn/T/bsat-retained-cert-o9ddshsz/query-10/check/proof.lrat"
+            ],
+            "seconds": 0.01805250020697713,
+            "cpu_seconds": 0.01696099999999999,
+            "children_peak_rss_bytes": 45842432,
+            "returncode": 0,
+            "stdout": "\nc turning on binary mode checking\n\nc parsing input formula with 2 variables and 3 clauses\n\nc finished parsing, read 38 bytes from proof file\n\nc UNSAT via unit propagation on the input instance\n\nc 3 of 3 clauses in core                            \n\nc 1 of 14 lemmas in core using 3 resolution steps\n\nc 0 RAT lemmas in core; 0 redundant literals in core lemmas\n\ns VERIFIED\n\nc verification time: 0.016 seconds\n",
+            "stderr": ""
+          },
+          {
+            "command": [
+              "/tmp/bsat-cake-verified-build/cake_lpr",
+              "--CML_HEAP_SIZE=512",
+              "--CML_STACK_SIZE=128",
+              "/var/folders/ts/779j13fj7_x2z167570zvv4c0000gn/T/bsat-retained-cert-o9ddshsz/query-10/check/input.cnf",
+              "/var/folders/ts/779j13fj7_x2z167570zvv4c0000gn/T/bsat-retained-cert-o9ddshsz/query-10/check/proof.lrat"
+            ],
+            "seconds": 0.002252166625112295,
+            "cpu_seconds": 0.0013180000000000136,
+            "children_peak_rss_bytes": 45842432,
+            "returncode": 0,
+            "stdout": "s VERIFIED UNSAT\n",
+            "stderr": ""
+          }
+        ],
+        "lrat_sha256": "e776097b7e49cc67a5b88db9dd157aeeb2e190e97e2b519be1207a844ec71bb0",
+        "seconds": 0.021045624744147062,
+        "rss_scope": "Cumulative child-process high-water RSS, not isolated per-stage peak"
+      },
+      "verified": true
+    },
+    {
+      "query": 11,
+      "result": 10,
+      "reused_preparations": 0,
+      "conflicts": 0,
+      "input_sha256": "c723087c6c5f7c739aa6f938795f888f96ddff55f6ff620953f14fb726660296",
+      "proof_sha256": "972e26a0f169bd69a1a53b2e01f9c253ec623cb61dfbbc5a8d0f2d3b55434eb2",
+      "proof_bytes": 36,
+      "verified": true
+    },
+    {
+      "query": 12,
+      "result": 20,
+      "reused_preparations": 0,
+      "conflicts": 1,
+      "input_sha256": "6eebc32a1df91c986410a9382c8c18e11b4f1d627b004e1fb4ca793424105f03",
+      "proof_sha256": "325ae79b8fcd561bea772a2fa213abc44ced0036b6549a9c084c1296515bca3f",
+      "proof_bytes": 44,
+      "validation": {
+        "input_sha256": "6eebc32a1df91c986410a9382c8c18e11b4f1d627b004e1fb4ca793424105f03",
+        "drat_sha256": "325ae79b8fcd561bea772a2fa213abc44ced0036b6549a9c084c1296515bca3f",
+        "converter_sha256": "9bfc20a5fa9eb2a0ffadd2b0cfc7cdd4a20f6aa9c8d7de5b6c771160b847f630",
+        "checker_sha256": "027e767e8e5543d61671c44f7475e985b7969112e6825d51f2207bf0580cbf5c",
+        "verified": true,
+        "checker_heap_mb": 512,
+        "checker_stack_mb": 128,
+        "stages": [
+          {
+            "command": [
+              "/tmp/bsat-drat-trim",
+              "/var/folders/ts/779j13fj7_x2z167570zvv4c0000gn/T/bsat-retained-cert-o9ddshsz/query-12/check/input.cnf",
+              "/var/folders/ts/779j13fj7_x2z167570zvv4c0000gn/T/bsat-retained-cert-o9ddshsz/query-12/check/proof.drat",
+              "-L",
+              "/var/folders/ts/779j13fj7_x2z167570zvv4c0000gn/T/bsat-retained-cert-o9ddshsz/query-12/check/proof.lrat"
+            ],
+            "seconds": 0.018684249836951494,
+            "cpu_seconds": 0.017612000000000017,
+            "children_peak_rss_bytes": 45842432,
+            "returncode": 0,
+            "stdout": "\nc turning on binary mode checking\n\nc parsing input formula with 2 variables and 3 clauses\n\nc finished parsing, read 44 bytes from proof file\n\nc UNSAT via unit propagation on the input instance\n\nc 3 of 3 clauses in core                            \n\nc 1 of 16 lemmas in core using 3 resolution steps\n\nc 0 RAT lemmas in core; 0 redundant literals in core lemmas\n\ns VERIFIED\n\nc verification time: 0.017 seconds\n",
+            "stderr": ""
+          },
+          {
+            "command": [
+              "/tmp/bsat-cake-verified-build/cake_lpr",
+              "--CML_HEAP_SIZE=512",
+              "--CML_STACK_SIZE=128",
+              "/var/folders/ts/779j13fj7_x2z167570zvv4c0000gn/T/bsat-retained-cert-o9ddshsz/query-12/check/input.cnf",
+              "/var/folders/ts/779j13fj7_x2z167570zvv4c0000gn/T/bsat-retained-cert-o9ddshsz/query-12/check/proof.lrat"
+            ],
+            "seconds": 0.0021663340739905834,
+            "cpu_seconds": 0.0012280000000000346,
+            "children_peak_rss_bytes": 45842432,
+            "returncode": 0,
+            "stdout": "s VERIFIED UNSAT\n",
+            "stderr": ""
+          }
+        ],
+        "lrat_sha256": "0e192689f3c24ce69bd6853ebc2b879c7b1d0cd76e6769c0e7b9b7d4d8e150b0",
+        "seconds": 0.021571832709014416,
+        "rss_scope": "Cumulative child-process high-water RSS, not isolated per-stage peak"
+      },
+      "verified": true
+    },
+    {
+      "query": 13,
+      "result": 10,
+      "reused_preparations": 0,
+      "conflicts": 0,
+      "input_sha256": "c723087c6c5f7c739aa6f938795f888f96ddff55f6ff620953f14fb726660296",
+      "proof_sha256": "23074f2f517a52c2898a42f75a107bef71c97bb0eea0bab4fc68a38f542fd2fc",
+      "proof_bytes": 42,
+      "verified": true
+    },
+    {
+      "query": 14,
+      "result": 20,
+      "reused_preparations": 0,
+      "conflicts": 1,
+      "input_sha256": "6eebc32a1df91c986410a9382c8c18e11b4f1d627b004e1fb4ca793424105f03",
+      "proof_sha256": "ec2d98bb710db10cd1ecb24374aad74a56ea464ed4b89f77bbbab58ef821b89e",
+      "proof_bytes": 50,
+      "validation": {
+        "input_sha256": "6eebc32a1df91c986410a9382c8c18e11b4f1d627b004e1fb4ca793424105f03",
+        "drat_sha256": "ec2d98bb710db10cd1ecb24374aad74a56ea464ed4b89f77bbbab58ef821b89e",
+        "converter_sha256": "9bfc20a5fa9eb2a0ffadd2b0cfc7cdd4a20f6aa9c8d7de5b6c771160b847f630",
+        "checker_sha256": "027e767e8e5543d61671c44f7475e985b7969112e6825d51f2207bf0580cbf5c",
+        "verified": true,
+        "checker_heap_mb": 512,
+        "checker_stack_mb": 128,
+        "stages": [
+          {
+            "command": [
+              "/tmp/bsat-drat-trim",
+              "/var/folders/ts/779j13fj7_x2z167570zvv4c0000gn/T/bsat-retained-cert-o9ddshsz/query-14/check/input.cnf",
+              "/var/folders/ts/779j13fj7_x2z167570zvv4c0000gn/T/bsat-retained-cert-o9ddshsz/query-14/check/proof.drat",
+              "-L",
+              "/var/folders/ts/779j13fj7_x2z167570zvv4c0000gn/T/bsat-retained-cert-o9ddshsz/query-14/check/proof.lrat"
+            ],
+            "seconds": 0.018976625055074692,
+            "cpu_seconds": 0.017707,
+            "children_peak_rss_bytes": 45842432,
+            "returncode": 0,
+            "stdout": "\nc turning on binary mode checking\n\nc parsing input formula with 2 variables and 3 clauses\n\nc finished parsing, read 50 bytes from proof file\n\nc UNSAT via unit propagation on the input instance\n\nc 3 of 3 clauses in core                            \n\nc 1 of 18 lemmas in core using 3 resolution steps\n\nc 0 RAT lemmas in core; 0 redundant literals in core lemmas\n\ns VERIFIED\n\nc verification time: 0.017 seconds\n",
+            "stderr": ""
+          },
+          {
+            "command": [
+              "/tmp/bsat-cake-verified-build/cake_lpr",
+              "--CML_HEAP_SIZE=512",
+              "--CML_STACK_SIZE=128",
+              "/var/folders/ts/779j13fj7_x2z167570zvv4c0000gn/T/bsat-retained-cert-o9ddshsz/query-14/check/input.cnf",
+              "/var/folders/ts/779j13fj7_x2z167570zvv4c0000gn/T/bsat-retained-cert-o9ddshsz/query-14/check/proof.lrat"
+            ],
+            "seconds": 0.0026096669025719166,
+            "cpu_seconds": 0.0014230000000000076,
+            "children_peak_rss_bytes": 45842432,
+            "returncode": 0,
+            "stdout": "s VERIFIED UNSAT\n",
+            "stderr": ""
+          }
+        ],
+        "lrat_sha256": "66b68b6df8663503ec4b8bde9062dc1a867197d082d5cfa9cbac1031021775c1",
+        "seconds": 0.022362791933119297,
+        "rss_scope": "Cumulative child-process high-water RSS, not isolated per-stage peak"
+      },
+      "verified": true
+    },
+    {
+      "query": 15,
+      "result": 10,
+      "reused_preparations": 0,
+      "conflicts": 0,
+      "input_sha256": "c723087c6c5f7c739aa6f938795f888f96ddff55f6ff620953f14fb726660296",
+      "proof_sha256": "d4f9741c85be01b47b397928147b66bf6e11803952f9b1bf6dbbf4770f547c1c",
+      "proof_bytes": 48,
+      "verified": true
+    },
+    {
+      "query": 16,
+      "result": 20,
+      "reused_preparations": 0,
+      "conflicts": 0,
+      "input_sha256": "c308919331c97cf5a5b156e5430913ff673bb30f19ad9c87a69122d58b78e01f",
+      "proof_sha256": "e25c6cd07da517293b2cf9f7baac950b8658968e54defbbefdd5b331417af37e",
+      "proof_bytes": 54,
+      "validation": {
+        "input_sha256": "c308919331c97cf5a5b156e5430913ff673bb30f19ad9c87a69122d58b78e01f",
+        "drat_sha256": "e25c6cd07da517293b2cf9f7baac950b8658968e54defbbefdd5b331417af37e",
+        "converter_sha256": "9bfc20a5fa9eb2a0ffadd2b0cfc7cdd4a20f6aa9c8d7de5b6c771160b847f630",
+        "checker_sha256": "027e767e8e5543d61671c44f7475e985b7969112e6825d51f2207bf0580cbf5c",
+        "verified": true,
+        "checker_heap_mb": 512,
+        "checker_stack_mb": 128,
+        "stages": [
+          {
+            "command": [
+              "/tmp/bsat-drat-trim",
+              "/var/folders/ts/779j13fj7_x2z167570zvv4c0000gn/T/bsat-retained-cert-o9ddshsz/query-16/check/input.cnf",
+              "/var/folders/ts/779j13fj7_x2z167570zvv4c0000gn/T/bsat-retained-cert-o9ddshsz/query-16/check/proof.drat",
+              "-L",
+              "/var/folders/ts/779j13fj7_x2z167570zvv4c0000gn/T/bsat-retained-cert-o9ddshsz/query-16/check/proof.lrat"
+            ],
+            "seconds": 0.020978374872356653,
+            "cpu_seconds": 0.019661000000000012,
+            "children_peak_rss_bytes": 45842432,
+            "returncode": 0,
+            "stdout": "\nc turning on binary mode checking\n\nc parsing input formula with 2 variables and 4 clauses\n\nc finished parsing, read 54 bytes from proof file\n\nc found complementary unit clauses: -1\n\ns VERIFIED\n\nc verification time: 0.018 seconds\n",
+            "stderr": ""
+          },
+          {
+            "command": [
+              "/tmp/bsat-cake-verified-build/cake_lpr",
+              "--CML_HEAP_SIZE=512",
+              "--CML_STACK_SIZE=128",
+              "/var/folders/ts/779j13fj7_x2z167570zvv4c0000gn/T/bsat-retained-cert-o9ddshsz/query-16/check/input.cnf",
+              "/var/folders/ts/779j13fj7_x2z167570zvv4c0000gn/T/bsat-retained-cert-o9ddshsz/query-16/check/proof.lrat"
+            ],
+            "seconds": 0.00258629210293293,
+            "cpu_seconds": 0.0015660000000000257,
+            "children_peak_rss_bytes": 45842432,
+            "returncode": 0,
+            "stdout": "s VERIFIED UNSAT\n",
+            "stderr": ""
+          }
+        ],
+        "lrat_sha256": "b4c64d5bde766c93ad0d1f4dfb7783b7bdd4f98cdc1a0ccc8ec5638595f24764",
+        "seconds": 0.02435337519273162,
+        "rss_scope": "Cumulative child-process high-water RSS, not isolated per-stage peak"
+      },
+      "verified": true
+    },
+    {
+      "query": 17,
+      "result": 10,
+      "reused_preparations": 0,
+      "conflicts": 0,
+      "input_sha256": "c723087c6c5f7c739aa6f938795f888f96ddff55f6ff620953f14fb726660296",
+      "proof_sha256": "7c3df53e0e40368399eb88b82c261ce7362f569299b2d945c1244fb3ffb3d064",
+      "proof_bytes": 52,
+      "verified": true
+    },
+    {
+      "query": 18,
+      "result": 20,
+      "reused_preparations": 0,
+      "conflicts": 1,
+      "input_sha256": "6eebc32a1df91c986410a9382c8c18e11b4f1d627b004e1fb4ca793424105f03",
+      "proof_sha256": "2c20db52c804d611e1a5bf79c5a113574a6724985a681ca8741261a8f545ae43",
+      "proof_bytes": 8,
+      "validation": {
+        "input_sha256": "6eebc32a1df91c986410a9382c8c18e11b4f1d627b004e1fb4ca793424105f03",
+        "drat_sha256": "2c20db52c804d611e1a5bf79c5a113574a6724985a681ca8741261a8f545ae43",
+        "converter_sha256": "9bfc20a5fa9eb2a0ffadd2b0cfc7cdd4a20f6aa9c8d7de5b6c771160b847f630",
+        "checker_sha256": "027e767e8e5543d61671c44f7475e985b7969112e6825d51f2207bf0580cbf5c",
+        "verified": true,
+        "checker_heap_mb": 512,
+        "checker_stack_mb": 128,
+        "stages": [
+          {
+            "command": [
+              "/tmp/bsat-drat-trim",
+              "/var/folders/ts/779j13fj7_x2z167570zvv4c0000gn/T/bsat-retained-cert-o9ddshsz/query-18/check/input.cnf",
+              "/var/folders/ts/779j13fj7_x2z167570zvv4c0000gn/T/bsat-retained-cert-o9ddshsz/query-18/check/proof.drat",
+              "-L",
+              "/var/folders/ts/779j13fj7_x2z167570zvv4c0000gn/T/bsat-retained-cert-o9ddshsz/query-18/check/proof.lrat"
+            ],
+            "seconds": 0.018954874947667122,
+            "cpu_seconds": 0.017575000000000007,
+            "children_peak_rss_bytes": 45842432,
+            "returncode": 0,
+            "stdout": "\nc turning on binary mode checking\n\nc parsing input formula with 2 variables and 3 clauses\n\nc finished parsing, read 8 bytes from proof file\n\nc UNSAT via unit propagation on the input instance\n\nc 3 of 3 clauses in core                            \n\nc 1 of 4 lemmas in core using 3 resolution steps\n\nc 0 RAT lemmas in core; 0 redundant literals in core lemmas\n\ns VERIFIED\n\nc verification time: 0.016 seconds\n",
+            "stderr": ""
+          },
+          {
+            "command": [
+              "/tmp/bsat-cake-verified-build/cake_lpr",
+              "--CML_HEAP_SIZE=512",
+              "--CML_STACK_SIZE=128",
+              "/var/folders/ts/779j13fj7_x2z167570zvv4c0000gn/T/bsat-retained-cert-o9ddshsz/query-18/check/input.cnf",
+              "/var/folders/ts/779j13fj7_x2z167570zvv4c0000gn/T/bsat-retained-cert-o9ddshsz/query-18/check/proof.lrat"
+            ],
+            "seconds": 0.0026368750259280205,
+            "cpu_seconds": 0.001579000000000011,
+            "children_peak_rss_bytes": 45842432,
+            "returncode": 0,
+            "stdout": "s VERIFIED UNSAT\n",
+            "stderr": ""
+          }
+        ],
+        "lrat_sha256": "5098b30da40a6dacb890249944d0872845a220a3f8dcbd3ff09cdb03d558b98c",
+        "seconds": 0.02236970840021968,
+        "rss_scope": "Cumulative child-process high-water RSS, not isolated per-stage peak"
+      },
+      "verified": true
+    },
+    {
+      "query": 19,
+      "result": 10,
+      "reused_preparations": 1,
+      "conflicts": 0,
+      "input_sha256": "c723087c6c5f7c739aa6f938795f888f96ddff55f6ff620953f14fb726660296",
+      "proof_sha256": "f532693ccda4873edd319995f7260a07f7697d30bfea135b2056cc61af687fe7",
+      "proof_bytes": 6,
+      "verified": true
+    },
+    {
+      "query": 20,
+      "result": 20,
+      "reused_preparations": 2,
+      "conflicts": 0,
+      "input_sha256": "6eebc32a1df91c986410a9382c8c18e11b4f1d627b004e1fb4ca793424105f03",
+      "proof_sha256": "0defc08323fc077c8a2d6aac4a11cfa788f98f7e1ca7ff6f2702d8dcd9baee8b",
+      "proof_bytes": 11,
+      "validation": {
+        "input_sha256": "6eebc32a1df91c986410a9382c8c18e11b4f1d627b004e1fb4ca793424105f03",
+        "drat_sha256": "0defc08323fc077c8a2d6aac4a11cfa788f98f7e1ca7ff6f2702d8dcd9baee8b",
+        "converter_sha256": "9bfc20a5fa9eb2a0ffadd2b0cfc7cdd4a20f6aa9c8d7de5b6c771160b847f630",
+        "checker_sha256": "027e767e8e5543d61671c44f7475e985b7969112e6825d51f2207bf0580cbf5c",
+        "verified": true,
+        "checker_heap_mb": 512,
+        "checker_stack_mb": 128,
+        "stages": [
+          {
+            "command": [
+              "/tmp/bsat-drat-trim",
+              "/var/folders/ts/779j13fj7_x2z167570zvv4c0000gn/T/bsat-retained-cert-o9ddshsz/query-20/check/input.cnf",
+              "/var/folders/ts/779j13fj7_x2z167570zvv4c0000gn/T/bsat-retained-cert-o9ddshsz/query-20/check/proof.drat",
+              "-L",
+              "/var/folders/ts/779j13fj7_x2z167570zvv4c0000gn/T/bsat-retained-cert-o9ddshsz/query-20/check/proof.lrat"
+            ],
+            "seconds": 0.020416750106960535,
+            "cpu_seconds": 0.019182000000000005,
+            "children_peak_rss_bytes": 45842432,
+            "returncode": 0,
+            "stdout": "\nc turning on binary mode checking\n\nc parsing input formula with 2 variables and 3 clauses\n\nc finished parsing, read 11 bytes from proof file\n\nc UNSAT via unit propagation on the input instance\n\nc 3 of 3 clauses in core                            \n\nc 1 of 5 lemmas in core using 3 resolution steps\n\nc 0 RAT lemmas in core; 0 redundant literals in core lemmas\n\ns VERIFIED\n\nc verification time: 0.018 seconds\n",
+            "stderr": ""
+          },
+          {
+            "command": [
+              "/tmp/bsat-cake-verified-build/cake_lpr",
+              "--CML_HEAP_SIZE=512",
+              "--CML_STACK_SIZE=128",
+              "/var/folders/ts/779j13fj7_x2z167570zvv4c0000gn/T/bsat-retained-cert-o9ddshsz/query-20/check/input.cnf",
+              "/var/folders/ts/779j13fj7_x2z167570zvv4c0000gn/T/bsat-retained-cert-o9ddshsz/query-20/check/proof.lrat"
+            ],
+            "seconds": 0.0023188753984868526,
+            "cpu_seconds": 0.0013270000000000087,
+            "children_peak_rss_bytes": 45842432,
+            "returncode": 0,
+            "stdout": "s VERIFIED UNSAT\n",
+            "stderr": ""
+          }
+        ],
+        "lrat_sha256": "dde3811c6c952a6c2fe6700b926d7274512ce701e8ae78b2af1c1080a9366ab1",
+        "seconds": 0.023476833943277597,
+        "rss_scope": "Cumulative child-process high-water RSS, not isolated per-stage peak"
+      },
+      "verified": true
+    },
+    {
+      "query": 21,
+      "result": 10,
+      "reused_preparations": 3,
+      "conflicts": 0,
+      "input_sha256": "c723087c6c5f7c739aa6f938795f888f96ddff55f6ff620953f14fb726660296",
+      "proof_sha256": "f56cdb1435b852e7d3f31fc1a025f17e390faf69d013130f6ec66dfbfb2b78c6",
+      "proof_bytes": 9,
+      "verified": true
+    },
+    {
+      "query": 22,
+      "result": 20,
+      "reused_preparations": 4,
+      "conflicts": 0,
+      "input_sha256": "6eebc32a1df91c986410a9382c8c18e11b4f1d627b004e1fb4ca793424105f03",
+      "proof_sha256": "8e2ebe4bc7974791b8a8e0440a7c699967058ce2968ad012cdad6073b077d6a6",
+      "proof_bytes": 14,
+      "validation": {
+        "input_sha256": "6eebc32a1df91c986410a9382c8c18e11b4f1d627b004e1fb4ca793424105f03",
+        "drat_sha256": "8e2ebe4bc7974791b8a8e0440a7c699967058ce2968ad012cdad6073b077d6a6",
+        "converter_sha256": "9bfc20a5fa9eb2a0ffadd2b0cfc7cdd4a20f6aa9c8d7de5b6c771160b847f630",
+        "checker_sha256": "027e767e8e5543d61671c44f7475e985b7969112e6825d51f2207bf0580cbf5c",
+        "verified": true,
+        "checker_heap_mb": 512,
+        "checker_stack_mb": 128,
+        "stages": [
+          {
+            "command": [
+              "/tmp/bsat-drat-trim",
+              "/var/folders/ts/779j13fj7_x2z167570zvv4c0000gn/T/bsat-retained-cert-o9ddshsz/query-22/check/input.cnf",
+              "/var/folders/ts/779j13fj7_x2z167570zvv4c0000gn/T/bsat-retained-cert-o9ddshsz/query-22/check/proof.drat",
+              "-L",
+              "/var/folders/ts/779j13fj7_x2z167570zvv4c0000gn/T/bsat-retained-cert-o9ddshsz/query-22/check/proof.lrat"
+            ],
+            "seconds": 0.01777875004336238,
+            "cpu_seconds": 0.016595999999999958,
+            "children_peak_rss_bytes": 45842432,
+            "returncode": 0,
+            "stdout": "\nc turning on binary mode checking\n\nc parsing input formula with 2 variables and 3 clauses\n\nc finished parsing, read 14 bytes from proof file\n\nc UNSAT via unit propagation on the input instance\n\nc 3 of 3 clauses in core                            \n\nc 1 of 6 lemmas in core using 3 resolution steps\n\nc 0 RAT lemmas in core; 0 redundant literals in core lemmas\n\ns VERIFIED\n\nc verification time: 0.015 seconds\n",
+            "stderr": ""
+          },
+          {
+            "command": [
+              "/tmp/bsat-cake-verified-build/cake_lpr",
+              "--CML_HEAP_SIZE=512",
+              "--CML_STACK_SIZE=128",
+              "/var/folders/ts/779j13fj7_x2z167570zvv4c0000gn/T/bsat-retained-cert-o9ddshsz/query-22/check/input.cnf",
+              "/var/folders/ts/779j13fj7_x2z167570zvv4c0000gn/T/bsat-retained-cert-o9ddshsz/query-22/check/proof.lrat"
+            ],
+            "seconds": 0.00237391609698534,
+            "cpu_seconds": 0.0013610000000000427,
+            "children_peak_rss_bytes": 45842432,
+            "returncode": 0,
+            "stdout": "s VERIFIED UNSAT\n",
+            "stderr": ""
+          }
+        ],
+        "lrat_sha256": "75657f1863ad45dcd281e00ec46cd02246bbabedae18d87a61ca0f7eea512483",
+        "seconds": 0.02091345889493823,
+        "rss_scope": "Cumulative child-process high-water RSS, not isolated per-stage peak"
+      },
+      "verified": true
+    },
+    {
+      "query": 23,
+      "result": 10,
+      "reused_preparations": 5,
+      "conflicts": 0,
+      "input_sha256": "c723087c6c5f7c739aa6f938795f888f96ddff55f6ff620953f14fb726660296",
+      "proof_sha256": "d98c409271c16090482ef1cc95563dcb0b1e16ff3579248f671556e7c344f05c",
+      "proof_bytes": 12,
+      "verified": true
+    },
+    {
+      "query": 24,
+      "result": 20,
+      "reused_preparations": 6,
+      "conflicts": 0,
+      "input_sha256": "6eebc32a1df91c986410a9382c8c18e11b4f1d627b004e1fb4ca793424105f03",
+      "proof_sha256": "c50eb5957058178324eade648fff94679f8e9ba6bd6e763b1f495ef9353b559d",
+      "proof_bytes": 17,
+      "validation": {
+        "input_sha256": "6eebc32a1df91c986410a9382c8c18e11b4f1d627b004e1fb4ca793424105f03",
+        "drat_sha256": "c50eb5957058178324eade648fff94679f8e9ba6bd6e763b1f495ef9353b559d",
+        "converter_sha256": "9bfc20a5fa9eb2a0ffadd2b0cfc7cdd4a20f6aa9c8d7de5b6c771160b847f630",
+        "checker_sha256": "027e767e8e5543d61671c44f7475e985b7969112e6825d51f2207bf0580cbf5c",
+        "verified": true,
+        "checker_heap_mb": 512,
+        "checker_stack_mb": 128,
+        "stages": [
+          {
+            "command": [
+              "/tmp/bsat-drat-trim",
+              "/var/folders/ts/779j13fj7_x2z167570zvv4c0000gn/T/bsat-retained-cert-o9ddshsz/query-24/check/input.cnf",
+              "/var/folders/ts/779j13fj7_x2z167570zvv4c0000gn/T/bsat-retained-cert-o9ddshsz/query-24/check/proof.drat",
+              "-L",
+              "/var/folders/ts/779j13fj7_x2z167570zvv4c0000gn/T/bsat-retained-cert-o9ddshsz/query-24/check/proof.lrat"
+            ],
+            "seconds": 0.01780341612175107,
+            "cpu_seconds": 0.01675099999999996,
+            "children_peak_rss_bytes": 45842432,
+            "returncode": 0,
+            "stdout": "\nc turning on binary mode checking\n\nc parsing input formula with 2 variables and 3 clauses\n\nc finished parsing, read 17 bytes from proof file\n\nc UNSAT via unit propagation on the input instance\n\nc 3 of 3 clauses in core                            \n\nc 1 of 7 lemmas in core using 3 resolution steps\n\nc 0 RAT lemmas in core; 0 redundant literals in core lemmas\n\ns VERIFIED\n\nc verification time: 0.016 seconds\n",
+            "stderr": ""
+          },
+          {
+            "command": [
+              "/tmp/bsat-cake-verified-build/cake_lpr",
+              "--CML_HEAP_SIZE=512",
+              "--CML_STACK_SIZE=128",
+              "/var/folders/ts/779j13fj7_x2z167570zvv4c0000gn/T/bsat-retained-cert-o9ddshsz/query-24/check/input.cnf",
+              "/var/folders/ts/779j13fj7_x2z167570zvv4c0000gn/T/bsat-retained-cert-o9ddshsz/query-24/check/proof.lrat"
+            ],
+            "seconds": 0.0022913338616490364,
+            "cpu_seconds": 0.0012839999999999796,
+            "children_peak_rss_bytes": 45842432,
+            "returncode": 0,
+            "stdout": "s VERIFIED UNSAT\n",
+            "stderr": ""
+          }
+        ],
+        "lrat_sha256": "6174c52739818bdaeaf6e61f723441a048458f89bb5f793351c11b6126756d2b",
+        "seconds": 0.020815249998122454,
+        "rss_scope": "Cumulative child-process high-water RSS, not isolated per-stage peak"
+      },
+      "verified": true
+    },
+    {
+      "query": 25,
+      "result": 10,
+      "reused_preparations": 7,
+      "conflicts": 0,
+      "input_sha256": "c723087c6c5f7c739aa6f938795f888f96ddff55f6ff620953f14fb726660296",
+      "proof_sha256": "9c88e550b75b5d6c55a4aba7d66d8547242d08aad2d35ab275019753012084ce",
+      "proof_bytes": 15,
+      "verified": true
+    },
+    {
+      "query": 26,
+      "result": 20,
+      "reused_preparations": 8,
+      "conflicts": 0,
+      "input_sha256": "6eebc32a1df91c986410a9382c8c18e11b4f1d627b004e1fb4ca793424105f03",
+      "proof_sha256": "bd6e039f798e75fb5a4f06a2259d46cac940139206f70784aea983a0d418bc7d",
+      "proof_bytes": 20,
+      "validation": {
+        "input_sha256": "6eebc32a1df91c986410a9382c8c18e11b4f1d627b004e1fb4ca793424105f03",
+        "drat_sha256": "bd6e039f798e75fb5a4f06a2259d46cac940139206f70784aea983a0d418bc7d",
+        "converter_sha256": "9bfc20a5fa9eb2a0ffadd2b0cfc7cdd4a20f6aa9c8d7de5b6c771160b847f630",
+        "checker_sha256": "027e767e8e5543d61671c44f7475e985b7969112e6825d51f2207bf0580cbf5c",
+        "verified": true,
+        "checker_heap_mb": 512,
+        "checker_stack_mb": 128,
+        "stages": [
+          {
+            "command": [
+              "/tmp/bsat-drat-trim",
+              "/var/folders/ts/779j13fj7_x2z167570zvv4c0000gn/T/bsat-retained-cert-o9ddshsz/query-26/check/input.cnf",
+              "/var/folders/ts/779j13fj7_x2z167570zvv4c0000gn/T/bsat-retained-cert-o9ddshsz/query-26/check/proof.drat",
+              "-L",
+              "/var/folders/ts/779j13fj7_x2z167570zvv4c0000gn/T/bsat-retained-cert-o9ddshsz/query-26/check/proof.lrat"
+            ],
+            "seconds": 0.018751416355371475,
+            "cpu_seconds": 0.017678000000000027,
+            "children_peak_rss_bytes": 45842432,
+            "returncode": 0,
+            "stdout": "\nc turning on binary mode checking\n\nc parsing input formula with 2 variables and 3 clauses\n\nc finished parsing, read 20 bytes from proof file\n\nc UNSAT via unit propagation on the input instance\n\nc 3 of 3 clauses in core                            \n\nc 1 of 8 lemmas in core using 3 resolution steps\n\nc 0 RAT lemmas in core; 0 redundant literals in core lemmas\n\ns VERIFIED\n\nc verification time: 0.017 seconds\n",
+            "stderr": ""
+          },
+          {
+            "command": [
+              "/tmp/bsat-cake-verified-build/cake_lpr",
+              "--CML_HEAP_SIZE=512",
+              "--CML_STACK_SIZE=128",
+              "/var/folders/ts/779j13fj7_x2z167570zvv4c0000gn/T/bsat-retained-cert-o9ddshsz/query-26/check/input.cnf",
+              "/var/folders/ts/779j13fj7_x2z167570zvv4c0000gn/T/bsat-retained-cert-o9ddshsz/query-26/check/proof.lrat"
+            ],
+            "seconds": 0.002482665702700615,
+            "cpu_seconds": 0.0014579999999999732,
+            "children_peak_rss_bytes": 45842432,
+            "returncode": 0,
+            "stdout": "s VERIFIED UNSAT\n",
+            "stderr": ""
+          }
+        ],
+        "lrat_sha256": "5c5cdbabc6c189046150c935c2616bff5aa5d8ad3018edf5d1ce271bd46bb202",
+        "seconds": 0.021987791173160076,
+        "rss_scope": "Cumulative child-process high-water RSS, not isolated per-stage peak"
+      },
+      "verified": true
+    },
+    {
+      "query": 27,
+      "result": 10,
+      "reused_preparations": 9,
+      "conflicts": 0,
+      "input_sha256": "c723087c6c5f7c739aa6f938795f888f96ddff55f6ff620953f14fb726660296",
+      "proof_sha256": "d62206611db2a0f1b2b67fc49b4e1f015607f9fa4df94ffef90e1cfe23179612",
+      "proof_bytes": 18,
+      "verified": true
+    },
+    {
+      "query": 28,
+      "result": 20,
+      "reused_preparations": 10,
+      "conflicts": 0,
+      "input_sha256": "6eebc32a1df91c986410a9382c8c18e11b4f1d627b004e1fb4ca793424105f03",
+      "proof_sha256": "6dbf14346c33f3e3892e138db5134fa82edeef8b23525e15c660c653ec37fcf3",
+      "proof_bytes": 23,
+      "validation": {
+        "input_sha256": "6eebc32a1df91c986410a9382c8c18e11b4f1d627b004e1fb4ca793424105f03",
+        "drat_sha256": "6dbf14346c33f3e3892e138db5134fa82edeef8b23525e15c660c653ec37fcf3",
+        "converter_sha256": "9bfc20a5fa9eb2a0ffadd2b0cfc7cdd4a20f6aa9c8d7de5b6c771160b847f630",
+        "checker_sha256": "027e767e8e5543d61671c44f7475e985b7969112e6825d51f2207bf0580cbf5c",
+        "verified": true,
+        "checker_heap_mb": 512,
+        "checker_stack_mb": 128,
+        "stages": [
+          {
+            "command": [
+              "/tmp/bsat-drat-trim",
+              "/var/folders/ts/779j13fj7_x2z167570zvv4c0000gn/T/bsat-retained-cert-o9ddshsz/query-28/check/input.cnf",
+              "/var/folders/ts/779j13fj7_x2z167570zvv4c0000gn/T/bsat-retained-cert-o9ddshsz/query-28/check/proof.drat",
+              "-L",
+              "/var/folders/ts/779j13fj7_x2z167570zvv4c0000gn/T/bsat-retained-cert-o9ddshsz/query-28/check/proof.lrat"
+            ],
+            "seconds": 0.018963207956403494,
+            "cpu_seconds": 0.017750000000000016,
+            "children_peak_rss_bytes": 45842432,
+            "returncode": 0,
+            "stdout": "\nc turning on binary mode checking\n\nc parsing input formula with 2 variables and 3 clauses\n\nc finished parsing, read 23 bytes from proof file\n\nc UNSAT via unit propagation on the input instance\n\nc 3 of 3 clauses in core                            \n\nc 1 of 9 lemmas in core using 3 resolution steps\n\nc 0 RAT lemmas in core; 0 redundant literals in core lemmas\n\ns VERIFIED\n\nc verification time: 0.017 seconds\n",
+            "stderr": ""
+          },
+          {
+            "command": [
+              "/tmp/bsat-cake-verified-build/cake_lpr",
+              "--CML_HEAP_SIZE=512",
+              "--CML_STACK_SIZE=128",
+              "/var/folders/ts/779j13fj7_x2z167570zvv4c0000gn/T/bsat-retained-cert-o9ddshsz/query-28/check/input.cnf",
+              "/var/folders/ts/779j13fj7_x2z167570zvv4c0000gn/T/bsat-retained-cert-o9ddshsz/query-28/check/proof.lrat"
+            ],
+            "seconds": 0.002357624936848879,
+            "cpu_seconds": 0.0013879999999999448,
+            "children_peak_rss_bytes": 45842432,
+            "returncode": 0,
+            "stdout": "s VERIFIED UNSAT\n",
+            "stderr": ""
+          }
+        ],
+        "lrat_sha256": "b679e39ea00787e59c7ca379b44b7623e4e94ca88555dbff32bde1f617a394d7",
+        "seconds": 0.022074375301599503,
+        "rss_scope": "Cumulative child-process high-water RSS, not isolated per-stage peak"
+      },
+      "verified": true
+    },
+    {
+      "query": 29,
+      "result": 10,
+      "reused_preparations": 11,
+      "conflicts": 0,
+      "input_sha256": "c723087c6c5f7c739aa6f938795f888f96ddff55f6ff620953f14fb726660296",
+      "proof_sha256": "f8ae2f35d1877eccee78ccb2316a038fb6c728526f852a008c254c54831bfd48",
+      "proof_bytes": 21,
+      "verified": true
+    },
+    {
+      "query": 30,
+      "result": 20,
+      "reused_preparations": 12,
+      "conflicts": 0,
+      "input_sha256": "6eebc32a1df91c986410a9382c8c18e11b4f1d627b004e1fb4ca793424105f03",
+      "proof_sha256": "bf9776180fa2ae62dae84d9ae78095fbf8fee6f3a55cef75d8b5ad11fa26780b",
+      "proof_bytes": 26,
+      "validation": {
+        "input_sha256": "6eebc32a1df91c986410a9382c8c18e11b4f1d627b004e1fb4ca793424105f03",
+        "drat_sha256": "bf9776180fa2ae62dae84d9ae78095fbf8fee6f3a55cef75d8b5ad11fa26780b",
+        "converter_sha256": "9bfc20a5fa9eb2a0ffadd2b0cfc7cdd4a20f6aa9c8d7de5b6c771160b847f630",
+        "checker_sha256": "027e767e8e5543d61671c44f7475e985b7969112e6825d51f2207bf0580cbf5c",
+        "verified": true,
+        "checker_heap_mb": 512,
+        "checker_stack_mb": 128,
+        "stages": [
+          {
+            "command": [
+              "/tmp/bsat-drat-trim",
+              "/var/folders/ts/779j13fj7_x2z167570zvv4c0000gn/T/bsat-retained-cert-o9ddshsz/query-30/check/input.cnf",
+              "/var/folders/ts/779j13fj7_x2z167570zvv4c0000gn/T/bsat-retained-cert-o9ddshsz/query-30/check/proof.drat",
+              "-L",
+              "/var/folders/ts/779j13fj7_x2z167570zvv4c0000gn/T/bsat-retained-cert-o9ddshsz/query-30/check/proof.lrat"
+            ],
+            "seconds": 0.017516250256448984,
+            "cpu_seconds": 0.016567000000000026,
+            "children_peak_rss_bytes": 45842432,
+            "returncode": 0,
+            "stdout": "\nc turning on binary mode checking\n\nc parsing input formula with 2 variables and 3 clauses\n\nc finished parsing, read 26 bytes from proof file\n\nc UNSAT via unit propagation on the input instance\n\nc 3 of 3 clauses in core                            \n\nc 1 of 10 lemmas in core using 3 resolution steps\n\nc 0 RAT lemmas in core; 0 redundant literals in core lemmas\n\ns VERIFIED\n\nc verification time: 0.015 seconds\n",
+            "stderr": ""
+          },
+          {
+            "command": [
+              "/tmp/bsat-cake-verified-build/cake_lpr",
+              "--CML_HEAP_SIZE=512",
+              "--CML_STACK_SIZE=128",
+              "/var/folders/ts/779j13fj7_x2z167570zvv4c0000gn/T/bsat-retained-cert-o9ddshsz/query-30/check/input.cnf",
+              "/var/folders/ts/779j13fj7_x2z167570zvv4c0000gn/T/bsat-retained-cert-o9ddshsz/query-30/check/proof.lrat"
+            ],
+            "seconds": 0.0021127499639987946,
+            "cpu_seconds": 0.0011919999999999847,
+            "children_peak_rss_bytes": 45842432,
+            "returncode": 0,
+            "stdout": "s VERIFIED UNSAT\n",
+            "stderr": ""
+          }
+        ],
+        "lrat_sha256": "d752cb89c9e3c2e2a42d522580bd29dfe6ee2e36ef4219f508483940bdf8c06b",
+        "seconds": 0.020340499933809042,
+        "rss_scope": "Cumulative child-process high-water RSS, not isolated per-stage peak"
+      },
+      "verified": true
+    },
+    {
+      "query": 31,
+      "result": 10,
+      "reused_preparations": 13,
+      "conflicts": 0,
+      "input_sha256": "c723087c6c5f7c739aa6f938795f888f96ddff55f6ff620953f14fb726660296",
+      "proof_sha256": "bddc69ab28037bb3f6dcdea24a9d8d386bb0176cc1b08be2f59cd5b98f8974f6",
+      "proof_bytes": 24,
+      "verified": true
+    },
+    {
+      "query": 32,
+      "result": 20,
+      "reused_preparations": 14,
+      "conflicts": 0,
+      "input_sha256": "6eebc32a1df91c986410a9382c8c18e11b4f1d627b004e1fb4ca793424105f03",
+      "proof_sha256": "71bc1d9e08871050d6af09afb7890df16d26b213aadd4fd537fcb3ec0e990f1b",
+      "proof_bytes": 29,
+      "validation": {
+        "input_sha256": "6eebc32a1df91c986410a9382c8c18e11b4f1d627b004e1fb4ca793424105f03",
+        "drat_sha256": "71bc1d9e08871050d6af09afb7890df16d26b213aadd4fd537fcb3ec0e990f1b",
+        "converter_sha256": "9bfc20a5fa9eb2a0ffadd2b0cfc7cdd4a20f6aa9c8d7de5b6c771160b847f630",
+        "checker_sha256": "027e767e8e5543d61671c44f7475e985b7969112e6825d51f2207bf0580cbf5c",
+        "verified": true,
+        "checker_heap_mb": 512,
+        "checker_stack_mb": 128,
+        "stages": [
+          {
+            "command": [
+              "/tmp/bsat-drat-trim",
+              "/var/folders/ts/779j13fj7_x2z167570zvv4c0000gn/T/bsat-retained-cert-o9ddshsz/query-32/check/input.cnf",
+              "/var/folders/ts/779j13fj7_x2z167570zvv4c0000gn/T/bsat-retained-cert-o9ddshsz/query-32/check/proof.drat",
+              "-L",
+              "/var/folders/ts/779j13fj7_x2z167570zvv4c0000gn/T/bsat-retained-cert-o9ddshsz/query-32/check/proof.lrat"
+            ],
+            "seconds": 0.018898332957178354,
+            "cpu_seconds": 0.017826000000000022,
+            "children_peak_rss_bytes": 45842432,
+            "returncode": 0,
+            "stdout": "\nc turning on binary mode checking\n\nc parsing input formula with 2 variables and 3 clauses\n\nc finished parsing, read 29 bytes from proof file\n\nc UNSAT via unit propagation on the input instance\n\nc 3 of 3 clauses in core                            \n\nc 1 of 11 lemmas in core using 3 resolution steps\n\nc 0 RAT lemmas in core; 0 redundant literals in core lemmas\n\ns VERIFIED\n\nc verification time: 0.017 seconds\n",
+            "stderr": ""
+          },
+          {
+            "command": [
+              "/tmp/bsat-cake-verified-build/cake_lpr",
+              "--CML_HEAP_SIZE=512",
+              "--CML_STACK_SIZE=128",
+              "/var/folders/ts/779j13fj7_x2z167570zvv4c0000gn/T/bsat-retained-cert-o9ddshsz/query-32/check/input.cnf",
+              "/var/folders/ts/779j13fj7_x2z167570zvv4c0000gn/T/bsat-retained-cert-o9ddshsz/query-32/check/proof.lrat"
+            ],
+            "seconds": 0.002268332988023758,
+            "cpu_seconds": 0.0013150000000000245,
+            "children_peak_rss_bytes": 45842432,
+            "returncode": 0,
+            "stdout": "s VERIFIED UNSAT\n",
+            "stderr": ""
+          }
+        ],
+        "lrat_sha256": "e25b0286817ee092e4bb57f3b3940def052c6af645b585c6ad9d04a61f3579e0",
+        "seconds": 0.02189029101282358,
+        "rss_scope": "Cumulative child-process high-water RSS, not isolated per-stage peak"
+      },
+      "verified": true
+    },
+    {
+      "query": 33,
+      "result": 10,
+      "reused_preparations": 15,
+      "conflicts": 0,
+      "input_sha256": "c723087c6c5f7c739aa6f938795f888f96ddff55f6ff620953f14fb726660296",
+      "proof_sha256": "44fbe3b03b49ed33751465acec2f7d8a46fc2ffd51c0c0b247561fedd496232b",
+      "proof_bytes": 27,
+      "verified": true
+    },
+    {
+      "query": 34,
+      "result": 20,
+      "reused_preparations": 16,
+      "conflicts": 0,
+      "input_sha256": "c308919331c97cf5a5b156e5430913ff673bb30f19ad9c87a69122d58b78e01f",
+      "proof_sha256": "607e8bb2f6200383b99242aa7fb1d7f4c18409aafdb36940dcbe033d3c3b3844",
+      "proof_bytes": 33,
+      "validation": {
+        "input_sha256": "c308919331c97cf5a5b156e5430913ff673bb30f19ad9c87a69122d58b78e01f",
+        "drat_sha256": "607e8bb2f6200383b99242aa7fb1d7f4c18409aafdb36940dcbe033d3c3b3844",
+        "converter_sha256": "9bfc20a5fa9eb2a0ffadd2b0cfc7cdd4a20f6aa9c8d7de5b6c771160b847f630",
+        "checker_sha256": "027e767e8e5543d61671c44f7475e985b7969112e6825d51f2207bf0580cbf5c",
+        "verified": true,
+        "checker_heap_mb": 512,
+        "checker_stack_mb": 128,
+        "stages": [
+          {
+            "command": [
+              "/tmp/bsat-drat-trim",
+              "/var/folders/ts/779j13fj7_x2z167570zvv4c0000gn/T/bsat-retained-cert-o9ddshsz/query-34/check/input.cnf",
+              "/var/folders/ts/779j13fj7_x2z167570zvv4c0000gn/T/bsat-retained-cert-o9ddshsz/query-34/check/proof.drat",
+              "-L",
+              "/var/folders/ts/779j13fj7_x2z167570zvv4c0000gn/T/bsat-retained-cert-o9ddshsz/query-34/check/proof.lrat"
+            ],
+            "seconds": 0.018195333890616894,
+            "cpu_seconds": 0.017055999999999988,
+            "children_peak_rss_bytes": 45842432,
+            "returncode": 0,
+            "stdout": "\nc turning on binary mode checking\n\nc parsing input formula with 2 variables and 4 clauses\n\nc finished parsing, read 33 bytes from proof file\n\nc found complementary unit clauses: -1\n\ns VERIFIED\n\nc verification time: 0.016 seconds\n",
+            "stderr": ""
+          },
+          {
+            "command": [
+              "/tmp/bsat-cake-verified-build/cake_lpr",
+              "--CML_HEAP_SIZE=512",
+              "--CML_STACK_SIZE=128",
+              "/var/folders/ts/779j13fj7_x2z167570zvv4c0000gn/T/bsat-retained-cert-o9ddshsz/query-34/check/input.cnf",
+              "/var/folders/ts/779j13fj7_x2z167570zvv4c0000gn/T/bsat-retained-cert-o9ddshsz/query-34/check/proof.lrat"
+            ],
+            "seconds": 0.002349541988223791,
+            "cpu_seconds": 0.0013019999999999976,
+            "children_peak_rss_bytes": 45842432,
+            "returncode": 0,
+            "stdout": "s VERIFIED UNSAT\n",
+            "stderr": ""
+          }
+        ],
+        "lrat_sha256": "b4c64d5bde766c93ad0d1f4dfb7783b7bdd4f98cdc1a0ccc8ec5638595f24764",
+        "seconds": 0.021271083038300276,
+        "rss_scope": "Cumulative child-process high-water RSS, not isolated per-stage peak"
+      },
+      "verified": true
+    },
+    {
+      "query": 35,
+      "result": 10,
+      "reused_preparations": 17,
+      "conflicts": 0,
+      "input_sha256": "c723087c6c5f7c739aa6f938795f888f96ddff55f6ff620953f14fb726660296",
+      "proof_sha256": "67cad7bd1222286ebddf85e677f17af9d3a7bc3d5e1bbe22b0b9688b2803375b",
+      "proof_bytes": 31,
+      "verified": true
+    },
+    {
+      "query": 36,
+      "result": 20,
+      "reused_preparations": 1,
+      "conflicts": 853,
+      "input_sha256": "831a1432cc1a02c1c7adab0075cae402dec614b5c90d8a273f61858975311833",
+      "proof_sha256": "ee0466bb24118ad91f966e92845c7a1584f188f3a0b756cb91da46f01124c0c1",
+      "proof_bytes": 11485,
+      "validation": {
+        "input_sha256": "831a1432cc1a02c1c7adab0075cae402dec614b5c90d8a273f61858975311833",
+        "drat_sha256": "ee0466bb24118ad91f966e92845c7a1584f188f3a0b756cb91da46f01124c0c1",
+        "converter_sha256": "9bfc20a5fa9eb2a0ffadd2b0cfc7cdd4a20f6aa9c8d7de5b6c771160b847f630",
+        "checker_sha256": "027e767e8e5543d61671c44f7475e985b7969112e6825d51f2207bf0580cbf5c",
+        "verified": true,
+        "checker_heap_mb": 512,
+        "checker_stack_mb": 128,
+        "stages": [
+          {
+            "command": [
+              "/tmp/bsat-drat-trim",
+              "/var/folders/ts/779j13fj7_x2z167570zvv4c0000gn/T/bsat-retained-cert-o9ddshsz/query-36/check/input.cnf",
+              "/var/folders/ts/779j13fj7_x2z167570zvv4c0000gn/T/bsat-retained-cert-o9ddshsz/query-36/check/proof.drat",
+              "-L",
+              "/var/folders/ts/779j13fj7_x2z167570zvv4c0000gn/T/bsat-retained-cert-o9ddshsz/query-36/check/proof.lrat"
+            ],
+            "seconds": 0.022466250229626894,
+            "cpu_seconds": 0.021298000000000053,
+            "children_peak_rss_bytes": 50610176,
+            "returncode": 0,
+            "stdout": "\nc turning on binary mode checking\n\nc parsing input formula with 43 variables and 134 clauses\n\nc finished parsing, read 11485 bytes from proof file\n\nc detected empty clause; start verification via backward checking\n\nc 134 of 134 clauses in core                            \n\nc 809 of 857 lemmas in core using 11369 resolution steps\n\nc 0 RAT lemmas in core; 808 redundant literals in core lemmas\n\ns VERIFIED\n\nc verification time: 0.020 seconds\n",
+            "stderr": ""
+          },
+          {
+            "command": [
+              "/tmp/bsat-cake-verified-build/cake_lpr",
+              "--CML_HEAP_SIZE=512",
+              "--CML_STACK_SIZE=128",
+              "/var/folders/ts/779j13fj7_x2z167570zvv4c0000gn/T/bsat-retained-cert-o9ddshsz/query-36/check/input.cnf",
+              "/var/folders/ts/779j13fj7_x2z167570zvv4c0000gn/T/bsat-retained-cert-o9ddshsz/query-36/check/proof.lrat"
+            ],
+            "seconds": 0.004458416253328323,
+            "cpu_seconds": 0.003417999999999949,
+            "children_peak_rss_bytes": 50610176,
+            "returncode": 0,
+            "stdout": "s VERIFIED UNSAT\n",
+            "stderr": ""
+          }
+        ],
+        "lrat_sha256": "34aa58162ba5bc71047634d2e584b9025d6edbddab3ba93ae8f7bd826ba62258",
+        "seconds": 0.027728707995265722,
+        "rss_scope": "Cumulative child-process high-water RSS, not isolated per-stage peak"
+      },
+      "verified": true
+    },
+    {
+      "query": 37,
+      "result": 10,
+      "reused_preparations": 2,
+      "conflicts": 0,
+      "input_sha256": "99739e57f42d01a9365b3fbf6486f2fdfaf24b070a8f84b6213e77480b3508a0",
+      "proof_sha256": "d9d95173aed0f3afa59b26057d45ddea8cbddd799faa96f036deed95e3099d81",
+      "proof_bytes": 11483,
+      "verified": true
+    },
+    {
+      "query": 38,
+      "result": 20,
+      "reused_preparations": 3,
+      "conflicts": 0,
+      "input_sha256": "454aa475e9eca197f5721ef3e90e03a61f69efd7473431190244ee68edd83090",
+      "proof_sha256": "5030135fecf8ab93435a50295029b072a6bfb9bbdfd3b568a5cd6f7ac8d39912",
+      "proof_bytes": 11489,
+      "validation": {
+        "input_sha256": "454aa475e9eca197f5721ef3e90e03a61f69efd7473431190244ee68edd83090",
+        "drat_sha256": "5030135fecf8ab93435a50295029b072a6bfb9bbdfd3b568a5cd6f7ac8d39912",
+        "converter_sha256": "9bfc20a5fa9eb2a0ffadd2b0cfc7cdd4a20f6aa9c8d7de5b6c771160b847f630",
+        "checker_sha256": "027e767e8e5543d61671c44f7475e985b7969112e6825d51f2207bf0580cbf5c",
+        "verified": true,
+        "checker_heap_mb": 512,
+        "checker_stack_mb": 128,
+        "stages": [
+          {
+            "command": [
+              "/tmp/bsat-drat-trim",
+              "/var/folders/ts/779j13fj7_x2z167570zvv4c0000gn/T/bsat-retained-cert-o9ddshsz/query-38/check/input.cnf",
+              "/var/folders/ts/779j13fj7_x2z167570zvv4c0000gn/T/bsat-retained-cert-o9ddshsz/query-38/check/proof.drat",
+              "-L",
+              "/var/folders/ts/779j13fj7_x2z167570zvv4c0000gn/T/bsat-retained-cert-o9ddshsz/query-38/check/proof.lrat"
+            ],
+            "seconds": 0.02202129177749157,
+            "cpu_seconds": 0.020933000000000063,
+            "children_peak_rss_bytes": 50610176,
+            "returncode": 0,
+            "stdout": "\nc turning on binary mode checking\n\nc parsing input formula with 43 variables and 135 clauses\n\nc WARNING: detected and deleted duplicate literal -43 at position 1 of proof line 991\n\nc finished parsing, read 11489 bytes from proof file\n\nc detected empty clause; start verification via backward checking\n\nc 134 of 135 clauses in core                            \n\nc 809 of 858 lemmas in core using 11369 resolution steps\n\nc 0 RAT lemmas in core; 808 redundant literals in core lemmas\n\ns VERIFIED\n\nc verification time: 0.020 seconds\n",
+            "stderr": ""
+          },
+          {
+            "command": [
+              "/tmp/bsat-cake-verified-build/cake_lpr",
+              "--CML_HEAP_SIZE=512",
+              "--CML_STACK_SIZE=128",
+              "/var/folders/ts/779j13fj7_x2z167570zvv4c0000gn/T/bsat-retained-cert-o9ddshsz/query-38/check/input.cnf",
+              "/var/folders/ts/779j13fj7_x2z167570zvv4c0000gn/T/bsat-retained-cert-o9ddshsz/query-38/check/proof.lrat"
+            ],
+            "seconds": 0.004420999903231859,
+            "cpu_seconds": 0.0033919999999999784,
+            "children_peak_rss_bytes": 50610176,
+            "returncode": 0,
+            "stdout": "s VERIFIED UNSAT\n",
+            "stderr": ""
+          }
+        ],
+        "lrat_sha256": "7ca3415ea9722f327cc15ef50bd297223d27983db6941bbd7fe8a2af76519efb",
+        "seconds": 0.027235125191509724,
+        "rss_scope": "Cumulative child-process high-water RSS, not isolated per-stage peak"
+      },
+      "verified": true
+    },
+    {
+      "query": 39,
+      "result": 10,
+      "reused_preparations": 4,
+      "conflicts": 0,
+      "input_sha256": "99739e57f42d01a9365b3fbf6486f2fdfaf24b070a8f84b6213e77480b3508a0",
+      "proof_sha256": "56e7ff2213bab43732ba745d07e994ba3415a366af4f8377d4a206a75dd9426e",
+      "proof_bytes": 11487,
+      "verified": true
+    },
+    {
+      "query": 40,
+      "result": 20,
+      "reused_preparations": 5,
+      "conflicts": 0,
+      "input_sha256": "454aa475e9eca197f5721ef3e90e03a61f69efd7473431190244ee68edd83090",
+      "proof_sha256": "bca214463504680679f4fcf7de4864846ed41fbbd13b98e6ff4f1818d9334a9c",
+      "proof_bytes": 11493,
+      "validation": {
+        "input_sha256": "454aa475e9eca197f5721ef3e90e03a61f69efd7473431190244ee68edd83090",
+        "drat_sha256": "bca214463504680679f4fcf7de4864846ed41fbbd13b98e6ff4f1818d9334a9c",
+        "converter_sha256": "9bfc20a5fa9eb2a0ffadd2b0cfc7cdd4a20f6aa9c8d7de5b6c771160b847f630",
+        "checker_sha256": "027e767e8e5543d61671c44f7475e985b7969112e6825d51f2207bf0580cbf5c",
+        "verified": true,
+        "checker_heap_mb": 512,
+        "checker_stack_mb": 128,
+        "stages": [
+          {
+            "command": [
+              "/tmp/bsat-drat-trim",
+              "/var/folders/ts/779j13fj7_x2z167570zvv4c0000gn/T/bsat-retained-cert-o9ddshsz/query-40/check/input.cnf",
+              "/var/folders/ts/779j13fj7_x2z167570zvv4c0000gn/T/bsat-retained-cert-o9ddshsz/query-40/check/proof.drat",
+              "-L",
+              "/var/folders/ts/779j13fj7_x2z167570zvv4c0000gn/T/bsat-retained-cert-o9ddshsz/query-40/check/proof.lrat"
+            ],
+            "seconds": 0.022058208007365465,
+            "cpu_seconds": 0.02095100000000004,
+            "children_peak_rss_bytes": 50610176,
+            "returncode": 0,
+            "stdout": "\nc turning on binary mode checking\n\nc parsing input formula with 43 variables and 135 clauses\n\nc WARNING: detected and deleted duplicate literal -43 at position 1 of proof line 991\n\nc WARNING: detected and deleted duplicate literal -43 at position 1 of proof line 992\n\nc finished parsing, read 11493 bytes from proof file\n\nc detected empty clause; start verification via backward checking\n\nc 134 of 135 clauses in core                            \n\nc 809 of 859 lemmas in core using 11369 resolution steps\n\nc 0 RAT lemmas in core; 808 redundant literals in core lemmas\n\ns VERIFIED\n\nc verification time: 0.020 seconds\n",
+            "stderr": ""
+          },
+          {
+            "command": [
+              "/tmp/bsat-cake-verified-build/cake_lpr",
+              "--CML_HEAP_SIZE=512",
+              "--CML_STACK_SIZE=128",
+              "/var/folders/ts/779j13fj7_x2z167570zvv4c0000gn/T/bsat-retained-cert-o9ddshsz/query-40/check/input.cnf",
+              "/var/folders/ts/779j13fj7_x2z167570zvv4c0000gn/T/bsat-retained-cert-o9ddshsz/query-40/check/proof.lrat"
+            ],
+            "seconds": 0.004426166415214539,
+            "cpu_seconds": 0.0034160000000000024,
+            "children_peak_rss_bytes": 50610176,
+            "returncode": 0,
+            "stdout": "s VERIFIED UNSAT\n",
+            "stderr": ""
+          }
+        ],
+        "lrat_sha256": "6d7bf83f589d48616189effbf0aa1b56fff4d286f1383c714e92fae758f8a2dd",
+        "seconds": 0.027255624998360872,
+        "rss_scope": "Cumulative child-process high-water RSS, not isolated per-stage peak"
+      },
+      "verified": true
+    },
+    {
+      "query": 41,
+      "result": 10,
+      "reused_preparations": 6,
+      "conflicts": 0,
+      "input_sha256": "99739e57f42d01a9365b3fbf6486f2fdfaf24b070a8f84b6213e77480b3508a0",
+      "proof_sha256": "dbb29ee793069db05f8200a2dae85008b1d4b8a5bdd64ffb070afbb042917cf2",
+      "proof_bytes": 11491,
+      "verified": true
+    },
+    {
+      "query": 42,
+      "result": 20,
+      "reused_preparations": 7,
+      "conflicts": 0,
+      "input_sha256": "454aa475e9eca197f5721ef3e90e03a61f69efd7473431190244ee68edd83090",
+      "proof_sha256": "64e59553b0361ac9dd53698908bfe64b94d04c63cc8c98928b3de8eb6d9f7b8c",
+      "proof_bytes": 11497,
+      "validation": {
+        "input_sha256": "454aa475e9eca197f5721ef3e90e03a61f69efd7473431190244ee68edd83090",
+        "drat_sha256": "64e59553b0361ac9dd53698908bfe64b94d04c63cc8c98928b3de8eb6d9f7b8c",
+        "converter_sha256": "9bfc20a5fa9eb2a0ffadd2b0cfc7cdd4a20f6aa9c8d7de5b6c771160b847f630",
+        "checker_sha256": "027e767e8e5543d61671c44f7475e985b7969112e6825d51f2207bf0580cbf5c",
+        "verified": true,
+        "checker_heap_mb": 512,
+        "checker_stack_mb": 128,
+        "stages": [
+          {
+            "command": [
+              "/tmp/bsat-drat-trim",
+              "/var/folders/ts/779j13fj7_x2z167570zvv4c0000gn/T/bsat-retained-cert-o9ddshsz/query-42/check/input.cnf",
+              "/var/folders/ts/779j13fj7_x2z167570zvv4c0000gn/T/bsat-retained-cert-o9ddshsz/query-42/check/proof.drat",
+              "-L",
+              "/var/folders/ts/779j13fj7_x2z167570zvv4c0000gn/T/bsat-retained-cert-o9ddshsz/query-42/check/proof.lrat"
+            ],
+            "seconds": 0.021799124777317047,
+            "cpu_seconds": 0.020570000000000033,
+            "children_peak_rss_bytes": 50610176,
+            "returncode": 0,
+            "stdout": "\nc turning on binary mode checking\n\nc parsing input formula with 43 variables and 135 clauses\n\nc WARNING: detected and deleted duplicate literal -43 at position 1 of proof line 991\n\nc WARNING: detected and deleted duplicate literal -43 at position 1 of proof line 992\n\nc WARNING: detected and deleted duplicate literal -43 at position 1 of proof line 993\n\nc finished parsing, read 11497 bytes from proof file\n\nc detected empty clause; start verification via backward checking\n\nc 134 of 135 clauses in core                            \n\nc 809 of 860 lemmas in core using 11369 resolution steps\n\nc 0 RAT lemmas in core; 808 redundant literals in core lemmas\n\ns VERIFIED\n\nc verification time: 0.019 seconds\n",
+            "stderr": ""
+          },
+          {
+            "command": [
+              "/tmp/bsat-cake-verified-build/cake_lpr",
+              "--CML_HEAP_SIZE=512",
+              "--CML_STACK_SIZE=128",
+              "/var/folders/ts/779j13fj7_x2z167570zvv4c0000gn/T/bsat-retained-cert-o9ddshsz/query-42/check/input.cnf",
+              "/var/folders/ts/779j13fj7_x2z167570zvv4c0000gn/T/bsat-retained-cert-o9ddshsz/query-42/check/proof.lrat"
+            ],
+            "seconds": 0.004359874874353409,
+            "cpu_seconds": 0.0034810000000000674,
+            "children_peak_rss_bytes": 50610176,
+            "returncode": 0,
+            "stdout": "s VERIFIED UNSAT\n",
+            "stderr": ""
+          }
+        ],
+        "lrat_sha256": "812d56500dd69500a91c4a2662f8bd78f26178c9d662b3af83aaac1c527d5f38",
+        "seconds": 0.026929082814604044,
+        "rss_scope": "Cumulative child-process high-water RSS, not isolated per-stage peak"
+      },
+      "verified": true
+    },
+    {
+      "query": 43,
+      "result": 10,
+      "reused_preparations": 8,
+      "conflicts": 0,
+      "input_sha256": "99739e57f42d01a9365b3fbf6486f2fdfaf24b070a8f84b6213e77480b3508a0",
+      "proof_sha256": "f22f0fb2e8136d9647120427a27f76b0ebb1be7922465229338499c5aea873ed",
+      "proof_bytes": 11495,
+      "verified": true
+    },
+    {
+      "query": 44,
+      "result": 20,
+      "reused_preparations": 9,
+      "conflicts": 0,
+      "input_sha256": "454aa475e9eca197f5721ef3e90e03a61f69efd7473431190244ee68edd83090",
+      "proof_sha256": "d81a3f1d84016edbd9e060f2f74f5945923563bbb268b3bf231db3b09302683f",
+      "proof_bytes": 11501,
+      "validation": {
+        "input_sha256": "454aa475e9eca197f5721ef3e90e03a61f69efd7473431190244ee68edd83090",
+        "drat_sha256": "d81a3f1d84016edbd9e060f2f74f5945923563bbb268b3bf231db3b09302683f",
+        "converter_sha256": "9bfc20a5fa9eb2a0ffadd2b0cfc7cdd4a20f6aa9c8d7de5b6c771160b847f630",
+        "checker_sha256": "027e767e8e5543d61671c44f7475e985b7969112e6825d51f2207bf0580cbf5c",
+        "verified": true,
+        "checker_heap_mb": 512,
+        "checker_stack_mb": 128,
+        "stages": [
+          {
+            "command": [
+              "/tmp/bsat-drat-trim",
+              "/var/folders/ts/779j13fj7_x2z167570zvv4c0000gn/T/bsat-retained-cert-o9ddshsz/query-44/check/input.cnf",
+              "/var/folders/ts/779j13fj7_x2z167570zvv4c0000gn/T/bsat-retained-cert-o9ddshsz/query-44/check/proof.drat",
+              "-L",
+              "/var/folders/ts/779j13fj7_x2z167570zvv4c0000gn/T/bsat-retained-cert-o9ddshsz/query-44/check/proof.lrat"
+            ],
+            "seconds": 0.02191633265465498,
+            "cpu_seconds": 0.020731,
+            "children_peak_rss_bytes": 50610176,
+            "returncode": 0,
+            "stdout": "\nc turning on binary mode checking\n\nc parsing input formula with 43 variables and 135 clauses\n\nc WARNING: detected and deleted duplicate literal -43 at position 1 of proof line 991\n\nc WARNING: detected and deleted duplicate literal -43 at position 1 of proof line 992\n\nc WARNING: detected and deleted duplicate literal -43 at position 1 of proof line 993\n\nc WARNING: detected and deleted duplicate literal -43 at position 1 of proof line 994\n\nc finished parsing, read 11501 bytes from proof file\n\nc detected empty clause; start verification via backward checking\n\nc 134 of 135 clauses in core                            \n\nc 809 of 861 lemmas in core using 11369 resolution steps\n\nc 0 RAT lemmas in core; 808 redundant literals in core lemmas\n\ns VERIFIED\n\nc verification time: 0.020 seconds\n",
+            "stderr": ""
+          },
+          {
+            "command": [
+              "/tmp/bsat-cake-verified-build/cake_lpr",
+              "--CML_HEAP_SIZE=512",
+              "--CML_STACK_SIZE=128",
+              "/var/folders/ts/779j13fj7_x2z167570zvv4c0000gn/T/bsat-retained-cert-o9ddshsz/query-44/check/input.cnf",
+              "/var/folders/ts/779j13fj7_x2z167570zvv4c0000gn/T/bsat-retained-cert-o9ddshsz/query-44/check/proof.lrat"
+            ],
+            "seconds": 0.004387250170111656,
+            "cpu_seconds": 0.0033599999999999464,
+            "children_peak_rss_bytes": 50610176,
+            "returncode": 0,
+            "stdout": "s VERIFIED UNSAT\n",
+            "stderr": ""
+          }
+        ],
+        "lrat_sha256": "28390ef13a558eee784929c5c5591088d73c3bfbc7c44da440832b566d996cb4",
+        "seconds": 0.027099958155304193,
+        "rss_scope": "Cumulative child-process high-water RSS, not isolated per-stage peak"
+      },
+      "verified": true
+    },
+    {
+      "query": 45,
+      "result": 10,
+      "reused_preparations": 10,
+      "conflicts": 0,
+      "input_sha256": "99739e57f42d01a9365b3fbf6486f2fdfaf24b070a8f84b6213e77480b3508a0",
+      "proof_sha256": "c656b56eb337831bf853079a699013589365018959db42cb06f1e0946e26f1a2",
+      "proof_bytes": 11499,
+      "verified": true
+    },
+    {
+      "query": 46,
+      "result": 20,
+      "reused_preparations": 10,
+      "conflicts": 657,
+      "input_sha256": "831a1432cc1a02c1c7adab0075cae402dec614b5c90d8a273f61858975311833",
+      "proof_sha256": "e67f7e25451ecdddaf847f0769659ffef89eb42930fc281f68904eec910af4d3",
+      "proof_bytes": 8680,
+      "validation": {
+        "input_sha256": "831a1432cc1a02c1c7adab0075cae402dec614b5c90d8a273f61858975311833",
+        "drat_sha256": "e67f7e25451ecdddaf847f0769659ffef89eb42930fc281f68904eec910af4d3",
+        "converter_sha256": "9bfc20a5fa9eb2a0ffadd2b0cfc7cdd4a20f6aa9c8d7de5b6c771160b847f630",
+        "checker_sha256": "027e767e8e5543d61671c44f7475e985b7969112e6825d51f2207bf0580cbf5c",
+        "verified": true,
+        "checker_heap_mb": 512,
+        "checker_stack_mb": 128,
+        "stages": [
+          {
+            "command": [
+              "/tmp/bsat-drat-trim",
+              "/var/folders/ts/779j13fj7_x2z167570zvv4c0000gn/T/bsat-retained-cert-o9ddshsz/query-46/check/input.cnf",
+              "/var/folders/ts/779j13fj7_x2z167570zvv4c0000gn/T/bsat-retained-cert-o9ddshsz/query-46/check/proof.drat",
+              "-L",
+              "/var/folders/ts/779j13fj7_x2z167570zvv4c0000gn/T/bsat-retained-cert-o9ddshsz/query-46/check/proof.lrat"
+            ],
+            "seconds": 0.02147937472909689,
+            "cpu_seconds": 0.020343000000000083,
+            "children_peak_rss_bytes": 50610176,
+            "returncode": 0,
+            "stdout": "\nc turning on binary mode checking\n\nc parsing input formula with 43 variables and 134 clauses\n\nc finished parsing, read 8680 bytes from proof file\n\nc detected empty clause; start verification via backward checking\n\nc 134 of 134 clauses in core                            \n\nc 622 of 660 lemmas in core using 8669 resolution steps\n\nc 0 RAT lemmas in core; 621 redundant literals in core lemmas\n\ns VERIFIED\n\nc verification time: 0.019 seconds\n",
+            "stderr": ""
+          },
+          {
+            "command": [
+              "/tmp/bsat-cake-verified-build/cake_lpr",
+              "--CML_HEAP_SIZE=512",
+              "--CML_STACK_SIZE=128",
+              "/var/folders/ts/779j13fj7_x2z167570zvv4c0000gn/T/bsat-retained-cert-o9ddshsz/query-46/check/input.cnf",
+              "/var/folders/ts/779j13fj7_x2z167570zvv4c0000gn/T/bsat-retained-cert-o9ddshsz/query-46/check/proof.lrat"
+            ],
+            "seconds": 0.003965249750763178,
+            "cpu_seconds": 0.0029229999999999257,
+            "children_peak_rss_bytes": 50610176,
+            "returncode": 0,
+            "stdout": "s VERIFIED UNSAT\n",
+            "stderr": ""
+          }
+        ],
+        "lrat_sha256": "1d4ef1200e4f95291a084bcc6edb1ac60928dddabe8fb5b302a3ea2fe49c2745",
+        "seconds": 0.02621887531131506,
+        "rss_scope": "Cumulative child-process high-water RSS, not isolated per-stage peak"
+      },
+      "verified": true
+    },
+    {
+      "query": 47,
+      "result": 10,
+      "reused_preparations": 11,
+      "conflicts": 0,
+      "input_sha256": "99739e57f42d01a9365b3fbf6486f2fdfaf24b070a8f84b6213e77480b3508a0",
+      "proof_sha256": "b864d25e19053d6f9adeb31cee655800ed581c33d18ca9d10758c522f3cb0edf",
+      "proof_bytes": 8678,
+      "verified": true
+    },
+    {
+      "query": 48,
+      "result": 20,
+      "reused_preparations": 12,
+      "conflicts": 657,
+      "input_sha256": "831a1432cc1a02c1c7adab0075cae402dec614b5c90d8a273f61858975311833",
+      "proof_sha256": "e6c830930ac9149e638cbf6a23bb0504c1cba41b7c45aa3f6c0b1c13993406b6",
+      "proof_bytes": 17358,
+      "validation": {
+        "input_sha256": "831a1432cc1a02c1c7adab0075cae402dec614b5c90d8a273f61858975311833",
+        "drat_sha256": "e6c830930ac9149e638cbf6a23bb0504c1cba41b7c45aa3f6c0b1c13993406b6",
+        "converter_sha256": "9bfc20a5fa9eb2a0ffadd2b0cfc7cdd4a20f6aa9c8d7de5b6c771160b847f630",
+        "checker_sha256": "027e767e8e5543d61671c44f7475e985b7969112e6825d51f2207bf0580cbf5c",
+        "verified": true,
+        "checker_heap_mb": 512,
+        "checker_stack_mb": 128,
+        "stages": [
+          {
+            "command": [
+              "/tmp/bsat-drat-trim",
+              "/var/folders/ts/779j13fj7_x2z167570zvv4c0000gn/T/bsat-retained-cert-o9ddshsz/query-48/check/input.cnf",
+              "/var/folders/ts/779j13fj7_x2z167570zvv4c0000gn/T/bsat-retained-cert-o9ddshsz/query-48/check/proof.drat",
+              "-L",
+              "/var/folders/ts/779j13fj7_x2z167570zvv4c0000gn/T/bsat-retained-cert-o9ddshsz/query-48/check/proof.lrat"
+            ],
+            "seconds": 0.021496708039194345,
+            "cpu_seconds": 0.02033199999999996,
+            "children_peak_rss_bytes": 50610176,
+            "returncode": 0,
+            "stdout": "\nc turning on binary mode checking\n\nc parsing input formula with 43 variables and 134 clauses\n\nc finished parsing, read 17358 bytes from proof file\n\nc detected empty clause; start verification via backward checking\n\nc 134 of 134 clauses in core                            \n\nc 622 of 1318 lemmas in core using 8669 resolution steps\n\nc 0 RAT lemmas in core; 621 redundant literals in core lemmas\n\ns VERIFIED\n\nc verification time: 0.019 seconds\n",
+            "stderr": ""
+          },
+          {
+            "command": [
+              "/tmp/bsat-cake-verified-build/cake_lpr",
+              "--CML_HEAP_SIZE=512",
+              "--CML_STACK_SIZE=128",
+              "/var/folders/ts/779j13fj7_x2z167570zvv4c0000gn/T/bsat-retained-cert-o9ddshsz/query-48/check/input.cnf",
+              "/var/folders/ts/779j13fj7_x2z167570zvv4c0000gn/T/bsat-retained-cert-o9ddshsz/query-48/check/proof.lrat"
+            ],
+            "seconds": 0.004110458306968212,
+            "cpu_seconds": 0.0030929999999999847,
+            "children_peak_rss_bytes": 50610176,
+            "returncode": 0,
+            "stdout": "s VERIFIED UNSAT\n",
+            "stderr": ""
+          }
+        ],
+        "lrat_sha256": "806c81627b727e60dd6adc927e0187af1832b88b77fd64d2ad7043caacad66cd",
+        "seconds": 0.026385542005300522,
+        "rss_scope": "Cumulative child-process high-water RSS, not isolated per-stage peak"
+      },
+      "verified": true
+    },
+    {
+      "query": 49,
+      "result": 10,
+      "reused_preparations": 13,
+      "conflicts": 0,
+      "input_sha256": "93b546440cd5aed48e423a50aa05b50aa8e119182e09b0c3da0509558d810439",
+      "proof_sha256": "c7d035431d54fd184147d5047eab554470d8806291f22b1062f14beb6450f57f",
+      "proof_bytes": 17356,
+      "verified": true
+    },
+    {
+      "query": 50,
+      "result": 20,
+      "reused_preparations": 14,
+      "conflicts": 0,
+      "input_sha256": "8e7faeff7914ebc6952626e6db0df417a98cc109533002adc0e9b1572a918de1",
+      "proof_sha256": "1ebf1c55161d5bb3a741581a220124c20fa483b11bed05a303b1a37fff6f0975",
+      "proof_bytes": 17361,
+      "validation": {
+        "input_sha256": "8e7faeff7914ebc6952626e6db0df417a98cc109533002adc0e9b1572a918de1",
+        "drat_sha256": "1ebf1c55161d5bb3a741581a220124c20fa483b11bed05a303b1a37fff6f0975",
+        "converter_sha256": "9bfc20a5fa9eb2a0ffadd2b0cfc7cdd4a20f6aa9c8d7de5b6c771160b847f630",
+        "checker_sha256": "027e767e8e5543d61671c44f7475e985b7969112e6825d51f2207bf0580cbf5c",
+        "verified": true,
+        "checker_heap_mb": 512,
+        "checker_stack_mb": 128,
+        "stages": [
+          {
+            "command": [
+              "/tmp/bsat-drat-trim",
+              "/var/folders/ts/779j13fj7_x2z167570zvv4c0000gn/T/bsat-retained-cert-o9ddshsz/query-50/check/input.cnf",
+              "/var/folders/ts/779j13fj7_x2z167570zvv4c0000gn/T/bsat-retained-cert-o9ddshsz/query-50/check/proof.drat",
+              "-L",
+              "/var/folders/ts/779j13fj7_x2z167570zvv4c0000gn/T/bsat-retained-cert-o9ddshsz/query-50/check/proof.lrat"
+            ],
+            "seconds": 0.02145820902660489,
+            "cpu_seconds": 0.02061499999999991,
+            "children_peak_rss_bytes": 50610176,
+            "returncode": 0,
+            "stdout": "\nc turning on binary mode checking\n\nc parsing input formula with 130 variables and 135 clauses\n\nc finished parsing, read 17361 bytes from proof file\n\nc detected empty clause; start verification via backward checking\n\nc 134 of 135 clauses in core                            \n\nc 622 of 1319 lemmas in core using 8669 resolution steps\n\nc 0 RAT lemmas in core; 621 redundant literals in core lemmas\n\ns VERIFIED\n\nc verification time: 0.019 seconds\n",
+            "stderr": ""
+          },
+          {
+            "command": [
+              "/tmp/bsat-cake-verified-build/cake_lpr",
+              "--CML_HEAP_SIZE=512",
+              "--CML_STACK_SIZE=128",
+              "/var/folders/ts/779j13fj7_x2z167570zvv4c0000gn/T/bsat-retained-cert-o9ddshsz/query-50/check/input.cnf",
+              "/var/folders/ts/779j13fj7_x2z167570zvv4c0000gn/T/bsat-retained-cert-o9ddshsz/query-50/check/proof.lrat"
+            ],
+            "seconds": 0.0040548332035541534,
+            "cpu_seconds": 0.003019000000000077,
+            "children_peak_rss_bytes": 50610176,
+            "returncode": 0,
+            "stdout": "s VERIFIED UNSAT\n",
+            "stderr": ""
+          }
+        ],
+        "lrat_sha256": "0c57a35ab36d45369982e2d7f31fa8f26f3e5d226cef7e108d7b310005dad6c6",
+        "seconds": 0.026335082948207855,
+        "rss_scope": "Cumulative child-process high-water RSS, not isolated per-stage peak"
+      },
+      "verified": true
+    },
+    {
+      "query": 51,
+      "result": 20,
+      "reused_preparations": 15,
+      "conflicts": 0,
+      "input_sha256": "8e7faeff7914ebc6952626e6db0df417a98cc109533002adc0e9b1572a918de1",
+      "proof_sha256": "3c4d995295675d537ddd443c000bd4162a6aff3e89e5d3221b6888037069d158",
+      "proof_bytes": 17363,
+      "validation": {
+        "input_sha256": "8e7faeff7914ebc6952626e6db0df417a98cc109533002adc0e9b1572a918de1",
+        "drat_sha256": "3c4d995295675d537ddd443c000bd4162a6aff3e89e5d3221b6888037069d158",
+        "converter_sha256": "9bfc20a5fa9eb2a0ffadd2b0cfc7cdd4a20f6aa9c8d7de5b6c771160b847f630",
+        "checker_sha256": "027e767e8e5543d61671c44f7475e985b7969112e6825d51f2207bf0580cbf5c",
+        "verified": true,
+        "checker_heap_mb": 512,
+        "checker_stack_mb": 128,
+        "stages": [
+          {
+            "command": [
+              "/tmp/bsat-drat-trim",
+              "/var/folders/ts/779j13fj7_x2z167570zvv4c0000gn/T/bsat-retained-cert-o9ddshsz/query-51/check/input.cnf",
+              "/var/folders/ts/779j13fj7_x2z167570zvv4c0000gn/T/bsat-retained-cert-o9ddshsz/query-51/check/proof.drat",
+              "-L",
+              "/var/folders/ts/779j13fj7_x2z167570zvv4c0000gn/T/bsat-retained-cert-o9ddshsz/query-51/check/proof.lrat"
+            ],
+            "seconds": 0.021219667047262192,
+            "cpu_seconds": 0.020237999999999978,
+            "children_peak_rss_bytes": 50610176,
+            "returncode": 0,
+            "stdout": "\nc turning on binary mode checking\n\nc parsing input formula with 130 variables and 135 clauses\n\nc finished parsing, read 17363 bytes from proof file\n\nc detected empty clause; start verification via backward checking\n\nc 134 of 135 clauses in core                            \n\nc 622 of 1320 lemmas in core using 8669 resolution steps\n\nc 0 RAT lemmas in core; 621 redundant literals in core lemmas\n\ns VERIFIED\n\nc verification time: 0.019 seconds\n",
+            "stderr": ""
+          },
+          {
+            "command": [
+              "/tmp/bsat-cake-verified-build/cake_lpr",
+              "--CML_HEAP_SIZE=512",
+              "--CML_STACK_SIZE=128",
+              "/var/folders/ts/779j13fj7_x2z167570zvv4c0000gn/T/bsat-retained-cert-o9ddshsz/query-51/check/input.cnf",
+              "/var/folders/ts/779j13fj7_x2z167570zvv4c0000gn/T/bsat-retained-cert-o9ddshsz/query-51/check/proof.lrat"
+            ],
+            "seconds": 0.003818791825324297,
+            "cpu_seconds": 0.0029009999999999037,
+            "children_peak_rss_bytes": 50610176,
+            "returncode": 0,
+            "stdout": "s VERIFIED UNSAT\n",
+            "stderr": ""
+          }
+        ],
+        "lrat_sha256": "6b9683a6a5bd1bc1cf0608d8af941709f7fbca320a5e8de9ed050b0bedbcf5b3",
+        "seconds": 0.02581058396026492,
+        "rss_scope": "Cumulative child-process high-water RSS, not isolated per-stage peak"
+      },
+      "verified": true
+    },
+    {
+      "query": 52,
+      "result": 20,
+      "reused_preparations": 16,
+      "conflicts": 0,
+      "input_sha256": "8e7faeff7914ebc6952626e6db0df417a98cc109533002adc0e9b1572a918de1",
+      "proof_sha256": "0610f2574e59cd85bb0cfc9aa2f97c2d9e8a61d699247474170f9f54e6c94ae5",
+      "proof_bytes": 17365,
+      "validation": {
+        "input_sha256": "8e7faeff7914ebc6952626e6db0df417a98cc109533002adc0e9b1572a918de1",
+        "drat_sha256": "0610f2574e59cd85bb0cfc9aa2f97c2d9e8a61d699247474170f9f54e6c94ae5",
+        "converter_sha256": "9bfc20a5fa9eb2a0ffadd2b0cfc7cdd4a20f6aa9c8d7de5b6c771160b847f630",
+        "checker_sha256": "027e767e8e5543d61671c44f7475e985b7969112e6825d51f2207bf0580cbf5c",
+        "verified": true,
+        "checker_heap_mb": 512,
+        "checker_stack_mb": 128,
+        "stages": [
+          {
+            "command": [
+              "/tmp/bsat-drat-trim",
+              "/var/folders/ts/779j13fj7_x2z167570zvv4c0000gn/T/bsat-retained-cert-o9ddshsz/query-52/check/input.cnf",
+              "/var/folders/ts/779j13fj7_x2z167570zvv4c0000gn/T/bsat-retained-cert-o9ddshsz/query-52/check/proof.drat",
+              "-L",
+              "/var/folders/ts/779j13fj7_x2z167570zvv4c0000gn/T/bsat-retained-cert-o9ddshsz/query-52/check/proof.lrat"
+            ],
+            "seconds": 0.02104654163122177,
+            "cpu_seconds": 0.020228999999999997,
+            "children_peak_rss_bytes": 50610176,
+            "returncode": 0,
+            "stdout": "\nc turning on binary mode checking\n\nc parsing input formula with 130 variables and 135 clauses\n\nc finished parsing, read 17365 bytes from proof file\n\nc detected empty clause; start verification via backward checking\n\nc 134 of 135 clauses in core                            \n\nc 622 of 1321 lemmas in core using 8669 resolution steps\n\nc 0 RAT lemmas in core; 621 redundant literals in core lemmas\n\ns VERIFIED\n\nc verification time: 0.019 seconds\n",
+            "stderr": ""
+          },
+          {
+            "command": [
+              "/tmp/bsat-cake-verified-build/cake_lpr",
+              "--CML_HEAP_SIZE=512",
+              "--CML_STACK_SIZE=128",
+              "/var/folders/ts/779j13fj7_x2z167570zvv4c0000gn/T/bsat-retained-cert-o9ddshsz/query-52/check/input.cnf",
+              "/var/folders/ts/779j13fj7_x2z167570zvv4c0000gn/T/bsat-retained-cert-o9ddshsz/query-52/check/proof.lrat"
+            ],
+            "seconds": 0.004053167067468166,
+            "cpu_seconds": 0.0030010000000000037,
+            "children_peak_rss_bytes": 50610176,
+            "returncode": 0,
+            "stdout": "s VERIFIED UNSAT\n",
+            "stderr": ""
+          }
+        ],
+        "lrat_sha256": "b10b11fc7464c71c740eb8aeef80448e1597b54608727608646f92261ebf6fb2",
+        "seconds": 0.025886582676321268,
+        "rss_scope": "Cumulative child-process high-water RSS, not isolated per-stage peak"
+      },
+      "verified": true
+    }
+  ],
+  "wrong_context_rejected": true
+}

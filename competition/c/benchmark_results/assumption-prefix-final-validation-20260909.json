@@ -1,0 +1,17 @@
+{
+  "scope": "Final certified-only assumption-prefix implementation",
+  "release_tests": 66,
+  "debug_tests": 66,
+  "release_pass": true,
+  "debug_pass": true,
+  "certificates_per_build": 53,
+  "wrong_context_rejected": true,
+  "source_sha256": {
+    "competition/c/src/solver.c": "af3ab426d56892da1fe01cb54f627198aa60a681c09995f5387e6ccbc93ae458",
+    "competition/c/src/bsat.c": "54bca071a3266f351f432f6f1daf3c912f1e1df5ad3d88ae7f783df5d34aa0bf",
+    "competition/c/include/solver.h": "edd74ff873ef81227099c0652430ac176435a1fc96256b8a663599a8e9928cb1",
+    "competition/c/tests/test_restart_reuse.c": "9d6bcb817103e0a1d6fad65d384b1f2710485567e5a2a8a928ce8cf55297695a"
+  },
+  "library_sha256": "95f487c8c0a348cc101260c3d8c27e1eb1c94e551703386bf33ba8986523e34b",
+  "diagnostic_library_sha256": "36d4e855018849e042e4607fab68280b12644464b68b08c4f1a87ed80a3dcb64"
+}

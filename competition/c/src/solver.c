@@ -2368,6 +2368,11 @@ static lbool solve_internal_account_impl(Solver *s, const Lit *assumps, uint32_t
         } else {
             if (solver_should_restart(s)) {
                 Level level = n_assumps ? 0 : solver_restart_level(s);
+                /* Keep only established assumptions, never ordinary decisions.
+                   Conflict backjumps remain unrestricted; new queries remove the
+                   prefix during preparation. Certified facade policy is opt-in. */
+                if (n_assumps && s->opts.restart_assumptions)
+                    level = MIN(s->decision_level, n_assumps);
                 solver_backtrack(s,level);
                 s->stats.restarts++;s->stats.reused_levels += level;
                 if (s->qhead<s->trail_size) continue;

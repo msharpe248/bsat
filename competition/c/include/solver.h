@@ -46,6 +46,7 @@ typedef struct SolverOpts {
     uint32_t restart_first;      // First restart interval (100)
     double   restart_inc;        // Restart interval increment (1.5)
     bool     glucose_restart;    // Use Glucose-style adaptive restarts
+    bool     restart_assumptions; // Retain established assumption prefix at restarts
     bool     reuse_trail;       // Experimental priority-based restart prefix reuse
     bool     chrono;            // Experimental chronological backtracking
     uint32_t chrono_levels;     // Maximum ordinary jump before keeping the prefix

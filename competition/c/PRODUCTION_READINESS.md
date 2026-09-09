@@ -141,6 +141,17 @@ checks 10/10 runs in both versions, with identical proof streams and less than
 1% aggregate CPU change. This improves the measured Linux case; it does not close
 the remaining reference-solver gap or establish workload-specific readiness.
 
+The [certified assumption-prefix follow-up](ASSUMPTION_RESTART_PREFIX.md) adds a
+checked retained cal3 solve within 60 CPU seconds: the control remains UNKNOWN,
+while the certified candidate completes in repeated 40.7–52.9-second runs. Both
+four-circuit candidate passes check 48/48 queries. A global version regresses
+uncertified cal3, so the final internal policy is enabled only by the certified
+facade. Certified gen23 becomes slower in the measured pass; the change is not a
+universal speedup. Full release/sanitizer and independent certificate checks pass;
+direct production-library timing is being finalized. The broader eight-family
+Linux reduction screen also passes its frozen regression gate, with only 4/16
+checked runs per version; its many UNKNOWNs limit generalization.
+
 ## Release gates
 
 A production release needs a concrete target workload and deployment envelope.
