@@ -96,3 +96,7 @@ correctness run 34324158958, independent integration run 34324158925 and fuzz ru
 34324159176. Superseded pre-runtime documentation/evidence correctness runs were
 cancelled to free macOS runner capacity. The final documentation-only commit
 skips redundant CI; it does not cancel the runtime commit's checks.
+
+A later [broader Linux comparison](CERTIFIED_LINUX_GENERALIZATION.md) passes its
+regression gates but does not reproduce the Mac cal3 solve within 60 CPU seconds
+on the measured EPYC 9V74 runner. See that report for the preserved limitations.
