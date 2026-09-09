@@ -63,3 +63,10 @@ injection in place. Restore the separately configured ordinary budget before
 checkpoint/replay. The focused real-library regression passes UNKNOWN → restored
 budget → zero-journal checkpoint → independently checked SAT. Archive the failed
 run; retry the same frozen outer envelope, with no raised resource limits.
+
+
+Fresh Linux baseline complete: 64/64 BSAT versus 62/64 CaDiCaL within equal query
+CPU budgets; strict summary and independent checking pass. See FRESH_COMPETITIVENESS.md.
+Retained cal3/cal100 work diagnosis complete; see RETAINED_SEARCH_WORK.md. The
+failure-cache prototype passes 66 release/sanitizer executables, focused entailment
+and cleanup cases, and 53 independent certificates per build; target timing pending.

@@ -31,11 +31,21 @@ Passing finite tests is not a formal proof of the complete C implementation.
 | Failed-worker recovery | Application examples retain input, recreate/replay, reject partial recovery and stale answers | [Recovery](SERVICE_RECOVERY.md); tested ENOMEM and SIGKILL worker loss, not a durable application transaction service |
 | Hard external containment | Linux acceptance harness: cgroup memory/CPU supervision and private tmpfs covering worker/checkers | [Complete transactions](LINUX_TRANSACTION_ACCEPTANCE.md); hosted provisional limits pass, deployment-specific policy still required |
 | Independent UNSAT acceptance | DRAT-to-LRAT conversion followed by pinned CakeML `cake_lpr` | [Verified checking](VERIFIED_CHECKING.md); checker verifies the exact CNF, not the application's upstream encoding intent |
-| Stateful industrial validation | Four published verification circuits, retained CaDiCaL and fresh Kissat | [Circuit histories](INDUSTRIAL_CIRCUIT_HISTORIES.md); bounded preprocessed circuits, not unbounded safety or customer trace coverage |
+| Stateful industrial validation | Original, expanded and fresh published verification circuit sets, retained CaDiCaL and fresh Kissat | [Circuit histories](INDUSTRIAL_CIRCUIT_HISTORIES.md); bounded preprocessed circuits, not unbounded safety or customer trace coverage |
 | Profiling and optimization evidence | Optional diagnostics, Linux software stacks, frozen serial benchmark reports | [Planning/layout](PLANNING_LAYOUT_EXPERIMENT.md); tested VM lacks hardware PMU, compact-header candidate rejected |
 | Fuzzing and failures | Coverage-guided API/parser targets, sanitizer and allocation-failure campaigns | [Fuzzing](FUZZING.md), [coverage inventory](tests/FEATURE_COVERAGE.md); bounded exercised paths |
 
 ## Current evidence and unresolved gaps
+
+Latest status: the certified LBD runtime c6b4ac8 passes correctness, independent
+integration and coverage-fuzz CI. The [fresh four-circuit baseline](FRESH_COMPETITIVENESS.md)
+checks 64/64 BSAT queries versus 62/64 retained CaDiCaL queries within equal CPU
+budgets, adding strengths on cal162 and a selected PicoRV32 case. The
+[retained work diagnosis](RETAINED_SEARCH_WORK.md) still shows large search-work
+gaps on cal3/cal100. These results establish workload dependence, not general
+competitiveness. The current batch is [competitiveness and complete cost](COMPETITIVENESS_MILESTONES.md).
+
+The campaign history below records earlier revisions and their then-current gaps.
 
 The real-circuit release campaign covers 192 queries through depth 16, growing to
 158,101 variables and 391,536 permanent clauses. It has 96 checked SAT, 92 checked

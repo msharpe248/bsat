@@ -1,0 +1,33 @@
+{
+  "queries": 64,
+  "solvers": {
+    "bsat": {
+      "checked_within_budget": 64,
+      "mean_cpu_par2": 0.11093964324999907,
+      "unfinished_or_late": []
+    },
+    "cadical": {
+      "checked_within_budget": 62,
+      "mean_cpu_par2": 0.7531832716718753,
+      "unfinished_or_late": [
+        [
+          "picorv32_mutAX_nomem-p8.aig",
+          0,
+          8,
+          1
+        ],
+        [
+          "picorv32_mutAX_nomem-p8.aig",
+          1,
+          8,
+          1
+        ]
+      ]
+    }
+  },
+  "max_bsat_owned_capacity_bytes": 173435155,
+  "max_journal_bytes": 4527796,
+  "rss_scope": "Per-solver RSS is not measured by this in-process comparison; use isolated transaction acceptance for aggregate peak memory.",
+  "total_query_and_validation_wall_seconds": 278.7959615880005,
+  "cost_scope": "Includes both retained solvers, fresh validation, export and checking; excludes encoding/additions. Not a BSAT-only transaction latency."
+}
