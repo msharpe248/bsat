@@ -75,6 +75,37 @@ the existing planning profile and Kissat UNKNOWN on both frozen inputs at equal
 faster, but that does not establish better solving: the solvers perform different
 search and simplification work. No additional planning policy is promoted.
 
+The [fresh larger holdout](EXPANDED_HOLDOUT_BASELINE.md) adds nine CNFs and 36
+serial BSAT/Kissat runs. BSAT completes 4/18 and Kissat 2/18; all completed answers
+are checked SAT. BSAT solves the 611,755-variable, 10,974,540-clause planning
+case in about 6.1 process-CPU seconds in both repetitions. Original-model checking
+adds about 9.5 wall seconds outside solve timing; those costs belong in deployment
+acceptance budgets. Most fresh inputs remain UNKNOWN for both solvers.
+
+The [clause eligibility follow-up](LEARNED_CLAUSE_ELIGIBILITY.md) corrects a
+repeated recommendation: scan-heat selection had already failed a prior holdout.
+About 71% of learned scans on the larger development planning input occur beyond
+the existing strengthening size limit. The new counters are diagnostic-only.
+[cal3 structural ablations](CAL3_STRUCTURAL_DIAGNOSIS.md) also remain unresolved
+for BSAT; CaDiCaL solves even with preprocessing disabled. These findings do not
+justify another production flag or a default change.
+
+Expanded circuit validation also exposed a [checker resource limit](CHECKER_RESOURCE_SCALING.md):
+a valid larger reference certificate exhausted the fixed CakeML heap, then its
+stack. Both sizes are now explicit settings and failures retain diagnostics and
+optional artifacts. The same certificate verifies with 2,048/512 MB settings,
+using about 2.28 GB checker RSS. These are checker runtime settings, not OS-level
+aggregate memory ceilings, and are separate from solver resource requirements.
+
+The completed [expanded probing comparison](EXPANDED_CERTIFIED_PROBING.md) adds
+128 paired queries through depth 24, reaching 730,151 variables and 1,960,296
+permanent clauses. Each mode returns 36 checked SAT, 20 checked UNSAT and eight
+UNKNOWNs. Probing CPU PAR-2 increases 3.4% with no solved-case loss; it remains
+opt-in. Another 32 sanitizer and 64 deeper release queries exercise checkpoint
+invalidation, zeroed journals and subsequent checked answers. Neither finite
+validation nor a configurable checker resource envelope establishes application
+SLOs or general solver competitiveness.
+
 ## Release gates
 
 A production release needs a concrete target workload and deployment envelope.
@@ -98,7 +129,7 @@ those requirements and the exact-candidate checks are satisfied.
 
 ## Where to look
 
-- [Current batch and outcomes](TARGETED_PERFORMANCE_MILESTONES.md)
+- [Current batch and outcomes](SEARCH_QUALITY_MILESTONES.md)
 - [Public ABI and lifetime contract](API_CONTRACT.md), [build/install](INSTALLING.md)
 - [Executable coverage and reproduction](tests/FEATURE_COVERAGE.md)
 - [Correctness CI](../../.github/workflows/c-solver.yml), [independent integration](../../.github/workflows/c-integration.yml), [fuzz CI](../../.github/workflows/c-fuzz.yml)

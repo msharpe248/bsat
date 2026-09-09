@@ -48,4 +48,8 @@ the numerical limits here are experiment gates only.
    review; retain diagnostics, no speculative selector. See LEARNED_CLAUSE_ELIGIBILITY.md.
 3. Complete: structural options do not close cal3; the reference also solves
    with preprocessing disabled. See CAL3_STRUCTURAL_DIAGNOSIS.md.
-4. Expanded certified history validation pending.
+4. Complete: 128 larger paired circuit queries, 32 sanitizer checkpoint queries
+   and 64 deeper original-circuit checkpoint queries. A checker heap/stack limit
+   was reproduced and fixed without relaxing verification. Both modes preserve
+   solved cases; larger-holdout probing CPU PAR-2 regresses 3.4%, so defaults stay
+   unchanged. See EXPANDED_CERTIFIED_PROBING.md and CHECKER_RESOURCE_SCALING.md.

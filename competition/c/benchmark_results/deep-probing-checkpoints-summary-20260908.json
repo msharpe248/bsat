@@ -1,0 +1,164 @@
+{
+  "complete": true,
+  "modes": {
+    "3": {
+      "queries": 32,
+      "solved": 30,
+      "sat": 16,
+      "unsat": 14,
+      "unknown": 2,
+      "late": 0,
+      "total_cpu_par2": 21.189937999999987,
+      "peak_journal_bytes": 20186609,
+      "peak_owned_capacity_bytes": 123354211,
+      "total_export_cpu_seconds": 0.5183730000000005,
+      "checkpoints": 12,
+      "checkpoint_cpu_seconds": 0.12234199999999502
+    },
+    "7": {
+      "queries": 32,
+      "solved": 30,
+      "sat": 16,
+      "unsat": 14,
+      "unknown": 2,
+      "late": 0,
+      "total_cpu_par2": 21.17426100000001,
+      "peak_journal_bytes": 21101087,
+      "peak_owned_capacity_bytes": 122512171,
+      "total_export_cpu_seconds": 0.5191869999999934,
+      "checkpoints": 12,
+      "checkpoint_cpu_seconds": 0.12358399999999747
+    }
+  },
+  "circuits": {
+    "cal3.aig": {
+      "3": {
+        "queries": 8,
+        "solved": 7,
+        "sat": 4,
+        "unsat": 3,
+        "unknown": 1,
+        "late": 0,
+        "total_cpu_par2": 10.13685,
+        "peak_journal_bytes": 20186609,
+        "peak_owned_capacity_bytes": 9162286,
+        "total_export_cpu_seconds": 0.021264999999999715,
+        "checkpoints": 3,
+        "checkpoint_cpu_seconds": 0.0051609999999999295
+      },
+      "7": {
+        "queries": 8,
+        "solved": 7,
+        "sat": 4,
+        "unsat": 3,
+        "unknown": 1,
+        "late": 0,
+        "total_cpu_par2": 10.257032000000004,
+        "peak_journal_bytes": 19540077,
+        "peak_owned_capacity_bytes": 9085722,
+        "total_export_cpu_seconds": 0.021148000000001943,
+        "checkpoints": 3,
+        "checkpoint_cpu_seconds": 0.005143000000000342
+      }
+    },
+    "gen23.aig": {
+      "3": {
+        "queries": 8,
+        "solved": 7,
+        "sat": 4,
+        "unsat": 3,
+        "unknown": 1,
+        "late": 0,
+        "total_cpu_par2": 10.644757999999996,
+        "peak_journal_bytes": 19541950,
+        "peak_owned_capacity_bytes": 123354211,
+        "total_export_cpu_seconds": 0.24830399999999742,
+        "checkpoints": 3,
+        "checkpoint_cpu_seconds": 0.06928699999999566
+      },
+      "7": {
+        "queries": 8,
+        "solved": 7,
+        "sat": 4,
+        "unsat": 3,
+        "unknown": 1,
+        "late": 0,
+        "total_cpu_par2": 10.376147000000003,
+        "peak_journal_bytes": 21101087,
+        "peak_owned_capacity_bytes": 122512171,
+        "total_export_cpu_seconds": 0.24741799999998904,
+        "checkpoints": 3,
+        "checkpoint_cpu_seconds": 0.0695129999999935
+      }
+    },
+    "usb_phy.aig": {
+      "3": {
+        "queries": 8,
+        "solved": 8,
+        "sat": 4,
+        "unsat": 4,
+        "unknown": 0,
+        "late": 0,
+        "total_cpu_par2": 0.032401000000000124,
+        "peak_journal_bytes": 29097,
+        "peak_owned_capacity_bytes": 8343727,
+        "total_export_cpu_seconds": 0.03399100000000388,
+        "checkpoints": 3,
+        "checkpoint_cpu_seconds": 0.007217000000000695
+      },
+      "7": {
+        "queries": 8,
+        "solved": 8,
+        "sat": 4,
+        "unsat": 4,
+        "unknown": 0,
+        "late": 0,
+        "total_cpu_par2": 0.03992399999999563,
+        "peak_journal_bytes": 24635,
+        "peak_owned_capacity_bytes": 8339471,
+        "total_export_cpu_seconds": 0.03297900000000098,
+        "checkpoints": 3,
+        "checkpoint_cpu_seconds": 0.00729300000000066
+      }
+    },
+    "vgasim_imgfifo-p039.aig": {
+      "3": {
+        "queries": 8,
+        "solved": 8,
+        "sat": 4,
+        "unsat": 4,
+        "unknown": 0,
+        "late": 0,
+        "total_cpu_par2": 0.3759289999999922,
+        "peak_journal_bytes": 263440,
+        "peak_owned_capacity_bytes": 60156483,
+        "total_export_cpu_seconds": 0.21481299999999948,
+        "checkpoints": 3,
+        "checkpoint_cpu_seconds": 0.04067699999999874
+      },
+      "7": {
+        "queries": 8,
+        "solved": 8,
+        "sat": 4,
+        "unsat": 4,
+        "unknown": 0,
+        "late": 0,
+        "total_cpu_par2": 0.5011580000000073,
+        "peak_journal_bytes": 362548,
+        "peak_owned_capacity_bytes": 60156867,
+        "total_export_cpu_seconds": 0.21764200000000145,
+        "checkpoints": 3,
+        "checkpoint_cpu_seconds": 0.041635000000002975
+      }
+    }
+  },
+  "lost_solves": [],
+  "gained_solves": [],
+  "cpu_par2_regression": -0.000739832273222274,
+  "passes_no_loss_five_percent_gate": true,
+  "scope": "Observed paired history results; does not automatically promote a default",
+  "source": {
+    "path": "competition/c/benchmark_results/deep-probing-checkpoints-20260908.json",
+    "sha256": "cdc7d0be4254763810e41812b039e686c620a31acff1ebd50d5ed3f6e9c47844"
+  }
+}

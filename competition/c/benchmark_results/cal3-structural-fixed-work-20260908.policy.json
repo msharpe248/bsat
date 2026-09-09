@@ -1,0 +1,101 @@
+{
+  "scope": "Frozen one-shot structural ablations of an exact cal3 query snapshot.",
+  "cpu_seconds": 5,
+  "wall_seconds": 10,
+  "repeats": 2,
+  "seed": 2026090864,
+  "fixed_conflicts": 10000,
+  "boundary": "Snapshot includes the query assumption as a permanent unit; not retained API semantics",
+  "commands": {
+    "bsat-default": [
+      "/Users/msharpe/python/bsat/competition/c/bin/bsat",
+      "--conflicts",
+      "10000",
+      "--binary-proof",
+      "--proof",
+      "{proof}",
+      "{input}"
+    ],
+    "bsat-equiv": [
+      "/Users/msharpe/python/bsat/competition/c/bin/bsat",
+      "--equiv",
+      "--equiv-budget",
+      "100000000",
+      "--conflicts",
+      "10000",
+      "--binary-proof",
+      "--proof",
+      "{proof}",
+      "{input}"
+    ],
+    "bsat-congruence": [
+      "/Users/msharpe/python/bsat/competition/c/bin/bsat",
+      "--congruence",
+      "--congruence-budget",
+      "100000000",
+      "--conflicts",
+      "10000",
+      "--binary-proof",
+      "--proof",
+      "{proof}",
+      "{input}"
+    ],
+    "bsat-combined": [
+      "/Users/msharpe/python/bsat/competition/c/bin/bsat",
+      "--congruence",
+      "--congruence-budget",
+      "100000000",
+      "--equiv",
+      "--equiv-budget",
+      "100000000",
+      "--conflicts",
+      "10000",
+      "--binary-proof",
+      "--proof",
+      "{proof}",
+      "{input}"
+    ],
+    "bsat-eliminate": [
+      "/Users/msharpe/python/bsat/competition/c/bin/bsat",
+      "--elim",
+      "--conflicts",
+      "10000",
+      "--binary-proof",
+      "--proof",
+      "{proof}",
+      "{input}"
+    ],
+    "cadical": [
+      "/private/tmp/bsat-cadical-reference/build/cadical",
+      "-c",
+      "10000",
+      "{input}",
+      "{proof}"
+    ],
+    "cadical-plain": [
+      "/private/tmp/bsat-cadical-reference/build/cadical",
+      "-c",
+      "10000",
+      "--plain",
+      "{input}",
+      "{proof}"
+    ],
+    "kissat": [
+      "/private/tmp/kissat-8af8e56f174b778aef3aa45af9f739b2a5f492c2/build/kissat",
+      "--conflicts=10000",
+      "-s",
+      "{input}",
+      "{proof}"
+    ]
+  },
+  "binaries": {
+    "/Users/msharpe/python/bsat/competition/c/bin/bsat": "0444e19c256fa3be362b990cc29e7f45b558c28ea58b688c405bc5505b73dc55",
+    "/private/tmp/bsat-cadical-reference/build/cadical": "053c58487356bd7fcce4f028d99da021ba9f7d69448c7997cc6a1901c33109ef",
+    "/private/tmp/kissat-8af8e56f174b778aef3aa45af9f739b2a5f492c2/build/kissat": "5cad8e92487416008cf8ec4573c2ab2a02b7c1927ab06e8c8cacb317908cff1f"
+  },
+  "inputs": {
+    "/private/tmp/bsat-target-snapshots/cal3-depth16-polarity1.cnf": {
+      "sha256": "6bbfa3e0109b277412f4bf0edc157670859943a2e914c2d16f27346acc1b9e98"
+    }
+  }
+}

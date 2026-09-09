@@ -1,0 +1,164 @@
+{
+  "complete": true,
+  "modes": {
+    "3": {
+      "queries": 64,
+      "solved": 56,
+      "sat": 36,
+      "unsat": 20,
+      "unknown": 8,
+      "late": 0,
+      "total_cpu_par2": 92.52825400000005,
+      "peak_journal_bytes": 19767116,
+      "peak_owned_capacity_bytes": 271165148,
+      "total_export_cpu_seconds": 4.260905999999905,
+      "checkpoints": 0,
+      "checkpoint_cpu_seconds": 0
+    },
+    "7": {
+      "queries": 64,
+      "solved": 56,
+      "sat": 36,
+      "unsat": 20,
+      "unknown": 8,
+      "late": 0,
+      "total_cpu_par2": 95.63681799999985,
+      "peak_journal_bytes": 20177748,
+      "peak_owned_capacity_bytes": 261862729,
+      "total_export_cpu_seconds": 4.258925999999899,
+      "checkpoints": 0,
+      "checkpoint_cpu_seconds": 0
+    }
+  },
+  "circuits": {
+    "cal100.aig": {
+      "3": {
+        "queries": 16,
+        "solved": 12,
+        "sat": 8,
+        "unsat": 4,
+        "unknown": 4,
+        "late": 0,
+        "total_cpu_par2": 41.612982999999915,
+        "peak_journal_bytes": 19767116,
+        "peak_owned_capacity_bytes": 171895350,
+        "total_export_cpu_seconds": 0.7434190000000243,
+        "checkpoints": 0,
+        "checkpoint_cpu_seconds": 0
+      },
+      "7": {
+        "queries": 16,
+        "solved": 12,
+        "sat": 8,
+        "unsat": 4,
+        "unknown": 4,
+        "late": 0,
+        "total_cpu_par2": 41.360505000000074,
+        "peak_journal_bytes": 20177748,
+        "peak_owned_capacity_bytes": 171939254,
+        "total_export_cpu_seconds": 0.695596999999978,
+        "checkpoints": 0,
+        "checkpoint_cpu_seconds": 0
+      }
+    },
+    "dspfilters_fastfir_second-p32.aig": {
+      "3": {
+        "queries": 16,
+        "solved": 14,
+        "sat": 8,
+        "unsat": 6,
+        "unknown": 2,
+        "late": 0,
+        "total_cpu_par2": 25.72266200000007,
+        "peak_journal_bytes": 3329250,
+        "peak_owned_capacity_bytes": 261824489,
+        "total_export_cpu_seconds": 1.352958000000001,
+        "checkpoints": 0,
+        "checkpoint_cpu_seconds": 0
+      },
+      "7": {
+        "queries": 16,
+        "solved": 14,
+        "sat": 8,
+        "unsat": 6,
+        "unknown": 2,
+        "late": 0,
+        "total_cpu_par2": 28.237486999999902,
+        "peak_journal_bytes": 4286111,
+        "peak_owned_capacity_bytes": 261862729,
+        "total_export_cpu_seconds": 1.357426999999916,
+        "checkpoints": 0,
+        "checkpoint_cpu_seconds": 0
+      }
+    },
+    "h_b05.aig": {
+      "3": {
+        "queries": 16,
+        "solved": 16,
+        "sat": 12,
+        "unsat": 4,
+        "unknown": 0,
+        "late": 0,
+        "total_cpu_par2": 0.24818600000006086,
+        "peak_journal_bytes": 3398,
+        "peak_owned_capacity_bytes": 129759467,
+        "total_export_cpu_seconds": 1.012880999999922,
+        "checkpoints": 0,
+        "checkpoint_cpu_seconds": 0
+      },
+      "7": {
+        "queries": 16,
+        "solved": 16,
+        "sat": 12,
+        "unsat": 4,
+        "unknown": 0,
+        "late": 0,
+        "total_cpu_par2": 0.29247999999989815,
+        "peak_journal_bytes": 3398,
+        "peak_owned_capacity_bytes": 129759467,
+        "total_export_cpu_seconds": 1.0212959999999782,
+        "checkpoints": 0,
+        "checkpoint_cpu_seconds": 0
+      }
+    },
+    "leader_election.3.prop1-back-serstep.aig": {
+      "3": {
+        "queries": 16,
+        "solved": 14,
+        "sat": 8,
+        "unsat": 6,
+        "unknown": 2,
+        "late": 0,
+        "total_cpu_par2": 24.944423,
+        "peak_journal_bytes": 15662045,
+        "peak_owned_capacity_bytes": 271165148,
+        "total_export_cpu_seconds": 1.1516479999999585,
+        "checkpoints": 0,
+        "checkpoint_cpu_seconds": 0
+      },
+      "7": {
+        "queries": 16,
+        "solved": 14,
+        "sat": 8,
+        "unsat": 6,
+        "unknown": 2,
+        "late": 0,
+        "total_cpu_par2": 25.746345999999974,
+        "peak_journal_bytes": 15848364,
+        "peak_owned_capacity_bytes": 243417252,
+        "total_export_cpu_seconds": 1.1846060000000271,
+        "checkpoints": 0,
+        "checkpoint_cpu_seconds": 0
+      }
+    }
+  },
+  "lost_solves": [],
+  "gained_solves": [],
+  "cpu_par2_regression": 0.03359583549474299,
+  "passes_no_loss_five_percent_gate": true,
+  "scope": "Observed paired history results; does not automatically promote a default",
+  "source": {
+    "path": "competition/c/benchmark_results/expanded-certified-probing-20260908.json",
+    "sha256": "88a6dc7298abda48f6a0ea3cebb48ea9bc8fd7cbbace2b86594d259ba1a58192"
+  }
+}

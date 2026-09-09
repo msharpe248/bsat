@@ -32,6 +32,8 @@ trials consume 7,346,394 / 832,974 work units. Replacement clauses subsequently
 receive 575,004 / 48,592 replacement scans during the measured run. These are
 observed uses, **not saved scans**: shortened clauses may avoid work, imply units
 or change search. The measurements do not identify that counterfactual benefit.
+Scan counts include propagation during later simplification trials as well as
+ordinary search; subsequent scans alone do not establish productive search use.
 Trial work excludes mandatory root closure, allocation and cleanup.
 
 In the uninstrumented release screen, ordinary versus inprocessing CPU is
