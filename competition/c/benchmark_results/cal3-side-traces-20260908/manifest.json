@@ -1,0 +1,47 @@
+{
+  "scope": "Diagnostic traces, not performance measurements; control must preserve baseline proof prefix",
+  "runs": [
+    {
+      "name": "baseline",
+      "binary_sha256": "0444e19c256fa3be362b990cc29e7f45b558c28ea58b688c405bc5505b73dc55",
+      "command": [
+        "/private/tmp/bsat-cal3-before",
+        "--conflicts",
+        "10000",
+        "--binary-proof",
+        "--proof",
+        "/tmp/bsat-side-baseline.drat",
+        "/tmp/bsat-target-snapshots/cal3-depth16-polarity1.cnf"
+      ],
+      "proof_sha256": "1b0d585ea797fd86243b41fe9f927265242dca5196ebd9272a516e9ff528f281"
+    },
+    {
+      "name": "control",
+      "binary_sha256": "bee566a387d046960bf5cd0588fbaa0f491ff017851e118b29e4d2622f26461a",
+      "command": [
+        "/Users/msharpe/python/bsat/competition/c/bin/bsat_side_control_trace",
+        "--conflicts",
+        "10000",
+        "--binary-proof",
+        "--proof",
+        "/tmp/bsat-side-control.drat",
+        "/tmp/bsat-target-snapshots/cal3-depth16-polarity1.cnf"
+      ],
+      "proof_sha256": "1b0d585ea797fd86243b41fe9f927265242dca5196ebd9272a516e9ff528f281"
+    },
+    {
+      "name": "candidate",
+      "binary_sha256": "3da9b9a654471b65c98f266094c3568a2959f4a54efafee0b268c8b48daee315",
+      "command": [
+        "/Users/msharpe/python/bsat/competition/c/bin/bsat_side_trace",
+        "--conflicts",
+        "10000",
+        "--binary-proof",
+        "--proof",
+        "/tmp/bsat-side-candidate.drat",
+        "/tmp/bsat-target-snapshots/cal3-depth16-polarity1.cnf"
+      ],
+      "proof_sha256": "f1f3c2988e7344e05af31b6f9b61a664f688e5ceeb55a104e83e722379265bca"
+    }
+  ]
+}

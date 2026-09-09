@@ -1,0 +1,130 @@
+diff --git a/competition/c/include/solver.h b/competition/c/include/solver.h
+index f10a230..be8c011 100644
+--- a/competition/c/include/solver.h
++++ b/competition/c/include/solver.h
+@@ -471,6 +471,9 @@ uint32_t solver_minimize_binary(Solver *s, Lit *learnt, uint32_t *size, uint32_t
+ uint32_t solver_minimize_clause(Solver* s, Lit* learnt, uint32_t* size);
+ 
+ // Analyze conflict and learn clause
++#if defined(BSAT_REASON_SIDE_BUMP) || defined(BSAT_REASON_SIDE_TRACE)
++unsigned solver_reason_side_reward(Solver*, const Lit*, uint32_t, uint32_t, bool);
++#endif
+ void solver_analyze(Solver* s, CRef conflict, Lit* learnt, uint32_t* learnt_size, Level* bt_level);
+ 
+ // Make a decision
+diff --git a/competition/c/src/solver.c b/competition/c/src/solver.c
+index 2275ef9..56a506d 100644
+--- a/competition/c/src/solver.c
++++ b/competition/c/src/solver.c
+@@ -1228,6 +1228,39 @@ static void improve_clause_lbd(Solver *s, CRef cr) {
+         CLAUSE_HEADER(s->arena, cr)->flags |= CLAUSE_FROZEN;
+ }
+ 
++/* Compile-time research prototype: bounded one-hop reason-side VSIDS reward.
++ * Does not modify clauses, reasons, assignments, or the learned resolvent. */
++#if defined(BSAT_REASON_SIDE_BUMP) || defined(BSAT_REASON_SIDE_TRACE)
++unsigned solver_reason_side_reward(Solver *s, const Lit *learnt, uint32_t n,
++                                   uint32_t budget, bool reward) {
++    if (s->opts.vmtf || s->opts.lrb || s->interrupted || !budget) return 0;
++    uint32_t touched=0, added=0;
++    for (uint32_t i=0;i<n;++i) {
++        Var v=var(learnt[i]);
++        if (!s->seen[v]) { s->seen[v]=1;s->minimize_touched[touched++]=v; }
++    }
++    for (uint32_t i=1;i<n && budget;++i) {
++        if (solver_budget_exhausted(s)) break;
++        Var v=var(learnt[i]);CRef cr=s->vars[v].reason;
++        if (s->values[v]==UNDEF || !s->vars[v].level || cr==BINARY_CONFLICT) continue;
++        Lit binary=s->binary_reasons[v];
++        if (cr==INVALID_CLAUSE && binary==LIT_UNDEF) continue;
++        uint32_t size=cr==INVALID_CLAUSE?1:CLAUSE_SIZE(s->arena,cr);
++        const Lit *lits=cr==INVALID_CLAUSE?&binary:CLAUSE_LITS(s->arena,cr);
++        for (uint32_t j=0;j<size && budget;++j) {
++            --budget;
++            Var u=var(lits[j]);
++            if (u==v || s->seen[u] || s->values[u]==UNDEF || !s->vars[u].level ||
++                s->vars[u].trail_pos>=s->vars[v].trail_pos) continue;
++            s->seen[u]=1;s->minimize_touched[touched++]=u;++added;
++            if (reward) bump_var_activity(s,u,s->order.var_inc);
++        }
++    }
++    for (uint32_t i=0;i<touched;++i) s->seen[s->minimize_touched[i]]=0;
++    return added;
++}
++#endif
++
+ static void solver_analyze_account_impl(Solver* s, CRef conflict, Lit* learnt, uint32_t* learnt_size, Level* bt_level) {
+     s->vmtf.pending = 0;
+     uint32_t index = s->trail_size - 1;
+@@ -2327,6 +2360,23 @@ static lbool solve_internal_account_impl(Solver *s, const Lit *assumps, uint32_t
+             uint32_t binary_removed = solver_minimize_binary(s,learnt,&n,lbd);
+             s->stats.minimized_literals += binary_removed;
+             if (binary_removed) lbd = calc_lbd(s,learnt,n);
++#if defined(BSAT_REASON_SIDE_BUMP) || defined(BSAT_REASON_SIDE_TRACE)
++            unsigned side=solver_reason_side_reward(s,learnt,n,10000,
++#ifdef BSAT_REASON_SIDE_BUMP
++                                                   true
++#else
++                                                   false
++#endif
++                                                   );
++#ifdef BSAT_REASON_SIDE_TRACE
++            fprintf(stderr,"c side-trace %llu %u %u %u %llu %llu\n",
++                    (unsigned long long)s->stats.conflicts,n,lbd,side,
++                    (unsigned long long)s->stats.decisions,
++                    (unsigned long long)s->stats.propagations);
++#else
++            (void)side;
++#endif
++#endif
+             record_lbd(s,lbd);
+             /* Put the highest remaining decision level in watch position 1. */
+             backtrack=0;
+diff --git a/competition/c/tests/test_reason_side.c b/competition/c/tests/test_reason_side.c
+new file mode 100644
+index 0000000..c38f6a6
+--- /dev/null
++++ b/competition/c/tests/test_reason_side.c
+@@ -0,0 +1,42 @@
++#include "../include/solver.h"
++#include <assert.h>
++#include <math.h>
++#include <stdio.h>
++#if defined(BSAT_REASON_SIDE_BUMP) || defined(BSAT_REASON_SIDE_TRACE)
++static void decision(Solver *s,Var v) {
++    s->decision_level++;s->trail_lims[s->decision_level]=s->trail_size;
++    s->values[v]=TRUE;s->vars[v].level=s->decision_level;
++    s->vars[v].reason=INVALID_CLAUSE;s->binary_reasons[v]=LIT_UNDEF;
++    s->vars[v].trail_pos=s->trail_size;s->trail[s->trail_size++]=(Trail){mkLit(v,false)};
++    assert(solver_propagate(s)==INVALID_CLAUSE);
++}
++int main(void) {
++    unsigned cases=0;
++    for(unsigned mode=0;mode<4;++mode) for(unsigned budget=0;budget<8;++budget)
++    for(unsigned large=0;large<2;++large) {
++        Solver *s=solver_new();assert(s);
++        for(unsigned v=0;v<6;++v)assert(solver_new_var(s));
++        Lit a[]={mkLit(1,true),mkLit(2,false)};
++        Lit b[]={mkLit(1,true),mkLit(2,true),mkLit(3,false)};
++        assert(solver_add_clause(s,a,2));assert(solver_add_clause(s,b,3));
++        decision(s,1);decision(s,4);
++        Lit learnt[]={mkLit(4,true),mkLit(2,true),mkLit(3,true)};
++        Lit before[3];memcpy(before,learnt,sizeof before);
++        double inc=large?1e101:1;s->order.var_inc=inc;
++        s->opts.vmtf=mode==1;s->opts.lrb=mode==2;s->interrupted=mode==3;
++        unsigned got=solver_reason_side_reward(s,learnt,3,budget,true);
++        unsigned expected=mode==0 && budget>0;
++        assert(got==expected && !memcmp(before,learnt,sizeof before));
++        for(Var v=1;v<=6;++v)assert(!s->seen[v] && isfinite(s->vars[v].activity));
++        assert((s->vars[1].activity>0)==(expected!=0));
++        assert(s->vars[2].activity==0 && s->vars[3].activity==0);
++        assert(s->vars[2].reason==INVALID_CLAUSE && s->binary_reasons[2]==mkLit(1,true));
++        assert(s->values[1]==TRUE && s->values[2]==TRUE && s->values[3]==TRUE);
++        solver_free(s);++cases;
++    }
++    printf("PASS: %u bounded reason-side reward cases\n",cases);
++    return 0;
++}
++#else
++int main(void) { puts("Reason-side prototype disabled");return 0; }
++#endif

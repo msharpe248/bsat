@@ -1,0 +1,19 @@
+{
+  "scope": "Completed prototype checks; no performance or default-promotion claim",
+  "release_unit_tests": {
+    "executables": 66,
+    "focused_cases": 64,
+    "result": "All tests passed!"
+  },
+  "sanitizer_unit_tests": {
+    "executables": 66,
+    "focused_cases": 64,
+    "result": "All tests passed!"
+  },
+  "independent_release": "PASS: 3956 solves; truth-table answers, original models, text/binary RUP proofs checked (seed 2026090902)\n",
+  "commands": [
+    "make -C competition/c -j2 MODE=side TARGET=bin/bsat_side OPTFLAGS=\"-O3 -march=native -flto -DBSAT_REASON_SIDE_BUMP\" all test",
+    "make -C competition/c -j2 MODE=side_debug TARGET=bin/bsat_side_debug OPTFLAGS=\"-g -O0 -DDEBUG -fsanitize=address -fsanitize=undefined -DBSAT_REASON_SIDE_BUMP\" all test",
+    "python3 competition/c/tests/validate.py --solver competition/c/bin/bsat_side --checker /tmp/bsat-drat-trim --cases 20 --seed 2026090902"
+  ]
+}
