@@ -28,3 +28,7 @@ Linux CI also runs independent-instance embedding and history tests with
 `MODE=tsan`. This checks exercised concurrent paths; it does not authorize
 concurrent calls on the same solver instance. See `API_CONTRACT.md` for the
 threading and lifetime contract.
+
+The installation also includes `share/doc/bsat/THIRD_PARTY_NOTICES`, containing
+the BSD notice for the portable reduction sort. Include it when redistributing
+the installed binaries or library.

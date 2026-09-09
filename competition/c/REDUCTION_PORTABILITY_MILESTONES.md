@@ -17,7 +17,8 @@ search-policy tradeoff, document it and do not silently promote a regression.
 
 Status: [cause isolated and portable sort promoted](PORTABLE_REDUCTION_ORDER.md).
 Linux now checks both cal3 answers within budget; the local confirmation loses
-no solves and preserves complete proof bytes. Final default checks are in progress.
+no solves and preserves complete proof bytes. Final default checks pass, including a newer Linux runner with four checked
+answers and median CPU 50.470 → 20.764 seconds. All scoped milestones are complete.
 
 Diagnosis completed: prefixes match through 1,999 conflicts; at 2,000 the
 pre-sort records match exactly and tied post-sort records differ. Disabling

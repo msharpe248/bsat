@@ -1,7 +1,7 @@
 # C solver production readiness
 
 This is the authoritative capability and release-gate summary for the C
-implementation, updated 2026-09-08. The package is `1.0.0-dev`: it has substantial
+implementation, updated 2026-09-09. The package is `1.0.0-dev`: it has substantial
 correctness and integration evidence, but has not met workload-specific production
 acceptance criteria. Historical milestone reports preserve measurements at their
 recorded revisions; they do not override this summary or the public API contract.
@@ -127,13 +127,19 @@ solve, and retaining more raises memory usage. No default is promoted. CaDiCaL
 and BSAT learned-literal counters are explicitly distinguished before/after
 minimization; raw totals are not matched quality measurements.
 
-The [focused implementation follow-up](CAL3_IMPLEMENTATION_MILESTONES.md) adds
-matched Linux/macOS controls and an implemented reason-side VSIDS experiment.
-The candidate passes finite validation but loses both target solves and is
-removed. Linux BSAT remains UNKNOWN at sixty CPU seconds while both references
-finish near one second. BSAT's 10,000-conflict trace differs across hosts; the
-references' prefixes match. The cause of that divergence remains to be isolated.
-These results establish neither a runtime improvement nor a hardware-only cause.
+The [focused implementation follow-up](CAL3_IMPLEMENTATION_MILESTONES.md) rejected
+a reason-side VSIDS experiment and exposed cross-host search divergence. The
+[portable reduction fix](PORTABLE_REDUCTION_ORDER.md) now isolates and fixes its
+first cause: platform-dependent ordering of tied learned-clause scores. Identical
+pre-sort states diverged at the first reduction, conflict 2,000. The default now
+uses a fixed typed sort preserving the observed Mac policy. Linux changes from
+two sixty-second UNKNOWNs to two checked UNSATs at 32.8/33.6 CPU seconds on the
+first runner. The exact-default comparison on a newer runner checks all answers
+and improves median CPU from 50.5 to 20.8 seconds (2.43× on this query), with
+complete proofs matching Mac byte for byte. The five-input local confirmation
+checks 10/10 runs in both versions, with identical proof streams and less than
+1% aggregate CPU change. This improves the measured Linux case; it does not close
+the remaining reference-solver gap or establish workload-specific readiness.
 
 ## Release gates
 
@@ -158,7 +164,7 @@ those requirements and the exact-candidate checks are satisfied.
 
 ## Where to look
 
-- [Current batch and outcomes](CAL3_IMPLEMENTATION_MILESTONES.md)
+- [Current batch and outcomes](REDUCTION_PORTABILITY_MILESTONES.md)
 - [Public ABI and lifetime contract](API_CONTRACT.md), [build/install](INSTALLING.md)
 - [Executable coverage and reproduction](tests/FEATURE_COVERAGE.md)
 - [Correctness CI](../../.github/workflows/c-solver.yml), [independent integration](../../.github/workflows/c-integration.yml), [fuzz CI](../../.github/workflows/c-fuzz.yml)

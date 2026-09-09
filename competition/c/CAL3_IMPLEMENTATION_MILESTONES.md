@@ -1,5 +1,9 @@
 # Focused cal3 implementation work — 2026-09-08
 
+Follow-up: [reduction portability](REDUCTION_PORTABILITY_MILESTONES.md) isolates
+the sort divergence and promotes a checked Linux improvement. Outcomes below
+retain this earlier, rejected branching experiment's scope.
+
 Freeze the investigation before candidate edits. Compare unchanged BSAT, pinned
 CaDiCaL and Kissat on the exact same query on Linux and macOS: 60 process CPU
 seconds, 90 wall seconds, two serial repetitions, checked conclusive answers.

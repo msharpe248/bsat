@@ -1,5 +1,9 @@
 # Same-input cal3 comparison across hosts — 2026-09-08
 
+Follow-up: [portable reduction ordering](PORTABLE_REDUCTION_ORDER.md) now isolates
+the first divergence and improves Linux cal3 to checked UNSAT within the budget.
+The measurements below describe the pre-fix baseline.
+
 The hosted Linux comparison confirms that the Mac Mini is not the sole obstacle
 behind BSAT's gap. On Linux, CaDiCaL and Kissat prove the exact same query in
 about one CPU second while BSAT remains UNKNOWN at sixty. All conclusive answers

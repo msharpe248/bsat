@@ -1,0 +1,25 @@
+{
+  "revision": "45f23897ef9ab65b56a889dffae2f617200d268b",
+  "release_unit_executables": 66,
+  "sanitizer_unit_executables": 66,
+  "package_consumers": "Passed frozen ABI-v1 C and installed-header C++ consumers, including license notice",
+  "tied_boundary": "Passed release and ASan/UBSan watch/GC survivor checks",
+  "final_mac_checked": 2,
+  "final_mac_proof_matches_candidate": true,
+  "retained_certificates": {
+    "release": 53,
+    "debug": 53
+  },
+  "binary_hashes": {
+    "competition/c/bin/bsat": "fd0db9c218142c253e4492066bf420ffd97599b851cda273442362e260c49993",
+    "competition/c/bin/bsat_debug": "1c033cba250447c0157b8dd7e786dc9ae4fbbdb19a0e89709c588525ffb6c68c",
+    "competition/c/bin/libbsat_release.dylib": "ef7b9b4af01eb20b53d8fbdbb6bd46ea845ab5c0f5c1b1405680cdbb54b94787",
+    "competition/c/bin/libbsat_debug.dylib": "b66fb6e9569325b4b509f5988bffd1f1cc67ffb003b1a2655bab691f45e7c8bd"
+  },
+  "linux_default_run": "https://github.com/msharpe248/bsat/actions/runs/34313559174",
+  "linux_checked_runs": 4,
+  "linux_median_cpu": {
+    "baseline": 50.469894499999995,
+    "portable": 20.76395
+  }
+}

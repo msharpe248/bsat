@@ -21,7 +21,8 @@ Two repetitions at each boundary establish:
 The first reduction has 1,696 eligible clauses and 126 tied-score groups. Its
 pre-sort records are identical; its first post-sort difference is at index 8,
 where both entries have LBD 3 and activity 34. A tied group at LBD 7/activity 2
-straddles the 848-clause retention boundary. The ordinary protections for binary,
+straddles the 848-clause retention boundary. Three clauses survive only on Mac,
+and three different clauses survive only on Linux. The ordinary protections for binary,
 low-glue and locked clauses remain separate from this ranking.
 
 [Raw boundary evidence](benchmark_results/reduction-boundaries-20260908/summary.json)
@@ -96,8 +97,19 @@ Final default release and sanitizer builds pass all 66 C executables. The added
 tied-boundary reduction regression checks exact survivors, relocated references,
 watch removal and model preservation. Installed C/C++ clients and the third-party
 notice check pass. Each build additionally checks 53 retained/rebuilt query
-certificates and rejects an intentionally wrong query context. Final hosted
-source/default confirmation is recorded separately from the gated candidate run.
+certificates and rejects an intentionally wrong query context. The [final default Linux rerun](benchmark_results/portable-sort-final-linux-20260909/timing.json)
+checks all four answers on an AMD EPYC 9V45 runner: median CPU falls from
+**50.470 to 20.764 seconds**, about **2.43× faster on this query**. Conflicts drop
+from 1,125,799 to 519,320, identically in both repetitions. All portable complete
+proofs match the Mac proof. This is the promoted source at `45f2389`, verified by
+[the hosted workflow](https://github.com/msharpe248/bsat/actions/runs/34313559174).
+
+The earlier candidate run used an AMD EPYC 7763 runner. Absolute times across
+those different machines are not paired measurements; each old/new comparison
+was serial on the same runner. The newer machine lets the old solver finish
+inside sixty seconds, while the within-host improvement remains substantial.
+The [final Mac executable](benchmark_results/portable-sort-final-mac-20260909.json)
+also verifies the identical proof twice. [Final validation record](benchmark_results/portable-sort-final-validation-20260909.json).
 
 ## Reproduction and limits
 
