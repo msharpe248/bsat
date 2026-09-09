@@ -1,0 +1,145 @@
+{
+  "workflow_run": 34322621466,
+  "scope": "Eight-family frozen existing-dataset Linux regression; two repetitions per solver, no pristine holdout claim",
+  "cpu_limit": 30,
+  "wall_limit": 45,
+  "solvers": {
+    "baseline": {
+      "runs": 16,
+      "checked_within_cpu": 4,
+      "mean_cpu_par2": 45.59744025,
+      "errors": 0
+    },
+    "portable": {
+      "runs": 16,
+      "checked_within_cpu": 4,
+      "mean_cpu_par2": 45.6141780625,
+      "errors": 0
+    }
+  },
+  "families": [
+    {
+      "family": "argumentation",
+      "input_sha256": "03633885a7b17597738c2947ab2fbc3c19f0e0121c6ea46dbcfea8e4138b8a9a",
+      "baseline": {
+        "checked": 0,
+        "median_cpu": 30.0163995,
+        "proof_hashes": []
+      },
+      "portable": {
+        "checked": 0,
+        "median_cpu": 30.014809,
+        "proof_hashes": []
+      }
+    },
+    {
+      "family": "battleship",
+      "input_sha256": "19dd9305587ecbb694f8ebd1685af6eeab8e046d3dfa6384cbfde7ac2810dff4",
+      "baseline": {
+        "checked": 0,
+        "median_cpu": 30.002207499999997,
+        "proof_hashes": []
+      },
+      "portable": {
+        "checked": 0,
+        "median_cpu": 30.002978,
+        "proof_hashes": []
+      }
+    },
+    {
+      "family": "belpyramid-puzzle",
+      "input_sha256": "04ce53ff1a1c3b7285f4c99be56d8fed5e042cdaf5e946e7e23e732faef9ad68",
+      "baseline": {
+        "checked": 2,
+        "median_cpu": 4.777175,
+        "proof_hashes": [
+          "f934b7b8d817643320977e7593be0f7e4ac9280cfa28dbb19ac0b34c6226a0af"
+        ]
+      },
+      "portable": {
+        "checked": 2,
+        "median_cpu": 4.911144999999999,
+        "proof_hashes": [
+          "3964f3048fca96c5bf20fd334bd521908161c79ef9bdbfbe50b4f3ccbdd340aa"
+        ]
+      }
+    },
+    {
+      "family": "coloring",
+      "input_sha256": "efb7e17df494bfa073e839056a7263cceec6269cf8c1c6cef03c6da5a7ae0973",
+      "baseline": {
+        "checked": 0,
+        "median_cpu": 30.004499000000003,
+        "proof_hashes": []
+      },
+      "portable": {
+        "checked": 0,
+        "median_cpu": 30.005275,
+        "proof_hashes": []
+      }
+    },
+    {
+      "family": "cryptography",
+      "input_sha256": "fbf923ffc448f1283dbdc4d8c1991d95d7baa0768ac83226ac968641ccac2df8",
+      "baseline": {
+        "checked": 0,
+        "median_cpu": 30.0008755,
+        "proof_hashes": []
+      },
+      "portable": {
+        "checked": 0,
+        "median_cpu": 30.0008725,
+        "proof_hashes": []
+      }
+    },
+    {
+      "family": "hamiltonian",
+      "input_sha256": "582a4c071196570e817d16ea8c108dc7a9634af5a5b8d455936cf4502b3158ed",
+      "baseline": {
+        "checked": 0,
+        "median_cpu": 30.001310000000004,
+        "proof_hashes": []
+      },
+      "portable": {
+        "checked": 0,
+        "median_cpu": 30.001524500000002,
+        "proof_hashes": []
+      }
+    },
+    {
+      "family": "scheduling",
+      "input_sha256": "5b874afeed91345a786ac4345c97aa3e617c57f748570be83421d149b34abebc",
+      "baseline": {
+        "checked": 2,
+        "median_cpu": 0.002347,
+        "proof_hashes": [
+          "1a503c4ec535411f237bf98ab8019ad27343a74aadf20a8a1a65f49c0579be69"
+        ]
+      },
+      "portable": {
+        "checked": 2,
+        "median_cpu": 0.0022795,
+        "proof_hashes": [
+          "1a503c4ec535411f237bf98ab8019ad27343a74aadf20a8a1a65f49c0579be69"
+        ]
+      }
+    },
+    {
+      "family": "tseitin-formulas",
+      "input_sha256": "9e4c57b9739f39a924d03267f05542831dc87fec9e9e2238f5e4ba11886378f4",
+      "baseline": {
+        "checked": 0,
+        "median_cpu": 29.999567999999996,
+        "proof_hashes": []
+      },
+      "portable": {
+        "checked": 0,
+        "median_cpu": 30.0000955,
+        "proof_hashes": []
+      }
+    }
+  ],
+  "relative_cpu_par2_change": 0.00036707789753620546,
+  "gate_pass": true,
+  "limitation": "Six of eight families have no checked solve in either version; censored aggregate is not evidence of broad speedup."
+}

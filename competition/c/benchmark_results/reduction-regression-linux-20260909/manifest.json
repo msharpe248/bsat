@@ -1,0 +1,28 @@
+{
+  "inputs": {
+    "/home/runner/work/_temp/inputs/battleship/d88c6afc13cdad0e2c8371a879692b39.cnf": {
+      "sha256": "19dd9305587ecbb694f8ebd1685af6eeab8e046d3dfa6384cbfde7ac2810dff4"
+    },
+    "/home/runner/work/_temp/inputs/belpyramid-puzzle/09cd83e233380d0ba1fc56cee88367b1.cnf": {
+      "sha256": "04ce53ff1a1c3b7285f4c99be56d8fed5e042cdaf5e946e7e23e732faef9ad68"
+    },
+    "/home/runner/work/_temp/inputs/hamiltonian/22df1827e3253fc824cc7ce806d75e0a.cnf": {
+      "sha256": "582a4c071196570e817d16ea8c108dc7a9634af5a5b8d455936cf4502b3158ed"
+    },
+    "/home/runner/work/_temp/inputs/coloring/08d56c03e6561f6b9bec2e3f344ea3de.cnf": {
+      "sha256": "efb7e17df494bfa073e839056a7263cceec6269cf8c1c6cef03c6da5a7ae0973"
+    },
+    "/home/runner/work/_temp/inputs/cryptography/99718c1729a8de3347a9946f1836421d.cnf": {
+      "sha256": "fbf923ffc448f1283dbdc4d8c1991d95d7baa0768ac83226ac968641ccac2df8"
+    },
+    "/home/runner/work/_temp/inputs/argumentation/00d5a43a481477fa4d56a2ce152a6cfb.cnf": {
+      "sha256": "03633885a7b17597738c2947ab2fbc3c19f0e0121c6ea46dbcfea8e4138b8a9a"
+    },
+    "/home/runner/work/_temp/inputs/scheduling/081f111af59344b61346367a930e24f6.cnf": {
+      "sha256": "5b874afeed91345a786ac4345c97aa3e617c57f748570be83421d149b34abebc"
+    },
+    "/home/runner/work/_temp/inputs/tseitin-formulas/42f1311ce504db8cc0cb590a568da20a.cnf": {
+      "sha256": "9e4c57b9739f39a924d03267f05542831dc87fec9e9e2238f5e4ba11886378f4"
+    }
+  }
+}

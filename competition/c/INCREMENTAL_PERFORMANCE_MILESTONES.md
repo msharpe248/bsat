@@ -26,7 +26,10 @@ push each milestone.
    and repeat frozen confirmation. Reject unsuccessful experiments explicitly;
    do not change defaults merely to complete the milestone.
 
-Status: corpus/harness preparation and retained baseline in progress.
+Status: broader Linux screen complete, gate passed with 4/16 checked runs in
+each version and +0.037% CPU PAR2; six unresolved families limit the evidence.
+Retained/fresh/journal baseline complete: see [updated diagnosis](CAL3_INCREMENTAL_FOLLOWUP.md).
+Certified restart-prefix implementation and final confirmation in progress.
 
 ## Bounded implementation experiment (frozen before candidate timing)
 
@@ -44,3 +47,10 @@ cal3 history with the same 60-second allowance first. If it adds no checked solv
 reject it for this target; if it succeeds, confirm repeated cal3 and all four
 pinned industrial circuit histories before any default promotion. Preserve the
 baseline and archive a rejected patch instead of leaving an unused switch.
+
+Confirmation refinement: the global prototype resolves all certified queries but
+loses the uncertified cal3 solve (UNKNOWN at 60 seconds versus the earlier control
+solve at 46.928). Do not promote it globally. Scope prefix retention to the
+certified facade via an internal option, preserving existing uncertified and
+one-shot policy. Revalidate this final implementation and compare the unchanged
+control across all four circuits. The uncertified regression stays in the record.

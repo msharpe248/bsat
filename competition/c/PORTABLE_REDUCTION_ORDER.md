@@ -124,3 +124,24 @@ current default. The historical candidate at `51e6c9a` required
 This closes the identified reduction-order portability gap and improves Linux
 cal3 solving. It does not close the remaining gap to CaDiCaL/Kissat or establish
 representative production throughput, deployment SLOs, or universal soundness.
+
+## Broader Linux regression screen — 2026-09-09
+
+The frozen eight-family existing-dataset screen in workflow run 34322621466
+compares the pinned pre-sort implementation with the portable default on one
+Ubuntu runner, two repetitions each, 30 process CPU / 45 wall seconds. Both
+versions check 4/16 runs (belpyramid-puzzle and scheduling); the other 12 runs per
+version reach the limit. No invalid answers or checked-solve losses occur.
+CPU PAR2 is 45.597440 versus 45.614178 seconds (+0.037%), passing the frozen 5%
+gate. Belpyramid median CPU changes 4.777175 to 4.911145 seconds (+2.8%) with
+different independently checked proof streams; scheduling is approximately 2 ms.
+The six unresolved families severely limit the conclusion: this is a passed
+regression screen, not evidence of broad speedup or deployment acceptance.
+
+Selection was frozen by filename and a 2 MB size cap before timing, without
+selecting by results; these are previously available datasets, not a pristine
+holdout. Inputs, dimensions/resources, compiler/CPU, raw timings and per-family
+summary are pinned under `tests/fixtures/reduction_regression/` and
+`benchmark_results/reduction-regression-linux-20260909/`. Benchmark raw `par2`
+uses wall time; the accompanying summary explicitly recomputes CPU PAR2 with
+60-second penalties for unfinished/unverified runs.
