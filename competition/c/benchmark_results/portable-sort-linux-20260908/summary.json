@@ -1,0 +1,20 @@
+{
+  "scope": "Matched Linux baseline/candidate and local confirmation; every conclusive outcome independently checked",
+  "cross_host_boundary_pairs": 20,
+  "cross_host_prefixes_match": true,
+  "complete_cal3_proofs_match_mac": true,
+  "linux": {
+    "baseline": {
+      "checked": 0,
+      "runs": 2,
+      "median_cpu": 60.006868,
+      "median_validation_wall": 6.809998467360856e-07
+    },
+    "portable": {
+      "checked": 2,
+      "runs": 2,
+      "median_cpu": 33.1878655,
+      "median_validation_wall": 10.832381490499756
+    }
+  }
+}

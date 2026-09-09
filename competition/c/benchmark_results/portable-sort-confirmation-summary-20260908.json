@@ -1,0 +1,76 @@
+{
+  "solvers": {
+    "baseline": {
+      "checked": 10,
+      "runs": 10,
+      "mean_cpu_par2": 5.283924600000001
+    },
+    "portable": {
+      "checked": 10,
+      "runs": 10,
+      "mean_cpu_par2": 5.241384999999999
+    }
+  },
+  "inputs": [
+    {
+      "input": "/Users/msharpe/python/bsat/dataset/sat_competition2025/battleship/ed6d842f96d10f3400bce251f9e95bfb.cnf",
+      "outcomes": [
+        "SAT",
+        "SAT",
+        "SAT",
+        "SAT"
+      ],
+      "proofs_identical": true,
+      "baseline": 0.6373055,
+      "portable": 0.6405890000000001
+    },
+    {
+      "input": "/Users/msharpe/python/bsat/dataset/sat_competition2025/belpyramid-puzzle/5831f35622f3e6c666f0cee6cac60e4c.cnf",
+      "outcomes": [
+        "UNSAT",
+        "UNSAT",
+        "UNSAT",
+        "UNSAT"
+      ],
+      "proofs_identical": true,
+      "baseline": 3.972131,
+      "portable": 3.9684799999999996
+    },
+    {
+      "input": "/Users/msharpe/python/bsat/dataset/sat_competition2025/hamiltonian/a497d784c61c330f012dcd80d44dcd43.cnf",
+      "outcomes": [
+        "SAT",
+        "SAT",
+        "SAT",
+        "SAT"
+      ],
+      "proofs_identical": true,
+      "baseline": 0.11290449999999999,
+      "portable": 0.100921
+    },
+    {
+      "input": "/private/tmp/bsat-target-snapshots/cal3-depth16-polarity1.cnf",
+      "outcomes": [
+        "UNSAT",
+        "UNSAT",
+        "UNSAT",
+        "UNSAT"
+      ],
+      "proofs_identical": true,
+      "baseline": 16.8540935,
+      "portable": 16.663392
+    },
+    {
+      "input": "/Users/msharpe/python/bsat/dataset/sat_competition2025/planning/2e058841373f34cc47d8dec927fd1796.cnf",
+      "outcomes": [
+        "SAT",
+        "SAT",
+        "SAT",
+        "SAT"
+      ],
+      "proofs_identical": true,
+      "baseline": 4.8431885,
+      "portable": 4.833543000000001
+    }
+  ]
+}

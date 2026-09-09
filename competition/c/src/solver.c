@@ -3,6 +3,7 @@
  *********************************************************************/
 
 #include "../include/solver.h"
+#include "../include/reduction_sort.h"
 #include <stdlib.h>
 #include <string.h>
 #include <stdio.h>
@@ -1649,29 +1650,6 @@ static void record_lbd(Solver *s, uint32_t lbd) {
  * Clause Database Reduction
  *********************************************************************/
 
-#include "../include/reduction_sort.h"
-
-// Comparison function for qsort - keep clauses with:
-// 1. Lower LBD (better quality)
-// 2. Higher activity (more recently used)
-#ifndef BSAT_PORTABLE_REDUCTION_SORT
-static int compare_clauses(const void* a, const void* b) {
-    const ClauseScore* ca = (const ClauseScore*)a;
-    const ClauseScore* cb = (const ClauseScore*)b;
-
-    // First, compare by LBD (lower is better)
-    if (ca->lbd != cb->lbd) {
-        return ca->lbd - cb->lbd;  // Ascending order (keep low LBD)
-    }
-
-    // If LBD is equal, compare by activity (higher is better)
-    if (ca->activity > cb->activity) return -1;  // Descending order
-    if (ca->activity < cb->activity) return 1;
-    return 0;
-}
-
-#endif
-
 static bool clause_locked(Solver *s, CRef cr) {
     uint32_t size = CLAUSE_SIZE(s->arena, cr);
     Lit *lits = CLAUSE_LITS(s->arena, cr);
@@ -1815,11 +1793,7 @@ static void solver_reduce_db_account_impl(Solver* s) {
                 (unsigned long long)s->stats.conflicts,i,scores[i].cref,
                 scores[i].lbd,(double)scores[i].activity);
 #endif
-#ifdef BSAT_PORTABLE_REDUCTION_SORT
     bsat_sort_clause_scores(scores,n);
-#else
-    qsort(scores, n, sizeof *scores, compare_clauses);
-#endif
 #ifdef BSAT_REDUCTION_TRACE
     if (s->stats.conflicts<=4001) for(uint32_t i=0;i<n;++i)
         fprintf(stderr,"c reduction-after %llu %u %u %u %a\n",
