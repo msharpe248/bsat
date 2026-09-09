@@ -86,3 +86,34 @@ The successful gates justify enabling the bounded scoring policy for certified
 solves. It changes learned-clause quality scores, never clause literals, logical
 inference, assumption lifetime or certificate context. Independent checks provide
 soundness evidence for tested queries, not a proof of the entire implementation.
+
+## Final production validation
+
+Runtime commit `c6b4ac84c94e231983886828d3100495a49545c6` removes the experimental
+macro and enables the independent internal scoring option for certified handles.
+All 66 C executables pass in release and ASan/UBSan builds. Each final build
+passes 53 independently checked retained/rebuilt certificates and wrong-context
+rejection. Staged installation, pkg-config, frozen ABI-v1 C and installed-header
+C++ consumers pass. The gated candidate also passed 256 stateful differential
+queries across public certified modes 2, 3, 6 and 7, including optional probing.
+
+The isolated preparatory checkout omitted the shared DIMACS fixtures and stopped
+at file parsing in both test modes; the complete workspace's final builds pass.
+This was a validation setup error, not a solver mismatch.
+
+Evidence: `query-lbd-production-validation-20260909.json`,
+`query-lbd-production-certificates-{release,debug}-20260909.json`, and
+`query-lbd-stateful-20260909.json` under benchmark_results.
+
+Runtime CI is still running when this record is written:
+[correctness](https://github.com/msharpe248/bsat/actions/runs/34375352013),
+[independent integration](https://github.com/msharpe248/bsat/actions/runs/34375352037),
+and [coverage fuzzing](https://github.com/msharpe248/bsat/actions/runs/34375352028).
+The earlier Linux candidate workflow is green; it is separate from final runtime CI.
+
+Direct final-production replays check 48/48 original and 31/32 expanded queries.
+Input identities, results, and every conclusive proof hash/conflict count match
+the gated Mac candidate. cal3 completes in 18.181 CPU seconds at 482,935 conflicts;
+cal100 depth-8 positive is the sole UNKNOWN. Reports:
+`query-lbd-production-{original,expanded}-20260909.json`. These replays validate
+the final implementation form; they are not additional independent holdouts.

@@ -1,0 +1,49 @@
+{
+  "runtime_revision": "c6b4ac84c94e231983886828d3100495a49545c6",
+  "platform": "macOS-26.6.1-arm64-arm-64bit-Mach-O",
+  "builds": {
+    "release": {
+      "c_test_executables": 66,
+      "all_passed": true,
+      "library_sha256": "da9fa41d9ecd5c5171307a6f9f2f0340dfa845d917f2aec321f5fdd734aa49f9",
+      "independent_certificates": 53,
+      "wrong_context_rejection": true,
+      "flags": "-O3 -march=native -flto",
+      "test_log_sha256": "c291c781930567d0a36765fb7d44cd96b2531426ea0c09a695512d5a0ca972f6"
+    },
+    "debug": {
+      "c_test_executables": 66,
+      "all_passed": true,
+      "library_sha256": "50d976e02a318083dcd35ba6ba2093160dcd830cd12329b3e316d88dee52b3c6",
+      "independent_certificates": 53,
+      "wrong_context_rejection": true,
+      "flags": "-g -O0 -DDEBUG -fsanitize=address -fsanitize=undefined",
+      "test_log_sha256": "9dcf8c9dac9aba7cdb0b396ca0a6f189fe1c7eeabb48c5b22e8b5af1817b143c"
+    }
+  },
+  "stateful_candidate_queries": 256,
+  "note": "Final production source decouples scoring from restart policy, enabling both only in certified facade; public ABI unchanged. Timed replays run serially after build/test work.",
+  "staged_install_frozen_c_abi_cpp_passed": true,
+  "production_replays": {
+    "original": {
+      "queries": 48,
+      "checked": 48,
+      "unknown": [],
+      "input_result_and_conclusive_proof_conflict_parity": true,
+      "library_sha256": "da9fa41d9ecd5c5171307a6f9f2f0340dfa845d917f2aec321f5fdd734aa49f9"
+    },
+    "expanded": {
+      "queries": 32,
+      "checked": 31,
+      "unknown": [
+        [
+          "cal100.aig",
+          8,
+          1
+        ]
+      ],
+      "input_result_and_conclusive_proof_conflict_parity": true,
+      "library_sha256": "da9fa41d9ecd5c5171307a6f9f2f0340dfa845d917f2aec321f5fdd734aa49f9"
+    }
+  }
+}
