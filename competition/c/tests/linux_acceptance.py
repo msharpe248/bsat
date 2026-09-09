@@ -112,13 +112,18 @@ def run_isolated(args,parent,name,case,fault='none'):
              '--manifest',str(args.manifest),'--library',str(args.library),
              '--converter',str(args.converter),'--checker',str(args.checker)]
     def attach():(cg/'cgroup.procs').write_text(str(os.getpid()))
-    stop=None
+    stop=None;storage_peak=0
     output=args.output/(name+'.stdout');errors=args.output/(name+'.stderr')
     try:
         with output.open('w') as out,errors.open('w') as err:
             child=subprocess.Popen(command,stdout=out,stderr=err,start_new_session=True,preexec_fn=attach,
                                    env=dict(os.environ,PYTHONDONTWRITEBYTECODE='1'))
             while child.poll() is None:
+                try:
+                    fs=os.statvfs(f'/proc/{child.pid}/root/tmp')
+                    if fs.f_blocks*fs.f_frsize==512*1024**2:
+                        storage_peak=max(storage_peak,(fs.f_blocks-fs.f_bfree)*fs.f_frsize)
+                except (FileNotFoundError,ProcessLookupError):pass
                 usage=counters(cg/'cpu.stat')['usage_usec']/1e6
                 if time.monotonic()-started>wall:stop='wall'
                 elif usage>cpu:stop='cpu'
@@ -129,6 +134,7 @@ def run_isolated(args,parent,name,case,fault='none'):
         elapsed=time.monotonic()-started
         row=dict(name=name,case=case,fault=fault,returncode=child.returncode,wall_seconds=elapsed,stop=stop,
                  limits=dict(memory_bytes=memory,wall_seconds=wall,aggregate_cpu_seconds=cpu,storage_bytes=512*1024**2),
+                 temporary_sampled_peak_bytes=storage_peak,storage_sample_interval_seconds=.02,
                  memory_peak_bytes=int((cg/'memory.peak').read_text()),memory_events=counters(cg/'memory.events'),
                  cpu=counters(cg/'cpu.stat'),stderr=errors.read_text()[-8000:])
         row['within_limits']=(elapsed<=wall and row['cpu']['usage_usec']<=cpu*1e6 and row['memory_peak_bytes']<=memory)
@@ -157,6 +163,8 @@ def main():
     if not args.output:p.error('--output required')
     args.output.mkdir(parents=True,exist_ok=True)
     report=dict(complete=False,scope='Provisional hosted Linux acceptance, not deployment certification',
+                resource_scope='Worker and checker process tree; lightweight supervisor outside cgroup',
+                storage_scope='512 MiB tmpfs hard capacity; 20 ms sampled occupancy is a lower bound on peak',
                 platform=platform.platform(),revision=subprocess.check_output(['git','rev-parse','HEAD'],text=True).strip(),
                 hashes={n:sha(getattr(args,n)) for n in ('library','converter','checker','manifest')},runs=[])
     parent=Path('/sys/fs/cgroup')/f'bsat-acceptance-{os.getpid()}'
