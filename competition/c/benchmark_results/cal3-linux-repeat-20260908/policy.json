@@ -1,0 +1,32 @@
+{
+  "fixed_conflicts": 0,
+  "inputs": {
+    "/home/runner/work/_temp/results/cal3.cnf": {
+      "sha256": "6bbfa3e0109b277412f4bf0edc157670859943a2e914c2d16f27346acc1b9e98"
+    }
+  },
+  "cpu_seconds": 60,
+  "wall_seconds": 90,
+  "repeats": 2,
+  "seed": 2026090901,
+  "commands": {
+    "bsat": [
+      "/home/runner/work/bsat/bsat/competition/c/bin/bsat",
+      "--binary-proof",
+      "--proof",
+      "{proof}",
+      "{input}"
+    ],
+    "cadical": [
+      "/home/runner/work/_temp/cadical/build/cadical",
+      "{input}",
+      "{proof}"
+    ],
+    "kissat": [
+      "/home/runner/work/_temp/kissat-8af8e56f174b778aef3aa45af9f739b2a5f492c2/build/kissat",
+      "-s",
+      "{input}",
+      "{proof}"
+    ]
+  }
+}

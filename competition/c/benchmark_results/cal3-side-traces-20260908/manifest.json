@@ -43,5 +43,6 @@
       ],
       "proof_sha256": "f1f3c2988e7344e05af31b6f9b61a664f688e5ceeb55a104e83e722379265bca"
     }
-  ]
+  ],
+  "input_sha256": "6bbfa3e0109b277412f4bf0edc157670859943a2e914c2d16f27346acc1b9e98"
 }

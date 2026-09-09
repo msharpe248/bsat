@@ -127,6 +127,14 @@ solve, and retaining more raises memory usage. No default is promoted. CaDiCaL
 and BSAT learned-literal counters are explicitly distinguished before/after
 minimization; raw totals are not matched quality measurements.
 
+The [focused implementation follow-up](CAL3_IMPLEMENTATION_MILESTONES.md) adds
+matched Linux/macOS controls and an implemented reason-side VSIDS experiment.
+The candidate passes finite validation but loses both target solves and is
+removed. Linux BSAT remains UNKNOWN at sixty CPU seconds while both references
+finish near one second. BSAT's 10,000-conflict trace differs across hosts; the
+references' prefixes match. The cause of that divergence remains to be isolated.
+These results establish neither a runtime improvement nor a hardware-only cause.
+
 ## Release gates
 
 A production release needs a concrete target workload and deployment envelope.
@@ -150,7 +158,7 @@ those requirements and the exact-candidate checks are satisfied.
 
 ## Where to look
 
-- [Current batch and outcomes](ACCEPTANCE_AND_SEARCH_MILESTONES.md)
+- [Current batch and outcomes](CAL3_IMPLEMENTATION_MILESTONES.md)
 - [Public ABI and lifetime contract](API_CONTRACT.md), [build/install](INSTALLING.md)
 - [Executable coverage and reproduction](tests/FEATURE_COVERAGE.md)
 - [Correctness CI](../../.github/workflows/c-solver.yml), [independent integration](../../.github/workflows/c-integration.yml), [fuzz CI](../../.github/workflows/c-fuzz.yml)

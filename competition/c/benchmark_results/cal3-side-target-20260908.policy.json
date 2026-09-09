@@ -1,0 +1,22 @@
+{
+  "base_revision": "8cc95da3650b8b815cd51524379329083353e902",
+  "candidate": "One-hop reason-side reward, excludes variables in minimized learned clause; budget 10000 reason literals; compile-time only; no claim of exact CaDiCaL policy",
+  "target_cpu_seconds": 60,
+  "target_wall_seconds": 90,
+  "repeats": 2,
+  "seed": 2026090904,
+  "promotion_gate": "Repeated >=10% target CPU improvement, no checked solve loss and <=5% CPU PAR-2 regression on frozen confirmation; otherwise archive/remove",
+  "confirmation_cpu_seconds": 60,
+  "confirmation_wall_seconds": 90,
+  "confirmation_repeats": 2,
+  "inputs": {
+    "/private/tmp/bsat-target-snapshots/cal3-depth16-polarity1.cnf": {
+      "sha256": "6bbfa3e0109b277412f4bf0edc157670859943a2e914c2d16f27346acc1b9e98"
+    }
+  },
+  "binaries": {
+    "/private/tmp/bsat-cal3-before": "0444e19c256fa3be362b990cc29e7f45b558c28ea58b688c405bc5505b73dc55",
+    "/Users/msharpe/python/bsat/competition/c/bin/bsat_side": "acc49bd935fc2f8fbf5b729aaa6995eb930427d14afe57dc6047a3e47035597d",
+    "/Users/msharpe/python/bsat/competition/c/bin/bsat_side_debug": "c0843dacaffef58230f27f2473b08f7a326a87c2ee566d21c71f91b89892de5b"
+  }
+}

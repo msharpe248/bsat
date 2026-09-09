@@ -1,5 +1,7 @@
 # Linux acceptance and search-quality follow-up — 2026-09-08
 
+Followed by [matched-host and concrete implementation work](CAL3_IMPLEMENTATION_MILESTONES.md).
+
 Authorized: complete the three recommended workstreams, update current docs,
 commit and push each validated milestone. Freeze this policy before experiments.
 

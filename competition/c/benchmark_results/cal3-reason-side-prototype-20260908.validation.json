@@ -14,6 +14,9 @@
   "commands": [
     "make -C competition/c -j2 MODE=side TARGET=bin/bsat_side OPTFLAGS=\"-O3 -march=native -flto -DBSAT_REASON_SIDE_BUMP\" all test",
     "make -C competition/c -j2 MODE=side_debug TARGET=bin/bsat_side_debug OPTFLAGS=\"-g -O0 -DDEBUG -fsanitize=address -fsanitize=undefined -DBSAT_REASON_SIDE_BUMP\" all test",
-    "python3 competition/c/tests/validate.py --solver competition/c/bin/bsat_side --checker /tmp/bsat-drat-trim --cases 20 --seed 2026090902"
-  ]
+    "python3 competition/c/tests/validate.py --solver competition/c/bin/bsat_side --checker /tmp/bsat-drat-trim --cases 20 --seed 2026090902",
+    "python3 competition/c/tests/validate.py --solver competition/c/bin/bsat_side_debug --checker /tmp/bsat-drat-trim --cases 5 --seed 2026090903"
+  ],
+  "independent_sanitizer": "PASS: 2576 solves; truth-table answers, original models, text/binary RUP proofs checked (seed 2026090903)\n",
+  "restoration": "Production source restored exactly; bin/bsat byte-identical to preserved baseline"
 }

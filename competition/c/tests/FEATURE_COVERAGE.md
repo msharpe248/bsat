@@ -20,6 +20,7 @@ capability and release-gate summary is [Production readiness](../PRODUCTION_READ
 | Proof I/O | `test_proof_encoding`, `check_process_failures.py` | Text/binary bytes, short writes, deferred flush failures, file-size limits and signals |
 | Independent answers | `validate.py` with pinned drat-trim | Small truth tables, original models, RUP checks and external UNSAT certificates across option combinations |
 | Long search | `check_long_search.py` | 24 assignment-exclusion/pigeonhole cases with renamed variables and reordered literals/clauses; counter gates require real restarts, reductions, GC and SCC substitution |
+| Matched-host cal3 controls | `benchmark_cal3_host.py`, `c-cal3-host.yml` | Checked timed outcomes and fixed-conflict prefix comparisons; host/OS/compiler effects are not isolated CPU effects |
 | cal3 learning diagnosis | `benchmark_cal3_learning.py` | Frozen 13-profile timed/fixed-conflict matrices, checked conclusive answers; development evidence only |
 | Measurement integrity | `test_select_corpus.py`, `test_benchmark_manifest.py`, `test_benchmark_artifacts.py` | History exclusion, frozen hashes, certificate retention and checker exit/status handling |
 | Retained incremental reference | `differential_histories.py`, `incremental_reference.py` | Persistent CaDiCaL plus fresh Kissat; additions, assumptions, cancellation and checkpoints |
