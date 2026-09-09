@@ -1,0 +1,36 @@
+{
+  "revision": "7df3ce27c569615bdd205dbd6b473ab2c33953a7",
+  "selection": {
+    "seed": 2026090861,
+    "minimum_bytes": 30000,
+    "maximum_bytes": 180000,
+    "policy": "sorted pinned tree, seeded shuffle within beem, goel/industry, goel/opensource, wolf; first per group; no solving before selection",
+    "tree_sha256": "1c894d23868525b4e70ab2064738595b7ea2d7cfdae74fcaae7a05ec7bc4a1cb"
+  },
+  "inputs": [
+    {
+      "url": "https://raw.githubusercontent.com/TechnionFV/CAV_2025_artifact/7df3ce27c569615bdd205dbd6b473ab2c33953a7/benchmarks_aig/aig_inputs/hwmcc19_fold_fraigy_orchestrate/aig/beem/leader_election.3.prop1-back-serstep.aig",
+      "file": "leader_election.3.prop1-back-serstep.aig",
+      "sha256": "cf40be25ad6dc2f890dc2316c37f2bed3b1182f31f21552e919436a884c30f52",
+      "bytes": 75650
+    },
+    {
+      "url": "https://raw.githubusercontent.com/TechnionFV/CAV_2025_artifact/7df3ce27c569615bdd205dbd6b473ab2c33953a7/benchmarks_aig/aig_inputs/hwmcc19_fold_fraigy_orchestrate/aig/goel/industry/cal100/cal100.aig",
+      "file": "cal100.aig",
+      "sha256": "8558287902564f3628155dfafbbd18c3788016e187077a4e14cb939265190a75",
+      "bytes": 54873
+    },
+    {
+      "url": "https://raw.githubusercontent.com/TechnionFV/CAV_2025_artifact/7df3ce27c569615bdd205dbd6b473ab2c33953a7/benchmarks_aig/aig_inputs/hwmcc19_fold_fraigy_orchestrate/aig/goel/opensource/h_b05/h_b05.aig",
+      "file": "h_b05.aig",
+      "sha256": "8bded624352c564cf3f0f86c1587f8e1b44c852393586664b557ddeb4ea735ca",
+      "bytes": 41843
+    },
+    {
+      "url": "https://raw.githubusercontent.com/TechnionFV/CAV_2025_artifact/7df3ce27c569615bdd205dbd6b473ab2c33953a7/benchmarks_aig/aig_inputs/hwmcc19_fold_fraigy_orchestrate/aig/wolf/2019C/dspfilters_fastfir_second-p32.aig",
+      "file": "dspfilters_fastfir_second-p32.aig",
+      "sha256": "39dacc3220985dd7e44ad2d9bbeac7d65e38b05ce09ceb4985d6f4824430e784",
+      "bytes": 88677
+    }
+  ]
+}

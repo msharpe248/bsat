@@ -13,8 +13,10 @@ def main():
     p = argparse.ArgumentParser(description=__doc__)
     p.add_argument('--aigtoaig', required=True, type=Path)
     p.add_argument('--output', required=True, type=Path)
+    p.add_argument('--manifest', type=Path, default=Path(__file__).parent/'fixtures/industrial_aig.json',
+                   help='Pinned input manifest; defaults to the original circuit suite')
     a = p.parse_args()
-    manifest = json.loads((Path(__file__).parent/'fixtures/industrial_aig.json').read_text())
+    manifest = json.loads(a.manifest.read_text())
     a.output.mkdir(parents=True, exist_ok=True)
     for row in manifest['inputs']:
         target = a.output/row['file']
