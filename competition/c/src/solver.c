@@ -1811,7 +1811,19 @@ static void solver_reduce_db_account_impl(Solver* s) {
         scores[n++] = (ClauseScore){cr, clause_lbd(s->arena, cr), clause_activity(s->arena, cr)};
     }
     if (SEARCH_DIAGNOSTICS(s)) s->accounting.reduced_candidates += n;
+#ifdef BSAT_REDUCTION_TRACE
+    if (s->stats.conflicts<=4001) for(uint32_t i=0;i<n;++i)
+        fprintf(stderr,"c reduction-before %llu %u %u %u %a\n",
+                (unsigned long long)s->stats.conflicts,i,scores[i].cref,
+                scores[i].lbd,(double)scores[i].activity);
+#endif
     qsort(scores, n, sizeof *scores, compare_clauses);
+#ifdef BSAT_REDUCTION_TRACE
+    if (s->stats.conflicts<=4001) for(uint32_t i=0;i<n;++i)
+        fprintf(stderr,"c reduction-after %llu %u %u %u %a\n",
+                (unsigned long long)s->stats.conflicts,i,scores[i].cref,
+                scores[i].lbd,(double)scores[i].activity);
+#endif
     uint32_t keep = (uint32_t)(n * s->opts.reduce_fraction);
     for (uint32_t i = 0; i < n; ++i) {
         if (i >= keep || scores[i].lbd > s->opts.max_lbd) {

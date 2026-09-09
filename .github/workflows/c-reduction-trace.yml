@@ -1,0 +1,23 @@
+name: C solver reduction boundary traces
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  trace:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Build and trace
+        run: |
+          make -C competition/c -j2 OPTFLAGS='-O3 -flto -DBSAT_REDUCTION_TRACE' all
+          python3 competition/c/tests/reduction_host_trace.py --solver competition/c/bin/bsat --output "$RUNNER_TEMP/results"
+          lscpu > "$RUNNER_TEMP/results/lscpu.txt"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: reduction-boundary-traces
+          path: ${{ runner.temp }}/results
