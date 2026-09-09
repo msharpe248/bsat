@@ -1,0 +1,3998 @@
+{
+  "scope": "Summarize checked query outcomes from the frozen incremental host comparison.",
+  "policy": {
+    "baseline_revision": "6f793ed7980fa9372009888ab0949c2c8db7685b",
+    "order": [
+      "baseline",
+      "candidate",
+      "candidate",
+      "baseline"
+    ],
+    "flags": 3,
+    "original": {
+      "depths": "0,1,2,4,8,16",
+      "cpu": 60
+    },
+    "expanded": {
+      "depths": "0,2,4,8",
+      "cpu": 10
+    },
+    "reference_cpu": "same as BSAT query",
+    "reference_wall": 90,
+    "checker_wall": 600,
+    "checker_heap_mb": 2048,
+    "checker_stack_mb": 512,
+    "scope": "Frozen existing pinned circuit sets; serial per host, no pristine holdout claim"
+  },
+  "suites": {
+    "original": {
+      "metrics": {
+        "baseline": {
+          "queries": 96,
+          "checked": 96,
+          "mean_cpu_par2": 0.8471140416666667,
+          "max_owned_capacity_bytes": 62230295,
+          "max_journal_bytes": 242753545
+        },
+        "candidate": {
+          "queries": 96,
+          "checked": 96,
+          "mean_cpu_par2": 0.39511401041666677,
+          "max_owned_capacity_bytes": 62583283,
+          "max_journal_bytes": 131137639
+        }
+      },
+      "relative_cpu_par2_change": -0.533576365185384,
+      "checked_solve_losses": [],
+      "checked_solve_gains": [],
+      "gate_pass": true,
+      "queries": [
+        {
+          "circuit": "cal3.aig",
+          "flags": 3,
+          "depth": 0,
+          "polarity": -1,
+          "input_sha256": "0189cdebaa13b3299066f3421a3b4f54da6aabd8691c914e0da4a71ee3db0737",
+          "baseline": {
+            "checked": 2,
+            "cpu_seconds": [
+              8.500000000000174e-05,
+              8.000000000000368e-05
+            ],
+            "conflicts": [
+              4,
+              4
+            ],
+            "max_owned_capacity_bytes": 221710,
+            "max_journal_bytes": 34,
+            "bsat_check_wall_seconds": [
+              0,
+              0
+            ],
+            "export_cpu_seconds": [
+              0.0003249999999999989,
+              0.0003929999999999975
+            ]
+          },
+          "candidate": {
+            "checked": 2,
+            "cpu_seconds": [
+              8.89999999999988e-05,
+              7.399999999999768e-05
+            ],
+            "conflicts": [
+              4,
+              4
+            ],
+            "max_owned_capacity_bytes": 221718,
+            "max_journal_bytes": 34,
+            "bsat_check_wall_seconds": [
+              0,
+              0
+            ],
+            "export_cpu_seconds": [
+              0.00038699999999999846,
+              0.0003830000000000014
+            ]
+          }
+        },
+        {
+          "circuit": "cal3.aig",
+          "flags": 3,
+          "depth": 0,
+          "polarity": 1,
+          "input_sha256": "b63e6958c0df967af7bfcd9139a6c0d73d27f699b50d74f38129d910d66dd2ed",
+          "baseline": {
+            "checked": 2,
+            "cpu_seconds": [
+              3.999999999999837e-05,
+              4.299999999999443e-05
+            ],
+            "conflicts": [
+              0,
+              0
+            ],
+            "max_owned_capacity_bytes": 221298,
+            "max_journal_bytes": 4,
+            "bsat_check_wall_seconds": [
+              0.022815124597400427,
+              0.02138279192149639
+            ],
+            "export_cpu_seconds": [
+              0.00036699999999999927,
+              0.000338999999999999
+            ]
+          },
+          "candidate": {
+            "checked": 2,
+            "cpu_seconds": [
+              4.400000000000237e-05,
+              3.199999999999731e-05
+            ],
+            "conflicts": [
+              0,
+              0
+            ],
+            "max_owned_capacity_bytes": 221306,
+            "max_journal_bytes": 4,
+            "bsat_check_wall_seconds": [
+              0.02590516721829772,
+              0.024198624771088362
+            ],
+            "export_cpu_seconds": [
+              0.0003929999999999975,
+              0.00035299999999999915
+            ]
+          }
+        },
+        {
+          "circuit": "cal3.aig",
+          "flags": 3,
+          "depth": 1,
+          "polarity": -1,
+          "input_sha256": "87fc68fb93e23d2eb819f0f6c23687c2b8b459f8582d8e726ef023215ed8dad1",
+          "baseline": {
+            "checked": 2,
+            "cpu_seconds": [
+              0.00014100000000000223,
+              0.00015099999999999836
+            ],
+            "conflicts": [
+              13,
+              13
+            ],
+            "max_owned_capacity_bytes": 454029,
+            "max_journal_bytes": 232,
+            "bsat_check_wall_seconds": [
+              0,
+              0
+            ],
+            "export_cpu_seconds": [
+              0.0006330000000000086,
+              0.0005860000000000032
+            ]
+          },
+          "candidate": {
+            "checked": 2,
+            "cpu_seconds": [
+              0.00014300000000000423,
+              0.00015600000000000336
+            ],
+            "conflicts": [
+              13,
+              13
+            ],
+            "max_owned_capacity_bytes": 454037,
+            "max_journal_bytes": 232,
+            "bsat_check_wall_seconds": [
+              0,
+              0
+            ],
+            "export_cpu_seconds": [
+              0.0005889999999999923,
+              0.0006069999999999964
+            ]
+          }
+        },
+        {
+          "circuit": "cal3.aig",
+          "flags": 3,
+          "depth": 1,
+          "polarity": 1,
+          "input_sha256": "544866eb8ce8b1c6c4a2faafc678b6595781dfc03e7b4d1e2d08648a8554382d",
+          "baseline": {
+            "checked": 2,
+            "cpu_seconds": [
+              6.899999999999962e-05,
+              6.899999999999962e-05
+            ],
+            "conflicts": [
+              6,
+              6
+            ],
+            "max_owned_capacity_bytes": 453617,
+            "max_journal_bytes": 114,
+            "bsat_check_wall_seconds": [
+              0.022518000099807978,
+              0.02372579090297222
+            ],
+            "export_cpu_seconds": [
+              0.0005150000000000016,
+              0.0005450000000000038
+            ]
+          },
+          "candidate": {
+            "checked": 2,
+            "cpu_seconds": [
+              6.899999999999962e-05,
+              7.400000000000462e-05
+            ],
+            "conflicts": [
+              6,
+              6
+            ],
+            "max_owned_capacity_bytes": 453625,
+            "max_journal_bytes": 114,
+            "bsat_check_wall_seconds": [
+              0.022579208947718143,
+              0.024811833165585995
+            ],
+            "export_cpu_seconds": [
+              0.0005269999999999997,
+              0.0005659999999999971
+            ]
+          }
+        },
+        {
+          "circuit": "cal3.aig",
+          "flags": 3,
+          "depth": 2,
+          "polarity": -1,
+          "input_sha256": "fe9f84e32dd102fbf3f1546fe5de3e77abbe4190f0ce039fdaa0b047e1c6ac35",
+          "baseline": {
+            "checked": 2,
+            "cpu_seconds": [
+              0.0004769999999999913,
+              0.0005049999999999916
+            ],
+            "conflicts": [
+              44,
+              44
+            ],
+            "max_owned_capacity_bytes": 565404,
+            "max_journal_bytes": 2282,
+            "bsat_check_wall_seconds": [
+              0,
+              0
+            ],
+            "export_cpu_seconds": [
+              0.0007660000000000028,
+              0.0007300000000000084
+            ]
+          },
+          "candidate": {
+            "checked": 2,
+            "cpu_seconds": [
+              0.0005340000000000067,
+              0.0005150000000000016
+            ],
+            "conflicts": [
+              44,
+              44
+            ],
+            "max_owned_capacity_bytes": 565412,
+            "max_journal_bytes": 2282,
+            "bsat_check_wall_seconds": [
+              0,
+              0
+            ],
+            "export_cpu_seconds": [
+              0.0008110000000000062,
+              0.0007619999999999988
+            ]
+          }
+        },
+        {
+          "circuit": "cal3.aig",
+          "flags": 3,
+          "depth": 2,
+          "polarity": 1,
+          "input_sha256": "0c5534341a6aa728283ce653cd2e70ddcd165f9f84e52b51bebc5c505a1e0aa7",
+          "baseline": {
+            "checked": 2,
+            "cpu_seconds": [
+              0.00027300000000000935,
+              0.0002940000000000026
+            ],
+            "conflicts": [
+              40,
+              40
+            ],
+            "max_owned_capacity_bytes": 563264,
+            "max_journal_bytes": 1178,
+            "bsat_check_wall_seconds": [
+              0.024547833018004894,
+              0.025934750214219093
+            ],
+            "export_cpu_seconds": [
+              0.0007759999999999989,
+              0.000788999999999998
+            ]
+          },
+          "candidate": {
+            "checked": 2,
+            "cpu_seconds": [
+              0.0002819999999999906,
+              0.0002899999999999986
+            ],
+            "conflicts": [
+              40,
+              40
+            ],
+            "max_owned_capacity_bytes": 563272,
+            "max_journal_bytes": 1178,
+            "bsat_check_wall_seconds": [
+              0.026600665878504515,
+              0.025194333866238594
+            ],
+            "export_cpu_seconds": [
+              0.000791,
+              0.0007459999999999967
+            ]
+          }
+        },
+        {
+          "circuit": "cal3.aig",
+          "flags": 3,
+          "depth": 4,
+          "polarity": -1,
+          "input_sha256": "e00b9f173f6ae6a5b58cf9766b94092672633bf9dd887d4ecd1e963feb938a24",
+          "baseline": {
+            "checked": 2,
+            "cpu_seconds": [
+              0.0002929999999999877,
+              0.00027199999999999447
+            ],
+            "conflicts": [
+              5,
+              5
+            ],
+            "max_owned_capacity_bytes": 985738,
+            "max_journal_bytes": 14064,
+            "bsat_check_wall_seconds": [
+              0,
+              0
+            ],
+            "export_cpu_seconds": [
+              0.0011430000000000051,
+              0.0011819999999999886
+            ]
+          },
+          "candidate": {
+            "checked": 2,
+            "cpu_seconds": [
+              0.00048599999999998644,
+              0.0005560000000000009
+            ],
+            "conflicts": [
+              22,
+              22
+            ],
+            "max_owned_capacity_bytes": 986290,
+            "max_journal_bytes": 13766,
+            "bsat_check_wall_seconds": [
+              0,
+              0
+            ],
+            "export_cpu_seconds": [
+              0.0011730000000000074,
+              0.0012159999999999949
+            ]
+          }
+        },
+        {
+          "circuit": "cal3.aig",
+          "flags": 3,
+          "depth": 4,
+          "polarity": 1,
+          "input_sha256": "9f0eabe1753f23f91b20221ef3421524a84851484b2b86dd0eb1f41794539cb6",
+          "baseline": {
+            "checked": 2,
+            "cpu_seconds": [
+              0.003022999999999998,
+              0.0029519999999999963
+            ],
+            "conflicts": [
+              255,
+              255
+            ],
+            "max_owned_capacity_bytes": 985390,
+            "max_journal_bytes": 13990,
+            "bsat_check_wall_seconds": [
+              0.035816042218357325,
+              0.035346291959285736
+            ],
+            "export_cpu_seconds": [
+              0.0011830000000000035,
+              0.0011309999999999931
+            ]
+          },
+          "candidate": {
+            "checked": 2,
+            "cpu_seconds": [
+              0.002793999999999991,
+              0.0027800000000000047
+            ],
+            "conflicts": [
+              240,
+              240
+            ],
+            "max_owned_capacity_bytes": 985206,
+            "max_journal_bytes": 12762,
+            "bsat_check_wall_seconds": [
+              0.036098791752010584,
+              0.03733204212039709
+            ],
+            "export_cpu_seconds": [
+              0.0011599999999999944,
+              0.0011789999999999995
+            ]
+          }
+        },
+        {
+          "circuit": "cal3.aig",
+          "flags": 3,
+          "depth": 8,
+          "polarity": -1,
+          "input_sha256": "7042e271d586106feaa4bc3305b166fac4b5397c0eb7d291d160d9f06e22d1a3",
+          "baseline": {
+            "checked": 2,
+            "cpu_seconds": [
+              0.0013639999999999763,
+              0.001462999999999992
+            ],
+            "conflicts": [
+              14,
+              14
+            ],
+            "max_owned_capacity_bytes": 2246650,
+            "max_journal_bytes": 291218,
+            "bsat_check_wall_seconds": [
+              0,
+              0
+            ],
+            "export_cpu_seconds": [
+              0.0019609999999999905,
+              0.0019950000000000245
+            ]
+          },
+          "candidate": {
+            "checked": 2,
+            "cpu_seconds": [
+              0.005180000000000018,
+              0.005087999999999981
+            ],
+            "conflicts": [
+              274,
+              274
+            ],
+            "max_owned_capacity_bytes": 2634158,
+            "max_journal_bytes": 418476,
+            "bsat_check_wall_seconds": [
+              0,
+              0
+            ],
+            "export_cpu_seconds": [
+              0.002118999999999982,
+              0.002018999999999993
+            ]
+          }
+        },
+        {
+          "circuit": "cal3.aig",
+          "flags": 3,
+          "depth": 8,
+          "polarity": 1,
+          "input_sha256": "198e949ae81738b3cff4673efe233a0551adf646fa66cf261264a8bed1f36d0a",
+          "baseline": {
+            "checked": 2,
+            "cpu_seconds": [
+              0.05494299999999999,
+              0.05582200000000001
+            ],
+            "conflicts": [
+              2293,
+              2293
+            ],
+            "max_owned_capacity_bytes": 2245694,
+            "max_journal_bytes": 290968,
+            "bsat_check_wall_seconds": [
+              0.1917624999769032,
+              0.1924256249330938
+            ],
+            "export_cpu_seconds": [
+              0.0019119999999999693,
+              0.0019279999999999853
+            ]
+          },
+          "candidate": {
+            "checked": 2,
+            "cpu_seconds": [
+              0.074016,
+              0.07342599999999999
+            ],
+            "conflicts": [
+              2764,
+              2764
+            ],
+            "max_owned_capacity_bytes": 2622130,
+            "max_journal_bytes": 401796,
+            "bsat_check_wall_seconds": [
+              0.24213458318263292,
+              0.2460869997739792
+            ],
+            "export_cpu_seconds": [
+              0.0019299999999999873,
+              0.0019839999999999858
+            ]
+          }
+        },
+        {
+          "circuit": "cal3.aig",
+          "flags": 3,
+          "depth": 16,
+          "polarity": -1,
+          "input_sha256": "66a2c215e71b0a6e0491b41f0176deaf6f6b7feada3e16f0e1785b01587fb08a",
+          "baseline": {
+            "checked": 2,
+            "cpu_seconds": [
+              0.0029590000000041528,
+              0.002955999999997516
+            ],
+            "conflicts": [
+              60,
+              60
+            ],
+            "max_owned_capacity_bytes": 7503494,
+            "max_journal_bytes": 242753545,
+            "bsat_check_wall_seconds": [
+              0,
+              0
+            ],
+            "export_cpu_seconds": [
+              0.03959400000000102,
+              0.04061699999999746
+            ]
+          },
+          "candidate": {
+            "checked": 2,
+            "cpu_seconds": [
+              0.0056769999999986,
+              0.0054909999999992465
+            ],
+            "conflicts": [
+              143,
+              143
+            ],
+            "max_owned_capacity_bytes": 6682554,
+            "max_journal_bytes": 131137639,
+            "bsat_check_wall_seconds": [
+              0,
+              0
+            ],
+            "export_cpu_seconds": [
+              0.02411299999999983,
+              0.031492000000000075
+            ]
+          }
+        },
+        {
+          "circuit": "cal3.aig",
+          "flags": 3,
+          "depth": 16,
+          "polarity": 1,
+          "input_sha256": "6bbfa3e0109b277412f4bf0edc157670859943a2e914c2d16f27346acc1b9e98",
+          "baseline": {
+            "checked": 2,
+            "cpu_seconds": [
+              39.511748,
+              39.897762
+            ],
+            "conflicts": [
+              1148517,
+              1148517
+            ],
+            "max_owned_capacity_bytes": 7500042,
+            "max_journal_bytes": 242749820,
+            "bsat_check_wall_seconds": [
+              23.145361125003546,
+              23.355086584109813
+            ],
+            "export_cpu_seconds": [
+              0.03898599999999419,
+              0.04164100000000559
+            ]
+          },
+          "candidate": {
+            "checked": 2,
+            "cpu_seconds": [
+              17.758321,
+              17.765979
+            ],
+            "conflicts": [
+              482935,
+              482935
+            ],
+            "max_owned_capacity_bytes": 6663166,
+            "max_journal_bytes": 131133015,
+            "bsat_check_wall_seconds": [
+              16.6121727922,
+              16.42289250018075
+            ],
+            "export_cpu_seconds": [
+              0.024583999999997275,
+              0.02354700000000065
+            ]
+          }
+        },
+        {
+          "circuit": "gen23.aig",
+          "flags": 3,
+          "depth": 0,
+          "polarity": -1,
+          "input_sha256": "664ed66f25d4da98a8a5508204c7b1f22a13f7b72e6dbbc0392f6870973f0f50",
+          "baseline": {
+            "checked": 2,
+            "cpu_seconds": [
+              0.0005260000000006926,
+              0.00045099999999820284
+            ],
+            "conflicts": [
+              1,
+              1
+            ],
+            "max_owned_capacity_bytes": 3628219,
+            "max_journal_bytes": 1376,
+            "bsat_check_wall_seconds": [
+              0,
+              0
+            ],
+            "export_cpu_seconds": [
+              0.0033069999999995048,
+              0.003353999999994528
+            ]
+          },
+          "candidate": {
+            "checked": 2,
+            "cpu_seconds": [
+              0.0004390000000000782,
+              0.0005920000000010361
+            ],
+            "conflicts": [
+              1,
+              1
+            ],
+            "max_owned_capacity_bytes": 3628227,
+            "max_journal_bytes": 1376,
+            "bsat_check_wall_seconds": [
+              0,
+              0
+            ],
+            "export_cpu_seconds": [
+              0.0032250000000004775,
+              0.003293000000002877
+            ]
+          }
+        },
+        {
+          "circuit": "gen23.aig",
+          "flags": 3,
+          "depth": 0,
+          "polarity": 1,
+          "input_sha256": "ee3697fac4ef27c6d832fd599b16ab3516cd52e39b6f16f16e489cb825111f4b",
+          "baseline": {
+            "checked": 2,
+            "cpu_seconds": [
+              0.022494999999999266,
+              0.02191299999999785
+            ],
+            "conflicts": [
+              228,
+              228
+            ],
+            "max_owned_capacity_bytes": 3628191,
+            "max_journal_bytes": 1368,
+            "bsat_check_wall_seconds": [
+              0.04635791666805744,
+              0.04602612508460879
+            ],
+            "export_cpu_seconds": [
+              0.003135000000000332,
+              0.0031570000000016307
+            ]
+          },
+          "candidate": {
+            "checked": 2,
+            "cpu_seconds": [
+              0.021765999999999508,
+              0.022064000000000306
+            ],
+            "conflicts": [
+              228,
+              228
+            ],
+            "max_owned_capacity_bytes": 3628199,
+            "max_journal_bytes": 1368,
+            "bsat_check_wall_seconds": [
+              0.04579587513580918,
+              0.045754124876111746
+            ],
+            "export_cpu_seconds": [
+              0.003233999999999071,
+              0.003129999999998745
+            ]
+          }
+        },
+        {
+          "circuit": "gen23.aig",
+          "flags": 3,
+          "depth": 1,
+          "polarity": -1,
+          "input_sha256": "5dd579aa938bbe98ef5edd0a59223eed154f2030c6cde1f68e3c5b27d6a10248",
+          "baseline": {
+            "checked": 2,
+            "cpu_seconds": [
+              0.001102000000003045,
+              0.001066999999999041
+            ],
+            "conflicts": [
+              0,
+              0
+            ],
+            "max_owned_capacity_bytes": 6865275,
+            "max_journal_bytes": 3199,
+            "bsat_check_wall_seconds": [
+              0,
+              0
+            ],
+            "export_cpu_seconds": [
+              0.006780999999996595,
+              0.006627000000001715
+            ]
+          },
+          "candidate": {
+            "checked": 2,
+            "cpu_seconds": [
+              0.001201000000001784,
+              0.001149000000001621
+            ],
+            "conflicts": [
+              0,
+              0
+            ],
+            "max_owned_capacity_bytes": 6865283,
+            "max_journal_bytes": 3199,
+            "bsat_check_wall_seconds": [
+              0,
+              0
+            ],
+            "export_cpu_seconds": [
+              0.006370000000000431,
+              0.006682000000001409
+            ]
+          }
+        },
+        {
+          "circuit": "gen23.aig",
+          "flags": 3,
+          "depth": 1,
+          "polarity": 1,
+          "input_sha256": "a51d6ab22ae668ef1aa5f211c78d94fea087e4a319e2d770d4447f7b7f6b0cfe",
+          "baseline": {
+            "checked": 2,
+            "cpu_seconds": [
+              0.01141900000000362,
+              0.011408999999993341
+            ],
+            "conflicts": [
+              228,
+              228
+            ],
+            "max_owned_capacity_bytes": 6863167,
+            "max_journal_bytes": 3199,
+            "bsat_check_wall_seconds": [
+              0.070441999938339,
+              0.07379537494853139
+            ],
+            "export_cpu_seconds": [
+              0.006528000000002976,
+              0.00661599999999396
+            ]
+          },
+          "candidate": {
+            "checked": 2,
+            "cpu_seconds": [
+              0.011738999999998612,
+              0.011749999999999261
+            ],
+            "conflicts": [
+              228,
+              228
+            ],
+            "max_owned_capacity_bytes": 6863175,
+            "max_journal_bytes": 3199,
+            "bsat_check_wall_seconds": [
+              0.070226542185992,
+              0.07158995792269707
+            ],
+            "export_cpu_seconds": [
+              0.006190999999997615,
+              0.006665999999999173
+            ]
+          }
+        },
+        {
+          "circuit": "gen23.aig",
+          "flags": 3,
+          "depth": 2,
+          "polarity": -1,
+          "input_sha256": "85b0792de42a2fa0080b424a12f43acf352ed57db0aabd72b1ecd3891453cea8",
+          "baseline": {
+            "checked": 2,
+            "cpu_seconds": [
+              0.0018560000000036325,
+              0.0016679999999951178
+            ],
+            "conflicts": [
+              1,
+              1
+            ],
+            "max_owned_capacity_bytes": 8413039,
+            "max_journal_bytes": 5036,
+            "bsat_check_wall_seconds": [
+              0,
+              0
+            ],
+            "export_cpu_seconds": [
+              0.009639999999997428,
+              0.00991099999999534
+            ]
+          },
+          "candidate": {
+            "checked": 2,
+            "cpu_seconds": [
+              0.0016050000000014109,
+              0.0018580000000021357
+            ],
+            "conflicts": [
+              1,
+              1
+            ],
+            "max_owned_capacity_bytes": 8413047,
+            "max_journal_bytes": 5036,
+            "bsat_check_wall_seconds": [
+              0,
+              0
+            ],
+            "export_cpu_seconds": [
+              0.009719000000000477,
+              0.010039000000002574
+            ]
+          }
+        },
+        {
+          "circuit": "gen23.aig",
+          "flags": 3,
+          "depth": 2,
+          "polarity": 1,
+          "input_sha256": "c231ea8e262b252a3d6fe7d90cded9f8bbebf47fbe1742af9048d4a8f3906396",
+          "baseline": {
+            "checked": 2,
+            "cpu_seconds": [
+              0.010971000000004949,
+              0.011020999999999503
+            ],
+            "conflicts": [
+              228,
+              228
+            ],
+            "max_owned_capacity_bytes": 8411443,
+            "max_journal_bytes": 5022,
+            "bsat_check_wall_seconds": [
+              0.09623129200190306,
+              0.09438525000587106
+            ],
+            "export_cpu_seconds": [
+              0.009520000000001971,
+              0.009968000000000643
+            ]
+          },
+          "candidate": {
+            "checked": 2,
+            "cpu_seconds": [
+              0.011233000000000715,
+              0.01138599999999812
+            ],
+            "conflicts": [
+              228,
+              228
+            ],
+            "max_owned_capacity_bytes": 8411451,
+            "max_journal_bytes": 5022,
+            "bsat_check_wall_seconds": [
+              0.0969172497279942,
+              0.09558804193511605
+            ],
+            "export_cpu_seconds": [
+              0.009861000000000786,
+              0.009755999999999432
+            ]
+          }
+        },
+        {
+          "circuit": "gen23.aig",
+          "flags": 3,
+          "depth": 4,
+          "polarity": -1,
+          "input_sha256": "1ebc009f1df0581881ccac717d0aeebe8799626b01654311010155ac1825d87f",
+          "baseline": {
+            "checked": 2,
+            "cpu_seconds": [
+              0.0032830000000032555,
+              0.003211000000000297
+            ],
+            "conflicts": [
+              1,
+              1
+            ],
+            "max_owned_capacity_bytes": 16069359,
+            "max_journal_bytes": 6884,
+            "bsat_check_wall_seconds": [
+              0,
+              0
+            ],
+            "export_cpu_seconds": [
+              0.016265000000004193,
+              0.01649900000000315
+            ]
+          },
+          "candidate": {
+            "checked": 2,
+            "cpu_seconds": [
+              0.0029710000000022774,
+              0.0033159999999980982
+            ],
+            "conflicts": [
+              1,
+              1
+            ],
+            "max_owned_capacity_bytes": 16069367,
+            "max_journal_bytes": 6884,
+            "bsat_check_wall_seconds": [
+              0,
+              0
+            ],
+            "export_cpu_seconds": [
+              0.016291999999999973,
+              0.01621199999999945
+            ]
+          }
+        },
+        {
+          "circuit": "gen23.aig",
+          "flags": 3,
+          "depth": 4,
+          "polarity": 1,
+          "input_sha256": "d85bc3d12a6608cfa8508cdd83b2a4b3f106f65de5b4986583c2be2478e79835",
+          "baseline": {
+            "checked": 2,
+            "cpu_seconds": [
+              0.02058399999999949,
+              0.020158999999999594
+            ],
+            "conflicts": [
+              229,
+              229
+            ],
+            "max_owned_capacity_bytes": 16069299,
+            "max_journal_bytes": 6873,
+            "bsat_check_wall_seconds": [
+              0.14620141731575131,
+              0.14461395889520645
+            ],
+            "export_cpu_seconds": [
+              0.015987000000002638,
+              0.016039999999996724
+            ]
+          },
+          "candidate": {
+            "checked": 2,
+            "cpu_seconds": [
+              0.020503000000001492,
+              0.02145800000000264
+            ],
+            "conflicts": [
+              229,
+              229
+            ],
+            "max_owned_capacity_bytes": 16069307,
+            "max_journal_bytes": 6873,
+            "bsat_check_wall_seconds": [
+              0.14679433312267065,
+              0.14700179127976298
+            ],
+            "export_cpu_seconds": [
+              0.016399999999997306,
+              0.016937999999999676
+            ]
+          }
+        },
+        {
+          "circuit": "gen23.aig",
+          "flags": 3,
+          "depth": 8,
+          "polarity": -1,
+          "input_sha256": "604cb16d920d1d0080bbd86f0d146937f587f390cba657cfe85307f5957878ea",
+          "baseline": {
+            "checked": 2,
+            "cpu_seconds": [
+              0.007131999999998584,
+              0.007246000000002084
+            ],
+            "conflicts": [
+              4,
+              4
+            ],
+            "max_owned_capacity_bytes": 29438891,
+            "max_journal_bytes": 96788,
+            "bsat_check_wall_seconds": [
+              0,
+              0
+            ],
+            "export_cpu_seconds": [
+              0.028824999999997658,
+              0.02883099999999672
+            ]
+          },
+          "candidate": {
+            "checked": 2,
+            "cpu_seconds": [
+              0.007196000000000424,
+              0.007414000000000698
+            ],
+            "conflicts": [
+              4,
+              4
+            ],
+            "max_owned_capacity_bytes": 29438899,
+            "max_journal_bytes": 96788,
+            "bsat_check_wall_seconds": [
+              0,
+              0
+            ],
+            "export_cpu_seconds": [
+              0.02905799999999914,
+              0.02894099999999966
+            ]
+          }
+        },
+        {
+          "circuit": "gen23.aig",
+          "flags": 3,
+          "depth": 8,
+          "polarity": 1,
+          "input_sha256": "a386b79c249b29e1fd0aad16072d12f09810ada0a71e5abe29f75fc5ad844253",
+          "baseline": {
+            "checked": 2,
+            "cpu_seconds": [
+              0.02381000000000455,
+              0.02541800000000194
+            ],
+            "conflicts": [
+              361,
+              361
+            ],
+            "max_owned_capacity_bytes": 29438831,
+            "max_journal_bytes": 96744,
+            "bsat_check_wall_seconds": [
+              0.26043708296492696,
+              0.2650699997320771
+            ],
+            "export_cpu_seconds": [
+              0.028418999999999528,
+              0.028853999999995494
+            ]
+          },
+          "candidate": {
+            "checked": 2,
+            "cpu_seconds": [
+              0.02526500000000098,
+              0.023752999999999247
+            ],
+            "conflicts": [
+              361,
+              361
+            ],
+            "max_owned_capacity_bytes": 29438839,
+            "max_journal_bytes": 96744,
+            "bsat_check_wall_seconds": [
+              0.26309483405202627,
+              0.26831437507644296
+            ],
+            "export_cpu_seconds": [
+              0.02839800000000281,
+              0.029060000000001196
+            ]
+          }
+        },
+        {
+          "circuit": "gen23.aig",
+          "flags": 3,
+          "depth": 16,
+          "polarity": -1,
+          "input_sha256": "08cbdec9dcbbe04c915c154a1a22cdfc9c0912809fb718f41471827669d9b5ad",
+          "baseline": {
+            "checked": 2,
+            "cpu_seconds": [
+              0.02869100000000202,
+              0.029330000000001633
+            ],
+            "conflicts": [
+              36,
+              36
+            ],
+            "max_owned_capacity_bytes": 62230295,
+            "max_journal_bytes": 8007801,
+            "bsat_check_wall_seconds": [
+              0,
+              0
+            ],
+            "export_cpu_seconds": [
+              0.05589200000000005,
+              0.056089000000000055
+            ]
+          },
+          "candidate": {
+            "checked": 2,
+            "cpu_seconds": [
+              0.01354599999999806,
+              0.015381000000001421
+            ],
+            "conflicts": [
+              12,
+              12
+            ],
+            "max_owned_capacity_bytes": 62583283,
+            "max_journal_bytes": 11790778,
+            "bsat_check_wall_seconds": [
+              0,
+              0
+            ],
+            "export_cpu_seconds": [
+              0.057095999999997815,
+              0.0563849999999988
+            ]
+          }
+        },
+        {
+          "circuit": "gen23.aig",
+          "flags": 3,
+          "depth": 16,
+          "polarity": 1,
+          "input_sha256": "54d5edb47954c6441a6919565d8d1cd7e4bb5a35059c7b8c30ff0450671f1426",
+          "baseline": {
+            "checked": 2,
+            "cpu_seconds": [
+              0.6961939999999984,
+              0.7060729999999964
+            ],
+            "conflicts": [
+              6078,
+              6078
+            ],
+            "max_owned_capacity_bytes": 62218139,
+            "max_journal_bytes": 8007142,
+            "bsat_check_wall_seconds": [
+              0.9219659580849111,
+              0.9171102498658001
+            ],
+            "export_cpu_seconds": [
+              0.05619500000000244,
+              0.055998000000002435
+            ]
+          },
+          "candidate": {
+            "checked": 2,
+            "cpu_seconds": [
+              0.9407839999999972,
+              0.9302410000000023
+            ],
+            "conflicts": [
+              7524,
+              7524
+            ],
+            "max_owned_capacity_bytes": 62582839,
+            "max_journal_bytes": 11790601,
+            "bsat_check_wall_seconds": [
+              0.8049511671997607,
+              0.7983666658401489
+            ],
+            "export_cpu_seconds": [
+              0.057475000000000165,
+              0.05658799999999786
+            ]
+          }
+        },
+        {
+          "circuit": "usb_phy.aig",
+          "flags": 3,
+          "depth": 0,
+          "polarity": -1,
+          "input_sha256": "f4fddbcdcbdde2a6384b4040526b24c1c9d116a489fb07b41ca75ef63ce7a929",
+          "baseline": {
+            "checked": 2,
+            "cpu_seconds": [
+              7.599999999996498e-05,
+              7.500000000248974e-05
+            ],
+            "conflicts": [
+              0,
+              0
+            ],
+            "max_owned_capacity_bytes": 258779,
+            "max_journal_bytes": 4,
+            "bsat_check_wall_seconds": [
+              0,
+              0
+            ],
+            "export_cpu_seconds": [
+              0.0004060000000052355,
+              0.00044500000000624595
+            ]
+          },
+          "candidate": {
+            "checked": 2,
+            "cpu_seconds": [
+              8.19999999990273e-05,
+              9.499999999817987e-05
+            ],
+            "conflicts": [
+              0,
+              0
+            ],
+            "max_owned_capacity_bytes": 258787,
+            "max_journal_bytes": 4,
+            "bsat_check_wall_seconds": [
+              0,
+              0
+            ],
+            "export_cpu_seconds": [
+              0.0005190000000006023,
+              0.000612000000000279
+            ]
+          }
+        },
+        {
+          "circuit": "usb_phy.aig",
+          "flags": 3,
+          "depth": 0,
+          "polarity": 1,
+          "input_sha256": "1d8896429d6f6a8ce661d42de9849d4c016530ee9f1ec0b5ec44cbeae0bd830f",
+          "baseline": {
+            "checked": 2,
+            "cpu_seconds": [
+              4.500000000007276e-05,
+              3.8000000003535206e-05
+            ],
+            "conflicts": [
+              0,
+              0
+            ],
+            "max_owned_capacity_bytes": 258783,
+            "max_journal_bytes": 4,
+            "bsat_check_wall_seconds": [
+              0.02280595898628235,
+              0.02289058268070221
+            ],
+            "export_cpu_seconds": [
+              0.00044199999999960937,
+              0.0003930000000025302
+            ]
+          },
+          "candidate": {
+            "checked": 2,
+            "cpu_seconds": [
+              6.000000000128125e-05,
+              5.9000000000253294e-05
+            ],
+            "conflicts": [
+              0,
+              0
+            ],
+            "max_owned_capacity_bytes": 258791,
+            "max_journal_bytes": 4,
+            "bsat_check_wall_seconds": [
+              0.027563665993511677,
+              0.03135475004091859
+            ],
+            "export_cpu_seconds": [
+              0.00046999999999997044,
+              0.0005249999999996646
+            ]
+          }
+        },
+        {
+          "circuit": "usb_phy.aig",
+          "flags": 3,
+          "depth": 1,
+          "polarity": -1,
+          "input_sha256": "1c2b9fee0148920a5def19a846d589e434d9409c3f815f087098395b74651645",
+          "baseline": {
+            "checked": 2,
+            "cpu_seconds": [
+              0.00014799999999581814,
+              0.00014700000000544833
+            ],
+            "conflicts": [
+              0,
+              0
+            ],
+            "max_owned_capacity_bytes": 484831,
+            "max_journal_bytes": 8,
+            "bsat_check_wall_seconds": [
+              0,
+              0
+            ],
+            "export_cpu_seconds": [
+              0.000686999999999216,
+              0.0007749999999973056
+            ]
+          },
+          "candidate": {
+            "checked": 2,
+            "cpu_seconds": [
+              0.0001449999999998397,
+              0.00014200000000030855
+            ],
+            "conflicts": [
+              0,
+              0
+            ],
+            "max_owned_capacity_bytes": 484839,
+            "max_journal_bytes": 8,
+            "bsat_check_wall_seconds": [
+              0,
+              0
+            ],
+            "export_cpu_seconds": [
+              0.0007870000000025357,
+              0.0007599999999996498
+            ]
+          }
+        },
+        {
+          "circuit": "usb_phy.aig",
+          "flags": 3,
+          "depth": 1,
+          "polarity": 1,
+          "input_sha256": "64aaf2dbf68ebc17addfa9767a555376c12191b64175219b586ba5a17b4cbdc6",
+          "baseline": {
+            "checked": 2,
+            "cpu_seconds": [
+              1.9000000001767603e-05,
+              1.9999999999242846e-05
+            ],
+            "conflicts": [
+              0,
+              0
+            ],
+            "max_owned_capacity_bytes": 484739,
+            "max_journal_bytes": 8,
+            "bsat_check_wall_seconds": [
+              0.024733208119869232,
+              0.024387666024267673
+            ],
+            "export_cpu_seconds": [
+              0.0006380000000021369,
+              0.0006860000000017408
+            ]
+          },
+          "candidate": {
+            "checked": 2,
+            "cpu_seconds": [
+              3.500000000045134e-05,
+              4.6000000001100716e-05
+            ],
+            "conflicts": [
+              0,
+              0
+            ],
+            "max_owned_capacity_bytes": 484747,
+            "max_journal_bytes": 8,
+            "bsat_check_wall_seconds": [
+              0.02995720924809575,
+              0.031991499941796064
+            ],
+            "export_cpu_seconds": [
+              0.0007559999999990907,
+              0.0008280000000020493
+            ]
+          }
+        },
+        {
+          "circuit": "usb_phy.aig",
+          "flags": 3,
+          "depth": 2,
+          "polarity": -1,
+          "input_sha256": "41310902408172076c408aaa463ed64be298d67d007922def678c7806660fbd1",
+          "baseline": {
+            "checked": 2,
+            "cpu_seconds": [
+              0.00021499999999718966,
+              0.00021100000000018326
+            ],
+            "conflicts": [
+              1,
+              1
+            ],
+            "max_owned_capacity_bytes": 862615,
+            "max_journal_bytes": 18,
+            "bsat_check_wall_seconds": [
+              0,
+              0
+            ],
+            "export_cpu_seconds": [
+              0.0009939999999986071,
+              0.0010279999999980305
+            ]
+          },
+          "candidate": {
+            "checked": 2,
+            "cpu_seconds": [
+              0.00021100000000018326,
+              0.00021000000000270802
+            ],
+            "conflicts": [
+              1,
+              1
+            ],
+            "max_owned_capacity_bytes": 862623,
+            "max_journal_bytes": 18,
+            "bsat_check_wall_seconds": [
+              0,
+              0
+            ],
+            "export_cpu_seconds": [
+              0.0010310000000011144,
+              0.0010880000000028645
+            ]
+          }
+        },
+        {
+          "circuit": "usb_phy.aig",
+          "flags": 3,
+          "depth": 2,
+          "polarity": 1,
+          "input_sha256": "e8c2eeca2d71a2e1996c195edcb80d60313ec534677045ec6b368bc78f37e505",
+          "baseline": {
+            "checked": 2,
+            "cpu_seconds": [
+              2.800000000036107e-05,
+              3.499999999689862e-05
+            ],
+            "conflicts": [
+              0,
+              0
+            ],
+            "max_owned_capacity_bytes": 862203,
+            "max_journal_bytes": 12,
+            "bsat_check_wall_seconds": [
+              0.028421500232070684,
+              0.02619091607630253
+            ],
+            "export_cpu_seconds": [
+              0.0009119999999995798,
+              0.000930999999994242
+            ]
+          },
+          "candidate": {
+            "checked": 2,
+            "cpu_seconds": [
+              4.099999999951365e-05,
+              2.800000000036107e-05
+            ],
+            "conflicts": [
+              0,
+              0
+            ],
+            "max_owned_capacity_bytes": 862211,
+            "max_journal_bytes": 12,
+            "bsat_check_wall_seconds": [
+              0.027652000077068806,
+              0.02793349977582693
+            ],
+            "export_cpu_seconds": [
+              0.0010150000000024306,
+              0.0010340000000006455
+            ]
+          }
+        },
+        {
+          "circuit": "usb_phy.aig",
+          "flags": 3,
+          "depth": 4,
+          "polarity": -1,
+          "input_sha256": "c359ecc29a1f49ce417465f42723670ac209b5c747060cc4bbb0afacf4716dcc",
+          "baseline": {
+            "checked": 2,
+            "cpu_seconds": [
+              0.0003359999999972274,
+              0.00033699999999470265
+            ],
+            "conflicts": [
+              4,
+              4
+            ],
+            "max_owned_capacity_bytes": 1709859,
+            "max_journal_bytes": 62,
+            "bsat_check_wall_seconds": [
+              0,
+              0
+            ],
+            "export_cpu_seconds": [
+              0.0015220000000013556,
+              0.0016749999999987608
+            ]
+          },
+          "candidate": {
+            "checked": 2,
+            "cpu_seconds": [
+              0.00036300000000011323,
+              0.0003700000000002035
+            ],
+            "conflicts": [
+              4,
+              4
+            ],
+            "max_owned_capacity_bytes": 1709867,
+            "max_journal_bytes": 62,
+            "bsat_check_wall_seconds": [
+              0,
+              0
+            ],
+            "export_cpu_seconds": [
+              0.0015649999999993724,
+              0.001886999999999972
+            ]
+          }
+        },
+        {
+          "circuit": "usb_phy.aig",
+          "flags": 3,
+          "depth": 4,
+          "polarity": 1,
+          "input_sha256": "f8ac2436601f94d3c13cda5b12864b700062763d9dc8789f8dbeac6126600cbb",
+          "baseline": {
+            "checked": 2,
+            "cpu_seconds": [
+              4.000000000559112e-05,
+              4.2000000000541604e-05
+            ],
+            "conflicts": [
+              0,
+              0
+            ],
+            "max_owned_capacity_bytes": 1709575,
+            "max_journal_bytes": 22,
+            "bsat_check_wall_seconds": [
+              0.02930408390238881,
+              0.030281917192041874
+            ],
+            "export_cpu_seconds": [
+              0.0014400000000023283,
+              0.0014899999999968827
+            ]
+          },
+          "candidate": {
+            "checked": 2,
+            "cpu_seconds": [
+              4.099999999951365e-05,
+              4.7999999999603915e-05
+            ],
+            "conflicts": [
+              0,
+              0
+            ],
+            "max_owned_capacity_bytes": 1709583,
+            "max_journal_bytes": 22,
+            "bsat_check_wall_seconds": [
+              0.03335816692560911,
+              0.03423620807006955
+            ],
+            "export_cpu_seconds": [
+              0.0016189999999980387,
+              0.0016409999999993374
+            ]
+          }
+        },
+        {
+          "circuit": "usb_phy.aig",
+          "flags": 3,
+          "depth": 8,
+          "polarity": -1,
+          "input_sha256": "0defa8fdf917147d7f3c54c71bd98f23ad9c30183cea9c216b041ae9a8cfc276",
+          "baseline": {
+            "checked": 2,
+            "cpu_seconds": [
+              0.0007540000000005875,
+              0.0006399999999970873
+            ],
+            "conflicts": [
+              7,
+              7
+            ],
+            "max_owned_capacity_bytes": 2932391,
+            "max_journal_bytes": 148,
+            "bsat_check_wall_seconds": [
+              0,
+              0
+            ],
+            "export_cpu_seconds": [
+              0.002760000000002094,
+              0.002701999999999316
+            ]
+          },
+          "candidate": {
+            "checked": 2,
+            "cpu_seconds": [
+              0.0007590000000021746,
+              0.0009300000000003195
+            ],
+            "conflicts": [
+              7,
+              7
+            ],
+            "max_owned_capacity_bytes": 2932399,
+            "max_journal_bytes": 148,
+            "bsat_check_wall_seconds": [
+              0,
+              0
+            ],
+            "export_cpu_seconds": [
+              0.0031199999999991235,
+              0.0028159999999992635
+            ]
+          }
+        },
+        {
+          "circuit": "usb_phy.aig",
+          "flags": 3,
+          "depth": 8,
+          "polarity": 1,
+          "input_sha256": "5a43d2317343319cb05ac17c994afdd67f60f33c3e463b9527c8cb678fda0a05",
+          "baseline": {
+            "checked": 2,
+            "cpu_seconds": [
+              4.899999999707916e-05,
+              7.700000000454565e-05
+            ],
+            "conflicts": [
+              0,
+              0
+            ],
+            "max_owned_capacity_bytes": 2931595,
+            "max_journal_bytes": 67,
+            "bsat_check_wall_seconds": [
+              0.037173000164330006,
+              0.03918087529018521
+            ],
+            "export_cpu_seconds": [
+              0.0025180000000020186,
+              0.0025799999999946976
+            ]
+          },
+          "candidate": {
+            "checked": 2,
+            "cpu_seconds": [
+              6.399999999828765e-05,
+              9.499999999817987e-05
+            ],
+            "conflicts": [
+              0,
+              0
+            ],
+            "max_owned_capacity_bytes": 2931603,
+            "max_journal_bytes": 67,
+            "bsat_check_wall_seconds": [
+              0.04997170902788639,
+              0.044769332744181156
+            ],
+            "export_cpu_seconds": [
+              0.0032989999999983866,
+              0.0030490000000007456
+            ]
+          }
+        },
+        {
+          "circuit": "usb_phy.aig",
+          "flags": 3,
+          "depth": 16,
+          "polarity": -1,
+          "input_sha256": "f4229fb14418bb8555f24f99407d98d92b84fce188d1f32ea4df0716531fa18f",
+          "baseline": {
+            "checked": 2,
+            "cpu_seconds": [
+              0.0017969999999962738,
+              0.0019399999999976103
+            ],
+            "conflicts": [
+              38,
+              38
+            ],
+            "max_owned_capacity_bytes": 5963119,
+            "max_journal_bytes": 1637,
+            "bsat_check_wall_seconds": [
+              0,
+              0
+            ],
+            "export_cpu_seconds": [
+              0.004905000000000825,
+              0.0049949999999938655
+            ]
+          },
+          "candidate": {
+            "checked": 2,
+            "cpu_seconds": [
+              0.0018209999999996285,
+              0.0018910000000005311
+            ],
+            "conflicts": [
+              38,
+              38
+            ],
+            "max_owned_capacity_bytes": 5963127,
+            "max_journal_bytes": 1637,
+            "bsat_check_wall_seconds": [
+              0,
+              0
+            ],
+            "export_cpu_seconds": [
+              0.005797000000001162,
+              0.004892000000001673
+            ]
+          }
+        },
+        {
+          "circuit": "usb_phy.aig",
+          "flags": 3,
+          "depth": 16,
+          "polarity": 1,
+          "input_sha256": "246d1d6b1a81330671cfc9d06aa47122be604a79ac77bbeaa5923366fe1c24a7",
+          "baseline": {
+            "checked": 2,
+            "cpu_seconds": [
+              0.0007850000000004798,
+              0.0008480000000048449
+            ],
+            "conflicts": [
+              42,
+              42
+            ],
+            "max_owned_capacity_bytes": 5961331,
+            "max_journal_bytes": 951,
+            "bsat_check_wall_seconds": [
+              0.05920270923525095,
+              0.05631258292123675
+            ],
+            "export_cpu_seconds": [
+              0.004686999999996999,
+              0.004878000000005045
+            ]
+          },
+          "candidate": {
+            "checked": 2,
+            "cpu_seconds": [
+              0.0007799999999988927,
+              0.0008370000000006428
+            ],
+            "conflicts": [
+              42,
+              42
+            ],
+            "max_owned_capacity_bytes": 5961339,
+            "max_journal_bytes": 951,
+            "bsat_check_wall_seconds": [
+              0.07223179191350937,
+              0.0599009171128273
+            ],
+            "export_cpu_seconds": [
+              0.005676000000001125,
+              0.005152999999999963
+            ]
+          }
+        },
+        {
+          "circuit": "vgasim_imgfifo-p039.aig",
+          "flags": 3,
+          "depth": 0,
+          "polarity": -1,
+          "input_sha256": "6428f4c839c8a66b68983fdccedc8ed6ab3b8f46e1640fc248b9f12cbf0f801d",
+          "baseline": {
+            "checked": 2,
+            "cpu_seconds": [
+              0.0002589999999997872,
+              0.0002899999999996794
+            ],
+            "conflicts": [
+              0,
+              0
+            ],
+            "max_owned_capacity_bytes": 1765011,
+            "max_journal_bytes": 4,
+            "bsat_check_wall_seconds": [
+              0,
+              0
+            ],
+            "export_cpu_seconds": [
+              0.0018209999999996285,
+              0.0018969999999995935
+            ]
+          },
+          "candidate": {
+            "checked": 2,
+            "cpu_seconds": [
+              0.0002979999999972449,
+              0.00029699999999976967
+            ],
+            "conflicts": [
+              0,
+              0
+            ],
+            "max_owned_capacity_bytes": 1765019,
+            "max_journal_bytes": 4,
+            "bsat_check_wall_seconds": [
+              0,
+              0
+            ],
+            "export_cpu_seconds": [
+              0.002215999999997109,
+              0.001940000000001163
+            ]
+          }
+        },
+        {
+          "circuit": "vgasim_imgfifo-p039.aig",
+          "flags": 3,
+          "depth": 0,
+          "polarity": 1,
+          "input_sha256": "72ceead99427e374b57b956d64df414555573c71fb322cfbc45fe11837ffa9ed",
+          "baseline": {
+            "checked": 2,
+            "cpu_seconds": [
+              6.49999999993156e-05,
+              6.400000000184036e-05
+            ],
+            "conflicts": [
+              0,
+              0
+            ],
+            "max_owned_capacity_bytes": 1764855,
+            "max_journal_bytes": 4,
+            "bsat_check_wall_seconds": [
+              0.032426583115011454,
+              0.034708499908447266
+            ],
+            "export_cpu_seconds": [
+              0.0017120000000048208,
+              0.001789000000002261
+            ]
+          },
+          "candidate": {
+            "checked": 2,
+            "cpu_seconds": [
+              7.599999999996498e-05,
+              7.199999999940587e-05
+            ],
+            "conflicts": [
+              0,
+              0
+            ],
+            "max_owned_capacity_bytes": 1764863,
+            "max_journal_bytes": 4,
+            "bsat_check_wall_seconds": [
+              0.047912209294736385,
+              0.03401870792731643
+            ],
+            "export_cpu_seconds": [
+              0.002104999999996693,
+              0.001881999999998385
+            ]
+          }
+        },
+        {
+          "circuit": "vgasim_imgfifo-p039.aig",
+          "flags": 3,
+          "depth": 1,
+          "polarity": -1,
+          "input_sha256": "6b62c63a8d2344ceb1427424b6553efb913a6a20cefb209fe41ce9071423d22f",
+          "baseline": {
+            "checked": 2,
+            "cpu_seconds": [
+              0.0006870000000063214,
+              0.0007550000000051682
+            ],
+            "conflicts": [
+              20,
+              20
+            ],
+            "max_owned_capacity_bytes": 3640927,
+            "max_journal_bytes": 244,
+            "bsat_check_wall_seconds": [
+              0,
+              0
+            ],
+            "export_cpu_seconds": [
+              0.003748000000001639,
+              0.0036479999999983193
+            ]
+          },
+          "candidate": {
+            "checked": 2,
+            "cpu_seconds": [
+              0.000838999999999146,
+              0.0007899999999985141
+            ],
+            "conflicts": [
+              20,
+              20
+            ],
+            "max_owned_capacity_bytes": 3640935,
+            "max_journal_bytes": 244,
+            "bsat_check_wall_seconds": [
+              0,
+              0
+            ],
+            "export_cpu_seconds": [
+              0.004141000000000616,
+              0.0037269999999978154
+            ]
+          }
+        },
+        {
+          "circuit": "vgasim_imgfifo-p039.aig",
+          "flags": 3,
+          "depth": 1,
+          "polarity": 1,
+          "input_sha256": "8af87f9c251e09046c1c99ae5679ef5446f79e5b5d5f9f559458baba175dc357",
+          "baseline": {
+            "checked": 2,
+            "cpu_seconds": [
+              5.699999999819738e-05,
+              5.499999999614147e-05
+            ],
+            "conflicts": [
+              0,
+              0
+            ],
+            "max_owned_capacity_bytes": 3639523,
+            "max_journal_bytes": 8,
+            "bsat_check_wall_seconds": [
+              0.04897250002250075,
+              0.04743170831352472
+            ],
+            "export_cpu_seconds": [
+              0.003565999999999292,
+              0.003641999999999257
+            ]
+          },
+          "candidate": {
+            "checked": 2,
+            "cpu_seconds": [
+              6.400000000184036e-05,
+              7.80000000020209e-05
+            ],
+            "conflicts": [
+              0,
+              0
+            ],
+            "max_owned_capacity_bytes": 3639531,
+            "max_journal_bytes": 8,
+            "bsat_check_wall_seconds": [
+              0.06170454202219844,
+              0.04842433286830783
+            ],
+            "export_cpu_seconds": [
+              0.004186000000000689,
+              0.0036300000000011323
+            ]
+          }
+        },
+        {
+          "circuit": "vgasim_imgfifo-p039.aig",
+          "flags": 3,
+          "depth": 2,
+          "polarity": -1,
+          "input_sha256": "e04706966aaea49e279c437c898d66ba52ef9596adc0a61a7d413cddf722be8b",
+          "baseline": {
+            "checked": 2,
+            "cpu_seconds": [
+              0.0007490000000061059,
+              0.0007540000000005875
+            ],
+            "conflicts": [
+              0,
+              0
+            ],
+            "max_owned_capacity_bytes": 4533543,
+            "max_journal_bytes": 249,
+            "bsat_check_wall_seconds": [
+              0,
+              0
+            ],
+            "export_cpu_seconds": [
+              0.005635000000005164,
+              0.005790000000004625
+            ]
+          },
+          "candidate": {
+            "checked": 2,
+            "cpu_seconds": [
+              0.000868000000000535,
+              0.0009009999999989304
+            ],
+            "conflicts": [
+              0,
+              0
+            ],
+            "max_owned_capacity_bytes": 4533551,
+            "max_journal_bytes": 249,
+            "bsat_check_wall_seconds": [
+              0,
+              0
+            ],
+            "export_cpu_seconds": [
+              0.0055730000000018265,
+              0.005893999999997845
+            ]
+          }
+        },
+        {
+          "circuit": "vgasim_imgfifo-p039.aig",
+          "flags": 3,
+          "depth": 2,
+          "polarity": 1,
+          "input_sha256": "aed546b86065bce6c343a0cb224909d511307111570d519d9b84a162defcb4f1",
+          "baseline": {
+            "checked": 2,
+            "cpu_seconds": [
+              8.19999999990273e-05,
+              0.00010600000000238197
+            ],
+            "conflicts": [
+              0,
+              0
+            ],
+            "max_owned_capacity_bytes": 4530507,
+            "max_journal_bytes": 249,
+            "bsat_check_wall_seconds": [
+              0.061986000277101994,
+              0.06467258324846625
+            ],
+            "export_cpu_seconds": [
+              0.005578999999997336,
+              0.005340999999994267
+            ]
+          },
+          "candidate": {
+            "checked": 2,
+            "cpu_seconds": [
+              0.00010200000000182285,
+              0.00011599999999845068
+            ],
+            "conflicts": [
+              0,
+              0
+            ],
+            "max_owned_capacity_bytes": 4530515,
+            "max_journal_bytes": 249,
+            "bsat_check_wall_seconds": [
+              0.06418950017541647,
+              0.06602133298292756
+            ],
+            "export_cpu_seconds": [
+              0.005382000000000886,
+              0.005672999999998041
+            ]
+          }
+        },
+        {
+          "circuit": "vgasim_imgfifo-p039.aig",
+          "flags": 3,
+          "depth": 4,
+          "polarity": -1,
+          "input_sha256": "42e51a9a0e81ade62de264978fc9aa467b5986d549993fddbfd85459f5b978b7",
+          "baseline": {
+            "checked": 2,
+            "cpu_seconds": [
+              0.0017709999999979686,
+              0.0018709999999941829
+            ],
+            "conflicts": [
+              23,
+              23
+            ],
+            "max_owned_capacity_bytes": 7877823,
+            "max_journal_bytes": 530,
+            "bsat_check_wall_seconds": [
+              0,
+              0
+            ],
+            "export_cpu_seconds": [
+              0.009080999999994788,
+              0.009649000000003127
+            ]
+          },
+          "candidate": {
+            "checked": 2,
+            "cpu_seconds": [
+              0.00194500000000275,
+              0.0021310000000021034
+            ],
+            "conflicts": [
+              23,
+              23
+            ],
+            "max_owned_capacity_bytes": 7877831,
+            "max_journal_bytes": 530,
+            "bsat_check_wall_seconds": [
+              0,
+              0
+            ],
+            "export_cpu_seconds": [
+              0.009280000000000399,
+              0.009812000000000154
+            ]
+          }
+        },
+        {
+          "circuit": "vgasim_imgfifo-p039.aig",
+          "flags": 3,
+          "depth": 4,
+          "polarity": 1,
+          "input_sha256": "9adf46c2a2cbfe80e881e5efda638d792df0c0db5bfd21f1d06f5af94603fb0d",
+          "baseline": {
+            "checked": 2,
+            "cpu_seconds": [
+              0.0001279999999965753,
+              0.00017199999999917281
+            ],
+            "conflicts": [
+              1,
+              1
+            ],
+            "max_owned_capacity_bytes": 7872323,
+            "max_journal_bytes": 259,
+            "bsat_check_wall_seconds": [
+              0.09056174987927079,
+              0.08994604181498289
+            ],
+            "export_cpu_seconds": [
+              0.009280000000003952,
+              0.008979999999993993
+            ]
+          },
+          "candidate": {
+            "checked": 2,
+            "cpu_seconds": [
+              0.00013599999999769352,
+              0.00017899999999926308
+            ],
+            "conflicts": [
+              1,
+              1
+            ],
+            "max_owned_capacity_bytes": 7872331,
+            "max_journal_bytes": 259,
+            "bsat_check_wall_seconds": [
+              0.08985108276829123,
+              0.095981250051409
+            ],
+            "export_cpu_seconds": [
+              0.009062000000000126,
+              0.009584999999997734
+            ]
+          }
+        },
+        {
+          "circuit": "vgasim_imgfifo-p039.aig",
+          "flags": 3,
+          "depth": 8,
+          "polarity": -1,
+          "input_sha256": "7ce8b676aff1fa388029681df11e2803aa04379a2273a56a19ebe67d6206cbd6",
+          "baseline": {
+            "checked": 2,
+            "cpu_seconds": [
+              0.0032739999999975566,
+              0.0033689999999992892
+            ],
+            "conflicts": [
+              22,
+              22
+            ],
+            "max_owned_capacity_bytes": 15880839,
+            "max_journal_bytes": 1123,
+            "bsat_check_wall_seconds": [
+              0,
+              0
+            ],
+            "export_cpu_seconds": [
+              0.016525000000001455,
+              0.016559999999998354
+            ]
+          },
+          "candidate": {
+            "checked": 2,
+            "cpu_seconds": [
+              0.00350999999999857,
+              0.004148000000000707
+            ],
+            "conflicts": [
+              22,
+              22
+            ],
+            "max_owned_capacity_bytes": 15880847,
+            "max_journal_bytes": 1123,
+            "bsat_check_wall_seconds": [
+              0,
+              0
+            ],
+            "export_cpu_seconds": [
+              0.016676000000000357,
+              0.016608999999998986
+            ]
+          }
+        },
+        {
+          "circuit": "vgasim_imgfifo-p039.aig",
+          "flags": 3,
+          "depth": 8,
+          "polarity": 1,
+          "input_sha256": "d9ae48470348bf57a7a980dd0fefdebb3e007464ff4337f1545cd21dd2e43529",
+          "baseline": {
+            "checked": 2,
+            "cpu_seconds": [
+              0.0012639999999990437,
+              0.0011560000000017112
+            ],
+            "conflicts": [
+              5,
+              5
+            ],
+            "max_owned_capacity_bytes": 15874059,
+            "max_journal_bytes": 635,
+            "bsat_check_wall_seconds": [
+              0.1485414169728756,
+              0.14742812514305115
+            ],
+            "export_cpu_seconds": [
+              0.01654999999999518,
+              0.016266999999999143
+            ]
+          },
+          "candidate": {
+            "checked": 2,
+            "cpu_seconds": [
+              0.0011580000000002144,
+              0.0013550000000002171
+            ],
+            "conflicts": [
+              5,
+              5
+            ],
+            "max_owned_capacity_bytes": 15874067,
+            "max_journal_bytes": 635,
+            "bsat_check_wall_seconds": [
+              0.14643779210746288,
+              0.161058290861547
+            ],
+            "export_cpu_seconds": [
+              0.016361999999997323,
+              0.01676100000000247
+            ]
+          }
+        },
+        {
+          "circuit": "vgasim_imgfifo-p039.aig",
+          "flags": 3,
+          "depth": 16,
+          "polarity": -1,
+          "input_sha256": "01f1e6895e0189605ce0c9f315669ea7cd3203396d84447b2cb185a0d1ea5225",
+          "baseline": {
+            "checked": 2,
+            "cpu_seconds": [
+              0.010322999999999638,
+              0.010446000000001732
+            ],
+            "conflicts": [
+              34,
+              34
+            ],
+            "max_owned_capacity_bytes": 29420531,
+            "max_journal_bytes": 21741,
+            "bsat_check_wall_seconds": [
+              0,
+              0
+            ],
+            "export_cpu_seconds": [
+              0.030250999999999806,
+              0.03051500000000118
+            ]
+          },
+          "candidate": {
+            "checked": 2,
+            "cpu_seconds": [
+              0.010385000000002975,
+              0.011372999999998967
+            ],
+            "conflicts": [
+              34,
+              34
+            ],
+            "max_owned_capacity_bytes": 29420539,
+            "max_journal_bytes": 21741,
+            "bsat_check_wall_seconds": [
+              0,
+              0
+            ],
+            "export_cpu_seconds": [
+              0.030603999999996745,
+              0.03173800000000071
+            ]
+          }
+        },
+        {
+          "circuit": "vgasim_imgfifo-p039.aig",
+          "flags": 3,
+          "depth": 16,
+          "polarity": 1,
+          "input_sha256": "cefb75daff4d769a1ab12a9d8b70c9e0e809f0e22389ceb5192850c1051ee191",
+          "baseline": {
+            "checked": 2,
+            "cpu_seconds": [
+              0.03558999999999912,
+              0.036145999999995126
+            ],
+            "conflicts": [
+              152,
+              152
+            ],
+            "max_owned_capacity_bytes": 29415799,
+            "max_journal_bytes": 18234,
+            "bsat_check_wall_seconds": [
+              0.2972458330914378,
+              0.29980687517672777
+            ],
+            "export_cpu_seconds": [
+              0.031023000000004686,
+              0.03097299999999592
+            ]
+          },
+          "candidate": {
+            "checked": 2,
+            "cpu_seconds": [
+              0.033179000000000514,
+              0.03708599999999862
+            ],
+            "conflicts": [
+              152,
+              152
+            ],
+            "max_owned_capacity_bytes": 29415807,
+            "max_journal_bytes": 18234,
+            "bsat_check_wall_seconds": [
+              0.302989499643445,
+              0.30477912491187453
+            ],
+            "export_cpu_seconds": [
+              0.031197999999999837,
+              0.03682099999999977
+            ]
+          }
+        }
+      ]
+    },
+    "expanded": {
+      "metrics": {
+        "baseline": {
+          "queries": 64,
+          "checked": 62,
+          "mean_cpu_par2": 0.9492744062499999,
+          "max_owned_capacity_bytes": 108935561,
+          "max_journal_bytes": 117507851
+        },
+        "candidate": {
+          "queries": 64,
+          "checked": 62,
+          "mean_cpu_par2": 0.8743441875000001,
+          "max_owned_capacity_bytes": 108935569,
+          "max_journal_bytes": 101805982
+        }
+      },
+      "relative_cpu_par2_change": -0.07893420306779686,
+      "checked_solve_losses": [],
+      "checked_solve_gains": [],
+      "gate_pass": true,
+      "queries": [
+        {
+          "circuit": "cal100.aig",
+          "flags": 3,
+          "depth": 0,
+          "polarity": -1,
+          "input_sha256": "5e80af96c085c715c954a58abc35979a505a054e6c1ce2bd28603c50a42c6fe0",
+          "baseline": {
+            "checked": 2,
+            "cpu_seconds": [
+              0.0012530000000001706,
+              0.0011569999999991865
+            ],
+            "conflicts": [
+              3,
+              3
+            ],
+            "max_owned_capacity_bytes": 7502458,
+            "max_journal_bytes": 24,
+            "bsat_check_wall_seconds": [
+              0,
+              0
+            ],
+            "export_cpu_seconds": [
+              0.0073150000000001825,
+              0.007312000000000651
+            ]
+          },
+          "candidate": {
+            "checked": 2,
+            "cpu_seconds": [
+              0.0015370000000007877,
+              0.0012439999999998008
+            ],
+            "conflicts": [
+              3,
+              3
+            ],
+            "max_owned_capacity_bytes": 7502466,
+            "max_journal_bytes": 24,
+            "bsat_check_wall_seconds": [
+              0,
+              0
+            ],
+            "export_cpu_seconds": [
+              0.007135999999999143,
+              0.007153999999999883
+            ]
+          }
+        },
+        {
+          "circuit": "cal100.aig",
+          "flags": 3,
+          "depth": 0,
+          "polarity": 1,
+          "input_sha256": "d0c5511442e4157096fa5e8b4a7f36f82c52138827020a8f74ff4cc8fa06305a",
+          "baseline": {
+            "checked": 2,
+            "cpu_seconds": [
+              0.00010599999999882925,
+              0.00010499999999957765
+            ],
+            "conflicts": [
+              0,
+              0
+            ],
+            "max_owned_capacity_bytes": 7493726,
+            "max_journal_bytes": 4,
+            "bsat_check_wall_seconds": [
+              0.0807846668176353,
+              0.07848191587254405
+            ],
+            "export_cpu_seconds": [
+              0.006824999999999193,
+              0.007070999999999827
+            ]
+          },
+          "candidate": {
+            "checked": 2,
+            "cpu_seconds": [
+              9.799999999948739e-05,
+              9.700000000023579e-05
+            ],
+            "conflicts": [
+              0,
+              0
+            ],
+            "max_owned_capacity_bytes": 7493734,
+            "max_journal_bytes": 4,
+            "bsat_check_wall_seconds": [
+              0.07761258305981755,
+              0.07784345792606473
+            ],
+            "export_cpu_seconds": [
+              0.006825000000000969,
+              0.007068000000000296
+            ]
+          }
+        },
+        {
+          "circuit": "cal100.aig",
+          "flags": 3,
+          "depth": 2,
+          "polarity": -1,
+          "input_sha256": "4faca6ec4570325b5ba5558bbde03c06653233263567afd358107b7e51f1f196",
+          "baseline": {
+            "checked": 2,
+            "cpu_seconds": [
+              0.004065999999999903,
+              0.004044000000000381
+            ],
+            "conflicts": [
+              3,
+              3
+            ],
+            "max_owned_capacity_bytes": 19731456,
+            "max_journal_bytes": 3451995,
+            "bsat_check_wall_seconds": [
+              0,
+              0
+            ],
+            "export_cpu_seconds": [
+              0.021737999999999147,
+              0.02218600000000137
+            ]
+          },
+          "candidate": {
+            "checked": 2,
+            "cpu_seconds": [
+              0.005115999999999232,
+              0.004201000000000121
+            ],
+            "conflicts": [
+              3,
+              3
+            ],
+            "max_owned_capacity_bytes": 19845912,
+            "max_journal_bytes": 3970857,
+            "bsat_check_wall_seconds": [
+              0,
+              0
+            ],
+            "export_cpu_seconds": [
+              0.022396000000000527,
+              0.022695000000000576
+            ]
+          }
+        },
+        {
+          "circuit": "cal100.aig",
+          "flags": 3,
+          "depth": 2,
+          "polarity": 1,
+          "input_sha256": "d66de9fd109a770db180027a0772ec1b76488f0ad218c89652c60074256e9415",
+          "baseline": {
+            "checked": 2,
+            "cpu_seconds": [
+              0.23442499999999988,
+              0.2342309999999994
+            ],
+            "conflicts": [
+              6467,
+              6467
+            ],
+            "max_owned_capacity_bytes": 19729700,
+            "max_journal_bytes": 3451944,
+            "bsat_check_wall_seconds": [
+              0.7375569166615605,
+              0.7378945001401007
+            ],
+            "export_cpu_seconds": [
+              0.02152799999999999,
+              0.0224189999999993
+            ]
+          },
+          "candidate": {
+            "checked": 2,
+            "cpu_seconds": [
+              0.25699200000000033,
+              0.25593800000000044
+            ],
+            "conflicts": [
+              6905,
+              6905
+            ],
+            "max_owned_capacity_bytes": 19845052,
+            "max_journal_bytes": 3970782,
+            "bsat_check_wall_seconds": [
+              0.7642234577797353,
+              0.7666656249202788
+            ],
+            "export_cpu_seconds": [
+              0.021758999999999418,
+              0.02226199999999956
+            ]
+          }
+        },
+        {
+          "circuit": "cal100.aig",
+          "flags": 3,
+          "depth": 4,
+          "polarity": -1,
+          "input_sha256": "1c83c94c97cdf77931d7931ef6e8a90b883863210781bd9443e18e14249d712d",
+          "baseline": {
+            "checked": 2,
+            "cpu_seconds": [
+              0.008485000000000298,
+              0.007870999999997963
+            ],
+            "conflicts": [
+              7,
+              7
+            ],
+            "max_owned_capacity_bytes": 41216378,
+            "max_journal_bytes": 88542378,
+            "bsat_check_wall_seconds": [
+              0,
+              0
+            ],
+            "export_cpu_seconds": [
+              0.0500419999999977,
+              0.04833400000000054
+            ]
+          },
+          "candidate": {
+            "checked": 2,
+            "cpu_seconds": [
+              0.013480000000001269,
+              0.014333000000000595
+            ],
+            "conflicts": [
+              102,
+              102
+            ],
+            "max_owned_capacity_bytes": 36096182,
+            "max_journal_bytes": 69161507,
+            "bsat_check_wall_seconds": [
+              0,
+              0
+            ],
+            "export_cpu_seconds": [
+              0.04687200000000047,
+              0.047088999999999714
+            ]
+          }
+        },
+        {
+          "circuit": "cal100.aig",
+          "flags": 3,
+          "depth": 4,
+          "polarity": 1,
+          "input_sha256": "7197f4d20b993ddf28d9cd39632a3898ac8b65d8434bb032f90e3349a3bbc3ec",
+          "baseline": {
+            "checked": 2,
+            "cpu_seconds": [
+              7.580092999999998,
+              7.583933999999999
+            ],
+            "conflicts": [
+              179224,
+              179224
+            ],
+            "max_owned_capacity_bytes": 41215454,
+            "max_journal_bytes": 88542283,
+            "bsat_check_wall_seconds": [
+              5.4861245839856565,
+              5.444132375065237
+            ],
+            "export_cpu_seconds": [
+              0.04878100000000174,
+              0.048600999999997896
+            ]
+          },
+          "candidate": {
+            "checked": 2,
+            "cpu_seconds": [
+              4.829222999999999,
+              4.823430999999998
+            ],
+            "conflicts": [
+              112437,
+              112437
+            ],
+            "max_owned_capacity_bytes": 36093690,
+            "max_journal_bytes": 69158594,
+            "bsat_check_wall_seconds": [
+              5.859860165975988,
+              5.8846737910062075
+            ],
+            "export_cpu_seconds": [
+              0.046219000000000676,
+              0.04585300000000103
+            ]
+          }
+        },
+        {
+          "circuit": "cal100.aig",
+          "flags": 3,
+          "depth": 8,
+          "polarity": -1,
+          "input_sha256": "5a99c8e119cdb7b0a719ae1fa38c646b5fd89e0d7202a34ddca521f2ccaa35e3",
+          "baseline": {
+            "checked": 2,
+            "cpu_seconds": [
+              0.06797699999999907,
+              0.06252899999999784
+            ],
+            "conflicts": [
+              100,
+              100
+            ],
+            "max_owned_capacity_bytes": 60749958,
+            "max_journal_bytes": 117507851,
+            "bsat_check_wall_seconds": [
+              0,
+              0
+            ],
+            "export_cpu_seconds": [
+              0.0831319999999991,
+              0.08252600000000143
+            ]
+          },
+          "candidate": {
+            "checked": 2,
+            "cpu_seconds": [
+              0.07640399999999659,
+              0.06501500000000249
+            ],
+            "conflicts": [
+              100,
+              100
+            ],
+            "max_owned_capacity_bytes": 60749966,
+            "max_journal_bytes": 101805982,
+            "bsat_check_wall_seconds": [
+              0,
+              0
+            ],
+            "export_cpu_seconds": [
+              0.0797019999999975,
+              0.08016500000000093
+            ]
+          }
+        },
+        {
+          "circuit": "cal100.aig",
+          "flags": 3,
+          "depth": 8,
+          "polarity": 1,
+          "input_sha256": "12a2ba66f0be134a09083c9a10a5facb7343d9c19d18b61e7543c4159287df37",
+          "baseline": {
+            "checked": 0,
+            "cpu_seconds": [
+              10.000194,
+              10.000230000000002
+            ],
+            "conflicts": [
+              147574,
+              147429
+            ],
+            "max_owned_capacity_bytes": 69345786,
+            "max_journal_bytes": 117505772,
+            "bsat_check_wall_seconds": [
+              0,
+              0
+            ],
+            "export_cpu_seconds": [
+              0,
+              0
+            ]
+          },
+          "candidate": {
+            "checked": 0,
+            "cpu_seconds": [
+              10.000412,
+              10.000191000000001
+            ],
+            "conflicts": [
+              144551,
+              145738
+            ],
+            "max_owned_capacity_bytes": 69108622,
+            "max_journal_bytes": 101803903,
+            "bsat_check_wall_seconds": [
+              0,
+              0
+            ],
+            "export_cpu_seconds": [
+              0,
+              0
+            ]
+          }
+        },
+        {
+          "circuit": "dspfilters_fastfir_second-p32.aig",
+          "flags": 3,
+          "depth": 0,
+          "polarity": -1,
+          "input_sha256": "d8c1d20c1dfb1fd79bfdfa017cbcf52d6b6261b6aca4838f0b09715192c6cc5e",
+          "baseline": {
+            "checked": 2,
+            "cpu_seconds": [
+              0.002111999999996783,
+              0.0019709999999975025
+            ],
+            "conflicts": [
+              11,
+              11
+            ],
+            "max_owned_capacity_bytes": 9306425,
+            "max_journal_bytes": 86,
+            "bsat_check_wall_seconds": [
+              0,
+              0
+            ],
+            "export_cpu_seconds": [
+              0.01127699999999976,
+              0.010993999999996618
+            ]
+          },
+          "candidate": {
+            "checked": 2,
+            "cpu_seconds": [
+              0.0022340000000014015,
+              0.0023049999999997794
+            ],
+            "conflicts": [
+              11,
+              11
+            ],
+            "max_owned_capacity_bytes": 9306433,
+            "max_journal_bytes": 86,
+            "bsat_check_wall_seconds": [
+              0,
+              0
+            ],
+            "export_cpu_seconds": [
+              0.010816000000005488,
+              0.011088000000000875
+            ]
+          }
+        },
+        {
+          "circuit": "dspfilters_fastfir_second-p32.aig",
+          "flags": 3,
+          "depth": 0,
+          "polarity": 1,
+          "input_sha256": "63ca5ded9f119829765cb147405e69c5d8bb09f0e2bb0ff246a64c2df222ea61",
+          "baseline": {
+            "checked": 2,
+            "cpu_seconds": [
+              0.00016700000000469117,
+              0.00016699999999758575
+            ],
+            "conflicts": [
+              0,
+              0
+            ],
+            "max_owned_capacity_bytes": 9286749,
+            "max_journal_bytes": 5,
+            "bsat_check_wall_seconds": [
+              0.109118124935776,
+              0.11100195813924074
+            ],
+            "export_cpu_seconds": [
+              0.01073300000000188,
+              0.011054000000001452
+            ]
+          },
+          "candidate": {
+            "checked": 2,
+            "cpu_seconds": [
+              0.00016899999999964166,
+              0.00017400000000122873
+            ],
+            "conflicts": [
+              0,
+              0
+            ],
+            "max_owned_capacity_bytes": 9286757,
+            "max_journal_bytes": 5,
+            "bsat_check_wall_seconds": [
+              0.1114433747716248,
+              0.10738949989899993
+            ],
+            "export_cpu_seconds": [
+              0.01061700000000343,
+              0.01068300000000022
+            ]
+          }
+        },
+        {
+          "circuit": "dspfilters_fastfir_second-p32.aig",
+          "flags": 3,
+          "depth": 2,
+          "polarity": -1,
+          "input_sha256": "3d638dd7e88f795433a6e50dadf91d2e3c433097a4202dc99833d0951525c26b",
+          "baseline": {
+            "checked": 2,
+            "cpu_seconds": [
+              0.006000999999997703,
+              0.006595000000004347
+            ],
+            "conflicts": [
+              9,
+              9
+            ],
+            "max_owned_capacity_bytes": 29644889,
+            "max_journal_bytes": 165,
+            "bsat_check_wall_seconds": [
+              0,
+              0
+            ],
+            "export_cpu_seconds": [
+              0.0326650000000015,
+              0.03323899999999469
+            ]
+          },
+          "candidate": {
+            "checked": 2,
+            "cpu_seconds": [
+              0.00762900000000144,
+              0.007343000000005873
+            ],
+            "conflicts": [
+              9,
+              9
+            ],
+            "max_owned_capacity_bytes": 29644897,
+            "max_journal_bytes": 165,
+            "bsat_check_wall_seconds": [
+              0,
+              0
+            ],
+            "export_cpu_seconds": [
+              0.03333299999999895,
+              0.03302999999999656
+            ]
+          }
+        },
+        {
+          "circuit": "dspfilters_fastfir_second-p32.aig",
+          "flags": 3,
+          "depth": 2,
+          "polarity": 1,
+          "input_sha256": "5333188ae362f97dca66e39d5760785c921a10716f8416fc63b5ae785bb2c544",
+          "baseline": {
+            "checked": 2,
+            "cpu_seconds": [
+              0.00029500000000126647,
+              0.00048699999999968213
+            ],
+            "conflicts": [
+              0,
+              0
+            ],
+            "max_owned_capacity_bytes": 29629533,
+            "max_journal_bytes": 91,
+            "bsat_check_wall_seconds": [
+              0.2815183326601982,
+              0.28466379176825285
+            ],
+            "export_cpu_seconds": [
+              0.033099999999997465,
+              0.03161300000000011
+            ]
+          },
+          "candidate": {
+            "checked": 2,
+            "cpu_seconds": [
+              0.0005200000000016303,
+              0.00046000000000390173
+            ],
+            "conflicts": [
+              0,
+              0
+            ],
+            "max_owned_capacity_bytes": 29629541,
+            "max_journal_bytes": 91,
+            "bsat_check_wall_seconds": [
+              0.2846319996751845,
+              0.2809602920897305
+            ],
+            "export_cpu_seconds": [
+              0.03245699999999374,
+              0.032480999999997096
+            ]
+          }
+        },
+        {
+          "circuit": "dspfilters_fastfir_second-p32.aig",
+          "flags": 3,
+          "depth": 4,
+          "polarity": -1,
+          "input_sha256": "b62531d0c203c43d7d6c92ef501067a894fa28cc4815d95b9de6089f0220ef3c",
+          "baseline": {
+            "checked": 2,
+            "cpu_seconds": [
+              0.009703000000001794,
+              0.01062000000000296
+            ],
+            "conflicts": [
+              7,
+              7
+            ],
+            "max_owned_capacity_bytes": 58827701,
+            "max_journal_bytes": 13021,
+            "bsat_check_wall_seconds": [
+              0,
+              0
+            ],
+            "export_cpu_seconds": [
+              0.0552589999999995,
+              0.05492699999999928
+            ]
+          },
+          "candidate": {
+            "checked": 2,
+            "cpu_seconds": [
+              0.01088399999999723,
+              0.011226000000000624
+            ],
+            "conflicts": [
+              7,
+              7
+            ],
+            "max_owned_capacity_bytes": 58827709,
+            "max_journal_bytes": 13021,
+            "bsat_check_wall_seconds": [
+              0,
+              0
+            ],
+            "export_cpu_seconds": [
+              0.05539699999999925,
+              0.05567699999999576
+            ]
+          }
+        },
+        {
+          "circuit": "dspfilters_fastfir_second-p32.aig",
+          "flags": 3,
+          "depth": 4,
+          "polarity": 1,
+          "input_sha256": "9ae39bd7f10dff4452dc8fe2b5ccc8639af645f8f232ade4d869b02146b3f4ed",
+          "baseline": {
+            "checked": 2,
+            "cpu_seconds": [
+              0.027353999999995438,
+              0.02796400000000432
+            ],
+            "conflicts": [
+              61,
+              61
+            ],
+            "max_owned_capacity_bytes": 58826873,
+            "max_journal_bytes": 12245,
+            "bsat_check_wall_seconds": [
+              0.48631766671314836,
+              0.4884473751299083
+            ],
+            "export_cpu_seconds": [
+              0.05546199999999857,
+              0.056048000000004095
+            ]
+          },
+          "candidate": {
+            "checked": 2,
+            "cpu_seconds": [
+              0.03100700000000245,
+              0.02962999999999738
+            ],
+            "conflicts": [
+              61,
+              61
+            ],
+            "max_owned_capacity_bytes": 58826881,
+            "max_journal_bytes": 12245,
+            "bsat_check_wall_seconds": [
+              0.48479479225352407,
+              0.4795762081630528
+            ],
+            "export_cpu_seconds": [
+              0.055228999999997086,
+              0.0562710000000024
+            ]
+          }
+        },
+        {
+          "circuit": "dspfilters_fastfir_second-p32.aig",
+          "flags": 3,
+          "depth": 8,
+          "polarity": -1,
+          "input_sha256": "52c485eaad1bfe8e8c185dfb21a412f7b2649ad992d5b9dd8cf80e66246b94c0",
+          "baseline": {
+            "checked": 2,
+            "cpu_seconds": [
+              0.028779999999997585,
+              0.02735900000000413
+            ],
+            "conflicts": [
+              18,
+              18
+            ],
+            "max_owned_capacity_bytes": 108935561,
+            "max_journal_bytes": 825536,
+            "bsat_check_wall_seconds": [
+              0,
+              0
+            ],
+            "export_cpu_seconds": [
+              0.09954900000000322,
+              0.10057100000000219
+            ]
+          },
+          "candidate": {
+            "checked": 2,
+            "cpu_seconds": [
+              0.031084999999997365,
+              0.02893100000000004
+            ],
+            "conflicts": [
+              18,
+              18
+            ],
+            "max_owned_capacity_bytes": 108935569,
+            "max_journal_bytes": 825536,
+            "bsat_check_wall_seconds": [
+              0,
+              0
+            ],
+            "export_cpu_seconds": [
+              0.1000399999999999,
+              0.09930099999999698
+            ]
+          }
+        },
+        {
+          "circuit": "dspfilters_fastfir_second-p32.aig",
+          "flags": 3,
+          "depth": 8,
+          "polarity": 1,
+          "input_sha256": "3966c63259fd4eb2871dcd9b785321f1b08a6054df6252d896582db3953b7b19",
+          "baseline": {
+            "checked": 2,
+            "cpu_seconds": [
+              1.4036900000000045,
+              1.3940210000000022
+            ],
+            "conflicts": [
+              1249,
+              1249
+            ],
+            "max_owned_capacity_bytes": 108929517,
+            "max_journal_bytes": 820535,
+            "bsat_check_wall_seconds": [
+              1.2316989172250032,
+              1.2346846661530435
+            ],
+            "export_cpu_seconds": [
+              0.0987349999999978,
+              0.10026599999999775
+            ]
+          },
+          "candidate": {
+            "checked": 2,
+            "cpu_seconds": [
+              1.6533230000000003,
+              1.544589000000002
+            ],
+            "conflicts": [
+              1249,
+              1249
+            ],
+            "max_owned_capacity_bytes": 108929525,
+            "max_journal_bytes": 820535,
+            "bsat_check_wall_seconds": [
+              1.2268327078782022,
+              1.2363934167660773
+            ],
+            "export_cpu_seconds": [
+              0.10187799999999925,
+              0.10074200000000388
+            ]
+          }
+        },
+        {
+          "circuit": "h_b05.aig",
+          "flags": 3,
+          "depth": 0,
+          "polarity": -1,
+          "input_sha256": "6560c380262ec6d6ecab26f605d96fd01452865cb10ae7a4e981e4c19bc4a319",
+          "baseline": {
+            "checked": 2,
+            "cpu_seconds": [
+              0.0009000000000014552,
+              0.0009039999999984616
+            ],
+            "conflicts": [
+              0,
+              0
+            ],
+            "max_owned_capacity_bytes": 6080403,
+            "max_journal_bytes": 4,
+            "bsat_check_wall_seconds": [
+              0,
+              0
+            ],
+            "export_cpu_seconds": [
+              0.005611999999999284,
+              0.005479999999998597
+            ]
+          },
+          "candidate": {
+            "checked": 2,
+            "cpu_seconds": [
+              0.001196000000000197,
+              0.0010639999999995098
+            ],
+            "conflicts": [
+              0,
+              0
+            ],
+            "max_owned_capacity_bytes": 6080411,
+            "max_journal_bytes": 4,
+            "bsat_check_wall_seconds": [
+              0,
+              0
+            ],
+            "export_cpu_seconds": [
+              0.005628000000001521,
+              0.00543500000000563
+            ]
+          }
+        },
+        {
+          "circuit": "h_b05.aig",
+          "flags": 3,
+          "depth": 0,
+          "polarity": 1,
+          "input_sha256": "e33049abcf0610249e0fad5f476208bbffa8fc0b576afd1b7549099220833205",
+          "baseline": {
+            "checked": 2,
+            "cpu_seconds": [
+              0.00013500000000021828,
+              0.00013200000000068712
+            ],
+            "conflicts": [
+              0,
+              0
+            ],
+            "max_owned_capacity_bytes": 6080407,
+            "max_journal_bytes": 4,
+            "bsat_check_wall_seconds": [
+              0.06640916597098112,
+              0.0664467909373343
+            ],
+            "export_cpu_seconds": [
+              0.005324000000001661,
+              0.005316999999998018
+            ]
+          },
+          "candidate": {
+            "checked": 2,
+            "cpu_seconds": [
+              0.00013200000000068712,
+              0.0001370000000022742
+            ],
+            "conflicts": [
+              0,
+              0
+            ],
+            "max_owned_capacity_bytes": 6080415,
+            "max_journal_bytes": 4,
+            "bsat_check_wall_seconds": [
+              0.0669164159335196,
+              0.06844858359545469
+            ],
+            "export_cpu_seconds": [
+              0.005377000000002852,
+              0.005420999999998344
+            ]
+          }
+        },
+        {
+          "circuit": "h_b05.aig",
+          "flags": 3,
+          "depth": 2,
+          "polarity": -1,
+          "input_sha256": "49d0c32aaef0aab70dce99bad0466aff3357a0f9ee44cf2bf4c09e26adf743a2",
+          "baseline": {
+            "checked": 2,
+            "cpu_seconds": [
+              0.00285199999999719,
+              0.0028930000000002565
+            ],
+            "conflicts": [
+              0,
+              0
+            ],
+            "max_owned_capacity_bytes": 15967915,
+            "max_journal_bytes": 14,
+            "bsat_check_wall_seconds": [
+              0,
+              0
+            ],
+            "export_cpu_seconds": [
+              0.016699000000002684,
+              0.015979999999998995
+            ]
+          },
+          "candidate": {
+            "checked": 2,
+            "cpu_seconds": [
+              0.003654999999994857,
+              0.0029770000000013397
+            ],
+            "conflicts": [
+              0,
+              0
+            ],
+            "max_owned_capacity_bytes": 15967923,
+            "max_journal_bytes": 14,
+            "bsat_check_wall_seconds": [
+              0,
+              0
+            ],
+            "export_cpu_seconds": [
+              0.016211000000005527,
+              0.015912999999997623
+            ]
+          }
+        },
+        {
+          "circuit": "h_b05.aig",
+          "flags": 3,
+          "depth": 2,
+          "polarity": 1,
+          "input_sha256": "518daf0e9bd21be522d230472791b631568e72ec790428fc6adbcaa205d0d9e6",
+          "baseline": {
+            "checked": 2,
+            "cpu_seconds": [
+              0.000301999999997804,
+              0.0002899999999996794
+            ],
+            "conflicts": [
+              1,
+              1
+            ],
+            "max_owned_capacity_bytes": 15967791,
+            "max_journal_bytes": 14,
+            "bsat_check_wall_seconds": [
+              0.1503540826961398,
+              0.1502878749743104
+            ],
+            "export_cpu_seconds": [
+              0.016114000000001738,
+              0.016041000000001304
+            ]
+          },
+          "candidate": {
+            "checked": 2,
+            "cpu_seconds": [
+              0.00032199999999704687,
+              0.0003109999999963975
+            ],
+            "conflicts": [
+              1,
+              1
+            ],
+            "max_owned_capacity_bytes": 15967799,
+            "max_journal_bytes": 14,
+            "bsat_check_wall_seconds": [
+              0.14758087508380413,
+              0.15538816712796688
+            ],
+            "export_cpu_seconds": [
+              0.015660999999994374,
+              0.015953000000003215
+            ]
+          }
+        },
+        {
+          "circuit": "h_b05.aig",
+          "flags": 3,
+          "depth": 4,
+          "polarity": -1,
+          "input_sha256": "3356b04e16ac5fa99a22d28c587103dbd62e0afa6cc4abe46b72384cedfcb620",
+          "baseline": {
+            "checked": 2,
+            "cpu_seconds": [
+              0.004711999999997829,
+              0.004608999999994978
+            ],
+            "conflicts": [
+              0,
+              0
+            ],
+            "max_owned_capacity_bytes": 28812631,
+            "max_journal_bytes": 101,
+            "bsat_check_wall_seconds": [
+              0,
+              0
+            ],
+            "export_cpu_seconds": [
+              0.027509000000002004,
+              0.026149000000003753
+            ]
+          },
+          "candidate": {
+            "checked": 2,
+            "cpu_seconds": [
+              0.006278000000001782,
+              0.005048000000002162
+            ],
+            "conflicts": [
+              0,
+              0
+            ],
+            "max_owned_capacity_bytes": 28812639,
+            "max_journal_bytes": 101,
+            "bsat_check_wall_seconds": [
+              0,
+              0
+            ],
+            "export_cpu_seconds": [
+              0.027076999999998463,
+              0.02645700000000062
+            ]
+          }
+        },
+        {
+          "circuit": "h_b05.aig",
+          "flags": 3,
+          "depth": 4,
+          "polarity": 1,
+          "input_sha256": "bb88ded305774d1ca7440f8f5fe055cbeac1a3686e5e5328d6f0579fa754d979",
+          "baseline": {
+            "checked": 2,
+            "cpu_seconds": [
+              0.0008979999999993993,
+              0.0010060000000038372
+            ],
+            "conflicts": [
+              8,
+              8
+            ],
+            "max_owned_capacity_bytes": 28812603,
+            "max_journal_bytes": 101,
+            "bsat_check_wall_seconds": [
+              0.23399508325383067,
+              0.23495699977502227
+            ],
+            "export_cpu_seconds": [
+              0.026528999999996472,
+              0.025390999999999053
+            ]
+          },
+          "candidate": {
+            "checked": 2,
+            "cpu_seconds": [
+              0.0011279999999942447,
+              0.0011160000000032255
+            ],
+            "conflicts": [
+              8,
+              8
+            ],
+            "max_owned_capacity_bytes": 28812611,
+            "max_journal_bytes": 101,
+            "bsat_check_wall_seconds": [
+              0.23018958419561386,
+              0.23500279197469354
+            ],
+            "export_cpu_seconds": [
+              0.026961000000000013,
+              0.02649700000000621
+            ]
+          }
+        },
+        {
+          "circuit": "h_b05.aig",
+          "flags": 3,
+          "depth": 8,
+          "polarity": -1,
+          "input_sha256": "57638a1b292d60894cb473a6ffecce1c47fb862d83172e895a21682e62c8cc4c",
+          "baseline": {
+            "checked": 2,
+            "cpu_seconds": [
+              0.006934999999998581,
+              0.006318999999997743
+            ],
+            "conflicts": [
+              2,
+              2
+            ],
+            "max_owned_capacity_bytes": 53668715,
+            "max_journal_bytes": 135,
+            "bsat_check_wall_seconds": [
+              0,
+              0
+            ],
+            "export_cpu_seconds": [
+              0.04830899999999616,
+              0.04836399999999941
+            ]
+          },
+          "candidate": {
+            "checked": 2,
+            "cpu_seconds": [
+              0.009042000000000883,
+              0.007125000000002046
+            ],
+            "conflicts": [
+              2,
+              2
+            ],
+            "max_owned_capacity_bytes": 53668723,
+            "max_journal_bytes": 135,
+            "bsat_check_wall_seconds": [
+              0,
+              0
+            ],
+            "export_cpu_seconds": [
+              0.04807999999999879,
+              0.04860800000000154
+            ]
+          }
+        },
+        {
+          "circuit": "h_b05.aig",
+          "flags": 3,
+          "depth": 8,
+          "polarity": 1,
+          "input_sha256": "283130ca92f9e73772dd37f2f36916eef068a327d2277487f40b5e140580b065",
+          "baseline": {
+            "checked": 2,
+            "cpu_seconds": [
+              0.008926000000002432,
+              0.008863000000005172
+            ],
+            "conflicts": [
+              0,
+              0
+            ],
+            "max_owned_capacity_bytes": 53668555,
+            "max_journal_bytes": 101,
+            "bsat_check_wall_seconds": [
+              0,
+              0
+            ],
+            "export_cpu_seconds": [
+              0.04778199999999799,
+              0.04759100000000416
+            ]
+          },
+          "candidate": {
+            "checked": 2,
+            "cpu_seconds": [
+              0.011633000000003335,
+              0.009145999999994103
+            ],
+            "conflicts": [
+              0,
+              0
+            ],
+            "max_owned_capacity_bytes": 53668563,
+            "max_journal_bytes": 101,
+            "bsat_check_wall_seconds": [
+              0,
+              0
+            ],
+            "export_cpu_seconds": [
+              0.047815999999997416,
+              0.048189000000000703
+            ]
+          }
+        },
+        {
+          "circuit": "leader_election.3.prop1-back-serstep.aig",
+          "flags": 3,
+          "depth": 0,
+          "polarity": -1,
+          "input_sha256": "13dda09801a12584d3227f409c44b88229211e1c31b599ed471c5cec97c46a96",
+          "baseline": {
+            "checked": 2,
+            "cpu_seconds": [
+              0.0020359999999999823,
+              0.0021809999999999885
+            ],
+            "conflicts": [
+              31,
+              31
+            ],
+            "max_owned_capacity_bytes": 8244904,
+            "max_journal_bytes": 388,
+            "bsat_check_wall_seconds": [
+              0,
+              0
+            ],
+            "export_cpu_seconds": [
+              0.01036699999999996,
+              0.009921999999999986
+            ]
+          },
+          "candidate": {
+            "checked": 2,
+            "cpu_seconds": [
+              0.0023279999999999967,
+              0.0021970000000000045
+            ],
+            "conflicts": [
+              31,
+              31
+            ],
+            "max_owned_capacity_bytes": 8244912,
+            "max_journal_bytes": 388,
+            "bsat_check_wall_seconds": [
+              0,
+              0
+            ],
+            "export_cpu_seconds": [
+              0.009950999999999988,
+              0.009887000000000035
+            ]
+          }
+        },
+        {
+          "circuit": "leader_election.3.prop1-back-serstep.aig",
+          "flags": 3,
+          "depth": 0,
+          "polarity": 1,
+          "input_sha256": "709a6a8ae51be45b7d28720bfb619aabbb566f596dffb7d3c0cbc83048111688",
+          "baseline": {
+            "checked": 2,
+            "cpu_seconds": [
+              9.100000000000774e-05,
+              9.599999999998499e-05
+            ],
+            "conflicts": [
+              0,
+              0
+            ],
+            "max_owned_capacity_bytes": 8235020,
+            "max_journal_bytes": 4,
+            "bsat_check_wall_seconds": [
+              0.09236991684883833,
+              0.09341695811599493
+            ],
+            "export_cpu_seconds": [
+              0.009787999999999991,
+              0.009946999999999984
+            ]
+          },
+          "candidate": {
+            "checked": 2,
+            "cpu_seconds": [
+              8.400000000000074e-05,
+              9.300000000000974e-05
+            ],
+            "conflicts": [
+              0,
+              0
+            ],
+            "max_owned_capacity_bytes": 8235028,
+            "max_journal_bytes": 4,
+            "bsat_check_wall_seconds": [
+              0.09232987510040402,
+              0.09526254096999764
+            ],
+            "export_cpu_seconds": [
+              0.009844999999999993,
+              0.00991800000000001
+            ]
+          }
+        },
+        {
+          "circuit": "leader_election.3.prop1-back-serstep.aig",
+          "flags": 3,
+          "depth": 2,
+          "polarity": -1,
+          "input_sha256": "f5fd1907fa36a5b6330427a92431baa0412ccd5aed6ff78bcf11cf38553e5a26",
+          "baseline": {
+            "checked": 2,
+            "cpu_seconds": [
+              0.008423999999999987,
+              0.008391000000000037
+            ],
+            "conflicts": [
+              33,
+              33
+            ],
+            "max_owned_capacity_bytes": 28975862,
+            "max_journal_bytes": 897,
+            "bsat_check_wall_seconds": [
+              0,
+              0
+            ],
+            "export_cpu_seconds": [
+              0.029803000000000024,
+              0.029703000000000035
+            ]
+          },
+          "candidate": {
+            "checked": 2,
+            "cpu_seconds": [
+              0.009962999999999944,
+              0.010020000000000029
+            ],
+            "conflicts": [
+              33,
+              33
+            ],
+            "max_owned_capacity_bytes": 28975870,
+            "max_journal_bytes": 897,
+            "bsat_check_wall_seconds": [
+              0,
+              0
+            ],
+            "export_cpu_seconds": [
+              0.029752,
+              0.029873999999999956
+            ]
+          }
+        },
+        {
+          "circuit": "leader_election.3.prop1-back-serstep.aig",
+          "flags": 3,
+          "depth": 2,
+          "polarity": 1,
+          "input_sha256": "6e94bd5b21a6859044835fbb61482bdcb6f23cb14c85335f7e1ab8feab5ea9a5",
+          "baseline": {
+            "checked": 2,
+            "cpu_seconds": [
+              0.0020660000000000123,
+              0.001919000000000004
+            ],
+            "conflicts": [
+              1,
+              1
+            ],
+            "max_owned_capacity_bytes": 28964346,
+            "max_journal_bytes": 398,
+            "bsat_check_wall_seconds": [
+              0.2480736249126494,
+              0.2553778328001499
+            ],
+            "export_cpu_seconds": [
+              0.029032999999999975,
+              0.02910299999999999
+            ]
+          },
+          "candidate": {
+            "checked": 2,
+            "cpu_seconds": [
+              0.002198999999999951,
+              0.002078999999999942
+            ],
+            "conflicts": [
+              1,
+              1
+            ],
+            "max_owned_capacity_bytes": 28964354,
+            "max_journal_bytes": 398,
+            "bsat_check_wall_seconds": [
+              0.2478350419551134,
+              0.25811158306896687
+            ],
+            "export_cpu_seconds": [
+              0.028991999999999907,
+              0.02930200000000005
+            ]
+          }
+        },
+        {
+          "circuit": "leader_election.3.prop1-back-serstep.aig",
+          "flags": 3,
+          "depth": 4,
+          "polarity": -1,
+          "input_sha256": "df14e74b9b2898952afb33c1b5d2b7fe07246feb0794b2727a3212c6e74b20ba",
+          "baseline": {
+            "checked": 2,
+            "cpu_seconds": [
+              0.026324999999999932,
+              0.028143999999999725
+            ],
+            "conflicts": [
+              48,
+              48
+            ],
+            "max_owned_capacity_bytes": 41102804,
+            "max_journal_bytes": 4724,
+            "bsat_check_wall_seconds": [
+              0,
+              0
+            ],
+            "export_cpu_seconds": [
+              0.05187900000000001,
+              0.04922899999999997
+            ]
+          },
+          "candidate": {
+            "checked": 2,
+            "cpu_seconds": [
+              0.037917999999999896,
+              0.033246999999999804
+            ],
+            "conflicts": [
+              48,
+              48
+            ],
+            "max_owned_capacity_bytes": 41102812,
+            "max_journal_bytes": 4724,
+            "bsat_check_wall_seconds": [
+              0,
+              0
+            ],
+            "export_cpu_seconds": [
+              0.048807000000000045,
+              0.05027000000000026
+            ]
+          }
+        },
+        {
+          "circuit": "leader_election.3.prop1-back-serstep.aig",
+          "flags": 3,
+          "depth": 4,
+          "polarity": 1,
+          "input_sha256": "c198d025a870015f23bff5a2945b170d7d9643df3b538d76df00b1b247d48207",
+          "baseline": {
+            "checked": 2,
+            "cpu_seconds": [
+              0.007093000000000016,
+              0.007640000000000091
+            ],
+            "conflicts": [
+              27,
+              27
+            ],
+            "max_owned_capacity_bytes": 41089848,
+            "max_journal_bytes": 4074,
+            "bsat_check_wall_seconds": [
+              0.413801624905318,
+              0.41892770770937204
+            ],
+            "export_cpu_seconds": [
+              0.04904299999999995,
+              0.050335999999999936
+            ]
+          },
+          "candidate": {
+            "checked": 2,
+            "cpu_seconds": [
+              0.00804500000000008,
+              0.007448000000000121
+            ],
+            "conflicts": [
+              27,
+              27
+            ],
+            "max_owned_capacity_bytes": 41089856,
+            "max_journal_bytes": 4074,
+            "bsat_check_wall_seconds": [
+              0.42513033375144005,
+              0.4213197501376271
+            ],
+            "export_cpu_seconds": [
+              0.049217999999999984,
+              0.05029499999999998
+            ]
+          }
+        },
+        {
+          "circuit": "leader_election.3.prop1-back-serstep.aig",
+          "flags": 3,
+          "depth": 8,
+          "polarity": -1,
+          "input_sha256": "a8398e8c6249b87a2c58f27f8593140466a2be705a28b59e178f0d68fe13c535",
+          "baseline": {
+            "checked": 2,
+            "cpu_seconds": [
+              0.04760299999999962,
+              0.047717999999999705
+            ],
+            "conflicts": [
+              44,
+              44
+            ],
+            "max_owned_capacity_bytes": 87945496,
+            "max_journal_bytes": 7280682,
+            "bsat_check_wall_seconds": [
+              0,
+              0
+            ],
+            "export_cpu_seconds": [
+              0.08969299999999869,
+              0.09113900000000008
+            ]
+          },
+          "candidate": {
+            "checked": 2,
+            "cpu_seconds": [
+              0.03980700000000148,
+              0.03934100000000029
+            ],
+            "conflicts": [
+              89,
+              89
+            ],
+            "max_owned_capacity_bytes": 88267092,
+            "max_journal_bytes": 8792659,
+            "bsat_check_wall_seconds": [
+              0,
+              0
+            ],
+            "export_cpu_seconds": [
+              0.08946200000000104,
+              0.09133199999999952
+            ]
+          }
+        },
+        {
+          "circuit": "leader_election.3.prop1-back-serstep.aig",
+          "flags": 3,
+          "depth": 8,
+          "polarity": 1,
+          "input_sha256": "64bf9fd5d4d6aa2bfe9416a034ef03b62c8dc9541299c5173865332e2c485a07",
+          "baseline": {
+            "checked": 2,
+            "cpu_seconds": [
+              0.8860730000000001,
+              0.8895239999999998
+            ],
+            "conflicts": [
+              5851,
+              5851
+            ],
+            "max_owned_capacity_bytes": 93155948,
+            "max_journal_bytes": 7279457,
+            "bsat_check_wall_seconds": [
+              2.9309016251936555,
+              2.921816417016089
+            ],
+            "export_cpu_seconds": [
+              0.08980599999999939,
+              0.08948100000000014
+            ]
+          },
+          "candidate": {
+            "checked": 2,
+            "cpu_seconds": [
+              1.012248,
+              0.9820829999999994
+            ],
+            "conflicts": [
+              6493,
+              6493
+            ],
+            "max_owned_capacity_bytes": 88250488,
+            "max_journal_bytes": 8757702,
+            "bsat_check_wall_seconds": [
+              3.5484957909211516,
+              3.5732544576749206
+            ],
+            "export_cpu_seconds": [
+              0.09330000000000016,
+              0.08959399999999995
+            ]
+          }
+        }
+      ]
+    }
+  },
+  "gate_pass": true
+}

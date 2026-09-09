@@ -1,0 +1,24 @@
+{
+  "baseline_revision": "6f793ed7980fa9372009888ab0949c2c8db7685b",
+  "order": [
+    "baseline",
+    "candidate",
+    "candidate",
+    "baseline"
+  ],
+  "flags": 3,
+  "original": {
+    "depths": "0,1,2,4,8,16",
+    "cpu": 60
+  },
+  "expanded": {
+    "depths": "0,2,4,8",
+    "cpu": 10
+  },
+  "reference_cpu": "same as BSAT query",
+  "reference_wall": 90,
+  "checker_wall": 600,
+  "checker_heap_mb": 2048,
+  "checker_stack_mb": 512,
+  "scope": "Frozen existing pinned circuit sets; serial per host, no pristine holdout claim"
+}

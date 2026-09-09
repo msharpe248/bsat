@@ -22,7 +22,7 @@ capability and release-gate summary is [Production readiness](../PRODUCTION_READ
 | Long search | `check_long_search.py` | 24 assignment-exclusion/pigeonhole cases with renamed variables and reordered literals/clauses; counter gates require real restarts, reductions, GC and SCC substitution |
 | Matched-host cal3 controls | `benchmark_cal3_host.py`, `c-cal3-host.yml` | Checked timed outcomes and fixed-conflict prefix comparisons; host/OS/compiler effects are not isolated CPU effects |
 | cal3 learning diagnosis | `benchmark_cal3_learning.py` | Frozen 13-profile timed/fixed-conflict matrices, checked conclusive answers; development evidence only |
-| Measurement integrity | `test_select_corpus.py`, `test_benchmark_manifest.py`, `test_benchmark_artifacts.py` | History exclusion, frozen hashes, certificate retention and checker exit/status handling |
+| Measurement integrity | `test_select_corpus.py`, `test_benchmark_manifest.py`, `test_benchmark_artifacts.py`, `test_incremental_summary.py` | History exclusion, frozen hashes, certificate retention and checker exit/status handling |
 | Retained incremental reference | `differential_histories.py`, `incremental_reference.py` | Persistent CaDiCaL plus fresh Kissat; additions, assumptions, cancellation and checkpoints |
 | Real verification circuits | `test_aag_history.py`, `industrial_histories.py` | Pinned AIGER input, growing CNF, independent circuit simulation and checked proofs; bounded safety queries |
 | Expanded circuit/checkpoint histories | `expanded_industrial_aig.json`, `industrial_histories.py --checkpoint-every`, `test_expanded_probing.py` | Larger pinned sources, checkpoint invalidation and journal reset, paired CPU/UNKNOWN accounting |

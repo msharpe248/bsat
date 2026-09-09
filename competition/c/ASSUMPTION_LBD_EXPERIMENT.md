@@ -33,3 +33,27 @@ slices, cancellation, growing guarded contradictions and later SAT queries.
 Reports under benchmark_results: query-lbd-validation-20260909.json,
 query-lbd-certificates-{release,debug}-20260909.json,
 query-lbd-target-20260909.json, query-lbd-retained-screen-20260909.json.
+
+## Matched Mac confirmation
+
+Frozen baseline/candidate/candidate/baseline runs complete. Original set: both
+versions check 96/96 queries; mean query CPU is 0.847114 → 0.395114 s (-53.36%).
+Expanded set: both check 62/64, with cal100 depth-8 positive remaining UNKNOWN in
+both repetitions; CPU PAR2 is 0.949274 → 0.874344 s (-7.89%). No query loses a
+checked solve. Both independent set gates pass.
+
+Retained cal3 completes at 482,935 conflicts versus 1,148,517 for control; the
+first control takes 39.512 s and candidate repetitions 17.758 / 17.766 s.
+Expanded cal100 depth-4 positive improves 7.580 / 7.584 → 4.829 / 4.823 CPU s
+(179,224 → 112,437 conflicts). Its first proof check increases 5.49 → 5.86 wall
+seconds, so lower solve CPU does not imply every downstream stage is faster.
+Original maximum owned capacity increases about 0.57% (62.23 → 62.58 MB); the
+expanded maximum differs by the candidate's extra 8-byte Solver footprint.
+Original maximum journal size drops 242.75 → 131.14 MB; expanded 117.51 → 101.81 MB.
+Owned capacity, journal bytes and checker RSS are distinct resource measures.
+
+Evidence: `benchmark_results/query-lbd-mac-confirmation-20260909/`. The summary
+checks exact query sets, input identity, checked answers, CPU deadlines and
+per-query losses. Six regressions validate that missing/context-changed queries,
+contradictory checked answers and losses hidden by faster other queries cannot
+pass. Linux candidate confirmation remains pending; no default promotion yet.

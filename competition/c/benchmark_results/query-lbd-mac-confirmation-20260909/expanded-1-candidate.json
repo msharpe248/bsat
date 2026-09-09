@@ -1,0 +1,2624 @@
+{
+  "scope": "Growing BMC histories from real upstream circuits, with independent witnesses.",
+  "complete": true,
+  "platform": "macOS-26.6.1-arm64-arm-64bit-Mach-O",
+  "circuits": {
+    "revision": "7df3ce27c569615bdd205dbd6b473ab2c33953a7",
+    "selection": {
+      "seed": 2026090861,
+      "minimum_bytes": 30000,
+      "maximum_bytes": 180000,
+      "policy": "sorted pinned tree, seeded shuffle within beem, goel/industry, goel/opensource, wolf; first per group; no solving before selection",
+      "tree_sha256": "1c894d23868525b4e70ab2064738595b7ea2d7cfdae74fcaae7a05ec7bc4a1cb"
+    },
+    "inputs": [
+      {
+        "url": "https://raw.githubusercontent.com/TechnionFV/CAV_2025_artifact/7df3ce27c569615bdd205dbd6b473ab2c33953a7/benchmarks_aig/aig_inputs/hwmcc19_fold_fraigy_orchestrate/aig/beem/leader_election.3.prop1-back-serstep.aig",
+        "file": "leader_election.3.prop1-back-serstep.aig",
+        "sha256": "cf40be25ad6dc2f890dc2316c37f2bed3b1182f31f21552e919436a884c30f52",
+        "bytes": 75650,
+        "aag": "leader_election.3.prop1-back-serstep.aag",
+        "aag_sha256": "c683096d990f9a7cce36bd32a9cc5cc2b0dd43b3724f47072b7c1c177007ad12",
+        "inputs": 1058,
+        "latches": 946,
+        "gates": 22977
+      },
+      {
+        "url": "https://raw.githubusercontent.com/TechnionFV/CAV_2025_artifact/7df3ce27c569615bdd205dbd6b473ab2c33953a7/benchmarks_aig/aig_inputs/hwmcc19_fold_fraigy_orchestrate/aig/goel/industry/cal100/cal100.aig",
+        "file": "cal100.aig",
+        "sha256": "8558287902564f3628155dfafbbd18c3788016e187077a4e14cb939265190a75",
+        "bytes": 54873,
+        "aag": "cal100.aag",
+        "aag_sha256": "d2fb3ddd57a01fceb6f2c91d34788ceb9c0e88747e8d0068efe21981faf4a5cb",
+        "inputs": 1413,
+        "latches": 718,
+        "gates": 16436
+      },
+      {
+        "url": "https://raw.githubusercontent.com/TechnionFV/CAV_2025_artifact/7df3ce27c569615bdd205dbd6b473ab2c33953a7/benchmarks_aig/aig_inputs/hwmcc19_fold_fraigy_orchestrate/aig/goel/opensource/h_b05/h_b05.aig",
+        "file": "h_b05.aig",
+        "sha256": "8bded624352c564cf3f0f86c1587f8e1b44c852393586664b557ddeb4ea735ca",
+        "bytes": 41843,
+        "aag": "h_b05.aag",
+        "aag_sha256": "87c7962793fe0237087583aad1b48e8342b72e735a04daf516c8fe825892fbc0",
+        "inputs": 4271,
+        "latches": 27,
+        "gates": 12470
+      },
+      {
+        "url": "https://raw.githubusercontent.com/TechnionFV/CAV_2025_artifact/7df3ce27c569615bdd205dbd6b473ab2c33953a7/benchmarks_aig/aig_inputs/hwmcc19_fold_fraigy_orchestrate/aig/wolf/2019C/dspfilters_fastfir_second-p32.aig",
+        "file": "dspfilters_fastfir_second-p32.aig",
+        "sha256": "39dacc3220985dd7e44ad2d9bbeac7d65e38b05ce09ceb4985d6f4824430e784",
+        "bytes": 88677,
+        "aag": "dspfilters_fastfir_second-p32.aag",
+        "aag_sha256": "b4e2d824b1f530239f5c21699b8c54b90a1fa29a7b920a01dad5d791c31434f5",
+        "inputs": 2686,
+        "latches": 1105,
+        "gates": 25415
+      }
+    ],
+    "aigtoaig_sha256": "f465b2c03dbc1f1a39996103f9543d884261f4b6eefd7cac1f2c90562b6faa79",
+    "aiger_revision": "039ec1a2cc37d3093ac35c4b6df65336b346f409",
+    "aiger_revision_scope": "Reproduction build pin; supplied executable identified separately by SHA-256."
+  },
+  "library_sha256": "9e73af9fbca2f95cc8c0968fc6062da7df13c3850f6e301c605b207fea128362",
+  "reference_sha256": "5cad8e92487416008cf8ec4573c2ab2a02b7c1927ab06e8c8cacb317908cff1f",
+  "incremental_reference_sha256": "0a4ffe327470abc9de9d7f19c8da5fda44487d914e3ca0cd74999b196453f395",
+  "converter_sha256": "9bfc20a5fa9eb2a0ffadd2b0cfc7cdd4a20f6aa9c8d7de5b6c771160b847f630",
+  "checker_sha256": "027e767e8e5543d61671c44f7475e985b7969112e6825d51f2207bf0580cbf5c",
+  "runs": [
+    {
+      "circuit": "leader_election.3.prop1-back-serstep.aig",
+      "repeat": 0,
+      "flags": 3,
+      "depth": 0,
+      "polarity": 1,
+      "variables": 24982,
+      "clauses": 69879,
+      "result": 20,
+      "incremental_result": 20,
+      "cpu_seconds": 8.400000000000074e-05,
+      "incremental_cpu_seconds": 3.200000000000425e-05,
+      "additions_both_solvers_cpu": 0.115011,
+      "assumptions": [
+        2949
+      ],
+      "bsat_cpu_overshoot_seconds": 0,
+      "reference_cpu_overshoot_seconds": 0,
+      "within_cpu_budget": true,
+      "reference_within_cpu_budget": true,
+      "stats": {
+        "version": 1,
+        "result": 20,
+        "conflicts": 0,
+        "decisions": 0,
+        "propagations": 2837,
+        "reused_preparations": 0,
+        "owned_capacity_bytes": 8235028,
+        "cpu_seconds": 7.983300000000138e-05
+      },
+      "journal_bytes": 4,
+      "input_sha256": "709a6a8ae51be45b7d28720bfb619aabbb566f596dffb7d3c0cbc83048111688",
+      "fresh_result": 20,
+      "certificate_checks": {
+        "fresh-check": {
+          "input_sha256": "709a6a8ae51be45b7d28720bfb619aabbb566f596dffb7d3c0cbc83048111688",
+          "drat_sha256": "0e577fb037c8e969ba88d1a07d6da0032ade77ae7b16c1e2a1dfbebb34f07122",
+          "converter_sha256": "9bfc20a5fa9eb2a0ffadd2b0cfc7cdd4a20f6aa9c8d7de5b6c771160b847f630",
+          "checker_sha256": "027e767e8e5543d61671c44f7475e985b7969112e6825d51f2207bf0580cbf5c",
+          "verified": true,
+          "checker_heap_mb": 2048,
+          "checker_stack_mb": 512,
+          "stages": [
+            {
+              "command": [
+                "/tmp/bsat-drat-trim",
+                "/var/folders/ts/779j13fj7_x2z167570zvv4c0000gn/T/bsat-industrial-ra37dw_f/fresh-check/input.cnf",
+                "/var/folders/ts/779j13fj7_x2z167570zvv4c0000gn/T/bsat-industrial-ra37dw_f/fresh-check/proof.drat",
+                "-L",
+                "/var/folders/ts/779j13fj7_x2z167570zvv4c0000gn/T/bsat-industrial-ra37dw_f/fresh-check/proof.lrat"
+              ],
+              "seconds": 0.04116249969229102,
+              "cpu_seconds": 0.040254,
+              "children_peak_rss_bytes": 55771136,
+              "returncode": 0,
+              "stdout": "\nc turning on binary mode checking\n\nc parsing input formula with 24982 variables and 69880 clauses\n\nc finished parsing, read 90066 bytes from proof file\n\nc UNSAT via unit propagation on the input instance\n\nc 4 of 69880 clauses in core                            \n\nc 1 of 3782 lemmas in core using 4 resolution steps\n\nc 0 RAT lemmas in core; 0 redundant literals in core lemmas\n\ns VERIFIED\n\nc verification time: 0.038 seconds\n",
+              "stderr": ""
+            },
+            {
+              "command": [
+                "/tmp/bsat-cake-verified-build/cake_lpr",
+                "--CML_HEAP_SIZE=2048",
+                "--CML_STACK_SIZE=512",
+                "/var/folders/ts/779j13fj7_x2z167570zvv4c0000gn/T/bsat-industrial-ra37dw_f/fresh-check/input.cnf",
+                "/var/folders/ts/779j13fj7_x2z167570zvv4c0000gn/T/bsat-industrial-ra37dw_f/fresh-check/proof.lrat"
+              ],
+              "seconds": 0.05279512470588088,
+              "cpu_seconds": 0.050437,
+              "children_peak_rss_bytes": 171360256,
+              "returncode": 0,
+              "stdout": "s VERIFIED UNSAT\n",
+              "stderr": ""
+            }
+          ],
+          "lrat_sha256": "d37ad09d19e53974579f75c74a9a694800bb304c23eb3be4aa3390ed941c6228",
+          "seconds": 0.0955372080206871,
+          "rss_scope": "Cumulative child-process high-water RSS, not isolated per-stage peak"
+        },
+        "bsat-check": {
+          "input_sha256": "709a6a8ae51be45b7d28720bfb619aabbb566f596dffb7d3c0cbc83048111688",
+          "drat_sha256": "38dedef449c0aa39f4158a98793881f4bfe3313ef89766230200e3d97dddcec4",
+          "converter_sha256": "9bfc20a5fa9eb2a0ffadd2b0cfc7cdd4a20f6aa9c8d7de5b6c771160b847f630",
+          "checker_sha256": "027e767e8e5543d61671c44f7475e985b7969112e6825d51f2207bf0580cbf5c",
+          "verified": true,
+          "checker_heap_mb": 2048,
+          "checker_stack_mb": 512,
+          "stages": [
+            {
+              "command": [
+                "/tmp/bsat-drat-trim",
+                "/var/folders/ts/779j13fj7_x2z167570zvv4c0000gn/T/bsat-industrial-ra37dw_f/bsat-check/input.cnf",
+                "/var/folders/ts/779j13fj7_x2z167570zvv4c0000gn/T/bsat-industrial-ra37dw_f/bsat-check/proof.drat",
+                "-L",
+                "/var/folders/ts/779j13fj7_x2z167570zvv4c0000gn/T/bsat-industrial-ra37dw_f/bsat-check/proof.lrat"
+              ],
+              "seconds": 0.040543749928474426,
+              "cpu_seconds": 0.038902000000000006,
+              "children_peak_rss_bytes": 171360256,
+              "returncode": 0,
+              "stdout": "\nc turning on binary mode checking\n\nc parsing input formula with 24982 variables and 69880 clauses\n\nc finished parsing, read 6 bytes from proof file\n\nc UNSAT via unit propagation on the input instance\n\nc 4 of 69880 clauses in core                            \n\nc 1 of 3 lemmas in core using 4 resolution steps\n\nc 0 RAT lemmas in core; 0 redundant literals in core lemmas\n\ns VERIFIED\n\nc verification time: 0.037 seconds\n",
+              "stderr": ""
+            },
+            {
+              "command": [
+                "/tmp/bsat-cake-verified-build/cake_lpr",
+                "--CML_HEAP_SIZE=2048",
+                "--CML_STACK_SIZE=512",
+                "/var/folders/ts/779j13fj7_x2z167570zvv4c0000gn/T/bsat-industrial-ra37dw_f/bsat-check/input.cnf",
+                "/var/folders/ts/779j13fj7_x2z167570zvv4c0000gn/T/bsat-industrial-ra37dw_f/bsat-check/proof.lrat"
+              ],
+              "seconds": 0.0500582498498261,
+              "cpu_seconds": 0.047834,
+              "children_peak_rss_bytes": 171360256,
+              "returncode": 0,
+              "stdout": "s VERIFIED UNSAT\n",
+              "stderr": ""
+            }
+          ],
+          "lrat_sha256": "80b8db7b3a539947fea74bd09d4f20a49d089afbe9ad8486f3f14f0848b882eb",
+          "seconds": 0.09232987510040402,
+          "rss_scope": "Cumulative child-process high-water RSS, not isolated per-stage peak"
+        }
+      },
+      "fresh_proof_sha256": "0e577fb037c8e969ba88d1a07d6da0032ade77ae7b16c1e2a1dfbebb34f07122",
+      "export_cpu_seconds": 0.009844999999999993,
+      "bsat_proof_sha256": "38dedef449c0aa39f4158a98793881f4bfe3313ef89766230200e3d97dddcec4",
+      "validated": true
+    },
+    {
+      "circuit": "leader_election.3.prop1-back-serstep.aig",
+      "repeat": 0,
+      "flags": 3,
+      "depth": 0,
+      "polarity": -1,
+      "variables": 24982,
+      "clauses": 69879,
+      "result": 10,
+      "incremental_result": 10,
+      "cpu_seconds": 0.0023279999999999967,
+      "incremental_cpu_seconds": 0.0009210000000000051,
+      "additions_both_solvers_cpu": 0,
+      "assumptions": [
+        -2949
+      ],
+      "bsat_cpu_overshoot_seconds": 0,
+      "reference_cpu_overshoot_seconds": 0,
+      "within_cpu_budget": true,
+      "reference_within_cpu_budget": true,
+      "stats": {
+        "version": 1,
+        "result": 10,
+        "conflicts": 31,
+        "decisions": 2413,
+        "propagations": 47215,
+        "reused_preparations": 1,
+        "owned_capacity_bytes": 8244912,
+        "cpu_seconds": 0.002319709000000003
+      },
+      "journal_bytes": 388,
+      "bsat_model_and_simulation": true,
+      "incremental_model_and_simulation": true,
+      "input_sha256": "13dda09801a12584d3227f409c44b88229211e1c31b599ed471c5cec97c46a96",
+      "fresh_result": 10,
+      "fresh_model_and_simulation": true,
+      "export_cpu_seconds": 0.009950999999999988,
+      "validated": true
+    },
+    {
+      "circuit": "leader_election.3.prop1-back-serstep.aig",
+      "repeat": 0,
+      "flags": 3,
+      "depth": 2,
+      "polarity": 1,
+      "variables": 74944,
+      "clauses": 211527,
+      "result": 20,
+      "incremental_result": 20,
+      "cpu_seconds": 0.002198999999999951,
+      "incremental_cpu_seconds": 0.0016770000000000396,
+      "additions_both_solvers_cpu": 0.245977,
+      "assumptions": [
+        52911
+      ],
+      "bsat_cpu_overshoot_seconds": 0,
+      "reference_cpu_overshoot_seconds": 0,
+      "within_cpu_budget": true,
+      "reference_within_cpu_budget": true,
+      "stats": {
+        "version": 1,
+        "result": 20,
+        "conflicts": 1,
+        "decisions": 0,
+        "propagations": 25571,
+        "reused_preparations": 2,
+        "owned_capacity_bytes": 28964354,
+        "cpu_seconds": 0.0021930829999999846
+      },
+      "journal_bytes": 398,
+      "input_sha256": "6e94bd5b21a6859044835fbb61482bdcb6f23cb14c85335f7e1ab8feab5ea9a5",
+      "fresh_result": 20,
+      "certificate_checks": {
+        "fresh-check": {
+          "input_sha256": "6e94bd5b21a6859044835fbb61482bdcb6f23cb14c85335f7e1ab8feab5ea9a5",
+          "drat_sha256": "82cfac33177df3e3a3078a18cb2b834bc9a6c94279883633e1722a0a9e6fdef6",
+          "converter_sha256": "9bfc20a5fa9eb2a0ffadd2b0cfc7cdd4a20f6aa9c8d7de5b6c771160b847f630",
+          "checker_sha256": "027e767e8e5543d61671c44f7475e985b7969112e6825d51f2207bf0580cbf5c",
+          "verified": true,
+          "checker_heap_mb": 2048,
+          "checker_stack_mb": 512,
+          "stages": [
+            {
+              "command": [
+                "/tmp/bsat-drat-trim",
+                "/var/folders/ts/779j13fj7_x2z167570zvv4c0000gn/T/bsat-industrial-kfu5xpi8/fresh-check/input.cnf",
+                "/var/folders/ts/779j13fj7_x2z167570zvv4c0000gn/T/bsat-industrial-kfu5xpi8/fresh-check/proof.drat",
+                "-L",
+                "/var/folders/ts/779j13fj7_x2z167570zvv4c0000gn/T/bsat-industrial-kfu5xpi8/fresh-check/proof.lrat"
+              ],
+              "seconds": 0.08648316562175751,
+              "cpu_seconds": 0.08455299999999998,
+              "children_peak_rss_bytes": 171360256,
+              "returncode": 0,
+              "stdout": "\nc turning on binary mode checking\n\nc parsing input formula with 74944 variables and 211528 clauses\n\nc finished parsing, read 208777 bytes from proof file\n\nc UNSAT via unit propagation on the input instance\n\nc 650 of 211528 clauses in core                            \n\nc 1 of 27555 lemmas in core using 650 resolution steps\n\nc 0 RAT lemmas in core; 0 redundant literals in core lemmas\n\ns VERIFIED\n\nc verification time: 0.082 seconds\n",
+              "stderr": ""
+            },
+            {
+              "command": [
+                "/tmp/bsat-cake-verified-build/cake_lpr",
+                "--CML_HEAP_SIZE=2048",
+                "--CML_STACK_SIZE=512",
+                "/var/folders/ts/779j13fj7_x2z167570zvv4c0000gn/T/bsat-industrial-kfu5xpi8/fresh-check/input.cnf",
+                "/var/folders/ts/779j13fj7_x2z167570zvv4c0000gn/T/bsat-industrial-kfu5xpi8/fresh-check/proof.lrat"
+              ],
+              "seconds": 0.15794404176995158,
+              "cpu_seconds": 0.15381,
+              "children_peak_rss_bytes": 531349504,
+              "returncode": 0,
+              "stdout": "s VERIFIED UNSAT\n",
+              "stderr": ""
+            }
+          ],
+          "lrat_sha256": "c95a0e8edb4147b98cf7e7766318d1597ffe50f06f2eea51bfdd836f57bd5ddf",
+          "seconds": 0.24769124994054437,
+          "rss_scope": "Cumulative child-process high-water RSS, not isolated per-stage peak"
+        },
+        "bsat-check": {
+          "input_sha256": "6e94bd5b21a6859044835fbb61482bdcb6f23cb14c85335f7e1ab8feab5ea9a5",
+          "drat_sha256": "8df40fea75f3598bcd465d2552967471251f612dde4a5d713d38086a8893c450",
+          "converter_sha256": "9bfc20a5fa9eb2a0ffadd2b0cfc7cdd4a20f6aa9c8d7de5b6c771160b847f630",
+          "checker_sha256": "027e767e8e5543d61671c44f7475e985b7969112e6825d51f2207bf0580cbf5c",
+          "verified": true,
+          "checker_heap_mb": 2048,
+          "checker_stack_mb": 512,
+          "stages": [
+            {
+              "command": [
+                "/tmp/bsat-drat-trim",
+                "/var/folders/ts/779j13fj7_x2z167570zvv4c0000gn/T/bsat-industrial-kfu5xpi8/bsat-check/input.cnf",
+                "/var/folders/ts/779j13fj7_x2z167570zvv4c0000gn/T/bsat-industrial-kfu5xpi8/bsat-check/proof.drat",
+                "-L",
+                "/var/folders/ts/779j13fj7_x2z167570zvv4c0000gn/T/bsat-industrial-kfu5xpi8/bsat-check/proof.lrat"
+              ],
+              "seconds": 0.0848662918433547,
+              "cpu_seconds": 0.08238299999999998,
+              "children_peak_rss_bytes": 531349504,
+              "returncode": 0,
+              "stdout": "\nc turning on binary mode checking\n\nc parsing input formula with 74944 variables and 211528 clauses\n\nc finished parsing, read 400 bytes from proof file\n\nc UNSAT via unit propagation on the input instance\n\nc 650 of 211528 clauses in core                            \n\nc 1 of 36 lemmas in core using 650 resolution steps\n\nc 0 RAT lemmas in core; 0 redundant literals in core lemmas\n\ns VERIFIED\n\nc verification time: 0.079 seconds\n",
+              "stderr": ""
+            },
+            {
+              "command": [
+                "/tmp/bsat-cake-verified-build/cake_lpr",
+                "--CML_HEAP_SIZE=2048",
+                "--CML_STACK_SIZE=512",
+                "/var/folders/ts/779j13fj7_x2z167570zvv4c0000gn/T/bsat-industrial-kfu5xpi8/bsat-check/input.cnf",
+                "/var/folders/ts/779j13fj7_x2z167570zvv4c0000gn/T/bsat-industrial-kfu5xpi8/bsat-check/proof.lrat"
+              ],
+              "seconds": 0.15955929178744555,
+              "cpu_seconds": 0.15547600000000003,
+              "children_peak_rss_bytes": 531349504,
+              "returncode": 0,
+              "stdout": "s VERIFIED UNSAT\n",
+              "stderr": ""
+            }
+          ],
+          "lrat_sha256": "4e66050e782e5176b7b07b7682894eae00b6e5fdd78e4dcfc2c29fd02bcab23a",
+          "seconds": 0.2478350419551134,
+          "rss_scope": "Cumulative child-process high-water RSS, not isolated per-stage peak"
+        }
+      },
+      "fresh_proof_sha256": "82cfac33177df3e3a3078a18cb2b834bc9a6c94279883633e1722a0a9e6fdef6",
+      "export_cpu_seconds": 0.028991999999999907,
+      "bsat_proof_sha256": "8df40fea75f3598bcd465d2552967471251f612dde4a5d713d38086a8893c450",
+      "validated": true
+    },
+    {
+      "circuit": "leader_election.3.prop1-back-serstep.aig",
+      "repeat": 0,
+      "flags": 3,
+      "depth": 2,
+      "polarity": -1,
+      "variables": 74944,
+      "clauses": 211527,
+      "result": 10,
+      "incremental_result": 10,
+      "cpu_seconds": 0.009962999999999944,
+      "incremental_cpu_seconds": 0.004164999999999974,
+      "additions_both_solvers_cpu": 0,
+      "assumptions": [
+        -52911
+      ],
+      "bsat_cpu_overshoot_seconds": 0,
+      "reference_cpu_overshoot_seconds": 0,
+      "within_cpu_budget": true,
+      "reference_within_cpu_budget": true,
+      "stats": {
+        "version": 1,
+        "result": 10,
+        "conflicts": 33,
+        "decisions": 11584,
+        "propagations": 221606,
+        "reused_preparations": 3,
+        "owned_capacity_bytes": 28975870,
+        "cpu_seconds": 0.009945083000000077
+      },
+      "journal_bytes": 897,
+      "bsat_model_and_simulation": true,
+      "incremental_model_and_simulation": true,
+      "input_sha256": "f5fd1907fa36a5b6330427a92431baa0412ccd5aed6ff78bcf11cf38553e5a26",
+      "fresh_result": 10,
+      "fresh_model_and_simulation": true,
+      "export_cpu_seconds": 0.029752,
+      "validated": true
+    },
+    {
+      "circuit": "leader_election.3.prop1-back-serstep.aig",
+      "repeat": 0,
+      "flags": 3,
+      "depth": 4,
+      "polarity": 1,
+      "variables": 124906,
+      "clauses": 353175,
+      "result": 20,
+      "incremental_result": 20,
+      "cpu_seconds": 0.00804500000000008,
+      "incremental_cpu_seconds": 0.06774999999999998,
+      "additions_both_solvers_cpu": 0.23947800000000008,
+      "assumptions": [
+        102873
+      ],
+      "bsat_cpu_overshoot_seconds": 0,
+      "reference_cpu_overshoot_seconds": 0,
+      "within_cpu_budget": true,
+      "reference_within_cpu_budget": true,
+      "stats": {
+        "version": 1,
+        "result": 20,
+        "conflicts": 27,
+        "decisions": 185,
+        "propagations": 172422,
+        "reused_preparations": 4,
+        "owned_capacity_bytes": 41089856,
+        "cpu_seconds": 0.00803612500000006
+      },
+      "journal_bytes": 4074,
+      "input_sha256": "c198d025a870015f23bff5a2945b170d7d9643df3b538d76df00b1b247d48207",
+      "fresh_result": 20,
+      "certificate_checks": {
+        "fresh-check": {
+          "input_sha256": "c198d025a870015f23bff5a2945b170d7d9643df3b538d76df00b1b247d48207",
+          "drat_sha256": "0b6cbd7f1a0041cdedc2f9d90324345db597242a3462296e957119b77cabbeda",
+          "converter_sha256": "9bfc20a5fa9eb2a0ffadd2b0cfc7cdd4a20f6aa9c8d7de5b6c771160b847f630",
+          "checker_sha256": "027e767e8e5543d61671c44f7475e985b7969112e6825d51f2207bf0580cbf5c",
+          "verified": true,
+          "checker_heap_mb": 2048,
+          "checker_stack_mb": 512,
+          "stages": [
+            {
+              "command": [
+                "/tmp/bsat-drat-trim",
+                "/var/folders/ts/779j13fj7_x2z167570zvv4c0000gn/T/bsat-industrial-c8ccu_ws/fresh-check/input.cnf",
+                "/var/folders/ts/779j13fj7_x2z167570zvv4c0000gn/T/bsat-industrial-c8ccu_ws/fresh-check/proof.drat",
+                "-L",
+                "/var/folders/ts/779j13fj7_x2z167570zvv4c0000gn/T/bsat-industrial-c8ccu_ws/fresh-check/proof.lrat"
+              ],
+              "seconds": 0.2717554159462452,
+              "cpu_seconds": 0.26941499999999996,
+              "children_peak_rss_bytes": 531349504,
+              "returncode": 0,
+              "stdout": "\nc turning on binary mode checking\n\nc parsing input formula with 124906 variables and 353176 clauses\n\nc finished parsing, read 3939600 bytes from proof file\n\nc detected empty clause; start verification via backward checking\n\nc 7161 of 353176 clauses in core                            \n\nc 1706 of 170850 lemmas in core using 212897 resolution steps\n\nc 0 RAT lemmas in core; 0 redundant literals in core lemmas\n\ns VERIFIED\n\nc verification time: 0.265 seconds\n",
+              "stderr": ""
+            },
+            {
+              "command": [
+                "/tmp/bsat-cake-verified-build/cake_lpr",
+                "--CML_HEAP_SIZE=2048",
+                "--CML_STACK_SIZE=512",
+                "/var/folders/ts/779j13fj7_x2z167570zvv4c0000gn/T/bsat-industrial-c8ccu_ws/fresh-check/input.cnf",
+                "/var/folders/ts/779j13fj7_x2z167570zvv4c0000gn/T/bsat-industrial-c8ccu_ws/fresh-check/proof.lrat"
+              ],
+              "seconds": 0.29307841695845127,
+              "cpu_seconds": 0.2863420000000001,
+              "children_peak_rss_bytes": 945438720,
+              "returncode": 0,
+              "stdout": "s VERIFIED UNSAT\n",
+              "stderr": ""
+            }
+          ],
+          "lrat_sha256": "c84e5db64991056414cc653fcec74dcff6f825fed6399bcd159aa01f3f6a20be",
+          "seconds": 0.5721499999053776,
+          "rss_scope": "Cumulative child-process high-water RSS, not isolated per-stage peak"
+        },
+        "bsat-check": {
+          "input_sha256": "c198d025a870015f23bff5a2945b170d7d9643df3b538d76df00b1b247d48207",
+          "drat_sha256": "fe19f1b165d53d145a2e74f35fcdc042a02d5eca3edbd3e98b6037927fda66a1",
+          "converter_sha256": "9bfc20a5fa9eb2a0ffadd2b0cfc7cdd4a20f6aa9c8d7de5b6c771160b847f630",
+          "checker_sha256": "027e767e8e5543d61671c44f7475e985b7969112e6825d51f2207bf0580cbf5c",
+          "verified": true,
+          "checker_heap_mb": 2048,
+          "checker_stack_mb": 512,
+          "stages": [
+            {
+              "command": [
+                "/tmp/bsat-drat-trim",
+                "/var/folders/ts/779j13fj7_x2z167570zvv4c0000gn/T/bsat-industrial-c8ccu_ws/bsat-check/input.cnf",
+                "/var/folders/ts/779j13fj7_x2z167570zvv4c0000gn/T/bsat-industrial-c8ccu_ws/bsat-check/proof.drat",
+                "-L",
+                "/var/folders/ts/779j13fj7_x2z167570zvv4c0000gn/T/bsat-industrial-c8ccu_ws/bsat-check/proof.lrat"
+              ],
+              "seconds": 0.14196333289146423,
+              "cpu_seconds": 0.13910799999999976,
+              "children_peak_rss_bytes": 945438720,
+              "returncode": 0,
+              "stdout": "\nc turning on binary mode checking\n\nc parsing input formula with 124906 variables and 353176 clauses\n\nc finished parsing, read 4076 bytes from proof file\n\nc detected empty clause; start verification via backward checking\n\nc 5222 of 353176 clauses in core                            \n\nc 12 of 97 lemmas in core using 25309 resolution steps\n\nc 0 RAT lemmas in core; 492 redundant literals in core lemmas\n\ns VERIFIED\n\nc verification time: 0.135 seconds\n",
+              "stderr": ""
+            },
+            {
+              "command": [
+                "/tmp/bsat-cake-verified-build/cake_lpr",
+                "--CML_HEAP_SIZE=2048",
+                "--CML_STACK_SIZE=512",
+                "/var/folders/ts/779j13fj7_x2z167570zvv4c0000gn/T/bsat-industrial-c8ccu_ws/bsat-check/input.cnf",
+                "/var/folders/ts/779j13fj7_x2z167570zvv4c0000gn/T/bsat-industrial-c8ccu_ws/bsat-check/proof.lrat"
+              ],
+              "seconds": 0.2779427501372993,
+              "cpu_seconds": 0.27156100000000005,
+              "children_peak_rss_bytes": 945438720,
+              "returncode": 0,
+              "stdout": "s VERIFIED UNSAT\n",
+              "stderr": ""
+            }
+          ],
+          "lrat_sha256": "35f28751f3905c2a7c19e3c116b9e73a183ebef557e7578d3aec230b1fe57f67",
+          "seconds": 0.42513033375144005,
+          "rss_scope": "Cumulative child-process high-water RSS, not isolated per-stage peak"
+        }
+      },
+      "fresh_proof_sha256": "0b6cbd7f1a0041cdedc2f9d90324345db597242a3462296e957119b77cabbeda",
+      "export_cpu_seconds": 0.049217999999999984,
+      "bsat_proof_sha256": "fe19f1b165d53d145a2e74f35fcdc042a02d5eca3edbd3e98b6037927fda66a1",
+      "validated": true
+    },
+    {
+      "circuit": "leader_election.3.prop1-back-serstep.aig",
+      "repeat": 0,
+      "flags": 3,
+      "depth": 4,
+      "polarity": -1,
+      "variables": 124906,
+      "clauses": 353175,
+      "result": 10,
+      "incremental_result": 10,
+      "cpu_seconds": 0.037917999999999896,
+      "incremental_cpu_seconds": 0.0073910000000001475,
+      "additions_both_solvers_cpu": 0,
+      "assumptions": [
+        -102873
+      ],
+      "bsat_cpu_overshoot_seconds": 0,
+      "reference_cpu_overshoot_seconds": 0,
+      "within_cpu_budget": true,
+      "reference_within_cpu_budget": true,
+      "stats": {
+        "version": 1,
+        "result": 10,
+        "conflicts": 48,
+        "decisions": 28852,
+        "propagations": 775348,
+        "reused_preparations": 5,
+        "owned_capacity_bytes": 41102812,
+        "cpu_seconds": 0.03789470900000014
+      },
+      "journal_bytes": 4724,
+      "bsat_model_and_simulation": true,
+      "incremental_model_and_simulation": true,
+      "input_sha256": "df14e74b9b2898952afb33c1b5d2b7fe07246feb0794b2727a3212c6e74b20ba",
+      "fresh_result": 10,
+      "fresh_model_and_simulation": true,
+      "export_cpu_seconds": 0.048807000000000045,
+      "validated": true
+    },
+    {
+      "circuit": "leader_election.3.prop1-back-serstep.aig",
+      "repeat": 0,
+      "flags": 3,
+      "depth": 8,
+      "polarity": 1,
+      "variables": 224830,
+      "clauses": 636471,
+      "result": 20,
+      "incremental_result": 20,
+      "cpu_seconds": 1.012248,
+      "incremental_cpu_seconds": 2.755363,
+      "additions_both_solvers_cpu": 0.5094340000000002,
+      "assumptions": [
+        202797
+      ],
+      "bsat_cpu_overshoot_seconds": 0,
+      "reference_cpu_overshoot_seconds": 0,
+      "within_cpu_budget": true,
+      "reference_within_cpu_budget": true,
+      "stats": {
+        "version": 1,
+        "result": 20,
+        "conflicts": 6493,
+        "decisions": 26101,
+        "propagations": 35361674,
+        "reused_preparations": 6,
+        "owned_capacity_bytes": 88250488,
+        "cpu_seconds": 1.012232542
+      },
+      "journal_bytes": 8757702,
+      "input_sha256": "64bf9fd5d4d6aa2bfe9416a034ef03b62c8dc9541299c5173865332e2c485a07",
+      "fresh_result": 20,
+      "certificate_checks": {
+        "fresh-check": {
+          "input_sha256": "64bf9fd5d4d6aa2bfe9416a034ef03b62c8dc9541299c5173865332e2c485a07",
+          "drat_sha256": "12f9bd57d4509a1be93171ffa7b0674b20b47878d573b1ed232ec1db194d203c",
+          "converter_sha256": "9bfc20a5fa9eb2a0ffadd2b0cfc7cdd4a20f6aa9c8d7de5b6c771160b847f630",
+          "checker_sha256": "027e767e8e5543d61671c44f7475e985b7969112e6825d51f2207bf0580cbf5c",
+          "verified": true,
+          "checker_heap_mb": 2048,
+          "checker_stack_mb": 512,
+          "stages": [
+            {
+              "command": [
+                "/tmp/bsat-drat-trim",
+                "/var/folders/ts/779j13fj7_x2z167570zvv4c0000gn/T/bsat-industrial-rfv_bl2b/fresh-check/input.cnf",
+                "/var/folders/ts/779j13fj7_x2z167570zvv4c0000gn/T/bsat-industrial-rfv_bl2b/fresh-check/proof.drat",
+                "-L",
+                "/var/folders/ts/779j13fj7_x2z167570zvv4c0000gn/T/bsat-industrial-rfv_bl2b/fresh-check/proof.lrat"
+              ],
+              "seconds": 3.783536915667355,
+              "cpu_seconds": 3.778906,
+              "children_peak_rss_bytes": 945438720,
+              "returncode": 0,
+              "stdout": "\nc turning on binary mode checking\n\nc parsing input formula with 224830 variables and 636472 clauses\n\nc finished parsing, read 10619350 bytes from proof file\n\nc detected empty clause; start verification via backward checking\n\nc 74743 of 636472 clauses in core                            \n\nc 54447 of 469067 lemmas in core using 3343516 resolution steps\n\nc 133 RAT lemmas in core; 30 redundant literals in core lemmas\n\ns VERIFIED\n\nc verification time: 3.771 seconds\n",
+              "stderr": ""
+            },
+            {
+              "command": [
+                "/tmp/bsat-cake-verified-build/cake_lpr",
+                "--CML_HEAP_SIZE=2048",
+                "--CML_STACK_SIZE=512",
+                "/var/folders/ts/779j13fj7_x2z167570zvv4c0000gn/T/bsat-industrial-rfv_bl2b/fresh-check/input.cnf",
+                "/var/folders/ts/779j13fj7_x2z167570zvv4c0000gn/T/bsat-industrial-rfv_bl2b/fresh-check/proof.lrat"
+              ],
+              "seconds": 0.8779368330724537,
+              "cpu_seconds": 0.8644459999999998,
+              "children_peak_rss_bytes": 2189737984,
+              "returncode": 0,
+              "stdout": "s VERIFIED UNSAT\n",
+              "stderr": ""
+            }
+          ],
+          "lrat_sha256": "0c33813a348aa17bff77a49afe29886cb7589e9ea60988ea246755937a804a9f",
+          "seconds": 4.683623792137951,
+          "rss_scope": "Cumulative child-process high-water RSS, not isolated per-stage peak"
+        },
+        "bsat-check": {
+          "input_sha256": "64bf9fd5d4d6aa2bfe9416a034ef03b62c8dc9541299c5173865332e2c485a07",
+          "drat_sha256": "0f17c35e7de3763c0372883f9644b6544d8bfa80e4021cf1066a6f851dc40fef",
+          "converter_sha256": "9bfc20a5fa9eb2a0ffadd2b0cfc7cdd4a20f6aa9c8d7de5b6c771160b847f630",
+          "checker_sha256": "027e767e8e5543d61671c44f7475e985b7969112e6825d51f2207bf0580cbf5c",
+          "verified": true,
+          "checker_heap_mb": 2048,
+          "checker_stack_mb": 512,
+          "stages": [
+            {
+              "command": [
+                "/tmp/bsat-drat-trim",
+                "/var/folders/ts/779j13fj7_x2z167570zvv4c0000gn/T/bsat-industrial-rfv_bl2b/bsat-check/input.cnf",
+                "/var/folders/ts/779j13fj7_x2z167570zvv4c0000gn/T/bsat-industrial-rfv_bl2b/bsat-check/proof.drat",
+                "-L",
+                "/var/folders/ts/779j13fj7_x2z167570zvv4c0000gn/T/bsat-industrial-rfv_bl2b/bsat-check/proof.lrat"
+              ],
+              "seconds": 1.492369375191629,
+              "cpu_seconds": 1.4867329999999983,
+              "children_peak_rss_bytes": 2189737984,
+              "returncode": 0,
+              "stdout": "\nc turning on binary mode checking\n\nc parsing input formula with 224830 variables and 636472 clauses\n\nc finished parsing, read 8757704 bytes from proof file\n\nc detected empty clause; start verification via backward checking\n\nc 48580 of 636472 clauses in core                            \n\nc 2647 of 6639 lemmas in core using 15199377 resolution steps\n\nc 0 RAT lemmas in core; 1005433 redundant literals in core lemmas\n\ns VERIFIED\n\nc verification time: 1.481 seconds\n",
+              "stderr": ""
+            },
+            {
+              "command": [
+                "/tmp/bsat-cake-verified-build/cake_lpr",
+                "--CML_HEAP_SIZE=2048",
+                "--CML_STACK_SIZE=512",
+                "/var/folders/ts/779j13fj7_x2z167570zvv4c0000gn/T/bsat-industrial-rfv_bl2b/bsat-check/input.cnf",
+                "/var/folders/ts/779j13fj7_x2z167570zvv4c0000gn/T/bsat-industrial-rfv_bl2b/bsat-check/proof.lrat"
+              ],
+              "seconds": 2.0012009157799184,
+              "cpu_seconds": 1.9947100000000006,
+              "children_peak_rss_bytes": 2191622144,
+              "returncode": 0,
+              "stdout": "s VERIFIED UNSAT\n",
+              "stderr": ""
+            }
+          ],
+          "lrat_sha256": "7fea0e209fd2f97328fbe987428f421e39b843899d1bddae6a72a60caf8dc7ef",
+          "seconds": 3.5484957909211516,
+          "rss_scope": "Cumulative child-process high-water RSS, not isolated per-stage peak"
+        }
+      },
+      "fresh_proof_sha256": "12f9bd57d4509a1be93171ffa7b0674b20b47878d573b1ed232ec1db194d203c",
+      "export_cpu_seconds": 0.09330000000000016,
+      "bsat_proof_sha256": "0f17c35e7de3763c0372883f9644b6544d8bfa80e4021cf1066a6f851dc40fef",
+      "validated": true
+    },
+    {
+      "circuit": "leader_election.3.prop1-back-serstep.aig",
+      "repeat": 0,
+      "flags": 3,
+      "depth": 8,
+      "polarity": -1,
+      "variables": 224830,
+      "clauses": 636471,
+      "result": 10,
+      "incremental_result": 10,
+      "cpu_seconds": 0.03980700000000148,
+      "incremental_cpu_seconds": 0.004557000000000144,
+      "additions_both_solvers_cpu": 0,
+      "assumptions": [
+        -202797
+      ],
+      "bsat_cpu_overshoot_seconds": 0,
+      "reference_cpu_overshoot_seconds": 0,
+      "within_cpu_budget": true,
+      "reference_within_cpu_budget": true,
+      "stats": {
+        "version": 1,
+        "result": 10,
+        "conflicts": 89,
+        "decisions": 21737,
+        "propagations": 801015,
+        "reused_preparations": 7,
+        "owned_capacity_bytes": 88267092,
+        "cpu_seconds": 0.03978620799999888
+      },
+      "journal_bytes": 8792659,
+      "bsat_model_and_simulation": true,
+      "incremental_model_and_simulation": true,
+      "input_sha256": "a8398e8c6249b87a2c58f27f8593140466a2be705a28b59e178f0d68fe13c535",
+      "fresh_result": 10,
+      "fresh_model_and_simulation": true,
+      "export_cpu_seconds": 0.08946200000000104,
+      "validated": true
+    },
+    {
+      "circuit": "cal100.aig",
+      "repeat": 0,
+      "flags": 3,
+      "depth": 0,
+      "polarity": 1,
+      "variables": 18568,
+      "clauses": 50028,
+      "result": 20,
+      "incremental_result": 20,
+      "cpu_seconds": 9.799999999948739e-05,
+      "incremental_cpu_seconds": 1.5999999998683734e-05,
+      "additions_both_solvers_cpu": 0.08221600000000073,
+      "assumptions": [
+        3775
+      ],
+      "bsat_cpu_overshoot_seconds": 0,
+      "reference_cpu_overshoot_seconds": 0,
+      "within_cpu_budget": true,
+      "reference_within_cpu_budget": true,
+      "stats": {
+        "version": 1,
+        "result": 20,
+        "conflicts": 0,
+        "decisions": 0,
+        "propagations": 2212,
+        "reused_preparations": 0,
+        "owned_capacity_bytes": 7493734,
+        "cpu_seconds": 8.966699999923833e-05
+      },
+      "journal_bytes": 4,
+      "input_sha256": "d0c5511442e4157096fa5e8b4a7f36f82c52138827020a8f74ff4cc8fa06305a",
+      "fresh_result": 20,
+      "certificate_checks": {
+        "fresh-check": {
+          "input_sha256": "d0c5511442e4157096fa5e8b4a7f36f82c52138827020a8f74ff4cc8fa06305a",
+          "drat_sha256": "1448be06075086b6446c2076d17feb5ec6d108f3c0ea902f181882258f3e5e56",
+          "converter_sha256": "9bfc20a5fa9eb2a0ffadd2b0cfc7cdd4a20f6aa9c8d7de5b6c771160b847f630",
+          "checker_sha256": "027e767e8e5543d61671c44f7475e985b7969112e6825d51f2207bf0580cbf5c",
+          "verified": true,
+          "checker_heap_mb": 2048,
+          "checker_stack_mb": 512,
+          "stages": [
+            {
+              "command": [
+                "/tmp/bsat-drat-trim",
+                "/var/folders/ts/779j13fj7_x2z167570zvv4c0000gn/T/bsat-industrial-27fgzxe0/fresh-check/input.cnf",
+                "/var/folders/ts/779j13fj7_x2z167570zvv4c0000gn/T/bsat-industrial-27fgzxe0/fresh-check/proof.drat",
+                "-L",
+                "/var/folders/ts/779j13fj7_x2z167570zvv4c0000gn/T/bsat-industrial-27fgzxe0/fresh-check/proof.lrat"
+              ],
+              "seconds": 0.04020895902067423,
+              "cpu_seconds": 0.03592200000000079,
+              "children_peak_rss_bytes": 2191622144,
+              "returncode": 0,
+              "stdout": "\nc turning on binary mode checking\n\nc parsing input formula with 18568 variables and 50029 clauses\n\nc finished parsing, read 94174 bytes from proof file\n\nc UNSAT via unit propagation on the input instance\n\nc 3 of 50029 clauses in core                            \n\nc 1 of 4012 lemmas in core using 3 resolution steps\n\nc 0 RAT lemmas in core; 0 redundant literals in core lemmas\n\ns VERIFIED\n\nc verification time: 0.034 seconds\n",
+              "stderr": ""
+            },
+            {
+              "command": [
+                "/tmp/bsat-cake-verified-build/cake_lpr",
+                "--CML_HEAP_SIZE=2048",
+                "--CML_STACK_SIZE=512",
+                "/var/folders/ts/779j13fj7_x2z167570zvv4c0000gn/T/bsat-industrial-27fgzxe0/fresh-check/input.cnf",
+                "/var/folders/ts/779j13fj7_x2z167570zvv4c0000gn/T/bsat-industrial-27fgzxe0/fresh-check/proof.lrat"
+              ],
+              "seconds": 0.038351917173713446,
+              "cpu_seconds": 0.03391799999999967,
+              "children_peak_rss_bytes": 2191622144,
+              "returncode": 0,
+              "stdout": "s VERIFIED UNSAT\n",
+              "stderr": ""
+            }
+          ],
+          "lrat_sha256": "cdad4a2f082cb8e435136dd2b91a2ad264f1cad8aa9d3625147ca80afeb21a07",
+          "seconds": 0.08012304082512856,
+          "rss_scope": "Cumulative child-process high-water RSS, not isolated per-stage peak"
+        },
+        "bsat-check": {
+          "input_sha256": "d0c5511442e4157096fa5e8b4a7f36f82c52138827020a8f74ff4cc8fa06305a",
+          "drat_sha256": "b30b2d7d01b05f3f0b2a27782994493e7b323a9620fd7b528d6038d722b78711",
+          "converter_sha256": "9bfc20a5fa9eb2a0ffadd2b0cfc7cdd4a20f6aa9c8d7de5b6c771160b847f630",
+          "checker_sha256": "027e767e8e5543d61671c44f7475e985b7969112e6825d51f2207bf0580cbf5c",
+          "verified": true,
+          "checker_heap_mb": 2048,
+          "checker_stack_mb": 512,
+          "stages": [
+            {
+              "command": [
+                "/tmp/bsat-drat-trim",
+                "/var/folders/ts/779j13fj7_x2z167570zvv4c0000gn/T/bsat-industrial-27fgzxe0/bsat-check/input.cnf",
+                "/var/folders/ts/779j13fj7_x2z167570zvv4c0000gn/T/bsat-industrial-27fgzxe0/bsat-check/proof.drat",
+                "-L",
+                "/var/folders/ts/779j13fj7_x2z167570zvv4c0000gn/T/bsat-industrial-27fgzxe0/bsat-check/proof.lrat"
+              ],
+              "seconds": 0.03673925017938018,
+              "cpu_seconds": 0.03245499999999957,
+              "children_peak_rss_bytes": 2191622144,
+              "returncode": 0,
+              "stdout": "\nc turning on binary mode checking\n\nc parsing input formula with 18568 variables and 50029 clauses\n\nc finished parsing, read 6 bytes from proof file\n\nc UNSAT via unit propagation on the input instance\n\nc 3 of 50029 clauses in core                            \n\nc 1 of 3 lemmas in core using 3 resolution steps\n\nc 0 RAT lemmas in core; 0 redundant literals in core lemmas\n\ns VERIFIED\n\nc verification time: 0.030 seconds\n",
+              "stderr": ""
+            },
+            {
+              "command": [
+                "/tmp/bsat-cake-verified-build/cake_lpr",
+                "--CML_HEAP_SIZE=2048",
+                "--CML_STACK_SIZE=512",
+                "/var/folders/ts/779j13fj7_x2z167570zvv4c0000gn/T/bsat-industrial-27fgzxe0/bsat-check/input.cnf",
+                "/var/folders/ts/779j13fj7_x2z167570zvv4c0000gn/T/bsat-industrial-27fgzxe0/bsat-check/proof.lrat"
+              ],
+              "seconds": 0.03939062496647239,
+              "cpu_seconds": 0.034816000000000846,
+              "children_peak_rss_bytes": 2191622144,
+              "returncode": 0,
+              "stdout": "s VERIFIED UNSAT\n",
+              "stderr": ""
+            }
+          ],
+          "lrat_sha256": "02cbeca4e319c1176372601937981f1bb127ff6bb9eecab6185442b0f198f18f",
+          "seconds": 0.07761258305981755,
+          "rss_scope": "Cumulative child-process high-water RSS, not isolated per-stage peak"
+        }
+      },
+      "fresh_proof_sha256": "1448be06075086b6446c2076d17feb5ec6d108f3c0ea902f181882258f3e5e56",
+      "export_cpu_seconds": 0.006825000000000969,
+      "bsat_proof_sha256": "b30b2d7d01b05f3f0b2a27782994493e7b323a9620fd7b528d6038d722b78711",
+      "validated": true
+    },
+    {
+      "circuit": "cal100.aig",
+      "repeat": 0,
+      "flags": 3,
+      "depth": 0,
+      "polarity": -1,
+      "variables": 18568,
+      "clauses": 50028,
+      "result": 10,
+      "incremental_result": 10,
+      "cpu_seconds": 0.0015370000000007877,
+      "incremental_cpu_seconds": 0.0007760000000001099,
+      "additions_both_solvers_cpu": 0,
+      "assumptions": [
+        -3775
+      ],
+      "bsat_cpu_overshoot_seconds": 0,
+      "reference_cpu_overshoot_seconds": 0,
+      "within_cpu_budget": true,
+      "reference_within_cpu_budget": true,
+      "stats": {
+        "version": 1,
+        "result": 10,
+        "conflicts": 3,
+        "decisions": 1898,
+        "propagations": 20727,
+        "reused_preparations": 1,
+        "owned_capacity_bytes": 7502466,
+        "cpu_seconds": 0.0015290840000012906
+      },
+      "journal_bytes": 24,
+      "bsat_model_and_simulation": true,
+      "incremental_model_and_simulation": true,
+      "input_sha256": "5e80af96c085c715c954a58abc35979a505a054e6c1ce2bd28603c50a42c6fe0",
+      "fresh_result": 10,
+      "fresh_model_and_simulation": true,
+      "export_cpu_seconds": 0.007135999999999143,
+      "validated": true
+    },
+    {
+      "circuit": "cal100.aig",
+      "repeat": 0,
+      "flags": 3,
+      "depth": 2,
+      "polarity": 1,
+      "variables": 55702,
+      "clauses": 151518,
+      "result": 20,
+      "incremental_result": 20,
+      "cpu_seconds": 0.25699200000000033,
+      "incremental_cpu_seconds": 0.21741700000000108,
+      "additions_both_solvers_cpu": 0.17358600000000024,
+      "assumptions": [
+        40909
+      ],
+      "bsat_cpu_overshoot_seconds": 0,
+      "reference_cpu_overshoot_seconds": 0,
+      "within_cpu_budget": true,
+      "reference_within_cpu_budget": true,
+      "stats": {
+        "version": 1,
+        "result": 20,
+        "conflicts": 6905,
+        "decisions": 49584,
+        "propagations": 5287764,
+        "reused_preparations": 2,
+        "owned_capacity_bytes": 19845052,
+        "cpu_seconds": 0.2569782089999997
+      },
+      "journal_bytes": 3970782,
+      "input_sha256": "d66de9fd109a770db180027a0772ec1b76488f0ad218c89652c60074256e9415",
+      "fresh_result": 20,
+      "certificate_checks": {
+        "fresh-check": {
+          "input_sha256": "d66de9fd109a770db180027a0772ec1b76488f0ad218c89652c60074256e9415",
+          "drat_sha256": "e5fea3c357068366f5ba8b5323efd73cd809aa8e6ba4667679ef59bf82f76022",
+          "converter_sha256": "9bfc20a5fa9eb2a0ffadd2b0cfc7cdd4a20f6aa9c8d7de5b6c771160b847f630",
+          "checker_sha256": "027e767e8e5543d61671c44f7475e985b7969112e6825d51f2207bf0580cbf5c",
+          "verified": true,
+          "checker_heap_mb": 2048,
+          "checker_stack_mb": 512,
+          "stages": [
+            {
+              "command": [
+                "/tmp/bsat-drat-trim",
+                "/var/folders/ts/779j13fj7_x2z167570zvv4c0000gn/T/bsat-industrial-ligbbavm/fresh-check/input.cnf",
+                "/var/folders/ts/779j13fj7_x2z167570zvv4c0000gn/T/bsat-industrial-ligbbavm/fresh-check/proof.drat",
+                "-L",
+                "/var/folders/ts/779j13fj7_x2z167570zvv4c0000gn/T/bsat-industrial-ligbbavm/fresh-check/proof.lrat"
+              ],
+              "seconds": 0.14143870817497373,
+              "cpu_seconds": 0.13707999999999942,
+              "children_peak_rss_bytes": 2191622144,
+              "returncode": 0,
+              "stdout": "\nc turning on binary mode checking\n\nc parsing input formula with 55702 variables and 151519 clauses\n\nc finished parsing, read 1904303 bytes from proof file\n\nc detected empty clause; start verification via backward checking\n\nc 10191 of 151519 clauses in core                            \n\nc 4366 of 95830 lemmas in core using 177164 resolution steps\n\nc 0 RAT lemmas in core; 0 redundant literals in core lemmas\n\ns VERIFIED\n\nc verification time: 0.134 seconds\n",
+              "stderr": ""
+            },
+            {
+              "command": [
+                "/tmp/bsat-cake-verified-build/cake_lpr",
+                "--CML_HEAP_SIZE=2048",
+                "--CML_STACK_SIZE=512",
+                "/var/folders/ts/779j13fj7_x2z167570zvv4c0000gn/T/bsat-industrial-ligbbavm/fresh-check/input.cnf",
+                "/var/folders/ts/779j13fj7_x2z167570zvv4c0000gn/T/bsat-industrial-ligbbavm/fresh-check/proof.lrat"
+              ],
+              "seconds": 0.14144708262756467,
+              "cpu_seconds": 0.13532800000000178,
+              "children_peak_rss_bytes": 2191622144,
+              "returncode": 0,
+              "stdout": "s VERIFIED UNSAT\n",
+              "stderr": ""
+            }
+          ],
+          "lrat_sha256": "984179665c4d904676d0485e7a91dbc3a5cd5939ae98db73ffb62b51d821c703",
+          "seconds": 0.28720262506976724,
+          "rss_scope": "Cumulative child-process high-water RSS, not isolated per-stage peak"
+        },
+        "bsat-check": {
+          "input_sha256": "d66de9fd109a770db180027a0772ec1b76488f0ad218c89652c60074256e9415",
+          "drat_sha256": "0b768db6ef6c334c724e5e1342f431da5c4980b856f7bf60bdb91bcf2f7446b6",
+          "converter_sha256": "9bfc20a5fa9eb2a0ffadd2b0cfc7cdd4a20f6aa9c8d7de5b6c771160b847f630",
+          "checker_sha256": "027e767e8e5543d61671c44f7475e985b7969112e6825d51f2207bf0580cbf5c",
+          "verified": true,
+          "checker_heap_mb": 2048,
+          "checker_stack_mb": 512,
+          "stages": [
+            {
+              "command": [
+                "/tmp/bsat-drat-trim",
+                "/var/folders/ts/779j13fj7_x2z167570zvv4c0000gn/T/bsat-industrial-ligbbavm/bsat-check/input.cnf",
+                "/var/folders/ts/779j13fj7_x2z167570zvv4c0000gn/T/bsat-industrial-ligbbavm/bsat-check/proof.drat",
+                "-L",
+                "/var/folders/ts/779j13fj7_x2z167570zvv4c0000gn/T/bsat-industrial-ligbbavm/bsat-check/proof.lrat"
+              ],
+              "seconds": 0.4468212090432644,
+              "cpu_seconds": 0.4420639999999991,
+              "children_peak_rss_bytes": 2191622144,
+              "returncode": 0,
+              "stdout": "\nc turning on binary mode checking\n\nc parsing input formula with 55702 variables and 151519 clauses\n\nc finished parsing, read 3970784 bytes from proof file\n\nc detected empty clause; start verification via backward checking\n\nc 10663 of 151519 clauses in core                            \n\nc 4355 of 6912 lemmas in core using 1123177 resolution steps\n\nc 0 RAT lemmas in core; 126048 redundant literals in core lemmas\n\ns VERIFIED\n\nc verification time: 0.439 seconds\n",
+              "stderr": ""
+            },
+            {
+              "command": [
+                "/tmp/bsat-cake-verified-build/cake_lpr",
+                "--CML_HEAP_SIZE=2048",
+                "--CML_STACK_SIZE=512",
+                "/var/folders/ts/779j13fj7_x2z167570zvv4c0000gn/T/bsat-industrial-ligbbavm/bsat-check/input.cnf",
+                "/var/folders/ts/779j13fj7_x2z167570zvv4c0000gn/T/bsat-industrial-ligbbavm/bsat-check/proof.lrat"
+              ],
+              "seconds": 0.3086079158820212,
+              "cpu_seconds": 0.3012940000000003,
+              "children_peak_rss_bytes": 2191622144,
+              "returncode": 0,
+              "stdout": "s VERIFIED UNSAT\n",
+              "stderr": ""
+            }
+          ],
+          "lrat_sha256": "eaf3076a8715a8c4c65d76aaa1a974a249f08f21972a2122fa5da6587a6cecc1",
+          "seconds": 0.7642234577797353,
+          "rss_scope": "Cumulative child-process high-water RSS, not isolated per-stage peak"
+        }
+      },
+      "fresh_proof_sha256": "e5fea3c357068366f5ba8b5323efd73cd809aa8e6ba4667679ef59bf82f76022",
+      "export_cpu_seconds": 0.021758999999999418,
+      "bsat_proof_sha256": "0b768db6ef6c334c724e5e1342f431da5c4980b856f7bf60bdb91bcf2f7446b6",
+      "validated": true
+    },
+    {
+      "circuit": "cal100.aig",
+      "repeat": 0,
+      "flags": 3,
+      "depth": 2,
+      "polarity": -1,
+      "variables": 55702,
+      "clauses": 151518,
+      "result": 10,
+      "incremental_result": 10,
+      "cpu_seconds": 0.005115999999999232,
+      "incremental_cpu_seconds": 0.0021279999999990196,
+      "additions_both_solvers_cpu": 0,
+      "assumptions": [
+        -40909
+      ],
+      "bsat_cpu_overshoot_seconds": 0,
+      "reference_cpu_overshoot_seconds": 0,
+      "within_cpu_budget": true,
+      "reference_within_cpu_budget": true,
+      "stats": {
+        "version": 1,
+        "result": 10,
+        "conflicts": 3,
+        "decisions": 4488,
+        "propagations": 56402,
+        "reused_preparations": 3,
+        "owned_capacity_bytes": 19845912,
+        "cpu_seconds": 0.005100084000000393
+      },
+      "journal_bytes": 3970857,
+      "bsat_model_and_simulation": true,
+      "incremental_model_and_simulation": true,
+      "input_sha256": "4faca6ec4570325b5ba5558bbde03c06653233263567afd358107b7e51f1f196",
+      "fresh_result": 10,
+      "fresh_model_and_simulation": true,
+      "export_cpu_seconds": 0.022396000000000527,
+      "validated": true
+    },
+    {
+      "circuit": "cal100.aig",
+      "repeat": 0,
+      "flags": 3,
+      "depth": 4,
+      "polarity": 1,
+      "variables": 92836,
+      "clauses": 253008,
+      "result": 20,
+      "incremental_result": 20,
+      "cpu_seconds": 4.829222999999999,
+      "incremental_cpu_seconds": 0.8570779999999978,
+      "additions_both_solvers_cpu": 0.1751290000000001,
+      "assumptions": [
+        78043
+      ],
+      "bsat_cpu_overshoot_seconds": 0,
+      "reference_cpu_overshoot_seconds": 0,
+      "within_cpu_budget": true,
+      "reference_within_cpu_budget": true,
+      "stats": {
+        "version": 1,
+        "result": 20,
+        "conflicts": 112437,
+        "decisions": 397375,
+        "propagations": 108578870,
+        "reused_preparations": 4,
+        "owned_capacity_bytes": 36093690,
+        "cpu_seconds": 4.829206959000002
+      },
+      "journal_bytes": 69158594,
+      "input_sha256": "7197f4d20b993ddf28d9cd39632a3898ac8b65d8434bb032f90e3349a3bbc3ec",
+      "fresh_result": 20,
+      "certificate_checks": {
+        "fresh-check": {
+          "input_sha256": "7197f4d20b993ddf28d9cd39632a3898ac8b65d8434bb032f90e3349a3bbc3ec",
+          "drat_sha256": "e0d45d86683adf15bc034a85a036eb9fb412f355d67e9169a1eeb38b51636047",
+          "converter_sha256": "9bfc20a5fa9eb2a0ffadd2b0cfc7cdd4a20f6aa9c8d7de5b6c771160b847f630",
+          "checker_sha256": "027e767e8e5543d61671c44f7475e985b7969112e6825d51f2207bf0580cbf5c",
+          "verified": true,
+          "checker_heap_mb": 2048,
+          "checker_stack_mb": 512,
+          "stages": [
+            {
+              "command": [
+                "/tmp/bsat-drat-trim",
+                "/var/folders/ts/779j13fj7_x2z167570zvv4c0000gn/T/bsat-industrial-7zzik69j/fresh-check/input.cnf",
+                "/var/folders/ts/779j13fj7_x2z167570zvv4c0000gn/T/bsat-industrial-7zzik69j/fresh-check/proof.drat",
+                "-L",
+                "/var/folders/ts/779j13fj7_x2z167570zvv4c0000gn/T/bsat-industrial-7zzik69j/fresh-check/proof.lrat"
+              ],
+              "seconds": 1.333498166874051,
+              "cpu_seconds": 1.3282830000000003,
+              "children_peak_rss_bytes": 2191622144,
+              "returncode": 0,
+              "stdout": "\nc turning on binary mode checking\n\nc parsing input formula with 92836 variables and 253009 clauses\n\nc finished parsing, read 15876291 bytes from proof file\n\nc detected empty clause; start verification via backward checking\n\nc 29708 of 253009 clauses in core                            \n\nc 54866 of 401420 lemmas in core using 2059005 resolution steps\n\nc 560 RAT lemmas in core; 0 redundant literals in core lemmas\n\ns VERIFIED\n\nc verification time: 1.324 seconds\n",
+              "stderr": ""
+            },
+            {
+              "command": [
+                "/tmp/bsat-cake-verified-build/cake_lpr",
+                "--CML_HEAP_SIZE=2048",
+                "--CML_STACK_SIZE=512",
+                "/var/folders/ts/779j13fj7_x2z167570zvv4c0000gn/T/bsat-industrial-7zzik69j/fresh-check/input.cnf",
+                "/var/folders/ts/779j13fj7_x2z167570zvv4c0000gn/T/bsat-industrial-7zzik69j/fresh-check/proof.lrat"
+              ],
+              "seconds": 0.5436815838329494,
+              "cpu_seconds": 0.5336710000000013,
+              "children_peak_rss_bytes": 2191622144,
+              "returncode": 0,
+              "stdout": "s VERIFIED UNSAT\n",
+              "stderr": ""
+            }
+          ],
+          "lrat_sha256": "f7450516bc19074ff79d46f0a08ee040daa02172af7a85b0e786bfabf640cc1f",
+          "seconds": 1.896015957929194,
+          "rss_scope": "Cumulative child-process high-water RSS, not isolated per-stage peak"
+        },
+        "bsat-check": {
+          "input_sha256": "7197f4d20b993ddf28d9cd39632a3898ac8b65d8434bb032f90e3349a3bbc3ec",
+          "drat_sha256": "beedbaef96a34d0c21adaef6964b1570fa2dd405616c1a9de6f6b15a613297db",
+          "converter_sha256": "9bfc20a5fa9eb2a0ffadd2b0cfc7cdd4a20f6aa9c8d7de5b6c771160b847f630",
+          "checker_sha256": "027e767e8e5543d61671c44f7475e985b7969112e6825d51f2207bf0580cbf5c",
+          "verified": true,
+          "checker_heap_mb": 2048,
+          "checker_stack_mb": 512,
+          "stages": [
+            {
+              "command": [
+                "/tmp/bsat-drat-trim",
+                "/var/folders/ts/779j13fj7_x2z167570zvv4c0000gn/T/bsat-industrial-7zzik69j/bsat-check/input.cnf",
+                "/var/folders/ts/779j13fj7_x2z167570zvv4c0000gn/T/bsat-industrial-7zzik69j/bsat-check/proof.drat",
+                "-L",
+                "/var/folders/ts/779j13fj7_x2z167570zvv4c0000gn/T/bsat-industrial-7zzik69j/bsat-check/proof.lrat"
+              ],
+              "seconds": 4.1576379160396755,
+              "cpu_seconds": 4.150623,
+              "children_peak_rss_bytes": 2191622144,
+              "returncode": 0,
+              "stdout": "\nc turning on binary mode checking\n\nc parsing input formula with 92836 variables and 253009 clauses\n\nc finished parsing, read 69158596 bytes from proof file\n\nc detected empty clause; start verification via backward checking\n\nc 33486 of 253009 clauses in core                            \n\nc 29738 of 119353 lemmas in core using 7795758 resolution steps\n\nc 0 RAT lemmas in core; 294890 redundant literals in core lemmas\n\ns VERIFIED\n\nc verification time: 4.148 seconds\n",
+              "stderr": ""
+            },
+            {
+              "command": [
+                "/tmp/bsat-cake-verified-build/cake_lpr",
+                "--CML_HEAP_SIZE=2048",
+                "--CML_STACK_SIZE=512",
+                "/var/folders/ts/779j13fj7_x2z167570zvv4c0000gn/T/bsat-industrial-7zzik69j/bsat-check/input.cnf",
+                "/var/folders/ts/779j13fj7_x2z167570zvv4c0000gn/T/bsat-industrial-7zzik69j/bsat-check/proof.lrat"
+              ],
+              "seconds": 1.6299832500517368,
+              "cpu_seconds": 1.6159160000000035,
+              "children_peak_rss_bytes": 2191622144,
+              "returncode": 0,
+              "stdout": "s VERIFIED UNSAT\n",
+              "stderr": ""
+            }
+          ],
+          "lrat_sha256": "f8eb874fcb3f0c5cd8968c28cb964a84b8546e51ba15e2d4bb16b2626c4bdd89",
+          "seconds": 5.859860165975988,
+          "rss_scope": "Cumulative child-process high-water RSS, not isolated per-stage peak"
+        }
+      },
+      "fresh_proof_sha256": "e0d45d86683adf15bc034a85a036eb9fb412f355d67e9169a1eeb38b51636047",
+      "export_cpu_seconds": 0.046219000000000676,
+      "bsat_proof_sha256": "beedbaef96a34d0c21adaef6964b1570fa2dd405616c1a9de6f6b15a613297db",
+      "validated": true
+    },
+    {
+      "circuit": "cal100.aig",
+      "repeat": 0,
+      "flags": 3,
+      "depth": 4,
+      "polarity": -1,
+      "variables": 92836,
+      "clauses": 253008,
+      "result": 10,
+      "incremental_result": 10,
+      "cpu_seconds": 0.013480000000001269,
+      "incremental_cpu_seconds": 0.0004469999999976437,
+      "additions_both_solvers_cpu": 0,
+      "assumptions": [
+        -78043
+      ],
+      "bsat_cpu_overshoot_seconds": 0,
+      "reference_cpu_overshoot_seconds": 0,
+      "within_cpu_budget": true,
+      "reference_within_cpu_budget": true,
+      "stats": {
+        "version": 1,
+        "result": 10,
+        "conflicts": 102,
+        "decisions": 9192,
+        "propagations": 305103,
+        "reused_preparations": 5,
+        "owned_capacity_bytes": 36096182,
+        "cpu_seconds": 0.013464666999997377
+      },
+      "journal_bytes": 69161507,
+      "bsat_model_and_simulation": true,
+      "incremental_model_and_simulation": true,
+      "input_sha256": "1c83c94c97cdf77931d7931ef6e8a90b883863210781bd9443e18e14249d712d",
+      "fresh_result": 10,
+      "fresh_model_and_simulation": true,
+      "export_cpu_seconds": 0.04687200000000047,
+      "validated": true
+    },
+    {
+      "circuit": "cal100.aig",
+      "repeat": 0,
+      "flags": 3,
+      "depth": 8,
+      "polarity": 1,
+      "variables": 167104,
+      "clauses": 455988,
+      "result": 0,
+      "incremental_result": 0,
+      "cpu_seconds": 10.000412,
+      "incremental_cpu_seconds": 10.000023999999996,
+      "additions_both_solvers_cpu": 0.3695629999999994,
+      "assumptions": [
+        152311
+      ],
+      "bsat_cpu_overshoot_seconds": 0.0004120000000007451,
+      "reference_cpu_overshoot_seconds": 2.3999999996249244e-05,
+      "within_cpu_budget": false,
+      "reference_within_cpu_budget": false,
+      "stats": {
+        "version": 1,
+        "result": 0,
+        "conflicts": 144551,
+        "decisions": 860101,
+        "propagations": 313609111,
+        "reused_preparations": 6,
+        "owned_capacity_bytes": 69100462,
+        "cpu_seconds": 10.000395541
+      },
+      "journal_bytes": 101616888,
+      "input_sha256": "12a2ba66f0be134a09083c9a10a5facb7343d9c19d18b61e7543c4159287df37",
+      "fresh_result": 20,
+      "certificate_checks": {
+        "fresh-check": {
+          "input_sha256": "12a2ba66f0be134a09083c9a10a5facb7343d9c19d18b61e7543c4159287df37",
+          "drat_sha256": "06bf02863802c13641da81e486de955ceb2a065b7785354675111767e35d12b9",
+          "converter_sha256": "9bfc20a5fa9eb2a0ffadd2b0cfc7cdd4a20f6aa9c8d7de5b6c771160b847f630",
+          "checker_sha256": "027e767e8e5543d61671c44f7475e985b7969112e6825d51f2207bf0580cbf5c",
+          "verified": true,
+          "checker_heap_mb": 2048,
+          "checker_stack_mb": 512,
+          "stages": [
+            {
+              "command": [
+                "/tmp/bsat-drat-trim",
+                "/var/folders/ts/779j13fj7_x2z167570zvv4c0000gn/T/bsat-industrial-69u5hp6j/fresh-check/input.cnf",
+                "/var/folders/ts/779j13fj7_x2z167570zvv4c0000gn/T/bsat-industrial-69u5hp6j/fresh-check/proof.drat",
+                "-L",
+                "/var/folders/ts/779j13fj7_x2z167570zvv4c0000gn/T/bsat-industrial-69u5hp6j/fresh-check/proof.lrat"
+              ],
+              "seconds": 20.70822524977848,
+              "cpu_seconds": 20.700756,
+              "children_peak_rss_bytes": 2191622144,
+              "returncode": 0,
+              "stdout": "\nc turning on binary mode checking\n\nc parsing input formula with 167104 variables and 455989 clauses\n\nc finished parsing, read 112338273 bytes from proof file\n\nc detected empty clause; start verification via backward checking\n\nc 127326 of 455989 clauses in core                            \n\nc 457751 of 1426556 lemmas in core using 20283306 resolution steps\n\nc 5043 RAT lemmas in core; 0 redundant literals in core lemmas\n\ns VERIFIED\n\nc verification time: 20.693 seconds\n",
+              "stderr": ""
+            },
+            {
+              "command": [
+                "/tmp/bsat-cake-verified-build/cake_lpr",
+                "--CML_HEAP_SIZE=2048",
+                "--CML_STACK_SIZE=512",
+                "/var/folders/ts/779j13fj7_x2z167570zvv4c0000gn/T/bsat-industrial-69u5hp6j/fresh-check/input.cnf",
+                "/var/folders/ts/779j13fj7_x2z167570zvv4c0000gn/T/bsat-industrial-69u5hp6j/fresh-check/proof.lrat"
+              ],
+              "seconds": 4.098513459321111,
+              "cpu_seconds": 4.092870999999995,
+              "children_peak_rss_bytes": 2191622144,
+              "returncode": 0,
+              "stdout": "s VERIFIED UNSAT\n",
+              "stderr": ""
+            }
+          ],
+          "lrat_sha256": "b5e3ba85c1269b903f704b6d1daaaacc6d9b771b3030fe999ae12f48eecf4b41",
+          "seconds": 24.94647075003013,
+          "rss_scope": "Cumulative child-process high-water RSS, not isolated per-stage peak"
+        }
+      },
+      "fresh_proof_sha256": "06bf02863802c13641da81e486de955ceb2a065b7785354675111767e35d12b9",
+      "validated": true
+    },
+    {
+      "circuit": "cal100.aig",
+      "repeat": 0,
+      "flags": 3,
+      "depth": 8,
+      "polarity": -1,
+      "variables": 167104,
+      "clauses": 455988,
+      "result": 10,
+      "incremental_result": 10,
+      "cpu_seconds": 0.07640399999999659,
+      "incremental_cpu_seconds": 0.0073080000000018686,
+      "additions_both_solvers_cpu": 0,
+      "assumptions": [
+        -152311
+      ],
+      "bsat_cpu_overshoot_seconds": 0,
+      "reference_cpu_overshoot_seconds": 0,
+      "within_cpu_budget": true,
+      "reference_within_cpu_budget": true,
+      "stats": {
+        "version": 1,
+        "result": 10,
+        "conflicts": 100,
+        "decisions": 67215,
+        "propagations": 987712,
+        "reused_preparations": 6,
+        "owned_capacity_bytes": 60749966,
+        "cpu_seconds": 0.07638012500000002
+      },
+      "journal_bytes": 101618967,
+      "bsat_model_and_simulation": true,
+      "incremental_model_and_simulation": true,
+      "input_sha256": "5a99c8e119cdb7b0a719ae1fa38c646b5fd89e0d7202a34ddca521f2ccaa35e3",
+      "fresh_result": 10,
+      "fresh_model_and_simulation": true,
+      "export_cpu_seconds": 0.0797019999999975,
+      "validated": true
+    },
+    {
+      "circuit": "h_b05.aig",
+      "repeat": 0,
+      "flags": 3,
+      "depth": 0,
+      "polarity": 1,
+      "variables": 16769,
+      "clauses": 37439,
+      "result": 20,
+      "incremental_result": 20,
+      "cpu_seconds": 0.00013200000000068712,
+      "incremental_cpu_seconds": 1.4000000000180535e-05,
+      "additions_both_solvers_cpu": 0.06200199999999967,
+      "assumptions": [
+        -4340
+      ],
+      "bsat_cpu_overshoot_seconds": 0,
+      "reference_cpu_overshoot_seconds": 0,
+      "within_cpu_budget": true,
+      "reference_within_cpu_budget": true,
+      "stats": {
+        "version": 1,
+        "result": 20,
+        "conflicts": 0,
+        "decisions": 0,
+        "propagations": 5665,
+        "reused_preparations": 0,
+        "owned_capacity_bytes": 6080415,
+        "cpu_seconds": 0.0001258329999984653
+      },
+      "journal_bytes": 4,
+      "input_sha256": "e33049abcf0610249e0fad5f476208bbffa8fc0b576afd1b7549099220833205",
+      "fresh_result": 20,
+      "certificate_checks": {
+        "fresh-check": {
+          "input_sha256": "e33049abcf0610249e0fad5f476208bbffa8fc0b576afd1b7549099220833205",
+          "drat_sha256": "3b27856a2d2088dc59a37af74b76c7cec0f5a4f7208de5688dda07464933866e",
+          "converter_sha256": "9bfc20a5fa9eb2a0ffadd2b0cfc7cdd4a20f6aa9c8d7de5b6c771160b847f630",
+          "checker_sha256": "027e767e8e5543d61671c44f7475e985b7969112e6825d51f2207bf0580cbf5c",
+          "verified": true,
+          "checker_heap_mb": 2048,
+          "checker_stack_mb": 512,
+          "stages": [
+            {
+              "command": [
+                "/tmp/bsat-drat-trim",
+                "/var/folders/ts/779j13fj7_x2z167570zvv4c0000gn/T/bsat-industrial-wofhvpe2/fresh-check/input.cnf",
+                "/var/folders/ts/779j13fj7_x2z167570zvv4c0000gn/T/bsat-industrial-wofhvpe2/fresh-check/proof.drat",
+                "-L",
+                "/var/folders/ts/779j13fj7_x2z167570zvv4c0000gn/T/bsat-industrial-wofhvpe2/fresh-check/proof.lrat"
+              ],
+              "seconds": 0.03663345891982317,
+              "cpu_seconds": 0.0333129999999946,
+              "children_peak_rss_bytes": 2191622144,
+              "returncode": 0,
+              "stdout": "\nc turning on binary mode checking\n\nc parsing input formula with 16769 variables and 37440 clauses\n\nc finished parsing, read 315889 bytes from proof file\n\nc UNSAT via unit propagation on the input instance\n\nc 9 of 37440 clauses in core                            \n\nc 1 of 12408 lemmas in core using 9 resolution steps\n\nc 0 RAT lemmas in core; 0 redundant literals in core lemmas\n\ns VERIFIED\n\nc verification time: 0.032 seconds\n",
+              "stderr": ""
+            },
+            {
+              "command": [
+                "/tmp/bsat-cake-verified-build/cake_lpr",
+                "--CML_HEAP_SIZE=2048",
+                "--CML_STACK_SIZE=512",
+                "/var/folders/ts/779j13fj7_x2z167570zvv4c0000gn/T/bsat-industrial-wofhvpe2/fresh-check/input.cnf",
+                "/var/folders/ts/779j13fj7_x2z167570zvv4c0000gn/T/bsat-industrial-wofhvpe2/fresh-check/proof.lrat"
+              ],
+              "seconds": 0.0316876252181828,
+              "cpu_seconds": 0.02721800000000507,
+              "children_peak_rss_bytes": 2191622144,
+              "returncode": 0,
+              "stdout": "s VERIFIED UNSAT\n",
+              "stderr": ""
+            }
+          ],
+          "lrat_sha256": "fc9ad06c02c82aa997a4962d99074230c6720a467f2870434077b1d4c15bdf5d",
+          "seconds": 0.06967612495645881,
+          "rss_scope": "Cumulative child-process high-water RSS, not isolated per-stage peak"
+        },
+        "bsat-check": {
+          "input_sha256": "e33049abcf0610249e0fad5f476208bbffa8fc0b576afd1b7549099220833205",
+          "drat_sha256": "059c9faafd7d8f6e7dd6f99d29945cb4a9d8c4a374e5ae2baca99a93ac0a5ee3",
+          "converter_sha256": "9bfc20a5fa9eb2a0ffadd2b0cfc7cdd4a20f6aa9c8d7de5b6c771160b847f630",
+          "checker_sha256": "027e767e8e5543d61671c44f7475e985b7969112e6825d51f2207bf0580cbf5c",
+          "verified": true,
+          "checker_heap_mb": 2048,
+          "checker_stack_mb": 512,
+          "stages": [
+            {
+              "command": [
+                "/tmp/bsat-drat-trim",
+                "/var/folders/ts/779j13fj7_x2z167570zvv4c0000gn/T/bsat-industrial-wofhvpe2/bsat-check/input.cnf",
+                "/var/folders/ts/779j13fj7_x2z167570zvv4c0000gn/T/bsat-industrial-wofhvpe2/bsat-check/proof.drat",
+                "-L",
+                "/var/folders/ts/779j13fj7_x2z167570zvv4c0000gn/T/bsat-industrial-wofhvpe2/bsat-check/proof.lrat"
+              ],
+              "seconds": 0.034627458080649376,
+              "cpu_seconds": 0.030542999999997322,
+              "children_peak_rss_bytes": 2191622144,
+              "returncode": 0,
+              "stdout": "\nc turning on binary mode checking\n\nc parsing input formula with 16769 variables and 37440 clauses\n\nc finished parsing, read 6 bytes from proof file\n\nc UNSAT via unit propagation on the input instance\n\nc 9 of 37440 clauses in core                            \n\nc 1 of 3 lemmas in core using 9 resolution steps\n\nc 0 RAT lemmas in core; 0 redundant literals in core lemmas\n\ns VERIFIED\n\nc verification time: 0.028 seconds\n",
+              "stderr": ""
+            },
+            {
+              "command": [
+                "/tmp/bsat-cake-verified-build/cake_lpr",
+                "--CML_HEAP_SIZE=2048",
+                "--CML_STACK_SIZE=512",
+                "/var/folders/ts/779j13fj7_x2z167570zvv4c0000gn/T/bsat-industrial-wofhvpe2/bsat-check/input.cnf",
+                "/var/folders/ts/779j13fj7_x2z167570zvv4c0000gn/T/bsat-industrial-wofhvpe2/bsat-check/proof.lrat"
+              ],
+              "seconds": 0.030912750400602818,
+              "cpu_seconds": 0.026655000000004314,
+              "children_peak_rss_bytes": 2191622144,
+              "returncode": 0,
+              "stdout": "s VERIFIED UNSAT\n",
+              "stderr": ""
+            }
+          ],
+          "lrat_sha256": "a0bd339bf8dcf32e24c0999b566afb4245287665a39a914f7c3fe6c6ccf4ed3a",
+          "seconds": 0.0669164159335196,
+          "rss_scope": "Cumulative child-process high-water RSS, not isolated per-stage peak"
+        }
+      },
+      "fresh_proof_sha256": "3b27856a2d2088dc59a37af74b76c7cec0f5a4f7208de5688dda07464933866e",
+      "export_cpu_seconds": 0.005377000000002852,
+      "bsat_proof_sha256": "059c9faafd7d8f6e7dd6f99d29945cb4a9d8c4a374e5ae2baca99a93ac0a5ee3",
+      "validated": true
+    },
+    {
+      "circuit": "h_b05.aig",
+      "repeat": 0,
+      "flags": 3,
+      "depth": 0,
+      "polarity": -1,
+      "variables": 16769,
+      "clauses": 37439,
+      "result": 10,
+      "incremental_result": 10,
+      "cpu_seconds": 0.001196000000000197,
+      "incremental_cpu_seconds": 0.00027399999999744296,
+      "additions_both_solvers_cpu": 0,
+      "assumptions": [
+        4340
+      ],
+      "bsat_cpu_overshoot_seconds": 0,
+      "reference_cpu_overshoot_seconds": 0,
+      "within_cpu_budget": true,
+      "reference_within_cpu_budget": true,
+      "stats": {
+        "version": 1,
+        "result": 10,
+        "conflicts": 0,
+        "decisions": 4265,
+        "propagations": 16769,
+        "reused_preparations": 1,
+        "owned_capacity_bytes": 6080411,
+        "cpu_seconds": 0.0011892499999959227
+      },
+      "journal_bytes": 4,
+      "bsat_model_and_simulation": true,
+      "incremental_model_and_simulation": true,
+      "input_sha256": "6560c380262ec6d6ecab26f605d96fd01452865cb10ae7a4e981e4c19bc4a319",
+      "fresh_result": 10,
+      "fresh_model_and_simulation": true,
+      "export_cpu_seconds": 0.005628000000001521,
+      "validated": true
+    },
+    {
+      "circuit": "h_b05.aig",
+      "repeat": 0,
+      "flags": 3,
+      "depth": 2,
+      "polarity": 1,
+      "variables": 50305,
+      "clauses": 112369,
+      "result": 20,
+      "incremental_result": 20,
+      "cpu_seconds": 0.00032199999999704687,
+      "incremental_cpu_seconds": 5.199999999661031e-05,
+      "additions_both_solvers_cpu": 0.1250920000000022,
+      "assumptions": [
+        -37876
+      ],
+      "bsat_cpu_overshoot_seconds": 0,
+      "reference_cpu_overshoot_seconds": 0,
+      "within_cpu_budget": true,
+      "reference_within_cpu_budget": true,
+      "stats": {
+        "version": 1,
+        "result": 20,
+        "conflicts": 1,
+        "decisions": 0,
+        "propagations": 16956,
+        "reused_preparations": 2,
+        "owned_capacity_bytes": 15967799,
+        "cpu_seconds": 0.0003164159999968774
+      },
+      "journal_bytes": 14,
+      "input_sha256": "518daf0e9bd21be522d230472791b631568e72ec790428fc6adbcaa205d0d9e6",
+      "fresh_result": 20,
+      "certificate_checks": {
+        "fresh-check": {
+          "input_sha256": "518daf0e9bd21be522d230472791b631568e72ec790428fc6adbcaa205d0d9e6",
+          "drat_sha256": "766f60d731ad15c49f8e2388d7fade5e80905efc93e1d54db49bbd225baa1c44",
+          "converter_sha256": "9bfc20a5fa9eb2a0ffadd2b0cfc7cdd4a20f6aa9c8d7de5b6c771160b847f630",
+          "checker_sha256": "027e767e8e5543d61671c44f7475e985b7969112e6825d51f2207bf0580cbf5c",
+          "verified": true,
+          "checker_heap_mb": 2048,
+          "checker_stack_mb": 512,
+          "stages": [
+            {
+              "command": [
+                "/tmp/bsat-drat-trim",
+                "/var/folders/ts/779j13fj7_x2z167570zvv4c0000gn/T/bsat-industrial-n0nq4la4/fresh-check/input.cnf",
+                "/var/folders/ts/779j13fj7_x2z167570zvv4c0000gn/T/bsat-industrial-n0nq4la4/fresh-check/proof.drat",
+                "-L",
+                "/var/folders/ts/779j13fj7_x2z167570zvv4c0000gn/T/bsat-industrial-n0nq4la4/fresh-check/proof.lrat"
+              ],
+              "seconds": 0.07722875010222197,
+              "cpu_seconds": 0.0728670000000029,
+              "children_peak_rss_bytes": 2191622144,
+              "returncode": 0,
+              "stdout": "\nc turning on binary mode checking\n\nc parsing input formula with 50305 variables and 112370 clauses\n\nc finished parsing, read 1038976 bytes from proof file\n\nc UNSAT via unit propagation on the input instance\n\nc 232 of 112370 clauses in core                            \n\nc 1 of 37316 lemmas in core using 232 resolution steps\n\nc 0 RAT lemmas in core; 0 redundant literals in core lemmas\n\ns VERIFIED\n\nc verification time: 0.070 seconds\n",
+              "stderr": ""
+            },
+            {
+              "command": [
+                "/tmp/bsat-cake-verified-build/cake_lpr",
+                "--CML_HEAP_SIZE=2048",
+                "--CML_STACK_SIZE=512",
+                "/var/folders/ts/779j13fj7_x2z167570zvv4c0000gn/T/bsat-industrial-n0nq4la4/fresh-check/input.cnf",
+                "/var/folders/ts/779j13fj7_x2z167570zvv4c0000gn/T/bsat-industrial-n0nq4la4/fresh-check/proof.lrat"
+              ],
+              "seconds": 0.08962912485003471,
+              "cpu_seconds": 0.08430199999999566,
+              "children_peak_rss_bytes": 2191622144,
+              "returncode": 0,
+              "stdout": "s VERIFIED UNSAT\n",
+              "stderr": ""
+            }
+          ],
+          "lrat_sha256": "d65fb89d9629f191876c411ccf0ebcd21f7343774d5646fef6d285c0d4d98d45",
+          "seconds": 0.1695887092500925,
+          "rss_scope": "Cumulative child-process high-water RSS, not isolated per-stage peak"
+        },
+        "bsat-check": {
+          "input_sha256": "518daf0e9bd21be522d230472791b631568e72ec790428fc6adbcaa205d0d9e6",
+          "drat_sha256": "3a4c55c7633de45f243e22f93b29d8be3c8902e175812f600788fc2ca775bec5",
+          "converter_sha256": "9bfc20a5fa9eb2a0ffadd2b0cfc7cdd4a20f6aa9c8d7de5b6c771160b847f630",
+          "checker_sha256": "027e767e8e5543d61671c44f7475e985b7969112e6825d51f2207bf0580cbf5c",
+          "verified": true,
+          "checker_heap_mb": 2048,
+          "checker_stack_mb": 512,
+          "stages": [
+            {
+              "command": [
+                "/tmp/bsat-drat-trim",
+                "/var/folders/ts/779j13fj7_x2z167570zvv4c0000gn/T/bsat-industrial-n0nq4la4/bsat-check/input.cnf",
+                "/var/folders/ts/779j13fj7_x2z167570zvv4c0000gn/T/bsat-industrial-n0nq4la4/bsat-check/proof.drat",
+                "-L",
+                "/var/folders/ts/779j13fj7_x2z167570zvv4c0000gn/T/bsat-industrial-n0nq4la4/bsat-check/proof.lrat"
+              ],
+              "seconds": 0.05761866690590978,
+              "cpu_seconds": 0.05297199999999047,
+              "children_peak_rss_bytes": 2191622144,
+              "returncode": 0,
+              "stdout": "\nc turning on binary mode checking\n\nc parsing input formula with 50305 variables and 112370 clauses\n\nc finished parsing, read 16 bytes from proof file\n\nc UNSAT via unit propagation on the input instance\n\nc 232 of 112370 clauses in core                            \n\nc 1 of 5 lemmas in core using 232 resolution steps\n\nc 0 RAT lemmas in core; 0 redundant literals in core lemmas\n\ns VERIFIED\n\nc verification time: 0.050 seconds\n",
+              "stderr": ""
+            },
+            {
+              "command": [
+                "/tmp/bsat-cake-verified-build/cake_lpr",
+                "--CML_HEAP_SIZE=2048",
+                "--CML_STACK_SIZE=512",
+                "/var/folders/ts/779j13fj7_x2z167570zvv4c0000gn/T/bsat-industrial-n0nq4la4/bsat-check/input.cnf",
+                "/var/folders/ts/779j13fj7_x2z167570zvv4c0000gn/T/bsat-industrial-n0nq4la4/bsat-check/proof.lrat"
+              ],
+              "seconds": 0.08772987499833107,
+              "cpu_seconds": 0.08211100000000693,
+              "children_peak_rss_bytes": 2191622144,
+              "returncode": 0,
+              "stdout": "s VERIFIED UNSAT\n",
+              "stderr": ""
+            }
+          ],
+          "lrat_sha256": "252cdb482e704782176f2ec05ff2b6ab053f54fe46569e4bcd3c39772ee6b4cb",
+          "seconds": 0.14758087508380413,
+          "rss_scope": "Cumulative child-process high-water RSS, not isolated per-stage peak"
+        }
+      },
+      "fresh_proof_sha256": "766f60d731ad15c49f8e2388d7fade5e80905efc93e1d54db49bbd225baa1c44",
+      "export_cpu_seconds": 0.015660999999994374,
+      "bsat_proof_sha256": "3a4c55c7633de45f243e22f93b29d8be3c8902e175812f600788fc2ca775bec5",
+      "validated": true
+    },
+    {
+      "circuit": "h_b05.aig",
+      "repeat": 0,
+      "flags": 3,
+      "depth": 2,
+      "polarity": -1,
+      "variables": 50305,
+      "clauses": 112369,
+      "result": 10,
+      "incremental_result": 10,
+      "cpu_seconds": 0.003654999999994857,
+      "incremental_cpu_seconds": 0.0009330000000034033,
+      "additions_both_solvers_cpu": 0,
+      "assumptions": [
+        37876
+      ],
+      "bsat_cpu_overshoot_seconds": 0,
+      "reference_cpu_overshoot_seconds": 0,
+      "within_cpu_budget": true,
+      "reference_within_cpu_budget": true,
+      "stats": {
+        "version": 1,
+        "result": 10,
+        "conflicts": 0,
+        "decisions": 12795,
+        "propagations": 50305,
+        "reused_preparations": 3,
+        "owned_capacity_bytes": 15967923,
+        "cpu_seconds": 0.003645042000002263
+      },
+      "journal_bytes": 14,
+      "bsat_model_and_simulation": true,
+      "incremental_model_and_simulation": true,
+      "input_sha256": "49d0c32aaef0aab70dce99bad0466aff3357a0f9ee44cf2bf4c09e26adf743a2",
+      "fresh_result": 10,
+      "fresh_model_and_simulation": true,
+      "export_cpu_seconds": 0.016211000000005527,
+      "validated": true
+    },
+    {
+      "circuit": "h_b05.aig",
+      "repeat": 0,
+      "flags": 3,
+      "depth": 4,
+      "polarity": 1,
+      "variables": 83841,
+      "clauses": 187299,
+      "result": 20,
+      "incremental_result": 20,
+      "cpu_seconds": 0.0011279999999942447,
+      "incremental_cpu_seconds": 0.004646000000001038,
+      "additions_both_solvers_cpu": 0.12804100000000318,
+      "assumptions": [
+        -71412
+      ],
+      "bsat_cpu_overshoot_seconds": 0,
+      "reference_cpu_overshoot_seconds": 0,
+      "within_cpu_budget": true,
+      "reference_within_cpu_budget": true,
+      "stats": {
+        "version": 1,
+        "result": 20,
+        "conflicts": 8,
+        "decisions": 12,
+        "propagations": 30209,
+        "reused_preparations": 4,
+        "owned_capacity_bytes": 28812611,
+        "cpu_seconds": 0.0011217919999992887
+      },
+      "journal_bytes": 101,
+      "input_sha256": "bb88ded305774d1ca7440f8f5fe055cbeac1a3686e5e5328d6f0579fa754d979",
+      "fresh_result": 20,
+      "certificate_checks": {
+        "fresh-check": {
+          "input_sha256": "bb88ded305774d1ca7440f8f5fe055cbeac1a3686e5e5328d6f0579fa754d979",
+          "drat_sha256": "23cc4db33314c15ce176a75fd53d07812d6e4a0189370388051bbbe751598999",
+          "converter_sha256": "9bfc20a5fa9eb2a0ffadd2b0cfc7cdd4a20f6aa9c8d7de5b6c771160b847f630",
+          "checker_sha256": "027e767e8e5543d61671c44f7475e985b7969112e6825d51f2207bf0580cbf5c",
+          "verified": true,
+          "checker_heap_mb": 2048,
+          "checker_stack_mb": 512,
+          "stages": [
+            {
+              "command": [
+                "/tmp/bsat-drat-trim",
+                "/var/folders/ts/779j13fj7_x2z167570zvv4c0000gn/T/bsat-industrial-ttsw6nkd/fresh-check/input.cnf",
+                "/var/folders/ts/779j13fj7_x2z167570zvv4c0000gn/T/bsat-industrial-ttsw6nkd/fresh-check/proof.drat",
+                "-L",
+                "/var/folders/ts/779j13fj7_x2z167570zvv4c0000gn/T/bsat-industrial-ttsw6nkd/fresh-check/proof.lrat"
+              ],
+              "seconds": 0.16230387473478913,
+              "cpu_seconds": 0.1578779999999973,
+              "children_peak_rss_bytes": 2191622144,
+              "returncode": 0,
+              "stdout": "\nc turning on binary mode checking\n\nc parsing input formula with 83841 variables and 187300 clauses\n\nc finished parsing, read 4477784 bytes from proof file\n\nc detected empty clause; start verification via backward checking\n\nc 660 of 187300 clauses in core                            \n\nc 362 of 199850 lemmas in core using 4481 resolution steps\n\nc 0 RAT lemmas in core; 0 redundant literals in core lemmas\n\ns VERIFIED\n\nc verification time: 0.155 seconds\n",
+              "stderr": ""
+            },
+            {
+              "command": [
+                "/tmp/bsat-cake-verified-build/cake_lpr",
+                "--CML_HEAP_SIZE=2048",
+                "--CML_STACK_SIZE=512",
+                "/var/folders/ts/779j13fj7_x2z167570zvv4c0000gn/T/bsat-industrial-ttsw6nkd/fresh-check/input.cnf",
+                "/var/folders/ts/779j13fj7_x2z167570zvv4c0000gn/T/bsat-industrial-ttsw6nkd/fresh-check/proof.lrat"
+              ],
+              "seconds": 0.14727808302268386,
+              "cpu_seconds": 0.14092899999998765,
+              "children_peak_rss_bytes": 2191622144,
+              "returncode": 0,
+              "stdout": "s VERIFIED UNSAT\n",
+              "stderr": ""
+            }
+          ],
+          "lrat_sha256": "60c8f6dbec4047d277e1a7ddb270a6d5ee531d94f931083c6b5079c55c31c7a6",
+          "seconds": 0.31470012478530407,
+          "rss_scope": "Cumulative child-process high-water RSS, not isolated per-stage peak"
+        },
+        "bsat-check": {
+          "input_sha256": "bb88ded305774d1ca7440f8f5fe055cbeac1a3686e5e5328d6f0579fa754d979",
+          "drat_sha256": "6ebdc4ec2ff870352fd63cd839dcfcf20d3bc4b29f6f3100bc3b0833088e7f07",
+          "converter_sha256": "9bfc20a5fa9eb2a0ffadd2b0cfc7cdd4a20f6aa9c8d7de5b6c771160b847f630",
+          "checker_sha256": "027e767e8e5543d61671c44f7475e985b7969112e6825d51f2207bf0580cbf5c",
+          "verified": true,
+          "checker_heap_mb": 2048,
+          "checker_stack_mb": 512,
+          "stages": [
+            {
+              "command": [
+                "/tmp/bsat-drat-trim",
+                "/var/folders/ts/779j13fj7_x2z167570zvv4c0000gn/T/bsat-industrial-ttsw6nkd/bsat-check/input.cnf",
+                "/var/folders/ts/779j13fj7_x2z167570zvv4c0000gn/T/bsat-industrial-ttsw6nkd/bsat-check/proof.drat",
+                "-L",
+                "/var/folders/ts/779j13fj7_x2z167570zvv4c0000gn/T/bsat-industrial-ttsw6nkd/bsat-check/proof.lrat"
+              ],
+              "seconds": 0.08101112535223365,
+              "cpu_seconds": 0.07645600000000186,
+              "children_peak_rss_bytes": 2191622144,
+              "returncode": 0,
+              "stdout": "\nc turning on binary mode checking\n\nc parsing input formula with 83841 variables and 187300 clauses\n\nc finished parsing, read 103 bytes from proof file\n\nc detected empty clause; start verification via backward checking\n\nc 317 of 187300 clauses in core                            \n\nc 5 of 14 lemmas in core using 431 resolution steps\n\nc 0 RAT lemmas in core; 6 redundant literals in core lemmas\n\ns VERIFIED\n\nc verification time: 0.073 seconds\n",
+              "stderr": ""
+            },
+            {
+              "command": [
+                "/tmp/bsat-cake-verified-build/cake_lpr",
+                "--CML_HEAP_SIZE=2048",
+                "--CML_STACK_SIZE=512",
+                "/var/folders/ts/779j13fj7_x2z167570zvv4c0000gn/T/bsat-industrial-ttsw6nkd/bsat-check/input.cnf",
+                "/var/folders/ts/779j13fj7_x2z167570zvv4c0000gn/T/bsat-industrial-ttsw6nkd/bsat-check/proof.lrat"
+              ],
+              "seconds": 0.14583191694691777,
+              "cpu_seconds": 0.14054200000001238,
+              "children_peak_rss_bytes": 2191622144,
+              "returncode": 0,
+              "stdout": "s VERIFIED UNSAT\n",
+              "stderr": ""
+            }
+          ],
+          "lrat_sha256": "c71241baf625e27950d65970b1d7e8af36386790bae61a56239cf26edf3a7731",
+          "seconds": 0.23018958419561386,
+          "rss_scope": "Cumulative child-process high-water RSS, not isolated per-stage peak"
+        }
+      },
+      "fresh_proof_sha256": "23cc4db33314c15ce176a75fd53d07812d6e4a0189370388051bbbe751598999",
+      "export_cpu_seconds": 0.026961000000000013,
+      "bsat_proof_sha256": "6ebdc4ec2ff870352fd63cd839dcfcf20d3bc4b29f6f3100bc3b0833088e7f07",
+      "validated": true
+    },
+    {
+      "circuit": "h_b05.aig",
+      "repeat": 0,
+      "flags": 3,
+      "depth": 4,
+      "polarity": -1,
+      "variables": 83841,
+      "clauses": 187299,
+      "result": 10,
+      "incremental_result": 10,
+      "cpu_seconds": 0.006278000000001782,
+      "incremental_cpu_seconds": 0.0016120000000015011,
+      "additions_both_solvers_cpu": 0,
+      "assumptions": [
+        71412
+      ],
+      "bsat_cpu_overshoot_seconds": 0,
+      "reference_cpu_overshoot_seconds": 0,
+      "within_cpu_budget": true,
+      "reference_within_cpu_budget": true,
+      "stats": {
+        "version": 1,
+        "result": 10,
+        "conflicts": 0,
+        "decisions": 21327,
+        "propagations": 83841,
+        "reused_preparations": 5,
+        "owned_capacity_bytes": 28812639,
+        "cpu_seconds": 0.006262333999998759
+      },
+      "journal_bytes": 101,
+      "bsat_model_and_simulation": true,
+      "incremental_model_and_simulation": true,
+      "input_sha256": "3356b04e16ac5fa99a22d28c587103dbd62e0afa6cc4abe46b72384cedfcb620",
+      "fresh_result": 10,
+      "fresh_model_and_simulation": true,
+      "export_cpu_seconds": 0.027076999999998463,
+      "validated": true
+    },
+    {
+      "circuit": "h_b05.aig",
+      "repeat": 0,
+      "flags": 3,
+      "depth": 8,
+      "polarity": 1,
+      "variables": 150913,
+      "clauses": 337159,
+      "result": 10,
+      "incremental_result": 10,
+      "cpu_seconds": 0.011633000000003335,
+      "incremental_cpu_seconds": 0.006646999999993852,
+      "additions_both_solvers_cpu": 0.258416000000004,
+      "assumptions": [
+        -138484
+      ],
+      "bsat_cpu_overshoot_seconds": 0,
+      "reference_cpu_overshoot_seconds": 0,
+      "within_cpu_budget": true,
+      "reference_within_cpu_budget": true,
+      "stats": {
+        "version": 1,
+        "result": 10,
+        "conflicts": 0,
+        "decisions": 38403,
+        "propagations": 150913,
+        "reused_preparations": 6,
+        "owned_capacity_bytes": 53668563,
+        "cpu_seconds": 0.01162541699999764
+      },
+      "journal_bytes": 101,
+      "bsat_model_and_simulation": true,
+      "incremental_model_and_simulation": true,
+      "input_sha256": "283130ca92f9e73772dd37f2f36916eef068a327d2277487f40b5e140580b065",
+      "fresh_result": 10,
+      "fresh_model_and_simulation": true,
+      "export_cpu_seconds": 0.047815999999997416,
+      "validated": true
+    },
+    {
+      "circuit": "h_b05.aig",
+      "repeat": 0,
+      "flags": 3,
+      "depth": 8,
+      "polarity": -1,
+      "variables": 150913,
+      "clauses": 337159,
+      "result": 10,
+      "incremental_result": 10,
+      "cpu_seconds": 0.009042000000000883,
+      "incremental_cpu_seconds": 0.004227000000000203,
+      "additions_both_solvers_cpu": 0,
+      "assumptions": [
+        138484
+      ],
+      "bsat_cpu_overshoot_seconds": 0,
+      "reference_cpu_overshoot_seconds": 0,
+      "within_cpu_budget": true,
+      "reference_within_cpu_budget": true,
+      "stats": {
+        "version": 1,
+        "result": 10,
+        "conflicts": 2,
+        "decisions": 38416,
+        "propagations": 161762,
+        "reused_preparations": 7,
+        "owned_capacity_bytes": 53668723,
+        "cpu_seconds": 0.009025999999998646
+      },
+      "journal_bytes": 135,
+      "bsat_model_and_simulation": true,
+      "incremental_model_and_simulation": true,
+      "input_sha256": "57638a1b292d60894cb473a6ffecce1c47fb862d83172e895a21682e62c8cc4c",
+      "fresh_result": 10,
+      "fresh_model_and_simulation": true,
+      "export_cpu_seconds": 0.04807999999999879,
+      "validated": true
+    },
+    {
+      "circuit": "dspfilters_fastfir_second-p32.aig",
+      "repeat": 0,
+      "flags": 3,
+      "depth": 0,
+      "polarity": 1,
+      "variables": 29207,
+      "clauses": 77352,
+      "result": 20,
+      "incremental_result": 20,
+      "cpu_seconds": 0.00016899999999964166,
+      "incremental_cpu_seconds": 1.6000000002236447e-05,
+      "additions_both_solvers_cpu": 0.12783600000000206,
+      "assumptions": [
+        22716
+      ],
+      "bsat_cpu_overshoot_seconds": 0,
+      "reference_cpu_overshoot_seconds": 0,
+      "within_cpu_budget": true,
+      "reference_within_cpu_budget": true,
+      "stats": {
+        "version": 1,
+        "result": 20,
+        "conflicts": 0,
+        "decisions": 0,
+        "propagations": 9319,
+        "reused_preparations": 0,
+        "owned_capacity_bytes": 9286757,
+        "cpu_seconds": 0.00016299999999347392
+      },
+      "journal_bytes": 5,
+      "input_sha256": "63ca5ded9f119829765cb147405e69c5d8bb09f0e2bb0ff246a64c2df222ea61",
+      "fresh_result": 20,
+      "certificate_checks": {
+        "fresh-check": {
+          "input_sha256": "63ca5ded9f119829765cb147405e69c5d8bb09f0e2bb0ff246a64c2df222ea61",
+          "drat_sha256": "5e1b8de3736c6827141f588266c1ce04a2f379c7b0f00609d9a4c667d0cb4804",
+          "converter_sha256": "9bfc20a5fa9eb2a0ffadd2b0cfc7cdd4a20f6aa9c8d7de5b6c771160b847f630",
+          "checker_sha256": "027e767e8e5543d61671c44f7475e985b7969112e6825d51f2207bf0580cbf5c",
+          "verified": true,
+          "checker_heap_mb": 2048,
+          "checker_stack_mb": 512,
+          "stages": [
+            {
+              "command": [
+                "/tmp/bsat-drat-trim",
+                "/var/folders/ts/779j13fj7_x2z167570zvv4c0000gn/T/bsat-industrial-yy7kmanv/fresh-check/input.cnf",
+                "/var/folders/ts/779j13fj7_x2z167570zvv4c0000gn/T/bsat-industrial-yy7kmanv/fresh-check/proof.drat",
+                "-L",
+                "/var/folders/ts/779j13fj7_x2z167570zvv4c0000gn/T/bsat-industrial-yy7kmanv/fresh-check/proof.lrat"
+              ],
+              "seconds": 0.05172858387231827,
+              "cpu_seconds": 0.04766799999998894,
+              "children_peak_rss_bytes": 2191622144,
+              "returncode": 0,
+              "stdout": "\nc turning on binary mode checking\n\nc parsing input formula with 29207 variables and 77353 clauses\n\nc finished parsing, read 355278 bytes from proof file\n\nc UNSAT via unit propagation on the input instance\n\nc 10 of 77353 clauses in core                            \n\nc 1 of 13335 lemmas in core using 10 resolution steps\n\nc 0 RAT lemmas in core; 0 redundant literals in core lemmas\n\ns VERIFIED\n\nc verification time: 0.046 seconds\n",
+              "stderr": ""
+            },
+            {
+              "command": [
+                "/tmp/bsat-cake-verified-build/cake_lpr",
+                "--CML_HEAP_SIZE=2048",
+                "--CML_STACK_SIZE=512",
+                "/var/folders/ts/779j13fj7_x2z167570zvv4c0000gn/T/bsat-industrial-yy7kmanv/fresh-check/input.cnf",
+                "/var/folders/ts/779j13fj7_x2z167570zvv4c0000gn/T/bsat-industrial-yy7kmanv/fresh-check/proof.lrat"
+              ],
+              "seconds": 0.06009800033643842,
+              "cpu_seconds": 0.05498199999999742,
+              "children_peak_rss_bytes": 2191622144,
+              "returncode": 0,
+              "stdout": "s VERIFIED UNSAT\n",
+              "stderr": ""
+            }
+          ],
+          "lrat_sha256": "19d0646bf5e2963722577a237a8557481e838a5ed60cfb9cb63d7c3d6ee3aa7d",
+          "seconds": 0.11378700006753206,
+          "rss_scope": "Cumulative child-process high-water RSS, not isolated per-stage peak"
+        },
+        "bsat-check": {
+          "input_sha256": "63ca5ded9f119829765cb147405e69c5d8bb09f0e2bb0ff246a64c2df222ea61",
+          "drat_sha256": "2d9e7707bdc14a8c565093c7384ca469ab7002aebf16b58fa2b5dd827fd5b89b",
+          "converter_sha256": "9bfc20a5fa9eb2a0ffadd2b0cfc7cdd4a20f6aa9c8d7de5b6c771160b847f630",
+          "checker_sha256": "027e767e8e5543d61671c44f7475e985b7969112e6825d51f2207bf0580cbf5c",
+          "verified": true,
+          "checker_heap_mb": 2048,
+          "checker_stack_mb": 512,
+          "stages": [
+            {
+              "command": [
+                "/tmp/bsat-drat-trim",
+                "/var/folders/ts/779j13fj7_x2z167570zvv4c0000gn/T/bsat-industrial-yy7kmanv/bsat-check/input.cnf",
+                "/var/folders/ts/779j13fj7_x2z167570zvv4c0000gn/T/bsat-industrial-yy7kmanv/bsat-check/proof.drat",
+                "-L",
+                "/var/folders/ts/779j13fj7_x2z167570zvv4c0000gn/T/bsat-industrial-yy7kmanv/bsat-check/proof.lrat"
+              ],
+              "seconds": 0.05035962490364909,
+              "cpu_seconds": 0.045612000000000874,
+              "children_peak_rss_bytes": 2191622144,
+              "returncode": 0,
+              "stdout": "\nc turning on binary mode checking\n\nc parsing input formula with 29207 variables and 77353 clauses\n\nc finished parsing, read 7 bytes from proof file\n\nc UNSAT via unit propagation on the input instance\n\nc 10 of 77353 clauses in core                            \n\nc 1 of 3 lemmas in core using 10 resolution steps\n\nc 0 RAT lemmas in core; 0 redundant literals in core lemmas\n\ns VERIFIED\n\nc verification time: 0.043 seconds\n",
+              "stderr": ""
+            },
+            {
+              "command": [
+                "/tmp/bsat-cake-verified-build/cake_lpr",
+                "--CML_HEAP_SIZE=2048",
+                "--CML_STACK_SIZE=512",
+                "/var/folders/ts/779j13fj7_x2z167570zvv4c0000gn/T/bsat-industrial-yy7kmanv/bsat-check/input.cnf",
+                "/var/folders/ts/779j13fj7_x2z167570zvv4c0000gn/T/bsat-industrial-yy7kmanv/bsat-check/proof.lrat"
+              ],
+              "seconds": 0.05923045799136162,
+              "cpu_seconds": 0.05414700000001815,
+              "children_peak_rss_bytes": 2191622144,
+              "returncode": 0,
+              "stdout": "s VERIFIED UNSAT\n",
+              "stderr": ""
+            }
+          ],
+          "lrat_sha256": "2f93fda19d55aa4a48852cbbc625b714668b63c8aa8652f99d7e989951b45351",
+          "seconds": 0.1114433747716248,
+          "rss_scope": "Cumulative child-process high-water RSS, not isolated per-stage peak"
+        }
+      },
+      "fresh_proof_sha256": "5e1b8de3736c6827141f588266c1ce04a2f379c7b0f00609d9a4c667d0cb4804",
+      "export_cpu_seconds": 0.01061700000000343,
+      "bsat_proof_sha256": "2d9e7707bdc14a8c565093c7384ca469ab7002aebf16b58fa2b5dd827fd5b89b",
+      "validated": true
+    },
+    {
+      "circuit": "dspfilters_fastfir_second-p32.aig",
+      "repeat": 0,
+      "flags": 3,
+      "depth": 0,
+      "polarity": -1,
+      "variables": 29207,
+      "clauses": 77352,
+      "result": 10,
+      "incremental_result": 10,
+      "cpu_seconds": 0.0022340000000014015,
+      "incremental_cpu_seconds": 0.000821000000001959,
+      "additions_both_solvers_cpu": 0,
+      "assumptions": [
+        -22716
+      ],
+      "bsat_cpu_overshoot_seconds": 0,
+      "reference_cpu_overshoot_seconds": 0,
+      "within_cpu_budget": true,
+      "reference_within_cpu_budget": true,
+      "stats": {
+        "version": 1,
+        "result": 10,
+        "conflicts": 11,
+        "decisions": 3252,
+        "propagations": 45455,
+        "reused_preparations": 1,
+        "owned_capacity_bytes": 9306433,
+        "cpu_seconds": 0.0022247500000034393
+      },
+      "journal_bytes": 86,
+      "bsat_model_and_simulation": true,
+      "incremental_model_and_simulation": true,
+      "input_sha256": "d8c1d20c1dfb1fd79bfdfa017cbcf52d6b6261b6aca4838f0b09715192c6cc5e",
+      "fresh_result": 10,
+      "fresh_model_and_simulation": true,
+      "export_cpu_seconds": 0.010816000000005488,
+      "validated": true
+    },
+    {
+      "circuit": "dspfilters_fastfir_second-p32.aig",
+      "repeat": 0,
+      "flags": 3,
+      "depth": 2,
+      "polarity": 1,
+      "variables": 87619,
+      "clauses": 234264,
+      "result": 20,
+      "incremental_result": 20,
+      "cpu_seconds": 0.0005200000000016303,
+      "incremental_cpu_seconds": 2.1000000003823516e-05,
+      "additions_both_solvers_cpu": 0.2667469999999952,
+      "assumptions": [
+        81128
+      ],
+      "bsat_cpu_overshoot_seconds": 0,
+      "reference_cpu_overshoot_seconds": 0,
+      "within_cpu_budget": true,
+      "reference_within_cpu_budget": true,
+      "stats": {
+        "version": 1,
+        "result": 20,
+        "conflicts": 0,
+        "decisions": 0,
+        "propagations": 12227,
+        "reused_preparations": 2,
+        "owned_capacity_bytes": 29629541,
+        "cpu_seconds": 0.0005099170000022468
+      },
+      "journal_bytes": 91,
+      "input_sha256": "5333188ae362f97dca66e39d5760785c921a10716f8416fc63b5ae785bb2c544",
+      "fresh_result": 20,
+      "certificate_checks": {
+        "fresh-check": {
+          "input_sha256": "5333188ae362f97dca66e39d5760785c921a10716f8416fc63b5ae785bb2c544",
+          "drat_sha256": "d3c8a49a373a6bdf62669e6289b60b317fe203b854d6c1d79a844bf251b5da3b",
+          "converter_sha256": "9bfc20a5fa9eb2a0ffadd2b0cfc7cdd4a20f6aa9c8d7de5b6c771160b847f630",
+          "checker_sha256": "027e767e8e5543d61671c44f7475e985b7969112e6825d51f2207bf0580cbf5c",
+          "verified": true,
+          "checker_heap_mb": 2048,
+          "checker_stack_mb": 512,
+          "stages": [
+            {
+              "command": [
+                "/tmp/bsat-drat-trim",
+                "/var/folders/ts/779j13fj7_x2z167570zvv4c0000gn/T/bsat-industrial-i_b12g7l/fresh-check/input.cnf",
+                "/var/folders/ts/779j13fj7_x2z167570zvv4c0000gn/T/bsat-industrial-i_b12g7l/fresh-check/proof.drat",
+                "-L",
+                "/var/folders/ts/779j13fj7_x2z167570zvv4c0000gn/T/bsat-industrial-i_b12g7l/fresh-check/proof.lrat"
+              ],
+              "seconds": 0.10163866588845849,
+              "cpu_seconds": 0.09719300000000297,
+              "children_peak_rss_bytes": 2191622144,
+              "returncode": 0,
+              "stdout": "\nc turning on binary mode checking\n\nc parsing input formula with 87619 variables and 234265 clauses\n\nc finished parsing, read 520114 bytes from proof file\n\nc UNSAT via unit propagation on the input instance\n\nc 46 of 234265 clauses in core                            \n\nc 1 of 19277 lemmas in core using 46 resolution steps\n\nc 0 RAT lemmas in core; 0 redundant literals in core lemmas\n\ns VERIFIED\n\nc verification time: 0.094 seconds\n",
+              "stderr": ""
+            },
+            {
+              "command": [
+                "/tmp/bsat-cake-verified-build/cake_lpr",
+                "--CML_HEAP_SIZE=2048",
+                "--CML_STACK_SIZE=512",
+                "/var/folders/ts/779j13fj7_x2z167570zvv4c0000gn/T/bsat-industrial-i_b12g7l/fresh-check/input.cnf",
+                "/var/folders/ts/779j13fj7_x2z167570zvv4c0000gn/T/bsat-industrial-i_b12g7l/fresh-check/proof.lrat"
+              ],
+              "seconds": 0.18044516583904624,
+              "cpu_seconds": 0.17357899999999948,
+              "children_peak_rss_bytes": 2191622144,
+              "returncode": 0,
+              "stdout": "s VERIFIED UNSAT\n",
+              "stderr": ""
+            }
+          ],
+          "lrat_sha256": "f8735dca7693ca309e6b15b4f10e969b4dc5641c81ba9b352b91e3721db2acb6",
+          "seconds": 0.2856953339651227,
+          "rss_scope": "Cumulative child-process high-water RSS, not isolated per-stage peak"
+        },
+        "bsat-check": {
+          "input_sha256": "5333188ae362f97dca66e39d5760785c921a10716f8416fc63b5ae785bb2c544",
+          "drat_sha256": "69c9cffa13a90357048da2d25aa4ed5b723239d50daecdd363f1b9bfb6c7f968",
+          "converter_sha256": "9bfc20a5fa9eb2a0ffadd2b0cfc7cdd4a20f6aa9c8d7de5b6c771160b847f630",
+          "checker_sha256": "027e767e8e5543d61671c44f7475e985b7969112e6825d51f2207bf0580cbf5c",
+          "verified": true,
+          "checker_heap_mb": 2048,
+          "checker_stack_mb": 512,
+          "stages": [
+            {
+              "command": [
+                "/tmp/bsat-drat-trim",
+                "/var/folders/ts/779j13fj7_x2z167570zvv4c0000gn/T/bsat-industrial-i_b12g7l/bsat-check/input.cnf",
+                "/var/folders/ts/779j13fj7_x2z167570zvv4c0000gn/T/bsat-industrial-i_b12g7l/bsat-check/proof.drat",
+                "-L",
+                "/var/folders/ts/779j13fj7_x2z167570zvv4c0000gn/T/bsat-industrial-i_b12g7l/bsat-check/proof.lrat"
+              ],
+              "seconds": 0.09673629188910127,
+              "cpu_seconds": 0.0918049999999988,
+              "children_peak_rss_bytes": 2191622144,
+              "returncode": 0,
+              "stdout": "\nc turning on binary mode checking\n\nc parsing input formula with 87619 variables and 234265 clauses\n\nc finished parsing, read 93 bytes from proof file\n\nc UNSAT via unit propagation on the input instance\n\nc 46 of 234265 clauses in core                            \n\nc 1 of 15 lemmas in core using 46 resolution steps\n\nc 0 RAT lemmas in core; 0 redundant literals in core lemmas\n\ns VERIFIED\n\nc verification time: 0.088 seconds\n",
+              "stderr": ""
+            },
+            {
+              "command": [
+                "/tmp/bsat-cake-verified-build/cake_lpr",
+                "--CML_HEAP_SIZE=2048",
+                "--CML_STACK_SIZE=512",
+                "/var/folders/ts/779j13fj7_x2z167570zvv4c0000gn/T/bsat-industrial-i_b12g7l/bsat-check/input.cnf",
+                "/var/folders/ts/779j13fj7_x2z167570zvv4c0000gn/T/bsat-industrial-i_b12g7l/bsat-check/proof.lrat"
+              ],
+              "seconds": 0.1843272503465414,
+              "cpu_seconds": 0.18054700000000468,
+              "children_peak_rss_bytes": 2191622144,
+              "returncode": 0,
+              "stdout": "s VERIFIED UNSAT\n",
+              "stderr": ""
+            }
+          ],
+          "lrat_sha256": "45396574fd1ca522dd1bbc82c439afde59d7eb51d49aa1d49aef54f06e772011",
+          "seconds": 0.2846319996751845,
+          "rss_scope": "Cumulative child-process high-water RSS, not isolated per-stage peak"
+        }
+      },
+      "fresh_proof_sha256": "d3c8a49a373a6bdf62669e6289b60b317fe203b854d6c1d79a844bf251b5da3b",
+      "export_cpu_seconds": 0.03245699999999374,
+      "bsat_proof_sha256": "69c9cffa13a90357048da2d25aa4ed5b723239d50daecdd363f1b9bfb6c7f968",
+      "validated": true
+    },
+    {
+      "circuit": "dspfilters_fastfir_second-p32.aig",
+      "repeat": 0,
+      "flags": 3,
+      "depth": 2,
+      "polarity": -1,
+      "variables": 87619,
+      "clauses": 234264,
+      "result": 10,
+      "incremental_result": 10,
+      "cpu_seconds": 0.00762900000000144,
+      "incremental_cpu_seconds": 0.003553000000003692,
+      "additions_both_solvers_cpu": 0,
+      "assumptions": [
+        -81128
+      ],
+      "bsat_cpu_overshoot_seconds": 0,
+      "reference_cpu_overshoot_seconds": 0,
+      "within_cpu_budget": true,
+      "reference_within_cpu_budget": true,
+      "stats": {
+        "version": 1,
+        "result": 10,
+        "conflicts": 9,
+        "decisions": 9039,
+        "propagations": 124021,
+        "reused_preparations": 3,
+        "owned_capacity_bytes": 29644897,
+        "cpu_seconds": 0.007615042000004735
+      },
+      "journal_bytes": 165,
+      "bsat_model_and_simulation": true,
+      "incremental_model_and_simulation": true,
+      "input_sha256": "3d638dd7e88f795433a6e50dadf91d2e3c433097a4202dc99833d0951525c26b",
+      "fresh_result": 10,
+      "fresh_model_and_simulation": true,
+      "export_cpu_seconds": 0.03333299999999895,
+      "validated": true
+    },
+    {
+      "circuit": "dspfilters_fastfir_second-p32.aig",
+      "repeat": 0,
+      "flags": 3,
+      "depth": 4,
+      "polarity": 1,
+      "variables": 146031,
+      "clauses": 391176,
+      "result": 20,
+      "incremental_result": 20,
+      "cpu_seconds": 0.03100700000000245,
+      "incremental_cpu_seconds": 0.08829999999999671,
+      "additions_both_solvers_cpu": 0.29368900000000053,
+      "assumptions": [
+        139540
+      ],
+      "bsat_cpu_overshoot_seconds": 0,
+      "reference_cpu_overshoot_seconds": 0,
+      "within_cpu_budget": true,
+      "reference_within_cpu_budget": true,
+      "stats": {
+        "version": 1,
+        "result": 20,
+        "conflicts": 61,
+        "decisions": 173,
+        "propagations": 1344577,
+        "reused_preparations": 4,
+        "owned_capacity_bytes": 58826881,
+        "cpu_seconds": 0.030992292000000532
+      },
+      "journal_bytes": 12245,
+      "input_sha256": "9ae39bd7f10dff4452dc8fe2b5ccc8639af645f8f232ade4d869b02146b3f4ed",
+      "fresh_result": 20,
+      "certificate_checks": {
+        "fresh-check": {
+          "input_sha256": "9ae39bd7f10dff4452dc8fe2b5ccc8639af645f8f232ade4d869b02146b3f4ed",
+          "drat_sha256": "ec6188b7def54eba2d3c34537359e5c8aaaa5f9a845aa9c43383993f4634d226",
+          "converter_sha256": "9bfc20a5fa9eb2a0ffadd2b0cfc7cdd4a20f6aa9c8d7de5b6c771160b847f630",
+          "checker_sha256": "027e767e8e5543d61671c44f7475e985b7969112e6825d51f2207bf0580cbf5c",
+          "verified": true,
+          "checker_heap_mb": 2048,
+          "checker_stack_mb": 512,
+          "stages": [
+            {
+              "command": [
+                "/tmp/bsat-drat-trim",
+                "/var/folders/ts/779j13fj7_x2z167570zvv4c0000gn/T/bsat-industrial-quap_q95/fresh-check/input.cnf",
+                "/var/folders/ts/779j13fj7_x2z167570zvv4c0000gn/T/bsat-industrial-quap_q95/fresh-check/proof.drat",
+                "-L",
+                "/var/folders/ts/779j13fj7_x2z167570zvv4c0000gn/T/bsat-industrial-quap_q95/fresh-check/proof.lrat"
+              ],
+              "seconds": 0.7760284156538546,
+              "cpu_seconds": 0.7709919999999999,
+              "children_peak_rss_bytes": 2191622144,
+              "returncode": 0,
+              "stdout": "\nc turning on binary mode checking\n\nc parsing input formula with 146031 variables and 391177 clauses\n\nc finished parsing, read 8578637 bytes from proof file\n\nc detected empty clause; start verification via backward checking\n\nc 18463 of 391177 clauses in core                            \n\nc 11796 of 394284 lemmas in core using 137667 resolution steps\n\nc 3 RAT lemmas in core; 0 redundant literals in core lemmas\n\ns VERIFIED\n\nc verification time: 0.766 seconds\n",
+              "stderr": ""
+            },
+            {
+              "command": [
+                "/tmp/bsat-cake-verified-build/cake_lpr",
+                "--CML_HEAP_SIZE=2048",
+                "--CML_STACK_SIZE=512",
+                "/var/folders/ts/779j13fj7_x2z167570zvv4c0000gn/T/bsat-industrial-quap_q95/fresh-check/input.cnf",
+                "/var/folders/ts/779j13fj7_x2z167570zvv4c0000gn/T/bsat-industrial-quap_q95/fresh-check/proof.lrat"
+              ],
+              "seconds": 0.33857204113155603,
+              "cpu_seconds": 0.33062700000000667,
+              "children_peak_rss_bytes": 2191622144,
+              "returncode": 0,
+              "stdout": "s VERIFIED UNSAT\n",
+              "stderr": ""
+            }
+          ],
+          "lrat_sha256": "5f2e3401e278fb775b40212ef52428bb273e8777d394005ca61662c1600029a8",
+          "seconds": 1.1252474170178175,
+          "rss_scope": "Cumulative child-process high-water RSS, not isolated per-stage peak"
+        },
+        "bsat-check": {
+          "input_sha256": "9ae39bd7f10dff4452dc8fe2b5ccc8639af645f8f232ade4d869b02146b3f4ed",
+          "drat_sha256": "22dace6dc60a9b4c01a9ed9caf361d29d95ae7cdf50c2e92e918c4bcdaae257a",
+          "converter_sha256": "9bfc20a5fa9eb2a0ffadd2b0cfc7cdd4a20f6aa9c8d7de5b6c771160b847f630",
+          "checker_sha256": "027e767e8e5543d61671c44f7475e985b7969112e6825d51f2207bf0580cbf5c",
+          "verified": true,
+          "checker_heap_mb": 2048,
+          "checker_stack_mb": 512,
+          "stages": [
+            {
+              "command": [
+                "/tmp/bsat-drat-trim",
+                "/var/folders/ts/779j13fj7_x2z167570zvv4c0000gn/T/bsat-industrial-quap_q95/bsat-check/input.cnf",
+                "/var/folders/ts/779j13fj7_x2z167570zvv4c0000gn/T/bsat-industrial-quap_q95/bsat-check/proof.drat",
+                "-L",
+                "/var/folders/ts/779j13fj7_x2z167570zvv4c0000gn/T/bsat-industrial-quap_q95/bsat-check/proof.lrat"
+              ],
+              "seconds": 0.16341108409687877,
+              "cpu_seconds": 0.15803699999999754,
+              "children_peak_rss_bytes": 2191622144,
+              "returncode": 0,
+              "stdout": "\nc turning on binary mode checking\n\nc parsing input formula with 146031 variables and 391177 clauses\n\nc finished parsing, read 12247 bytes from proof file\n\nc detected empty clause; start verification via backward checking\n\nc 5848 of 391177 clauses in core                            \n\nc 50 of 86 lemmas in core using 53127 resolution steps\n\nc 0 RAT lemmas in core; 898 redundant literals in core lemmas\n\ns VERIFIED\n\nc verification time: 0.153 seconds\n",
+              "stderr": ""
+            },
+            {
+              "command": [
+                "/tmp/bsat-cake-verified-build/cake_lpr",
+                "--CML_HEAP_SIZE=2048",
+                "--CML_STACK_SIZE=512",
+                "/var/folders/ts/779j13fj7_x2z167570zvv4c0000gn/T/bsat-industrial-quap_q95/bsat-check/input.cnf",
+                "/var/folders/ts/779j13fj7_x2z167570zvv4c0000gn/T/bsat-industrial-quap_q95/bsat-check/proof.lrat"
+              ],
+              "seconds": 0.3157702498137951,
+              "cpu_seconds": 0.30681199999999587,
+              "children_peak_rss_bytes": 2191622144,
+              "returncode": 0,
+              "stdout": "s VERIFIED UNSAT\n",
+              "stderr": ""
+            }
+          ],
+          "lrat_sha256": "3e4dda3221dec0d742b758db77d04e2f73f4df33cd7ef0dadf686961f551602c",
+          "seconds": 0.48479479225352407,
+          "rss_scope": "Cumulative child-process high-water RSS, not isolated per-stage peak"
+        }
+      },
+      "fresh_proof_sha256": "ec6188b7def54eba2d3c34537359e5c8aaaa5f9a845aa9c43383993f4634d226",
+      "export_cpu_seconds": 0.055228999999997086,
+      "bsat_proof_sha256": "22dace6dc60a9b4c01a9ed9caf361d29d95ae7cdf50c2e92e918c4bcdaae257a",
+      "validated": true
+    },
+    {
+      "circuit": "dspfilters_fastfir_second-p32.aig",
+      "repeat": 0,
+      "flags": 3,
+      "depth": 4,
+      "polarity": -1,
+      "variables": 146031,
+      "clauses": 391176,
+      "result": 10,
+      "incremental_result": 10,
+      "cpu_seconds": 0.01088399999999723,
+      "incremental_cpu_seconds": 0.006247999999999365,
+      "additions_both_solvers_cpu": 0,
+      "assumptions": [
+        -139540
+      ],
+      "bsat_cpu_overshoot_seconds": 0,
+      "reference_cpu_overshoot_seconds": 0,
+      "within_cpu_budget": true,
+      "reference_within_cpu_budget": true,
+      "stats": {
+        "version": 1,
+        "result": 10,
+        "conflicts": 7,
+        "decisions": 12291,
+        "propagations": 184391,
+        "reused_preparations": 5,
+        "owned_capacity_bytes": 58827709,
+        "cpu_seconds": 0.010871999999999105
+      },
+      "journal_bytes": 13021,
+      "bsat_model_and_simulation": true,
+      "incremental_model_and_simulation": true,
+      "input_sha256": "b62531d0c203c43d7d6c92ef501067a894fa28cc4815d95b9de6089f0220ef3c",
+      "fresh_result": 10,
+      "fresh_model_and_simulation": true,
+      "export_cpu_seconds": 0.05539699999999925,
+      "validated": true
+    },
+    {
+      "circuit": "dspfilters_fastfir_second-p32.aig",
+      "repeat": 0,
+      "flags": 3,
+      "depth": 8,
+      "polarity": 1,
+      "variables": 262855,
+      "clauses": 705000,
+      "result": 20,
+      "incremental_result": 20,
+      "cpu_seconds": 1.6533230000000003,
+      "incremental_cpu_seconds": 1.7219140000000053,
+      "additions_both_solvers_cpu": 0.5786239999999978,
+      "assumptions": [
+        256364
+      ],
+      "bsat_cpu_overshoot_seconds": 0,
+      "reference_cpu_overshoot_seconds": 0,
+      "within_cpu_budget": true,
+      "reference_within_cpu_budget": true,
+      "stats": {
+        "version": 1,
+        "result": 20,
+        "conflicts": 1249,
+        "decisions": 9513,
+        "propagations": 47621703,
+        "reused_preparations": 6,
+        "owned_capacity_bytes": 108929525,
+        "cpu_seconds": 1.6533057080000049
+      },
+      "journal_bytes": 820535,
+      "input_sha256": "3966c63259fd4eb2871dcd9b785321f1b08a6054df6252d896582db3953b7b19",
+      "fresh_result": 20,
+      "certificate_checks": {
+        "fresh-check": {
+          "input_sha256": "3966c63259fd4eb2871dcd9b785321f1b08a6054df6252d896582db3953b7b19",
+          "drat_sha256": "3ce696fd69243a99d7cf85d1f297f6b19c4f5152b83796eb6637b8f33bdbec2c",
+          "converter_sha256": "9bfc20a5fa9eb2a0ffadd2b0cfc7cdd4a20f6aa9c8d7de5b6c771160b847f630",
+          "checker_sha256": "027e767e8e5543d61671c44f7475e985b7969112e6825d51f2207bf0580cbf5c",
+          "verified": true,
+          "checker_heap_mb": 2048,
+          "checker_stack_mb": 512,
+          "stages": [
+            {
+              "command": [
+                "/tmp/bsat-drat-trim",
+                "/var/folders/ts/779j13fj7_x2z167570zvv4c0000gn/T/bsat-industrial-ak3tg2iv/fresh-check/input.cnf",
+                "/var/folders/ts/779j13fj7_x2z167570zvv4c0000gn/T/bsat-industrial-ak3tg2iv/fresh-check/proof.drat",
+                "-L",
+                "/var/folders/ts/779j13fj7_x2z167570zvv4c0000gn/T/bsat-industrial-ak3tg2iv/fresh-check/proof.lrat"
+              ],
+              "seconds": 2.117713582701981,
+              "cpu_seconds": 2.112435000000014,
+              "children_peak_rss_bytes": 2191622144,
+              "returncode": 0,
+              "stdout": "\nc turning on binary mode checking\n\nc parsing input formula with 262855 variables and 705001 clauses\n\nc finished parsing, read 13951617 bytes from proof file\n\nc detected empty clause; start verification via backward checking\n\nc 42231 of 705001 clauses in core                            \n\nc 28200 of 644580 lemmas in core using 672890 resolution steps\n\nc 19 RAT lemmas in core; 0 redundant literals in core lemmas\n\ns VERIFIED\n\nc verification time: 2.103 seconds\n",
+              "stderr": ""
+            },
+            {
+              "command": [
+                "/tmp/bsat-cake-verified-build/cake_lpr",
+                "--CML_HEAP_SIZE=2048",
+                "--CML_STACK_SIZE=512",
+                "/var/folders/ts/779j13fj7_x2z167570zvv4c0000gn/T/bsat-industrial-ak3tg2iv/fresh-check/input.cnf",
+                "/var/folders/ts/779j13fj7_x2z167570zvv4c0000gn/T/bsat-industrial-ak3tg2iv/fresh-check/proof.lrat"
+              ],
+              "seconds": 0.6407938748598099,
+              "cpu_seconds": 0.6307010000000086,
+              "children_peak_rss_bytes": 2191622144,
+              "returncode": 0,
+              "stdout": "s VERIFIED UNSAT\n",
+              "stderr": ""
+            }
+          ],
+          "lrat_sha256": "8bd91261664b468f68d557ff84c6caeb33858583934996bd6d388055cf640b90",
+          "seconds": 2.7772878748364747,
+          "rss_scope": "Cumulative child-process high-water RSS, not isolated per-stage peak"
+        },
+        "bsat-check": {
+          "input_sha256": "3966c63259fd4eb2871dcd9b785321f1b08a6054df6252d896582db3953b7b19",
+          "drat_sha256": "6d06f6dee14db83ccd7c43233708a590946b43e901fcd00c8cf0ef06902162b1",
+          "converter_sha256": "9bfc20a5fa9eb2a0ffadd2b0cfc7cdd4a20f6aa9c8d7de5b6c771160b847f630",
+          "checker_sha256": "027e767e8e5543d61671c44f7475e985b7969112e6825d51f2207bf0580cbf5c",
+          "verified": true,
+          "checker_heap_mb": 2048,
+          "checker_stack_mb": 512,
+          "stages": [
+            {
+              "command": [
+                "/tmp/bsat-drat-trim",
+                "/var/folders/ts/779j13fj7_x2z167570zvv4c0000gn/T/bsat-industrial-ak3tg2iv/bsat-check/input.cnf",
+                "/var/folders/ts/779j13fj7_x2z167570zvv4c0000gn/T/bsat-industrial-ak3tg2iv/bsat-check/proof.drat",
+                "-L",
+                "/var/folders/ts/779j13fj7_x2z167570zvv4c0000gn/T/bsat-industrial-ak3tg2iv/bsat-check/proof.lrat"
+              ],
+              "seconds": 0.5816156659275293,
+              "cpu_seconds": 0.5760519999999958,
+              "children_peak_rss_bytes": 2191622144,
+              "returncode": 0,
+              "stdout": "\nc turning on binary mode checking\n\nc parsing input formula with 262855 variables and 705001 clauses\n\nc finished parsing, read 820537 bytes from proof file\n\nc detected empty clause; start verification via backward checking\n\nc 21001 of 705001 clauses in core                            \n\nc 880 of 1343 lemmas in core using 765165 resolution steps\n\nc 0 RAT lemmas in core; 47022 redundant literals in core lemmas\n\ns VERIFIED\n\nc verification time: 0.568 seconds\n",
+              "stderr": ""
+            },
+            {
+              "command": [
+                "/tmp/bsat-cake-verified-build/cake_lpr",
+                "--CML_HEAP_SIZE=2048",
+                "--CML_STACK_SIZE=512",
+                "/var/folders/ts/779j13fj7_x2z167570zvv4c0000gn/T/bsat-industrial-ak3tg2iv/bsat-check/input.cnf",
+                "/var/folders/ts/779j13fj7_x2z167570zvv4c0000gn/T/bsat-industrial-ak3tg2iv/bsat-check/proof.lrat"
+              ],
+              "seconds": 0.6335195829160511,
+              "cpu_seconds": 0.6206430000000034,
+              "children_peak_rss_bytes": 2191622144,
+              "returncode": 0,
+              "stdout": "s VERIFIED UNSAT\n",
+              "stderr": ""
+            }
+          ],
+          "lrat_sha256": "06cc5c02e0342e9008614695ee3ae52e5bba1218ef07f1e6352402793d9e5fd1",
+          "seconds": 1.2268327078782022,
+          "rss_scope": "Cumulative child-process high-water RSS, not isolated per-stage peak"
+        }
+      },
+      "fresh_proof_sha256": "3ce696fd69243a99d7cf85d1f297f6b19c4f5152b83796eb6637b8f33bdbec2c",
+      "export_cpu_seconds": 0.10187799999999925,
+      "bsat_proof_sha256": "6d06f6dee14db83ccd7c43233708a590946b43e901fcd00c8cf0ef06902162b1",
+      "validated": true
+    },
+    {
+      "circuit": "dspfilters_fastfir_second-p32.aig",
+      "repeat": 0,
+      "flags": 3,
+      "depth": 8,
+      "polarity": -1,
+      "variables": 262855,
+      "clauses": 705000,
+      "result": 10,
+      "incremental_result": 10,
+      "cpu_seconds": 0.031084999999997365,
+      "incremental_cpu_seconds": 0.013725000000000875,
+      "additions_both_solvers_cpu": 0,
+      "assumptions": [
+        -256364
+      ],
+      "bsat_cpu_overshoot_seconds": 0,
+      "reference_cpu_overshoot_seconds": 0,
+      "within_cpu_budget": true,
+      "reference_within_cpu_budget": true,
+      "stats": {
+        "version": 1,
+        "result": 10,
+        "conflicts": 18,
+        "decisions": 22042,
+        "propagations": 643478,
+        "reused_preparations": 7,
+        "owned_capacity_bytes": 108935569,
+        "cpu_seconds": 0.031061499999999853
+      },
+      "journal_bytes": 825536,
+      "bsat_model_and_simulation": true,
+      "incremental_model_and_simulation": true,
+      "input_sha256": "52c485eaad1bfe8e8c185dfb21a412f7b2649ad992d5b9dd8cf80e66246b94c0",
+      "fresh_result": 10,
+      "fresh_model_and_simulation": true,
+      "export_cpu_seconds": 0.1000399999999999,
+      "validated": true
+    }
+  ],
+  "limits": {
+    "bsat_cpu": 10.0,
+    "bsat_conflicts": 0,
+    "cadical_thread_cpu": 10.0,
+    "cadical_cooperative_wall": 90.0,
+    "kissat_wall": 90.0,
+    "checker_stage_wall": 600.0
+  },
+  "checkpoint_every": 0,
+  "checker_heap_mb": 2048,
+  "checker_stack_mb": 512,
+  "harness_sha256": "e926be2521ef080ac90d3faf0fe6892f176563bdbe63cd9d8dad76d943f0ca68",
+  "diagnostic_profile": null,
+  "accounting": false,
+  "timing_scope": "Serial API query process CPU excludes encoding, additions, export and checking; repeated modes alternate order.",
+  "incremental_signature": "cadical-3.0.1-c607304"
+}
