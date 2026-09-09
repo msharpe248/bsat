@@ -6,6 +6,7 @@ from benchmark import digest
 p=argparse.ArgumentParser(description=__doc__)
 for n in ('bsat','cadical','kissat','output'):p.add_argument('--'+n,type=Path,required=True)
 p.add_argument('--controls',action='store_true')
+p.add_argument('--conflicts',type=int,default=0)
 a=p.parse_args();a.output.mkdir(parents=True,exist_ok=True)
 fixture=Path(__file__).parent/'fixtures/acceptance/cal3-query.cnf.gz'
 cnf=a.output/'cal3.cnf';cnf.write_bytes(gzip.decompress(fixture.read_bytes()))
@@ -15,8 +16,13 @@ profiles={'bsat':[str(a.bsat.resolve()),'--binary-proof','--proof','{proof}','{i
 if a.controls:
  profiles={n:[str(a.cadical.resolve()),'--plain',*f,'{input}','{proof}'] for n,f in {
   'plain':[], 'no-otfs':['--no-otfs'], 'no-bumpreason':['--no-bumpreason']}.items()}
-policy={'inputs':{str(cnf.resolve()):{'sha256':digest(cnf)}},'cpu_seconds':60,'wall_seconds':90,'repeats':2,'seed':2026090901,'commands':profiles}
+if a.conflicts<0:p.error('conflicts must be nonnegative')
+if a.conflicts:
+ for n,c in profiles.items():
+  c[1:1]=(['--conflicts',str(a.conflicts)] if n=='bsat' else ['-c',str(a.conflicts)] if n!='kissat' else [f'--conflicts={a.conflicts}'])
+policy={'fixed_conflicts':a.conflicts,'inputs':{str(cnf.resolve()):{'sha256':digest(cnf)}},'cpu_seconds':60,'wall_seconds':90,'repeats':2,'seed':2026090901,'commands':profiles}
 manifest=a.output/'policy.json';manifest.write_text(json.dumps(policy,indent=2)+'\n')
 cmd=[sys.executable,str(Path(__file__).with_name('benchmark.py')),'--checker',str(Path(__file__).with_name('verified_check.py')),'--cpu-limit','60','--timeout','90','--check-timeout','600','--repeats','2','--seed','2026090901','--external-wall-only','--manifest',str(manifest),'--output',str(a.output/'results.json')]
+if a.conflicts:cmd.remove('--external-wall-only')
 for n,c in profiles.items():cmd+=['--solver',n+'='+shlex.join(c)]
 subprocess.run(cmd,check=True)

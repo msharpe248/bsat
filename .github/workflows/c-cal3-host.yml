@@ -34,6 +34,7 @@ jobs:
           BSAT_CAKE_STACK_MB: '512'
         run: |
           python3 competition/c/tests/benchmark_cal3_host.py --bsat competition/c/bin/bsat --cadical "$RUNNER_TEMP/cadical/build/cadical" --kissat "$RUNNER_TEMP/kissat-8af8e56f174b778aef3aa45af9f739b2a5f492c2/build/kissat" --output "$RUNNER_TEMP/results"
+          python3 competition/c/tests/benchmark_cal3_host.py --conflicts 10000 --bsat competition/c/bin/bsat --cadical "$RUNNER_TEMP/cadical/build/cadical" --kissat "$RUNNER_TEMP/kissat-8af8e56f174b778aef3aa45af9f739b2a5f492c2/build/kissat" --output "$RUNNER_TEMP/results/fixed"
           lscpu > "$RUNNER_TEMP/results/lscpu.txt"
       - uses: actions/upload-artifact@v4
         if: always()
