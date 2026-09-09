@@ -483,3 +483,9 @@ deduplication and removal of implied supersets. Neither added solves; the strong
 variant's large-budget gain came with an ordinary-budget regression, so both were
 rejected. Retained tests cover 2,048 signed-parent projections and all 84 staging
 cutoffs without requiring either experimental policy.
+
+The [certified query-scoring follow-up](ASSUMPTION_LBD_EXPERIMENT.md) now excludes
+fixed assumption levels from learned-clause LBD scores while retaining every
+literal. Matched Mac/Linux confirmation passes the frozen regression gates;
+Linux gains checked cal3 and cal100 depth-4 solves. Some queries and proof costs
+regress, and cal100 depth 8 remains unfinished. No public API change is required.

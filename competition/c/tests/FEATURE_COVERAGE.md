@@ -13,7 +13,7 @@ capability and release-gate summary is [Production readiness](../PRODUCTION_READ
 | Learning/minimization | `test_minimize`, `test_binary_minimize`, `test_features` | Learned-clause checks and bounded minimization paths |
 | Preprocessing/reconstruction | `test_equiv`, `test_congruence`, `test_elim_*`, `test_model_transfer`, `test_bce_linear` | Gate/SCC/elimination interactions and original model restoration |
 | Reduction/collection | `test_reduction_sort`, `test_reduction_ranking`, `test_reduce_growth`, `test_clause_locks`, `test_gc_*` | Fixed tie order, forced sort fallback, tied retention boundaries, locked reasons, relocation and budgets |
-| Search policies | `test_heap`, `test_vmtf`, `test_phases`, `test_rephase`, `test_portfolio`, `test_restart_reuse` | Policy/state invariants, certified assumption-prefix restarts with 300 duplicates and future query/addition checks; not a general performance guarantee |
+| Search policies | `test_heap`, `test_vmtf`, `test_phases`, `test_rephase`, `test_portfolio`, `test_restart_reuse` | Policy/state invariants, certified assumption-prefix restarts and query-aware LBD scoring with 300 duplicates, boundary reset and future query/addition checks; not a general performance guarantee |
 | Local search | `test_local_search_*`, `test_walk_phase_feedback`, `validate_local_search.py` | Model checks, initialization, counters, root assignments and budgets |
 | API | `test_api_contract`, `test_options`, `test_regressions` | Supported synchronous contract, invalid arguments, repeated calls and truth-table comparisons |
 | Allocation failures | `make fault-test recovery-fault-test` | Deterministic ENOMEM sweeps, including 131 recovery cutoffs; not every possible allocation sequence |

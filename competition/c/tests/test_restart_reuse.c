@@ -81,7 +81,7 @@ static void assumptions(void) {
    levels. Conditional UNSAT must leave the permanent formula satisfiable. */
 static void assumption_prefixes(void) {
     for(unsigned profile=0;profile<4;++profile) {
-        SolverOpts o=default_opts();o.probing=false;o.reuse_learnts=true;o.restart_assumptions=true;
+        SolverOpts o=default_opts();o.probing=false;o.reuse_learnts=true;o.restart_assumptions=true;o.assumption_lbd=true;
         o.luby_restart=true;o.luby_unit=1;o.chrono=profile&1;
         o.chrono_levels=0;o.vmtf=profile&2;
         Solver *s=solver_new_with_opts(&o);assert(s);
@@ -99,9 +99,7 @@ static void assumption_prefixes(void) {
         Lit repeated[300];for(unsigned i=0;i<300;++i)repeated[i]=mkLit(guard,false);
         assert(solver_solve_with_assumptions(s,repeated,300)==FALSE);
         assert(!s->base_unsat && s->stats.restarts && s->stats.reused_levels);
-#ifdef BSAT_ASSUMPTION_LBD
         assert(!s->lbd_assumption_levels);
-#endif
         uint32_t count=0;const Lit *core=solver_conflict(s,&count);
         assert(core && count==300);
         for(unsigned i=0;i<count;++i)assert(core[i]==neg(repeated[i]));
@@ -109,9 +107,7 @@ static void assumption_prefixes(void) {
         assert(solver_solve_with_assumptions(s,&negative,1)==TRUE);
         assert(solver_model_value(s,guard)==FALSE && solver_check_model(s));
         assert(solver_solve(s)==TRUE && solver_check_model(s));
-#ifdef BSAT_ASSUMPTION_LBD
         assert(!s->lbd_assumption_levels);
-#endif
         /* Adding the previously temporary guard makes the contradiction permanent. */
         solver_add_clause(s,repeated,1); /* A known root contradiction returns false. */
         assert(solver_solve(s)==FALSE && !s->error);

@@ -153,6 +153,15 @@ the direct production library checks 96/96 queries and proves certified cal3 in
 Linux reduction screen also passes its frozen regression gate, with only 4/16
 checked runs per version; its many UNKNOWNs limit generalization.
 
+The [assumption-aware LBD follow-up](ASSUMPTION_LBD_EXPERIMENT.md) passes frozen
+original/expanded confirmation on Mac and Linux and enables scoring that excludes
+query-fixed levels for certified solves. Linux improves 94/96 → 96/96 and
+60/64 → 62/64 checked queries, with no checked losses; CPU PAR2 improves 72.83%
+and 19.13%. cal100 depth 8 remains UNKNOWN, and Linux gen23 and some journal sizes
+regress. Full query checking remains outside solve timing. The scoring change
+preserves all learned literals and query context; it does not establish a general
+soundness proof or deployment readiness.
+
 ## Release gates
 
 A production release needs a concrete target workload and deployment envelope.

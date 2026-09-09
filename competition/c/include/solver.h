@@ -85,6 +85,7 @@ typedef struct SolverOpts {
     bool     dynamic_lbd;       // Re-evaluate learned-clause quality during analysis
     uint32_t minimize_budget;   // Work cap per minimization pass (0 disables)
     bool     minimize;          // Enable clause minimization (true)
+    bool     assumption_lbd;    // Exclude query-fixed levels from LBD scoring
 
     // Preprocessing
     bool     bce;               // Enable blocked clause elimination (true)
@@ -364,9 +365,7 @@ typedef struct Solver {
     size_t input_size, input_capacity;
     uint32_t input_clauses, clauses_capacity;
     uint32_t last_assumptions;
-#ifdef BSAT_ASSUMPTION_LBD
-    uint32_t lbd_assumption_levels; /* Experimental transient scoring boundary. */
-#endif
+    uint32_t lbd_assumption_levels; /* Transient boundary, zero between queries. */
     Var factor_original_vars; // Auxiliary variables are discarded on rebuild
     uint64_t reused_solves;
     size_t probed_input_size;

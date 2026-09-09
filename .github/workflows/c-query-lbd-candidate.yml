@@ -18,8 +18,8 @@ jobs:
           mkdir -p "$RUNNER_TEMP/baseline"
           git archive 6f793ed7980fa9372009888ab0949c2c8db7685b competition/c/src competition/c/include competition/c/Makefile competition/c/VERSION | tar -x -C "$RUNNER_TEMP/baseline"
           make -C "$RUNNER_TEMP/baseline/competition/c" -j2 OPTFLAGS='-O3 -flto' shared
-          make -C competition/c -j2 MODE=query_lbd OPTFLAGS='-O3 -flto -DBSAT_ASSUMPTION_LBD' shared query-certificate-driver test
-          make -C competition/c -j2 MODE=query_lbd_debug OPTFLAGS='-g -O0 -DDEBUG -fsanitize=address -fsanitize=undefined -DBSAT_ASSUMPTION_LBD' query-certificate-driver test
+          make -C competition/c -j2 MODE=query_lbd OPTFLAGS='-O3 -flto' shared query-certificate-driver test
+          make -C competition/c -j2 MODE=query_lbd_debug OPTFLAGS='-g -O0 -DDEBUG -fsanitize=address -fsanitize=undefined' query-certificate-driver test
           curl -Lf https://github.com/arminbiere/kissat/archive/8af8e56f174b778aef3aa45af9f739b2a5f492c2.tar.gz -o "$RUNNER_TEMP/kissat.tar.gz"
           tar -xzf "$RUNNER_TEMP/kissat.tar.gz" -C "$RUNNER_TEMP"
           git init "$RUNNER_TEMP/cadical"

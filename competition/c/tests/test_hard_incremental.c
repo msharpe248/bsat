@@ -30,7 +30,7 @@ int main(void) {
     for(unsigned profile=0;profile<8;++profile) {
         SolverOpts o=default_opts();o.reuse_learnts=true;o.probing=false;
         o.max_conflicts=127;o.reduce_interval=32;o.restart_first=16;o.luby_unit=16;
-        o.restart_assumptions=profile&4;
+        o.restart_assumptions=profile&4;o.assumption_lbd=profile&4;
         o.chrono=profile&1;o.chrono_levels=0;o.vmtf=profile&2;o.alternating=profile&2;
         Solver *s=solver_new_with_opts(&o);assert(s);
         for(unsigned module=0;module<8;++module) {
@@ -47,9 +47,7 @@ int main(void) {
                    Exercise retries, then allow a longer contiguous search. */
                 s->opts.max_conflicts=slices<8?127:32768;
                 result=solver_solve_with_assumptions(s,&active,1);++queries;
-#ifdef BSAT_ASSUMPTION_LBD
                 assert(!s->lbd_assumption_levels);
-#endif
                 assert(!s->error && ++slices<2048);unknown+=result==UNDEF;
                 conflicts+=s->stats.conflicts;reductions+=s->stats.reduces;gc+=s->garbage_collections>0;
             } while(result==UNDEF);

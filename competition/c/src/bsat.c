@@ -46,6 +46,7 @@ bsat *bsat_create(uint32_t abi,uint32_t flags) {
     o.probe_on_change=o.reuse_learnts;
     if(flags&BSAT_CERTIFICATES) {
         o.restart_assumptions=true;
+        o.assumption_lbd=true; /* Score fixed query levels without dropping literals. */
         /* The journal contains RUP additions only. Keep variable namespace and
            original formula intact; do not enable equisatisfiable transforms. */
         o.probing=(flags&BSAT_CERTIFIED_PROBING)!=0;

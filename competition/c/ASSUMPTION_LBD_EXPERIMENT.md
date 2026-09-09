@@ -1,6 +1,6 @@
 # Assumption-aware LBD experiment — 2026-09-09
 
-Status: gated prototype, not a production default. Frozen hypothesis and target
+Status: promoted for certified solves after both matched-host confirmation gates passed. Frozen hypothesis and target
 acceptance are in [query-context diagnosis](QUERY_CONTEXT_DIAGNOSIS.md).
 
 The candidate ignores fixed assumption-prefix levels when computing LBD,
@@ -8,8 +8,10 @@ including their implications and dummy assumption levels. Learned clauses keep
 all literals and remain consequences of the permanent formula. A transient
 scoring boundary is installed around certified-policy solves and cleared after
 every completed or interrupted search. Root-only and uncertified policy retain
-the previous score. The compile-time BSAT_ASSUMPTION_LBD gate keeps all runtime
-changes, including the extra Solver field, out of ordinary builds.
+the previous score. The experiment used the compile-time BSAT_ASSUMPTION_LBD gate. The final
+implementation uses a separate internal assumption_lbd policy enabled by the
+certified facade, independently of the restart policy; it adds no public flag or
+ABI change. The transient boundary is zero outside a solve.
 
 Before timing, all 66 C executables pass in release/ASan/UBSan; 53 retained/rebuilt
 query certificates per build independently check, including wrong-context
@@ -17,7 +19,7 @@ rejection. The target experiment checks 8/8 queries: fresh assumption cal3 now
 solves twice in 26.552 / 26.830 CPU seconds (681,570 conflicts), versus control
 UNKNOWN at 60. Unit-query conflicts/proof path remain unchanged. A first retained
 four-circuit pass checks 48/48 queries; cal3 takes 18.000 seconds and 482,935
-conflicts. These are development wins, pending broader confirmation.
+conflicts. These target results preceded the broader confirmation below.
 
 Confirmation is frozen to the original and expanded sets/budgets in
 ASSUMPTION_SEARCH_MILESTONES.md. Compare pre-score prefix-retaining revision
@@ -56,4 +58,31 @@ Evidence: `benchmark_results/query-lbd-mac-confirmation-20260909/`. The summary
 checks exact query sets, input identity, checked answers, CPU deadlines and
 per-query losses. Six regressions validate that missing/context-changed queries,
 contradictory checked answers and losses hidden by faster other queries cannot
-pass. Linux candidate confirmation remains pending; no default promotion yet.
+pass. Linux confirmation also passes, as detailed below.
+
+## Matched Linux confirmation and decision
+
+[Run 34372161034](https://github.com/msharpe248/bsat/actions/runs/34372161034)
+completed successfully, including release/sanitizer tests and independent query
+certificates. Against the same prefix-retaining baseline, the original set
+improves from 94/96 to 96/96 checked queries; mean CPU PAR2 falls 2.557042 →
+0.694731 seconds (-72.83%). Expanded: 60/64 → 62/64 checked, CPU PAR2 1.631357 →
+1.319243 (-19.13%). Both gates pass with no per-query checked losses.
+
+Retained cal3 moves from two 60-second UNKNOWNs to checked UNSATs in 29.592 /
+30.128 CPU seconds, both at 482,935 conflicts, matching the Mac candidate's
+search work. cal100 depth-4 positive moves from two 10-second UNKNOWNs to checked
+UNSATs in 9.539 / 9.319 seconds. cal100 depth-8 positive remains UNKNOWN.
+
+This is not a universal improvement: Linux gen23 depth-16 positive increases
+2.191 / 2.039 → 2.784 / 2.906 seconds and 6,078 → 7,524 conflicts. Its journal
+grows 8.01 → 11.79 MB. Expanded maximum journal size grows 64.37 → 79.57 MB;
+cal3's new proofs require about 31–32 additional wall seconds to check. Solve CPU
+excludes export and checking. These are reused circuit sets, not pristine holdouts.
+
+Evidence: `benchmark_results/query-lbd-linux-confirmation-20260909/`, including
+compiler/host metadata, all eight runs, certificate checks and acceptance summary.
+The successful gates justify enabling the bounded scoring policy for certified
+solves. It changes learned-clause quality scores, never clause literals, logical
+inference, assumption lifetime or certificate context. Independent checks provide
+soundness evidence for tested queries, not a proof of the entire implementation.

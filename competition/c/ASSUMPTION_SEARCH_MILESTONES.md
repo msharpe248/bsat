@@ -28,5 +28,7 @@ complete: no checked losses, but both versions still time out on cal3 at 60 CPU
 seconds on this runner.
 [Fresh query diagnosis](QUERY_CONTEXT_DIAGNOSIS.md) is complete; the bounded
 assumption-level LBD scoring prototype passes its target and retained screens.
-Gated build 90091dd is undergoing paired original/expanded confirmation locally
-and in Linux run 34372161034; it is not a production default.
+The [LBD scoring follow-up](ASSUMPTION_LBD_EXPERIMENT.md) passes both original
+and expanded gates on Mac and Linux (run 34372161034), with no checked losses.
+Linux adds checked cal3 and cal100 depth-4 solves; cal100 depth 8 stays UNKNOWN.
+The final internal policy is enabled only for certified solves.
