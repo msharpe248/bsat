@@ -29,4 +29,8 @@ independent integration and fuzz CI all pass. Commit and push each milestone.
    query-budget UNKNOWN/recovery case. Deployment traces and SLOs are requested;
    absent those, report public-workload acceptance and leave deployment certification open.
 
-Status: scope and untouched input selection frozen; measurements pending.
+Status: scope and untouched input selection frozen in 3060825. Reference extension
+passes 128 result/model/core parity queries; summary passes six acceptance tests.
+Fresh hosted Linux run 34388664761 is running. Acceptance harness now takes explicit
+resource settings and requires two checked hard transactions in addition to normal,
+UNKNOWN and failure/replay cases. Full Linux validation is the next milestone.

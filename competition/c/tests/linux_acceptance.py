@@ -5,6 +5,7 @@ import ctypes as C
 import gzip
 import hashlib
 import json
+import math
 import os
 from pathlib import Path
 import platform
@@ -41,8 +42,8 @@ def transaction(args):
         nonlocal handle
         if handle:lib.bsat_destroy(handle)
         handle=lib.bsat_create(1,3);assert handle
-        assert lib.bsat_set_query_limits(handle,5,0,0)
-        assert lib.bsat_set_journal_limit(handle,32*1024*1024)
+        assert lib.bsat_set_query_limits(handle,args.query_cpu,0,0)
+        assert lib.bsat_set_journal_limit(handle,args.journal_mb*1024*1024)
         for clause in clauses:assert lib.bsat_add_clause(handle,literals(clause),len(clause))
     timed('load',rebuild)
     if args.fault=='kill':os.kill(os.getpid(),signal.SIGKILL)
@@ -69,6 +70,7 @@ def transaction(args):
     answers=[]
     try:
         for index,assumption in enumerate(case['assumptions']):
+            if index:assert lib.bsat_set_query_limits(handle,args.resume_query_cpu or args.query_cpu,0,0)
             arr=literals([assumption]);result=timed('solve',lambda:lib.bsat_solve(handle,arr,1))
             assert result in (0,10,20) and not lib.bsat_error(handle)
             row=dict(result=result,assumption=assumption,accepted=False)
@@ -83,7 +85,7 @@ def transaction(args):
                             model='v '+' '.join(str(lib.bsat_value(handle,v) or v) for v in range(1,n+1))+' 0\n'
                             assert model_valid(exact,model)
                         else:
-                            checked=verify(cnf,proof,args.converter,args.checker,root/'check',30,512,128)
+                            checked=verify(cnf,proof,args.converter,args.checker,root/'check',args.checker_wall,args.checker_heap_mb,args.checker_stack_mb)
                             row['verification']=checked;assert checked['verified'],checked
                     timed('validate',validate)
                     row.update(accepted=True,input_sha256=sha(cnf),proof_sha256=sha(proof))
@@ -100,17 +102,20 @@ def transaction(args):
     print(json.dumps(report),flush=True)
 
 
-def run_isolated(args,parent,name,case,fault='none'):
+def run_isolated(args,parent,name,case,fault='none',query_cpu=None):
     started=time.monotonic()
     cg=parent/name;cg.mkdir()
-    memory=64*1024*1024 if fault=='memory' else 4*1024**3
+    memory=64*1024*1024 if fault=='memory' else args.memory_mb*1024**2
     for key,value in [('memory.max',memory),('memory.swap.max',0),('memory.oom.group',1),('pids.max',64)]:
         (cg/key).write_text(str(value))
-    wall=1 if fault=='wall' else 60;cpu=1 if fault=='cpu' else 30
+    wall=1 if fault=='wall' else args.wall;cpu=1 if fault=='cpu' else args.aggregate_cpu
     command=['unshare','--mount','--propagation','private',sys.executable,str(Path(__file__).resolve()),
-             '--isolated','--case',case,'--fault',fault,'--storage',str(512*1024**2),
+             '--isolated','--case',case,'--fault',fault,'--storage',str(args.storage),
              '--manifest',str(args.manifest),'--library',str(args.library),
-             '--converter',str(args.converter),'--checker',str(args.checker)]
+             '--converter',str(args.converter),'--checker',str(args.checker),
+             '--query-cpu',str(args.query_cpu if query_cpu is None else query_cpu),'--resume-query-cpu',str(args.query_cpu),
+             '--journal-mb',str(args.journal_mb),'--checker-wall',str(args.checker_wall),
+             '--checker-heap-mb',str(args.checker_heap_mb),'--checker-stack-mb',str(args.checker_stack_mb)]
     def attach():(cg/'cgroup.procs').write_text(str(os.getpid()))
     stop=None;storage_peak=0
     output=args.output/(name+'.stdout');errors=args.output/(name+'.stderr')
@@ -121,7 +126,7 @@ def run_isolated(args,parent,name,case,fault='none'):
             while child.poll() is None:
                 try:
                     fs=os.statvfs(f'/proc/{child.pid}/root/tmp')
-                    if fs.f_blocks*fs.f_frsize==512*1024**2:
+                    if fs.f_blocks*fs.f_frsize==args.storage:
                         storage_peak=max(storage_peak,(fs.f_blocks-fs.f_bfree)*fs.f_frsize)
                 except (FileNotFoundError,ProcessLookupError):pass
                 usage=counters(cg/'cpu.stat')['usage_usec']/1e6
@@ -133,7 +138,7 @@ def run_isolated(args,parent,name,case,fault='none'):
             child.wait(timeout=10)
         elapsed=time.monotonic()-started
         row=dict(name=name,case=case,fault=fault,returncode=child.returncode,wall_seconds=elapsed,stop=stop,
-                 limits=dict(memory_bytes=memory,wall_seconds=wall,aggregate_cpu_seconds=cpu,storage_bytes=512*1024**2),
+                 limits=dict(memory_bytes=memory,wall_seconds=wall,aggregate_cpu_seconds=cpu,storage_bytes=args.storage),
                  temporary_sampled_peak_bytes=storage_peak,storage_sample_interval_seconds=.02,
                  memory_peak_bytes=int((cg/'memory.peak').read_text()),memory_events=counters(cg/'memory.events'),
                  cpu=counters(cg/'cpu.stat'),stderr=errors.read_text()[-8000:])
@@ -156,7 +161,21 @@ def main():
     p.add_argument('--output',type=Path);p.add_argument('--isolated',action='store_true')
     p.add_argument('--case',default='gen23');p.add_argument('--fault',default='none')
     p.add_argument('--storage',type=int,default=512*1024**2)
+    p.add_argument('--query-cpu',type=float,default=5)
+    p.add_argument('--resume-query-cpu',type=float,default=0,help='Budget for queries after the first; 0 uses query-cpu')
+    p.add_argument('--hard-query-cpu',type=float,default=0,help='Also require checked cal3 with this positive solve budget')
+    p.add_argument('--journal-mb',type=int,default=32)
+    p.add_argument('--checker-wall',type=float,default=30)
+    p.add_argument('--checker-heap-mb',type=int,default=512)
+    p.add_argument('--checker-stack-mb',type=int,default=128)
+    p.add_argument('--wall',type=float,default=60)
+    p.add_argument('--aggregate-cpu',type=float,default=30)
+    p.add_argument('--memory-mb',type=int,default=4096)
     args=p.parse_args()
+    if any(not math.isfinite(x) or x<=0 for x in (args.query_cpu,args.checker_wall,args.wall,args.aggregate_cpu)):
+        p.error('CPU/wall limits must be finite and positive')
+    if any(not math.isfinite(x) or x<0 for x in (args.hard_query_cpu,args.resume_query_cpu)):p.error('invalid hard/resume query budget')
+    if min(args.storage,args.journal_mb,args.checker_heap_mb,args.checker_stack_mb,args.memory_mb)<=0:p.error('memory/storage limits must be positive')
     for name in ('library','converter','checker','manifest'):setattr(args,name,getattr(args,name).resolve())
     if args.isolated:return transaction(args)
     if sys.platform!='linux' or os.geteuid()!=0:p.error('requires root on a disposable cgroup-v2 Linux runner')
@@ -164,7 +183,8 @@ def main():
     args.output.mkdir(parents=True,exist_ok=True)
     report=dict(complete=False,scope='Provisional hosted Linux acceptance, not deployment certification',
                 resource_scope='Worker and checker process tree; lightweight supervisor outside cgroup',
-                storage_scope='512 MiB tmpfs hard capacity; 20 ms sampled occupancy is a lower bound on peak',
+                storage_scope='Configured tmpfs hard capacity; 20 ms sampled occupancy is a lower bound on peak',
+                policy={k:getattr(args,k) for k in ('query_cpu','hard_query_cpu','journal_mb','checker_wall','checker_heap_mb','checker_stack_mb','wall','aggregate_cpu','memory_mb','storage')},
                 platform=platform.platform(),revision=subprocess.check_output(['git','rev-parse','HEAD'],text=True).strip(),
                 hashes={n:sha(getattr(args,n)) for n in ('library','converter','checker','manifest')},runs=[])
     parent=Path('/sys/fs/cgroup')/f'bsat-acceptance-{os.getpid()}'
@@ -175,7 +195,13 @@ def main():
             assert row['returncode']==0 and row['stop'] is None and row['within_limits']
             assert [r['result'] for r in row['transaction']['answers']]==[20,10]
             assert all(r['accepted'] for r in row['transaction']['answers'])
-        row=run_isolated(args,parent,'unknown','cal3');report['runs'].append(row)
+        if args.hard_query_cpu:
+            for repeat in range(2):
+                row=run_isolated(args,parent,f'hard-{repeat}','cal3',query_cpu=args.hard_query_cpu);report['runs'].append(row)
+                assert row['returncode']==0 and row['stop'] is None and row['within_limits']
+                assert [r['result'] for r in row['transaction']['answers']]==[20,10]
+                assert all(r['accepted'] for r in row['transaction']['answers'])
+        row=run_isolated(args,parent,'unknown','cal3',query_cpu=0.000001);report['runs'].append(row)
         assert row['returncode']==0 and row['within_limits']
         assert [r['result'] for r in row['transaction']['answers']]==[0,10]
         assert [r['accepted'] for r in row['transaction']['answers']]==[False,True]
@@ -191,9 +217,9 @@ def main():
                 retry=run_isolated(args,parent,fault+'-replay','gen23');report['runs'].append(retry)
                 assert retry['returncode']==0 and retry['stop'] is None and retry['within_limits']
                 assert all(r['accepted'] for r in retry['transaction']['answers'])
-                assert row['cpu']['usage_usec']+retry['cpu']['usage_usec']<=30*1e6
+                assert row['cpu']['usage_usec']+retry['cpu']['usage_usec']<=args.aggregate_cpu*1e6
             row['recovery_total_seconds']=time.monotonic()-before
-            assert row['recovery_total_seconds']<60
+            assert row['recovery_total_seconds']<args.wall
         report['complete']=True
     except BaseException as error:
         report['failure']=repr(error);raise

@@ -23,7 +23,7 @@ jobs:
           mkdir -p "$RUNNER_TEMP/acceptance-results"
           lscpu > "$RUNNER_TEMP/acceptance-results/lscpu.txt"
           uname -a > "$RUNNER_TEMP/acceptance-results/kernel.txt"
-          sudo "$(command -v python3)" competition/c/tests/linux_acceptance.py --library competition/c/bin/libbsat_release.so --converter "$RUNNER_TEMP/drat-trim" --checker "$RUNNER_TEMP/cake-lpr/cake_lpr" --manifest competition/c/tests/fixtures/acceptance/manifest.json --output "$RUNNER_TEMP/acceptance-results"
+          sudo "$(command -v python3)" competition/c/tests/linux_acceptance.py --library competition/c/bin/libbsat_release.so --converter "$RUNNER_TEMP/drat-trim" --checker "$RUNNER_TEMP/cake-lpr/cake_lpr" --manifest competition/c/tests/fixtures/acceptance/manifest.json --query-cpu 60 --hard-query-cpu 60 --journal-mb 256 --checker-wall 60 --checker-heap-mb 2048 --checker-stack-mb 512 --wall 180 --aggregate-cpu 120 --memory-mb 4096 --storage 1073741824 --output "$RUNNER_TEMP/acceptance-results"
       - name: Make results readable
         if: always()
         run: sudo chown -R "$(id -u):$(id -g)" "$RUNNER_TEMP/acceptance-results" || true
