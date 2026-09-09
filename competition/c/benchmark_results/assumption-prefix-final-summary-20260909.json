@@ -1,0 +1,108 @@
+{
+  "scope": "Final production facade versus byte-identical pinned pre-prefix control; 4 circuits, 6 depths, 2 polarities, certified/uncertified retained modes. Single final pass; two earlier certified prototype passes.",
+  "control_revision": "d6601b90183d186185eb7d091235145f5f189264",
+  "implementation_revision": "365b574e2b2601eb8efb6d66fb21c8ad34a8e313",
+  "no_checked_solve_loss": true,
+  "all_uncertified_work_counters_match": true,
+  "all_certified_proof_hashes_match_both_prototype_passes": true,
+  "modes": {
+    "1": {
+      "control": {
+        "queries": 48,
+        "checked_within_cpu": 48,
+        "mean_cpu_par2": 1.1413227083333333
+      },
+      "production": {
+        "queries": 48,
+        "checked_within_cpu": 48,
+        "mean_cpu_par2": 1.2553169999999996
+      }
+    },
+    "3": {
+      "control": {
+        "queries": 48,
+        "checked_within_cpu": 47,
+        "mean_cpu_par2": 2.52516275
+      },
+      "production": {
+        "queries": 48,
+        "checked_within_cpu": 48,
+        "mean_cpu_par2": 1.0045731458333333
+      }
+    }
+  },
+  "depth16_positive": [
+    {
+      "circuit": "cal3.aig",
+      "flags": 1,
+      "control_result": 20,
+      "control_cpu": 53.95201,
+      "production_result": 20,
+      "production_cpu": 59.364643,
+      "production_conflicts": 1400032
+    },
+    {
+      "circuit": "cal3.aig",
+      "flags": 3,
+      "control_result": 0,
+      "control_cpu": 60.00004,
+      "production_result": 20,
+      "production_cpu": 46.73397000000001,
+      "production_conflicts": 1148517
+    },
+    {
+      "circuit": "usb_phy.aig",
+      "flags": 1,
+      "control_result": 20,
+      "control_cpu": 0.004753000000008001,
+      "production_result": 20,
+      "production_cpu": 0.004965999999996029,
+      "production_conflicts": 2
+    },
+    {
+      "circuit": "usb_phy.aig",
+      "flags": 3,
+      "control_result": 20,
+      "control_cpu": 0.000945000000001528,
+      "production_result": 20,
+      "production_cpu": 0.0009850000000000136,
+      "production_conflicts": 42
+    },
+    {
+      "circuit": "vgasim_imgfifo-p039.aig",
+      "flags": 1,
+      "control_result": 20,
+      "control_cpu": 0.044786999999999466,
+      "production_result": 20,
+      "production_cpu": 0.042519999999996116,
+      "production_conflicts": 199
+    },
+    {
+      "circuit": "vgasim_imgfifo-p039.aig",
+      "flags": 3,
+      "control_result": 20,
+      "control_cpu": 0.045496999999997456,
+      "production_result": 20,
+      "production_cpu": 0.0493590000000097,
+      "production_conflicts": 152
+    },
+    {
+      "circuit": "gen23.aig",
+      "flags": 1,
+      "control_result": 20,
+      "control_cpu": 0.24177000000000248,
+      "production_result": 20,
+      "production_cpu": 0.29277799999999843,
+      "production_conflicts": 2178
+    },
+    {
+      "circuit": "gen23.aig",
+      "flags": 3,
+      "control_result": 20,
+      "control_cpu": 0.8484100000000012,
+      "production_result": 20,
+      "production_cpu": 1.1569359999999875,
+      "production_conflicts": 6078
+    }
+  ]
+}

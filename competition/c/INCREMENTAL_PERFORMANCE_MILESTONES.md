@@ -29,7 +29,13 @@ push each milestone.
 Status: broader Linux screen complete, gate passed with 4/16 checked runs in
 each version and +0.037% CPU PAR2; six unresolved families limit the evidence.
 Retained/fresh/journal baseline complete: see [updated diagnosis](CAL3_INCREMENTAL_FOLLOWUP.md).
-Certified restart-prefix implementation and final confirmation in progress.
+[Certified-only restart-prefix implementation](ASSUMPTION_RESTART_PREFIX.md) and
+final confirmation complete: 96/96 production-library queries check, including
+certified cal3 in 46.7 CPU seconds. All 66 C tests pass in release/ASan/UBSan, plus
+53 independent query certificates per build. The global uncertified regression
+was rejected; the final uncertified work counters match control. Documented
+tradeoff: certified gen23 slows from 0.85 to 1.16 CPU seconds. Runtime CI continues
+on commit 365b574; these scoped milestones are not deployment certification.
 
 ## Bounded implementation experiment (frozen before candidate timing)
 

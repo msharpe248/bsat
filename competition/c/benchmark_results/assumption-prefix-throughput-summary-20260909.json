@@ -1,0 +1,45 @@
+{
+  "scope": "Alternating uncertified capped-work comparison; not completed solves",
+  "runs": [
+    {
+      "report": "assumption-prefix-throughput-0-control-20260909.json",
+      "solver": "control",
+      "cpu_seconds": 4.11893,
+      "conflicts": 100000,
+      "decisions": 198061,
+      "propagations": 63187009,
+      "result": 0
+    },
+    {
+      "report": "assumption-prefix-throughput-1-production-20260909.json",
+      "solver": "production",
+      "cpu_seconds": 4.011305,
+      "conflicts": 100000,
+      "decisions": 198061,
+      "propagations": 63187009,
+      "result": 0
+    },
+    {
+      "report": "assumption-prefix-throughput-2-production-20260909.json",
+      "solver": "production",
+      "cpu_seconds": 4.0785279999999995,
+      "conflicts": 100000,
+      "decisions": 198061,
+      "propagations": 63187009,
+      "result": 0
+    },
+    {
+      "report": "assumption-prefix-throughput-3-control-20260909.json",
+      "solver": "control",
+      "cpu_seconds": 4.012397,
+      "conflicts": 100000,
+      "decisions": 198061,
+      "propagations": 63187009,
+      "result": 0
+    }
+  ],
+  "control_mean_cpu": 4.065663499999999,
+  "production_mean_cpu": 4.044916499999999,
+  "relative_change": -0.005102980116283629,
+  "work_counters_match": true
+}

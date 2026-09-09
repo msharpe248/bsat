@@ -1,0 +1,22 @@
+{
+  "scope": "Resolve final uncertified CPU timing difference despite identical work counts; frozen before timing",
+  "order": [
+    "control",
+    "production",
+    "production",
+    "control"
+  ],
+  "flags": 1,
+  "conflicts": 100000,
+  "cpu_seconds": 60,
+  "depths": [
+    0,
+    1,
+    2,
+    4,
+    8,
+    16
+  ],
+  "timing_scope": "Serial full growing histories, inspect positive depth16 solving process CPU at identical conflict limit; independent references/checking excluded",
+  "purpose": "Throughput diagnostic only; UNKNOWN is not accepted. Do not infer full-query speedup from capped work."
+}

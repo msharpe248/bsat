@@ -47,8 +47,8 @@ pinned circuits and the same six growing depths. All 96 certified queries resolv
 and check. The global prototype regresses uncertified cal3 to UNKNOWN at 60
 seconds (1,324,252 conflicts), so global promotion is rejected. The final change
 keeps uncertified behavior unchanged; the final scoped implementation passes the full release/ASan/UBSan suites and
-53 independent certificate checks per build. Direct production-library timing
-is in progress.
+53 independent certificate checks per build. Direct production-library confirmation resolves and checks 96/96 queries: all
+48 uncertified and all 48 certified queries, versus 48/48 and 47/48 in the control.
 
 Evidence: `benchmark_results/assumption-restart-validation-20260909.json`,
 `assumption-restart-certificates-{release,debug}-20260909.json`,
@@ -60,3 +60,39 @@ resolves 48/48 per pass. There is a tradeoff: certified gen23 depth-16 positive
 CPU rises from 0.848 in the control pass to 1.378 / 1.283 in the two candidate
 passes. This is not a universal per-query speedup. Promotion is based on adding
 the difficult checked solve without a solve loss in this frozen circuit mix.
+
+## Final production confirmation
+
+The production library (not the diagnostic facade) proves certified cal3 in
+46.733970 CPU seconds and 1,148,517 conflicts. Every certified proof hash matches
+both prototype confirmation passes. All uncertified conflict, decision and
+propagation counts match the control at every query; no checked solve is lost.
+Certified CPU PAR2 falls from 2.525163 to 1.004573 seconds per query in this
+specific 48-query mix, using a 120-second penalty for UNKNOWN at a 60-second
+budget. This penalized aggregate is not a claim of a 2.5x completed-solve speedup.
+Final certified gen23 takes 1.156936 versus 0.848410 CPU seconds (+36%).
+
+Uncertified cal3 takes 53.952 control versus 59.365 production CPU seconds in
+those single full-history passes despite identical work. A subsequent frozen
+control/production/production/control diagnostic caps each positive depth-16
+query at 100,000 conflicts. All four runs have identical conflict, decision and
+propagation counts. Mean CPU is 4.0656635 control versus 4.0449165 production
+(-0.51%); this short check does not reproduce a throughput regression, but does
+not prove equal timing across a whole query or establish the cause of variation.
+Capped UNKNOWNs are not accepted results. No precise uncertified speed claim is
+made. The uncertified search policy is unchanged.
+
+Final reports: `assumption-prefix-production-confirmation-20260909.json`,
+`assumption-prefix-final-summary-20260909.json`,
+`assumption-prefix-final-validation-20260909.json`,
+`assumption-prefix-final-certificates-{release,debug}-20260909.json`, and
+`assumption-prefix-throughput-*-20260909.json`, all under `benchmark_results/`.
+Runtime commit: `365b574e2b2601eb8efb6d66fb21c8ad34a8e313`.
+
+All scoped local checks and measurements are complete. Runtime fuzz and
+independent integration CI have passed; the correctness matrix remains in progress.
+Runtime CI is tracked by
+correctness run 34324158958, independent integration run 34324158925 and fuzz run
+34324159176. Superseded pre-runtime documentation/evidence correctness runs were
+cancelled to free macOS runner capacity. The final documentation-only commit
+skips redundant CI; it does not cancel the runtime commit's checks.

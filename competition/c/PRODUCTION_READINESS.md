@@ -148,7 +148,8 @@ four-circuit candidate passes check 48/48 queries. A global version regresses
 uncertified cal3, so the final internal policy is enabled only by the certified
 facade. Certified gen23 becomes slower in the measured pass; the change is not a
 universal speedup. Full release/sanitizer and independent certificate checks pass;
-direct production-library timing is being finalized. The broader eight-family
+the direct production library checks 96/96 queries and proves certified cal3 in
+46.7 CPU seconds. Runtime CI remains separately tracked in that report. The broader eight-family
 Linux reduction screen also passes its frozen regression gate, with only 4/16
 checked runs per version; its many UNKNOWNs limit generalization.
 
