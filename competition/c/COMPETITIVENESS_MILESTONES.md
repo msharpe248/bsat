@@ -78,3 +78,16 @@ The failure-cache experiment is rejected: 36 checked candidate queries preserve
 all conflicts, proof streams and minimization inspections. Runtime source restored.
 Separate per-solver embedding-process RSS follow-up runs in 34390131562; it excludes
 checker processes and identifies Python/encoding overhead explicitly.
+
+
+Proof-cost experiment complete and rejected for automatic acceptance. All eight
+paths independently verify; saved artifacts shrink 87.7% / 59.1%, but total child
+CPU changes +0.62% / +31.18%. See PROOF_COMPACTION_EXPERIMENT.md. Direct verification
+remains unchanged. The new diagnostics and acceptance fix are the implemented
+improvements in this batch; neither rejected experiment changes solver defaults.
+
+
+Isolated memory follow-up complete (34390131562): one solver per embedding process,
+all BSAT queries agree with pinned checked contexts; PicoRV32 peak RSS is 535.55
+MiB for BSAT and 676.24 MiB for CaDiCaL. These include Python/encoding/model checks,
+exclude external certificate checkers, and are not native-only memory figures.

@@ -24,7 +24,7 @@ capability and release-gate summary is [Production readiness](../PRODUCTION_READ
 | cal3 learning diagnosis | `benchmark_cal3_learning.py` | Frozen 13-profile timed/fixed-conflict matrices, checked conclusive answers; development evidence only |
 | Measurement integrity | `test_select_corpus.py`, `test_benchmark_manifest.py`, `test_benchmark_artifacts.py`, `test_incremental_summary.py` | History exclusion, frozen hashes, certificate retention and checker exit/status handling |
 | Retained incremental reference | `differential_histories.py`, `incremental_reference.py` | Persistent CaDiCaL plus fresh Kissat; additions, assumptions, cancellation and checkpoints |
-| Real verification circuits | `test_aag_history.py`, `industrial_histories.py` | Pinned AIGER input, growing CNF, independent circuit simulation and checked proofs; bounded safety queries |
+| Real verification circuits | `test_aag_history.py`, `industrial_histories.py`, `test_competitiveness_summary.py` | Pinned AIGER input, growing CNF, independent circuit simulation and checked proofs; bounded safety queries |
 | Expanded circuit/checkpoint histories | `expanded_industrial_aig.json`, `industrial_histories.py --checkpoint-every`, `test_expanded_probing.py` | Larger pinned sources, checkpoint invalidation and journal reset, paired CPU/UNKNOWN accounting |
 | Certified journals | `test_proof_journal`, `test_query_export`, `test_journal_limits`, `check_retained_certificates.py` | Exact query context, RUP journal, quota and I/O failures; independent checker required |
 | Certified probing | `test_certified_probing`, public flags 6/7 in `industrial_histories.py` and `differential_histories.py` | 4,096 oracle queries per C build, assumption-safe RUP units, future additions, cancellation and journal quotas |
@@ -83,3 +83,9 @@ claims apply only to their pinned binaries and workloads.
 - `embedding_soak.c`: 256-variable parity histories with an exact four-model oracle.
 - `test_certify_query.py`: augmented-query acceptance and wrong-base rejection.
 - `test_process_control.py`: timeout cleanup of descendants and nested wrappers.
+
+The fresh competitiveness campaign additionally checks an isolated CaDiCaL public
+statistics extension (`check_reference_statistics.py`, 128 result/model/core queries)
+and frozen summary integrity (six missing/context/contradiction/deadline tests).
+`measure_retained_resources.py` isolates one solver/embedding process per circuit;
+its RSS includes Python encoding/model validation and excludes proof checkers.
