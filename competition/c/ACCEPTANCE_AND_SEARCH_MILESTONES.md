@@ -34,3 +34,12 @@ certify an unspecified application's semantics, durability or service SLOs.
 
 Status: [complete Linux acceptance](LINUX_TRANSACTION_ACCEPTANCE.md) passes the
 provisional gates. Learning ablations and longer-subset measurements are pending.
+
+The learning matrix is frozen in `tests/benchmark_cal3_learning.py`: BSAT
+default, no minimization, iterative, binary, combined, retention fraction 0.9,
+and reduction interval 1,000,000,000 (effectively disabled for this screen).
+CaDiCaL: default, plain, plain without minimization, plain without shrinking,
+plain without either, and plain without reduction. Run both the CPU-limited
+screen and a separate 10,000-conflict diagnostic, two repetitions each. The
+default CaDiCaL shrinking pass can still operate with `--no-minimize`; disabling
+both is a distinct ablation. No new runtime option or default is proposed.

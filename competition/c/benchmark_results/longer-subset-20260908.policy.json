@@ -1,0 +1,21 @@
+{
+  "scope": "Frozen development subset, no holdout claim",
+  "cpu_seconds": 60,
+  "wall_seconds": 90,
+  "repeats": 2,
+  "seed": 2026090868,
+  "inputs": {
+    "/Users/msharpe/python/bsat/dataset/sat_competition2025/planning/16c999d046885c8e51f196e60c34d966.cnf": {
+      "sha256": "77db4df9cc8bd8cd59dae994f24a3cf686ebd46e2aa123c534b5e3cc3a75d9b5"
+    },
+    "/private/tmp/bsat-target-snapshots/cal3-depth16-polarity1.cnf": {
+      "sha256": "6bbfa3e0109b277412f4bf0edc157670859943a2e914c2d16f27346acc1b9e98"
+    },
+    "/Users/msharpe/python/bsat/dataset/sat_competition2025/influence-maximization/931621d9964e9d0cd1c4001822015c92.cnf": {
+      "sha256": "4995264659fd21ba40f487b2ecb0629bf241f9f543a7358d02b5e4376c09eab2"
+    },
+    "/Users/msharpe/python/bsat/dataset/sat_competition2025/scheduling/c05d4d3ecd06a2e3942fea09159dd27b.cnf": {
+      "sha256": "8505ed3bdf7a83d6c03fadf50eb01a6e12dd4554428bc326542d17c7447dedb8"
+    }
+  }
+}
