@@ -1,0 +1,34 @@
+{
+  "source_revision": "7df3ce27c569615bdd205dbd6b473ab2c33953a7",
+  "encoder": "tests/aag_history.py",
+  "cases": [
+    {
+      "name": "gen23",
+      "file": "gen23.cnf.gz",
+      "sha256": "a5aada5abe85d9491ba13ddd98120f35d962f8fe1282548e7a920f4c4ed765a7",
+      "compressed_sha256": "0e94423030c42730f528aa0dfbe0643c143ba9fa8ee199ee1d6f1d1bd3727461",
+      "source_aag_sha256": "609eea08faa4d98b023dbd995b571b25cba37ec967ce62e54a3f8fab8aa6ff32",
+      "depth": 8,
+      "variables": 83701,
+      "clauses": 206920,
+      "assumptions": [
+        78957,
+        -78957
+      ]
+    },
+    {
+      "name": "cal3",
+      "file": "cal3.cnf.gz",
+      "sha256": "72e4a8cee8b37d18e7d54b4e4944008f99a9954f8f6b19b5438303631246778d",
+      "compressed_sha256": "7fa97b5f76711c7a3dc731f32b54cc55755b9f26b814b8e7092b36e0a5f6d101",
+      "source_aag_sha256": "178eb62256e68a589343fefe070d7717cf9ac5176f0f96dd2337f848890fda4c",
+      "depth": 16,
+      "variables": 9028,
+      "clauses": 23880,
+      "assumptions": [
+        8715,
+        -8715
+      ]
+    }
+  ]
+}
