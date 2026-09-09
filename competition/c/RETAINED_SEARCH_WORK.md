@@ -36,3 +36,17 @@ and status are in COMPETITIVENESS_MILESTONES.md.
 
 Evidence: benchmark_results/search-gap-{cal3,cal100}-20260909.json and
 reference-statistics-parity-20260909.json. All 18 diagnostic query answers check.
+
+
+## Failure-cache result
+
+Rejected and removed from runtime source. Both target repetitions preserve every
+conclusive proof hash, conflict count, learned-literal count and minimization
+inspection count: cal3 remains 482,935 conflicts / 308,694,275 inspections;
+cal100 remains 112,437 / 19,167,222. All 36 candidate queries check. The added cache
+does not eliminate measured repeated work on these histories, so small timing
+fluctuations cannot justify promotion or broader tuning. The validated patch and
+66-test release/sanitizer plus 53-certificate-per-build evidence are archived in
+`failure-cache-decision-20260909.json` and the adjacent prototype/target reports.
+The remaining gap warrants a separately designed certified simplification or
+search-quality experiment; this campaign introduces no new solver policy.

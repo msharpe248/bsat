@@ -1,0 +1,42 @@
+--- a/competition/c/src/minimize.c
++++ b/competition/c/src/minimize.c
+@@ -35,6 +35,9 @@
+     if (seen_val == 2) {
+         return false;  // Cycle - being explored
+     }
++#ifdef BSAT_CACHE_MINIMIZE_FAILURES
++    if (seen_val == 255) { s->stats.minimize_cache_hits++; return false; }
++#endif
+     if (seen_val >= 3) {
+         *height = seen_val - 3;
+         s->stats.minimize_cache_hits++;
+@@ -109,7 +112,16 @@
+         // Recursively check if this literal is covered
+         unsigned child_height;
+         if (!lit_redundant(s, q, abstract_levels, depth + 1, remaining, touched, &child_height)) {
+-            s->seen[v] = orig_seen;
++#ifdef BSAT_CACHE_MINIMIZE_FAILURES
++            if (s->opts.assumption_lbd) {
++                /* Failure caching is conservative even for depth-dependent
++                   failures: it can only retain a literal. Clear per candidate. */
++                ASSERT(*touched < s->num_vars + 1);
++                s->minimize_touched[(*touched)++] = v;
++                s->seen[v] = 255;
++            } else
++#endif
++                s->seen[v] = orig_seen;
+             return false;
+         }
+         if (child_height + 1 > max_height) max_height = child_height + 1;
+--- a/competition/c/tests/test_minimize.c
++++ b/competition/c/tests/test_minimize.c
+@@ -11,6 +11,9 @@
+     for(unsigned i=0;i<vars;++i) assert(solver_new_var(s));
+     s->opts.random_phase=false;
+     s->opts.iterative_minimize=true;
++#ifdef BSAT_CACHE_MINIMIZE_FAILURES
++    s->opts.assumption_lbd=true;
++#endif
+     return s;
+ }
+ 

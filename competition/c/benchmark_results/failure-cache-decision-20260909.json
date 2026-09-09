@@ -1,0 +1,33 @@
+{
+  "decision": "rejected: no reduction in search or minimization work; default source restored",
+  "runtime_baseline": "c6b4ac84c94e231983886828d3100495a49545c6",
+  "patch_sha256": "e040491a0286568f14bd85abd660a4b5dddd12a63493e57439ca1d3dccda9b41",
+  "builds": {
+    "release": {
+      "c_executables": 66,
+      "independent_certificates": 53,
+      "focused_entailment_cleanup_passed": true,
+      "log_sha256": "2e811431a0c292bcee390efa9cdd417400cf0067869775ed34c7ed266efb951d"
+    },
+    "debug": {
+      "c_executables": 66,
+      "independent_certificates": 53,
+      "focused_entailment_cleanup_passed": true,
+      "log_sha256": "0658dfaa109945e50bffc5cf759a83d74cfe2d6f817f695686f93bf4f0989b4d"
+    }
+  },
+  "targets": {
+    "cal3": {
+      "checked_candidate_queries": 24,
+      "identical_input_result_proof_conflicts_inspections_literals": true,
+      "baseline_library_sha256": "b663404a3bf2067929fa76385155fac551ec0345c267d641924bf32e1855d921",
+      "candidate_library_sha256": "23640edb3c8c3000bf6b70d29e75477fa5412b1b0d96de5e5544eb62a0311e52"
+    },
+    "cal100": {
+      "checked_candidate_queries": 12,
+      "identical_input_result_proof_conflicts_inspections_literals": true,
+      "baseline_library_sha256": "b663404a3bf2067929fa76385155fac551ec0345c267d641924bf32e1855d921",
+      "candidate_library_sha256": "23640edb3c8c3000bf6b70d29e75477fa5412b1b0d96de5e5544eb62a0311e52"
+    }
+  }
+}
