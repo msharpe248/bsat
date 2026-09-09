@@ -90,6 +90,11 @@ def transaction(args):
                     timed('validate',validate)
                     row.update(accepted=True,input_sha256=sha(cnf),proof_sha256=sha(proof))
             answers.append(row)
+            # Checkpoint rebuilds obey the current CPU budget too. The tiny first
+            # UNKNOWN injection must restore the normal budget before recovery.
+            checkpoint_cpu=args.resume_query_cpu or args.query_cpu
+            assert lib.bsat_set_query_limits(handle,checkpoint_cpu,0,0)
+            row['checkpoint_cpu_budget']=checkpoint_cpu
             assert timed('checkpoint',lambda:lib.bsat_checkpoint(handle))
             used=C.c_uint64();assert lib.bsat_get_journal_bytes(handle,C.byref(used)) and used.value==0
             assert not lib.bsat_value(handle,1)

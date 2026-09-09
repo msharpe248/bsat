@@ -1,0 +1,11 @@
+Traceback (most recent call last):
+  File "/home/runner/work/bsat/bsat/competition/c/tests/linux_acceptance.py", line 232, in <module>
+    if __name__=='__main__':main()
+                            ^^^^^^
+  File "/home/runner/work/bsat/bsat/competition/c/tests/linux_acceptance.py", line 180, in main
+    if args.isolated:return transaction(args)
+                            ^^^^^^^^^^^^^^^^^
+  File "/home/runner/work/bsat/bsat/competition/c/tests/linux_acceptance.py", line 93, in transaction
+    assert timed('checkpoint',lambda:lib.bsat_checkpoint(handle))
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError

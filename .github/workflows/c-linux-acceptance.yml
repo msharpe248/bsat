@@ -18,6 +18,8 @@ jobs:
           curl -Lf https://raw.githubusercontent.com/marijnheule/drat-trim/2e3b2dc0ecf938addbd779d42877b6ed69d9a985/drat-trim.c -o "$RUNNER_TEMP/drat-trim.c"
           cc -O2 "$RUNNER_TEMP/drat-trim.c" -o "$RUNNER_TEMP/drat-trim"
           python3 competition/c/tests/build_verified_checker.py --directory "$RUNNER_TEMP/cake-lpr"
+      - name: Check interrupted-query checkpoint recovery
+        run: python3 competition/c/tests/check_checkpoint_budget_recovery.py --library competition/c/bin/libbsat_release.so
       - name: Execute isolated end-to-end acceptance
         run: |
           mkdir -p "$RUNNER_TEMP/acceptance-results"

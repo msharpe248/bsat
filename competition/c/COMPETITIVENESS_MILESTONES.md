@@ -34,3 +34,32 @@ passes 128 result/model/core parity queries; summary passes six acceptance tests
 Fresh hosted Linux run 34388664761 is running. Acceptance harness now takes explicit
 resource settings and requires two checked hard transactions in addition to normal,
 UNKNOWN and failure/replay cases. Full Linux validation is the next milestone.
+
+Proof-cost hypothesis (frozen before timing): DRAT-trim's core/literal trimming
+without LRAT output can shrink clauses as well as discard unused lemmas. Test
+`-l compact.drat -C`, then the ordinary independent LRAT/CakeML chain, against
+direct LRAT conversion in direct/trim/trim/direct order on cal3 and cal100 exports.
+Count the extra trimming pass. Promote only an optional artifact path if checked
+proof bytes fall and complete verification CPU improves on both targets; do not
+change solve policy or claim that smaller artifacts alone reduce acceptance time.
+
+Search hypothesis (frozen before building): cache a failed recursive minimization
+subtree only within the current source-literal candidate. Current cal3 performs
+308,694,275 reason inspections and cal100 19,167,222; both default recursion paths
+restore failed nodes to unseen and may revisit them through the same dependency
+DAG. A cached failure only keeps a literal; depth/context-dependent failures may
+conservatively miss a later removal. Clear all marks before the next source
+literal and query. Test in certified policy only, with an experimental build macro.
+Require full release/sanitizer tests and independently checked target histories.
+Screen cal3 and cal100 twice at existing depths/budgets before broader confirmation;
+reject a target checked loss or >5% combined target solve CPU regression. A failed
+screen is archived and the prototype removed; no alternate cache tuning grid.
+
+
+First hard acceptance run 34388896901 checks both hard repetitions (~95 seconds,
+~2.67 GiB peak) but fails in the tiny-budget UNKNOWN checkpoint. Checkpoint rebuilds
+honor the current CPU budget; the harness incorrectly left the one-microsecond
+injection in place. Restore the separately configured ordinary budget before
+checkpoint/replay. The focused real-library regression passes UNKNOWN → restored
+budget → zero-journal checkpoint → independently checked SAT. Archive the failed
+run; retry the same frozen outer envelope, with no raised resource limits.

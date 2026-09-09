@@ -1,0 +1,703 @@
+{
+  "complete": false,
+  "scope": "Provisional hosted Linux acceptance, not deployment certification",
+  "resource_scope": "Worker and checker process tree; lightweight supervisor outside cgroup",
+  "storage_scope": "Configured tmpfs hard capacity; 20 ms sampled occupancy is a lower bound on peak",
+  "policy": {
+    "query_cpu": 60.0,
+    "hard_query_cpu": 60.0,
+    "journal_mb": 256,
+    "checker_wall": 60.0,
+    "checker_heap_mb": 2048,
+    "checker_stack_mb": 512,
+    "wall": 180.0,
+    "aggregate_cpu": 120.0,
+    "memory_mb": 4096,
+    "storage": 1073741824
+  },
+  "platform": "Linux-6.17.0-1022-azure-x86_64-with-glibc2.39",
+  "revision": "70c394d1642e884bb610f7dd2a8da49bb58c0d18",
+  "hashes": {
+    "library": "4edceed8576884c4a23c988393be246a02a4825d551038bcf590b72756fabeac",
+    "converter": "659c7b1f5ef578cd6cfb2f06e477368eb12e82717502e3eaf263d40c5853b233",
+    "checker": "a0f239f9159768e9d302c4b7d03a2e620a26ececd1a1ccb493b5fb6f83604e99",
+    "manifest": "9a894a9769816148dfea6e70c9a14bfa8527e2714a0733e649ad47f1ce171d28"
+  },
+  "runs": [
+    {
+      "name": "normal-0",
+      "case": "gen23",
+      "fault": "none",
+      "returncode": 0,
+      "wall_seconds": 2.4505254019999967,
+      "stop": null,
+      "limits": {
+        "memory_bytes": 4294967296,
+        "wall_seconds": 180.0,
+        "aggregate_cpu_seconds": 120.0,
+        "storage_bytes": 1073741824
+      },
+      "temporary_sampled_peak_bytes": 10498048,
+      "storage_sample_interval_seconds": 0.02,
+      "memory_peak_bytes": 705724416,
+      "memory_events": {
+        "low": 0,
+        "high": 0,
+        "max": 0,
+        "oom": 0,
+        "oom_kill": 0,
+        "oom_group_kill": 0
+      },
+      "cpu": {
+        "usage_usec": 2414431,
+        "user_usec": 2203305,
+        "system_usec": 211125,
+        "nice_usec": 0,
+        "core_sched.force_idle_usec": 0
+      },
+      "stderr": "",
+      "within_limits": true,
+      "transaction": {
+        "complete": true,
+        "case": "gen23",
+        "source_sha256": "a5aada5abe85d9491ba13ddd98120f35d962f8fe1282548e7a920f4c4ed765a7",
+        "answers": [
+          {
+            "result": 20,
+            "assumption": 78957,
+            "accepted": true,
+            "verification": {
+              "input_sha256": "a386b79c249b29e1fd0aad16072d12f09810ada0a71e5abe29f75fc5ad844253",
+              "drat_sha256": "c0103feec160e1770f34464ca6a3004a1779c9022a4ac5a4d11d73e4df283204",
+              "converter_sha256": "659c7b1f5ef578cd6cfb2f06e477368eb12e82717502e3eaf263d40c5853b233",
+              "checker_sha256": "a0f239f9159768e9d302c4b7d03a2e620a26ececd1a1ccb493b5fb6f83604e99",
+              "verified": true,
+              "checker_heap_mb": 2048,
+              "checker_stack_mb": 512,
+              "stages": [
+                {
+                  "command": [
+                    "/home/runner/work/_temp/drat-trim",
+                    "/tmp/tmpmya625py/check/input.cnf",
+                    "/tmp/tmpmya625py/check/proof.drat",
+                    "-L",
+                    "/tmp/tmpmya625py/check/proof.lrat"
+                  ],
+                  "seconds": 0.20464219499999814,
+                  "cpu_seconds": 0.20424399999999998,
+                  "children_peak_rss_bytes": 149266432,
+                  "returncode": 0,
+                  "stdout": "\nc turning on binary mode checking\n\nc parsing input formula with 83701 variables and 206921 clauses\n\nc finished parsing, read 180873 bytes from proof file\n\nc detected empty clause; start verification via backward checking\n\nc 18293 of 206921 clauses in core                            \n\nc 394 of 430 lemmas in core using 206473 resolution steps\n\nc 0 RAT lemmas in core; 3597 redundant literals in core lemmas\n\ns VERIFIED\n\nc verification time: 0.197 seconds\n",
+                  "stderr": ""
+                },
+                {
+                  "command": [
+                    "/home/runner/work/_temp/cake-lpr/cake_lpr",
+                    "--CML_HEAP_SIZE=2048",
+                    "--CML_STACK_SIZE=512",
+                    "/tmp/tmpmya625py/check/input.cnf",
+                    "/tmp/tmpmya625py/check/proof.lrat"
+                  ],
+                  "seconds": 0.3006814490000025,
+                  "cpu_seconds": 0.300366,
+                  "children_peak_rss_bytes": 566079488,
+                  "returncode": 0,
+                  "stdout": "s VERIFIED UNSAT\n",
+                  "stderr": ""
+                }
+              ],
+              "lrat_sha256": "b0fdce439986ca24ea6eeea78deaf800aea8bf82449a52e9b16798466971ee07",
+              "seconds": 0.5137766880000001,
+              "rss_scope": "Cumulative child-process high-water RSS, not isolated per-stage peak"
+            },
+            "input_sha256": "a386b79c249b29e1fd0aad16072d12f09810ada0a71e5abe29f75fc5ad844253",
+            "proof_sha256": "c0103feec160e1770f34464ca6a3004a1779c9022a4ac5a4d11d73e4df283204"
+          },
+          {
+            "result": 10,
+            "assumption": -78957,
+            "accepted": true,
+            "input_sha256": "604cb16d920d1d0080bbd86f0d146937f587f390cba657cfe85307f5957878ea",
+            "proof_sha256": "c0acc2d8f22c673f85d0d8adecc748331d3fdcf620bfec9ecd0d80594c986412"
+          }
+        ],
+        "stages": [
+          {
+            "name": "decompress",
+            "wall_seconds": 0.012297957000001247,
+            "cpu_seconds": 0.012297616999999997
+          },
+          {
+            "name": "parse",
+            "wall_seconds": 0.22882306399999663,
+            "cpu_seconds": 0.228794885
+          },
+          {
+            "name": "load",
+            "wall_seconds": 0.3970284760000027,
+            "cpu_seconds": 0.396663712
+          },
+          {
+            "name": "solve",
+            "wall_seconds": 0.14053289400000324,
+            "cpu_seconds": 0.14053127600000004
+          },
+          {
+            "name": "export",
+            "wall_seconds": 0.026291188000001853,
+            "cpu_seconds": 0.026290601000000025
+          },
+          {
+            "name": "validate",
+            "wall_seconds": 0.8055647189999959,
+            "cpu_seconds": 0.30127845200000003
+          },
+          {
+            "name": "checkpoint",
+            "wall_seconds": 0.028765093999993496,
+            "cpu_seconds": 0.02876539399999989
+          },
+          {
+            "name": "solve",
+            "wall_seconds": 0.08159877900000367,
+            "cpu_seconds": 0.08159820900000003
+          },
+          {
+            "name": "export",
+            "wall_seconds": 0.026692372000006515,
+            "cpu_seconds": 0.026675192999999986
+          },
+          {
+            "name": "validate",
+            "wall_seconds": 0.5360781779999968,
+            "cpu_seconds": 0.5359330199999999
+          },
+          {
+            "name": "checkpoint",
+            "wall_seconds": 0.023454834999995455,
+            "cpu_seconds": 0.023442865999999896
+          }
+        ],
+        "storage_failure": null,
+        "transaction_seconds": 2.3285930710000002,
+        "temporary_bytes_used": 0,
+        "temporary_capacity_bytes": 1073741824
+      }
+    },
+    {
+      "name": "normal-1",
+      "case": "gen23",
+      "fault": "none",
+      "returncode": 0,
+      "wall_seconds": 2.428460655000002,
+      "stop": null,
+      "limits": {
+        "memory_bytes": 4294967296,
+        "wall_seconds": 180.0,
+        "aggregate_cpu_seconds": 120.0,
+        "storage_bytes": 1073741824
+      },
+      "temporary_sampled_peak_bytes": 10493952,
+      "storage_sample_interval_seconds": 0.02,
+      "memory_peak_bytes": 705048576,
+      "memory_events": {
+        "low": 0,
+        "high": 0,
+        "max": 0,
+        "oom": 0,
+        "oom_kill": 0,
+        "oom_group_kill": 0
+      },
+      "cpu": {
+        "usage_usec": 2397458,
+        "user_usec": 2182417,
+        "system_usec": 215041,
+        "nice_usec": 0,
+        "core_sched.force_idle_usec": 0
+      },
+      "stderr": "",
+      "within_limits": true,
+      "transaction": {
+        "complete": true,
+        "case": "gen23",
+        "source_sha256": "a5aada5abe85d9491ba13ddd98120f35d962f8fe1282548e7a920f4c4ed765a7",
+        "answers": [
+          {
+            "result": 20,
+            "assumption": 78957,
+            "accepted": true,
+            "verification": {
+              "input_sha256": "a386b79c249b29e1fd0aad16072d12f09810ada0a71e5abe29f75fc5ad844253",
+              "drat_sha256": "c0103feec160e1770f34464ca6a3004a1779c9022a4ac5a4d11d73e4df283204",
+              "converter_sha256": "659c7b1f5ef578cd6cfb2f06e477368eb12e82717502e3eaf263d40c5853b233",
+              "checker_sha256": "a0f239f9159768e9d302c4b7d03a2e620a26ececd1a1ccb493b5fb6f83604e99",
+              "verified": true,
+              "checker_heap_mb": 2048,
+              "checker_stack_mb": 512,
+              "stages": [
+                {
+                  "command": [
+                    "/home/runner/work/_temp/drat-trim",
+                    "/tmp/tmpmsy7senj/check/input.cnf",
+                    "/tmp/tmpmsy7senj/check/proof.drat",
+                    "-L",
+                    "/tmp/tmpmsy7senj/check/proof.lrat"
+                  ],
+                  "seconds": 0.20821605199999738,
+                  "cpu_seconds": 0.20788899999999996,
+                  "children_peak_rss_bytes": 148938752,
+                  "returncode": 0,
+                  "stdout": "\nc turning on binary mode checking\n\nc parsing input formula with 83701 variables and 206921 clauses\n\nc finished parsing, read 180873 bytes from proof file\n\nc detected empty clause; start verification via backward checking\n\nc 18293 of 206921 clauses in core                            \n\nc 394 of 430 lemmas in core using 206473 resolution steps\n\nc 0 RAT lemmas in core; 3597 redundant literals in core lemmas\n\ns VERIFIED\n\nc verification time: 0.200 seconds\n",
+                  "stderr": ""
+                },
+                {
+                  "command": [
+                    "/home/runner/work/_temp/cake-lpr/cake_lpr",
+                    "--CML_HEAP_SIZE=2048",
+                    "--CML_STACK_SIZE=512",
+                    "/tmp/tmpmsy7senj/check/input.cnf",
+                    "/tmp/tmpmsy7senj/check/proof.lrat"
+                  ],
+                  "seconds": 0.2968756359999958,
+                  "cpu_seconds": 0.29650899999999997,
+                  "children_peak_rss_bytes": 566079488,
+                  "returncode": 0,
+                  "stdout": "s VERIFIED UNSAT\n",
+                  "stderr": ""
+                }
+              ],
+              "lrat_sha256": "b0fdce439986ca24ea6eeea78deaf800aea8bf82449a52e9b16798466971ee07",
+              "seconds": 0.5135202400000054,
+              "rss_scope": "Cumulative child-process high-water RSS, not isolated per-stage peak"
+            },
+            "input_sha256": "a386b79c249b29e1fd0aad16072d12f09810ada0a71e5abe29f75fc5ad844253",
+            "proof_sha256": "c0103feec160e1770f34464ca6a3004a1779c9022a4ac5a4d11d73e4df283204"
+          },
+          {
+            "result": 10,
+            "assumption": -78957,
+            "accepted": true,
+            "input_sha256": "604cb16d920d1d0080bbd86f0d146937f587f390cba657cfe85307f5957878ea",
+            "proof_sha256": "c0acc2d8f22c673f85d0d8adecc748331d3fdcf620bfec9ecd0d80594c986412"
+          }
+        ],
+        "stages": [
+          {
+            "name": "decompress",
+            "wall_seconds": 0.01207436700000386,
+            "cpu_seconds": 0.012073355000000001
+          },
+          {
+            "name": "parse",
+            "wall_seconds": 0.23183267200000302,
+            "cpu_seconds": 0.23176711500000002
+          },
+          {
+            "name": "load",
+            "wall_seconds": 0.38520142600000185,
+            "cpu_seconds": 0.385191835
+          },
+          {
+            "name": "solve",
+            "wall_seconds": 0.13911052200000285,
+            "cpu_seconds": 0.13910788500000004
+          },
+          {
+            "name": "export",
+            "wall_seconds": 0.026386750000000347,
+            "cpu_seconds": 0.02638637399999999
+          },
+          {
+            "name": "validate",
+            "wall_seconds": 0.798617347000004,
+            "cpu_seconds": 0.294450934
+          },
+          {
+            "name": "checkpoint",
+            "wall_seconds": 0.027834251000001586,
+            "cpu_seconds": 0.02783435199999995
+          },
+          {
+            "name": "solve",
+            "wall_seconds": 0.0801263239999983,
+            "cpu_seconds": 0.08011439800000009
+          },
+          {
+            "name": "export",
+            "wall_seconds": 0.0270742009999978,
+            "cpu_seconds": 0.02705942100000014
+          },
+          {
+            "name": "validate",
+            "wall_seconds": 0.5379557509999984,
+            "cpu_seconds": 0.5378513029999998
+          },
+          {
+            "name": "checkpoint",
+            "wall_seconds": 0.023904162000000895,
+            "cpu_seconds": 0.02390424000000002
+          }
+        ],
+        "storage_failure": null,
+        "transaction_seconds": 2.311764030000006,
+        "temporary_bytes_used": 0,
+        "temporary_capacity_bytes": 1073741824
+      }
+    },
+    {
+      "name": "hard-0",
+      "case": "cal3",
+      "fault": "none",
+      "returncode": 0,
+      "wall_seconds": 95.175551806,
+      "stop": null,
+      "limits": {
+        "memory_bytes": 4294967296,
+        "wall_seconds": 180.0,
+        "aggregate_cpu_seconds": 120.0,
+        "storage_bytes": 1073741824
+      },
+      "temporary_sampled_peak_bytes": 679534592,
+      "storage_sample_interval_seconds": 0.02,
+      "memory_peak_bytes": 2866085888,
+      "memory_events": {
+        "low": 0,
+        "high": 0,
+        "max": 0,
+        "oom": 0,
+        "oom_kill": 0,
+        "oom_group_kill": 0
+      },
+      "cpu": {
+        "usage_usec": 95146959,
+        "user_usec": 92198332,
+        "system_usec": 2948626,
+        "nice_usec": 0,
+        "core_sched.force_idle_usec": 0
+      },
+      "stderr": "",
+      "within_limits": true,
+      "transaction": {
+        "complete": true,
+        "case": "cal3",
+        "source_sha256": "72e4a8cee8b37d18e7d54b4e4944008f99a9954f8f6b19b5438303631246778d",
+        "answers": [
+          {
+            "result": 20,
+            "assumption": 8715,
+            "accepted": true,
+            "verification": {
+              "input_sha256": "6bbfa3e0109b277412f4bf0edc157670859943a2e914c2d16f27346acc1b9e98",
+              "drat_sha256": "4ebd3c82a350c1921762081fc880dfb67de75546bd56a35cc17a9f55bae80c57",
+              "converter_sha256": "659c7b1f5ef578cd6cfb2f06e477368eb12e82717502e3eaf263d40c5853b233",
+              "checker_sha256": "a0f239f9159768e9d302c4b7d03a2e620a26ececd1a1ccb493b5fb6f83604e99",
+              "verified": true,
+              "checker_heap_mb": 2048,
+              "checker_stack_mb": 512,
+              "stages": [
+                {
+                  "command": [
+                    "/home/runner/work/_temp/drat-trim",
+                    "/tmp/tmpv49egulv/check/input.cnf",
+                    "/tmp/tmpv49egulv/check/proof.drat",
+                    "-L",
+                    "/tmp/tmpv49egulv/check/proof.lrat"
+                  ],
+                  "seconds": 33.461777522999995,
+                  "cpu_seconds": 33.456765999999995,
+                  "children_peak_rss_bytes": 519856128,
+                  "returncode": 0,
+                  "stdout": "\nc turning on binary mode checking\n\nc parsing input formula with 9028 variables and 23881 clauses\n\nc finished parsing, read 172165409 bytes from proof file\n\nc detected empty clause; start verification via backward checking\n\nc 13158 of 23881 clauses in core                            \n\nc 55805 of 681573 lemmas in core using 24400495 resolution steps\n\nc 0 RAT lemmas in core; 1833465 redundant literals in core lemmas\n\ns VERIFIED\n\nc verification time: 33.451 seconds\n",
+                  "stderr": ""
+                },
+                {
+                  "command": [
+                    "/home/runner/work/_temp/cake-lpr/cake_lpr",
+                    "--CML_HEAP_SIZE=2048",
+                    "--CML_STACK_SIZE=512",
+                    "/tmp/tmpv49egulv/check/input.cnf",
+                    "/tmp/tmpv49egulv/check/proof.lrat"
+                  ],
+                  "seconds": 5.738492051000009,
+                  "cpu_seconds": 5.737093,
+                  "children_peak_rss_bytes": 2151526400,
+                  "returncode": 0,
+                  "stdout": "s VERIFIED UNSAT\n",
+                  "stderr": ""
+                }
+              ],
+              "lrat_sha256": "a72bcf7c32a4097a504e802a8519dbedf6feaac0196add22ea879ffff7f597d4",
+              "seconds": 39.567639662999994,
+              "rss_scope": "Cumulative child-process high-water RSS, not isolated per-stage peak"
+            },
+            "input_sha256": "6bbfa3e0109b277412f4bf0edc157670859943a2e914c2d16f27346acc1b9e98",
+            "proof_sha256": "4ebd3c82a350c1921762081fc880dfb67de75546bd56a35cc17a9f55bae80c57"
+          },
+          {
+            "result": 10,
+            "assumption": -8715,
+            "accepted": true,
+            "input_sha256": "66a2c215e71b0a6e0491b41f0176deaf6f6b7feada3e16f0e1785b01587fb08a",
+            "proof_sha256": "d9d49a9de3fe30a543cf7131a29b39a0b32b8f2b7d0a0e675dd0654a6c68afdf"
+          }
+        ],
+        "stages": [
+          {
+            "name": "decompress",
+            "wall_seconds": 0.0016104769999998325,
+            "cpu_seconds": 0.0016096479999999982
+          },
+          {
+            "name": "parse",
+            "wall_seconds": 0.02553257500000683,
+            "cpu_seconds": 0.025533218000000003
+          },
+          {
+            "name": "load",
+            "wall_seconds": 0.04545276300000012,
+            "cpu_seconds": 0.045452695
+          },
+          {
+            "name": "solve",
+            "wall_seconds": 55.018933343,
+            "cpu_seconds": 55.012359652
+          },
+          {
+            "name": "export",
+            "wall_seconds": 0.08936087499999701,
+            "cpu_seconds": 0.08933079300000202
+          },
+          {
+            "name": "validate",
+            "wall_seconds": 39.59417159399999,
+            "cpu_seconds": 0.3950637539999988
+          },
+          {
+            "name": "checkpoint",
+            "wall_seconds": 0.028997435000007954,
+            "cpu_seconds": 0.028414642000001322
+          },
+          {
+            "name": "solve",
+            "wall_seconds": 0.007532921000006354,
+            "cpu_seconds": 0.0074869899999967515
+          },
+          {
+            "name": "export",
+            "wall_seconds": 0.0031156649999957153,
+            "cpu_seconds": 0.003115823999998213
+          },
+          {
+            "name": "validate",
+            "wall_seconds": 0.05498310199999423,
+            "cpu_seconds": 0.054971188999999754
+          },
+          {
+            "name": "checkpoint",
+            "wall_seconds": 0.003224047999992763,
+            "cpu_seconds": 0.0032237229999978467
+          }
+        ],
+        "storage_failure": null,
+        "transaction_seconds": 95.089136161,
+        "temporary_bytes_used": 0,
+        "temporary_capacity_bytes": 1073741824
+      }
+    },
+    {
+      "name": "hard-1",
+      "case": "cal3",
+      "fault": "none",
+      "returncode": 0,
+      "wall_seconds": 95.08990925200001,
+      "stop": null,
+      "limits": {
+        "memory_bytes": 4294967296,
+        "wall_seconds": 180.0,
+        "aggregate_cpu_seconds": 120.0,
+        "storage_bytes": 1073741824
+      },
+      "temporary_sampled_peak_bytes": 679534592,
+      "storage_sample_interval_seconds": 0.02,
+      "memory_peak_bytes": 2866401280,
+      "memory_events": {
+        "low": 0,
+        "high": 0,
+        "max": 0,
+        "oom": 0,
+        "oom_kill": 0,
+        "oom_group_kill": 0
+      },
+      "cpu": {
+        "usage_usec": 95054789,
+        "user_usec": 92225153,
+        "system_usec": 2829636,
+        "nice_usec": 0,
+        "core_sched.force_idle_usec": 0
+      },
+      "stderr": "",
+      "within_limits": true,
+      "transaction": {
+        "complete": true,
+        "case": "cal3",
+        "source_sha256": "72e4a8cee8b37d18e7d54b4e4944008f99a9954f8f6b19b5438303631246778d",
+        "answers": [
+          {
+            "result": 20,
+            "assumption": 8715,
+            "accepted": true,
+            "verification": {
+              "input_sha256": "6bbfa3e0109b277412f4bf0edc157670859943a2e914c2d16f27346acc1b9e98",
+              "drat_sha256": "4ebd3c82a350c1921762081fc880dfb67de75546bd56a35cc17a9f55bae80c57",
+              "converter_sha256": "659c7b1f5ef578cd6cfb2f06e477368eb12e82717502e3eaf263d40c5853b233",
+              "checker_sha256": "a0f239f9159768e9d302c4b7d03a2e620a26ececd1a1ccb493b5fb6f83604e99",
+              "verified": true,
+              "checker_heap_mb": 2048,
+              "checker_stack_mb": 512,
+              "stages": [
+                {
+                  "command": [
+                    "/home/runner/work/_temp/drat-trim",
+                    "/tmp/tmp7k_rotbt/check/input.cnf",
+                    "/tmp/tmp7k_rotbt/check/proof.drat",
+                    "-L",
+                    "/tmp/tmp7k_rotbt/check/proof.lrat"
+                  ],
+                  "seconds": 34.361676058,
+                  "cpu_seconds": 34.355818000000006,
+                  "children_peak_rss_bytes": 520929280,
+                  "returncode": 0,
+                  "stdout": "\nc turning on binary mode checking\n\nc parsing input formula with 9028 variables and 23881 clauses\n\nc finished parsing, read 172165409 bytes from proof file\n\nc detected empty clause; start verification via backward checking\n\nc 13158 of 23881 clauses in core                            \n\nc 55805 of 681573 lemmas in core using 24400495 resolution steps\n\nc 0 RAT lemmas in core; 1833465 redundant literals in core lemmas\n\ns VERIFIED\n\nc verification time: 34.350 seconds\n",
+                  "stderr": ""
+                },
+                {
+                  "command": [
+                    "/home/runner/work/_temp/cake-lpr/cake_lpr",
+                    "--CML_HEAP_SIZE=2048",
+                    "--CML_STACK_SIZE=512",
+                    "/tmp/tmp7k_rotbt/check/input.cnf",
+                    "/tmp/tmp7k_rotbt/check/proof.lrat"
+                  ],
+                  "seconds": 5.850133519999986,
+                  "cpu_seconds": 5.848786999999998,
+                  "children_peak_rss_bytes": 2151530496,
+                  "returncode": 0,
+                  "stdout": "s VERIFIED UNSAT\n",
+                  "stderr": ""
+                }
+              ],
+              "lrat_sha256": "a72bcf7c32a4097a504e802a8519dbedf6feaac0196add22ea879ffff7f597d4",
+              "seconds": 40.56552978799999,
+              "rss_scope": "Cumulative child-process high-water RSS, not isolated per-stage peak"
+            },
+            "input_sha256": "6bbfa3e0109b277412f4bf0edc157670859943a2e914c2d16f27346acc1b9e98",
+            "proof_sha256": "4ebd3c82a350c1921762081fc880dfb67de75546bd56a35cc17a9f55bae80c57"
+          },
+          {
+            "result": 10,
+            "assumption": -8715,
+            "accepted": true,
+            "input_sha256": "66a2c215e71b0a6e0491b41f0176deaf6f6b7feada3e16f0e1785b01587fb08a",
+            "proof_sha256": "d9d49a9de3fe30a543cf7131a29b39a0b32b8f2b7d0a0e675dd0654a6c68afdf"
+          }
+        ],
+        "stages": [
+          {
+            "name": "decompress",
+            "wall_seconds": 0.0017489649999902213,
+            "cpu_seconds": 0.0017481239999999967
+          },
+          {
+            "name": "parse",
+            "wall_seconds": 0.02563529799999742,
+            "cpu_seconds": 0.025636600999999995
+          },
+          {
+            "name": "load",
+            "wall_seconds": 0.048011264999985315,
+            "cpu_seconds": 0.048005323000000016
+          },
+          {
+            "name": "solve",
+            "wall_seconds": 53.912655736999994,
+            "cpu_seconds": 53.90418382
+          },
+          {
+            "name": "export",
+            "wall_seconds": 0.08753333000001362,
+            "cpu_seconds": 0.0875220800000065
+          },
+          {
+            "name": "validate",
+            "wall_seconds": 40.592004132,
+            "cpu_seconds": 0.3813611110000039
+          },
+          {
+            "name": "checkpoint",
+            "wall_seconds": 0.02827488899998798,
+            "cpu_seconds": 0.02773346199999338
+          },
+          {
+            "name": "solve",
+            "wall_seconds": 0.007723569999996016,
+            "cpu_seconds": 0.007723891000004812
+          },
+          {
+            "name": "export",
+            "wall_seconds": 0.0032525190000001203,
+            "cpu_seconds": 0.0032064369999957876
+          },
+          {
+            "name": "validate",
+            "wall_seconds": 0.05408251600002245,
+            "cpu_seconds": 0.05408358200000407
+          },
+          {
+            "name": "checkpoint",
+            "wall_seconds": 0.0032893240000078094,
+            "cpu_seconds": 0.00328922100000284
+          }
+        ],
+        "storage_failure": null,
+        "transaction_seconds": 94.99776287099999,
+        "temporary_bytes_used": 0,
+        "temporary_capacity_bytes": 1073741824
+      }
+    },
+    {
+      "name": "unknown",
+      "case": "cal3",
+      "fault": "none",
+      "returncode": 1,
+      "wall_seconds": 0.1765599249999923,
+      "stop": null,
+      "limits": {
+        "memory_bytes": 4294967296,
+        "wall_seconds": 180.0,
+        "aggregate_cpu_seconds": 120.0,
+        "storage_bytes": 1073741824
+      },
+      "temporary_sampled_peak_bytes": 0,
+      "storage_sample_interval_seconds": 0.02,
+      "memory_peak_bytes": 20086784,
+      "memory_events": {
+        "low": 0,
+        "high": 0,
+        "max": 0,
+        "oom": 0,
+        "oom_kill": 0,
+        "oom_group_kill": 0
+      },
+      "cpu": {
+        "usage_usec": 150901,
+        "user_usec": 137822,
+        "system_usec": 13078,
+        "nice_usec": 0,
+        "core_sched.force_idle_usec": 0
+      },
+      "stderr": "Traceback (most recent call last):\n  File \"/home/runner/work/bsat/bsat/competition/c/tests/linux_acceptance.py\", line 232, in <module>\n    if __name__=='__main__':main()\n                            ^^^^^^\n  File \"/home/runner/work/bsat/bsat/competition/c/tests/linux_acceptance.py\", line 180, in main\n    if args.isolated:return transaction(args)\n                            ^^^^^^^^^^^^^^^^^\n  File \"/home/runner/work/bsat/bsat/competition/c/tests/linux_acceptance.py\", line 93, in transaction\n    assert timed('checkpoint',lambda:lib.bsat_checkpoint(handle))\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nAssertionError\n",
+      "within_limits": true
+    }
+  ],
+  "failure": "AssertionError()"
+}
