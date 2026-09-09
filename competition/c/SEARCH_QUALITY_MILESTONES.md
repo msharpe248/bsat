@@ -46,5 +46,6 @@ the numerical limits here are experiment gates only.
 1. Complete: frozen inputs and checked large-CNF baseline; see EXPANDED_HOLDOUT_BASELINE.md.
 2. Complete: eligibility/payback measurements and corrected prior-experiment
    review; retain diagnostics, no speculative selector. See LEARNED_CLAUSE_ELIGIBILITY.md.
-3. Structural comparison in progress.
+3. Complete: structural options do not close cal3; the reference also solves
+   with preprocessing disabled. See CAL3_STRUCTURAL_DIAGNOSIS.md.
 4. Expanded certified history validation pending.
