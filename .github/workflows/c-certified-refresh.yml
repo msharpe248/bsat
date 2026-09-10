@@ -7,9 +7,6 @@ jobs:
   compare:
     runs-on: ubuntu-24.04
     timeout-minutes: 60
-    env:
-      BSAT_DRAT_TRIM: ${{ runner.temp }}/drat-trim
-      BSAT_CAKE_LPR: ${{ runner.temp }}/cake-lpr/cake_lpr
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -59,13 +56,22 @@ jobs:
           cc --version > "$RUNNER_TEMP/results/compiler.txt"
           git rev-parse HEAD > "$RUNNER_TEMP/results/revision.txt"
       - name: Independently check release and sanitizer certificates
+        env:
+          BSAT_DRAT_TRIM: ${{ runner.temp }}/drat-trim
+          BSAT_CAKE_LPR: ${{ runner.temp }}/cake-lpr/cake_lpr
         run: |
           python3 competition/c/tests/check_retained_certificates.py --driver competition/c/bin/query_certificate_driver_refresh --output "$RUNNER_TEMP/results/certificates-release.json"
           python3 competition/c/tests/check_retained_certificates.py --driver competition/c/bin/query_certificate_driver_refresh_debug --output "$RUNNER_TEMP/results/certificates-debug.json"
       - name: Serial paired target comparisons
+        env:
+          BSAT_DRAT_TRIM: ${{ runner.temp }}/drat-trim
+          BSAT_CAKE_LPR: ${{ runner.temp }}/cake-lpr/cake_lpr
         run: |
           python3 competition/c/tests/benchmark_ssr_targets.py --experiment certified-refresh --baseline-revision 76fcd3c569d035f22c617581b1a5627289bfeff0 --baseline "$RUNNER_TEMP/baseline/competition/c/bin/libquery_diagnostics_release.so" --candidate competition/c/bin/libquery_diagnostics_refresh.so --reference "$RUNNER_TEMP/kissat-8af8e56f174b778aef3aa45af9f739b2a5f492c2/build/kissat" --incremental-reference "$RUNNER_TEMP/cadical/build/libcadical.so" --original "$RUNNER_TEMP/original" --expanded "$RUNNER_TEMP/expanded" --output "$RUNNER_TEMP/results/targets"
       - name: Fresh imported DIMACS holdout
+        env:
+          BSAT_DRAT_TRIM: ${{ runner.temp }}/drat-trim
+          BSAT_CAKE_LPR: ${{ runner.temp }}/cake-lpr/cake_lpr
         run: |
           python3 competition/c/tests/prepare_linux_baseline.py "$RUNNER_TEMP/holdout" --source competition/c/tests/fixtures/search_use
           python3 competition/c/tests/benchmark_certified_dimacs.py --baseline "$RUNNER_TEMP/baseline/competition/c/bin/libbsat_release.so" --candidate competition/c/bin/libbsat_refresh.so --manifest "$RUNNER_TEMP/holdout/manifest.json" --output "$RUNNER_TEMP/results/holdout.json"

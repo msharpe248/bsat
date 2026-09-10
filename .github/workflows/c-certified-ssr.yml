@@ -7,9 +7,6 @@ jobs:
   compare:
     runs-on: ubuntu-24.04
     timeout-minutes: 60
-    env:
-      BSAT_DRAT_TRIM: ${{ runner.temp }}/drat-trim
-      BSAT_CAKE_LPR: ${{ runner.temp }}/cake-lpr/cake_lpr
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -61,13 +58,22 @@ jobs:
           cc --version > "$RUNNER_TEMP/results/compiler.txt"
           git rev-parse HEAD > "$RUNNER_TEMP/results/revision.txt"
       - name: Independently check release and sanitizer certificates
+        env:
+          BSAT_DRAT_TRIM: ${{ runner.temp }}/drat-trim
+          BSAT_CAKE_LPR: ${{ runner.temp }}/cake-lpr/cake_lpr
         run: |
           python3 competition/c/tests/check_retained_certificates.py --driver competition/c/bin/query_certificate_driver_ssr --output "$RUNNER_TEMP/results/certificates-release.json"
           python3 competition/c/tests/check_retained_certificates.py --driver competition/c/bin/query_certificate_driver_ssr_debug --output "$RUNNER_TEMP/results/certificates-debug.json"
       - name: Serial paired target comparisons
+        env:
+          BSAT_DRAT_TRIM: ${{ runner.temp }}/drat-trim
+          BSAT_CAKE_LPR: ${{ runner.temp }}/cake-lpr/cake_lpr
         run: |
           python3 competition/c/tests/benchmark_ssr_targets.py --baseline "$RUNNER_TEMP/baseline/competition/c/bin/libquery_diagnostics_release.so" --candidate competition/c/bin/libquery_diagnostics_ssr.so --reference "$RUNNER_TEMP/kissat-8af8e56f174b778aef3aa45af9f739b2a5f492c2/build/kissat" --incremental-reference "$RUNNER_TEMP/cadical/build/libcadical.so" --original "$RUNNER_TEMP/original" --expanded "$RUNNER_TEMP/expanded" --output "$RUNNER_TEMP/results/targets"
       - name: Broader original, expanded and fresh circuit validation
+        env:
+          BSAT_DRAT_TRIM: ${{ runner.temp }}/drat-trim
+          BSAT_CAKE_LPR: ${{ runner.temp }}/cake-lpr/cake_lpr
         run: |
           for suite in original expanded fresh; do
             cpu=10; depths=0,2,4,8
