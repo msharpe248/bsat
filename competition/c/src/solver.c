@@ -1946,84 +1946,6 @@ bool solver_add_rup_clause(Solver *s, const Lit *lits, uint32_t size) {
     return !s->error && !s->interrupted;
 }
 
-#ifdef BSAT_CERTIFIED_SSR
-/* Incomplete watched-pivot SSR at root. Original input is immutable; every
-   replacement is implied by two active permanent consequences. */
-static bool ssr_charge(Solver *s, uint64_t work) {
-    if (s->work_limit && work > s->work_limit - MIN(s->work,s->work_limit)) return false;
-    s->work += work; s->ssr_inspections += work;
-    return !solver_budget_exhausted(s);
-}
-
-bool solver_certified_ssr(Solver *s) {
-    if (!s || s->decision_level || s->has_solved || !s->proof_journal ||
-        !s->opts.assumption_lbd || !s->opts.preprocess_budget ||
-        s->result==FALSE || solver_budget_exhausted_now(s)) return true;
-    if (s->ssr_seen_input && s->ssr_input_size==s->input_size) return true;
-    s->ssr_seen_input=true;s->ssr_input_size=s->input_size;
-    uint32_t count=s->num_clauses;
-    for (uint32_t k=0;k<count;++k) {
-        if (!ssr_charge(s,1)) break;
-        uint32_t at=s->ssr_cursor++ % count; CRef old=s->clauses[at];
-        if (clause_deleted(s->arena,old)) continue;
-        uint32_t n=CLAUSE_SIZE(s->arena,old);
-        if (n<3 || n>16 || !ssr_charge(s,n)) continue;
-        Lit target[16];memcpy(target,CLAUSE_LITS(s->arena,old),n*sizeof *target);
-        bool assigned=false;
-        for (uint32_t j=0;j<n;++j) assigned |= s->values[var(target[j])]!=UNDEF;
-        if (assigned) continue; /* Includes all root-locked targets. */
-        ++s->ssr_candidates;uint32_t remove=n;
-        for (uint32_t pivot=0;pivot<n && remove==n;++pivot) {
-            WatchList *wl=watch_list(s->watches,neg(target[pivot]));
-            for (uint32_t j=0;j<wl->size && remove==n;++j) {
-                if (!ssr_charge(s,1)) goto done;
-                Watch w=wl->watches[j];Lit binary[2]={neg(target[pivot]),w.blocker};
-                const Lit *source=binary;uint32_t size=2;
-                if (!is_binary_watch(w)) {
-                    CRef witness=watch_clause(w);
-                    if (witness==old || clause_deleted(s->arena,witness)) continue;
-                    size=CLAUSE_SIZE(s->arena,witness);
-                    if (size<2 || size>4 || size>n) continue;
-                    source=CLAUSE_LITS(s->arena,witness);
-                }
-                bool subset=true,opposite=false;
-                for (uint32_t t=0;t<size && subset;++t) {
-                    if (!ssr_charge(s,1)) goto done;
-                    if (source[t]==neg(target[pivot])) {opposite=true;continue;}
-                    bool found=false;
-                    for (uint32_t q=0;q<n && !found;++q) {
-                        if (!ssr_charge(s,1)) goto done;
-                        found=q!=pivot && target[q]==source[t];
-                    }
-                    subset=found;
-                }
-                if (subset && opposite) remove=pivot;
-            }
-        }
-        if (remove==n) continue;
-        /* Charge old-watch removal before beginning the atomic replacement. */
-        uint64_t detach=(uint64_t)watch_list(s->watches,target[0])->size+
-                        watch_list(s->watches,target[1])->size+n;
-        if (!ssr_charge(s,detach) || solver_budget_exhausted_now(s)) break;
-        Lit reduced[16];uint32_t out=0;
-        for (uint32_t j=0;j<n;++j) if(j!=remove) reduced[out++]=target[j];
-        proof_add_clause(s,reduced,out);
-        if (s->error) return false;
-        CRef fresh=arena_alloc(s->arena,reduced,out,false);
-        if (fresh==INVALID_CLAUSE) {s->error=true;return false;}
-        CRef watched=out==2?arena_binary_watch_ref(fresh):fresh;
-        watch_add(s->watches,reduced[0],watched,reduced[1]);
-        watch_add(s->watches,reduced[1],watched,reduced[0]);
-        if (s->watches->failed) {s->error=true;return false;}
-        s->clauses[at]=fresh;solver_delete_clause(s,old);
-        ++s->ssr_strengthened;
-        /* All replacement literals are unassigned: no root implication is lost. */
-    }
-done:
-    return !s->error;
-}
-#endif
-
 static bool solver_simplify_account_impl(Solver *s) {
     if (s->decision_level || !s->opts.inprocess || !s->opts.preprocess_budget ||
         s->stats.conflicts < s->last_vivify + s->opts.inprocess_interval) return true;
@@ -2315,9 +2237,6 @@ static lbool solve_internal_account_impl(Solver *s, const Lit *assumps, uint32_t
     if (solver_propagate(s) != INVALID_CLAUSE) {s->base_unsat=true;return FALSE;}
     if (s->error || s->interrupted) return UNDEF;
     s->work_limit = s->work + MIN(s->opts.preprocess_budget, UINT64_MAX-s->work);
-#ifdef BSAT_CERTIFIED_SSR
-    if (!solver_certified_ssr(s)) {s->work_limit=0;return UNDEF;}
-#endif
     if (s->opts.preprocess_budget && s->opts.probing &&
         (!s->opts.probe_on_change || !s->probed_input || s->probed_input_size!=s->input_size)) {
         s->probed_input=true;s->probed_input_size=s->input_size;

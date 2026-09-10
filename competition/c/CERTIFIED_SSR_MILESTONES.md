@@ -38,3 +38,15 @@ replacement also passes release and ASan/UBSan. The local ABBA screen checks all
 combined candidate CPU cost, below the required benefit threshold. Linux broader
 validation and isolated memory measurements are still running. This is a capability
 experiment, not a promise of speedup or production deployment certification.
+
+
+The runtime has been restored to its pre-experiment implementation. The two-file
+[prototype patch](benchmark_results/certified-ssr-prototype-20260909.patch) preserves
+the implementation; the manual `c-certified-ssr.yml` workflow applies it before
+building the experimental configurations. Conditional diagnostic and validation
+hooks remain for reproduction, and the future-query public API regression runs
+in normal builds. `BSAT_CERTIFIED_SSR` is not a supported production build option.
+The local raw reports and summary are in
+[ssr-targets-mac-20260909](benchmark_results/ssr-targets-mac-20260909/summary.json).
+Zero strengthening on these prepared circuits is evidence against this bounded
+watch-indexed implementation on these targets, not against SSR in general.

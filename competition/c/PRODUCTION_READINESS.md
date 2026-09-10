@@ -43,7 +43,9 @@ checks 64/64 BSAT queries versus 62/64 retained CaDiCaL queries within equal CPU
 budgets, adding strengths on cal162 and a selected PicoRV32 case. The
 [retained work diagnosis](RETAINED_SEARCH_WORK.md) still shows large search-work
 gaps on cal3/cal100. These results establish workload dependence, not general
-competitiveness. The current batch is [competitiveness and complete cost](COMPETITIVENESS_MILESTONES.md).
+competitiveness. The latest [certified SSR experiment](CERTIFIED_SSR_MILESTONES.md) passed local
+correctness checks but found zero strengthenings on its paired targets and failed
+the benefit gate. Its runtime is archived; Linux broader validation is pending.
 
 The campaign history below records earlier revisions and their then-current gaps.
 
@@ -208,7 +210,7 @@ those requirements and the exact-candidate checks are satisfied.
 
 ## Where to look
 
-- [Current batch and outcomes](COMPETITIVENESS_MILESTONES.md)
+- [Certified SSR experiment and outcomes](CERTIFIED_SSR_MILESTONES.md)
 - [Public ABI and lifetime contract](API_CONTRACT.md), [build/install](INSTALLING.md)
 - [Executable coverage and reproduction](tests/FEATURE_COVERAGE.md)
 - [Correctness CI](../../.github/workflows/c-solver.yml), [independent integration](../../.github/workflows/c-integration.yml), [fuzz CI](../../.github/workflows/c-fuzz.yml)

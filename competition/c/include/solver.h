@@ -365,12 +365,6 @@ typedef struct Solver {
     size_t input_size, input_capacity;
     uint32_t input_clauses, clauses_capacity;
     uint32_t last_assumptions;
-#ifdef BSAT_CERTIFIED_SSR
-    size_t ssr_input_size;
-    uint32_t ssr_cursor;
-    bool ssr_seen_input;
-    uint64_t ssr_candidates, ssr_inspections, ssr_strengthened;
-#endif
     uint32_t lbd_assumption_levels; /* Transient boundary, zero between queries. */
     Var factor_original_vars; // Auxiliary variables are discarded on rebuild
     uint64_t reused_solves;
@@ -498,9 +492,5 @@ Level solver_restart_level(Solver* s);
 
 // Simplify clause database
 bool solver_simplify(Solver* s);
-
-#ifdef BSAT_CERTIFIED_SSR
-bool solver_certified_ssr(Solver *s);
-#endif
 
 #endif // BSAT_SOLVER_H

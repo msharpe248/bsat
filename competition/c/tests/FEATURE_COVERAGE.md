@@ -2,7 +2,7 @@
 
 This matrix describes checked behavior, not a percentage of solver correctness.
 The former “100% of directly testable features” claim and 2025 test counts were
-outdated. The Makefile discovers `test_*.c` automatically (66 C executables as of
+outdated. The Makefile discovers `test_*.c` automatically (67 C executables as of
 2026-09-09). Release and ASan/UBSan use separate object directories. The authoritative
 capability and release-gate summary is [Production readiness](../PRODUCTION_READINESS.md).
 
@@ -89,3 +89,12 @@ statistics extension (`check_reference_statistics.py`, 128 result/model/core que
 and frozen summary integrity (six missing/context/contradiction/deadline tests).
 `measure_retained_resources.py` isolates one solver/embedding process per circuit;
 its RSS includes Python encoding/model validation and excludes proof checkers.
+
+The archived [certified SSR experiment](../CERTIFIED_SSR_MILESTONES.md) adds
+`test_certified_ssr`: normal builds exercise future assumptions, permanent
+additions and checkpoint behavior in four certified modes. Applying the archived
+runtime patch and enabling `BSAT_CERTIFIED_SSR` additionally tests 352 exhaustive
+signed clause pairs, forced arena compaction, root assignments, cancellation,
+work and journal limits. Its fault driver adds 202 focused allocation cutoffs;
+its certificate driver adds 24 independently checked queries (77 total per build).
+These experimental cases do not imply SSR is enabled in the production library.
