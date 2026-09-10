@@ -32,5 +32,9 @@ Compile-time BSAT_CERTIFIED_SSR gate, certified handles only. No new public flag
 Status: prototype implemented; 67 release/sanitizer tests, 352 exhaustive signed
 pairs, 77 independently checked query certificates per build, 202 focused SSR
 allocation cutoffs per build and 3,485 total allocation failures pass. Four checker
-and five acceptance-summary regressions pass. Paired timing is next. This is a capability
+and five acceptance-summary regressions pass. Explicit arena compaction after every exhaustive clause-pair
+replacement also passes release and ASan/UBSan. The local ABBA screen checks all
+36 queries per build, finds zero strengthenings on both targets and a 1.32% lower
+combined candidate CPU cost, below the required benefit threshold. Linux broader
+validation and isolated memory measurements are still running. This is a capability
 experiment, not a promise of speedup or production deployment certification.

@@ -1,0 +1,27 @@
+{
+  "baseline_revision": "c6b4ac84c94e231983886828d3100495a49545c6",
+  "order": [
+    "baseline",
+    "candidate",
+    "candidate",
+    "baseline"
+  ],
+  "flags": 3,
+  "query_cpu": 60,
+  "reference_wall": 90,
+  "checker_wall": 600,
+  "checker_heap_mb": 2048,
+  "checker_stack_mb": 512,
+  "targets": {
+    "cal3": {
+      "circuit": "cal3.aig",
+      "depths": "0,1,2,4,8,16",
+      "suite": "original"
+    },
+    "cal100": {
+      "circuit": "cal100.aig",
+      "depths": "0,2,4",
+      "suite": "expanded"
+    }
+  }
+}

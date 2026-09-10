@@ -25,6 +25,8 @@ static void exhaustive(void) {
         memcpy(input,s->input,len*sizeof *input);assert(solver_certified_ssr(s));
         assert(!s->error&&s->ssr_strengthened>0&&s->work<=1000000);
         assert(s->input_size==len&&!memcmp(input,s->input,len*sizeof *input)&&s->num_vars==n);
+        /* Force arena compaction after replacement, including tagged binaries. */
+        s->work_limit=0;solver_collect_garbage(s);assert(s->garbage_collections==1);
         for(unsigned bits=0;bits<(1u<<n);++bits) {
             bool original=true,live=true;size_t start=0;
             for(size_t i=0;i<len;++i)if(!input[i]){original&=satisfies(input+start,(unsigned)(i-start),bits);start=i+1;}
