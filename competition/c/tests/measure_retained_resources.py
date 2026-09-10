@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """Isolated per-family embedding RSS, replaying independently checked contexts."""
-import argparse,ctypes as C,hashlib,json,resource,subprocess,sys,time
+import argparse,ctypes as C,hashlib,json,resource,subprocess,sys,time,math
 from pathlib import Path
 from aag_history import Circuit
 from incremental_reference import Reference
@@ -13,11 +13,11 @@ def worker(a):
     prior=json.loads(a.checked_report.read_text());assert prior['complete']
     truth={(r['circuit'],r['depth'],r['polarity']):r for r in prior['runs'] if r['repeat']==0}
     lib=library(a.library.resolve()) if a.solver=='bsat' else None
-    handle=lib.bsat_create(1,3) if lib else Reference(a.reference.resolve(),10,90)
-    if lib:assert handle and lib.bsat_set_query_limits(handle,10,0,0)
+    handle=lib.bsat_create(1,3) if lib else Reference(a.reference.resolve(),a.cpu,a.reference_wall)
+    if lib:assert handle and lib.bsat_set_query_limits(handle,a.cpu,0,0)
     clauses=[];frame=0;rows=[];start=time.monotonic()
     try:
-        for depth in (0,2,4,8):
+        for depth in sorted(set(map(int,a.depths.split(',')))):
             while frame<=depth:
                 for clause in circuit.frame(frame):
                     if lib:assert lib.bsat_add_clause(handle,literals(clause),len(clause))
@@ -46,14 +46,16 @@ def worker(a):
 def main():
     p=argparse.ArgumentParser(description=__doc__)
     for k in ('library','reference','circuits','checked-report'):p.add_argument('--'+k,type=Path,required=True)
+    p.add_argument('--depths',default='0,2,4,8');p.add_argument('--cpu',type=float,default=10);p.add_argument('--reference-wall',type=float,default=90)
     p.add_argument('--output',type=Path);p.add_argument('--solver',choices=['bsat','cadical']);p.add_argument('--circuit');a=p.parse_args()
+    if any(not math.isfinite(x) or x<=0 for x in (a.cpu,a.reference_wall)) or min(map(int,a.depths.split(',')))<0:p.error('invalid depth or budget')
     if a.solver:print(json.dumps(worker(a)));return
     assert a.output
     d={'complete':False,'scope':'Fresh process per solver/family: Python embedding, CNF encoding/hash/model validation and one native solver. Excludes independent proof checker, other solver and parent; not native-only RSS. Replays exact independently checked baseline contexts.','checked_report_sha256':hashlib.sha256(a.checked_report.read_bytes()).hexdigest(),'library_sha256':hashlib.sha256(a.library.read_bytes()).hexdigest(),'reference_sha256':hashlib.sha256(a.reference.read_bytes()).hexdigest(),'runs':[]}
     try:
         for row in json.loads((a.circuits/'manifest.json').read_text())['inputs']:
             for solver in ('bsat','cadical'):
-                command=[sys.executable,str(Path(__file__).resolve()),'--solver',solver,'--circuit',row['file']]
+                command=[sys.executable,str(Path(__file__).resolve()),'--solver',solver,'--circuit',row['file'],'--depths',a.depths,'--cpu',str(a.cpu),'--reference-wall',str(a.reference_wall)]
                 for k in ('library','reference','circuits','checked_report'):command+=['--'+k.replace('_','-'),str(getattr(a,k).resolve())]
                 run=subprocess.run(command,text=True,capture_output=True,timeout=300,check=True);d['runs'].append(json.loads(run.stdout));print(solver,row['file'],d['runs'][-1]['peak_rss_bytes'],flush=True)
         d['complete']=True

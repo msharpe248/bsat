@@ -53,5 +53,19 @@ int main(int argc,char **argv) {
     int unit=130;assert(bsat_add_clause(s,&unit,1));assert(!bsat_export_query(s,"/nonexistent/query","/nonexistent/proof"));
     query(s,&b,1,10,130);query(s,&a,1,20,130);
     assert(bsat_add_clause(s,&a,1));query(s,NULL,0,20,130);query(s,NULL,0,20,130);
-    bsat_destroy(s);return 0;
+    bsat_destroy(s);
+#ifdef BSAT_CERTIFIED_SSR
+    const unsigned modes[]={2,3,6,7};
+    for(unsigned mode=0;mode<4;++mode) {
+        s=bsat_create(1,modes[mode]);assert(s);int left[]={-1,2},right[]={1,2,3};
+        assert(bsat_add_clause(s,left,2)&&bsat_add_clause(s,right,3));
+        int assumptions[]={-2,-3},flipped[]={2,-3};int cancelled=1;
+        bsat_set_terminate(s,&cancelled,stop);query(s,assumptions,2,0,3);cancelled=0;
+        query(s,assumptions,2,20,3);query(s,flipped,2,10,3);query(s,NULL,0,10,3);
+        assert(bsat_checkpoint(s));query(s,assumptions,2,20,3);
+        int unit2=-2,unit3=-3,positive3=3;assert(bsat_add_clause(s,&unit2,1));query(s,&positive3,1,10,3);
+        assert(bsat_add_clause(s,&unit3,1));query(s,NULL,0,20,3);bsat_destroy(s);
+    }
+#endif
+    return 0;
 }

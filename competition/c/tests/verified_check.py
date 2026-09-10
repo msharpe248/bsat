@@ -30,7 +30,7 @@ def cake_verified(run):
 def verify(cnf,drat,converter,checker,directory,timeout=600,heap_mb=512,stack_mb=128):
     if any(not isinstance(n,int) or isinstance(n,bool) or n<=0 for n in (heap_mb,stack_mb)):
         raise ValueError('checker heap_mb and stack_mb must be positive integers')
-    started=time.monotonic()
+    started=time.monotonic();parent_started=time.process_time()
     directory=Path(directory);directory.mkdir(parents=True,exist_ok=True)
     sha=lambda p:hashlib.sha256(p.read_bytes()).hexdigest()
     inp=directory/'input.cnf';proof=directory/'proof.drat';lrat=directory/'proof.lrat'
@@ -66,6 +66,8 @@ def verify(cnf,drat,converter,checker,directory,timeout=600,heap_mb=512,stack_mb
         return report
     finally:
         report['seconds']=time.monotonic()-started
+        report['parent_cpu_seconds']=time.process_time()-parent_started
+        report['total_cpu_seconds']=report['parent_cpu_seconds']+sum(s.get('cpu_seconds',0) for s in report['stages'])
         report['rss_scope']='Cumulative child-process high-water RSS, not isolated per-stage peak'
         (directory/'verification.json').write_text(json.dumps(report,indent=2)+'\n')
 

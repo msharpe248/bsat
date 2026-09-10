@@ -1,0 +1,15 @@
+{
+  "release_c_tests": 67,
+  "sanitizer_c_tests": 67,
+  "signed_pairs_with_exhaustive_equivalence": 352,
+  "independent_certificates_per_build": 77,
+  "wrong_context_rejected": true,
+  "ssr_allocation_failures_per_build": 202,
+  "total_allocation_failures_per_build": 3485,
+  "verified_checker_regressions": 4,
+  "summary_regressions": 5,
+  "libraries": {
+    "ssr": "8f0de142afa5031b1969d8fbd5c7eaf04c704115e97872047e3ab944096aeff3",
+    "ssr_debug": "f68e9847e166e524f4f5ce27eb45377e1b50f762c1c488158b9b5ca242ba2b5b"
+  }
+}

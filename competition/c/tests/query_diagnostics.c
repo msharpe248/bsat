@@ -24,6 +24,11 @@ BSAT_API int bsat_diagnostic_write(bsat *s,const char *path) {
     FILE *f=fopen(path,"wx");if(!f)return 0;
     Solver *core=s->core;
     fputs("{",f);
+#ifdef BSAT_CERTIFIED_SSR
+    fprintf(f,"\"ssr_candidates\":%llu,\"ssr_inspections\":%llu,\"ssr_strengthened\":%llu,",
+            (unsigned long long)core->ssr_candidates,(unsigned long long)core->ssr_inspections,
+            (unsigned long long)core->ssr_strengthened);
+#endif
 #define STAT(field) fprintf(f,"\"" #field "\":%llu,",(unsigned long long)core->stats.field)
     STAT(conflicts);STAT(decisions);STAT(propagations);STAT(restarts);STAT(reduces);
     STAT(learned_clauses);STAT(learned_literals);STAT(deleted_clauses);STAT(minimized_literals);

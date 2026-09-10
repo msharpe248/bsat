@@ -27,6 +27,9 @@ def main():
         # Query 0 requires assumption -2; its proof must not certify satisfiable F.
         base=root/'wrong.cnf';base.write_text('p cnf 2 2\n1 2 0\n-1 2 0\n')
         assert not verify(base,root/'query-0/proof.drat',converter,checker,root/'wrong-check',30)['verified']
+        if len(rows)>53:
+            ssr_base=root/'wrong-ssr.cnf';ssr_base.write_text('p cnf 3 2\n-1 2 0\n1 2 3 0\n')
+            assert not verify(ssr_base,root/'query-53/proof.drat',converter,checker,root/'wrong-ssr-check',30)['verified']
         # First 18 queries rebuild, next 18 retain. Both exact contexts agree.
         assert all(rows[i]['input_sha256']==rows[i+18]['input_sha256'] for i in range(18))
         assert rows[35]['reused_preparations']>0

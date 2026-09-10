@@ -103,8 +103,35 @@ static size_t certificate_attempt(bool reuse,bool probing,size_t cutoff) {
     }
     bsat_destroy(s);return calls;
 }
+#ifdef BSAT_CERTIFIED_SSR
+static size_t ssr_attempt(size_t cutoff) {
+    fail_at=0;calls=0;failed=false;
+    SolverOpts o=default_opts();o.probing=false;o.assumption_lbd=true;
+    Solver *s=solver_new_with_opts(&o);assert(s);
+    for(unsigned v=0;v<202;++v)assert(solver_new_var(s));
+    Lit source[]={mkLit(1,true),mkLit(2,false)};assert(solver_add_clause(s,source,2));
+    for(unsigned v=3;v<=202;++v) {
+        Lit target[]={mkLit(1,false),mkLit(2,false),mkLit(v,false)};
+        assert(solver_add_clause(s,target,3));
+    }
+    FILE *journal=tmpfile();assert(journal);s->proof_journal=journal;s->opts.binary_proof=true;
+    s->work_limit=1000000;calls=0;fail_at=cutoff;failed=false;
+    bool okay=solver_certified_ssr(s);size_t count=calls;fail_at=0;
+    if(failed)assert(!okay&&s->error);
+    else assert(okay&&s->ssr_strengthened==200);
+    s->work_limit=0;lbool result=solver_solve(s);
+    if(failed)assert(result==UNDEF);
+    else assert(result==TRUE&&solver_check_model(s));
+    solver_free(s);fclose(journal);return count;
+}
+#endif
 int main(void) {
     size_t injected=0;
+#ifdef BSAT_CERTIFIED_SSR
+    size_t ssr_count=ssr_attempt(0);assert(ssr_count>0);
+    for(size_t i=1;i<=ssr_count;++i){ssr_attempt(i);assert(failed);++injected;}
+    printf("PASS: %zu SSR replacement allocation failures preserve UNKNOWN/error\n",ssr_count);
+#endif
     for(unsigned p=0;p<8;++p)for(unsigned sat=0;sat<2;++sat) {
         size_t count=attempt(p,sat,0);
         for(size_t i=1;i<=count;++i) {
