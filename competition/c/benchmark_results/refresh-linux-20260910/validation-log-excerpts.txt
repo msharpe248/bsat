@@ -1,0 +1,8 @@
+compare	Build public library and fetch pinned independent sources	2026-09-10T01:43:21.7854773Z PASS: 3283 single-allocation failures across 22 profiles/formulas and repeated solves
+compare	Build public library and fetch pinned independent sources	2026-09-10T01:43:34.2490760Z PASS: 22 proof output cutoffs and 2 deferred-flush failures return UNKNOWN
+compare	Build public library and fetch pinned independent sources	2026-09-10T01:43:34.8631234Z All tests passed!
+compare	Build public library and fetch pinned independent sources	2026-09-10T01:43:41.6335842Z PASS: 3283 single-allocation failures across 22 profiles/formulas and repeated solves
+compare	Build public library and fetch pinned independent sources	2026-09-10T01:45:31.6403921Z PASS: 22 proof output cutoffs and 2 deferred-flush failures return UNKNOWN
+compare	Build public library and fetch pinned independent sources	2026-09-10T01:45:39.1730674Z All tests passed!
+compare	Independently check release and sanitizer certificates	2026-09-10T01:47:01.0362990Z PASS: 53 retained/rebuilt query certificates and wrong-context rejection
+compare	Independently check release and sanitizer certificates	2026-09-10T01:47:03.1332106Z PASS: 53 retained/rebuilt query certificates and wrong-context rejection

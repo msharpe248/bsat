@@ -10,7 +10,7 @@ from process_control import run_capture
 def sha(p): return hashlib.sha256(Path(p).read_bytes()).hexdigest()
 
 def worker(libpath, source, cpu, wall, artifacts):
-    start=time.process_time();data=source.read_bytes();n,cs=parse_cnf(data.decode())
+    start=time.process_time();row=None;child_cpu=0.;data=source.read_bytes();n,cs=parse_cnf(data.decode())
     if n<0 or any(not 0<abs(x)<=n for c in cs for x in c):raise ValueError('invalid namespace')
     lib=library(libpath.resolve());s=lib.bsat_create(1,3);assert s
     with tempfile.TemporaryDirectory(prefix='bsat-dimacs-check-') as tmp:
@@ -38,10 +38,15 @@ def worker(libpath, source, cpu, wall, artifacts):
             if r==20:
                 check=verify(cnf,proof,os.environ['BSAT_DRAT_TRIM'],os.environ['BSAT_CAKE_LPR'],folder/'check',600,2048,512)
                 row['verification']=check;row['verified']=check['verified'];row['check_cpu']=check['total_cpu_seconds']
+                child_cpu=sum(stage['cpu_seconds'] for stage in check['stages'])
             if r and not row['verified']:
                 shutil.copytree(folder,artifacts,dirs_exist_ok=True)
             return row
-        finally:lib.bsat_destroy(s)
+        finally:
+            lib.bsat_destroy(s)
+            if row is not None:
+                row['measured_worker_cpu']=time.process_time()-start+child_cpu
+                row['cost_scope']='Worker CPU from input loading through teardown plus checker-child CPU, including bookkeeping; excludes Python startup/imports and result serialization.'
 
 def summarize(rows, cpu=15, wall=20):
     summary={'versions':{},'losses':[]}
@@ -52,6 +57,8 @@ def summarize(rows, cpu=15, wall=20):
         for k in ('load_cpu','solve_cpu','solve_wall','export_cpu','check_cpu'):
             assert math.isfinite(r[k]) and r[k]>=0
         assert not r['within_budget'] or (r['solve_cpu']<=cpu and r['solve_wall']<=wall)
+        for field in ('measured_worker_cpu','transaction_cpu'):
+            if field in r:assert math.isfinite(r[field]) and r[field]>=0
         grouped.setdefault(r['input'],[]).append(r)
     for name,rs in grouped.items():
         assert len(rs)==4 and [r['version'] for r in rs]==['baseline','candidate','candidate','baseline']
@@ -62,7 +69,7 @@ def summarize(rows, cpu=15, wall=20):
     for v in ('baseline','candidate'):
         rs=[r for r in rows if r['version']==v]
         okay=lambda r:bool(r['result'] and r['verified'] and r['within_budget'])
-        summary['versions'][v]={'queries':len(rs),'checked':sum(okay(r) for r in rs),'solve_cpu_par2_sum':sum(r['solve_cpu'] if okay(r) else 2*cpu for r in rs),'complete_cpu_par2_sum':sum(r['load_cpu']+r['solve_cpu']+r['export_cpu']+r['check_cpu'] if okay(r) else 2*cpu for r in rs),'embedding_peak_rss_bytes':max(r['embedding_peak_rss_bytes'] for r in rs)}
+        summary['versions'][v]={'queries':len(rs),'checked':sum(okay(r) for r in rs),'solve_cpu_par2_sum':sum(r['solve_cpu'] if okay(r) else 2*cpu for r in rs),'complete_cpu_par2_sum':sum(r.get('transaction_cpu',r.get('measured_worker_cpu',r['load_cpu']+r['solve_cpu']+r['export_cpu']+r['check_cpu'])) if okay(r) else 2*cpu for r in rs),'embedding_peak_rss_bytes':max(r['embedding_peak_rss_bytes'] for r in rs),'cost_scope':'worker_and_checker_processes_cpu' if all('transaction_cpu' in r for r in rs) else 'measured_worker_cpu' if all('measured_worker_cpu' in r for r in rs) else 'legacy_phase_sum_excludes_harness_bookkeeping'}
     b=summary['versions']['baseline'];c=summary['versions']['candidate']
     summary['gate_pass']=not summary['losses'] and c['solve_cpu_par2_sum']<=1.05*b['solve_cpu_par2_sum'] and c['complete_cpu_par2_sum']<=1.05*b['complete_cpu_par2_sum']
     return summary
@@ -77,14 +84,18 @@ def main():
     assert a.baseline and a.candidate and a.manifest and a.output
     manifest=json.loads(a.manifest.read_text());assert manifest['inputs']
     pinned={v:sha(getattr(a,v)) for v in ('baseline','candidate')}
-    report={'complete':False,'manifest_sha256':sha(a.manifest),'library_sha256':pinned,'harness_sha256':sha(__file__),'scope':'Imported DIMACS directly into certified public API flags 3; no AIG preparation. Fresh embedding process per run; embedding peak excludes checker processes. Solve CPU budget excludes loading/export/checking; complete CPU includes them.','cpu':a.cpu,'wall':a.wall,'runs':[]}
+    report={'complete':False,'manifest_sha256':sha(a.manifest),'library_sha256':pinned,'harness_sha256':sha(__file__),'scope':'Imported DIMACS directly into certified public API flags 3; no AIG preparation. Fresh embedding process per run; embedding peak excludes checker processes. Solve CPU budget excludes loading/export/checking; Measured worker CPU includes them and bookkeeping through teardown, excluding startup/imports and result serialization.','cpu':a.cpu,'wall':a.wall,'runs':[]}
     a.output.parent.mkdir(parents=True,exist_ok=True)
     for source,entry in manifest['inputs'].items():
         assert sha(source)==entry['sha256']
         for i,v in enumerate(('baseline','candidate','candidate','baseline')):
             cmd=[sys.executable,str(Path(__file__).resolve()),'--worker',str(getattr(a,v).resolve()),'--input',source,'--cpu',str(a.cpu),'--wall',str(a.wall),'--output',str(a.output.parent/'unverified'/f'{Path(source).stem}-{i}')]
-            run=run_capture(cmd,1300);assert run.returncode==0,run.stderr
+            before=resource.getrusage(resource.RUSAGE_CHILDREN)
+            run=run_capture(cmd,1300);after=resource.getrusage(resource.RUSAGE_CHILDREN)
+            assert run.returncode==0,run.stderr
             r=json.loads(run.stdout);assert r['input_sha256']==entry['sha256'] and r['library_sha256']==pinned[v]
+            r['transaction_cpu']=after.ru_utime+after.ru_stime-before.ru_utime-before.ru_stime
+            r['transaction_cpu_scope']='Fresh worker and its waited-for checker descendants, measured by parent RUSAGE_CHILDREN delta; includes startup, cleanup and result serialization. Parent orchestration CPU excluded.'
             r.update(version=v,input=source,family=entry['family']);report['runs'].append(r)
             a.output.write_text(json.dumps(report,indent=2)+'\n')
             assert not r['result'] or r['verified']

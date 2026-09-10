@@ -1,0 +1,90 @@
+[
+  {
+    "result": 10,
+    "input_sha256": "fd1abdf0f63a24a0a2218635e4ebe34de25360d8c66278ffa73161b8a1276e70",
+    "library_sha256": "fc4d2c0c69c0288abc160d2f61a81f5dc25f52be354837cc7adeeddac2dc0060",
+    "load_cpu": 0.0017700000000000007,
+    "solve_cpu": 3.800000000000331e-05,
+    "solve_wall": 3.645801916718483e-05,
+    "owned_capacity_bytes": 18527,
+    "conflicts": 0,
+    "propagations": 2,
+    "within_budget": true,
+    "verified": true,
+    "export_cpu": 0.00036900000000000127,
+    "check_cpu": 1.6999999999996185e-05,
+    "query_sha256": "0800169e860f9787c06f93fda5b53358492aa00f2ee2ce2e6931e4c6335ded7e",
+    "proof_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "proof_bytes": 0,
+    "embedding_peak_rss_bytes": 22740992,
+    "measured_worker_cpu": 0.0026720000000000008,
+    "cost_scope": "Worker CPU from input loading through teardown plus checker-child CPU, including bookkeeping; excludes Python startup/imports and result serialization."
+  },
+  {
+    "result": 20,
+    "input_sha256": "ac42a371b5a124286c410ed5dfa2e3be7ee7d5b1feac6f08e7e1715f0c3669a8",
+    "library_sha256": "fc4d2c0c69c0288abc160d2f61a81f5dc25f52be354837cc7adeeddac2dc0060",
+    "load_cpu": 0.0006560000000000038,
+    "solve_cpu": 2.9000000000001247e-05,
+    "solve_wall": 2.82912515103817e-05,
+    "owned_capacity_bytes": 18462,
+    "conflicts": 0,
+    "propagations": 0,
+    "within_budget": true,
+    "verified": true,
+    "export_cpu": 0.0002529999999999963,
+    "check_cpu": 0.031651,
+    "query_sha256": "ac42a371b5a124286c410ed5dfa2e3be7ee7d5b1feac6f08e7e1715f0c3669a8",
+    "proof_sha256": "7d8e61117e9a1ab2808f295546661f921bbe7e20c0158c7e81b5d1c13654b457",
+    "proof_bytes": 4,
+    "embedding_peak_rss_bytes": 22839296,
+    "verification": {
+      "input_sha256": "ac42a371b5a124286c410ed5dfa2e3be7ee7d5b1feac6f08e7e1715f0c3669a8",
+      "drat_sha256": "7d8e61117e9a1ab2808f295546661f921bbe7e20c0158c7e81b5d1c13654b457",
+      "converter_sha256": "9bfc20a5fa9eb2a0ffadd2b0cfc7cdd4a20f6aa9c8d7de5b6c771160b847f630",
+      "checker_sha256": "027e767e8e5543d61671c44f7475e985b7969112e6825d51f2207bf0580cbf5c",
+      "verified": true,
+      "checker_heap_mb": 2048,
+      "checker_stack_mb": 512,
+      "stages": [
+        {
+          "command": [
+            "/tmp/bsat-drat-trim",
+            "/var/folders/ts/779j13fj7_x2z167570zvv4c0000gn/T/bsat-dimacs-check-8uybkjfb/check/input.cnf",
+            "/var/folders/ts/779j13fj7_x2z167570zvv4c0000gn/T/bsat-dimacs-check-8uybkjfb/check/proof.drat",
+            "-L",
+            "/var/folders/ts/779j13fj7_x2z167570zvv4c0000gn/T/bsat-dimacs-check-8uybkjfb/check/proof.lrat"
+          ],
+          "seconds": 0.027100333012640476,
+          "cpu_seconds": 0.024621,
+          "children_peak_rss_bytes": 45809664,
+          "returncode": 0,
+          "stdout": "\nc turning on binary mode checking\n\nc parsing input formula with 1 variables and 2 clauses\n\nc finished parsing, read 4 bytes from proof file\n\nc found complementary unit clauses: -1\n\ns VERIFIED\n\nc verification time: 0.022 seconds\n",
+          "stderr": ""
+        },
+        {
+          "command": [
+            "/tmp/bsat-cake-verified-build/cake_lpr",
+            "--CML_HEAP_SIZE=2048",
+            "--CML_STACK_SIZE=512",
+            "/var/folders/ts/779j13fj7_x2z167570zvv4c0000gn/T/bsat-dimacs-check-8uybkjfb/check/input.cnf",
+            "/var/folders/ts/779j13fj7_x2z167570zvv4c0000gn/T/bsat-dimacs-check-8uybkjfb/check/proof.lrat"
+          ],
+          "seconds": 0.003998082596808672,
+          "cpu_seconds": 0.0024249999999999975,
+          "children_peak_rss_bytes": 45809664,
+          "returncode": 0,
+          "stdout": "s VERIFIED UNSAT\n",
+          "stderr": ""
+        }
+      ],
+      "lrat_sha256": "2e9bf73f333fd3624376d1eb676ce8d6240ba39924936c22bc1a522bfb01b8cc",
+      "seconds": 0.032914791721850634,
+      "parent_cpu_seconds": 0.004604999999999998,
+      "total_cpu_seconds": 0.031651,
+      "rss_scope": "Cumulative child-process high-water RSS, not isolated per-stage peak"
+    },
+    "measured_worker_cpu": 0.033343,
+    "cost_scope": "Worker CPU from input loading through teardown plus checker-child CPU, including bookkeeping; excludes Python startup/imports and result serialization."
+  }
+]

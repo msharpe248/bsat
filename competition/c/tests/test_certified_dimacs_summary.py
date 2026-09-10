@@ -8,8 +8,12 @@ class Summary(unittest.TestCase):
         r=self.rows();r[1]['result']=0;r[1]['verified']=False;self.assertFalse(summarize(r)['gate_pass'])
     def test_check_cost(self):
         r=self.rows();r[1]['check_cpu']=10;self.assertFalse(summarize(r)['gate_pass'])
+    def test_bookkeeping_cost(self):
+        r=self.rows()
+        for row in r:row['transaction_cpu']=1.3 if row['version']=='baseline' else 2
+        self.assertFalse(summarize(r)['gate_pass'])
     def test_invalid(self):
-        for key,value in [('input_sha256','different'),('result',20),('solve_cpu',float('nan')),('solve_wall',21),('solve_cpu',16),('verified',False)]:
+        for key,value in [('input_sha256','different'),('result',20),('solve_cpu',float('nan')),('solve_wall',21),('solve_cpu',16),('verified',False),('transaction_cpu',float('nan'))]:
             r=self.rows();r[1][key]=value
             with self.assertRaises(AssertionError):summarize(r)
 if __name__=='__main__':unittest.main()

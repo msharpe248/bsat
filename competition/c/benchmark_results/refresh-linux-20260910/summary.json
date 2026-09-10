@@ -1,0 +1,125 @@
+{
+  "workflow_run": 34426516845,
+  "revision": "df61412dcd664f3e699fe956f111153718f7b8dc",
+  "outcome": "rejected_target_checked_loss_and_cost_regressions",
+  "targets": {
+    "complete": true,
+    "versions": {
+      "baseline": {
+        "complete_cpu_par2_sum": 187.691251773
+      },
+      "candidate": {
+        "complete_cpu_par2_sum": 344.545989225
+      }
+    },
+    "losses": [
+      [
+        "cal3",
+        16,
+        1
+      ]
+    ],
+    "targets": {
+      "cal3": {
+        "baseline": {
+          "queries": 24,
+          "checked": 24,
+          "solve_cpu_sum": 72.28997624,
+          "complete_cpu_par2_sum": 139.348551261,
+          "check_wall_sum": 66.77454310200005,
+          "max_journal_bytes": 131137639,
+          "max_owned_capacity": 6682554,
+          "max_cumulative_ssr_strengthened": 0,
+          "lbd_updates_sum": 0
+        },
+        "candidate": {
+          "queries": 24,
+          "checked": 22,
+          "solve_cpu_sum": 120.371821732,
+          "complete_cpu_par2_sum": 242.105009765,
+          "check_wall_sum": 1.5077701189999857,
+          "max_journal_bytes": 208834650,
+          "max_owned_capacity": 7216710,
+          "max_cumulative_ssr_strengthened": 0,
+          "lbd_updates_sum": 1660055
+        }
+      },
+      "cal100": {
+        "baseline": {
+          "queries": 12,
+          "checked": 12,
+          "solve_cpu_sum": 22.425573068,
+          "complete_cpu_par2_sum": 48.342700512,
+          "check_wall_sum": 25.499615938000034,
+          "max_journal_bytes": 69161507,
+          "max_owned_capacity": 36096182,
+          "max_cumulative_ssr_strengthened": 0,
+          "lbd_updates_sum": 0
+        },
+        "candidate": {
+          "queries": 12,
+          "checked": 12,
+          "solve_cpu_sum": 64.95224479400001,
+          "complete_cpu_par2_sum": 102.44097946000001,
+          "check_wall_sum": 36.82209014100022,
+          "max_journal_bytes": 198864557,
+          "max_owned_capacity": 36453706,
+          "max_cumulative_ssr_strengthened": 0,
+          "lbd_updates_sum": 678724
+        }
+      }
+    },
+    "relative_complete_cpu_change": 0.835706171546585,
+    "target_regressions": [
+      "cal3",
+      "cal100"
+    ],
+    "gate_pass": false,
+    "benefit_demonstrated": false
+  },
+  "holdout": {
+    "versions": {
+      "baseline": {
+        "queries": 12,
+        "checked": 2,
+        "solve_cpu_par2_sum": 300.00048122,
+        "complete_cpu_par2_sum": 300.352184053,
+        "embedding_peak_rss_bytes": 71221248,
+        "cost_scope": "legacy_phase_sum_excludes_harness_bookkeeping"
+      },
+      "candidate": {
+        "queries": 12,
+        "checked": 2,
+        "solve_cpu_par2_sum": 300.000456294,
+        "complete_cpu_par2_sum": 300.351932664,
+        "embedding_peak_rss_bytes": 68849664,
+        "cost_scope": "legacy_phase_sum_excludes_harness_bookkeeping"
+      }
+    },
+    "losses": [],
+    "gate_pass": true
+  },
+  "memory_scope": "Single fresh embedding process per target/version, including Python encoding/hash/model validation; excludes independent proof-checker processes. Not native-only or complete transaction RSS. Known independently checked contexts; candidate UNKNOWN remains unfinished.",
+  "memory": {
+    "memory-cal100-baseline": {
+      "peak_rss_bytes": 139902976,
+      "queries": 6,
+      "unknown": 0
+    },
+    "memory-cal3-candidate": {
+      "peak_rss_bytes": 39936000,
+      "queries": 12,
+      "unknown": 1
+    },
+    "memory-cal100-candidate": {
+      "peak_rss_bytes": 143200256,
+      "queries": 6,
+      "unknown": 0
+    },
+    "memory-cal3-baseline": {
+      "peak_rss_bytes": 38907904,
+      "queries": 12,
+      "unknown": 0
+    }
+  }
+}

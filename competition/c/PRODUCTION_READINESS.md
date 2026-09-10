@@ -1,7 +1,7 @@
 # C solver production readiness
 
 This is the authoritative capability and release-gate summary for the C
-implementation, updated 2026-09-09. The package is `1.0.0-dev`: it has substantial
+implementation, updated 2026-09-10. The package is `1.0.0-dev`: it has substantial
 correctness and integration evidence, but has not met workload-specific production
 acceptance criteria. Historical milestone reports preserve measurements at their
 recorded revisions; they do not override this summary or the public API contract.
@@ -54,7 +54,7 @@ use at reduction, including deleted clauses, and freezes six fresh direct DIMACS
 inputs. The certified score-refresh candidate lost the hard cal3 solve and was
 archived. Both restored release/sanitizer builds pass 69 C tests. Both builds
 check 2/12 local holdout runs; the rest are UNKNOWN at 15 CPU seconds. Linux
-confirmation is pending. The offline SSR audit finds 47 root-unassigned targets
+confirms the target regressions and the same holdout checked count. The offline SSR audit finds 47 root-unassigned targets
 in a nontrivial multiplier input; another input with witnesses is already root
 UNSAT. Neither finding establishes a simplification speedup.
 
@@ -221,6 +221,7 @@ those requirements and the exact-candidate checks are satisfied.
 
 ## Where to look
 
+- [Search usefulness, fresh DIMACS and score-refresh results](SEARCH_USE_MILESTONES.md)
 - [Certified SSR experiment and outcomes](CERTIFIED_SSR_MILESTONES.md)
 - [Public ABI and lifetime contract](API_CONTRACT.md), [build/install](INSTALLING.md)
 - [Executable coverage and reproduction](tests/FEATURE_COVERAGE.md)

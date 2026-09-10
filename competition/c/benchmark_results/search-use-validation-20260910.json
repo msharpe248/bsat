@@ -1,0 +1,55 @@
+{
+  "scope": "Finite validation for observational clause-use instrumentation and archived certified score-refresh candidate; not a proof of universal solver soundness",
+  "candidate": {
+    "revision": "894aa677feacc903ba681abcd38cf9b47e21b70e",
+    "release_c_tests": 69,
+    "asan_ubsan_c_tests": 69,
+    "independent_certificates_per_build": 53,
+    "allocation_cutoffs_per_build": 3283,
+    "proof_output_cutoffs_per_build": 22,
+    "deferred_flush_failures_per_build": 2
+  },
+  "retained_diagnostics": {
+    "release_c_tests_before_candidate_test_added": 68,
+    "final_asan_ubsan_c_tests": 69,
+    "public_control_parity_queries_with_accounting": 48,
+    "independently_checked_retained_queries": 18,
+    "target_proof_and_conflict_parity": true
+  },
+  "restored_production": {
+    "release_c_tests": 69,
+    "asan_ubsan_c_tests": 69,
+    "candidate_runtime_removed": true
+  },
+  "python_checks": {
+    "ssr_opportunity_random_formulas_with_exhaustive_5_variable_entailment": 200,
+    "ssr_opportunity_test_methods": 3,
+    "target_gate_tests": 6,
+    "dimacs_gate_tests": 5,
+    "dimacs_worker_smoke": [
+      "SAT",
+      "UNSAT"
+    ],
+    "portable_fixture_hash_round_trips": 6,
+    "measured_dimacs_rows_checked_against_manifest_library_hashes_and_deadlines": 24,
+    "worker_transaction_cpu_smoke_cases": 8
+  },
+  "libraries": {
+    "libbsat_refresh.dylib": "16b3df48a94fe1fe898975369b707ee19d5090f248cfe6eb19c7a51990285a54",
+    "libbsat_release.dylib": "fc4d2c0c69c0288abc160d2f61a81f5dc25f52be354837cc7adeeddac2dc0060",
+    "libquery_diagnostics_diagnostic.dylib": "c23268c8ce767f08247aec6a497de82c04b394c7d86e118669f1c9857192334f"
+  },
+  "linux": {
+    "workflow_run": 34426516845,
+    "revision": "df61412dcd664f3e699fe956f111153718f7b8dc",
+    "conclusion": "success",
+    "candidate_performance_gates": "rejected",
+    "c_tests_per_build": 69,
+    "independent_certificates_per_build": 53,
+    "allocation_cutoffs_per_build": 3283,
+    "target_checked_baseline": 36,
+    "target_checked_candidate": 34,
+    "holdout_checked_per_build": 2,
+    "holdout_queries_per_build": 12
+  }
+}
