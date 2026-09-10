@@ -19,6 +19,8 @@ class Audit(unittest.TestCase):
         r=audit(3,cs);self.assertEqual(r['opportunity_targets'],1);self.assertEqual(r['root_unassigned_opportunities'],0);self.assertTrue(r['root_complete'])
         r=audit(3,cs,0);self.assertFalse(r['root_complete']);self.assertFalse(r['complete'])
         self.assertTrue(audit(1,[[1],[-1]])['root_unsat'])
+        self.assertEqual(audit(3,[[-1,2],[1,2,3],[2],[-2]])['nontrivial_root_unassigned_opportunities'],0)
+        self.assertIsNone(audit(3,cs,0)['nontrivial_root_unassigned_opportunities'])
     def test_normalization(self):
         r=audit(3,[[-1,2,2],[1,2,3],[1,-1,3]])
         self.assertEqual(r['opportunity_targets'],1)

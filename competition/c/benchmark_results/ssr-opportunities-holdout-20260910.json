@@ -1,5 +1,6 @@
 {
   "scope": "Offline simplification opportunity audit; does not run or modify solver",
+  "harness_sha256": "1b23978c6b3a3ee57c665f8c8cb92e839a77c0fa70521e31103ac54e3403d456",
   "runs": [
     {
       "variables": 1126,
@@ -15,6 +16,7 @@
       "root_work": 269,
       "opportunity_targets": 74,
       "root_unassigned_opportunities": 47,
+      "nontrivial_root_unassigned_opportunities": 47,
       "witnesses": [
         {
           "source": 3352,
@@ -479,6 +481,7 @@
       "root_work": 2,
       "opportunity_targets": 0,
       "root_unassigned_opportunities": 0,
+      "nontrivial_root_unassigned_opportunities": 0,
       "witnesses": [],
       "scope": "One independently checked removal per target on immutable normalized input; no fixpoint, no speed claim. Root classification is provisional unless root_complete.",
       "input": "/Users/msharpe/python/bsat/dataset/sat_competition2025/multiplier-equivalence-checking/98a991c902324b02349e766ad357cdc6.cnf",
@@ -498,6 +501,7 @@
       "root_work": 0,
       "opportunity_targets": 0,
       "root_unassigned_opportunities": 0,
+      "nontrivial_root_unassigned_opportunities": 0,
       "witnesses": [],
       "scope": "One independently checked removal per target on immutable normalized input; no fixpoint, no speed claim. Root classification is provisional unless root_complete.",
       "input": "/Users/msharpe/python/bsat/dataset/sat_competition2025/scheduling/35ec95b9b2398fb522db178855016ae0.cnf",
@@ -517,6 +521,7 @@
       "root_work": 1292,
       "opportunity_targets": 57,
       "root_unassigned_opportunities": 43,
+      "nontrivial_root_unassigned_opportunities": 0,
       "witnesses": [
         {
           "source": 8162,
@@ -879,6 +884,7 @@
       "root_work": 32,
       "opportunity_targets": 0,
       "root_unassigned_opportunities": 0,
+      "nontrivial_root_unassigned_opportunities": 0,
       "witnesses": [],
       "scope": "One independently checked removal per target on immutable normalized input; no fixpoint, no speed claim. Root classification is provisional unless root_complete.",
       "input": "/Users/msharpe/python/bsat/dataset/sat_competition2025/argumentation/16564a6acba6b9fc887c447d4e507767.cnf",
@@ -898,6 +904,7 @@
       "root_work": 0,
       "opportunity_targets": 0,
       "root_unassigned_opportunities": 0,
+      "nontrivial_root_unassigned_opportunities": 0,
       "witnesses": [],
       "scope": "One independently checked removal per target on immutable normalized input; no fixpoint, no speed claim. Root classification is provisional unless root_complete.",
       "input": "/Users/msharpe/python/bsat/dataset/sat_competition2025/unknown-cases/ca3c65a863526793968fc30618a42709.cnf",

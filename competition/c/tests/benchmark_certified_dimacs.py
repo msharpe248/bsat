@@ -43,14 +43,15 @@ def worker(libpath, source, cpu, wall, artifacts):
             return row
         finally:lib.bsat_destroy(s)
 
-def summarize(rows, cpu=15):
+def summarize(rows, cpu=15, wall=20):
     summary={'versions':{},'losses':[]}
     grouped={}
     for r in rows:
         assert r['version'] in ('baseline','candidate') and r['result'] in (0,10,20)
         assert not r['result'] or r['verified']
-        for k in ('load_cpu','solve_cpu','export_cpu','check_cpu'):
+        for k in ('load_cpu','solve_cpu','solve_wall','export_cpu','check_cpu'):
             assert math.isfinite(r[k]) and r[k]>=0
+        assert not r['within_budget'] or (r['solve_cpu']<=cpu and r['solve_wall']<=wall)
         grouped.setdefault(r['input'],[]).append(r)
     for name,rs in grouped.items():
         assert len(rs)==4 and [r['version'] for r in rs]==['baseline','candidate','candidate','baseline']
@@ -74,15 +75,19 @@ def main():
     if a.worker:
         print(json.dumps(worker(a.worker,a.input,a.cpu,a.wall,a.output)));return
     assert a.baseline and a.candidate and a.manifest and a.output
-    manifest=json.loads(a.manifest.read_text());report={'complete':False,'manifest_sha256':sha(a.manifest),'scope':'Imported DIMACS directly into certified public API flags 3; no AIG preparation. Fresh embedding process per run; embedding peak excludes checker processes. Solve CPU budget excludes loading/export/checking; complete CPU includes them.','cpu':a.cpu,'wall':a.wall,'runs':[]}
+    manifest=json.loads(a.manifest.read_text());assert manifest['inputs']
+    pinned={v:sha(getattr(a,v)) for v in ('baseline','candidate')}
+    report={'complete':False,'manifest_sha256':sha(a.manifest),'library_sha256':pinned,'harness_sha256':sha(__file__),'scope':'Imported DIMACS directly into certified public API flags 3; no AIG preparation. Fresh embedding process per run; embedding peak excludes checker processes. Solve CPU budget excludes loading/export/checking; complete CPU includes them.','cpu':a.cpu,'wall':a.wall,'runs':[]}
     a.output.parent.mkdir(parents=True,exist_ok=True)
     for source,entry in manifest['inputs'].items():
         assert sha(source)==entry['sha256']
         for i,v in enumerate(('baseline','candidate','candidate','baseline')):
             cmd=[sys.executable,str(Path(__file__).resolve()),'--worker',str(getattr(a,v).resolve()),'--input',source,'--cpu',str(a.cpu),'--wall',str(a.wall),'--output',str(a.output.parent/'unverified'/f'{Path(source).stem}-{i}')]
             run=run_capture(cmd,1300);assert run.returncode==0,run.stderr
-            r=json.loads(run.stdout);r.update(version=v,input=source,family=entry['family']);report['runs'].append(r)
+            r=json.loads(run.stdout);assert r['input_sha256']==entry['sha256'] and r['library_sha256']==pinned[v]
+            r.update(version=v,input=source,family=entry['family']);report['runs'].append(r)
             a.output.write_text(json.dumps(report,indent=2)+'\n')
+            assert not r['result'] or r['verified']
             print(entry['family'],v,r['result'],r['verified'],flush=True)
-    report['summary']=summarize(report['runs'],a.cpu);report['complete']=True;a.output.write_text(json.dumps(report,indent=2)+'\n');print(json.dumps(report['summary'],indent=2))
+    report['summary']=summarize(report['runs'],a.cpu,a.wall);report['complete']=True;a.output.write_text(json.dumps(report,indent=2)+'\n');print(json.dumps(report['summary'],indent=2))
 if __name__=='__main__':main()

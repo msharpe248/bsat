@@ -97,3 +97,25 @@ the positive depth-16 answer in both candidate repetitions, and cal100 also
 regresses. Combined solve/export/check CPU PAR2 rises 138.12%. The DIMACS holdout
 and Linux confirmation are still running. Raw target records are in
 `benchmark_results/refresh-targets-mac-20260910/`.
+
+
+Interpretation correction from the root-closure flags: p-center is already root
+UNSAT, so its 57 valid relations (43 on root-unassigned targets) are not useful
+search opportunities. The circuit-multiplier case is not root UNSAT and has 47
+root-unassigned opportunities before the scan cap. This is the relevant future
+simplification lead. Both current builds time out on that input at 15 CPU seconds;
+no SSR performance benefit has been measured there.
+
+
+The completed local DIMACS holdout checks 2/12 runs in each build (the root-UNSAT
+p-center repetitions); the other ten runs per build are UNKNOWN at 15 CPU seconds.
+There is no new solve or informative aggregate speed gain. Peak embedding RSS is
+80,805,888 baseline / 79,888,384 candidate bytes across these isolated workers,
+including Python input/export/model data and excluding proof-checker processes.
+All input/library hashes and deadline claims were rechecked against frozen
+artifacts. Future harness runs enforce those checks before accepting each row.
+
+After archiving the candidate, all 69 ordinary release and ASan/UBSan C executables
+pass. The candidate core changes are removed; observational diagnostics and
+regressions remain. Archive application checks pass. Linux confirmation and its
+separate resource replays remain pending.

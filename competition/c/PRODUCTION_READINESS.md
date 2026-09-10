@@ -49,6 +49,15 @@ circuit screen and failed the benefit gate. Its runtime is archived. The additio
 Linux screen has 110 independently checked answers and two UNKNOWNs across 112
 queries, with no observed wrong answers; isolated embedding memory was measured.
 
+The current [search usefulness campaign](SEARCH_USE_MILESTONES.md) measures clause
+use at reduction, including deleted clauses, and freezes six fresh direct DIMACS
+inputs. The certified score-refresh candidate lost the hard cal3 solve and was
+archived. Both restored release/sanitizer builds pass 69 C tests. Both builds
+check 2/12 local holdout runs; the rest are UNKNOWN at 15 CPU seconds. Linux
+confirmation is pending. The offline SSR audit finds 47 root-unassigned targets
+in a nontrivial multiplier input; another input with witnesses is already root
+UNSAT. Neither finding establishes a simplification speedup.
+
 The campaign history below records earlier revisions and their then-current gaps.
 
 The real-circuit release campaign covers 192 queries through depth 16, growing to

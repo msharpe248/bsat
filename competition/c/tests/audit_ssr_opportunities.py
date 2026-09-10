@@ -65,6 +65,7 @@ def audit(n, clauses, budget=1000000):
             'eligible_targets_visited':eligible,'complete':complete,'budget':budget,'inspection_work':min(work,budget),
             'root_complete':root_complete,'root_unsat':root_unsat,'root_assigned_variables':len(assigned),
             'root_work':min(root_work,budget),'opportunity_targets':len(hits),'root_unassigned_opportunities':unassigned,
+            'nontrivial_root_unassigned_opportunities':(0 if root_unsat else unassigned) if root_complete else None,
             'witnesses':hits,'scope':'One independently checked removal per target on immutable normalized input; no fixpoint, no speed claim. Root classification is provisional unless root_complete.'}
 
 
@@ -73,6 +74,6 @@ def main():
     rows=[]
     for path in a.inputs:
         data=path.read_bytes();n,cs=parse_cnf(data.decode());r=audit(n,cs,a.budget);r.update(input=str(path.resolve()),input_sha256=hashlib.sha256(data).hexdigest());rows.append(r)
-    a.output.write_text(json.dumps({'scope':'Offline simplification opportunity audit; does not run or modify solver','runs':rows},indent=2)+'\n')
+    a.output.write_text(json.dumps({'scope':'Offline simplification opportunity audit; does not run or modify solver','harness_sha256':hashlib.sha256(Path(__file__).read_bytes()).hexdigest(),'runs':rows},indent=2)+'\n')
     print([(r['opportunity_targets'],r['root_unassigned_opportunities'],r['complete'],r['root_complete']) for r in rows])
 if __name__=='__main__': main()

@@ -18,6 +18,8 @@ jobs:
           mkdir -p "$RUNNER_TEMP/baseline"
           git archive 76fcd3c569d035f22c617581b1a5627289bfeff0 competition/c/src competition/c/include competition/c/tests competition/c/Makefile competition/c/VERSION | tar -x -C "$RUNNER_TEMP/baseline"
           make -C "$RUNNER_TEMP/baseline/competition/c" -j2 OPTFLAGS='-O3 -flto' shared query-diagnostics
+          git apply --check competition/c/benchmark_results/certified-refresh-prototype-20260910.patch
+          git apply competition/c/benchmark_results/certified-refresh-prototype-20260910.patch
           make -C competition/c -j2 MODE=refresh OPTFLAGS='-O3 -flto -DBSAT_CERTIFIED_REFRESH' shared query-diagnostics query-certificate-driver test fault-test
           make -C competition/c -j2 MODE=refresh_debug OPTFLAGS='-g -O0 -DDEBUG -fsanitize=address -fsanitize=undefined -DBSAT_CERTIFIED_REFRESH' query-certificate-driver test fault-test
           curl -Lf https://github.com/arminbiere/kissat/archive/8af8e56f174b778aef3aa45af9f739b2a5f492c2.tar.gz -o "$RUNNER_TEMP/kissat.tar.gz"

@@ -2,8 +2,8 @@
 
 This matrix describes checked behavior, not a percentage of solver correctness.
 The former “100% of directly testable features” claim and 2025 test counts were
-outdated. The Makefile discovers `test_*.c` automatically (67 C executables as of
-2026-09-09). Release and ASan/UBSan use separate object directories. The authoritative
+outdated. The Makefile discovers `test_*.c` automatically (69 C executables as of
+2026-09-10). Release and ASan/UBSan use separate object directories. The authoritative
 capability and release-gate summary is [Production readiness](../PRODUCTION_READINESS.md).
 
 | Area | Executable evidence | Boundary |
@@ -98,3 +98,13 @@ signed clause pairs, forced arena compaction, root assignments, cancellation,
 work and journal limits. Its fault driver adds 202 focused allocation cutoffs;
 its certificate driver adds 24 independently checked queries (77 total per build).
 These experimental cases do not imply SSR is enabled in the production library.
+
+The [search usefulness campaign](../SEARCH_USE_MILESTONES.md) adds
+`test_clause_use` for diagnostic binary reuse, deletion/retention partitions,
+recent-use expiry and GC preservation. Analysis fixtures verify observational
+LBD counters without changing scores. `test_certified_refresh` tests the gated
+score-refresh experiment, including the non-glue floor and unchanged proof output;
+its experimental body is skipped in ordinary builds. The Python offline SSR audit
+has 200 random formula comparisons with exhaustive five-variable entailment,
+normalization/root/budget checks. Certified DIMACS summary tests reject wrong
+contexts, wrong answers, NaN costs, hidden solved losses and checker-cost regressions.
