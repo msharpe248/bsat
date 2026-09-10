@@ -1,0 +1,28 @@
+{
+  "experiment": "certified-refresh",
+  "baseline_revision": "76fcd3c569d035f22c617581b1a5627289bfeff0",
+  "order": [
+    "baseline",
+    "candidate",
+    "candidate",
+    "baseline"
+  ],
+  "flags": 3,
+  "query_cpu": 60,
+  "reference_wall": 90,
+  "checker_wall": 600,
+  "checker_heap_mb": 2048,
+  "checker_stack_mb": 512,
+  "targets": {
+    "cal3": {
+      "circuit": "cal3.aig",
+      "depths": "0,1,2,4,8,16",
+      "suite": "original"
+    },
+    "cal100": {
+      "circuit": "cal100.aig",
+      "depths": "0,2,4",
+      "suite": "expanded"
+    }
+  }
+}

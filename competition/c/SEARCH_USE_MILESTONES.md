@@ -80,3 +80,20 @@ scan). The other four scans complete without matches. These establish concrete
 opportunities in two direct DIMACS inputs, not solver performance gains. Each
 witness is retained by original clause index/pivot and checked against the exact
 signed subset relation; input hashes and root-closure completeness are recorded.
+
+
+Both first macOS cal3 candidate histories reach UNKNOWN at 60 CPU seconds; the
+first baseline checks UNSAT at 23.20 seconds. The candidate loses the target and
+is rejected. The patch is archived in
+`benchmark_results/certified-refresh-prototype-20260910.patch`; runtime source is
+restored to the diagnostic-only 76fcd3c implementation. The manual workflow
+reapplies that patch to reproduce the experiment. Remaining frozen paired,
+DIMACS and Linux resource measurements continue; they cannot override this loss.
+No complete transaction promotion run is needed for this rejected candidate.
+
+
+The completed local target ABBA summary rejects both per-target gates: cal3 loses
+the positive depth-16 answer in both candidate repetitions, and cal100 also
+regresses. Combined solve/export/check CPU PAR2 rises 138.12%. The DIMACS holdout
+and Linux confirmation are still running. Raw target records are in
+`benchmark_results/refresh-targets-mac-20260910/`.

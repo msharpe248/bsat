@@ -1,0 +1,61 @@
+{
+  "scope": "Cumulative retained diagnostic events; not timings, unique-clause quality, or counterfactual performance",
+  "targets": {
+    "cal3": {
+      "queries": 12,
+      "checked": 12,
+      "counters": {
+        "use_lbd_checks": 7050085,
+        "use_lbd_lower": 4994533,
+        "use_lbd_to_glue": 3880510,
+        "use_binary_units": 6128259,
+        "use_learned_conflicts": 151428,
+        "use_reduction_visits": 1624922,
+        "use_kept": 1145292,
+        "use_deleted": 479630,
+        "use_deleted_never": 24326,
+        "use_deleted_recent": 452743,
+        "use_deleted_recent_analysis": 443180,
+        "use_deleted_recent_high_lbd": 362611,
+        "use_kept_recent_analysis": 617702,
+        "use_deleted_scans": 379899953,
+        "use_deleted_never_scans": 10569356,
+        "use_deleted_age_sum": 670765582,
+        "use_deleted_recent_high_lbd_scans": 294248780,
+        "use_kept_unused": 12737,
+        "use_kept_unused_scans": 401175
+      },
+      "deleted_recent_analysis_fraction": 0.9240039196880929,
+      "eligible_reuse_lower_lbd_fraction": 0.7084358557379096,
+      "scope": "Deletion totals count clauses; kept totals count repeated reduction visits; LBD totals count eligible analysis reuse events, not unique clauses. Initial learned-clause assertions are excluded from reuse."
+    },
+    "cal100": {
+      "queries": 6,
+      "checked": 6,
+      "counters": {
+        "use_lbd_checks": 968222,
+        "use_lbd_lower": 672517,
+        "use_lbd_to_glue": 382667,
+        "use_binary_units": 653848,
+        "use_learned_conflicts": 27126,
+        "use_reduction_visits": 293179,
+        "use_kept": 178682,
+        "use_deleted": 114497,
+        "use_deleted_never": 6086,
+        "use_deleted_recent": 106110,
+        "use_deleted_recent_analysis": 102197,
+        "use_deleted_recent_high_lbd": 77951,
+        "use_kept_recent_analysis": 59878,
+        "use_deleted_scans": 133103901,
+        "use_deleted_never_scans": 3842138,
+        "use_deleted_age_sum": 182872281,
+        "use_deleted_recent_high_lbd_scans": 113946988,
+        "use_kept_unused": 1351,
+        "use_kept_unused_scans": 43488
+      },
+      "deleted_recent_analysis_fraction": 0.8925736045485908,
+      "eligible_reuse_lower_lbd_fraction": 0.6945896705507622,
+      "scope": "Deletion totals count clauses; kept totals count repeated reduction visits; LBD totals count eligible analysis reuse events, not unique clauses. Initial learned-clause assertions are excluded from reuse."
+    }
+  }
+}

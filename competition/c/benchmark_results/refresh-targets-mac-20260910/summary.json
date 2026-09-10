@@ -1,0 +1,75 @@
+{
+  "complete": true,
+  "versions": {
+    "baseline": {
+      "complete_cpu_par2_sum": 129.722389
+    },
+    "candidate": {
+      "complete_cpu_par2_sum": 308.891913
+    }
+  },
+  "losses": [
+    [
+      "cal3",
+      16,
+      1
+    ]
+  ],
+  "targets": {
+    "cal3": {
+      "baseline": {
+        "queries": 24,
+        "checked": 24,
+        "solve_cpu_sum": 47.31416099999999,
+        "complete_cpu_par2_sum": 97.532298,
+        "check_wall_sum": 50.1627056254074,
+        "max_journal_bytes": 131137639,
+        "max_owned_capacity": 6682554,
+        "max_cumulative_ssr_strengthened": 0,
+        "lbd_updates_sum": 0
+      },
+      "candidate": {
+        "queries": 24,
+        "checked": 22,
+        "solve_cpu_sum": 120.243228,
+        "complete_cpu_par2_sum": 241.424963,
+        "check_wall_sum": 0.9797458774410188,
+        "max_journal_bytes": 319037721,
+        "max_owned_capacity": 7556182,
+        "max_cumulative_ssr_strengthened": 0,
+        "lbd_updates_sum": 2522436
+      }
+    },
+    "cal100": {
+      "baseline": {
+        "queries": 12,
+        "checked": 12,
+        "solve_cpu_sum": 13.717193,
+        "complete_cpu_par2_sum": 32.190090999999995,
+        "check_wall_sum": 18.11690450180322,
+        "max_journal_bytes": 69161507,
+        "max_owned_capacity": 36096182,
+        "max_cumulative_ssr_strengthened": 0,
+        "lbd_updates_sum": 0
+      },
+      "candidate": {
+        "queries": 12,
+        "checked": 12,
+        "solve_cpu_sum": 40.21356,
+        "complete_cpu_par2_sum": 67.46695,
+        "check_wall_sum": 26.80178570887074,
+        "max_journal_bytes": 198864557,
+        "max_owned_capacity": 36453706,
+        "max_cumulative_ssr_strengthened": 0,
+        "lbd_updates_sum": 678724
+      }
+    }
+  },
+  "relative_complete_cpu_change": 1.3811765677550079,
+  "target_regressions": [
+    "cal3",
+    "cal100"
+  ],
+  "gate_pass": false,
+  "benefit_demonstrated": false
+}
