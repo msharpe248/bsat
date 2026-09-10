@@ -1,0 +1,61 @@
+{
+  "complete": true,
+  "versions": {
+    "baseline": {
+      "complete_cpu_par2_sum": 191.42704639500002
+    },
+    "candidate": {
+      "complete_cpu_par2_sum": 189.94550340499998
+    }
+  },
+  "losses": [],
+  "targets": {
+    "cal3": {
+      "baseline": {
+        "queries": 24,
+        "checked": 24,
+        "solve_cpu_sum": 74.710143966,
+        "complete_cpu_par2_sum": 143.032877305,
+        "check_wall_sum": 68.02219663699998,
+        "max_journal_bytes": 131137639,
+        "max_owned_capacity": 6682554,
+        "max_cumulative_ssr_strengthened": 0
+      },
+      "candidate": {
+        "queries": 24,
+        "checked": 24,
+        "solve_cpu_sum": 73.059416795,
+        "complete_cpu_par2_sum": 141.590065257,
+        "check_wall_sum": 68.23226712100006,
+        "max_journal_bytes": 131137639,
+        "max_owned_capacity": 6682594,
+        "max_cumulative_ssr_strengthened": 0
+      }
+    },
+    "cal100": {
+      "baseline": {
+        "queries": 12,
+        "checked": 12,
+        "solve_cpu_sum": 22.373421835000002,
+        "complete_cpu_par2_sum": 48.39416909000001,
+        "check_wall_sum": 25.619408064000027,
+        "max_journal_bytes": 69161507,
+        "max_owned_capacity": 36096182,
+        "max_cumulative_ssr_strengthened": 0
+      },
+      "candidate": {
+        "queries": 12,
+        "checked": 12,
+        "solve_cpu_sum": 22.449879448000004,
+        "complete_cpu_par2_sum": 48.355438148,
+        "check_wall_sum": 25.501612180000052,
+        "max_journal_bytes": 69161507,
+        "max_owned_capacity": 36096222,
+        "max_cumulative_ssr_strengthened": 0
+      }
+    }
+  },
+  "relative_complete_cpu_change": -0.007739465336277229,
+  "gate_pass": true,
+  "benefit_demonstrated": false
+}

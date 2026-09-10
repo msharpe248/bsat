@@ -43,9 +43,11 @@ checks 64/64 BSAT queries versus 62/64 retained CaDiCaL queries within equal CPU
 budgets, adding strengths on cal162 and a selected PicoRV32 case. The
 [retained work diagnosis](RETAINED_SEARCH_WORK.md) still shows large search-work
 gaps on cal3/cal100. These results establish workload dependence, not general
-competitiveness. The latest [certified SSR experiment](CERTIFIED_SSR_MILESTONES.md) passed local
-correctness checks but found zero strengthenings on its paired targets and failed
-the benefit gate. Its runtime is archived; Linux broader validation is pending.
+competitiveness. The latest [certified SSR experiment](CERTIFIED_SSR_MILESTONES.md) passed macOS/Linux
+correctness checks but found zero strengthenings on its paired targets or broader
+circuit screen and failed the benefit gate. Its runtime is archived. The additional
+Linux screen has 110 independently checked answers and two UNKNOWNs across 112
+queries, with no observed wrong answers; isolated embedding memory was measured.
 
 The campaign history below records earlier revisions and their then-current gaps.
 

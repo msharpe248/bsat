@@ -1,0 +1,63 @@
+{
+  "workflow_run": 34422377127,
+  "revision": "253075c2e4eff3768068c9b9be9d060a8f728a9f",
+  "outcome": "rejected_no_demonstrated_target_benefit",
+  "runtime_restored_to": "c6b4ac84c94e231983886828d3100495a49545c6",
+  "c_tests_per_build": 67,
+  "certificates_per_build": 77,
+  "allocation_cutoffs_per_build": 3485,
+  "ssr_allocation_cutoffs_per_build": 202,
+  "explicit_compaction_test_scope": "Later macOS release and ASan/UBSan validation, not included in this Linux revision",
+  "broad": {
+    "broad-original": {
+      "complete": true,
+      "queries": 48,
+      "checked_answers": 48,
+      "results": {
+        "20": 24,
+        "10": 24
+      },
+      "max_cumulative_ssr_strengthened": 0
+    },
+    "broad-expanded": {
+      "complete": true,
+      "queries": 32,
+      "checked_answers": 30,
+      "results": {
+        "20": 13,
+        "10": 17,
+        "0": 2
+      },
+      "max_cumulative_ssr_strengthened": 0
+    },
+    "broad-fresh": {
+      "complete": true,
+      "queries": 32,
+      "checked_answers": 32,
+      "results": {
+        "20": 16,
+        "10": 16
+      },
+      "max_cumulative_ssr_strengthened": 0
+    }
+  },
+  "memory_scope": "Single fresh embedding process per circuit and version, including Python encoding/hash/model checks and one native solver; excludes proof checkers. Exact independently checked baseline contexts. Not native-only or complete transaction RSS.",
+  "memory": {
+    "memory-cal100-baseline": {
+      "peak_rss_bytes": 140718080,
+      "queries": 6
+    },
+    "memory-cal3-candidate": {
+      "peak_rss_bytes": 39612416,
+      "queries": 12
+    },
+    "memory-cal100-candidate": {
+      "peak_rss_bytes": 141266944,
+      "queries": 6
+    },
+    "memory-cal3-baseline": {
+      "peak_rss_bytes": 39297024,
+      "queries": 12
+    }
+  }
+}

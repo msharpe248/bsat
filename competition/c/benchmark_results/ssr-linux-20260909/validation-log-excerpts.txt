@@ -1,0 +1,8 @@
+compare	Build public library and fetch pinned independent sources	2026-09-10T00:43:02.7096537Z PASS: 202 SSR replacement allocation failures preserve UNKNOWN/error
+compare	Build public library and fetch pinned independent sources	2026-09-10T00:43:02.7097036Z PASS: 3485 single-allocation failures across 22 profiles/formulas and repeated solves
+compare	Build public library and fetch pinned independent sources	2026-09-10T00:43:03.0998002Z PASS: 352 signed SSR pairs with exhaustive equivalence, immutable input and rebuild
+compare	Build public library and fetch pinned independent sources	2026-09-10T00:43:16.9706229Z All tests passed!
+compare	Build public library and fetch pinned independent sources	2026-09-10T00:43:23.3351776Z PASS: 202 SSR replacement allocation failures preserve UNKNOWN/error
+compare	Build public library and fetch pinned independent sources	2026-09-10T00:43:23.3352253Z PASS: 3485 single-allocation failures across 22 profiles/formulas and repeated solves
+compare	Build public library and fetch pinned independent sources	2026-09-10T00:43:28.3700235Z PASS: 352 signed SSR pairs with exhaustive equivalence, immutable input and rebuild
+compare	Build public library and fetch pinned independent sources	2026-09-10T00:45:13.9377467Z All tests passed!
