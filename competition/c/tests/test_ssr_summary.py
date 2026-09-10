@@ -27,6 +27,10 @@ class Gates(unittest.TestCase):
         def change(r,v,i):
             if v=='candidate':r['certificate_checks']['bsat-check']['total_cpu_seconds']=10
         rc,d=self.run_case(change);self.assertEqual(rc,0);self.assertFalse(d['gate_pass'])
+    def test_hidden_target_regression(self):
+        def change(r,v,i):
+            if v=='candidate':r['cpu_seconds']=0.01 if r['circuit']=='cal3.aig' else 1.5
+        rc,d=self.run_case(change);self.assertEqual(rc,0);self.assertFalse(d['gate_pass']);self.assertEqual(d['target_regressions'],['cal100'])
     def test_context(self):
         def change(r,v,i):
             if i==1:r['input_sha256']='different'

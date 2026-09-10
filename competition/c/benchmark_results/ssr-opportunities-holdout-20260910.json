@@ -1,0 +1,907 @@
+{
+  "scope": "Offline simplification opportunity audit; does not run or modify solver",
+  "runs": [
+    {
+      "variables": 1126,
+      "clauses": 22166,
+      "normalization": "remove duplicates; exclude tautologies; preserve original clause indices",
+      "eligible_targets_visited": 5944,
+      "complete": false,
+      "budget": 1000000,
+      "inspection_work": 1000000,
+      "root_complete": true,
+      "root_unsat": false,
+      "root_assigned_variables": 8,
+      "root_work": 269,
+      "opportunity_targets": 74,
+      "root_unassigned_opportunities": 47,
+      "witnesses": [
+        {
+          "source": 3352,
+          "target": 45,
+          "pivot": 370,
+          "root_unassigned": true
+        },
+        {
+          "source": 11554,
+          "target": 51,
+          "pivot": -635,
+          "root_unassigned": false
+        },
+        {
+          "source": 14541,
+          "target": 52,
+          "pivot": 54,
+          "root_unassigned": true
+        },
+        {
+          "source": 18409,
+          "target": 91,
+          "pivot": 633,
+          "root_unassigned": false
+        },
+        {
+          "source": 11554,
+          "target": 92,
+          "pivot": -635,
+          "root_unassigned": false
+        },
+        {
+          "source": 21983,
+          "target": 213,
+          "pivot": -992,
+          "root_unassigned": true
+        },
+        {
+          "source": 11428,
+          "target": 220,
+          "pivot": -508,
+          "root_unassigned": true
+        },
+        {
+          "source": 18409,
+          "target": 224,
+          "pivot": 633,
+          "root_unassigned": false
+        },
+        {
+          "source": 11554,
+          "target": 276,
+          "pivot": 634,
+          "root_unassigned": false
+        },
+        {
+          "source": 13625,
+          "target": 372,
+          "pivot": -272,
+          "root_unassigned": true
+        },
+        {
+          "source": 18409,
+          "target": 389,
+          "pivot": -634,
+          "root_unassigned": false
+        },
+        {
+          "source": 21983,
+          "target": 416,
+          "pivot": -1014,
+          "root_unassigned": true
+        },
+        {
+          "source": 21090,
+          "target": 459,
+          "pivot": -632,
+          "root_unassigned": true
+        },
+        {
+          "source": 18409,
+          "target": 461,
+          "pivot": 633,
+          "root_unassigned": false
+        },
+        {
+          "source": 3352,
+          "target": 549,
+          "pivot": 370,
+          "root_unassigned": true
+        },
+        {
+          "source": 18409,
+          "target": 735,
+          "pivot": -634,
+          "root_unassigned": false
+        },
+        {
+          "source": 15145,
+          "target": 772,
+          "pivot": -22,
+          "root_unassigned": true
+        },
+        {
+          "source": 19704,
+          "target": 777,
+          "pivot": -50,
+          "root_unassigned": true
+        },
+        {
+          "source": 11554,
+          "target": 854,
+          "pivot": -635,
+          "root_unassigned": false
+        },
+        {
+          "source": 21090,
+          "target": 872,
+          "pivot": -631,
+          "root_unassigned": true
+        },
+        {
+          "source": 18409,
+          "target": 910,
+          "pivot": 633,
+          "root_unassigned": false
+        },
+        {
+          "source": 17285,
+          "target": 940,
+          "pivot": 506,
+          "root_unassigned": true
+        },
+        {
+          "source": 3352,
+          "target": 1027,
+          "pivot": -1084,
+          "root_unassigned": true
+        },
+        {
+          "source": 9837,
+          "target": 1179,
+          "pivot": 56,
+          "root_unassigned": true
+        },
+        {
+          "source": 3352,
+          "target": 1439,
+          "pivot": -1084,
+          "root_unassigned": true
+        },
+        {
+          "source": 19365,
+          "target": 1619,
+          "pivot": -347,
+          "root_unassigned": true
+        },
+        {
+          "source": 12450,
+          "target": 1654,
+          "pivot": -434,
+          "root_unassigned": true
+        },
+        {
+          "source": 11554,
+          "target": 1668,
+          "pivot": -635,
+          "root_unassigned": false
+        },
+        {
+          "source": 11554,
+          "target": 1675,
+          "pivot": -635,
+          "root_unassigned": false
+        },
+        {
+          "source": 3352,
+          "target": 1749,
+          "pivot": 370,
+          "root_unassigned": true
+        },
+        {
+          "source": 12792,
+          "target": 1765,
+          "pivot": -288,
+          "root_unassigned": true
+        },
+        {
+          "source": 4031,
+          "target": 1782,
+          "pivot": -991,
+          "root_unassigned": true
+        },
+        {
+          "source": 18409,
+          "target": 1959,
+          "pivot": -634,
+          "root_unassigned": false
+        },
+        {
+          "source": 19365,
+          "target": 1985,
+          "pivot": -347,
+          "root_unassigned": true
+        },
+        {
+          "source": 4196,
+          "target": 2046,
+          "pivot": -113,
+          "root_unassigned": true
+        },
+        {
+          "source": 1356,
+          "target": 2103,
+          "pivot": -597,
+          "root_unassigned": false
+        },
+        {
+          "source": 18409,
+          "target": 2142,
+          "pivot": -634,
+          "root_unassigned": false
+        },
+        {
+          "source": 11554,
+          "target": 2149,
+          "pivot": 634,
+          "root_unassigned": false
+        },
+        {
+          "source": 18409,
+          "target": 2409,
+          "pivot": -634,
+          "root_unassigned": false
+        },
+        {
+          "source": 11792,
+          "target": 2517,
+          "pivot": 104,
+          "root_unassigned": true
+        },
+        {
+          "source": 11554,
+          "target": 2808,
+          "pivot": -635,
+          "root_unassigned": false
+        },
+        {
+          "source": 18409,
+          "target": 2893,
+          "pivot": 633,
+          "root_unassigned": false
+        },
+        {
+          "source": 11554,
+          "target": 3071,
+          "pivot": -635,
+          "root_unassigned": false
+        },
+        {
+          "source": 18409,
+          "target": 3082,
+          "pivot": 633,
+          "root_unassigned": false
+        },
+        {
+          "source": 18355,
+          "target": 3090,
+          "pivot": -2,
+          "root_unassigned": true
+        },
+        {
+          "source": 19365,
+          "target": 3137,
+          "pivot": 115,
+          "root_unassigned": true
+        },
+        {
+          "source": 18429,
+          "target": 3170,
+          "pivot": -55,
+          "root_unassigned": true
+        },
+        {
+          "source": 8358,
+          "target": 3330,
+          "pivot": -949,
+          "root_unassigned": true
+        },
+        {
+          "source": 3352,
+          "target": 3490,
+          "pivot": -1084,
+          "root_unassigned": true
+        },
+        {
+          "source": 4041,
+          "target": 3559,
+          "pivot": -32,
+          "root_unassigned": true
+        },
+        {
+          "source": 12179,
+          "target": 3565,
+          "pivot": -90,
+          "root_unassigned": true
+        },
+        {
+          "source": 3352,
+          "target": 3571,
+          "pivot": -1084,
+          "root_unassigned": true
+        },
+        {
+          "source": 18409,
+          "target": 3584,
+          "pivot": 633,
+          "root_unassigned": false
+        },
+        {
+          "source": 19365,
+          "target": 3650,
+          "pivot": 115,
+          "root_unassigned": true
+        },
+        {
+          "source": 18861,
+          "target": 3750,
+          "pivot": -21,
+          "root_unassigned": true
+        },
+        {
+          "source": 19365,
+          "target": 3833,
+          "pivot": 115,
+          "root_unassigned": true
+        },
+        {
+          "source": 21090,
+          "target": 3845,
+          "pivot": -632,
+          "root_unassigned": true
+        },
+        {
+          "source": 21090,
+          "target": 4006,
+          "pivot": -631,
+          "root_unassigned": true
+        },
+        {
+          "source": 2304,
+          "target": 4221,
+          "pivot": -737,
+          "root_unassigned": true
+        },
+        {
+          "source": 18409,
+          "target": 4340,
+          "pivot": 633,
+          "root_unassigned": false
+        },
+        {
+          "source": 18409,
+          "target": 4472,
+          "pivot": 633,
+          "root_unassigned": false
+        },
+        {
+          "source": 3352,
+          "target": 4494,
+          "pivot": -1084,
+          "root_unassigned": true
+        },
+        {
+          "source": 646,
+          "target": 4563,
+          "pivot": -821,
+          "root_unassigned": true
+        },
+        {
+          "source": 18409,
+          "target": 4595,
+          "pivot": 633,
+          "root_unassigned": false
+        },
+        {
+          "source": 18429,
+          "target": 5016,
+          "pivot": 106,
+          "root_unassigned": true
+        },
+        {
+          "source": 19365,
+          "target": 5251,
+          "pivot": 115,
+          "root_unassigned": true
+        },
+        {
+          "source": 19365,
+          "target": 5339,
+          "pivot": -347,
+          "root_unassigned": true
+        },
+        {
+          "source": 19365,
+          "target": 5347,
+          "pivot": 115,
+          "root_unassigned": true
+        },
+        {
+          "source": 18409,
+          "target": 5570,
+          "pivot": -634,
+          "root_unassigned": false
+        },
+        {
+          "source": 20225,
+          "target": 5601,
+          "pivot": -190,
+          "root_unassigned": true
+        },
+        {
+          "source": 11792,
+          "target": 5661,
+          "pivot": 104,
+          "root_unassigned": true
+        },
+        {
+          "source": 20788,
+          "target": 5670,
+          "pivot": -485,
+          "root_unassigned": true
+        },
+        {
+          "source": 18409,
+          "target": 5722,
+          "pivot": 633,
+          "root_unassigned": false
+        },
+        {
+          "source": 22052,
+          "target": 5978,
+          "pivot": -918,
+          "root_unassigned": true
+        }
+      ],
+      "scope": "One independently checked removal per target on immutable normalized input; no fixpoint, no speed claim. Root classification is provisional unless root_complete.",
+      "input": "/Users/msharpe/python/bsat/dataset/sat_competition2025/circuit-multiplier/115fa7f61704bc12b2373aa471bc434f.cnf",
+      "input_sha256": "756f235b0d1798e658aff074aae2c18e398d0f5d21fb52d030ca13227319ace4"
+    },
+    {
+      "variables": 2729,
+      "clauses": 9022,
+      "normalization": "remove duplicates; exclude tautologies; preserve original clause indices",
+      "eligible_targets_visited": 5491,
+      "complete": true,
+      "budget": 1000000,
+      "inspection_work": 643310,
+      "root_complete": true,
+      "root_unsat": false,
+      "root_assigned_variables": 1,
+      "root_work": 2,
+      "opportunity_targets": 0,
+      "root_unassigned_opportunities": 0,
+      "witnesses": [],
+      "scope": "One independently checked removal per target on immutable normalized input; no fixpoint, no speed claim. Root classification is provisional unless root_complete.",
+      "input": "/Users/msharpe/python/bsat/dataset/sat_competition2025/multiplier-equivalence-checking/98a991c902324b02349e766ad357cdc6.cnf",
+      "input_sha256": "8469232dce636ee64d77804b32a8f62ac982baa7366c1dee76071afcc6215933"
+    },
+    {
+      "variables": 3640,
+      "clauses": 127491,
+      "normalization": "remove duplicates; exclude tautologies; preserve original clause indices",
+      "eligible_targets_visited": 0,
+      "complete": true,
+      "budget": 1000000,
+      "inspection_work": 0,
+      "root_complete": true,
+      "root_unsat": false,
+      "root_assigned_variables": 0,
+      "root_work": 0,
+      "opportunity_targets": 0,
+      "root_unassigned_opportunities": 0,
+      "witnesses": [],
+      "scope": "One independently checked removal per target on immutable normalized input; no fixpoint, no speed claim. Root classification is provisional unless root_complete.",
+      "input": "/Users/msharpe/python/bsat/dataset/sat_competition2025/scheduling/35ec95b9b2398fb522db178855016ae0.cnf",
+      "input_sha256": "e67bb0065623cb1014899f98553b33cf3f93706b81204b8e6282cc4d66898752"
+    },
+    {
+      "variables": 4487,
+      "clauses": 16697,
+      "normalization": "remove duplicates; exclude tautologies; preserve original clause indices",
+      "eligible_targets_visited": 7735,
+      "complete": true,
+      "budget": 1000000,
+      "inspection_work": 528082,
+      "root_complete": true,
+      "root_unsat": true,
+      "root_assigned_variables": 115,
+      "root_work": 1292,
+      "opportunity_targets": 57,
+      "root_unassigned_opportunities": 43,
+      "witnesses": [
+        {
+          "source": 8162,
+          "target": 419,
+          "pivot": 2,
+          "root_unassigned": true
+        },
+        {
+          "source": 8164,
+          "target": 421,
+          "pivot": 3,
+          "root_unassigned": true
+        },
+        {
+          "source": 8166,
+          "target": 423,
+          "pivot": 4,
+          "root_unassigned": true
+        },
+        {
+          "source": 8168,
+          "target": 425,
+          "pivot": 5,
+          "root_unassigned": true
+        },
+        {
+          "source": 8170,
+          "target": 427,
+          "pivot": 6,
+          "root_unassigned": true
+        },
+        {
+          "source": 8172,
+          "target": 429,
+          "pivot": 7,
+          "root_unassigned": true
+        },
+        {
+          "source": 8174,
+          "target": 431,
+          "pivot": 8,
+          "root_unassigned": false
+        },
+        {
+          "source": 8176,
+          "target": 433,
+          "pivot": 9,
+          "root_unassigned": false
+        },
+        {
+          "source": 8178,
+          "target": 435,
+          "pivot": 10,
+          "root_unassigned": false
+        },
+        {
+          "source": 8180,
+          "target": 437,
+          "pivot": 11,
+          "root_unassigned": true
+        },
+        {
+          "source": 8183,
+          "target": 1234,
+          "pivot": 3,
+          "root_unassigned": true
+        },
+        {
+          "source": 8185,
+          "target": 1236,
+          "pivot": 4,
+          "root_unassigned": true
+        },
+        {
+          "source": 8187,
+          "target": 1238,
+          "pivot": 5,
+          "root_unassigned": true
+        },
+        {
+          "source": 8189,
+          "target": 1240,
+          "pivot": 6,
+          "root_unassigned": true
+        },
+        {
+          "source": 8191,
+          "target": 1242,
+          "pivot": 7,
+          "root_unassigned": true
+        },
+        {
+          "source": 8193,
+          "target": 1244,
+          "pivot": 8,
+          "root_unassigned": false
+        },
+        {
+          "source": 8195,
+          "target": 1246,
+          "pivot": 9,
+          "root_unassigned": false
+        },
+        {
+          "source": 8197,
+          "target": 1248,
+          "pivot": 10,
+          "root_unassigned": false
+        },
+        {
+          "source": 8199,
+          "target": 1250,
+          "pivot": 11,
+          "root_unassigned": false
+        },
+        {
+          "source": 8201,
+          "target": 1252,
+          "pivot": 12,
+          "root_unassigned": true
+        },
+        {
+          "source": 16686,
+          "target": 8149,
+          "pivot": 407,
+          "root_unassigned": true
+        },
+        {
+          "source": 16687,
+          "target": 8150,
+          "pivot": 408,
+          "root_unassigned": true
+        },
+        {
+          "source": 16688,
+          "target": 8151,
+          "pivot": 409,
+          "root_unassigned": true
+        },
+        {
+          "source": 16689,
+          "target": 8152,
+          "pivot": 410,
+          "root_unassigned": true
+        },
+        {
+          "source": 16690,
+          "target": 8153,
+          "pivot": 411,
+          "root_unassigned": true
+        },
+        {
+          "source": 16691,
+          "target": 8154,
+          "pivot": 412,
+          "root_unassigned": true
+        },
+        {
+          "source": 16692,
+          "target": 8155,
+          "pivot": 413,
+          "root_unassigned": true
+        },
+        {
+          "source": 16693,
+          "target": 8156,
+          "pivot": 414,
+          "root_unassigned": true
+        },
+        {
+          "source": 16694,
+          "target": 8157,
+          "pivot": 415,
+          "root_unassigned": true
+        },
+        {
+          "source": 16695,
+          "target": 8158,
+          "pivot": 416,
+          "root_unassigned": true
+        },
+        {
+          "source": 419,
+          "target": 8162,
+          "pivot": -2,
+          "root_unassigned": true
+        },
+        {
+          "source": 421,
+          "target": 8164,
+          "pivot": -3,
+          "root_unassigned": true
+        },
+        {
+          "source": 423,
+          "target": 8166,
+          "pivot": -4,
+          "root_unassigned": true
+        },
+        {
+          "source": 425,
+          "target": 8168,
+          "pivot": -5,
+          "root_unassigned": true
+        },
+        {
+          "source": 427,
+          "target": 8170,
+          "pivot": -6,
+          "root_unassigned": true
+        },
+        {
+          "source": 429,
+          "target": 8172,
+          "pivot": -7,
+          "root_unassigned": true
+        },
+        {
+          "source": 431,
+          "target": 8174,
+          "pivot": -8,
+          "root_unassigned": false
+        },
+        {
+          "source": 433,
+          "target": 8176,
+          "pivot": -9,
+          "root_unassigned": false
+        },
+        {
+          "source": 435,
+          "target": 8178,
+          "pivot": -10,
+          "root_unassigned": false
+        },
+        {
+          "source": 1234,
+          "target": 8183,
+          "pivot": -3,
+          "root_unassigned": true
+        },
+        {
+          "source": 1236,
+          "target": 8185,
+          "pivot": -4,
+          "root_unassigned": true
+        },
+        {
+          "source": 1238,
+          "target": 8187,
+          "pivot": -5,
+          "root_unassigned": true
+        },
+        {
+          "source": 1240,
+          "target": 8189,
+          "pivot": -6,
+          "root_unassigned": true
+        },
+        {
+          "source": 1242,
+          "target": 8191,
+          "pivot": -7,
+          "root_unassigned": true
+        },
+        {
+          "source": 1244,
+          "target": 8193,
+          "pivot": -8,
+          "root_unassigned": false
+        },
+        {
+          "source": 1246,
+          "target": 8195,
+          "pivot": -9,
+          "root_unassigned": false
+        },
+        {
+          "source": 1248,
+          "target": 8197,
+          "pivot": -10,
+          "root_unassigned": false
+        },
+        {
+          "source": 1250,
+          "target": 8199,
+          "pivot": -11,
+          "root_unassigned": false
+        },
+        {
+          "source": 8150,
+          "target": 16687,
+          "pivot": -408,
+          "root_unassigned": true
+        },
+        {
+          "source": 8151,
+          "target": 16688,
+          "pivot": -409,
+          "root_unassigned": true
+        },
+        {
+          "source": 8152,
+          "target": 16689,
+          "pivot": -410,
+          "root_unassigned": true
+        },
+        {
+          "source": 8153,
+          "target": 16690,
+          "pivot": -411,
+          "root_unassigned": true
+        },
+        {
+          "source": 8154,
+          "target": 16691,
+          "pivot": -412,
+          "root_unassigned": true
+        },
+        {
+          "source": 8155,
+          "target": 16692,
+          "pivot": -413,
+          "root_unassigned": true
+        },
+        {
+          "source": 8156,
+          "target": 16693,
+          "pivot": -414,
+          "root_unassigned": true
+        },
+        {
+          "source": 8157,
+          "target": 16694,
+          "pivot": -415,
+          "root_unassigned": true
+        },
+        {
+          "source": 8158,
+          "target": 16695,
+          "pivot": -416,
+          "root_unassigned": true
+        }
+      ],
+      "scope": "One independently checked removal per target on immutable normalized input; no fixpoint, no speed claim. Root classification is provisional unless root_complete.",
+      "input": "/Users/msharpe/python/bsat/dataset/sat_competition2025/p-center/50519e9e964f30dc34992f0348bd7005.cnf",
+      "input_sha256": "9facfc19f4db07ba1fdfe4d2dbb711990fb985e03f5b89778ec9ffefccff29f3"
+    },
+    {
+      "variables": 802,
+      "clauses": 48439,
+      "normalization": "remove duplicates; exclude tautologies; preserve original clause indices",
+      "eligible_targets_visited": 0,
+      "complete": true,
+      "budget": 1000000,
+      "inspection_work": 0,
+      "root_complete": true,
+      "root_unsat": false,
+      "root_assigned_variables": 2,
+      "root_work": 32,
+      "opportunity_targets": 0,
+      "root_unassigned_opportunities": 0,
+      "witnesses": [],
+      "scope": "One independently checked removal per target on immutable normalized input; no fixpoint, no speed claim. Root classification is provisional unless root_complete.",
+      "input": "/Users/msharpe/python/bsat/dataset/sat_competition2025/argumentation/16564a6acba6b9fc887c447d4e507767.cnf",
+      "input_sha256": "a9a740c9e3744b39f659a44e675760702b6530beb22a1842dd2a583a2d1264a2"
+    },
+    {
+      "variables": 600,
+      "clauses": 5404,
+      "normalization": "remove duplicates; exclude tautologies; preserve original clause indices",
+      "eligible_targets_visited": 481,
+      "complete": true,
+      "budget": 1000000,
+      "inspection_work": 118230,
+      "root_complete": true,
+      "root_unsat": false,
+      "root_assigned_variables": 0,
+      "root_work": 0,
+      "opportunity_targets": 0,
+      "root_unassigned_opportunities": 0,
+      "witnesses": [],
+      "scope": "One independently checked removal per target on immutable normalized input; no fixpoint, no speed claim. Root classification is provisional unless root_complete.",
+      "input": "/Users/msharpe/python/bsat/dataset/sat_competition2025/unknown-cases/ca3c65a863526793968fc30618a42709.cnf",
+      "input_sha256": "41faaa4a2e7616b9e854bd8bc0255c6fc875ba1b48781ecdd1b19884fac24b8f"
+    }
+  ]
+}

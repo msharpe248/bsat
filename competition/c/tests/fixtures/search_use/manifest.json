@@ -1,0 +1,48 @@
+{
+  "selection_manifest": "benchmark_results/search-use-holdout-20260910.json",
+  "scope": "Imported competition DIMACS, no additional AIG preparation; upstream preprocessing unknown",
+  "inputs": [
+    {
+      "file": "115fa7f61704bc12b2373aa471bc434f.cnf.gz",
+      "family": "circuit-multiplier",
+      "bytes": 698101,
+      "sha256": "756f235b0d1798e658aff074aae2c18e398d0f5d21fb52d030ca13227319ace4",
+      "compressed_sha256": "aef962222f11a739e4cfa1d00265a7b1ef7da42ad7a990b5577742129cd3fe6a"
+    },
+    {
+      "file": "98a991c902324b02349e766ad357cdc6.cnf.gz",
+      "family": "multiplier-equivalence-checking",
+      "bytes": 133970,
+      "sha256": "8469232dce636ee64d77804b32a8f62ac982baa7366c1dee76071afcc6215933",
+      "compressed_sha256": "9eb80f84db66824ee62ce99b6e07f97d47dd415e453a7a0bd612da35eb44a70c"
+    },
+    {
+      "file": "35ec95b9b2398fb522db178855016ae0.cnf.gz",
+      "family": "scheduling",
+      "bytes": 1669102,
+      "sha256": "e67bb0065623cb1014899f98553b33cf3f93706b81204b8e6282cc4d66898752",
+      "compressed_sha256": "9d7ae61087432e52e347eecaff8eb8343778c2dacac9872bbced1161a9891094"
+    },
+    {
+      "file": "50519e9e964f30dc34992f0348bd7005.cnf.gz",
+      "family": "p-center",
+      "bytes": 386507,
+      "sha256": "9facfc19f4db07ba1fdfe4d2dbb711990fb985e03f5b89778ec9ffefccff29f3",
+      "compressed_sha256": "c06ec9c52084a13e56e1dd98c7bf573790b14ed80d1b06f071bbbdffe43ed334"
+    },
+    {
+      "file": "16564a6acba6b9fc887c447d4e507767.cnf.gz",
+      "family": "argumentation",
+      "bytes": 588318,
+      "sha256": "a9a740c9e3744b39f659a44e675760702b6530beb22a1842dd2a583a2d1264a2",
+      "compressed_sha256": "17d34761271a3d3d8fd4d27be422fdde9078753127eeebbbd49f3ef4dbc76d8b"
+    },
+    {
+      "file": "ca3c65a863526793968fc30618a42709.cnf.gz",
+      "family": "unknown-cases",
+      "bytes": 67471,
+      "sha256": "41faaa4a2e7616b9e854bd8bc0255c6fc875ba1b48781ecdd1b19884fac24b8f",
+      "compressed_sha256": "5347bcc395180325adc087c470a64d038e3d7f61473db8871cbd9c9ee96f8d33"
+    }
+  ]
+}

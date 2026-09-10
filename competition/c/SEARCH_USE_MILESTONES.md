@@ -65,3 +65,18 @@ inclusive timers mean diagnostic CPU is not a production performance score.
 The offline audit finds zero opportunities on complete cal3 and smaller planning
 scans; the larger planning scan exhausts its 1,000,000-unit bound with zero found,
 which does not establish absence. No destructive simplifier is warranted yet.
+
+
+Candidate implemented behind the compile-time gate. Before timing, all 69 release
+and ASan/UBSan C tests, 53 independent certificates per build, 3,283 allocation
+cutoffs per build, six paired-target summary tests and four DIMACS summary tests
+pass. SAT/UNSAT public DIMACS worker smoke checks and six packed fixture hash
+round trips pass. Query/certificate tests cover cancellation, checkpoint, later
+clauses and changing assumptions. No production default is enabled.
+
+The post-freeze holdout opportunity audit finds 74 multiplier witnesses (47 root
+unassigned, capped scan) and 57 p-center witnesses (43 root unassigned, complete
+scan). The other four scans complete without matches. These establish concrete
+opportunities in two direct DIMACS inputs, not solver performance gains. Each
+witness is retained by original clause index/pivot and checked against the exact
+signed subset relation; input hashes and root-closure completeness are recorded.

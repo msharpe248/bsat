@@ -1233,11 +1233,17 @@ static void improve_clause_lbd(Solver *s, CRef cr) {
         if(current<=s->opts.glue_lbd) ++s->accounting.use_lbd_to_glue;
     }
 #endif
-    if ((!s->opts.dynamic_lbd && !s->opts.protect_used) || !clause_learned(s->arena, cr)) return;
-    if (s->opts.dynamic_lbd) {
+#ifdef BSAT_CERTIFIED_REFRESH
+    const bool certified_refresh=s->opts.assumption_lbd && s->proof_journal;
+#else
+    const bool certified_refresh=false;
+#endif
+    if ((!s->opts.dynamic_lbd && !s->opts.protect_used && !certified_refresh) || !clause_learned(s->arena, cr)) return;
+    if (s->opts.dynamic_lbd || certified_refresh) {
         uint32_t old = clause_lbd(s->arena, cr);
         if (old > s->opts.glue_lbd) {
             uint32_t current = calc_lbd(s, CLAUSE_LITS(s->arena, cr), CLAUSE_SIZE(s->arena, cr));
+            if(certified_refresh) current=MAX(current,s->opts.glue_lbd+1);
             if (current < old) {
                 set_clause_lbd(s->arena, cr, current);
                 s->stats.lbd_updates++;

@@ -32,7 +32,7 @@ BSAT_API int bsat_diagnostic_write(bsat *s,const char *path) {
 #define STAT(field) fprintf(f,"\"" #field "\":%llu,",(unsigned long long)core->stats.field)
     STAT(conflicts);STAT(decisions);STAT(propagations);STAT(restarts);STAT(reduces);
     STAT(learned_clauses);STAT(learned_literals);STAT(deleted_clauses);STAT(minimized_literals);
-    STAT(minimize_inspections);STAT(minimize_budget_hits);STAT(glue_clauses);STAT(max_lbd);
+    STAT(minimize_inspections);STAT(minimize_budget_hits);STAT(glue_clauses);STAT(max_lbd);STAT(lbd_updates);
 #undef STAT
     fprintf(f,"\"literal_inspections\":%llu,\"garbage_collections\":%llu,",
             (unsigned long long)core->work,(unsigned long long)core->garbage_collections);
