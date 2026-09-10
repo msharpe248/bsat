@@ -199,6 +199,25 @@ typedef struct SolverAccounting {
     uint64_t learned_scans_eligible_size, learned_scans_oversize, learned_scans_unlocked;
     uint64_t vivify_attempts, vivify_replaced, vivify_removed_literals, vivify_work;
     uint64_t strengthened_scans;
+    uint64_t use_lbd_checks;
+    uint64_t use_lbd_lower;
+    uint64_t use_lbd_to_glue;
+    uint64_t use_binary_units;
+    uint64_t use_learned_conflicts;
+    uint64_t use_reduction_visits;
+    uint64_t use_kept;
+    uint64_t use_deleted;
+    uint64_t use_deleted_never;
+    uint64_t use_deleted_recent;
+    uint64_t use_deleted_recent_analysis;
+    uint64_t use_deleted_recent_high_lbd;
+    uint64_t use_kept_recent_analysis;
+    uint64_t use_deleted_scans;
+    uint64_t use_deleted_never_scans;
+    uint64_t use_deleted_age_sum;
+    uint64_t use_deleted_recent_high_lbd_scans;
+    uint64_t use_kept_unused;
+    uint64_t use_kept_unused_scans;
 #endif
     double seconds[ACCOUNT_PHASES];
     uint64_t calls[ACCOUNT_PHASES];

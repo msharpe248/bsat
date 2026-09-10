@@ -39,6 +39,27 @@ BSAT_API int bsat_diagnostic_write(bsat *s,const char *path) {
 #define COUNT(field) fprintf(f,"\"" #field "\":%llu,",(unsigned long long)core->accounting.field)
     COUNT(binary_visits);COUNT(long_visits);COUNT(blocker_hits);COUNT(replacement_scans);
     COUNT(original_scans);COUNT(learned_scans);COUNT(scan_size_9_plus);
+#ifdef BSAT_SEARCH_DIAGNOSTICS
+    COUNT(use_lbd_checks);
+    COUNT(use_lbd_lower);
+    COUNT(use_lbd_to_glue);
+    COUNT(use_binary_units);
+    COUNT(use_learned_conflicts);
+    COUNT(use_reduction_visits);
+    COUNT(use_kept);
+    COUNT(use_deleted);
+    COUNT(use_deleted_never);
+    COUNT(use_deleted_recent);
+    COUNT(use_deleted_recent_analysis);
+    COUNT(use_deleted_recent_high_lbd);
+    COUNT(use_kept_recent_analysis);
+    COUNT(use_deleted_scans);
+    COUNT(use_deleted_never_scans);
+    COUNT(use_deleted_age_sum);
+    COUNT(use_deleted_recent_high_lbd_scans);
+    COUNT(use_kept_unused);
+    COUNT(use_kept_unused_scans);
+#endif
 #undef COUNT
     /* Post-query database inspection only; it is outside measured solving CPU.
        Guarded clauses remain globally entailed; the count is not a proof claim. */

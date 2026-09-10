@@ -981,6 +981,14 @@ static CRef solver_propagate_account_impl(Solver* s) {
 #endif
 
                 if (s->values[v] == UNDEF) {
+                    #ifdef BSAT_SEARCH_DIAGNOSTICS
+                    if (SEARCH_DIAGNOSTICS(s) && binary_reason != INVALID_CLAUSE) {
+                        ClauseHeader *h=CLAUSE_HEADER(s->arena,binary_reason);
+                        if(h->units<UINT32_MAX) ++h->units;
+                        h->recent_use|=1;
+                        if(clause_learned(s->arena,binary_reason)) ++s->accounting.use_binary_units;
+                    }
+#endif
                     // Unit propagation via binary clause
                     s->values[v] = sign(q) ? FALSE : TRUE;
                     s->vars[v].level = s->opts.chrono ? s->vars[var(p)].level : s->decision_level;
@@ -1151,6 +1159,7 @@ static CRef solver_propagate_account_impl(Solver* s) {
 #ifdef BSAT_SEARCH_DIAGNOSTICS
                     ClauseHeader *h=CLAUSE_HEADER(s->arena,cref);
                     if(h->units<UINT32_MAX) ++h->units;
+                    h->recent_use|=1;
 #endif
                 }
                 // Unit clause - propagate
@@ -1214,6 +1223,16 @@ static uint32_t calc_lbd(Solver* s, const Lit* lits, uint32_t size) {
 }
 
 static void improve_clause_lbd(Solver *s, CRef cr) {
+#ifdef BSAT_SEARCH_DIAGNOSTICS
+    /* Observe score staleness at valid conflict/reason assignments without
+       changing stored scores. Counts are reuse events, not unique clauses. */
+    if(SEARCH_DIAGNOSTICS(s) && clause_learned(s->arena,cr) && clause_lbd(s->arena,cr)>s->opts.glue_lbd) {
+        uint32_t current=calc_lbd(s,CLAUSE_LITS(s->arena,cr),CLAUSE_SIZE(s->arena,cr));
+        ++s->accounting.use_lbd_checks;
+        if(current<clause_lbd(s->arena,cr)) ++s->accounting.use_lbd_lower;
+        if(current<=s->opts.glue_lbd) ++s->accounting.use_lbd_to_glue;
+    }
+#endif
     if ((!s->opts.dynamic_lbd && !s->opts.protect_used) || !clause_learned(s->arena, cr)) return;
     if (s->opts.dynamic_lbd) {
         uint32_t old = clause_lbd(s->arena, cr);
@@ -1262,6 +1281,14 @@ static void solver_analyze_account_impl(Solver* s, CRef conflict, Lit* learnt, u
             }
         }
     } else if (conflict != INVALID_CLAUSE) {
+#ifdef BSAT_SEARCH_DIAGNOSTICS
+        if(SEARCH_DIAGNOSTICS(s)) {
+            ClauseHeader *h=CLAUSE_HEADER(s->arena,conflict);
+            if(h->conflicts<UINT32_MAX) ++h->conflicts;
+            h->recent_use|=4;
+            if(clause_learned(s->arena,conflict)) ++s->accounting.use_learned_conflicts;
+        }
+#endif
         // Regular conflict from arena
         improve_clause_lbd(s, conflict);
         uint32_t size = CLAUSE_SIZE(s->arena, conflict);
@@ -1324,6 +1351,7 @@ static void solver_analyze_account_impl(Solver* s, CRef conflict, Lit* learnt, u
                 if(SEARCH_DIAGNOSTICS(s)) {
                     ClauseHeader *h=CLAUSE_HEADER(s->arena,reason);
                     if(h->analyses<UINT32_MAX) ++h->analyses;
+                    h->recent_use|=2;
                 }
 #endif
                 bump_clause_activity(s->arena, reason, 1.0f);
@@ -1770,6 +1798,39 @@ bool solver_should_reduce(Solver* s) {
     return true;
 }
 
+/* Diagnostic visits count reduction decisions, not unique clauses. Metadata
+   follows arena GC. Creation's mandatory assertion is deliberately not a reuse. */
+static void account_reduction_use(Solver *s, CRef cr, bool deleted) {
+#ifdef BSAT_SEARCH_DIAGNOSTICS
+    if(!SEARCH_DIAGNOSTICS(s)) return;
+    ClauseHeader *h=CLAUSE_HEADER(s->arena,cr);
+    SolverAccounting *a=&s->accounting;
+    bool unused=!h->units && !h->analyses && !h->conflicts;
+    bool analyzed=(h->recent_use&6)!=0;
+    ++a->use_reduction_visits;
+    if(deleted) {
+        ++a->use_deleted;
+        a->use_deleted_scans+=h->scans;
+        if(unused) {++a->use_deleted_never;a->use_deleted_never_scans+=h->scans;}
+        if(h->recent_use) ++a->use_deleted_recent;
+        if(analyzed) ++a->use_deleted_recent_analysis;
+        if(analyzed && h->lbd>6) {
+            ++a->use_deleted_recent_high_lbd;
+            a->use_deleted_recent_high_lbd_scans+=h->scans;
+        }
+        uint64_t born=((uint64_t)h->born_hi<<32)|h->born_lo;
+        if(a->diagnostic_conflicts>=born) a->use_deleted_age_sum+=a->diagnostic_conflicts-born;
+    } else {
+        ++a->use_kept;
+        if(analyzed) ++a->use_kept_recent_analysis;
+        if(unused) {++a->use_kept_unused;a->use_kept_unused_scans+=h->scans;}
+    }
+    h->recent_use=0;
+#else
+    (void)s;(void)cr;(void)deleted;
+#endif
+}
+
 static void solver_reduce_db_account_impl(Solver* s) {
     s->stats.reduces++;
     ClauseScore *scores = malloc((s->num_learnts ? s->num_learnts : 1) * sizeof *scores);
@@ -1781,9 +1842,9 @@ static void solver_reduce_db_account_impl(Solver* s) {
         if (s->opts.protect_used) {
             bool used = (CLAUSE_HEADER(s->arena, cr)->flags & CLAUSE_FROZEN) != 0;
             CLAUSE_HEADER(s->arena, cr)->flags &= ~CLAUSE_FROZEN;
-            if (used && clause_lbd(s->arena, cr) <= 6) continue;
+            if (used && clause_lbd(s->arena, cr) <= 6) {account_reduction_use(s,cr,false);continue;}
         }
-        if (CLAUSE_SIZE(s->arena, cr) <= 2 || clause_lbd(s->arena, cr) <= s->opts.glue_lbd || clause_locked(s, cr)) continue;
+        if (CLAUSE_SIZE(s->arena, cr) <= 2 || clause_lbd(s->arena, cr) <= s->opts.glue_lbd || clause_locked(s, cr)) {account_reduction_use(s,cr,false);continue;}
         scores[n++] = (ClauseScore){cr, clause_lbd(s->arena, cr), clause_activity(s->arena, cr)};
     }
     if (SEARCH_DIAGNOSTICS(s)) s->accounting.reduced_candidates += n;
@@ -1802,6 +1863,7 @@ static void solver_reduce_db_account_impl(Solver* s) {
 #endif
     uint32_t keep = (uint32_t)(n * s->opts.reduce_fraction);
     for (uint32_t i = 0; i < n; ++i) {
+        account_reduction_use(s,scores[i].cref,i >= keep || scores[i].lbd > s->opts.max_lbd);
         if (i >= keep || scores[i].lbd > s->opts.max_lbd) {
             if (SEARCH_DIAGNOSTICS(s) && scores[i].activity == 0)
                 s->accounting.deleted_without_analysis_use++;

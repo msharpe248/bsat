@@ -11,6 +11,7 @@ from public_api import library, literals, Stats
 p=argparse.ArgumentParser(description=__doc__)
 p.add_argument('--production',required=True,type=Path)
 p.add_argument('--diagnostic',required=True,type=Path)
+p.add_argument('--accounting',action='store_true',help='Enable intrusive counters during parity checks')
 a=p.parse_args();base=library(a.production.resolve());diag=library(a.diagnostic.resolve())
 diag.bsat_diagnostic_configure.argtypes=[C.c_void_p,C.c_char_p,C.c_int];diag.bsat_diagnostic_configure.restype=C.c_int
 diag.bsat_diagnostic_write.argtypes=[C.c_void_p,C.c_char_p];diag.bsat_diagnostic_write.restype=C.c_int
@@ -21,7 +22,7 @@ with tempfile.TemporaryDirectory() as tmp:
         handles=[(base,base.bsat_create(1,flags)),(diag,diag.bsat_create(1,flags))]
         assert all(s for _,s in handles)
         assert not diag.bsat_diagnostic_configure(handles[1][1],b'invalid',0)
-        assert diag.bsat_diagnostic_configure(handles[1][1],b'control',0)
+        assert diag.bsat_diagnostic_configure(handles[1][1],b'control',int(a.accounting))
         try:
             for bits in range(63):
                 c=[(-1 if bits&(1<<v) else 1)*(v+1) for v in range(6)]

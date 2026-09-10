@@ -1,0 +1,62 @@
+{
+  "scope": "Offline simplification opportunity audit; does not run or modify solver",
+  "runs": [
+    {
+      "variables": 9028,
+      "clauses": 23881,
+      "normalization": "remove duplicates; exclude tautologies; preserve original clause indices",
+      "eligible_targets_visited": 7701,
+      "complete": true,
+      "budget": 1000000,
+      "inspection_work": 509922,
+      "root_complete": true,
+      "root_unsat": false,
+      "root_assigned_variables": 697,
+      "root_work": 2830,
+      "opportunity_targets": 0,
+      "root_unassigned_opportunities": 0,
+      "witnesses": [],
+      "scope": "One independently checked removal per target on immutable normalized input; no fixpoint, no speed claim. Root classification is provisional unless root_complete.",
+      "input": "/private/tmp/bsat-target-snapshots/cal3-depth16-polarity1.cnf",
+      "input_sha256": "6bbfa3e0109b277412f4bf0edc157670859943a2e914c2d16f27346acc1b9e98"
+    },
+    {
+      "variables": 50277,
+      "clauses": 283903,
+      "normalization": "remove duplicates; exclude tautologies; preserve original clause indices",
+      "eligible_targets_visited": 14629,
+      "complete": false,
+      "budget": 1000000,
+      "inspection_work": 1000000,
+      "root_complete": true,
+      "root_unsat": false,
+      "root_assigned_variables": 1822,
+      "root_work": 3284,
+      "opportunity_targets": 0,
+      "root_unassigned_opportunities": 0,
+      "witnesses": [],
+      "scope": "One independently checked removal per target on immutable normalized input; no fixpoint, no speed claim. Root classification is provisional unless root_complete.",
+      "input": "/Users/msharpe/python/bsat/dataset/sat_competition2025/planning/16c999d046885c8e51f196e60c34d966.cnf",
+      "input_sha256": "77db4df9cc8bd8cd59dae994f24a3cf686ebd46e2aa123c534b5e3cc3a75d9b5"
+    },
+    {
+      "variables": 3084,
+      "clauses": 26019,
+      "normalization": "remove duplicates; exclude tautologies; preserve original clause indices",
+      "eligible_targets_visited": 2024,
+      "complete": true,
+      "budget": 1000000,
+      "inspection_work": 306894,
+      "root_complete": true,
+      "root_unsat": false,
+      "root_assigned_variables": 181,
+      "root_work": 590,
+      "opportunity_targets": 0,
+      "root_unassigned_opportunities": 0,
+      "witnesses": [],
+      "scope": "One independently checked removal per target on immutable normalized input; no fixpoint, no speed claim. Root classification is provisional unless root_complete.",
+      "input": "/Users/msharpe/python/bsat/dataset/sat_competition2025/planning/21b173943af57eefaac5e88bfa2662ad.cnf",
+      "input_sha256": "c0391929a13777b719e8383b31cbee5904e05741e105c4c22914a2259a17ecfd"
+    }
+  ]
+}

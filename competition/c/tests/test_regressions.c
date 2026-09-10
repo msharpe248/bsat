@@ -179,6 +179,7 @@ static void dynamic_clause_quality(void) {
     for (unsigned learned = 0; learned < 2; ++learned) {
         Solver *s = formula("p cnf 4 3\n-1 -2 3 4 0\n-1 -2 3 -4 0\n-1 -3 0\n");
         s->opts.dynamic_lbd = enabled;
+        s->opts.accounting = true;
         s->opts.protect_used = protect;
         /* Normal solve setup allocates independent decision-level marks. */
         s->levels_capacity = 5;
@@ -214,6 +215,14 @@ static void dynamic_clause_quality(void) {
         unsigned expected = enabled && learned ? 2 : initial_lbd;
         assert(clause_lbd(s->arena, a) == expected && clause_lbd(s->arena, b) == expected);
         assert(s->stats.lbd_updates == (enabled && learned ? 2u : 0u));
+#ifdef BSAT_SEARCH_DIAGNOSTICS
+        assert(s->accounting.use_lbd_checks == (learned ? 2u : 0u));
+        assert(s->accounting.use_lbd_lower == (learned ? 2u : 0u));
+        assert(s->accounting.use_lbd_to_glue == (learned ? 2u : 0u));
+        assert(s->accounting.use_learned_conflicts == (learned ? 1u : 0u));
+        assert(CLAUSE_HEADER(s->arena,b)->conflicts==1);
+        assert(CLAUSE_HEADER(s->arena,a)->analyses==1);
+#endif
         for (Var v = 1; v <= 4; ++v) assert(!s->seen[v]);
         for (unsigned level = 0; level < s->levels_capacity; ++level) assert(!s->level_seen[level]);
         solver_backtrack(s, 0);

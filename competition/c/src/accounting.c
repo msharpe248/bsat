@@ -90,6 +90,25 @@ void solver_print_accounting(const Solver *s) {
     PRINT_SEARCH(learned_scans_unlocked);PRINT_SEARCH(vivify_attempts);
     PRINT_SEARCH(vivify_replaced);PRINT_SEARCH(vivify_removed_literals);
     PRINT_SEARCH(vivify_work);PRINT_SEARCH(strengthened_scans);
+    PRINT_SEARCH(use_lbd_checks);
+    PRINT_SEARCH(use_lbd_lower);
+    PRINT_SEARCH(use_lbd_to_glue);
+    PRINT_SEARCH(use_binary_units);
+    PRINT_SEARCH(use_learned_conflicts);
+    PRINT_SEARCH(use_reduction_visits);
+    PRINT_SEARCH(use_kept);
+    PRINT_SEARCH(use_deleted);
+    PRINT_SEARCH(use_deleted_never);
+    PRINT_SEARCH(use_deleted_recent);
+    PRINT_SEARCH(use_deleted_recent_analysis);
+    PRINT_SEARCH(use_deleted_recent_high_lbd);
+    PRINT_SEARCH(use_kept_recent_analysis);
+    PRINT_SEARCH(use_deleted_scans);
+    PRINT_SEARCH(use_deleted_never_scans);
+    PRINT_SEARCH(use_deleted_age_sum);
+    PRINT_SEARCH(use_deleted_recent_high_lbd_scans);
+    PRINT_SEARCH(use_kept_unused);
+    PRINT_SEARCH(use_kept_unused_scans);
 #endif
 #undef PRINT_SEARCH
 #ifdef BSAT_SEARCH_DIAGNOSTICS
