@@ -2968,12 +2968,20 @@ solve_internal_account_impl(Solver *s, const Lit *assumps, uint32_t n_assumps)
             Level backtrack;
 
             solver_analyze(s, conflict, learnt, &n, &backtrack);
+#ifdef BSAT_SEARCH_DIAGNOSTICS
+            double minimize_start = solver_account_begin(s);
+#endif
+
             s->stats.minimized_literals += solver_minimize_clause(s, learnt, &n);
             uint32_t lbd = calc_lbd(s, learnt, n);
             uint32_t binary_removed = solver_minimize_binary(s, learnt, &n, lbd);
 
             s->stats.minimized_literals += binary_removed;
             if (binary_removed) lbd = calc_lbd(s, learnt, n);
+#ifdef BSAT_SEARCH_DIAGNOSTICS
+            if (minimize_start >= 0)
+                s->accounting.minimize_lbd_seconds += solver_cpu_time() - minimize_start;
+#endif
             record_lbd(s, lbd);
             /* Put the highest remaining decision level in watch position 1. */
             backtrack = 0;
@@ -3059,7 +3067,20 @@ solve_internal_account_impl(Solver *s, const Lit *assumps, uint32_t n_assumps)
                    prefix during preparation. Certified facade policy is opt-in. */
                 if (n_assumps && s->opts.restart_assumptions)
                     level = MIN(s->decision_level, n_assumps);
+#ifdef BSAT_SEARCH_DIAGNOSTICS
+                if (SEARCH_DIAGNOSTICS(s)) {
+                    ++s->accounting.restart_events;
+                    s->accounting.restart_trail_before += s->trail_size;
+                    s->accounting.restart_levels_before += s->decision_level;
+                }
+#endif
                 solver_backtrack(s, level);
+#ifdef BSAT_SEARCH_DIAGNOSTICS
+                if (SEARCH_DIAGNOSTICS(s)) {
+                    s->accounting.restart_trail_kept += s->trail_size;
+                    s->accounting.restart_levels_kept += s->decision_level;
+                }
+#endif
                 s->stats.restarts++;
                 s->stats.reused_levels += level;
                 if (s->qhead < s->trail_size) continue;

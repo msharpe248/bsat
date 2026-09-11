@@ -221,6 +221,7 @@ those requirements and the exact-candidate checks are satisfied.
 
 ## Where to look
 
+- [cal100 depth-8 propagation diagnosis and rejected ternary fast path](CAL100_SEARCH_MILESTONES.md)
 - [Search usefulness, fresh DIMACS and score-refresh results](SEARCH_USE_MILESTONES.md)
 - [Certified SSR experiment and outcomes](CERTIFIED_SSR_MILESTONES.md)
 - [Public ABI and lifetime contract](API_CONTRACT.md), [build/install](INSTALLING.md)

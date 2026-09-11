@@ -1,0 +1,94 @@
+{
+  "fixed_work": {
+    "order": [
+      "control",
+      "candidate",
+      "candidate",
+      "control"
+    ],
+    "target_cpu_seconds": [
+      15.773401,
+      15.424968,
+      15.561477999999997,
+      15.087598
+    ],
+    "improvement_percent": -0.40649040557629856,
+    "repeatable_over_five_percent": false,
+    "exact_search_resource_work_and_proof_parity": true
+  },
+  "targets": {
+    "cal100": {
+      "queries": 16,
+      "checked_baseline": 14,
+      "checked_candidate": 14,
+      "checked_losses": [],
+      "checked_gains": [],
+      "cost_scope": "Solve/export/independent BSAT check CPU; UNKNOWN receives 120-second PAR2. Not full transaction CPU.",
+      "baseline_cpu_par2": 265.11657599999995,
+      "candidate_cpu_par2": 268.19925,
+      "cost_change_percent": 1.1627616977069266,
+      "target_baseline": [
+        {
+          "cpu": 60.000213,
+          "result": 0,
+          "conflicts": 781164
+        },
+        {
+          "cpu": 60.00019800000001,
+          "result": 0,
+          "conflicts": 778949
+        }
+      ],
+      "target_candidate": [
+        {
+          "cpu": 60.000671,
+          "result": 0,
+          "conflicts": 649267
+        },
+        {
+          "cpu": 60.000271,
+          "result": 0,
+          "conflicts": 604672
+        }
+      ]
+    },
+    "cal3": {
+      "queries": 24,
+      "checked_baseline": 24,
+      "checked_candidate": 24,
+      "checked_losses": [],
+      "checked_gains": [],
+      "cost_scope": "Solve/export/independent BSAT check CPU; UNKNOWN receives 120-second PAR2. Not full transaction CPU.",
+      "baseline_cpu_par2": 76.70812300000001,
+      "candidate_cpu_par2": 87.384652,
+      "cost_change_percent": 13.918381238451083,
+      "target_baseline": [
+        {
+          "cpu": 18.124836,
+          "result": 20,
+          "conflicts": 482935
+        },
+        {
+          "cpu": 18.141071999999998,
+          "result": 20,
+          "conflicts": 482935
+        }
+      ],
+      "target_candidate": [
+        {
+          "cpu": 19.714023,
+          "result": 20,
+          "conflicts": 482935
+        },
+        {
+          "cpu": 22.204763,
+          "result": 20,
+          "conflicts": 482935
+        }
+      ]
+    }
+  },
+  "local_gate_passed": false,
+  "production_promotion": false,
+  "promotion_scope": "A local pass would still require independent holdout and cross-host confirmation."
+}

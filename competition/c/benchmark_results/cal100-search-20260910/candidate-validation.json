@@ -1,0 +1,18 @@
+{
+  "candidate_macro": "BSAT_TERNARY_PROPAGATION",
+  "unit_suites": {
+    "release": {
+      "executables": 70,
+      "passed": true
+    },
+    "debug": {
+      "executables": 70,
+      "passed": true
+    }
+  },
+  "independent_certificates": "PASS: 11316 solves; truth-table answers, original models, text/binary RUP proofs checked (seed 20260906)",
+  "focused_diagnostic": [
+    "PASS: restart accounting preserves search, assumption replacement and retained queries",
+    "PASS: accounting survives equivalence/rebuilds and marks incomplete allocation states"
+  ]
+}

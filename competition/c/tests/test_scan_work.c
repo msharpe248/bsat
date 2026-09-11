@@ -31,6 +31,38 @@ fixture(unsigned n, unsigned available, bool conflict, unsigned begin)
     return s;
 }
 
+static void
+ternary_cutoffs(void)
+{
+    const unsigned cursors[] = {0, 1, 2, UINT32_MAX};
+
+    for (unsigned circular = 0; circular < 2; ++circular)
+        for (unsigned c = 0; c < sizeof cursors / sizeof *cursors; ++c)
+            for (unsigned outcome = 0; outcome < 3; ++outcome) {
+                Solver *s = fixture(3, outcome == 0 ? 2 : 0, outcome == 2, cursors[c]);
+                CRef cr = s->clauses[0];
+                uint32_t before = s->qhead;
+
+                s->opts.circular = circular != 0;
+                s->work = 1022;
+                s->work_limit = 1024;
+                assert(solver_propagate(s) == INVALID_CLAUSE);
+                assert(s->work == 1024 && s->qhead == before);
+                assert(watch_list(s->watches, mkLit(1, false))->size == 1);
+                if (outcome != 2) assert(s->values[2] == UNDEF);
+                s->work_limit = 0;
+                assert(solver_propagate(s) == (outcome == 2 ? cr : INVALID_CLAUSE));
+                assert(s->work == 1026 && !s->error && !s->watches->failed);
+                if (outcome == 0) {
+                    assert(CLAUSE_LITS(s->arena, cr)[1] == mkLit(3, false));
+                    assert(CLAUSE_HEADER(s->arena, cr)->search == 2);
+                } else if (outcome == 1) {
+                    assert(s->values[2] == TRUE && s->vars[2].reason == cr);
+                }
+                solver_free(s);
+            }
+}
+
 int
 main(void)
 {
@@ -83,5 +115,6 @@ main(void)
             ++cases;
         }
     assert(cases == 108);
-    puts("PASS: 108 scan work cases, circular replacement, unit/conflict and interrupted replay");
+    ternary_cutoffs();
+    puts("PASS: 108 long-clause and 24 ternary scan cases, cursor bounds and interrupted replay");
 }

@@ -6,6 +6,7 @@ certificate validation. Passing these tests does not establish production
 readiness for arbitrary workloads. Start with
 [Production readiness](PRODUCTION_READINESS.md), the authoritative capability
 matrix, evidence limits and release gates. The current batch is recorded in
+[CAL100_SEARCH_MILESTONES.md](CAL100_SEARCH_MILESTONES.md), following
 [SEARCH_USE_MILESTONES.md](SEARCH_USE_MILESTONES.md).
 [HARDENING.md](HARDENING.md) and earlier milestone reports preserve historical
 changes and measurements. Reproducible checks are indexed in

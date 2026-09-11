@@ -206,6 +206,10 @@ typedef struct SolverAccounting {
     uint64_t learned_reason_uses, learned_reason_lbd_sum;
     uint64_t reduced_candidates, deleted_without_analysis_use;
 #ifdef BSAT_SEARCH_DIAGNOSTICS
+    /* Cumulative restart observations; removed assignments are not measured replays. */
+    uint64_t restart_events, restart_trail_before, restart_trail_kept;
+    uint64_t restart_levels_before, restart_levels_kept;
+    double minimize_lbd_seconds; /* The test facade resets this interval before each query. */
     uint64_t learned_scans_eligible_size, learned_scans_oversize, learned_scans_unlocked;
     uint64_t vivify_attempts, vivify_replaced, vivify_removed_literals, vivify_work;
     uint64_t strengthened_scans;

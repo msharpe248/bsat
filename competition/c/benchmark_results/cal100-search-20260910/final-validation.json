@@ -1,0 +1,31 @@
+{
+  "production_candidate_enabled": false,
+  "format_check": true,
+  "archived_patch_applies": true,
+  "summary_regressions": 4,
+  "production_preprocessor_parity": "Identical to 1b424f6 except assertion source line numbers and blank lines",
+  "suites": {
+    "release": {
+      "executables": 70,
+      "passed": true
+    },
+    "debug": {
+      "executables": 70,
+      "passed": true
+    },
+    "diagnostic": {
+      "executables": 70,
+      "passed": true
+    }
+  },
+  "diagnostic_facade_parity_queries": 48,
+  "final_source_sha256": {
+    "competition/c/src/solver.c": "87d87643ca826e73abca984a87e6065b7600590ab966a8aa23588aed719126a6",
+    "competition/c/include/solver.h": "bf1ff44769d1fd58842c522bce0a1daa99fac5635673c74d81098ae3ed615d90",
+    "competition/c/tests/query_diagnostics.c": "fc8e6fcbbafb41111a78de29b0bdd6a5e708683fd3d361fea2dab50fe10dbbdf",
+    "competition/c/tests/measure_search_scaling.py": "ddd41331d77daaa4c6b7fd9507dce87a5ba3e815be40c5732e0ab91991e96c97",
+    "competition/c/tests/analyze_search_scaling.py": "df52f48c3d0357a2524aade255fe9bbbbe6a3c81ac8f20cd056c32ee424187e4",
+    "competition/c/tests/test_scan_work.c": "248048538847dfae9aa645425897a276625754a68be3072e09b30cf9502cba9a",
+    "competition/c/tests/test_search_scaling.c": "359f1592a1ab311573bb01fecfa9f45dc9e9651c9025aad7ad9878c9e391fd0b"
+  }
+}

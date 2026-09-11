@@ -1,0 +1,50 @@
+--- a/competition/c/src/solver.c
++++ b/competition/c/src/solver.c
+@@ -1309,8 +1309,36 @@
+             }
+ 
+             // Look for another literal to watch
++            Level reason_level = s->opts.chrono ? s->vars[var(p)].level : s->decision_level;
++
++#ifdef BSAT_TERNARY_PROPAGATION
++            /* A ternary has exactly one replacement candidate. Keep the general
++               path for detailed counters and use it as an instrumented oracle. */
++            if (size == 3 && !SEARCH_DIAGNOSTICS(s)) {
++                s->work++;
++                if ((s->work & 1023) == 0 && solver_budget_exhausted(s)) {
++                    while (i < ws->size)
++                        watches[j++] = watches[i++];
++                    ws->size = j;
++                    s->qhead--;
++                    return INVALID_CLAUSE;
++                }
++                Lit lit = lits[2];
++                Var v = var(lit);
++
++                if (s->values[v] != (sign(lit) ? TRUE : FALSE)) {
++                    lits[1] = lit;
++                    lits[2] = neg(p);
++                    CLAUSE_HEADER(s->arena, cref)->search = 2;
++                    watch_add(s->watches, lit, cref, first);
++                    i++;
++                    continue;
++                }
++                if (s->opts.chrono) reason_level = MAX(reason_level, s->vars[v].level);
++                goto unit_or_conflict;
++            }
++#endif
+             bool found = false;
+-            Level reason_level = s->opts.chrono ? s->vars[var(p)].level : s->decision_level;
+             uint32_t begin = s->opts.circular ? CLAUSE_HEADER(s->arena, cref)->search : 2;
+ 
+             if (begin < 2 || begin >= size) begin = 2;
+@@ -1388,6 +1416,9 @@
+             }
+ 
+             // Clause is unit or conflicting
++#ifdef BSAT_TERNARY_PROPAGATION
++        unit_or_conflict:
++#endif
+             watches[j++] = w;
+             i++;
+ 

@@ -1,0 +1,9 @@
+{
+  "queries": 8,
+  "search_counters": true,
+  "same_layout_resource_work": true,
+  "journal_sizes": true,
+  "completed_proof_hashes": true,
+  "control": "competition/c/benchmark_results/cal100-search-20260910/fixed-cal100-0-control.json",
+  "candidate": "competition/c/benchmark_results/cal100-search-20260910/fixed-cal100-1-candidate.json"
+}

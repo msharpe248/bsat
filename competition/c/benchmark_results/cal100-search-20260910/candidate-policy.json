@@ -1,0 +1,12 @@
+{
+  "candidate": "BSAT_TERNARY_PROPAGATION",
+  "order": "Two baseline repetitions completed before candidate build; two serial candidate repetitions; any borderline benefit requires interleaved confirmation.",
+  "fixed_work_gate": "Add a checked cal100 depth-8 solve, or >5% repeatable fixed-work CPU improvement; no cal3 checked losses or >5% total solve/export/check regression.",
+  "conflict_cap": 200000,
+  "query_cpu_seconds": 60,
+  "source_sha256": {
+    "competition/c/src/solver.c": "42a55f2f9fc56913fc2c420101c9e6911db120e3463a6be882263b5dee2bbdda",
+    "competition/c/include/solver.h": "933fd976d629f309bb04aa262b095730ecf5329aaff5ec1e4aebe47aece600f8",
+    "competition/c/CAL100_SEARCH_MILESTONES.md": "f07cffc2106b1c713bdd410b5db34ad27ee25c2e3c4a4559392683a51bb9e3d1"
+  }
+}

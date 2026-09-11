@@ -67,6 +67,7 @@ bsat_diagnostic_write(bsat *s, const char *path)
     STAT(glue_clauses);
     STAT(max_lbd);
     STAT(lbd_updates);
+    STAT(reused_levels);
 #undef STAT
     fprintf(f, "\"literal_inspections\":%llu,\"garbage_collections\":%llu,",
             (unsigned long long)core->work, (unsigned long long)core->garbage_collections);
@@ -74,11 +75,22 @@ bsat_diagnostic_write(bsat *s, const char *path)
     COUNT(binary_visits);
     COUNT(long_visits);
     COUNT(blocker_hits);
+    COUNT(first_hits);
     COUNT(replacement_scans);
+    COUNT(replacement_moves);
+    COUNT(long_units);
+    COUNT(long_conflicts);
     COUNT(original_scans);
     COUNT(learned_scans);
     COUNT(scan_size_9_plus);
+    COUNT(learned_reason_uses);
+    COUNT(learned_reason_lbd_sum);
 #ifdef BSAT_SEARCH_DIAGNOSTICS
+    COUNT(restart_events);
+    COUNT(restart_trail_before);
+    COUNT(restart_trail_kept);
+    COUNT(restart_levels_before);
+    COUNT(restart_levels_kept);
     COUNT(use_lbd_checks);
     COUNT(use_lbd_lower);
     COUNT(use_lbd_to_glue);
@@ -100,6 +112,10 @@ bsat_diagnostic_write(bsat *s, const char *path)
     COUNT(use_kept_unused_scans);
 #endif
 #undef COUNT
+    fprintf(f, "\"reused_solves\":%llu,", (unsigned long long)core->reused_solves);
+#ifdef BSAT_SEARCH_DIAGNOSTICS
+    fprintf(f, "\"minimize_lbd_seconds\":%.9f,", core->accounting.minimize_lbd_seconds);
+#endif
     /* Post-query database inspection only; it is outside measured solving CPU.
        Guarded clauses remain globally entailed; the count is not a proof claim. */
     uint64_t live = 0, guarded = 0, guarded_lbd3 = 0, fixed = 0, fixed_lbd3 = 0;
@@ -141,6 +157,9 @@ bsat_diagnostic_write(bsat *s, const char *path)
     fputs("\"phase_seconds\":[", f);
     for (unsigned i = 0; i < ACCOUNT_PHASES; ++i)
         fprintf(f, "%s%.9f", i ? "," : "", core->accounting.seconds[i]);
+    fputs("],\"phase_calls\":[", f);
+    for (unsigned i = 0; i < ACCOUNT_PHASES; ++i)
+        fprintf(f, "%s%llu", i ? "," : "", (unsigned long long)core->accounting.calls[i]);
     fputs("]}\n", f);
     int okay = !ferror(f);
 
@@ -154,4 +173,7 @@ bsat_diagnostic_begin_query(bsat *s)
     if (bsat_error(s)) return;
     memset(s->core->accounting.seconds, 0, sizeof s->core->accounting.seconds);
     memset(s->core->accounting.calls, 0, sizeof s->core->accounting.calls);
+#ifdef BSAT_SEARCH_DIAGNOSTICS
+    s->core->accounting.minimize_lbd_seconds = 0;
+#endif
 }

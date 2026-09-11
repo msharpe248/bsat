@@ -1,0 +1,15 @@
+{
+  "sha256": {
+    "competition/c/include/solver.h": "933fd976d629f309bb04aa262b095730ecf5329aaff5ec1e4aebe47aece600f8",
+    "competition/c/src/solver.c": "53dfa227df047c88d8e3d86659f30cc8fe9ca359fb1edd0e598698e35bd99e65",
+    "competition/c/tests/query_diagnostics.c": "fc8e6fcbbafb41111a78de29b0bdd6a5e708683fd3d361fea2dab50fe10dbbdf",
+    "competition/c/tests/measure_search_scaling.py": "f5d2068d3341a6b12141a50d7b6d414e8e5fffecdcebacdb0e34dc9073cacf45",
+    "competition/c/tests/analyze_search_scaling.py": "7860e43e4d4f701dd22266ab5d28bc12b7ea2014b1b89e508f1e0ade08ee5be4",
+    "/private/tmp/bsat-cal100-search-20260910/libquery_control.dylib": "8285d2101f40cb811f5eb59e82036efd19e4d2f7498b6436dd0dbf0018c7e629",
+    "/private/tmp/bsat-cal100-search-20260910/libquery_accounting.dylib": "b48f1762206703a4a273237e2bc5c1a544dbb61b8b4f2b5b2ba706a1f938b175"
+  },
+  "control_build": "MODE=release",
+  "accounting_build": "MODE=diagnostic",
+  "conflicts_per_query": 200000,
+  "cpu_safety_seconds": 300
+}
