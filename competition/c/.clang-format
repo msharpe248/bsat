@@ -1,0 +1,18 @@
+BasedOnStyle: LLVM
+IndentWidth: 4
+ContinuationIndentWidth: 4
+ColumnLimit: 100
+UseTab: Never
+PointerAlignment: Right
+BreakBeforeBraces: Custom
+BraceWrapping:
+  AfterFunction: true
+BreakAfterReturnType: AllDefinitions
+AllowShortFunctionsOnASingleLine: None
+AllowShortBlocksOnASingleLine: Never
+AllowShortIfStatementsOnASingleLine: WithoutElse
+AllowShortLoopsOnASingleLine: false
+SeparateDefinitionBlocks: Always
+SpaceBeforeParens: ControlStatements
+SortIncludes: Never
+ReflowComments: Never

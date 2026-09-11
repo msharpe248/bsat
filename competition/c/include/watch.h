@@ -19,8 +19,8 @@
  *********************************************************************/
 
 typedef struct Watch {
-    CRef cref;        // Clause reference
-    Lit  blocker;     // Blocking literal (satisfied => skip clause)
+    CRef cref;   // Clause reference
+    Lit blocker; // Blocking literal (satisfied => skip clause)
 } Watch;
 
 /*********************************************************************
@@ -31,9 +31,9 @@ typedef struct Watch {
  *********************************************************************/
 
 typedef struct WatchList {
-    Watch*   watches;     // Dynamic array of watches
-    uint32_t size;        // Current number of watches
-    uint32_t capacity;    // Allocated capacity
+    Watch *watches;    // Dynamic array of watches
+    uint32_t size;     // Current number of watches
+    uint32_t capacity; // Allocated capacity
 } WatchList;
 
 /*********************************************************************
@@ -43,12 +43,12 @@ typedef struct WatchList {
  *********************************************************************/
 
 typedef struct WatchManager {
-    WatchList* lists;     // Array of watch lists (2 * num_vars)
-    uint32_t   num_vars;  // Number of variables
-    bool failed;         // Allocation failure must propagate as UNKNOWN
-    uint64_t   updates;   // Statistics: watch updates
-    uint64_t   visits;    // Statistics: clause visits
-    uint64_t   skipped;   // Statistics: skipped by blocker
+    WatchList *lists;  // Array of watch lists (2 * num_vars)
+    uint32_t num_vars; // Number of variables
+    bool failed;       // Allocation failure must propagate as UNKNOWN
+    uint64_t updates;  // Statistics: watch updates
+    uint64_t visits;   // Statistics: clause visits
+    uint64_t skipped;  // Statistics: skipped by blocker
 } WatchManager;
 
 /*********************************************************************
@@ -56,26 +56,28 @@ typedef struct WatchManager {
  *********************************************************************/
 
 // Initialize watch manager for given number of variables
-WatchManager* watch_init(uint32_t num_vars);
+WatchManager *watch_init(uint32_t num_vars);
 
 // Resize watch manager to handle more variables (in-place, preserves existing watches)
-bool watch_resize(WatchManager* wm, uint32_t new_num_vars);
+bool watch_resize(WatchManager *wm, uint32_t new_num_vars);
 
 // Free watch manager and all watch lists
-void watch_free(WatchManager* wm);
+void watch_free(WatchManager *wm);
 
 // Clear all watches (for restart/cleanup)
-void watch_clear(WatchManager* wm);
+void watch_clear(WatchManager *wm);
 
 // Add a watch for literal lit watching clause cref
 // The blocker should be another literal in the clause
-void watch_add(WatchManager* wm, Lit lit, CRef cref, Lit blocker);
+void watch_add(WatchManager *wm, Lit lit, CRef cref, Lit blocker);
 
 // Remove all watches for a clause (when deleting clause)
-void watch_remove_clause(WatchManager* wm, Arena* arena, CRef cref);
+void watch_remove_clause(WatchManager *wm, Arena *arena, CRef cref);
 
 // Get watch list for a literal
-static inline WatchList* watch_list(WatchManager* wm, Lit lit) {
+static inline WatchList *
+watch_list(WatchManager *wm, Lit lit)
+{
     return &wm->lists[toInt(lit)];
 }
 
@@ -84,10 +86,13 @@ static inline WatchList* watch_list(WatchManager* wm, Lit lit) {
  *********************************************************************/
 
 // Ensure watch list has capacity for at least one more watch
-static inline bool watchlist_ensure_capacity(WatchList* wl) {
+static inline bool
+watchlist_ensure_capacity(WatchList *wl)
+{
     if (wl->size >= wl->capacity) {
         uint32_t new_cap = wl->capacity ? wl->capacity * 2 : 4;
-        Watch* new_watches = (Watch*)realloc(wl->watches, new_cap * sizeof(Watch));
+        Watch *new_watches = (Watch *)realloc(wl->watches, new_cap * sizeof(Watch));
+
         if (!new_watches) return false;
         wl->watches = new_watches;
         wl->capacity = new_cap;
@@ -96,20 +101,26 @@ static inline bool watchlist_ensure_capacity(WatchList* wl) {
 }
 
 // Add a watch to a watch list
-static inline void watchlist_push(WatchList* wl, Watch w) {
+static inline void
+watchlist_push(WatchList *wl, Watch w)
+{
     if (watchlist_ensure_capacity(wl)) {
         wl->watches[wl->size++] = w;
     }
 }
 
 // Remove watch at index i (swap with last and shrink)
-static inline void watchlist_remove(WatchList* wl, uint32_t i) {
+static inline void
+watchlist_remove(WatchList *wl, uint32_t i)
+{
     ASSERT(i < wl->size);
     wl->watches[i] = wl->watches[--wl->size];
 }
 
 // Clear a watch list
-static inline void watchlist_clear(WatchList* wl) {
+static inline void
+watchlist_clear(WatchList *wl)
+{
     wl->size = 0;
 }
 
@@ -121,7 +132,9 @@ static inline void watchlist_clear(WatchList* wl) {
  *********************************************************************/
 
 // Check if watch represents a binary clause
-static inline bool is_binary_watch(Watch w) {
+static inline bool
+is_binary_watch(Watch w)
+{
     return w.cref == INVALID_CLAUSE;
 }
 
@@ -130,26 +143,36 @@ static inline bool is_binary_watch(Watch w) {
 #define ARENA_BINARY_TAG (1u << 31)
 _Static_assert(MAX_CLAUSES < ARENA_BINARY_TAG, "arena references must leave the binary tag free");
 
-static inline bool is_arena_binary_watch(Watch w) {
+static inline bool
+is_arena_binary_watch(Watch w)
+{
     return w.cref != INVALID_CLAUSE && (w.cref & ARENA_BINARY_TAG) != 0;
 }
 
-static inline CRef watch_clause(Watch w) {
+static inline CRef
+watch_clause(Watch w)
+{
     return is_arena_binary_watch(w) ? w.cref & ~ARENA_BINARY_TAG : w.cref;
 }
 
-static inline CRef arena_binary_watch_ref(CRef cr) {
+static inline CRef
+arena_binary_watch_ref(CRef cr)
+{
     ASSERT(cr < MAX_CLAUSES);
     return cr | ARENA_BINARY_TAG;
 }
 
 // Create binary watch (cref = INVALID_CLAUSE, blocker = other literal)
-static inline Watch make_binary_watch(Lit other) {
+static inline Watch
+make_binary_watch(Lit other)
+{
     return (Watch){INVALID_CLAUSE, other};
 }
 
 // Get the implied literal from binary watch
-static inline Lit binary_other(Watch w) {
+static inline Lit
+binary_other(Watch w)
+{
     ASSERT(is_binary_watch(w));
     return w.blocker;
 }
@@ -159,14 +182,14 @@ static inline Lit binary_other(Watch w) {
  *********************************************************************/
 
 typedef struct {
-    uint64_t total_watches;   // Total number of watches
-    uint64_t binary_watches;  // Number of binary clause watches
-    uint64_t updates;         // Total watch updates
-    uint64_t visits;          // Total clause visits
-    uint64_t skipped;         // Clauses skipped by blocker
-    double   skip_rate;       // Percentage of skipped visits
+    uint64_t total_watches;  // Total number of watches
+    uint64_t binary_watches; // Number of binary clause watches
+    uint64_t updates;        // Total watch updates
+    uint64_t visits;         // Total clause visits
+    uint64_t skipped;        // Clauses skipped by blocker
+    double skip_rate;        // Percentage of skipped visits
 } WatchStats;
 
-WatchStats watch_stats(const WatchManager* wm);
+WatchStats watch_stats(const WatchManager *wm);
 
 #endif // BSAT_WATCH_H

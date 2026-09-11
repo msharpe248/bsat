@@ -17,38 +17,51 @@
 static int tests_run = 0;
 static int tests_passed = 0;
 
-#define TEST(name) \
-    do { \
-        printf("Testing %s... ", name); \
-        tests_run++; \
+#define TEST(name)                                                                                 \
+    do {                                                                                           \
+        printf("Testing %s... ", name);                                                            \
+        tests_run++;                                                                               \
     } while (0)
 
-#define PASS() \
-    do { \
-        printf("✅ PASS\n"); \
-        tests_passed++; \
+#define PASS()                                                                                     \
+    do {                                                                                           \
+        printf("✅ PASS\n");                                                                       \
+        tests_passed++;                                                                            \
     } while (0)
 
-#define FAIL(msg) \
-    do { \
-        printf("❌ FAIL: %s\n", msg); \
-        exit(1); \
+#define FAIL(msg)                                                                                  \
+    do {                                                                                           \
+        printf("❌ FAIL: %s\n", msg);                                                              \
+        exit(1);                                                                                   \
     } while (0)
 
-static Solver *pigeonhole(unsigned holes) {
-    SolverOpts opts=default_opts();opts.probing=false;
-    opts.reduce_interval=2;opts.glue_lbd=0;opts.reduce_fraction=0;
-    Solver *s=solver_new_with_opts(&opts);
-    for(unsigned i=0;i<(holes+1)*holes;++i) solver_new_var(s);
+static Solver *
+pigeonhole(unsigned holes)
+{
+    SolverOpts opts = default_opts();
+
+    opts.probing = false;
+    opts.reduce_interval = 2;
+    opts.glue_lbd = 0;
+    opts.reduce_fraction = 0;
+    Solver *s = solver_new_with_opts(&opts);
+
+    for (unsigned i = 0; i < (holes + 1) * holes; ++i)
+        solver_new_var(s);
     Lit lits[8];
-    for(unsigned p=0;p<=holes;++p) {
-        for(unsigned h=0;h<holes;++h) lits[h]=mkLit(p*holes+h+1,false);
-        solver_add_clause(s,lits,holes);
+
+    for (unsigned p = 0; p <= holes; ++p) {
+        for (unsigned h = 0; h < holes; ++h)
+            lits[h] = mkLit(p * holes + h + 1, false);
+        solver_add_clause(s, lits, holes);
     }
-    for(unsigned h=0;h<holes;++h) for(unsigned p=0;p<=holes;++p) for(unsigned q=p+1;q<=holes;++q) {
-        lits[0]=mkLit(p*holes+h+1,true);lits[1]=mkLit(q*holes+h+1,true);
-        solver_add_clause(s,lits,2);
-    }
+    for (unsigned h = 0; h < holes; ++h)
+        for (unsigned p = 0; p <= holes; ++p)
+            for (unsigned q = p + 1; q <= holes; ++q) {
+                lits[0] = mkLit(p * holes + h + 1, true);
+                lits[1] = mkLit(q * holes + h + 1, true);
+                solver_add_clause(s, lits, 2);
+            }
     return s;
 }
 
@@ -56,17 +69,23 @@ static Solver *pigeonhole(unsigned holes) {
  * Feature Test Cases
  *********************************************************************/
 
-void test_clause_learning(void) {
+void
+test_clause_learning(void)
+{
     TEST("Clause learning on pigeonhole");
-    Solver *s=pigeonhole(4);
-    if(solver_solve(s)!=FALSE || !s->stats.learned_clauses) FAIL("Expected UNSAT with learning");
-    solver_free(s);PASS();
+    Solver *s = pigeonhole(4);
+
+    if (solver_solve(s) != FALSE || !s->stats.learned_clauses) FAIL("Expected UNSAT with learning");
+    solver_free(s);
+    PASS();
 }
 
-void test_unit_propagation(void) {
+void
+test_unit_propagation(void)
+{
     TEST("Unit propagation (forces assignments)");
 
-    Solver* s = solver_new();
+    Solver *s = solver_new();
 
     // Create a unit propagation chain
     // (x1) ∧ (¬x1 ∨ x2) ∧ (¬x2 ∨ x3)
@@ -107,18 +126,20 @@ void test_unit_propagation(void) {
         FAIL("Too many decisions - should propagate without deciding");
     }
 
-    printf("(propagations=%llu, decisions=%llu) ",
-           (unsigned long long)s->stats.propagations, (unsigned long long)s->stats.decisions);
+    printf("(propagations=%llu, decisions=%llu) ", (unsigned long long)s->stats.propagations,
+           (unsigned long long)s->stats.decisions);
 
     solver_free(s);
     PASS();
 }
 
-void test_restarts(void) {
+void
+test_restarts(void)
+{
     TEST("Restarts (search restarts occur)");
 
     // Load a harder instance that should trigger restarts
-    Solver* s = solver_new();
+    Solver *s = solver_new();
     DimacsError err = dimacs_parse_file(s, "../tests/fixtures/unit/simple_sat_3.cnf");
 
     if (err != DIMACS_OK) {
@@ -139,10 +160,12 @@ void test_restarts(void) {
     PASS();
 }
 
-void test_bce_preprocessing(void) {
+void
+test_bce_preprocessing(void)
+{
     TEST("BCE preprocessing (blocked clauses eliminated)");
 
-    Solver* s = solver_new();
+    Solver *s = solver_new();
 
     // Create a formula with blocked clauses
     // Note: BCE happens during parsing/preprocessing
@@ -169,10 +192,12 @@ void test_bce_preprocessing(void) {
     PASS();
 }
 
-void test_lbd_calculation(void) {
+void
+test_lbd_calculation(void)
+{
     TEST("LBD calculation (learned clauses get LBD scores)");
 
-    Solver* s = solver_new();
+    Solver *s = solver_new();
 
     // Parse a file that will cause learning
     DimacsError err = dimacs_parse_file(s, "../tests/fixtures/unit/simple_unsat_3.cnf");
@@ -197,10 +222,12 @@ void test_lbd_calculation(void) {
     PASS();
 }
 
-void test_vsids_decisions(void) {
+void
+test_vsids_decisions(void)
+{
     TEST("VSIDS heuristic (decisions are made)");
 
-    Solver* s = solver_new();
+    Solver *s = solver_new();
 
     // Create a formula requiring decisions
     // (x1 ∨ x2) ∧ (x3 ∨ x4)
@@ -236,10 +263,12 @@ void test_vsids_decisions(void) {
     PASS();
 }
 
-void test_clause_minimization(void) {
+void
+test_clause_minimization(void)
+{
     TEST("Clause minimization (learned clauses minimized)");
 
-    Solver* s = solver_new();
+    Solver *s = solver_new();
 
     // Parse a file that causes conflicts
     DimacsError err = dimacs_parse_file(s, "../tests/fixtures/unit/simple_unsat_3.cnf");
@@ -261,10 +290,12 @@ void test_clause_minimization(void) {
     PASS();
 }
 
-void test_subsumption(void) {
+void
+test_subsumption(void)
+{
     TEST("On-the-fly subsumption (subsumed clauses removed)");
 
-    Solver* s = solver_new();
+    Solver *s = solver_new();
 
     // Parse a file that may have subsumption opportunities
     DimacsError err = dimacs_parse_file(s, "../tests/fixtures/unit/horn_sat.cnf");
@@ -286,24 +317,36 @@ void test_subsumption(void) {
     PASS();
 }
 
-void test_database_reduction(void) {
+void
+test_database_reduction(void)
+{
     TEST("Learned clauses are actually reduced");
-    Solver *s=pigeonhole(5);
-    if(solver_solve(s)!=FALSE || !s->stats.deleted_clauses) FAIL("Expected deletions during UNSAT search");
-    solver_free(s);PASS();
+    Solver *s = pigeonhole(5);
+
+    if (solver_solve(s) != FALSE || !s->stats.deleted_clauses)
+        FAIL("Expected deletions during UNSAT search");
+    solver_free(s);
+    PASS();
 }
 
-void test_glue_clause_protection(void) {
+void
+test_glue_clause_protection(void)
+{
     TEST("Low-LBD learned clauses are tracked");
-    Solver *s=pigeonhole(4);s->opts.glue_lbd=2;
-    if(solver_solve(s)!=FALSE || !s->stats.glue_clauses) FAIL("Expected glue clauses");
-    solver_free(s);PASS();
+    Solver *s = pigeonhole(4);
+
+    s->opts.glue_lbd = 2;
+    if (solver_solve(s) != FALSE || !s->stats.glue_clauses) FAIL("Expected glue clauses");
+    solver_free(s);
+    PASS();
 }
 
-void test_binary_clauses(void) {
+void
+test_binary_clauses(void)
+{
     TEST("Binary clause handling (efficient storage)");
 
-    Solver* s = solver_new();
+    Solver *s = solver_new();
 
     // Create a formula with many binary clauses
     Var x1 = solver_new_var(s);
@@ -340,11 +383,13 @@ void test_binary_clauses(void) {
     PASS();
 }
 
-void test_failed_literal_probing(void) {
+void
+test_failed_literal_probing(void)
+{
     TEST("Failed literal probing (discovers implications)");
 
     // Create a solver with probing enabled (default)
-    Solver* s = solver_new();
+    Solver *s = solver_new();
 
     // Create a formula where probing can discover unit clauses
     // (x1) ∧ (¬x1 ∨ x2 ∨ x3) ∧ (¬x2) ∧ (¬x3)
@@ -388,21 +433,25 @@ void test_failed_literal_probing(void) {
     PASS();
 }
 
-void test_minisat_clause_minimization(void) {
+void
+test_minisat_clause_minimization(void)
+{
     TEST("MiniSat clause minimization (67%% literal reduction)");
 
     // Use an instance that generates learned clauses requiring minimization
-    Solver* s = solver_new();
+    Solver *s = solver_new();
 
     // Create a harder problem that will generate conflicts and learned clauses
     // Use a random 3-SAT structure that causes conflicts
     const int nvars = 20;
+
     for (int i = 0; i < nvars; i++) {
         solver_new_var(s);
     }
 
     // Add random 3-SAT clauses
     Lit lits[3];
+
     for (int i = 0; i < 80; i++) {
         lits[0] = mkLit((i % nvars) + 1, (i / 2) % 2);
         lits[1] = mkLit(((i * 3) % nvars) + 1, (i / 3) % 2);
@@ -416,8 +465,8 @@ void test_minisat_clause_minimization(void) {
     (void)result;
 
     // Check if conflicts occurred and minimization happened
-    printf("(conflicts=%llu, minimized=%llu) ",
-           (unsigned long long)s->stats.conflicts, (unsigned long long)s->stats.minimized_literals);
+    printf("(conflicts=%llu, minimized=%llu) ", (unsigned long long)s->stats.conflicts,
+           (unsigned long long)s->stats.minimized_literals);
 
     // If we had conflicts and learned clauses, minimization should work
     // The 67% reduction is achieved on larger instances
@@ -430,25 +479,30 @@ void test_minisat_clause_minimization(void) {
     PASS();
 }
 
-void test_vivification_inprocessing(void) {
+void
+test_vivification_inprocessing(void)
+{
     TEST("Vivification inprocessing (clause strengthening)");
 
     // Create solver with inprocessing enabled
     SolverOpts opts = default_opts();
-    opts.inprocess = true;
-    opts.inprocess_interval = 10;  // Very frequent for testing
 
-    Solver* s = solver_new_with_opts(&opts);
+    opts.inprocess = true;
+    opts.inprocess_interval = 10; // Very frequent for testing
+
+    Solver *s = solver_new_with_opts(&opts);
 
     // Create a formula with redundancy that vivification can exploit
     // The formula should have clauses where some literals are implied
     const int nvars = 15;
+
     for (int i = 0; i < nvars; i++) {
         solver_new_var(s);
     }
 
     // Add clauses that create implication chains
     Lit lits[3];
+
     for (int i = 0; i < 50; i++) {
         lits[0] = mkLit((i % nvars) + 1, (i / 2) % 2);
         lits[1] = mkLit(((i * 2 + 1) % nvars) + 1, (i / 3) % 2);
@@ -464,8 +518,7 @@ void test_vivification_inprocessing(void) {
     }
 
     // Vivification runs during solving with --inprocess
-    printf("(inprocess enabled, result=%s) ",
-           result == TRUE ? "SAT" : "UNSAT");
+    printf("(inprocess enabled, result=%s) ", result == TRUE ? "SAT" : "UNSAT");
 
     solver_free(s);
     PASS();
@@ -475,7 +528,9 @@ void test_vivification_inprocessing(void) {
  * Main Test Runner
  *********************************************************************/
 
-int main(void) {
+int
+main(void)
+{
     printf("========================================\n");
     printf("BSAT Feature-Specific Tests\n");
     printf("========================================\n\n");

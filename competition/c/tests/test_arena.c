@@ -14,32 +14,35 @@
 static int tests_run = 0;
 static int tests_passed = 0;
 
-#define TEST(name) \
-    do { \
-        printf("Testing %s... ", name); \
-        tests_run++; \
+#define TEST(name)                                                                                 \
+    do {                                                                                           \
+        printf("Testing %s... ", name);                                                            \
+        tests_run++;                                                                               \
     } while (0)
 
-#define PASS() \
-    do { \
-        printf("✅ PASS\n"); \
-        tests_passed++; \
+#define PASS()                                                                                     \
+    do {                                                                                           \
+        printf("✅ PASS\n");                                                                       \
+        tests_passed++;                                                                            \
     } while (0)
 
-#define FAIL(msg) \
-    do { \
-        printf("❌ FAIL: %s\n", msg); \
-        exit(1); \
+#define FAIL(msg)                                                                                  \
+    do {                                                                                           \
+        printf("❌ FAIL: %s\n", msg);                                                              \
+        exit(1);                                                                                   \
     } while (0)
 
 /*********************************************************************
  * Test Cases
  *********************************************************************/
 
-void test_arena_creation(void) {
+void
+test_arena_creation(void)
+{
     TEST("Arena creation and destruction");
 
-    Arena* arena = arena_init(1024);
+    Arena *arena = arena_init(1024);
+
     if (arena == NULL) {
         FAIL("Failed to create arena");
     }
@@ -60,10 +63,12 @@ void test_arena_creation(void) {
     PASS();
 }
 
-void test_single_clause_alloc(void) {
+void
+test_single_clause_alloc(void)
+{
     TEST("Single clause allocation");
 
-    Arena* arena = arena_init(1024);
+    Arena *arena = arena_init(1024);
 
     // Allocate a clause: (x1 ∨ x2 ∨ x3)
     Lit lits[3] = {mkLit(1, false), mkLit(2, false), mkLit(3, false)};
@@ -79,7 +84,8 @@ void test_single_clause_alloc(void) {
     }
 
     // Verify clause literals
-    Lit* stored = CLAUSE_LITS(arena, cref);
+    Lit *stored = CLAUSE_LITS(arena, cref);
+
     for (int i = 0; i < 3; i++) {
         if (stored[i] != lits[i]) {
             FAIL("Literal mismatch");
@@ -100,14 +106,16 @@ void test_single_clause_alloc(void) {
     PASS();
 }
 
-void test_learned_clause(void) {
+void
+test_learned_clause(void)
+{
     TEST("Learned clause allocation");
 
-    Arena* arena = arena_init(1024);
+    Arena *arena = arena_init(1024);
 
     // Allocate a learned clause
     Lit lits[2] = {mkLit(1, false), mkLit(2, true)};
-    CRef cref = arena_alloc(arena, lits, 2, true);  // learned=true
+    CRef cref = arena_alloc(arena, lits, 2, true); // learned=true
 
     if (cref == INVALID_CLAUSE) {
         FAIL("Allocation failed");
@@ -122,10 +130,12 @@ void test_learned_clause(void) {
     PASS();
 }
 
-void test_multiple_clauses(void) {
+void
+test_multiple_clauses(void)
+{
     TEST("Multiple clause allocations");
 
-    Arena* arena = arena_init(1024);
+    Arena *arena = arena_init(1024);
 
     // Allocate multiple clauses of different sizes
     Lit lits1[1] = {mkLit(1, false)};
@@ -154,10 +164,12 @@ void test_multiple_clauses(void) {
     PASS();
 }
 
-void test_lbd_operations(void) {
+void
+test_lbd_operations(void)
+{
     TEST("LBD (Literal Block Distance) operations");
 
-    Arena* arena = arena_init(1024);
+    Arena *arena = arena_init(1024);
 
     Lit lits[2] = {mkLit(1, false), mkLit(2, false)};
     CRef cref = arena_alloc(arena, lits, 2, true);
@@ -183,10 +195,12 @@ void test_lbd_operations(void) {
     PASS();
 }
 
-void test_activity_operations(void) {
+void
+test_activity_operations(void)
+{
     TEST("Clause activity operations");
 
-    Arena* arena = arena_init(1024);
+    Arena *arena = arena_init(1024);
 
     Lit lits[2] = {mkLit(1, false), mkLit(2, false)};
     CRef cref = arena_alloc(arena, lits, 2, true);
@@ -212,10 +226,12 @@ void test_activity_operations(void) {
     PASS();
 }
 
-void test_clause_deletion(void) {
+void
+test_clause_deletion(void)
+{
     TEST("Clause deletion");
 
-    Arena* arena = arena_init(1024);
+    Arena *arena = arena_init(1024);
 
     Lit lits[2] = {mkLit(1, false), mkLit(2, false)};
     CRef cref = arena_alloc(arena, lits, 2, false);
@@ -235,19 +251,23 @@ void test_clause_deletion(void) {
     PASS();
 }
 
-void test_arena_stats(void) {
+void
+test_arena_stats(void)
+{
     TEST("Arena statistics");
 
-    Arena* arena = arena_init(1024);
+    Arena *arena = arena_init(1024);
 
     // Initially has 1 word reserved (index 0)
     ArenaStats stats = arena_stats(arena);
+
     if (stats.used_bytes != sizeof(uint32_t)) {
         FAIL("Initial used_bytes should be sizeof(uint32_t) (index 0 reserved)");
     }
 
     // Allocate a clause
     Lit lits[3] = {mkLit(1, false), mkLit(2, false), mkLit(3, false)};
+
     arena_alloc(arena, lits, 3, false);
 
     // Check stats updated
@@ -264,10 +284,12 @@ void test_arena_stats(void) {
     PASS();
 }
 
-void test_empty_clause(void) {
+void
+test_empty_clause(void)
+{
     TEST("Empty clause handling");
 
-    Arena* arena = arena_init(1024);
+    Arena *arena = arena_init(1024);
 
     // Try to allocate empty clause
     CRef cref = arena_alloc(arena, NULL, 0, false);
@@ -284,13 +306,16 @@ void test_empty_clause(void) {
     PASS();
 }
 
-void test_large_clause(void) {
+void
+test_large_clause(void)
+{
     TEST("Large clause allocation");
 
-    Arena* arena = arena_init(1024);
+    Arena *arena = arena_init(1024);
 
     // Allocate a large clause (100 literals)
     Lit lits[100];
+
     for (int i = 0; i < 100; i++) {
         lits[i] = mkLit(i + 1, i % 2 == 0);
     }
@@ -306,7 +331,8 @@ void test_large_clause(void) {
     }
 
     // Verify all literals stored correctly
-    Lit* stored = CLAUSE_LITS(arena, cref);
+    Lit *stored = CLAUSE_LITS(arena, cref);
+
     for (int i = 0; i < 100; i++) {
         if (stored[i] != lits[i]) {
             FAIL("Literal mismatch in large clause");
@@ -317,17 +343,20 @@ void test_large_clause(void) {
     PASS();
 }
 
-void test_arena_growth(void) {
+void
+test_arena_growth(void)
+{
     TEST("Arena automatic growth");
 
     // Start with small arena
-    Arena* arena = arena_init(16);
+    Arena *arena = arena_init(16);
     size_t initial_capacity = arena->capacity;
 
     // Allocate many clauses to force growth
     for (int i = 0; i < 100; i++) {
         Lit lits[3] = {mkLit(1, false), mkLit(2, false), mkLit(3, false)};
         CRef cref = arena_alloc(arena, lits, 3, false);
+
         if (cref == INVALID_CLAUSE) {
             FAIL("Allocation failed during growth");
         }
@@ -346,7 +375,9 @@ void test_arena_growth(void) {
  * Main Test Runner
  *********************************************************************/
 
-int main(void) {
+int
+main(void)
+{
     printf("========================================\n");
     printf("BSAT Arena Allocator Unit Tests\n");
     printf("========================================\n\n");

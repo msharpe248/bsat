@@ -15,32 +15,34 @@
 static int tests_run = 0;
 static int tests_passed = 0;
 
-#define TEST(name) \
-    do { \
-        printf("Testing %s... ", name); \
-        tests_run++; \
+#define TEST(name)                                                                                 \
+    do {                                                                                           \
+        printf("Testing %s... ", name);                                                            \
+        tests_run++;                                                                               \
     } while (0)
 
-#define PASS() \
-    do { \
-        printf("✅ PASS\n"); \
-        tests_passed++; \
+#define PASS()                                                                                     \
+    do {                                                                                           \
+        printf("✅ PASS\n");                                                                       \
+        tests_passed++;                                                                            \
     } while (0)
 
-#define FAIL(msg) \
-    do { \
-        printf("❌ FAIL: %s\n", msg); \
-        exit(1); \
+#define FAIL(msg)                                                                                  \
+    do {                                                                                           \
+        printf("❌ FAIL: %s\n", msg);                                                              \
+        exit(1);                                                                                   \
     } while (0)
 
 /*********************************************************************
  * Test Cases
  *********************************************************************/
 
-void test_trivial_sat(void) {
+void
+test_trivial_sat(void)
+{
     TEST("trivial_sat.cnf");
 
-    Solver* s = solver_new();
+    Solver *s = solver_new();
     DimacsError err = dimacs_parse_file(s, "../tests/fixtures/unit/trivial_sat.cnf");
 
     if (err != DIMACS_OK) {
@@ -51,6 +53,7 @@ void test_trivial_sat(void) {
     // Focus on correctness of SAT/UNSAT result
 
     lbool result = solver_solve(s);
+
     if (result != TRUE) {
         FAIL("Expected SAT");
     }
@@ -59,10 +62,12 @@ void test_trivial_sat(void) {
     PASS();
 }
 
-void test_trivial_unsat(void) {
+void
+test_trivial_unsat(void)
+{
     TEST("trivial_unsat.cnf");
 
-    Solver* s = solver_new();
+    Solver *s = solver_new();
     DimacsError err = dimacs_parse_file(s, "../tests/fixtures/unit/trivial_unsat.cnf");
 
     if (err != DIMACS_OK) {
@@ -70,6 +75,7 @@ void test_trivial_unsat(void) {
     }
 
     lbool result = solver_solve(s);
+
     if (result != FALSE) {
         FAIL("Expected UNSAT");
     }
@@ -78,10 +84,12 @@ void test_trivial_unsat(void) {
     PASS();
 }
 
-void test_empty(void) {
+void
+test_empty(void)
+{
     TEST("empty.cnf");
 
-    Solver* s = solver_new();
+    Solver *s = solver_new();
     DimacsError err = dimacs_parse_file(s, "../tests/fixtures/unit/empty.cnf");
 
     if (err != DIMACS_OK) {
@@ -89,6 +97,7 @@ void test_empty(void) {
     }
 
     lbool result = solver_solve(s);
+
     if (result != TRUE) {
         FAIL("Empty CNF should be SAT");
     }
@@ -97,17 +106,18 @@ void test_empty(void) {
     PASS();
 }
 
-void test_parse_with_comments(void) {
+void
+test_parse_with_comments(void)
+{
     TEST("Parse with comments");
 
-    const char* dimacs_str =
-        "c This is a comment\n"
-        "c Another comment\n"
-        "p cnf 2 1\n"
-        "c Comment between clauses\n"
-        "1 2 0\n";
+    const char *dimacs_str = "c This is a comment\n"
+                             "c Another comment\n"
+                             "p cnf 2 1\n"
+                             "c Comment between clauses\n"
+                             "1 2 0\n";
 
-    Solver* s = solver_new();
+    Solver *s = solver_new();
     DimacsError err = dimacs_parse_string(s, dimacs_str);
 
     if (err != DIMACS_OK) {
@@ -122,15 +132,16 @@ void test_parse_with_comments(void) {
     PASS();
 }
 
-void test_parse_unit_clauses(void) {
+void
+test_parse_unit_clauses(void)
+{
     TEST("Parse unit clauses");
 
-    const char* dimacs_str =
-        "p cnf 2 2\n"
-        "1 0\n"
-        "-2 0\n";
+    const char *dimacs_str = "p cnf 2 2\n"
+                             "1 0\n"
+                             "-2 0\n";
 
-    Solver* s = solver_new();
+    Solver *s = solver_new();
     DimacsError err = dimacs_parse_string(s, dimacs_str);
 
     if (err != DIMACS_OK) {
@@ -138,6 +149,7 @@ void test_parse_unit_clauses(void) {
     }
 
     lbool result = solver_solve(s);
+
     if (result != TRUE) {
         FAIL("Unit clauses should be satisfiable");
     }
@@ -146,16 +158,17 @@ void test_parse_unit_clauses(void) {
     PASS();
 }
 
-void test_parse_empty_lines(void) {
+void
+test_parse_empty_lines(void)
+{
     TEST("Parse with empty lines");
 
-    const char* dimacs_str =
-        "p cnf 2 1\n"
-        "\n"
-        "1 2 0\n"
-        "\n";
+    const char *dimacs_str = "p cnf 2 1\n"
+                             "\n"
+                             "1 2 0\n"
+                             "\n";
 
-    Solver* s = solver_new();
+    Solver *s = solver_new();
     DimacsError err = dimacs_parse_string(s, dimacs_str);
 
     if (err != DIMACS_OK) {
@@ -164,6 +177,7 @@ void test_parse_empty_lines(void) {
 
     // Just verify it parses and solves correctly
     lbool result = solver_solve(s);
+
     if (result != TRUE) {
         FAIL("Should be SAT");
     }
@@ -172,20 +186,25 @@ void test_parse_empty_lines(void) {
     PASS();
 }
 
-void test_malformed_input(void) {
+void
+test_malformed_input(void)
+{
     TEST("Malformed input error handling");
 
-    Solver* s = solver_new();
+    Solver *s = solver_new();
+
     if (dimacs_parse_string(s, "p cnf 1 1\n1") != DIMACS_ERROR_FORMAT)
         FAIL("Unterminated clause must be rejected");
     solver_free(s);
     PASS();
 }
 
-void test_unit_propagation(void) {
+void
+test_unit_propagation(void)
+{
     TEST("unit_propagation.cnf");
 
-    Solver* s = solver_new();
+    Solver *s = solver_new();
     DimacsError err = dimacs_parse_file(s, "../tests/fixtures/unit/unit_propagation.cnf");
 
     if (err != DIMACS_OK) {
@@ -193,6 +212,7 @@ void test_unit_propagation(void) {
     }
 
     lbool result = solver_solve(s);
+
     if (result != FALSE) {
         FAIL("Expected UNSAT (conflict after unit propagation)");
     }
@@ -201,10 +221,12 @@ void test_unit_propagation(void) {
     PASS();
 }
 
-void test_simple_sat_3(void) {
+void
+test_simple_sat_3(void)
+{
     TEST("simple_sat_3.cnf");
 
-    Solver* s = solver_new();
+    Solver *s = solver_new();
     DimacsError err = dimacs_parse_file(s, "../tests/fixtures/unit/simple_sat_3.cnf");
 
     if (err != DIMACS_OK) {
@@ -212,6 +234,7 @@ void test_simple_sat_3(void) {
     }
 
     lbool result = solver_solve(s);
+
     if (result != TRUE) {
         FAIL("Expected SAT");
     }
@@ -220,10 +243,12 @@ void test_simple_sat_3(void) {
     PASS();
 }
 
-void test_simple_unsat_3(void) {
+void
+test_simple_unsat_3(void)
+{
     TEST("simple_unsat_3.cnf");
 
-    Solver* s = solver_new();
+    Solver *s = solver_new();
     DimacsError err = dimacs_parse_file(s, "../tests/fixtures/unit/simple_unsat_3.cnf");
 
     if (err != DIMACS_OK) {
@@ -231,6 +256,7 @@ void test_simple_unsat_3(void) {
     }
 
     lbool result = solver_solve(s);
+
     if (result != FALSE) {
         FAIL("Expected UNSAT");
     }
@@ -239,10 +265,12 @@ void test_simple_unsat_3(void) {
     PASS();
 }
 
-void test_horn_sat(void) {
+void
+test_horn_sat(void)
+{
     TEST("horn_sat.cnf");
 
-    Solver* s = solver_new();
+    Solver *s = solver_new();
     DimacsError err = dimacs_parse_file(s, "../tests/fixtures/unit/horn_sat.cnf");
 
     if (err != DIMACS_OK) {
@@ -250,6 +278,7 @@ void test_horn_sat(void) {
     }
 
     lbool result = solver_solve(s);
+
     if (result != TRUE) {
         FAIL("Expected SAT");
     }
@@ -258,10 +287,12 @@ void test_horn_sat(void) {
     PASS();
 }
 
-void test_horn_unsat(void) {
+void
+test_horn_unsat(void)
+{
     TEST("horn_unsat.cnf");
 
-    Solver* s = solver_new();
+    Solver *s = solver_new();
     DimacsError err = dimacs_parse_file(s, "../tests/fixtures/unit/horn_unsat.cnf");
 
     if (err != DIMACS_OK) {
@@ -269,6 +300,7 @@ void test_horn_unsat(void) {
     }
 
     lbool result = solver_solve(s);
+
     if (result != FALSE) {
         FAIL("Expected UNSAT");
     }
@@ -281,7 +313,9 @@ void test_horn_unsat(void) {
  * Main Test Runner
  *********************************************************************/
 
-int main(void) {
+int
+main(void)
+{
     printf("========================================\n");
     printf("BSAT DIMACS I/O Unit Tests\n");
     printf("========================================\n\n");

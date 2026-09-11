@@ -6,211 +6,368 @@
 #include <stdio.h>
 #include <time.h>
 
-static Solver *new_solver(unsigned vars) {
-    Solver *s=solver_new();assert(s);
-    for(unsigned i=0;i<vars;++i) assert(solver_new_var(s));
-    s->opts.random_phase=false;
-    s->opts.iterative_minimize=true;
+static Solver *
+new_solver(unsigned vars)
+{
+    Solver *s = solver_new();
+
+    assert(s);
+    for (unsigned i = 0; i < vars; ++i)
+        assert(solver_new_var(s));
+    s->opts.random_phase = false;
+    s->opts.iterative_minimize = true;
     return s;
 }
 
 /* Establish a decision on a chosen literal, independent of heap tie-breaking. */
-static void decision(Solver *s, Lit l) {
-    Var v=var(l);assert(s->values[v]==UNDEF);
+static void
+decision(Solver *s, Lit l)
+{
+    Var v = var(l);
+
+    assert(s->values[v] == UNDEF);
     s->decision_level++;
-    s->trail_lims[s->decision_level]=s->trail_size;
-    s->values[v]=sign(l)?FALSE:TRUE;
-    s->vars[v].level=s->decision_level;
-    s->vars[v].reason=INVALID_CLAUSE;
-    s->binary_reasons[v]=LIT_UNDEF;
-    s->vars[v].trail_pos=s->trail_size;
-    s->trail[s->trail_size++]=(Trail){l};
-    assert(solver_propagate(s)==INVALID_CLAUSE);
+    s->trail_lims[s->decision_level] = s->trail_size;
+    s->values[v] = sign(l) ? FALSE : TRUE;
+    s->vars[v].level = s->decision_level;
+    s->vars[v].reason = INVALID_CLAUSE;
+    s->binary_reasons[v] = LIT_UNDEF;
+    s->vars[v].trail_pos = s->trail_size;
+    s->trail[s->trail_size++] = (Trail){l};
+    assert(solver_propagate(s) == INVALID_CLAUSE);
 }
-static void edge(Solver *s, Var from, Var to) {
-    Lit c[]={mkLit(from,true),mkLit(to,false)};
-    assert(solver_add_clause(s,c,2));
+
+static void
+edge(Solver *s, Var from, Var to)
+{
+    Lit c[] = {mkLit(from, true), mkLit(to, false)};
+
+    assert(solver_add_clause(s, c, 2));
 }
-static void clean(const Solver *s) {
-    for(Var v=1;v<=s->num_vars;++v) assert(!s->seen[v]);
+
+static void
+clean(const Solver *s)
+{
+    for (Var v = 1; v <= s->num_vars; ++v)
+        assert(!s->seen[v]);
 }
-static bool value(unsigned bits,Lit l) { return ((bits>>(var(l)-1))&1u)!=sign(l); }
-static void entailed(const Solver *s,const Lit *clause,unsigned n) {
-    assert(s->num_vars<=12);
-    for(unsigned bits=0;bits<(1u<<s->num_vars);++bits) {
-        bool formula=true,one=false;
-        for(size_t i=0;i<s->input_size;++i) {
-            if(s->input[i]) one |= value(bits,s->input[i]);
-            else { formula &= one;one=false; }
+
+static bool
+value(unsigned bits, Lit l)
+{
+    return ((bits >> (var(l) - 1)) & 1u) != sign(l);
+}
+
+static void
+entailed(const Solver *s, const Lit *clause, unsigned n)
+{
+    assert(s->num_vars <= 12);
+    for (unsigned bits = 0; bits < (1u << s->num_vars); ++bits) {
+        bool formula = true, one = false;
+
+        for (size_t i = 0; i < s->input_size; ++i) {
+            if (s->input[i])
+                one |= value(bits, s->input[i]);
+            else {
+                formula &= one;
+                one = false;
+            }
         }
-        if(formula) {
-            bool satisfied=false;
-            for(unsigned i=0;i<n;++i) satisfied |= value(bits,clause[i]);
+        if (formula) {
+            bool satisfied = false;
+
+            for (unsigned i = 0; i < n; ++i)
+                satisfied |= value(bits, clause[i]);
             assert(satisfied);
         }
     }
 }
-static void binary_and_cache(void) {
-    Solver *s=new_solver(5);
-    edge(s,1,2);edge(s,2,3);edge(s,2,4);
-    Lit source[]={mkLit(5,false),mkLit(1,true),mkLit(3,true),mkLit(4,true)};
-    assert(solver_add_clause(s,source,4));
-    decision(s,mkLit(1,false));
-    unsigned n=4;
+
+static void
+binary_and_cache(void)
+{
+    Solver *s = new_solver(5);
+
+    edge(s, 1, 2);
+    edge(s, 2, 3);
+    edge(s, 2, 4);
+    Lit source[] = {mkLit(5, false), mkLit(1, true), mkLit(3, true), mkLit(4, true)};
+
+    assert(solver_add_clause(s, source, 4));
+    decision(s, mkLit(1, false));
+    unsigned n = 4;
+
     /* Three antecedent inspections suffice only if the shared 2 -> 1 path is
        reused when proving that both 3 and 4 are redundant. */
-    s->opts.minimize_budget=3;
-    assert(solver_minimize_clause(s,source,&n)==2 && n==2);
-    assert(source[0]==mkLit(5,false) && source[1]==mkLit(1,true));
-    assert(s->stats.minimize_cache_hits>0 && s->stats.minimize_binary_steps>0);
-    entailed(s,source,n);clean(s);solver_free(s);
+    s->opts.minimize_budget = 3;
+    assert(solver_minimize_clause(s, source, &n) == 2 && n == 2);
+    assert(source[0] == mkLit(5, false) && source[1] == mkLit(1, true));
+    assert(s->stats.minimize_cache_hits > 0 && s->stats.minimize_binary_steps > 0);
+    entailed(s, source, n);
+    clean(s);
+    solver_free(s);
 }
-static void long_mixed_chain(void) {
-    const unsigned length=2000;
-    Solver *s=new_solver(length+2);
-    Lit root=mkLit(length+2,true);assert(solver_add_clause(s,&root,1));
-    for(unsigned i=2;i<=length;++i) {
-        Lit c[]={mkLit(i-1,true),mkLit(i,false),neg(root)};
-        unsigned size=i%3==0?3:2;
-        assert(solver_add_clause(s,c,size));
-        if(i%3==1) {
+
+static void
+long_mixed_chain(void)
+{
+    const unsigned length = 2000;
+    Solver *s = new_solver(length + 2);
+    Lit root = mkLit(length + 2, true);
+
+    assert(solver_add_clause(s, &root, 1));
+    for (unsigned i = 2; i <= length; ++i) {
+        Lit c[] = {mkLit(i - 1, true), mkLit(i, false), neg(root)};
+        unsigned size = i % 3 == 0 ? 3 : 2;
+
+        assert(solver_add_clause(s, c, size));
+        if (i % 3 == 1) {
             /* Explicit binary watches, as used for learned binaries. */
-            CRef cr=s->clauses[s->num_clauses-1];
-            watch_remove_clause(s->watches,s->arena,cr);
-            watch_add(s->watches,c[0],cr,c[1]);watch_add(s->watches,c[1],cr,c[0]);
+            CRef cr = s->clauses[s->num_clauses - 1];
+
+            watch_remove_clause(s->watches, s->arena, cr);
+            watch_add(s->watches, c[0], cr, c[1]);
+            watch_add(s->watches, c[1], cr, c[0]);
         }
     }
-    Lit original[]={mkLit(length+1,false),mkLit(1,true),mkLit(length,true)};
-    assert(solver_add_clause(s,original,3));
-    assert(solver_propagate(s)==INVALID_CLAUSE);
-    decision(s,mkLit(1,false));
-    for(unsigned pass=0;pass<2;++pass) {
-        Lit c[]={original[0],original[1],original[2]};unsigned n=3;
-        assert(solver_minimize_clause(s,c,&n)==1 && n==2);
-        assert(c[0]==original[0] && c[1]==original[1]);clean(s);
+    Lit original[] = {mkLit(length + 1, false), mkLit(1, true), mkLit(length, true)};
+
+    assert(solver_add_clause(s, original, 3));
+    assert(solver_propagate(s) == INVALID_CLAUSE);
+    decision(s, mkLit(1, false));
+    for (unsigned pass = 0; pass < 2; ++pass) {
+        Lit c[] = {original[0], original[1], original[2]};
+        unsigned n = 3;
+
+        assert(solver_minimize_clause(s, c, &n) == 1 && n == 2);
+        assert(c[0] == original[0] && c[1] == original[1]);
+        clean(s);
     }
-    s->opts.minimize_budget=8;
-    unsigned n=3;
-    assert(solver_minimize_clause(s,original,&n)==0 && n==3);
-    assert(s->stats.minimize_budget_hits>0);clean(s);solver_free(s);
+    s->opts.minimize_budget = 8;
+    unsigned n = 3;
+
+    assert(solver_minimize_clause(s, original, &n) == 0 && n == 3);
+    assert(s->stats.minimize_budget_hits > 0);
+    clean(s);
+    solver_free(s);
 }
-static void failed_branch(void) {
-    Solver *s=new_solver(6);
-    edge(s,1,2);
+
+static void
+failed_branch(void)
+{
+    Solver *s = new_solver(6);
+
+    edge(s, 1, 2);
     /* x3 needs uncovered decision x6 as well as a covered source. */
-    Lit cause[]={mkLit(2,true),mkLit(6,true),mkLit(3,false)};
-    assert(solver_add_clause(s,cause,3));
-    edge(s,2,4);
-    Lit source[]={mkLit(5,false),mkLit(1,true),mkLit(3,true),mkLit(4,true)};
-    assert(solver_add_clause(s,source,4));
-    decision(s,mkLit(1,false));decision(s,mkLit(6,false));
-    unsigned n=4;
-    assert(solver_minimize_clause(s,source,&n)==1 && n==3);
-    assert(source[2]==mkLit(3,true));entailed(s,source,n);clean(s);solver_free(s);
+    Lit cause[] = {mkLit(2, true), mkLit(6, true), mkLit(3, false)};
+
+    assert(solver_add_clause(s, cause, 3));
+    edge(s, 2, 4);
+    Lit source[] = {mkLit(5, false), mkLit(1, true), mkLit(3, true), mkLit(4, true)};
+
+    assert(solver_add_clause(s, source, 4));
+    decision(s, mkLit(1, false));
+    decision(s, mkLit(6, false));
+    unsigned n = 4;
+
+    assert(solver_minimize_clause(s, source, &n) == 1 && n == 3);
+    assert(source[2] == mkLit(3, true));
+    entailed(s, source, n);
+    clean(s);
+    solver_free(s);
 }
-static void cyclic_and_disabled(void) {
-    Solver *s=new_solver(4);edge(s,1,2);edge(s,2,3);
-    Lit source[]={mkLit(4,false),mkLit(1,true),mkLit(3,true)};
-    assert(solver_add_clause(s,source,3));decision(s,mkLit(1,false));
+
+static void
+cyclic_and_disabled(void)
+{
+    Solver *s = new_solver(4);
+
+    edge(s, 1, 2);
+    edge(s, 2, 3);
+    Lit source[] = {mkLit(4, false), mkLit(1, true), mkLit(3, true)};
+
+    assert(solver_add_clause(s, source, 3));
+    decision(s, mkLit(1, false));
     /* A stale/cyclic binary reason must never become a cache proof. */
-    s->binary_reasons[3]=mkLit(3,true);
-    unsigned n=3;assert(!solver_minimize_clause(s,source,&n) && n==3);clean(s);
-    s->binary_reasons[3]=mkLit(2,true);
-    s->opts.minimize_budget=0;assert(!solver_minimize_clause(s,source,&n));clean(s);
-    s->opts.minimize_budget=10000;s->opts.minimize=false;
-    assert(!solver_minimize_clause(s,source,&n));clean(s);
-    s->opts.minimize=true;
-    assert(solver_minimize_clause(s,source,&n)==1 && n==2);
-    entailed(s,source,n);clean(s);solver_free(s);
+    s->binary_reasons[3] = mkLit(3, true);
+    unsigned n = 3;
+
+    assert(!solver_minimize_clause(s, source, &n) && n == 3);
+    clean(s);
+    s->binary_reasons[3] = mkLit(2, true);
+    s->opts.minimize_budget = 0;
+    assert(!solver_minimize_clause(s, source, &n));
+    clean(s);
+    s->opts.minimize_budget = 10000;
+    s->opts.minimize = false;
+    assert(!solver_minimize_clause(s, source, &n));
+    clean(s);
+    s->opts.minimize = true;
+    assert(solver_minimize_clause(s, source, &n) == 1 && n == 2);
+    entailed(s, source, n);
+    clean(s);
+    solver_free(s);
 }
+
 /* Each implied variable needs its two predecessors. Without caching or a work
    bound, recursive minimization revisits this small DAG exponentially often. */
-static Solver *shared_dag(unsigned length, Lit source[4]) {
-    Solver *s=new_solver(length+1);s->opts.iterative_minimize=false;
-    for(unsigned v=3;v<=length;++v) {
-        Lit reason[]={mkLit(v-1,true),mkLit(v-2,true),mkLit(v,false)};
-        assert(solver_add_clause(s,reason,3));
+static Solver *
+shared_dag(unsigned length, Lit source[4])
+{
+    Solver *s = new_solver(length + 1);
+
+    s->opts.iterative_minimize = false;
+    for (unsigned v = 3; v <= length; ++v) {
+        Lit reason[] = {mkLit(v - 1, true), mkLit(v - 2, true), mkLit(v, false)};
+
+        assert(solver_add_clause(s, reason, 3));
     }
-    source[0]=mkLit(length+1,false);source[1]=mkLit(1,true);
-    source[2]=mkLit(2,true);source[3]=mkLit(length,true);
-    assert(solver_add_clause(s,source,4));
-    decision(s,mkLit(1,false));decision(s,mkLit(2,false));
+    source[0] = mkLit(length + 1, false);
+    source[1] = mkLit(1, true);
+    source[2] = mkLit(2, true);
+    source[3] = mkLit(length, true);
+    assert(solver_add_clause(s, source, 4));
+    decision(s, mkLit(1, false));
+    decision(s, mkLit(2, false));
     return s;
 }
-static void legacy_limits(void) {
-    Lit source[4];Solver *s=shared_dag(64,source);unsigned n=4;
-    s->opts.minimize_budget=64;
-    uint64_t before=s->stats.minimize_inspections;
-    assert(solver_minimize_clause(s,source,&n)==0 && n==4);
-    assert(s->stats.minimize_inspections-before==s->opts.minimize_budget);
-    assert(s->stats.minimize_budget_hits==1);clean(s);
+
+static void
+legacy_limits(void)
+{
+    Lit source[4];
+    Solver *s = shared_dag(64, source);
+    unsigned n = 4;
+
+    s->opts.minimize_budget = 64;
+    uint64_t before = s->stats.minimize_inspections;
+
+    assert(solver_minimize_clause(s, source, &n) == 0 && n == 4);
+    assert(s->stats.minimize_inspections - before == s->opts.minimize_budget);
+    assert(s->stats.minimize_budget_hits == 1);
+    clean(s);
     /* Preexisting cancellation must leave the clause and scratch unchanged. */
-    before=s->stats.minimize_inspections;s->interrupted=true;
-    assert(!solver_minimize_clause(s,source,&n));
-    assert(s->stats.minimize_inspections==before);clean(s);
+    before = s->stats.minimize_inspections;
+    s->interrupted = true;
+    assert(!solver_minimize_clause(s, source, &n));
+    assert(s->stats.minimize_inspections == before);
+    clean(s);
     /* A deadline reached inside the recursive traversal must unwind safely. */
-    s->interrupted=false;s->opts.max_time=0.001;
-    s->stats.start_time=solver_cpu_time()-1.0;
-    s->stats.minimize_inspections=1000; // Check after descending through several reasons.
-    assert(!solver_minimize_clause(s,source,&n) && n==4 && s->interrupted);
-    assert(s->stats.minimize_inspections==1024);clean(s);solver_free(s);
-    s=shared_dag(7,source);n=4;
-    s->opts.minimize_budget=0;assert(!solver_minimize_clause(s,source,&n));clean(s);
-    s->opts.minimize_budget=1;assert(!solver_minimize_clause(s,source,&n) && n==4);
-    entailed(s,source,n);clean(s);
-    s->opts.minimize_budget=10000;
-    assert(solver_minimize_clause(s,source,&n)==1 && n==3);
-    entailed(s,source,n);clean(s);solver_free(s);
-    s=shared_dag(7,source);
-    Lit partial[]={source[0],source[1],source[2],mkLit(3,true),source[3]};n=5;
-    s->opts.minimize_budget=3;
-    assert(solver_minimize_clause(s,partial,&n)==1 && n==4);
-    assert(partial[3]==source[3] && s->stats.minimize_inspections==3);
-    entailed(s,partial,n);clean(s);solver_free(s);
-    s=shared_dag(64,source);n=4;
-    assert(solver_minimize_clause(s,source,&n)==1 && n==3);
-    assert(s->stats.minimize_inspections==3*(64-2));
-    assert(s->stats.minimize_cache_hits>0);clean(s);solver_free(s);
-    for(unsigned length=130;length<=131;++length) {
-        s=shared_dag(length,source);n=4;s->opts.minimize_budget=100000;
-        assert(solver_minimize_clause(s,source,&n)==(length==130?1u:0u));
-        assert(n==(length==130?3u:4u));
-        assert(!s->stats.minimize_budget_hits);clean(s);solver_free(s);
+    s->interrupted = false;
+    s->opts.max_time = 0.001;
+    s->stats.start_time = solver_cpu_time() - 1.0;
+    s->stats.minimize_inspections = 1000; // Check after descending through several reasons.
+    assert(!solver_minimize_clause(s, source, &n) && n == 4 && s->interrupted);
+    assert(s->stats.minimize_inspections == 1024);
+    clean(s);
+    solver_free(s);
+    s = shared_dag(7, source);
+    n = 4;
+    s->opts.minimize_budget = 0;
+    assert(!solver_minimize_clause(s, source, &n));
+    clean(s);
+    s->opts.minimize_budget = 1;
+    assert(!solver_minimize_clause(s, source, &n) && n == 4);
+    entailed(s, source, n);
+    clean(s);
+    s->opts.minimize_budget = 10000;
+    assert(solver_minimize_clause(s, source, &n) == 1 && n == 3);
+    entailed(s, source, n);
+    clean(s);
+    solver_free(s);
+    s = shared_dag(7, source);
+    Lit partial[] = {source[0], source[1], source[2], mkLit(3, true), source[3]};
+
+    n = 5;
+    s->opts.minimize_budget = 3;
+    assert(solver_minimize_clause(s, partial, &n) == 1 && n == 4);
+    assert(partial[3] == source[3] && s->stats.minimize_inspections == 3);
+    entailed(s, partial, n);
+    clean(s);
+    solver_free(s);
+    s = shared_dag(64, source);
+    n = 4;
+    assert(solver_minimize_clause(s, source, &n) == 1 && n == 3);
+    assert(s->stats.minimize_inspections == 3 * (64 - 2));
+    assert(s->stats.minimize_cache_hits > 0);
+    clean(s);
+    solver_free(s);
+    for (unsigned length = 130; length <= 131; ++length) {
+        s = shared_dag(length, source);
+        n = 4;
+        s->opts.minimize_budget = 100000;
+        assert(solver_minimize_clause(s, source, &n) == (length == 130 ? 1u : 0u));
+        assert(n == (length == 130 ? 3u : 4u));
+        assert(!s->stats.minimize_budget_hits);
+        clean(s);
+        solver_free(s);
     }
 }
-static void signed_binary_strengthening(void) {
+
+static void
+signed_binary_strengthening(void)
+{
     unsigned checks = 0;
+
     for (unsigned iterative = 0; iterative < 2; ++iterative)
-    for (unsigned signs = 0; signs < 16; ++signs)
-    for (unsigned budget = 0; budget <= 4; ++budget) {
-        Solver *s = new_solver(5);s->opts.iterative_minimize = iterative;
-        Lit assigned[6];
-        for (Var v = 1; v <= 5; ++v) assigned[v] = mkLit(v, v <= 4 && (signs & (1u << (v-1))));
-        unsigned from[] = {1, 2, 2}, to[] = {2, 3, 4};
-        for (unsigned i = 0; i < 3; ++i) {
-            Lit edge[] = {neg(assigned[from[i]]), assigned[to[i]]};
-            assert(solver_add_clause(s, edge, 2));
-        }
-        Lit original[] = {assigned[5], neg(assigned[1]), neg(assigned[3]), neg(assigned[4])};
-        Lit source[4];for (unsigned i = 0; i < 4; ++i) source[i] = original[i];
-        assert(solver_add_clause(s, original, 4));decision(s, assigned[1]);
-        s->opts.minimize_budget = budget;unsigned n = 4;
-        unsigned removed = solver_minimize_clause(s, source, &n);
-        assert(n >= 2 && n <= 4 && removed == 4-n);
-        assert(source[0] == original[0] && source[1] == original[1]);
-        unsigned next = 0;
-        for (unsigned i = 0; i < n; ++i) {
-            while (next < 4 && original[next] != source[i]) ++next;
-            assert(next < 4);++next;
-        }
-        entailed(s, source, n);clean(s);solver_free(s);++checks;
-    }
+        for (unsigned signs = 0; signs < 16; ++signs)
+            for (unsigned budget = 0; budget <= 4; ++budget) {
+                Solver *s = new_solver(5);
+
+                s->opts.iterative_minimize = iterative;
+                Lit assigned[6];
+
+                for (Var v = 1; v <= 5; ++v)
+                    assigned[v] = mkLit(v, v <= 4 && (signs & (1u << (v - 1))));
+                unsigned from[] = {1, 2, 2}, to[] = {2, 3, 4};
+
+                for (unsigned i = 0; i < 3; ++i) {
+                    Lit edge[] = {neg(assigned[from[i]]), assigned[to[i]]};
+
+                    assert(solver_add_clause(s, edge, 2));
+                }
+                Lit original[] = {assigned[5], neg(assigned[1]), neg(assigned[3]),
+                                  neg(assigned[4])};
+                Lit source[4];
+
+                for (unsigned i = 0; i < 4; ++i)
+                    source[i] = original[i];
+                assert(solver_add_clause(s, original, 4));
+                decision(s, assigned[1]);
+                s->opts.minimize_budget = budget;
+                unsigned n = 4;
+                unsigned removed = solver_minimize_clause(s, source, &n);
+
+                assert(n >= 2 && n <= 4 && removed == 4 - n);
+                assert(source[0] == original[0] && source[1] == original[1]);
+                unsigned next = 0;
+
+                for (unsigned i = 0; i < n; ++i) {
+                    while (next < 4 && original[next] != source[i])
+                        ++next;
+                    assert(next < 4);
+                    ++next;
+                }
+                entailed(s, source, n);
+                clean(s);
+                solver_free(s);
+                ++checks;
+            }
     assert(checks == 160);
-    puts("PASS: 160 signed binary graph/budget cases, independent entailment, stable subsequence and cleanup");
+    puts("PASS: 160 signed binary graph/budget cases, independent entailment, stable subsequence "
+         "and cleanup");
 }
-int main(void) {
-    binary_and_cache();long_mixed_chain();failed_branch();cyclic_and_disabled();
-    legacy_limits();signed_binary_strengthening();
-    puts("PASS: binary/arena minimization, shared dependencies, 2000-edge chains, failure rollback, budgets and scratch cleanup");
+
+int
+main(void)
+{
+    binary_and_cache();
+    long_mixed_chain();
+    failed_branch();
+    cyclic_and_disabled();
+    legacy_limits();
+    signed_binary_strengthening();
+    puts("PASS: binary/arena minimization, shared dependencies, 2000-edge chains, failure "
+         "rollback, budgets and scratch cleanup");
     return 0;
 }

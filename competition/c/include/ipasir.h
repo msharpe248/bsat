@@ -15,7 +15,8 @@ BSAT_API int ipasir_solve(void *solver);
 BSAT_API int ipasir_val(void *solver, int lit);
 BSAT_API int ipasir_failed(void *solver, int lit);
 BSAT_API void ipasir_set_terminate(void *solver, void *state, int (*terminate)(void *));
-BSAT_API void ipasir_set_learn(void *solver, void *state, int max_length, void (*learn)(void *, int *));
+BSAT_API void ipasir_set_learn(void *solver, void *state, int max_length,
+                               void (*learn)(void *, int *));
 #ifdef __cplusplus
 }
 #endif

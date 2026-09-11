@@ -39,7 +39,7 @@
 #define INVALID_VAR 0
 #define INVALID_LIT 0
 #define INVALID_CLAUSE UINT32_MAX
-#define BINARY_CONFLICT (UINT32_MAX - 1)  // Special marker for binary conflicts
+#define BINARY_CONFLICT (UINT32_MAX - 1) // Special marker for binary conflicts
 #define INVALID_LEVEL UINT32_MAX
 #define LIT_UNDEF 0
 
@@ -62,27 +62,28 @@ typedef uint32_t CRef;
 typedef uint32_t Level;
 
 /* Per-instance deterministic generator: no process-global rand() state. */
-static inline uint32_t bsat_random(uint32_t *state) {
+static inline uint32_t
+bsat_random(uint32_t *state)
+{
     uint32_t x = *state ? *state : 0x9e3779b9u;
-    x ^= x << 13; x ^= x >> 17; x ^= x << 5;
+
+    x ^= x << 13;
+    x ^= x >> 17;
+    x ^= x << 5;
     *state = x;
     return x;
 }
 
 // Truth values
-typedef enum {
-    UNDEF = 0,
-    FALSE = 1,
-    TRUE = 2
-} lbool;
+typedef enum { UNDEF = 0, FALSE = 1, TRUE = 2 } lbool;
 
 // Clause flags for metadata
 typedef enum {
-    CLAUSE_ORIGINAL = 0,     // Original problem clause
-    CLAUSE_LEARNED = 1,      // Learned during search
-    CLAUSE_DELETED = 2,      // Marked for deletion
-    CLAUSE_GLUE = 4,         // Glue clause (LBD <= 2)
-    CLAUSE_FROZEN = 8        // Protected from deletion
+    CLAUSE_ORIGINAL = 0, // Original problem clause
+    CLAUSE_LEARNED = 1,  // Learned during search
+    CLAUSE_DELETED = 2,  // Marked for deletion
+    CLAUSE_GLUE = 4,     // Glue clause (LBD <= 2)
+    CLAUSE_FROZEN = 8    // Protected from deletion
 } ClauseFlags;
 
 /*********************************************************************
@@ -90,37 +91,51 @@ typedef enum {
  *********************************************************************/
 
 // Create literal from variable and sign
-static inline Lit mkLit(Var v, bool sign) {
+static inline Lit
+mkLit(Var v, bool sign)
+{
     return (v << 1) | (sign ? 1 : 0);
 }
 
 // Get variable from literal
-static inline Var var(Lit l) {
+static inline Var
+var(Lit l)
+{
     return l >> 1;
 }
 
 // Check if literal is negative
-static inline bool sign(Lit l) {
+static inline bool
+sign(Lit l)
+{
     return l & 1;
 }
 
 // Negate a literal
-static inline Lit neg(Lit l) {
+static inline Lit
+neg(Lit l)
+{
     return l ^ 1;
 }
 
 // Get array index for literal (for watch lists)
-static inline uint32_t toInt(Lit l) {
+static inline uint32_t
+toInt(Lit l)
+{
     return l;
 }
 
 // Convert literal to external format (DIMACS)
-static inline int toDimacs(Lit l) {
+static inline int
+toDimacs(Lit l)
+{
     return sign(l) ? -(int)var(l) : (int)var(l);
 }
 
 // Create literal from DIMACS format
-static inline Lit fromDimacs(int d) {
+static inline Lit
+fromDimacs(int d)
+{
     return mkLit(abs(d), d < 0);
 }
 
@@ -129,22 +144,30 @@ static inline Lit fromDimacs(int d) {
  *********************************************************************/
 
 // Negate truth value
-static inline lbool lnot(lbool v) {
+static inline lbool
+lnot(lbool v)
+{
     return (v == UNDEF) ? UNDEF : (v == TRUE) ? FALSE : TRUE;
 }
 
 // Convert bool to lbool
-static inline lbool toLbool(bool v) {
+static inline lbool
+toLbool(bool v)
+{
     return v ? TRUE : FALSE;
 }
 
 // Convert lbool to bool (undefined becomes false)
-static inline bool toBool(lbool v) {
+static inline bool
+toBool(lbool v)
+{
     return v == TRUE;
 }
 
 // XOR for lbool (for sign handling)
-static inline lbool lxor(lbool a, bool b) {
+static inline lbool
+lxor(lbool a, bool b)
+{
     return (a == UNDEF) ? UNDEF : b ? lnot(a) : a;
 }
 
@@ -153,8 +176,8 @@ static inline lbool lxor(lbool a, bool b) {
  *********************************************************************/
 
 // Min/Max macros
-#define MIN(a,b) ((a) < (b) ? (a) : (b))
-#define MAX(a,b) ((a) > (b) ? (a) : (b))
+#define MIN(a, b) ((a) < (b) ? (a) : (b))
+#define MAX(a, b) ((a) > (b) ? (a) : (b))
 
 // Array size macro
 #define ARRAY_SIZE(arr) (sizeof(arr) / sizeof((arr)[0]))

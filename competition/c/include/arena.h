@@ -18,12 +18,12 @@
 
 typedef struct Arena {
     bool verbose;
-    uint32_t* memory;      // Contiguous memory block
-    size_t    size;        // Current size in uint32_t units
-    size_t    capacity;    // Total capacity in uint32_t units
-    size_t    wasted;      // Wasted space from deletions
-    uint32_t  num_growths; // Number of times arena was expanded
-    size_t    peak_size;   // Peak size reached (for stats)
+    uint32_t *memory;     // Contiguous memory block
+    size_t size;          // Current size in uint32_t units
+    size_t capacity;      // Total capacity in uint32_t units
+    size_t wasted;        // Wasted space from deletions
+    uint32_t num_growths; // Number of times arena was expanded
+    size_t peak_size;     // Peak size reached (for stats)
 } Arena;
 
 /*********************************************************************
@@ -34,31 +34,34 @@ typedef struct Arena {
  *********************************************************************/
 
 typedef struct ClauseHeader {
-    uint32_t size     : 28;  // Number of literals (max 268M)
-    uint32_t flags    : 4;   // Clause flags (learned, deleted, etc.)
-    uint32_t search;         // Circular watch search cursor
-    uint32_t lbd;            // Literal Block Distance score
-    float    activity;       // Clause activity for deletion
+    uint32_t size : 28; // Number of literals (max 268M)
+    uint32_t flags : 4; // Clause flags (learned, deleted, etc.)
+    uint32_t search;    // Circular watch search cursor
+    uint32_t lbd;       // Literal Block Distance score
+    float activity;     // Clause activity for deletion
 #ifdef BSAT_SEARCH_DIAGNOSTICS
     /* Arena records are only 4-byte aligned: do not put uint64_t here. */
     uint32_t born_lo, born_hi;
     uint32_t scans, units, analyses;
     uint32_t conflicts, recent_use; /* Bits: propagation=1, analysis=2, conflict=4. */
-    uint32_t strengthened; /* Diagnostic lineage, preserved by arena GC. */
+    uint32_t strengthened;          /* Diagnostic lineage, preserved by arena GC. */
 #endif
 } ClauseHeader;
 
 // Get clause header from CRef
-#define CLAUSE_HEADER(arena, cref) ((ClauseHeader*)&(arena)->memory[cref])
+#define CLAUSE_HEADER(arena, cref) ((ClauseHeader *)&(arena)->memory[cref])
 
 // Get literals array from CRef
-#define CLAUSE_LITS(arena, cref) ((Lit*)&(arena)->memory[cref + sizeof(ClauseHeader)/sizeof(uint32_t)])
+#define CLAUSE_LITS(arena, cref)                                                                   \
+    ((Lit *)&(arena)->memory[cref + sizeof(ClauseHeader) / sizeof(uint32_t)])
 
 // Get clause size from CRef
 #define CLAUSE_SIZE(arena, cref) (CLAUSE_HEADER(arena, cref)->size)
 
 // Calculate total memory needed for a clause
-static inline size_t clause_bytes(uint32_t size) {
+static inline size_t
+clause_bytes(uint32_t size)
+{
     return sizeof(ClauseHeader) + size * sizeof(Lit);
 }
 
@@ -70,64 +73,76 @@ static inline size_t clause_bytes(uint32_t size) {
 size_t estimate_arena_size(uint32_t num_clauses, uint32_t num_vars);
 
 // Initialize arena with initial capacity
-Arena* arena_init(size_t initial_capacity);
+Arena *arena_init(size_t initial_capacity);
 
 // Reserve capacity to avoid repeated growth (like std::vector::reserve)
-bool arena_reserve(Arena* arena, size_t min_capacity);
+bool arena_reserve(Arena *arena, size_t min_capacity);
 
 // Free arena and all its memory
-void arena_free(Arena* arena);
+void arena_free(Arena *arena);
 
 // Allocate space for a new clause
 // Returns INVALID_CLAUSE on failure
-CRef arena_alloc(Arena* arena, const Lit* lits, uint32_t size, bool learned);
+CRef arena_alloc(Arena *arena, const Lit *lits, uint32_t size, bool learned);
 
 // Mark clause as deleted (doesn't free memory immediately)
-void arena_delete(Arena* arena, CRef cref);
+void arena_delete(Arena *arena, CRef cref);
 
 // Relocation requires all solver references; see solver_collect_garbage().
 
 // Get current memory usage statistics
 typedef struct {
-    size_t total_bytes;     // Total allocated memory
-    size_t used_bytes;      // Currently used memory
-    size_t wasted_bytes;    // Wasted from deletions
-    uint32_t num_clauses;   // Number of active clauses
+    size_t total_bytes;   // Total allocated memory
+    size_t used_bytes;    // Currently used memory
+    size_t wasted_bytes;  // Wasted from deletions
+    uint32_t num_clauses; // Number of active clauses
 } ArenaStats;
 
-ArenaStats arena_stats(const Arena* arena);
+ArenaStats arena_stats(const Arena *arena);
 
 /*********************************************************************
  * Inline Helper Functions
  *********************************************************************/
 
 // Check if clause is deleted
-static inline bool clause_deleted(const Arena* arena, CRef cref) {
+static inline bool
+clause_deleted(const Arena *arena, CRef cref)
+{
     return (CLAUSE_HEADER(arena, cref)->flags & CLAUSE_DELETED) != 0;
 }
 
 // Check if clause is learned
-static inline bool clause_learned(const Arena* arena, CRef cref) {
+static inline bool
+clause_learned(const Arena *arena, CRef cref)
+{
     return (CLAUSE_HEADER(arena, cref)->flags & CLAUSE_LEARNED) != 0;
 }
 
 // Get clause LBD
-static inline uint32_t clause_lbd(const Arena* arena, CRef cref) {
+static inline uint32_t
+clause_lbd(const Arena *arena, CRef cref)
+{
     return CLAUSE_HEADER(arena, cref)->lbd;
 }
 
 // Set clause LBD
-static inline void set_clause_lbd(Arena* arena, CRef cref, uint32_t lbd) {
+static inline void
+set_clause_lbd(Arena *arena, CRef cref, uint32_t lbd)
+{
     CLAUSE_HEADER(arena, cref)->lbd = lbd;
 }
 
 // Get clause activity
-static inline float clause_activity(const Arena* arena, CRef cref) {
+static inline float
+clause_activity(const Arena *arena, CRef cref)
+{
     return CLAUSE_HEADER(arena, cref)->activity;
 }
 
 // Bump clause activity
-static inline void bump_clause_activity(Arena* arena, CRef cref, float inc) {
+static inline void
+bump_clause_activity(Arena *arena, CRef cref, float inc)
+{
     CLAUSE_HEADER(arena, cref)->activity += inc;
 }
 

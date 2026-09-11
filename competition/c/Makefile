@@ -53,8 +53,19 @@ CFLAGS += -I$(INCDIR)
 # Phony targets
 .PHONY: all clean test tests benchmark help dirs check
 
+# Use clang-format 21.1.8 for reproducible formatting.
+CLANG_FORMAT ?= clang-format
+FORMAT_SOURCES = $(shell find src include tests examples -type f \( -name '*.c' -o -name '*.h' \))
+.PHONY: format format-check
+
 # Default target
 all: dirs $(TARGET)
+
+format:
+	$(CLANG_FORMAT) -i $(FORMAT_SOURCES)
+
+format-check:
+	$(CLANG_FORMAT) --dry-run --Werror $(FORMAT_SOURCES)
 
 # Create necessary directories
 dirs:
@@ -169,6 +180,8 @@ help:
 	@echo "  all       - Build the solver (default)"
 	@echo "  clean     - Remove build artifacts"
 	@echo "  test      - Build and run tests"
+	@echo "  format    - Format C sources and headers (clang-format 21.1.8)"
+	@echo "  format-check - Check C formatting without changing files"
 	@echo "  benchmark - Run benchmarks"
 	@echo "  pgo       - Full PGO build (generate + train + use)"
 	@echo "  help      - Show this message"

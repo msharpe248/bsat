@@ -28,7 +28,8 @@ BSAT_API void bsat_destroy(bsat *s);
 BSAT_API int bsat_set_limits(bsat *s, double cpu_seconds, uint32_t conflicts, uint32_t decisions);
 /* Update limits between queries, including after input. Preserves the latest
    model/core. Limits apply separately to each subsequent solve; 0 is unlimited. */
-BSAT_API int bsat_set_query_limits(bsat *s, double cpu_seconds, uint32_t conflicts, uint32_t decisions);
+BSAT_API int bsat_set_query_limits(bsat *s, double cpu_seconds, uint32_t conflicts,
+                                   uint32_t decisions);
 /* Cooperative per-query/checkpoint wall deadline and owned-core capacity
    ceiling. Zero disables a limit. Capacity excludes transient allocations,
    allocator/stdio overhead and RSS; polling can overshoot. For hard bounds use
@@ -39,6 +40,7 @@ BSAT_API int bsat_set_service_limits(bsat *s, double wall_seconds, uint64_t owne
 #define BSAT_SERVICE_WALL 1
 #define BSAT_SERVICE_CAPACITY 2
 BSAT_API int bsat_service_limit_hit(const bsat *s);
+
 /* Snapshot of the latest query. CPU excludes input and later idle time. Owned
    capacity is an estimate, not RSS. Getter accepts sizeof(bsat_stats_v1) or more. */
 typedef struct bsat_stats_v1 {
@@ -48,6 +50,7 @@ typedef struct bsat_stats_v1 {
     uint64_t owned_capacity_bytes;
     double cpu_seconds;
 } bsat_stats_v1;
+
 BSAT_API int bsat_get_stats(const bsat *s, bsat_stats_v1 *out, size_t size);
 /* DIMACS signed literals, no zero terminator. Variables grow automatically.
    Return 1 means accepted, including an empty/contradictory clause. */

@@ -16,7 +16,9 @@
  * Arena Management
  *********************************************************************/
 
-size_t estimate_arena_size(uint32_t num_clauses, uint32_t num_vars) {
+size_t
+estimate_arena_size(uint32_t num_clauses, uint32_t num_vars)
+{
     // Estimate space needed:
     // - ClauseHeader: 3 words (12 bytes for size/flags/lbd + 4 bytes for activity)
     // - Average literals per clause: assume 3 for 3-SAT
@@ -46,9 +48,12 @@ size_t estimate_arena_size(uint32_t num_clauses, uint32_t num_vars) {
     return total;
 }
 
-Arena* arena_init(size_t initial_capacity) {
+Arena *
+arena_init(size_t initial_capacity)
+{
     if (initial_capacity > MAX_CLAUSES) return NULL;
-    Arena* arena = (Arena*)malloc(sizeof(Arena));
+    Arena *arena = (Arena *)malloc(sizeof(Arena));
+
     if (!arena) return NULL;
 
     // Use default if no capacity specified
@@ -56,13 +61,13 @@ Arena* arena_init(size_t initial_capacity) {
         initial_capacity = INITIAL_CAPACITY;
     }
 
-    arena->memory = (uint32_t*)malloc(initial_capacity * sizeof(uint32_t));
+    arena->memory = (uint32_t *)malloc(initial_capacity * sizeof(uint32_t));
     if (!arena->memory) {
         free(arena);
         return NULL;
     }
 
-    arena->size = 1;  // Reserve index 0 as invalid
+    arena->size = 1; // Reserve index 0 as invalid
     arena->capacity = initial_capacity;
     arena->wasted = 0;
     arena->num_growths = 0;
@@ -75,7 +80,9 @@ Arena* arena_init(size_t initial_capacity) {
     return arena;
 }
 
-void arena_free(Arena* arena) {
+void
+arena_free(Arena *arena)
+{
     if (arena) {
         free(arena->memory);
         free(arena);
@@ -86,7 +93,9 @@ void arena_free(Arena* arena) {
  * Allocation
  *********************************************************************/
 
-static bool arena_grow(Arena* arena, size_t needed) {
+static bool
+arena_grow(Arena *arena, size_t needed)
+{
     size_t old_capacity = arena->capacity;
     size_t new_capacity = arena->capacity;
 
@@ -94,15 +103,15 @@ static bool arena_grow(Arena* arena, size_t needed) {
     while (new_capacity < arena->size + needed) {
         new_capacity += new_capacity / 2 + 1;
         if (new_capacity > MAX_CLAUSES) {
-            return false;  // Hit maximum size
+            return false; // Hit maximum size
         }
     }
 
     // Reallocate memory
-    uint32_t* new_memory = (uint32_t*)realloc(arena->memory,
-                                               new_capacity * sizeof(uint32_t));
+    uint32_t *new_memory = (uint32_t *)realloc(arena->memory, new_capacity * sizeof(uint32_t));
+
     if (!new_memory) {
-        return false;  // Out of memory
+        return false; // Out of memory
     }
 
     arena->memory = new_memory;
@@ -112,16 +121,16 @@ static bool arena_grow(Arena* arena, size_t needed) {
     // Per-arena diagnostics
     if (arena->verbose) {
         fprintf(stderr, "c [Arena] Grew from %zu to %zu words (%.1f KB -> %.1f KB) [growth #%u]\n",
-                old_capacity, new_capacity,
-                old_capacity * sizeof(uint32_t) / 1024.0,
-                new_capacity * sizeof(uint32_t) / 1024.0,
-                arena->num_growths);
+                old_capacity, new_capacity, old_capacity * sizeof(uint32_t) / 1024.0,
+                new_capacity * sizeof(uint32_t) / 1024.0, arena->num_growths);
     }
 
     return true;
 }
 
-bool arena_reserve(Arena* arena, size_t min_capacity) {
+bool
+arena_reserve(Arena *arena, size_t min_capacity)
+{
     if (min_capacity > MAX_CLAUSES) return false;
     // Already have enough capacity
     if (arena->capacity >= min_capacity) {
@@ -130,25 +139,27 @@ bool arena_reserve(Arena* arena, size_t min_capacity) {
 
     // Calculate new capacity
     size_t new_capacity = arena->capacity;
+
     while (new_capacity < min_capacity) {
         new_capacity += new_capacity / 2 + 1;
         if (new_capacity > MAX_CLAUSES) {
             new_capacity = MAX_CLAUSES;
             if (new_capacity < min_capacity) {
-                return false;  // Cannot satisfy request
+                return false; // Cannot satisfy request
             }
             break;
         }
     }
 
     // Reallocate memory
-    uint32_t* new_memory = (uint32_t*)realloc(arena->memory,
-                                               new_capacity * sizeof(uint32_t));
+    uint32_t *new_memory = (uint32_t *)realloc(arena->memory, new_capacity * sizeof(uint32_t));
+
     if (!new_memory) {
-        return false;  // Out of memory
+        return false; // Out of memory
     }
 
     size_t old_capacity = arena->capacity;
+
     arena->memory = new_memory;
     arena->capacity = new_capacity;
 
@@ -157,17 +168,19 @@ bool arena_reserve(Arena* arena, size_t min_capacity) {
         fprintf(stderr, "c [Arena] Reserved %zu words (%.1f MB) based on problem size\n",
                 new_capacity, new_capacity * sizeof(uint32_t) / (1024.0 * 1024.0));
         fprintf(stderr, "c [Arena] Growth from %zu to %zu words (%.1f KB -> %.1f KB)\n",
-                old_capacity, new_capacity,
-                old_capacity * sizeof(uint32_t) / 1024.0,
+                old_capacity, new_capacity, old_capacity * sizeof(uint32_t) / 1024.0,
                 new_capacity * sizeof(uint32_t) / 1024.0);
     }
 
     return true;
 }
 
-CRef arena_alloc(Arena* arena, const Lit* lits, uint32_t size, bool learned) {
+CRef
+arena_alloc(Arena *arena, const Lit *lits, uint32_t size, bool learned)
+{
     if (size >= (1u << 28) || arena->size > MAX_CLAUSES ||
-        (size_t)size + sizeof(ClauseHeader)/4 > MAX_CLAUSES - arena->size) return INVALID_CLAUSE;
+        (size_t)size + sizeof(ClauseHeader) / 4 > MAX_CLAUSES - arena->size)
+        return INVALID_CLAUSE;
     // Calculate space needed
     size_t header_words = (sizeof(ClauseHeader) + sizeof(uint32_t) - 1) / sizeof(uint32_t);
     size_t total_words = header_words + size;
@@ -175,7 +188,7 @@ CRef arena_alloc(Arena* arena, const Lit* lits, uint32_t size, bool learned) {
     // Ensure we have enough space
     if (arena->size + total_words > arena->capacity) {
         if (!arena_grow(arena, total_words)) {
-            return INVALID_CLAUSE;  // Allocation failed
+            return INVALID_CLAUSE; // Allocation failed
         }
     }
 
@@ -183,7 +196,8 @@ CRef arena_alloc(Arena* arena, const Lit* lits, uint32_t size, bool learned) {
     CRef cref = arena->size;
 
     // Initialize clause header
-    ClauseHeader* header = CLAUSE_HEADER(arena, cref);
+    ClauseHeader *header = CLAUSE_HEADER(arena, cref);
+
     header->search = 2;
     header->size = size;
     header->flags = learned ? CLAUSE_LEARNED : CLAUSE_ORIGINAL;
@@ -197,7 +211,8 @@ CRef arena_alloc(Arena* arena, const Lit* lits, uint32_t size, bool learned) {
 #endif
 
     // Copy literals
-    Lit* dest = CLAUSE_LITS(arena, cref);
+    Lit *dest = CLAUSE_LITS(arena, cref);
+
     if (size) memcpy(dest, lits, size * sizeof(Lit));
 
     // Update arena size
@@ -215,16 +230,20 @@ CRef arena_alloc(Arena* arena, const Lit* lits, uint32_t size, bool learned) {
  * Deletion and Garbage Collection
  *********************************************************************/
 
-void arena_delete(Arena* arena, CRef cref) {
+void
+arena_delete(Arena *arena, CRef cref)
+{
     if (cref == INVALID_CLAUSE) return;
 
-    ClauseHeader* header = CLAUSE_HEADER(arena, cref);
-    if (header->flags & CLAUSE_DELETED) return;  // Already deleted
+    ClauseHeader *header = CLAUSE_HEADER(arena, cref);
+
+    if (header->flags & CLAUSE_DELETED) return; // Already deleted
 
     header->flags |= CLAUSE_DELETED;
 
     // Track wasted space
     size_t header_words = (sizeof(ClauseHeader) + sizeof(uint32_t) - 1) / sizeof(uint32_t);
+
     arena->wasted += header_words + header->size;
 }
 
@@ -232,7 +251,9 @@ void arena_delete(Arena* arena, CRef cref) {
  * Statistics
  *********************************************************************/
 
-ArenaStats arena_stats(const Arena* arena) {
+ArenaStats
+arena_stats(const Arena *arena)
+{
     ArenaStats stats = {0};
 
     stats.total_bytes = arena->capacity * sizeof(uint32_t);
@@ -241,8 +262,9 @@ ArenaStats arena_stats(const Arena* arena) {
 
     // Count active clauses
     uint32_t pos = 1;
+
     while (pos < arena->size) {
-        ClauseHeader* header = (ClauseHeader*)&arena->memory[pos];
+        ClauseHeader *header = (ClauseHeader *)&arena->memory[pos];
         size_t header_words = (sizeof(ClauseHeader) + sizeof(uint32_t) - 1) / sizeof(uint32_t);
 
         if (!(header->flags & CLAUSE_DELETED)) {

@@ -31,6 +31,26 @@ assumption sequences, clause reduction, locked reasons, and garbage collection.
 The Python validator uses its own truth-table oracle, model parser and RUP
 checker, tries option combinations, and minimizes failing formulas.
 
+## C formatting
+
+Use clang-format 21.1.8 with the checked-in `.clang-format` configuration:
+
+```sh
+make format
+make format-check
+```
+
+Set `CLANG_FORMAT=/path/to/clang-format` if it is not on your PATH. Formatting
+uses four spaces, spaces around operators, and separate lines for function
+return types, names, and opening braces. Other opening braces stay on the same
+line. Keep statements on separate lines; simple single-line guards are fine.
+Add a blank line after each group of local declarations (including in nested
+blocks), and between logical phases of a function. clang-format preserves these
+blank lines but does not insert declaration or logical-phase separators for you.
+Function names at column one make `^function_name` find definitions. Function
+braces at column one make `^{` and `^}` useful boundaries for searches and Vim
+function navigation; keep other opening braces at the end of their line.
+
 ## Run
 
 ```sh

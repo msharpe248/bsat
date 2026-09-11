@@ -35,9 +35,9 @@ struct Solver;
  *********************************************************************/
 
 typedef struct OccList {
-    CRef*    clauses;    // Array of clause references
-    uint32_t size;       // Number of clauses in list
-    uint32_t capacity;   // Allocated capacity
+    CRef *clauses;     // Array of clause references
+    uint32_t size;     // Number of clauses in list
+    uint32_t capacity; // Allocated capacity
 } OccList;
 
 /*********************************************************************
@@ -49,8 +49,8 @@ typedef struct OccList {
  *********************************************************************/
 
 typedef struct ElimEntry {
-    Var      var;         // The eliminated variable
-    Lit*     clause;      // Zero-delimited reconstruction clauses
+    Var var;              // The eliminated variable
+    Lit *clause;          // Zero-delimited reconstruction clauses
     uint32_t clause_size; // Number of words in the reconstruction record
 } ElimEntry;
 
@@ -63,17 +63,17 @@ typedef struct ElimEntry {
 
 typedef struct ElimState {
     // Occurrence lists: occs[lit] = clauses containing lit
-    OccList* occs;
-    uint32_t occs_capacity;  // Capacity (2 * num_vars)
+    OccList *occs;
+    uint32_t occs_capacity; // Capacity (2 * num_vars)
 
     // Elimination stack for solution reconstruction
-    ElimEntry* stack;
-    uint32_t   stack_size;
-    uint32_t   stack_capacity;
+    ElimEntry *stack;
+    uint32_t stack_size;
+    uint32_t stack_capacity;
 
     // Per-variable elimination status
-    bool*    eliminated;     // eliminated[v] = true if v was eliminated
-    uint32_t elim_capacity;  // Capacity of eliminated array
+    bool *eliminated;       // eliminated[v] = true if v was eliminated
+    uint32_t elim_capacity; // Capacity of eliminated array
 
     bool occs_complete;
     // Statistics
@@ -82,7 +82,7 @@ typedef struct ElimState {
     uint64_t resolvents_added;
 
     // Track resolvent CRefs for debugging/dumping
-    CRef*    resolvent_crefs;
+    CRef *resolvent_crefs;
     uint32_t resolvent_crefs_size;
     uint32_t resolvent_crefs_capacity;
 } ElimState;
@@ -91,29 +91,29 @@ typedef struct ElimState {
  * Initialization and Cleanup
  *********************************************************************/
 
-bool elim_save(struct Solver* s, Var v, const Lit* lits, uint32_t size);
+bool elim_save(struct Solver *s, Var v, const Lit *lits, uint32_t size);
 
 // Initialize elimination state (call after solver has variables)
-void elim_init(struct Solver* s);
+void elim_init(struct Solver *s);
 
 // Free all elimination structures
-void elim_free(struct Solver* s);
+void elim_free(struct Solver *s);
 
 /*********************************************************************
  * Occurrence List Management
  *********************************************************************/
 
 // Build occurrence lists from current clause database
-void elim_build_occs(struct Solver* s);
+void elim_build_occs(struct Solver *s);
 
 // Add clause to occurrence lists for all its literals
-void elim_add_occ(struct Solver* s, Lit lit, CRef cref);
+void elim_add_occ(struct Solver *s, Lit lit, CRef cref);
 
 // Remove clause from occurrence lists for all its literals
-void elim_remove_occ(struct Solver* s, Lit lit, CRef cref);
+void elim_remove_occ(struct Solver *s, Lit lit, CRef cref);
 
 // Clear all occurrence lists (but keep allocated memory)
-void elim_clear_occs(struct Solver* s);
+void elim_clear_occs(struct Solver *s);
 
 /*********************************************************************
  * Variable Elimination
@@ -122,26 +122,24 @@ void elim_clear_occs(struct Solver* s);
 // Calculate the cost of eliminating a variable
 // Returns number of resolvents that would be created (filtering tautologies)
 // Returns -1 if elimination is not worthwhile (too many resolvents)
-int elim_cost(struct Solver* s, Var v);
+int elim_cost(struct Solver *s, Var v);
 
 // Check if a resolvent would be a tautology (contains both x and ¬x)
-bool elim_is_tautology(const Lit* c1, uint32_t s1,
-                       const Lit* c2, uint32_t s2,
-                       Var pivot);
+bool elim_is_tautology(const Lit *c1, uint32_t s1, const Lit *c2, uint32_t s2, Var pivot);
 
 // Bounded linear check for canonical clauses; false also means budget exhausted.
 // Owns the root-preprocessing minimizer scratch and always clears its marks.
-bool elim_bounded_tautology(struct Solver* s, const Lit* c1, uint32_t s1,
-                           const Lit* c2, uint32_t s2, Var pivot);
+bool elim_bounded_tautology(struct Solver *s, const Lit *c1, uint32_t s1, const Lit *c2,
+                            uint32_t s2, Var pivot);
 
 // Eliminate a single variable
 // Returns true on success, false if elimination not possible
-bool elim_eliminate_var(struct Solver* s, Var v);
+bool elim_eliminate_var(struct Solver *s, Var v);
 
 // Main BVE preprocessing loop
 // Eliminates variables with positive cost-benefit ratio
 // Returns number of variables eliminated
-uint32_t elim_preprocess(struct Solver* s);
+uint32_t elim_preprocess(struct Solver *s);
 
 /*********************************************************************
  * Solution Reconstruction
@@ -149,19 +147,19 @@ uint32_t elim_preprocess(struct Solver* s);
 
 // After solving, extend the model to include eliminated variables
 // Must be called after solver finds SAT, before returning model
-void elim_extend_model(struct Solver* s);
+void elim_extend_model(struct Solver *s);
 
 /*********************************************************************
  * Utility Functions
  *********************************************************************/
 
 // Check if a variable has been eliminated
-bool elim_is_eliminated(const struct Solver* s, Var v);
+bool elim_is_eliminated(const struct Solver *s, Var v);
 
 // Get occurrence list for a literal
-OccList* elim_get_occs(struct Solver* s, Lit lit);
+OccList *elim_get_occs(struct Solver *s, Lit lit);
 
 // Print elimination statistics
-void elim_print_stats(const struct Solver* s);
+void elim_print_stats(const struct Solver *s);
 
 #endif // BSAT_ELIM_H

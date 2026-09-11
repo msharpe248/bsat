@@ -15,32 +15,35 @@
 static int tests_run = 0;
 static int tests_passed = 0;
 
-#define TEST(name) \
-    do { \
-        printf("Testing %s... ", name); \
-        tests_run++; \
+#define TEST(name)                                                                                 \
+    do {                                                                                           \
+        printf("Testing %s... ", name);                                                            \
+        tests_run++;                                                                               \
     } while (0)
 
-#define PASS() \
-    do { \
-        printf("✅ PASS\n"); \
-        tests_passed++; \
+#define PASS()                                                                                     \
+    do {                                                                                           \
+        printf("✅ PASS\n");                                                                       \
+        tests_passed++;                                                                            \
     } while (0)
 
-#define FAIL(msg) \
-    do { \
-        printf("❌ FAIL: %s\n", msg); \
-        exit(1); \
+#define FAIL(msg)                                                                                  \
+    do {                                                                                           \
+        printf("❌ FAIL: %s\n", msg);                                                              \
+        exit(1);                                                                                   \
     } while (0)
 
 /*********************************************************************
  * Test Cases
  *********************************************************************/
 
-void test_watch_manager_creation(void) {
+void
+test_watch_manager_creation(void)
+{
     TEST("Watch manager creation and destruction");
 
-    WatchManager* wm = watch_init(10);  // 10 variables
+    WatchManager *wm = watch_init(10); // 10 variables
+
     if (wm == NULL) {
         FAIL("Failed to create watch manager");
     }
@@ -56,8 +59,8 @@ void test_watch_manager_creation(void) {
     // Should have 2 * num_vars lists (positive and negative for each var)
     // Check a few lists are initialized
     for (Var v = 1; v <= 10; v++) {
-        WatchList* pos_list = watch_list(wm, mkLit(v, false));
-        WatchList* neg_list = watch_list(wm, mkLit(v, true));
+        WatchList *pos_list = watch_list(wm, mkLit(v, false));
+        WatchList *neg_list = watch_list(wm, mkLit(v, true));
 
         if (pos_list == NULL || neg_list == NULL) {
             FAIL("Watch lists not properly initialized");
@@ -72,11 +75,13 @@ void test_watch_manager_creation(void) {
     PASS();
 }
 
-void test_add_single_watch(void) {
+void
+test_add_single_watch(void)
+{
     TEST("Add single watch");
 
-    Arena* arena = arena_init(1024);
-    WatchManager* wm = watch_init(5);
+    Arena *arena = arena_init(1024);
+    WatchManager *wm = watch_init(5);
 
     // Create a clause and add it to arena
     Lit lits[3] = {mkLit(1, false), mkLit(2, false), mkLit(3, true)};
@@ -87,7 +92,8 @@ void test_add_single_watch(void) {
     watch_add(wm, mkLit(1, false), cref, mkLit(2, false));
 
     // Check watch was added
-    WatchList* list = watch_list(wm, mkLit(1, false));
+    WatchList *list = watch_list(wm, mkLit(1, false));
+
     if (list->size != 1) {
         FAIL("Watch list should have 1 watch");
     }
@@ -105,11 +111,13 @@ void test_add_single_watch(void) {
     PASS();
 }
 
-void test_add_multiple_watches_same_literal(void) {
+void
+test_add_multiple_watches_same_literal(void)
+{
     TEST("Add multiple watches to same literal");
 
-    Arena* arena = arena_init(1024);
-    WatchManager* wm = watch_init(5);
+    Arena *arena = arena_init(1024);
+    WatchManager *wm = watch_init(5);
 
     // Create multiple clauses
     Lit lits1[2] = {mkLit(1, false), mkLit(2, false)};
@@ -126,7 +134,8 @@ void test_add_multiple_watches_same_literal(void) {
     watch_add(wm, mkLit(1, false), cref3, mkLit(4, false));
 
     // Check all watches added
-    WatchList* list = watch_list(wm, mkLit(1, false));
+    WatchList *list = watch_list(wm, mkLit(1, false));
+
     if (list->size != 3) {
         FAIL("Watch list should have 3 watches");
     }
@@ -136,11 +145,13 @@ void test_add_multiple_watches_same_literal(void) {
     PASS();
 }
 
-void test_add_watches_different_literals(void) {
+void
+test_add_watches_different_literals(void)
+{
     TEST("Add watches to different literals");
 
-    Arena* arena = arena_init(1024);
-    WatchManager* wm = watch_init(5);
+    Arena *arena = arena_init(1024);
+    WatchManager *wm = watch_init(5);
 
     // Create a clause
     Lit lits[3] = {mkLit(1, false), mkLit(2, true), mkLit(3, false)};
@@ -152,8 +163,8 @@ void test_add_watches_different_literals(void) {
     watch_add(wm, mkLit(2, true), cref, mkLit(1, false));
 
     // Check both watch lists
-    WatchList* list1 = watch_list(wm, mkLit(1, false));
-    WatchList* list2 = watch_list(wm, mkLit(2, true));
+    WatchList *list1 = watch_list(wm, mkLit(1, false));
+    WatchList *list2 = watch_list(wm, mkLit(2, true));
 
     if (list1->size != 1) {
         FAIL("List for x1 should have 1 watch");
@@ -168,11 +179,13 @@ void test_add_watches_different_literals(void) {
     PASS();
 }
 
-void test_remove_clause_watches(void) {
+void
+test_remove_clause_watches(void)
+{
     TEST("Remove all watches for a clause");
 
-    Arena* arena = arena_init(1024);
-    WatchManager* wm = watch_init(5);
+    Arena *arena = arena_init(1024);
+    WatchManager *wm = watch_init(5);
 
     // Create a clause with two watches
     Lit lits[3] = {mkLit(1, false), mkLit(2, false), mkLit(3, false)};
@@ -206,11 +219,13 @@ void test_remove_clause_watches(void) {
     PASS();
 }
 
-void test_watch_clear(void) {
+void
+test_watch_clear(void)
+{
     TEST("Clear all watches");
 
-    Arena* arena = arena_init(1024);
-    WatchManager* wm = watch_init(5);
+    Arena *arena = arena_init(1024);
+    WatchManager *wm = watch_init(5);
 
     // Add several watches
     Lit lits[2] = {mkLit(1, false), mkLit(2, false)};
@@ -240,11 +255,13 @@ void test_watch_clear(void) {
     PASS();
 }
 
-void test_blocker_literal(void) {
+void
+test_blocker_literal(void)
+{
     TEST("Blocking literal optimization");
 
-    Arena* arena = arena_init(1024);
-    WatchManager* wm = watch_init(5);
+    Arena *arena = arena_init(1024);
+    WatchManager *wm = watch_init(5);
 
     // Create a clause: (x1 ∨ x2 ∨ x3)
     Lit lits[3] = {mkLit(1, false), mkLit(2, false), mkLit(3, false)};
@@ -253,10 +270,12 @@ void test_blocker_literal(void) {
     // Watch on x1 with x2 as blocker
     Lit watched_lit = mkLit(1, false);
     Lit blocker = mkLit(2, false);
+
     watch_add(wm, watched_lit, cref, blocker);
 
     // Retrieve the watch
-    WatchList* list = watch_list(wm, watched_lit);
+    WatchList *list = watch_list(wm, watched_lit);
+
     if (list->size != 1) {
         FAIL("Should have 1 watch");
     }
@@ -276,15 +295,17 @@ void test_blocker_literal(void) {
     PASS();
 }
 
-void test_positive_and_negative_literals(void) {
+void
+test_positive_and_negative_literals(void)
+{
     TEST("Positive and negative literal watches");
 
-    Arena* arena = arena_init(1024);
-    WatchManager* wm = watch_init(5);
+    Arena *arena = arena_init(1024);
+    WatchManager *wm = watch_init(5);
 
     // Create clauses with positive and negative literals
-    Lit lits1[2] = {mkLit(1, false), mkLit(2, false)};  // (x1 ∨ x2)
-    Lit lits2[2] = {mkLit(1, true), mkLit(2, true)};    // (~x1 ∨ ~x2)
+    Lit lits1[2] = {mkLit(1, false), mkLit(2, false)}; // (x1 ∨ x2)
+    Lit lits2[2] = {mkLit(1, true), mkLit(2, true)};   // (~x1 ∨ ~x2)
 
     CRef cref1 = arena_alloc(arena, lits1, 2, false);
     CRef cref2 = arena_alloc(arena, lits2, 2, false);
@@ -296,13 +317,15 @@ void test_positive_and_negative_literals(void) {
     watch_add(wm, mkLit(1, true), cref2, mkLit(2, true));
 
     // Check positive literal list
-    WatchList* pos_list = watch_list(wm, mkLit(1, false));
+    WatchList *pos_list = watch_list(wm, mkLit(1, false));
+
     if (pos_list->size != 1) {
         FAIL("Positive x1 should have 1 watch");
     }
 
     // Check negative literal list
-    WatchList* neg_list = watch_list(wm, mkLit(1, true));
+    WatchList *neg_list = watch_list(wm, mkLit(1, true));
+
     if (neg_list->size != 1) {
         FAIL("Negative x1 should have 1 watch");
     }
@@ -317,21 +340,25 @@ void test_positive_and_negative_literals(void) {
     PASS();
 }
 
-void test_watch_list_growth(void) {
+void
+test_watch_list_growth(void)
+{
     TEST("Watch list automatic growth");
 
-    Arena* arena = arena_init(1024);
-    WatchManager* wm = watch_init(2);
+    Arena *arena = arena_init(1024);
+    WatchManager *wm = watch_init(2);
 
     // Add many watches to same literal to force growth
     for (int i = 0; i < 100; i++) {
         Lit lits[2] = {mkLit(1, false), mkLit(2, false)};
         CRef cref = arena_alloc(arena, lits, 2, false);
+
         watch_add(wm, mkLit(1, false), cref, mkLit(2, false));
     }
 
     // Check all watches were added
-    WatchList* list = watch_list(wm, mkLit(1, false));
+    WatchList *list = watch_list(wm, mkLit(1, false));
+
     if (list->size != 100) {
         FAIL("Should have 100 watches after adding 100");
     }
@@ -341,11 +368,13 @@ void test_watch_list_growth(void) {
     PASS();
 }
 
-void test_binary_clause_watches(void) {
+void
+test_binary_clause_watches(void)
+{
     TEST("Binary clause (2 literals) watches");
 
-    Arena* arena = arena_init(1024);
-    WatchManager* wm = watch_init(5);
+    Arena *arena = arena_init(1024);
+    WatchManager *wm = watch_init(5);
 
     // Create a binary clause: (x1 ∨ x2)
     Lit lits[2] = {mkLit(1, false), mkLit(2, false)};
@@ -365,8 +394,8 @@ void test_binary_clause_watches(void) {
     }
 
     // Verify blockers are correct
-    Watch* w1 = &watch_list(wm, mkLit(1, false))->watches[0];
-    Watch* w2 = &watch_list(wm, mkLit(2, false))->watches[0];
+    Watch *w1 = &watch_list(wm, mkLit(1, false))->watches[0];
+    Watch *w2 = &watch_list(wm, mkLit(2, false))->watches[0];
 
     if (w1->blocker != mkLit(2, false)) {
         FAIL("x1's blocker should be x2");
@@ -380,15 +409,18 @@ void test_binary_clause_watches(void) {
     PASS();
 }
 
-void test_watch_resize(void) {
+void
+test_watch_resize(void)
+{
     TEST("Watch manager in-place resize");
 
-    Arena* arena = arena_init(1024);
-    WatchManager* wm = watch_init(5);  // Start with 5 variables
+    Arena *arena = arena_init(1024);
+    WatchManager *wm = watch_init(5); // Start with 5 variables
 
     // Add watches for variables 1-5
     Lit lits[2] = {mkLit(1, false), mkLit(2, false)};
     CRef cref1 = arena_alloc(arena, lits, 2, false);
+
     watch_add(wm, mkLit(1, false), cref1, mkLit(2, false));
     watch_add(wm, mkLit(5, true), cref1, mkLit(1, false));
 
@@ -402,6 +434,7 @@ void test_watch_resize(void) {
 
     // Resize to handle more variables (in-place growth)
     bool resized = watch_resize(wm, 20);
+
     if (!resized) {
         FAIL("watch_resize should succeed");
     }
@@ -429,6 +462,7 @@ void test_watch_resize(void) {
     // Can add watches for new variables
     Lit lits2[2] = {mkLit(15, false), mkLit(20, false)};
     CRef cref2 = arena_alloc(arena, lits2, 2, false);
+
     watch_add(wm, mkLit(15, false), cref2, mkLit(20, false));
 
     if (watch_list(wm, mkLit(15, false))->size != 1) {
@@ -437,12 +471,14 @@ void test_watch_resize(void) {
 
     // Resize to same size should be no-op
     bool resized_same = watch_resize(wm, 20);
+
     if (!resized_same) {
         FAIL("Resize to same size should succeed");
     }
 
     // Resize to smaller should be no-op (keeps larger)
     bool resized_smaller = watch_resize(wm, 10);
+
     if (!resized_smaller) {
         FAIL("Resize to smaller should succeed (no-op)");
     }
@@ -459,7 +495,9 @@ void test_watch_resize(void) {
  * Main Test Runner
  *********************************************************************/
 
-int main(void) {
+int
+main(void)
+{
     printf("========================================\n");
     printf("BSAT Watch Manager Unit Tests\n");
     printf("========================================\n\n");

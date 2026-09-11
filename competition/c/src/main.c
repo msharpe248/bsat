@@ -23,14 +23,19 @@
 static volatile sig_atomic_t print_stats_requested = 0;
 
 // Signal handler for SIGUSR1 - request statistics dump
-static void sigusr1_handler(int signum) {
-    (void)signum;  // Unused parameter
+static void
+sigusr1_handler(int signum)
+{
+    (void)signum; // Unused parameter
     print_stats_requested = 1;
 }
 
 // Install signal handler
-static void install_signal_handlers(void) {
+static void
+install_signal_handlers(void)
+{
     struct sigaction sa;
+
     sa.sa_handler = sigusr1_handler;
     sigemptyset(&sa.sa_mask);
     sa.sa_flags = 0;
@@ -38,8 +43,11 @@ static void install_signal_handlers(void) {
 }
 
 // Print progress statistics (safe to call from main loop)
-static void print_progress_stats(const Solver* s) {
+static void
+print_progress_stats(const Solver *s)
+{
     double elapsed = solver_cpu_time() - s->stats.start_time;
+
     fprintf(stderr, "\n");
     fprintf(stderr, "c ========== Progress Update ==========\n");
     fprintf(stderr, "c Elapsed time     : %.3f s\n", elapsed);
@@ -59,8 +67,13 @@ static void print_progress_stats(const Solver* s) {
     fflush(stderr);
 }
 
-static int cli_progress(void *state) {
-    if(print_stats_requested) {print_stats_requested=0;print_progress_stats(state);}
+static int
+cli_progress(void *state)
+{
+    if (print_stats_requested) {
+        print_stats_requested = 0;
+        print_progress_stats(state);
+    }
     return 0;
 }
 
@@ -68,7 +81,9 @@ static int cli_progress(void *state) {
  * Usage Information
  *********************************************************************/
 
-static void print_usage(const char* program) {
+static void
+print_usage(const char *program)
+{
     printf("Usage: %s [OPTIONS] <input.cnf>\n", program);
     printf("\n");
     printf("Options:\n");
@@ -90,7 +105,8 @@ static void print_usage(const char* program) {
     printf("Restart parameters:\n");
     printf("  --reuse-trail            Reuse high-priority restart prefixes (experimental)\n");
     printf("  --chrono                 Experimental chronological backtracking\n");
-    printf("  --chrono-levels <n>      Maximum ordinary jump before chronological backtracking (100)\n");
+    printf("  --chrono-levels <n>      Maximum ordinary jump before chronological backtracking "
+           "(100)\n");
     printf("  --restart-first <n>       First restart interval (default: 100)\n");
     printf("  --restart-inc <f>         Restart multiplier (default: 1.5)\n");
     printf("  --glucose-restart         Use Glucose adaptive restarts (EMA mode)\n");
@@ -138,13 +154,15 @@ static void print_usage(const char* program) {
     printf("Preprocessing:\n");
     printf("  --bce                    Enable bounded blocked clause elimination\n");
     printf("  --alternating            Experimental focused/stable search modes\n");
-    printf("  --portfolio <sec>        Focused CPU slice, then fresh alternating search (experimental)\n");
+    printf("  --portfolio <sec>        Focused CPU slice, then fresh alternating search "
+           "(experimental)\n");
     printf("  --no-circular            Disable circular replacement watch search\n");
     printf("  --seed <n>               Deterministic per-solver random seed\n");
     printf("  --preprocess-budget <n>  Literal-work budget (0 disables preprocessing)\n");
     printf("  --subsume-budget <n>     Subsumption candidate budget per conflict\n");
     printf("  --no-bce                  Disable blocked clause elimination\n");
-    printf("  --elim                    [EXPERIMENTAL] Enable bounded variable elimination (BVE)\n");
+    printf(
+        "  --elim                    [EXPERIMENTAL] Enable bounded variable elimination (BVE)\n");
     printf("  --no-elim                 Disable BVE (default)\n");
     printf("  --elim-max-occ <n>        Max occurrences for BVE (default: 10)\n");
     printf("  --elim-grow <n>           Max clause growth for BVE (default: 0)\n");
@@ -185,96 +203,97 @@ static void print_usage(const char* program) {
  * Option Parsing
  *********************************************************************/
 
-static struct option long_options[] = {
-    {"help",            no_argument,       0, 'h'},
-    {"verbose",         no_argument,       0, 'v'},
-    {"debug",           no_argument,       0, 0},
-    {"quiet",           no_argument,       0, 'q'},
-    {"stats",           no_argument,       0, 's'},
-    {"conflicts",       required_argument, 0, 'c'},
-    {"decisions",       required_argument, 0, 'd'},
-    {"time",            required_argument, 0, 't'},
-    {"var-decay",       required_argument, 0, 0},
-    {"var-inc",         required_argument, 0, 0},
-    {"restart-first",   required_argument, 0, 0},
-    {"restart-inc",     required_argument, 0, 0},
-    {"glucose-restart", no_argument,       0, 0},
-    {"glucose-restart-ema", no_argument,   0, 0},
-    {"glucose-restart-avg", no_argument,   0, 0},
-    {"luby-restart",    no_argument,       0, 0},
-    {"no-luby-restart", no_argument,       0, 0},
-    {"luby-unit",       required_argument, 0, 0},
-    {"no-restarts",     no_argument,       0, 0},
-    {"glucose-fast-alpha", required_argument, 0, 0},
-    {"glucose-slow-alpha", required_argument, 0, 0},
-    {"glucose-min-conflicts", required_argument, 0, 0},
-    {"glucose-window-size", required_argument, 0, 0},
-    {"glucose-k",       required_argument, 0, 0},
-    {"reuse-trail", no_argument, 0, 0},
-    {"chrono", no_argument, 0, 0},
-    {"chrono-levels", required_argument, 0, 0},
-    {"vmtf", no_argument, 0, 0},
-    {"lrb",             no_argument,       0, 0},
-    {"vsids",           no_argument,       0, 0},
-    {"no-phase-saving", no_argument,       0, 0},
-    {"random-phase",    no_argument,       0, 0},
-    {"no-random-phase", no_argument,       0, 0},
-    {"random-prob",     required_argument, 0, 0},
-    {"no-rephase",      no_argument,       0, 0},
-    {"rephase-interval", required_argument, 0, 0},
-    {"max-lbd",         required_argument, 0, 0},
-    {"glue-lbd",        required_argument, 0, 0},
-    {"reduce-fraction", required_argument, 0, 0},
-    {"reduce-interval", required_argument, 0, 0},
-    {"reduce-increment", required_argument, 0, 0},
-    {"binary-minimize", no_argument, 0, 0},
-    {"iterative-minimize", no_argument, 0, 0},
-    {"protect-used", no_argument, 0, 0},
-    {"dynamic-lbd", no_argument, 0, 0},
-    {"minimize-budget", required_argument, 0, 0},
-    {"no-minimize",     no_argument,       0, 0},
-    {"no-subsumption",  no_argument,       0, 0},
-    {"bce", no_argument, 0, 0},
-    {"alternating", no_argument, 0, 0},
-    {"portfolio", required_argument, 0, 0},
-    {"no-circular", no_argument, 0, 0},
-    {"seed", required_argument, 0, 0},
-    {"preprocess-budget", required_argument, 0, 0},
-    {"subsume-budget", required_argument, 0, 0},
-    {"no-bce",          no_argument,       0, 0},
-    {"elim",            no_argument,       0, 0},
-    {"no-elim",         no_argument,       0, 0},
-    {"elim-max-occ",    required_argument, 0, 0},
-    {"elim-grow",       required_argument, 0, 0},
-    {"equiv",           no_argument,       0, 0},
-    {"equiv-budget",    required_argument, 0, 0},
-    {"congruence", no_argument, 0, 0},
-    {"congruence-budget", required_argument, 0, 0},
-    {"factor", no_argument, 0, 0},
-    {"factor-budget", required_argument, 0, 0},
-    {"factor-max-variables", required_argument, 0, 0},
-    {"factor-min-gain", required_argument, 0, 0},
-    {"no-probing",      no_argument,       0, 0},
-    {"inprocess",       no_argument,       0, 0},
-    {"inprocess-interval", required_argument, 0, 0},
-    {"local-search",    no_argument,       0, 0},
-    {"ls-interval",     required_argument, 0, 0},
-    {"ls-max-flips",    required_argument, 0, 0},
-    {"ls-save-phases", no_argument, 0, 0},
-    {"ls-noise",        required_argument, 0, 0},
-    {"proof",           required_argument, 0, 0},
-    {"accounting",      no_argument,       0, 0},
-    {"binary-proof",    no_argument,       0, 0},
-    {0, 0, 0, 0}
-};
+static struct option long_options[] = {{"help", no_argument, 0, 'h'},
+                                       {"verbose", no_argument, 0, 'v'},
+                                       {"debug", no_argument, 0, 0},
+                                       {"quiet", no_argument, 0, 'q'},
+                                       {"stats", no_argument, 0, 's'},
+                                       {"conflicts", required_argument, 0, 'c'},
+                                       {"decisions", required_argument, 0, 'd'},
+                                       {"time", required_argument, 0, 't'},
+                                       {"var-decay", required_argument, 0, 0},
+                                       {"var-inc", required_argument, 0, 0},
+                                       {"restart-first", required_argument, 0, 0},
+                                       {"restart-inc", required_argument, 0, 0},
+                                       {"glucose-restart", no_argument, 0, 0},
+                                       {"glucose-restart-ema", no_argument, 0, 0},
+                                       {"glucose-restart-avg", no_argument, 0, 0},
+                                       {"luby-restart", no_argument, 0, 0},
+                                       {"no-luby-restart", no_argument, 0, 0},
+                                       {"luby-unit", required_argument, 0, 0},
+                                       {"no-restarts", no_argument, 0, 0},
+                                       {"glucose-fast-alpha", required_argument, 0, 0},
+                                       {"glucose-slow-alpha", required_argument, 0, 0},
+                                       {"glucose-min-conflicts", required_argument, 0, 0},
+                                       {"glucose-window-size", required_argument, 0, 0},
+                                       {"glucose-k", required_argument, 0, 0},
+                                       {"reuse-trail", no_argument, 0, 0},
+                                       {"chrono", no_argument, 0, 0},
+                                       {"chrono-levels", required_argument, 0, 0},
+                                       {"vmtf", no_argument, 0, 0},
+                                       {"lrb", no_argument, 0, 0},
+                                       {"vsids", no_argument, 0, 0},
+                                       {"no-phase-saving", no_argument, 0, 0},
+                                       {"random-phase", no_argument, 0, 0},
+                                       {"no-random-phase", no_argument, 0, 0},
+                                       {"random-prob", required_argument, 0, 0},
+                                       {"no-rephase", no_argument, 0, 0},
+                                       {"rephase-interval", required_argument, 0, 0},
+                                       {"max-lbd", required_argument, 0, 0},
+                                       {"glue-lbd", required_argument, 0, 0},
+                                       {"reduce-fraction", required_argument, 0, 0},
+                                       {"reduce-interval", required_argument, 0, 0},
+                                       {"reduce-increment", required_argument, 0, 0},
+                                       {"binary-minimize", no_argument, 0, 0},
+                                       {"iterative-minimize", no_argument, 0, 0},
+                                       {"protect-used", no_argument, 0, 0},
+                                       {"dynamic-lbd", no_argument, 0, 0},
+                                       {"minimize-budget", required_argument, 0, 0},
+                                       {"no-minimize", no_argument, 0, 0},
+                                       {"no-subsumption", no_argument, 0, 0},
+                                       {"bce", no_argument, 0, 0},
+                                       {"alternating", no_argument, 0, 0},
+                                       {"portfolio", required_argument, 0, 0},
+                                       {"no-circular", no_argument, 0, 0},
+                                       {"seed", required_argument, 0, 0},
+                                       {"preprocess-budget", required_argument, 0, 0},
+                                       {"subsume-budget", required_argument, 0, 0},
+                                       {"no-bce", no_argument, 0, 0},
+                                       {"elim", no_argument, 0, 0},
+                                       {"no-elim", no_argument, 0, 0},
+                                       {"elim-max-occ", required_argument, 0, 0},
+                                       {"elim-grow", required_argument, 0, 0},
+                                       {"equiv", no_argument, 0, 0},
+                                       {"equiv-budget", required_argument, 0, 0},
+                                       {"congruence", no_argument, 0, 0},
+                                       {"congruence-budget", required_argument, 0, 0},
+                                       {"factor", no_argument, 0, 0},
+                                       {"factor-budget", required_argument, 0, 0},
+                                       {"factor-max-variables", required_argument, 0, 0},
+                                       {"factor-min-gain", required_argument, 0, 0},
+                                       {"no-probing", no_argument, 0, 0},
+                                       {"inprocess", no_argument, 0, 0},
+                                       {"inprocess-interval", required_argument, 0, 0},
+                                       {"local-search", no_argument, 0, 0},
+                                       {"ls-interval", required_argument, 0, 0},
+                                       {"ls-max-flips", required_argument, 0, 0},
+                                       {"ls-save-phases", no_argument, 0, 0},
+                                       {"ls-noise", required_argument, 0, 0},
+                                       {"proof", required_argument, 0, 0},
+                                       {"accounting", no_argument, 0, 0},
+                                       {"binary-proof", no_argument, 0, 0},
+                                       {0, 0, 0, 0}};
 
 /*********************************************************************
  * Main Function
  *********************************************************************/
 
-int main(int argc, char** argv) {
+int
+main(int argc, char **argv)
+{
     // Default options
     SolverOpts opts = default_opts();
+
     // Override from environment variables
     if (getenv("BSAT_VERBOSE")) {
         opts.verbose = true;
@@ -282,7 +301,6 @@ int main(int argc, char** argv) {
     if (getenv("DEBUG_CDCL")) {
         opts.debug = true;
     }
-
 
     double portfolio_seconds = 0;
 
@@ -294,211 +312,226 @@ int main(int argc, char** argv) {
         if (optarg && !(c == 0 && !strcmp(long_options[option_index].name, "proof"))) {
             const char *name = c == 0 ? long_options[option_index].name : "";
             bool floating = c == 't' || strstr(name, "decay") || strstr(name, "alpha") ||
-                !strcmp(name,"var-inc") || !strcmp(name,"restart-inc") || !strcmp(name,"glucose-k") ||
-                !strcmp(name,"random-prob") || !strcmp(name,"reduce-fraction") || !strcmp(name,"ls-noise") || !strcmp(name,"portfolio");
-            char *end; errno=0;
+                            !strcmp(name, "var-inc") || !strcmp(name, "restart-inc") ||
+                            !strcmp(name, "glucose-k") || !strcmp(name, "random-prob") ||
+                            !strcmp(name, "reduce-fraction") || !strcmp(name, "ls-noise") ||
+                            !strcmp(name, "portfolio");
+            char *end;
+
+            errno = 0;
             bool valid;
+
             if (floating) {
-                double value=strtod(optarg,&end);
-                valid=!errno && end!=optarg && !*end && isfinite(value) && value>=0;
+                double value = strtod(optarg, &end);
+
+                valid = !errno && end != optarg && !*end && isfinite(value) && value >= 0;
             } else {
-                unsigned long long value=strtoull(optarg,&end,10);
-                valid=optarg[0]>='0' && optarg[0]<='9' && !errno && end!=optarg && !*end &&
-                    (!strcmp(name,"preprocess-budget") || !strcmp(name,"equiv-budget") || !strcmp(name,"congruence-budget") || !strcmp(name,"factor-budget") || value<=UINT32_MAX);
+                unsigned long long value = strtoull(optarg, &end, 10);
+
+                valid = optarg[0] >= '0' && optarg[0] <= '9' && !errno && end != optarg && !*end &&
+                        (!strcmp(name, "preprocess-budget") || !strcmp(name, "equiv-budget") ||
+                         !strcmp(name, "congruence-budget") || !strcmp(name, "factor-budget") ||
+                         value <= UINT32_MAX);
             }
-            if (!valid) { fprintf(stderr,"Error: invalid numeric argument: %s\n",optarg);return 1; }
+            if (!valid) {
+                fprintf(stderr, "Error: invalid numeric argument: %s\n", optarg);
+                return 1;
+            }
         }
         switch (c) {
-            case 'h':
-                print_usage(argv[0]);
-                return 0;
+        case 'h':
+            print_usage(argv[0]);
+            return 0;
 
-            case 'v':
-                opts.verbose = true;
-                opts.quiet = false;
-                break;
+        case 'v':
+            opts.verbose = true;
+            opts.quiet = false;
+            break;
 
-            case 'q':
-                opts.quiet = true;
-                opts.verbose = false;
-                opts.stats = false;
-                break;
+        case 'q':
+            opts.quiet = true;
+            opts.verbose = false;
+            opts.stats = false;
+            break;
 
-            case 's':
-                opts.stats = true;
-                break;
+        case 's':
+            opts.stats = true;
+            break;
 
-            case 'c':
-                opts.max_conflicts = (uint32_t)atol(optarg);
-                break;
+        case 'c':
+            opts.max_conflicts = (uint32_t)atol(optarg);
+            break;
 
-            case 'd':
-                opts.max_decisions = (uint32_t)atol(optarg);
-                break;
+        case 'd':
+            opts.max_decisions = (uint32_t)atol(optarg);
+            break;
 
-            case 't':
-                opts.max_time = atof(optarg);
-                break;
+        case 't':
+            opts.max_time = atof(optarg);
+            break;
 
-            case 0:
-                // Long option
-                if (strcmp(long_options[option_index].name, "bce") == 0) {
-                    opts.bce = true;
-                } else if (strcmp(long_options[option_index].name, "alternating") == 0) {
-                    opts.alternating = true;
-                } else if (strcmp(long_options[option_index].name, "congruence") == 0) {
-                    opts.congruence = true;
-                } else if (strcmp(long_options[option_index].name, "factor") == 0) {
-                    opts.factor = true;
-                } else if (strcmp(long_options[option_index].name, "factor-budget") == 0) {
-                    opts.factor_budget = strtoull(optarg,NULL,10);
-                } else if (strcmp(long_options[option_index].name, "factor-max-variables") == 0) {
-                    opts.factor_max_variables = strtoul(optarg,NULL,10);
-                } else if (strcmp(long_options[option_index].name, "factor-min-gain") == 0) {
-                    opts.factor_min_gain = strtoul(optarg,NULL,10);
-                } else if (strcmp(long_options[option_index].name, "congruence-budget") == 0) {
-                    opts.congruence_budget = strtoull(optarg,NULL,10);
-                } else if (strcmp(long_options[option_index].name, "portfolio") == 0) {
-                    portfolio_seconds = atof(optarg);
-                    if (portfolio_seconds <= 0) { fprintf(stderr,"Error: portfolio slice must be positive\n");return 1; }
-                } else if (strcmp(long_options[option_index].name, "no-circular") == 0) {
-                    opts.circular = false;
-                } else if (strcmp(long_options[option_index].name, "seed") == 0) {
-                    opts.seed = (uint32_t)atol(optarg);
-                } else if (strcmp(long_options[option_index].name, "preprocess-budget") == 0) {
-                    opts.preprocess_budget = strtoull(optarg,NULL,10);
-                } else if (strcmp(long_options[option_index].name, "subsume-budget") == 0) {
-                    opts.subsume_budget = (uint32_t)atol(optarg);
-                } else if (strcmp(long_options[option_index].name, "debug") == 0) {
-                    opts.debug = true;
-                } else if (strcmp(long_options[option_index].name, "var-decay") == 0) {
-                    opts.var_decay = atof(optarg);
-                } else if (strcmp(long_options[option_index].name, "var-inc") == 0) {
-                    opts.var_inc = atof(optarg);
-                } else if (strcmp(long_options[option_index].name, "restart-first") == 0) {
-                    opts.restart_first = (uint32_t)atol(optarg);
-                } else if (strcmp(long_options[option_index].name, "restart-inc") == 0) {
-                    opts.restart_inc = atof(optarg);
-                } else if (strcmp(long_options[option_index].name, "glucose-restart") == 0) {
-                    opts.glucose_restart = true;
-                } else if (strcmp(long_options[option_index].name, "luby-restart") == 0) {
-                    opts.luby_restart = true;
-                    opts.glucose_restart = false;  // Disable Glucose when Luby enabled
-                } else if (strcmp(long_options[option_index].name, "no-luby-restart") == 0) {
-                    opts.luby_restart = false;
-                    opts.glucose_restart = true;   // Re-enable Glucose
-                } else if (strcmp(long_options[option_index].name, "luby-unit") == 0) {
-                    opts.luby_unit = (uint32_t)atol(optarg);
-                } else if (strcmp(long_options[option_index].name, "no-restarts") == 0) {
-                    opts.restart_first = UINT32_MAX;
-                } else if (strcmp(long_options[option_index].name, "glucose-fast-alpha") == 0) {
-                    opts.glucose_fast_alpha = atof(optarg);
-                } else if (strcmp(long_options[option_index].name, "glucose-slow-alpha") == 0) {
-                    opts.glucose_slow_alpha = atof(optarg);
-                } else if (strcmp(long_options[option_index].name, "glucose-min-conflicts") == 0) {
-                    opts.glucose_min_conflicts = (uint32_t)atol(optarg);
-                } else if (strcmp(long_options[option_index].name, "glucose-restart-ema") == 0) {
-                    opts.glucose_restart = true;
-                    opts.glucose_use_ema = true;
-                    opts.luby_restart = false;
-                } else if (strcmp(long_options[option_index].name, "glucose-restart-avg") == 0) {
-                    opts.glucose_restart = true;
-                    opts.glucose_use_ema = false;
-                    opts.luby_restart = false;
-                } else if (strcmp(long_options[option_index].name, "glucose-window-size") == 0) {
-                    opts.glucose_window_size = (uint32_t)atol(optarg);
-                } else if (strcmp(long_options[option_index].name, "glucose-k") == 0) {
-                    opts.glucose_k = atof(optarg);
-                } else if (strcmp(long_options[option_index].name, "reuse-trail") == 0) {
-                    opts.reuse_trail = true;
-                } else if (strcmp(long_options[option_index].name, "chrono") == 0) {
-                    opts.chrono = true;
-                } else if (strcmp(long_options[option_index].name, "chrono-levels") == 0) {
-                    opts.chrono_levels = (uint32_t)strtoul(optarg,NULL,10);
-                } else if (strcmp(long_options[option_index].name, "vmtf") == 0) {
-                    opts.vmtf = true;
-                } else if (strcmp(long_options[option_index].name, "lrb") == 0) {
-                    opts.lrb = true;
-                } else if (strcmp(long_options[option_index].name, "vsids") == 0) {
-                    opts.lrb = false;
-                } else if (strcmp(long_options[option_index].name, "no-phase-saving") == 0) {
-                    opts.phase_saving = false;
-                } else if (strcmp(long_options[option_index].name, "random-phase") == 0) {
-                    opts.random_phase = true;
-                } else if (strcmp(long_options[option_index].name, "no-random-phase") == 0) {
-                    opts.random_phase = false;
-                } else if (strcmp(long_options[option_index].name, "random-prob") == 0) {
-                    opts.random_phase_prob = atof(optarg);
-                } else if (strcmp(long_options[option_index].name, "no-rephase") == 0) {
-                    opts.rephase = false;
-                } else if (strcmp(long_options[option_index].name, "rephase-interval") == 0) {
-                    opts.rephase_interval = (uint32_t)atol(optarg);
-                } else if (strcmp(long_options[option_index].name, "max-lbd") == 0) {
-                    opts.max_lbd = (uint32_t)atol(optarg);
-                } else if (strcmp(long_options[option_index].name, "glue-lbd") == 0) {
-                    opts.glue_lbd = (uint32_t)atol(optarg);
-                } else if (strcmp(long_options[option_index].name, "reduce-fraction") == 0) {
-                    opts.reduce_fraction = atof(optarg);
-                } else if (strcmp(long_options[option_index].name, "reduce-interval") == 0) {
-                    opts.reduce_interval = (uint32_t)atol(optarg);
-                } else if (strcmp(long_options[option_index].name, "reduce-increment") == 0) {
-                    opts.reduce_increment = (uint32_t)strtoul(optarg, NULL, 10);
-                } else if (strcmp(long_options[option_index].name, "binary-minimize") == 0) {
-                    opts.binary_minimize = true;
-                } else if (strcmp(long_options[option_index].name, "iterative-minimize") == 0) {
-                    opts.iterative_minimize = true;
-                } else if (strcmp(long_options[option_index].name, "protect-used") == 0) {
-                    opts.protect_used = true;
-                } else if (strcmp(long_options[option_index].name, "dynamic-lbd") == 0) {
-                    opts.dynamic_lbd = true;
-                } else if (strcmp(long_options[option_index].name, "minimize-budget") == 0) {
-                    opts.minimize_budget = (uint32_t)strtoul(optarg, NULL, 10);
-                } else if (strcmp(long_options[option_index].name, "no-minimize") == 0) {
-                    opts.minimize = false;
-                } else if (strcmp(long_options[option_index].name, "no-subsumption") == 0) {
-                    opts.subsumption = false;
-                } else if (strcmp(long_options[option_index].name, "no-bce") == 0) {
-                    opts.bce = false;
-                } else if (strcmp(long_options[option_index].name, "elim") == 0) {
-                    opts.elim = true;
-                } else if (strcmp(long_options[option_index].name, "no-elim") == 0) {
-                    opts.elim = false;
-                } else if (strcmp(long_options[option_index].name, "elim-max-occ") == 0) {
-                    opts.elim_max_occ = (uint32_t)atol(optarg);
-                } else if (strcmp(long_options[option_index].name, "elim-grow") == 0) {
-                    opts.elim_grow = (uint32_t)atol(optarg);
-                } else if (strcmp(long_options[option_index].name, "equiv") == 0) {
-                    opts.equiv = true;
-                } else if (strcmp(long_options[option_index].name, "equiv-budget") == 0) {
-                    opts.equiv_budget = strtoull(optarg, NULL, 10);
-                } else if (strcmp(long_options[option_index].name, "no-probing") == 0) {
-                    opts.probing = false;
-                } else if (strcmp(long_options[option_index].name, "inprocess") == 0) {
-                    opts.inprocess = true;
-                } else if (strcmp(long_options[option_index].name, "inprocess-interval") == 0) {
-                    opts.inprocess_interval = (uint32_t)atol(optarg);
-                } else if (strcmp(long_options[option_index].name, "local-search") == 0) {
-                    opts.local_search = true;
-                } else if (strcmp(long_options[option_index].name, "ls-interval") == 0) {
-                    opts.ls_interval = (uint32_t)atol(optarg);
-                } else if (strcmp(long_options[option_index].name, "ls-max-flips") == 0) {
-                    opts.ls_max_flips = (uint32_t)atol(optarg);
-                } else if (strcmp(long_options[option_index].name, "ls-save-phases") == 0) {
-                    opts.ls_save_phases = true;
-                } else if (strcmp(long_options[option_index].name, "ls-noise") == 0) {
-                    opts.ls_noise = atof(optarg);
-                } else if (strcmp(long_options[option_index].name, "proof") == 0) {
-                    opts.proof_path = optarg;
-                } else if (strcmp(long_options[option_index].name, "accounting") == 0) {
-                    opts.accounting = true;
-                } else if (strcmp(long_options[option_index].name, "binary-proof") == 0) {
-                    opts.binary_proof = true;
+        case 0:
+            // Long option
+            if (strcmp(long_options[option_index].name, "bce") == 0) {
+                opts.bce = true;
+            } else if (strcmp(long_options[option_index].name, "alternating") == 0) {
+                opts.alternating = true;
+            } else if (strcmp(long_options[option_index].name, "congruence") == 0) {
+                opts.congruence = true;
+            } else if (strcmp(long_options[option_index].name, "factor") == 0) {
+                opts.factor = true;
+            } else if (strcmp(long_options[option_index].name, "factor-budget") == 0) {
+                opts.factor_budget = strtoull(optarg, NULL, 10);
+            } else if (strcmp(long_options[option_index].name, "factor-max-variables") == 0) {
+                opts.factor_max_variables = strtoul(optarg, NULL, 10);
+            } else if (strcmp(long_options[option_index].name, "factor-min-gain") == 0) {
+                opts.factor_min_gain = strtoul(optarg, NULL, 10);
+            } else if (strcmp(long_options[option_index].name, "congruence-budget") == 0) {
+                opts.congruence_budget = strtoull(optarg, NULL, 10);
+            } else if (strcmp(long_options[option_index].name, "portfolio") == 0) {
+                portfolio_seconds = atof(optarg);
+                if (portfolio_seconds <= 0) {
+                    fprintf(stderr, "Error: portfolio slice must be positive\n");
+                    return 1;
                 }
-                break;
+            } else if (strcmp(long_options[option_index].name, "no-circular") == 0) {
+                opts.circular = false;
+            } else if (strcmp(long_options[option_index].name, "seed") == 0) {
+                opts.seed = (uint32_t)atol(optarg);
+            } else if (strcmp(long_options[option_index].name, "preprocess-budget") == 0) {
+                opts.preprocess_budget = strtoull(optarg, NULL, 10);
+            } else if (strcmp(long_options[option_index].name, "subsume-budget") == 0) {
+                opts.subsume_budget = (uint32_t)atol(optarg);
+            } else if (strcmp(long_options[option_index].name, "debug") == 0) {
+                opts.debug = true;
+            } else if (strcmp(long_options[option_index].name, "var-decay") == 0) {
+                opts.var_decay = atof(optarg);
+            } else if (strcmp(long_options[option_index].name, "var-inc") == 0) {
+                opts.var_inc = atof(optarg);
+            } else if (strcmp(long_options[option_index].name, "restart-first") == 0) {
+                opts.restart_first = (uint32_t)atol(optarg);
+            } else if (strcmp(long_options[option_index].name, "restart-inc") == 0) {
+                opts.restart_inc = atof(optarg);
+            } else if (strcmp(long_options[option_index].name, "glucose-restart") == 0) {
+                opts.glucose_restart = true;
+            } else if (strcmp(long_options[option_index].name, "luby-restart") == 0) {
+                opts.luby_restart = true;
+                opts.glucose_restart = false; // Disable Glucose when Luby enabled
+            } else if (strcmp(long_options[option_index].name, "no-luby-restart") == 0) {
+                opts.luby_restart = false;
+                opts.glucose_restart = true; // Re-enable Glucose
+            } else if (strcmp(long_options[option_index].name, "luby-unit") == 0) {
+                opts.luby_unit = (uint32_t)atol(optarg);
+            } else if (strcmp(long_options[option_index].name, "no-restarts") == 0) {
+                opts.restart_first = UINT32_MAX;
+            } else if (strcmp(long_options[option_index].name, "glucose-fast-alpha") == 0) {
+                opts.glucose_fast_alpha = atof(optarg);
+            } else if (strcmp(long_options[option_index].name, "glucose-slow-alpha") == 0) {
+                opts.glucose_slow_alpha = atof(optarg);
+            } else if (strcmp(long_options[option_index].name, "glucose-min-conflicts") == 0) {
+                opts.glucose_min_conflicts = (uint32_t)atol(optarg);
+            } else if (strcmp(long_options[option_index].name, "glucose-restart-ema") == 0) {
+                opts.glucose_restart = true;
+                opts.glucose_use_ema = true;
+                opts.luby_restart = false;
+            } else if (strcmp(long_options[option_index].name, "glucose-restart-avg") == 0) {
+                opts.glucose_restart = true;
+                opts.glucose_use_ema = false;
+                opts.luby_restart = false;
+            } else if (strcmp(long_options[option_index].name, "glucose-window-size") == 0) {
+                opts.glucose_window_size = (uint32_t)atol(optarg);
+            } else if (strcmp(long_options[option_index].name, "glucose-k") == 0) {
+                opts.glucose_k = atof(optarg);
+            } else if (strcmp(long_options[option_index].name, "reuse-trail") == 0) {
+                opts.reuse_trail = true;
+            } else if (strcmp(long_options[option_index].name, "chrono") == 0) {
+                opts.chrono = true;
+            } else if (strcmp(long_options[option_index].name, "chrono-levels") == 0) {
+                opts.chrono_levels = (uint32_t)strtoul(optarg, NULL, 10);
+            } else if (strcmp(long_options[option_index].name, "vmtf") == 0) {
+                opts.vmtf = true;
+            } else if (strcmp(long_options[option_index].name, "lrb") == 0) {
+                opts.lrb = true;
+            } else if (strcmp(long_options[option_index].name, "vsids") == 0) {
+                opts.lrb = false;
+            } else if (strcmp(long_options[option_index].name, "no-phase-saving") == 0) {
+                opts.phase_saving = false;
+            } else if (strcmp(long_options[option_index].name, "random-phase") == 0) {
+                opts.random_phase = true;
+            } else if (strcmp(long_options[option_index].name, "no-random-phase") == 0) {
+                opts.random_phase = false;
+            } else if (strcmp(long_options[option_index].name, "random-prob") == 0) {
+                opts.random_phase_prob = atof(optarg);
+            } else if (strcmp(long_options[option_index].name, "no-rephase") == 0) {
+                opts.rephase = false;
+            } else if (strcmp(long_options[option_index].name, "rephase-interval") == 0) {
+                opts.rephase_interval = (uint32_t)atol(optarg);
+            } else if (strcmp(long_options[option_index].name, "max-lbd") == 0) {
+                opts.max_lbd = (uint32_t)atol(optarg);
+            } else if (strcmp(long_options[option_index].name, "glue-lbd") == 0) {
+                opts.glue_lbd = (uint32_t)atol(optarg);
+            } else if (strcmp(long_options[option_index].name, "reduce-fraction") == 0) {
+                opts.reduce_fraction = atof(optarg);
+            } else if (strcmp(long_options[option_index].name, "reduce-interval") == 0) {
+                opts.reduce_interval = (uint32_t)atol(optarg);
+            } else if (strcmp(long_options[option_index].name, "reduce-increment") == 0) {
+                opts.reduce_increment = (uint32_t)strtoul(optarg, NULL, 10);
+            } else if (strcmp(long_options[option_index].name, "binary-minimize") == 0) {
+                opts.binary_minimize = true;
+            } else if (strcmp(long_options[option_index].name, "iterative-minimize") == 0) {
+                opts.iterative_minimize = true;
+            } else if (strcmp(long_options[option_index].name, "protect-used") == 0) {
+                opts.protect_used = true;
+            } else if (strcmp(long_options[option_index].name, "dynamic-lbd") == 0) {
+                opts.dynamic_lbd = true;
+            } else if (strcmp(long_options[option_index].name, "minimize-budget") == 0) {
+                opts.minimize_budget = (uint32_t)strtoul(optarg, NULL, 10);
+            } else if (strcmp(long_options[option_index].name, "no-minimize") == 0) {
+                opts.minimize = false;
+            } else if (strcmp(long_options[option_index].name, "no-subsumption") == 0) {
+                opts.subsumption = false;
+            } else if (strcmp(long_options[option_index].name, "no-bce") == 0) {
+                opts.bce = false;
+            } else if (strcmp(long_options[option_index].name, "elim") == 0) {
+                opts.elim = true;
+            } else if (strcmp(long_options[option_index].name, "no-elim") == 0) {
+                opts.elim = false;
+            } else if (strcmp(long_options[option_index].name, "elim-max-occ") == 0) {
+                opts.elim_max_occ = (uint32_t)atol(optarg);
+            } else if (strcmp(long_options[option_index].name, "elim-grow") == 0) {
+                opts.elim_grow = (uint32_t)atol(optarg);
+            } else if (strcmp(long_options[option_index].name, "equiv") == 0) {
+                opts.equiv = true;
+            } else if (strcmp(long_options[option_index].name, "equiv-budget") == 0) {
+                opts.equiv_budget = strtoull(optarg, NULL, 10);
+            } else if (strcmp(long_options[option_index].name, "no-probing") == 0) {
+                opts.probing = false;
+            } else if (strcmp(long_options[option_index].name, "inprocess") == 0) {
+                opts.inprocess = true;
+            } else if (strcmp(long_options[option_index].name, "inprocess-interval") == 0) {
+                opts.inprocess_interval = (uint32_t)atol(optarg);
+            } else if (strcmp(long_options[option_index].name, "local-search") == 0) {
+                opts.local_search = true;
+            } else if (strcmp(long_options[option_index].name, "ls-interval") == 0) {
+                opts.ls_interval = (uint32_t)atol(optarg);
+            } else if (strcmp(long_options[option_index].name, "ls-max-flips") == 0) {
+                opts.ls_max_flips = (uint32_t)atol(optarg);
+            } else if (strcmp(long_options[option_index].name, "ls-save-phases") == 0) {
+                opts.ls_save_phases = true;
+            } else if (strcmp(long_options[option_index].name, "ls-noise") == 0) {
+                opts.ls_noise = atof(optarg);
+            } else if (strcmp(long_options[option_index].name, "proof") == 0) {
+                opts.proof_path = optarg;
+            } else if (strcmp(long_options[option_index].name, "accounting") == 0) {
+                opts.accounting = true;
+            } else if (strcmp(long_options[option_index].name, "binary-proof") == 0) {
+                opts.binary_proof = true;
+            }
+            break;
 
-            case '?':
-                // Unknown option
-                return 1;
+        case '?':
+            // Unknown option
+            return 1;
         }
     }
 
@@ -509,12 +542,14 @@ int main(int argc, char** argv) {
         return 1;
     }
 
-    const char* input_file = argv[optind];
+    const char *input_file = argv[optind];
 
     struct stat input_stat, proof_stat;
-    if (opts.proof_path && !stat(input_file,&input_stat) && !stat(opts.proof_path,&proof_stat) &&
-        input_stat.st_dev==proof_stat.st_dev && input_stat.st_ino==proof_stat.st_ino) {
-        fprintf(stderr,"Error: input and proof must be different files\n");return 1;
+
+    if (opts.proof_path && !stat(input_file, &input_stat) && !stat(opts.proof_path, &proof_stat) &&
+        input_stat.st_dev == proof_stat.st_dev && input_stat.st_ino == proof_stat.st_ino) {
+        fprintf(stderr, "Error: input and proof must be different files\n");
+        return 1;
     }
 
     // Print header
@@ -525,7 +560,8 @@ int main(int argc, char** argv) {
     }
 
     // Create solver
-    Solver* solver = solver_new_with_opts(&opts);
+    Solver *solver = solver_new_with_opts(&opts);
+
     if (!solver) {
         fprintf(stderr, "Error: Failed to create solver\n");
         return 1;
@@ -533,6 +569,7 @@ int main(int argc, char** argv) {
 
     // Parse input file
     DimacsError err = dimacs_parse_file(solver, input_file);
+
     if (err != DIMACS_OK) {
         fprintf(stderr, "Error parsing DIMACS file: %s\n", dimacs_error_string(err));
         solver_free(solver);
@@ -552,13 +589,15 @@ int main(int argc, char** argv) {
 
     // The executable owns its progress signal; the library never installs it.
     install_signal_handlers();
-    solver_set_terminate(solver,solver,cli_progress);
+    solver_set_terminate(solver, solver, cli_progress);
     // Solve
     double start_time = (double)clock() / CLOCKS_PER_SEC;
-    lbool result = portfolio_seconds ? solver_solve_portfolio(solver, portfolio_seconds) : solver_solve(solver);
+    lbool result = portfolio_seconds ? solver_solve_portfolio(solver, portfolio_seconds)
+                                     : solver_solve(solver);
     double solve_time = (double)clock() / CLOCKS_PER_SEC - start_time;
 
-    if (solver->error) fprintf(stderr, "Error: solver allocation, certificate, or model validation failure\n");
+    if (solver->error)
+        fprintf(stderr, "Error: solver allocation, certificate, or model validation failure\n");
     // Print result
     if (result == TRUE) {
         printf("s SATISFIABLE\n");
@@ -566,9 +605,12 @@ int main(int argc, char** argv) {
         // Print model
         printf("v ");
         int vars_per_line = 0;
-        Var model_vars=solver->factor_original_vars?solver->factor_original_vars:solver->num_vars;
+        Var model_vars =
+            solver->factor_original_vars ? solver->factor_original_vars : solver->num_vars;
+
         for (Var v = 1; v <= model_vars; v++) {
             lbool val = solver_model_value(solver, v);
+
             if (val == TRUE) {
                 printf("%u ", v);
             } else if (val == FALSE) {
@@ -604,6 +646,7 @@ int main(int argc, char** argv) {
 
     // Clean up
     bool failed = solver->error;
+
     solver_free(solver);
     if (failed) return 1;
 

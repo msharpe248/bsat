@@ -21,111 +21,111 @@
 
 typedef struct SolverOpts {
     // Core parameters
-    uint32_t max_conflicts;      // Conflict limit (0 = unlimited)
-    uint32_t max_decisions;      // Decision limit (0 = unlimited)
-    double   max_time;           // Time limit in seconds (0 = unlimited)
-    bool     equiv;              // Opt-in binary SCC substitution
-    uint64_t equiv_budget;       // Independent preprocessing work budget
-    bool     congruence;         // Experimental AND/XOR/ITE gate congruence
-    uint64_t congruence_budget;  // Independent gate extraction/derivation budget
+    uint32_t max_conflicts;     // Conflict limit (0 = unlimited)
+    uint32_t max_decisions;     // Decision limit (0 = unlimited)
+    double max_time;            // Time limit in seconds (0 = unlimited)
+    bool equiv;                 // Opt-in binary SCC substitution
+    uint64_t equiv_budget;      // Independent preprocessing work budget
+    bool congruence;            // Experimental AND/XOR/ITE gate congruence
+    uint64_t congruence_budget; // Independent gate extraction/derivation budget
     bool factor;                // Opt-in proof-producing binary/ternary BVA
     uint64_t factor_budget;
     uint32_t factor_max_variables;
-    uint32_t factor_min_gain;    // Minimum net clauses removed per rectangle
+    uint32_t factor_min_gain; // Minimum net clauses removed per rectangle
 
     // Branching heuristic
-    bool     vmtf;              // Experimental move-to-front variable queue
-    bool     lrb;                // Use LRB/CHB instead of VSIDS (false)
-    double   var_decay;          // Variable activity decay for VSIDS (0.95)
-    double   var_inc;            // Variable activity increment (1.0)
-    double   clause_decay;       // Clause activity decay (0.999)
-    double   lrb_step_min;       // Minimum step size for LRB (0.06)
-    double   lrb_step_max;       // Maximum step size for LRB (0.4)
+    bool vmtf;           // Experimental move-to-front variable queue
+    bool lrb;            // Use LRB/CHB instead of VSIDS (false)
+    double var_decay;    // Variable activity decay for VSIDS (0.95)
+    double var_inc;      // Variable activity increment (1.0)
+    double clause_decay; // Clause activity decay (0.999)
+    double lrb_step_min; // Minimum step size for LRB (0.06)
+    double lrb_step_max; // Maximum step size for LRB (0.4)
 
     // Restart parameters
-    uint32_t restart_first;      // First restart interval (100)
-    double   restart_inc;        // Restart interval increment (1.5)
-    bool     glucose_restart;    // Use Glucose-style adaptive restarts
-    bool     restart_assumptions; // Retain established assumption prefix at restarts
-    bool     reuse_trail;       // Experimental priority-based restart prefix reuse
-    bool     chrono;            // Experimental chronological backtracking
-    uint32_t chrono_levels;     // Maximum ordinary jump before keeping the prefix
-    bool     luby_restart;       // Use Luby restart sequence (vs geometric/glucose)
-    uint32_t luby_unit;          // Luby unit size (conflicts per Luby unit, default 512)
-    uint32_t restart_postpone;   // Min trail growth to postpone restart (10%)
+    uint32_t restart_first;    // First restart interval (100)
+    double restart_inc;        // Restart interval increment (1.5)
+    bool glucose_restart;      // Use Glucose-style adaptive restarts
+    bool restart_assumptions;  // Retain established assumption prefix at restarts
+    bool reuse_trail;          // Experimental priority-based restart prefix reuse
+    bool chrono;               // Experimental chronological backtracking
+    uint32_t chrono_levels;    // Maximum ordinary jump before keeping the prefix
+    bool luby_restart;         // Use Luby restart sequence (vs geometric/glucose)
+    uint32_t luby_unit;        // Luby unit size (conflicts per Luby unit, default 512)
+    uint32_t restart_postpone; // Min trail growth to postpone restart (10%)
 
     // Glucose EMA parameters (for --glucose-restart-ema)
-    bool     glucose_use_ema;    // Use EMA (true) vs sliding window (false)
-    double   glucose_fast_alpha; // Glucose fast MA decay factor (0.8)
-    double   glucose_slow_alpha; // Glucose slow MA decay factor (0.9999)
+    bool glucose_use_ema;           // Use EMA (true) vs sliding window (false)
+    double glucose_fast_alpha;      // Glucose fast MA decay factor (0.8)
+    double glucose_slow_alpha;      // Glucose slow MA decay factor (0.9999)
     uint32_t glucose_min_conflicts; // Min conflicts before Glucose restarts (100)
 
     // Glucose sliding window parameters (for --glucose-restart-avg)
     uint32_t glucose_window_size; // Window size for short-term average (50)
-    double   glucose_k;          // Threshold multiplier (0.8)
+    double glucose_k;             // Threshold multiplier (0.8)
 
     // Phase saving parameters
-    bool     phase_saving;       // Enable phase saving (true)
+    bool phase_saving;           // Enable phase saving (true)
     uint32_t phase_reset_period; // Reset saved phases periodically (10000)
-    bool     random_phase;       // Use random phase selection (false)
-    double   random_phase_prob;  // Probability of random phase (0.01)
-    bool     adaptive_random;    // Enable when stuck (true)
-    bool     rephase;            // Enable periodic rephasing (true)
+    bool random_phase;           // Use random phase selection (false)
+    double random_phase_prob;    // Probability of random phase (0.01)
+    bool adaptive_random;        // Enable when stuck (true)
+    bool rephase;                // Enable periodic rephasing (true)
     uint32_t rephase_interval;   // Conflicts between rephases (1000)
 
     // Clause management
-    uint32_t max_lbd;           // Max LBD for keeping learned clauses (30)
-    uint32_t glue_lbd;          // LBD threshold for glue clauses (2)
-    double   reduce_fraction;   // Fraction of learned clauses to keep (0.5)
-    uint32_t reduce_interval;   // Conflicts between reductions (2000)
-    uint32_t reduce_increment;  // Add to interval after each reduction (0: fixed)
-    bool     binary_minimize; // Bounded binary-resolution pass on short low-LBD clauses
-    bool     iterative_minimize; // Experimental binary-aware traversal (false)
-    bool     protect_used;      // One reduction reprieve for used LBD <= 6 clauses
-    bool     dynamic_lbd;       // Re-evaluate learned-clause quality during analysis
-    uint32_t minimize_budget;   // Work cap per minimization pass (0 disables)
-    bool     minimize;          // Enable clause minimization (true)
-    bool     assumption_lbd;    // Exclude query-fixed levels from LBD scoring
+    uint32_t max_lbd;          // Max LBD for keeping learned clauses (30)
+    uint32_t glue_lbd;         // LBD threshold for glue clauses (2)
+    double reduce_fraction;    // Fraction of learned clauses to keep (0.5)
+    uint32_t reduce_interval;  // Conflicts between reductions (2000)
+    uint32_t reduce_increment; // Add to interval after each reduction (0: fixed)
+    bool binary_minimize;      // Bounded binary-resolution pass on short low-LBD clauses
+    bool iterative_minimize;   // Experimental binary-aware traversal (false)
+    bool protect_used;         // One reduction reprieve for used LBD <= 6 clauses
+    bool dynamic_lbd;          // Re-evaluate learned-clause quality during analysis
+    uint32_t minimize_budget;  // Work cap per minimization pass (0 disables)
+    bool minimize;             // Enable clause minimization (true)
+    bool assumption_lbd;       // Exclude query-fixed levels from LBD scoring
 
     // Preprocessing
-    bool     bce;               // Enable blocked clause elimination (true)
-    bool     probing;           // Enable failed literal probing (true)
-    bool     probe_on_change;   // Reuse handles: probe once per permanent input revision
+    bool bce;             // Enable blocked clause elimination (true)
+    bool probing;         // Enable failed literal probing (true)
+    bool probe_on_change; // Reuse handles: probe once per permanent input revision
 
     // Bounded Variable Elimination (BVE) - SatELite-style preprocessing
-    bool     elim;              // Enable BVE preprocessing (false - opt-in)
-    uint32_t elim_max_occ;      // Max occurrences to consider for elimination (10)
-    uint32_t elim_grow;         // Max clause growth allowed (0 = no growth)
+    bool elim;             // Enable BVE preprocessing (false - opt-in)
+    uint32_t elim_max_occ; // Max occurrences to consider for elimination (10)
+    uint32_t elim_grow;    // Max clause growth allowed (0 = no growth)
 
     // DRAT Proof Logging
-    const char* proof_path;     // Path to proof file (NULL = disabled)
-    bool     binary_proof;      // Use binary DRAT format (false)
+    const char *proof_path; // Path to proof file (NULL = disabled)
+    bool binary_proof;      // Use binary DRAT format (false)
 
     // Inprocessing
-    bool     inprocess;         // Enable inprocessing (false)
+    bool inprocess;              // Enable inprocessing (false)
     uint32_t inprocess_interval; // Conflicts between inprocessing (10000)
-    bool     subsumption;       // Enable subsumption (true)
-    bool     var_elim;          // Enable variable elimination (true)
+    bool subsumption;            // Enable subsumption (true)
+    bool var_elim;               // Enable variable elimination (true)
 
     // Local search hybridization
-    bool     local_search;      // Enable local search (false - opt-in)
-    uint32_t ls_interval;       // Conflicts between local search calls (5000)
-    uint32_t ls_max_flips;      // Max flips per local search call (100000)
-    bool     ls_save_phases;    // Experimental feedback from improved walks
-    double   ls_noise;          // Noise parameter for WalkSAT (0.5)
+    bool local_search;     // Enable local search (false - opt-in)
+    uint32_t ls_interval;  // Conflicts between local search calls (5000)
+    uint32_t ls_max_flips; // Max flips per local search call (100000)
+    bool ls_save_phases;   // Experimental feedback from improved walks
+    double ls_noise;       // Noise parameter for WalkSAT (0.5)
 
     uint64_t preprocess_budget; // Literal inspections per preprocessing pass
     uint32_t subsume_budget;    // Candidate clauses per learned clause
-    bool alternating;          // Experimental focused/stable schedule
-    bool circular;             // Circular replacement watch search
+    bool alternating;           // Experimental focused/stable schedule
+    bool circular;              // Circular replacement watch search
     uint32_t seed;
-    bool reuse_learnts;         // Opt-in safe repeated-call fast path
-    bool accounting;           // Opt-in intrusive phase CPU diagnostics
+    bool reuse_learnts; // Opt-in safe repeated-call fast path
+    bool accounting;    // Opt-in intrusive phase CPU diagnostics
     // Output options
-    bool     verbose;           // Verbose output (false) - same as BSAT_VERBOSE
-    bool     debug;             // Debug output (false) - same as DEBUG_CDCL
-    bool     quiet;             // Suppress all output (false)
-    bool     stats;             // Print statistics (true)
+    bool verbose; // Verbose output (false) - same as BSAT_VERBOSE
+    bool debug;   // Debug output (false) - same as DEBUG_CDCL
+    bool quiet;   // Suppress all output (false)
+    bool stats;   // Print statistics (true)
 } SolverOpts;
 
 // Get default options
@@ -141,18 +141,18 @@ SolverOpts default_opts(void);
 
 typedef struct VarInfo {
     // VSIDS/LRB activity - first for 8-byte alignment and cache-friendly heap access
-    double   activity;       // Variable activity score
+    double activity; // Variable activity score
 
     // Assignment metadata; hot truth values live in Solver.values.
-    Level    level;          // Decision level
-    CRef     reason;         // Reason clause (INVALID_CLAUSE for decisions)
-    uint32_t trail_pos;      // Position in trail
+    Level level;        // Decision level
+    CRef reason;        // Reason clause (INVALID_CLAUSE for decisions)
+    uint32_t trail_pos; // Position in trail
 
     // Less frequently accessed
-    uint32_t heap_pos;       // Position in VSIDS heap
+    uint32_t heap_pos; // Position in VSIDS heap
 
     // Phase saving - 1 byte, naturally packs at end with padding
-    bool     polarity;       // Saved polarity
+    bool polarity; // Saved polarity
 } VarInfo;
 
 /*********************************************************************
@@ -161,7 +161,7 @@ typedef struct VarInfo {
 
 /* Assignment levels live in vars[var(lit)].level; trail_lims bounds levels. */
 typedef struct Trail {
-    Lit      lit;           // Assigned literal
+    Lit lit; // Assigned literal
 } Trail;
 
 /*********************************************************************
@@ -174,10 +174,20 @@ typedef struct VmtfNode {
 } VmtfNode;
 
 typedef enum {
-    ACCOUNT_PARSE, ACCOUNT_PROPAGATE, ACCOUNT_ANALYZE, ACCOUNT_REDUCE,
-    ACCOUNT_GC, ACCOUNT_PREPROCESS, ACCOUNT_SIMPLIFY, ACCOUNT_RECONSTRUCT,
-    ACCOUNT_MODEL, ACCOUNT_PROOF, ACCOUNT_SEARCH, ACCOUNT_PHASES
+    ACCOUNT_PARSE,
+    ACCOUNT_PROPAGATE,
+    ACCOUNT_ANALYZE,
+    ACCOUNT_REDUCE,
+    ACCOUNT_GC,
+    ACCOUNT_PREPROCESS,
+    ACCOUNT_SIMPLIFY,
+    ACCOUNT_RECONSTRUCT,
+    ACCOUNT_MODEL,
+    ACCOUNT_PROOF,
+    ACCOUNT_SEARCH,
+    ACCOUNT_PHASES
 } AccountPhase;
+
 /* Compile out detailed search counters in ordinary release/debug builds. */
 #ifdef BSAT_SEARCH_DIAGNOSTICS
 #define SEARCH_DIAGNOSTICS(s) ((s)->opts.accounting)
@@ -222,6 +232,7 @@ typedef struct SolverAccounting {
     double seconds[ACCOUNT_PHASES];
     uint64_t calls[ACCOUNT_PHASES];
 } SolverAccounting;
+
 typedef struct SolverMemory {
     uint64_t arena, watches, input, variables, references, elimination, local_search;
     uint64_t other, total;
@@ -231,37 +242,37 @@ typedef struct SolverMemory {
 typedef struct Solver {
     // Problem size
     uint32_t num_vars;
-    uint32_t var_capacity;    // Allocated capacity for variable arrays
+    uint32_t var_capacity; // Allocated capacity for variable arrays
     uint32_t num_clauses;
-    uint32_t num_original;    // Number of original clauses
+    uint32_t num_original; // Number of original clauses
 
     // Core data structures
-    Arena*        arena;       // Clause allocator
-    WatchManager* watches;     // Watch lists
-    uint64_t*     lrb_last_conflict; // Optional recency timestamps for LRB only
-    VarInfo*      vars;        // Variable information, separate from hot values
-    uint8_t*      values;      // One authoritative UNDEF/FALSE/TRUE byte per variable
+    Arena *arena;                // Clause allocator
+    WatchManager *watches;       // Watch lists
+    uint64_t *lrb_last_conflict; // Optional recency timestamps for LRB only
+    VarInfo *vars;               // Variable information, separate from hot values
+    uint8_t *values;             // One authoritative UNDEF/FALSE/TRUE byte per variable
 
     // Trail (assignment stack)
-    Trail*   trail;           // Assignment trail
-    uint32_t trail_size;      // Current trail size
-    uint32_t trail_lim;       // Next decision position
-    uint32_t qhead;           // Propagation queue head
-    Level*   trail_lims;      // Decision level limits
-    Level    decision_level;  // Current decision level
+    Trail *trail;         // Assignment trail
+    uint32_t trail_size;  // Current trail size
+    uint32_t trail_lim;   // Next decision position
+    uint32_t qhead;       // Propagation queue head
+    Level *trail_lims;    // Decision level limits
+    Level decision_level; // Current decision level
 
     // Clause database
-    CRef*    clauses;         // All clauses
-    uint32_t num_learnts;     // Number of learned clauses
-    CRef*    learnts;         // Learned clauses
-    uint32_t learnts_size;    // Size of learned clause array
+    CRef *clauses;         // All clauses
+    uint32_t num_learnts;  // Number of learned clauses
+    CRef *learnts;         // Learned clauses
+    uint32_t learnts_size; // Size of learned clause array
 
     // VSIDS heap
     struct {
-        Var*     heap;        // Binary max-heap of variables
-        uint32_t size;        // Current heap size
-        double   var_inc;     // Activity increment
-        double   var_decay;   // Activity decay factor
+        Var *heap;        // Binary max-heap of variables
+        uint32_t size;    // Current heap size
+        double var_inc;   // Activity increment
+        double var_decay; // Activity decay factor
     } order;
 
     struct {
@@ -272,15 +283,17 @@ typedef struct Solver {
     } vmtf;
 
     // Conflict analysis
-    uint8_t* seen;            // Seen flags for conflict analysis
-    Var*     minimize_touched; // Unique scratch marks to clear after minimization
-    Lit*     analyze_stack;   // Temporary stack for analysis
-    uint32_t analyze_toclear; // Number of seen variables to clear
-    Lit      binary_conflict_lits[2]; // Literals from binary clause conflict
-    Lit*     binary_reasons;  // binary_reasons[v] = other literal if propagated by binary, LIT_UNDEF otherwise
+    uint8_t *seen;               // Seen flags for conflict analysis
+    Var *minimize_touched;       // Unique scratch marks to clear after minimization
+    Lit *analyze_stack;          // Temporary stack for analysis
+    uint32_t analyze_toclear;    // Number of seen variables to clear
+    Lit binary_conflict_lits[2]; // Literals from binary clause conflict
+    Lit *
+        binary_reasons; // binary_reasons[v] = other literal if propagated by binary, LIT_UNDEF otherwise
 
     SolverAccounting accounting;
     size_t trail_limits_capacity;
+
     // Statistics
     struct {
         uint64_t decisions;
@@ -314,32 +327,32 @@ typedef struct Solver {
         uint32_t factor_variables;
         uint64_t chronological, chrono_retained, chrono_rewatched, chrono_lower_conflicts;
         uint64_t lbd_updates;
-        uint64_t clock_checks;      // Actual CPU deadline clock reads
+        uint64_t clock_checks; // Actual CPU deadline clock reads
         uint64_t target_copied, target_cleared;
-        uint64_t blocked_clauses;    // Clauses removed by blocked clause elimination
+        uint64_t blocked_clauses; // Clauses removed by blocked clause elimination
         uint64_t max_lbd;
         uint64_t glue_clauses;
-        double   start_time;
+        double start_time;
     } stats;
 
     // Restart state
     struct {
-        uint32_t conflicts_since;     // Conflicts since last restart
-        uint32_t threshold;           // Current restart threshold
-        uint32_t luby_index;         // Current position in Luby sequence
+        uint32_t conflicts_since; // Conflicts since last restart
+        uint32_t threshold;       // Current restart threshold
+        uint32_t luby_index;      // Current position in Luby sequence
 
         // Glucose EMA state
-        double   slow_ma;            // Slow moving average (Glucose EMA)
-        double   fast_ma;            // Fast moving average (Glucose EMA)
+        double slow_ma; // Slow moving average (Glucose EMA)
+        double fast_ma; // Fast moving average (Glucose EMA)
 
         // Glucose sliding window state
-        uint32_t *recent_lbds;       // Circular buffer of recent LBDs
-        uint32_t recent_lbds_count;  // Number of LBDs in buffer
-        uint32_t recent_lbds_head;   // Head index for circular buffer
-        uint64_t lbd_sum;            // Sum of all LBDs (for long-term average)
-        uint64_t lbd_count;          // Count of all LBDs
+        uint32_t *recent_lbds;      // Circular buffer of recent LBDs
+        uint32_t recent_lbds_count; // Number of LBDs in buffer
+        uint32_t recent_lbds_head;  // Head index for circular buffer
+        uint64_t lbd_sum;           // Sum of all LBDs (for long-term average)
+        uint64_t lbd_count;         // Count of all LBDs
 
-        uint32_t stuck_conflicts;    // Conflicts without progress
+        uint32_t stuck_conflicts; // Conflicts without progress
     } restart;
 
     // Options
@@ -351,28 +364,28 @@ typedef struct Solver {
     uint32_t learn_max_length;
 
     // Variable Elimination (BVE)
-    ElimState* elim;          // Elimination state (NULL if not using BVE)
+    ElimState *elim; // Elimination state (NULL if not using BVE)
 
     // DRAT Proof Logging
-    FILE* proof_file;         // Owned ordinary proof output
-    FILE* proof_journal;      // Borrowed append-only RUP journal; no deletions
+    FILE *proof_file;    // Owned ordinary proof output
+    FILE *proof_journal; // Borrowed append-only RUP journal; no deletions
     uint64_t journal_bytes, journal_limit;
 
     // Rephasing state (Kissat-style target phases)
     struct {
-        uint8_t* best_phase;      // UNDEF/FALSE/TRUE target value for each variable
+        uint8_t *best_phase;      // UNDEF/FALSE/TRUE target value for each variable
         uint32_t best_trail_size; // Trail size when best assignment was saved
-        bool best_prefix_valid;  // Saved target is still a prefix of the current trail
+        bool best_prefix_valid;   // Saved target is still a prefix of the current trail
         uint32_t conflicts_since; // Conflicts since last rephase
         uint32_t rephase_count;   // Number of rephases performed
     } rephase;
 
     // Local search state
     struct {
-        LocalSearchState* state;      // Local search state (NULL until first use)
-        uint64_t conflicts_since;     // Conflicts since last local search
-        uint32_t calls;               // Number of local search calls
-        uint32_t successes;           // Number of successful local search calls
+        LocalSearchState *state;  // Local search state (NULL until first use)
+        uint64_t conflicts_since; // Conflicts since last local search
+        uint32_t calls;           // Number of local search calls
+        uint32_t successes;       // Number of successful local search calls
     } local_search;
 
     /* Immutable input, used for model checking and safe incremental rebuilds. */
@@ -385,7 +398,7 @@ typedef struct Solver {
     uint32_t input_clauses, clauses_capacity;
     uint32_t last_assumptions;
     uint32_t lbd_assumption_levels; /* Transient boundary, zero between queries. */
-    Var factor_original_vars; // Auxiliary variables are discarded on rebuild
+    Var factor_original_vars;       // Auxiliary variables are discarded on rebuild
     uint64_t reused_solves;
     size_t probed_input_size;
     bool probed_input;
@@ -403,7 +416,7 @@ typedef struct Solver {
     unsigned portfolio_attempts;
     uint64_t portfolio_first_conflicts, portfolio_first_decisions;
     // Result
-    lbool result;             // SAT/UNSAT/UNKNOWN
+    lbool result; // SAT/UNSAT/UNKNOWN
 } Solver;
 
 /*********************************************************************
@@ -418,51 +431,51 @@ SolverMemory solver_memory(const Solver *s);
 void solver_print_accounting(const Solver *s);
 
 // Create a new solver
-Solver* solver_new(void);
+Solver *solver_new(void);
 
 // Create solver with options
-Solver* solver_new_with_opts(const SolverOpts* opts);
+Solver *solver_new_with_opts(const SolverOpts *opts);
 
 // Free solver and all resources
-void solver_free(Solver* s);
+void solver_free(Solver *s);
 /* Discard derived state by rebuilding permanent input, respecting cancellation. */
 bool solver_reset_learning(Solver *s);
 
 // Add a variable (returns variable index)
-Var solver_new_var(Solver* s);
+Var solver_new_var(Solver *s);
 
 // Copies literals. False means a contradiction or error; inspect Solver.error.
-bool solver_add_clause(Solver* s, const Lit* lits, uint32_t size);
+bool solver_add_clause(Solver *s, const Lit *lits, uint32_t size);
 
 // Main solve function
-lbool solver_solve(Solver* s);
+lbool solver_solve(Solver *s);
 
 /* Experimental focused search for focused_seconds CPU seconds, then fresh
    alternating search. max_time/conflicts/decisions bound the whole call.
    No assumptions; a proof stream requires opts.proof_path so it can be reset.
    Ordinary stats describe the final attempt; options are restored on return. */
-lbool solver_solve_portfolio(Solver* s, double focused_seconds);
+lbool solver_solve_portfolio(Solver *s, double focused_seconds);
 
 /* Root-only preprocessing helpers. Derived clauses never enter immutable input. */
-bool solver_add_rup_clause(Solver* s, const Lit* lits, uint32_t size);
-uint32_t solver_congruence(Solver* s);
-uint32_t solver_factor(Solver* s);
+bool solver_add_rup_clause(Solver *s, const Lit *lits, uint32_t size);
+uint32_t solver_congruence(Solver *s);
+uint32_t solver_factor(Solver *s);
 /* Internal conflict preparation for chronological search.
    False means a root conflict or a resource/error stop; inspect solver flags. */
-bool solver_normalize_conflict(Solver* s, CRef conflict);
+bool solver_normalize_conflict(Solver *s, CRef conflict);
 
 // Solve with assumptions
-lbool solver_solve_with_assumptions(Solver* s, const Lit* assumps, uint32_t n_assumps);
+lbool solver_solve_with_assumptions(Solver *s, const Lit *assumps, uint32_t n_assumps);
 
 // Read only after a successful SAT solve and before any mutation/next solve.
-lbool solver_model_value(const Solver* s, Var v);
+lbool solver_model_value(const Solver *s, Var v);
 
 // Get a nonminimal clause of negated failed assumptions (empty for base UNSAT).
 // Valid until the next solve or mutation.
-const Lit* solver_conflict(const Solver* s, uint32_t* size);
+const Lit *solver_conflict(const Solver *s, uint32_t *size);
 
 // Print statistics
-void solver_print_stats(const Solver* s);
+void solver_print_stats(const Solver *s);
 
 /*********************************************************************
  * Internal Functions (for testing/debugging)
@@ -471,45 +484,45 @@ void solver_print_stats(const Solver* s);
 /* Callbacks execute synchronously on the solving thread; never reenter. */
 void solver_set_terminate(Solver *s, void *state, int (*terminate)(void *));
 double solver_cpu_time(void);
-bool solver_budget_exhausted(Solver* s);
+bool solver_budget_exhausted(Solver *s);
 /* Fresh CPU reading for callers that already throttle expensive checkpoints. */
-bool solver_budget_exhausted_now(Solver* s);
+bool solver_budget_exhausted_now(Solver *s);
 Var solver_vmtf_pick(Solver *s);
 void solver_vmtf_bump(Solver *s, Var v);
 void solver_vmtf_bump_batch(Solver *s, Var *vars, uint32_t count);
 void solver_vmtf_unassign(Solver *s, Var v);
-void solver_maybe_save_best_phases(Solver* s);
-uint32_t solver_substitute_equivalences(Solver* s);
-bool solver_check_model(const Solver* s);
-void solver_collect_garbage(Solver* s);
-void solver_delete_clause(Solver* s, CRef cref);
-void proof_add_clause(Solver* s, const Lit* lits, uint32_t size);
-void proof_delete_clause(Solver* s, const Lit* lits, uint32_t size);
+void solver_maybe_save_best_phases(Solver *s);
+uint32_t solver_substitute_equivalences(Solver *s);
+bool solver_check_model(const Solver *s);
+void solver_collect_garbage(Solver *s);
+void solver_delete_clause(Solver *s, CRef cref);
+void proof_add_clause(Solver *s, const Lit *lits, uint32_t size);
+void proof_delete_clause(Solver *s, const Lit *lits, uint32_t size);
 // Unit propagation
-CRef solver_propagate(Solver* s);
+CRef solver_propagate(Solver *s);
 
 // Minimize an asserting clause while its reason graph is still assigned.
 uint32_t solver_minimize_binary(Solver *s, Lit *learnt, uint32_t *size, uint32_t lbd);
-uint32_t solver_minimize_clause(Solver* s, Lit* learnt, uint32_t* size);
+uint32_t solver_minimize_clause(Solver *s, Lit *learnt, uint32_t *size);
 
 // Analyze conflict and learn clause
-void solver_analyze(Solver* s, CRef conflict, Lit* learnt, uint32_t* learnt_size, Level* bt_level);
+void solver_analyze(Solver *s, CRef conflict, Lit *learnt, uint32_t *learnt_size, Level *bt_level);
 
 // Make a decision
-bool solver_decide(Solver* s);
+bool solver_decide(Solver *s);
 
 // Backtrack to level
-void solver_backtrack(Solver* s, Level level);
+void solver_backtrack(Solver *s, Level level);
 
 // Reduce learned clause database
-void solver_reduce_db(Solver* s);
-bool solver_should_reduce(Solver* s);
+void solver_reduce_db(Solver *s);
+bool solver_should_reduce(Solver *s);
 
 // Check if should restart
-bool solver_should_restart(Solver* s);
-Level solver_restart_level(Solver* s);
+bool solver_should_restart(Solver *s);
+Level solver_restart_level(Solver *s);
 
 // Simplify clause database
-bool solver_simplify(Solver* s);
+bool solver_simplify(Solver *s);
 
 #endif // BSAT_SOLVER_H
