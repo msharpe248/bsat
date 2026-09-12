@@ -1,6 +1,12 @@
 name: C solver fresh competitiveness baseline
 on:
   workflow_dispatch:
+    inputs:
+      corpus:
+        description: Frozen circuit corpus
+        type: choice
+        default: original
+        options: [original, performance-five]
 permissions:
   contents: read
 jobs:
@@ -46,7 +52,11 @@ jobs:
           git -C "$RUNNER_TEMP/aiger" fetch --depth 1 origin 039ec1a2cc37d3093ac35c4b6df65336b346f409
           git -C "$RUNNER_TEMP/aiger" checkout --detach FETCH_HEAD
           (cd "$RUNNER_TEMP/aiger" && ./configure.sh && make -j2 aigtoaig)
-          python3 competition/c/tests/prepare_industrial_aig.py --aigtoaig "$RUNNER_TEMP/aiger/aigtoaig" --output "$RUNNER_TEMP/fresh" --manifest competition/c/tests/fixtures/fresh_competitiveness_aig.json
+          manifest=competition/c/tests/fixtures/fresh_competitiveness_aig.json
+          if [ '${{ inputs.corpus }}' = performance-five ]; then
+            manifest=competition/c/tests/fixtures/performance_five_aig.json
+          fi
+          python3 competition/c/tests/prepare_industrial_aig.py --aigtoaig "$RUNNER_TEMP/aiger/aigtoaig" --output "$RUNNER_TEMP/fresh" --manifest "$manifest"
           mkdir -p "$RUNNER_TEMP/results"
           lscpu > "$RUNNER_TEMP/results/lscpu.txt"
           cc --version > "$RUNNER_TEMP/results/compiler.txt"

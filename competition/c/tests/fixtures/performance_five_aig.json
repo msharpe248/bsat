@@ -1,0 +1,72 @@
+{
+  "revision": "7df3ce27c569615bdd205dbd6b473ab2c33953a7",
+  "selection": {
+    "seed": 2026091118,
+    "tree_sha256": "1c894d23868525b4e70ab2064738595b7ea2d7cfdae74fcaae7a05ec7bc4a1cb",
+    "policy": "Before solving: sorted path pools, first path per filename, independently shuffled per upstream prefix, first two unseen filenames per prefix; 3,000\u2013300,000 bytes. Four related upstream groups, not eight independent families. Original 30,000\u2013200,000 range had no unseen opensource candidates; range widened before any solving. Content duplicates rejected before freezing.",
+    "prefixes": [
+      "benchmarks_aig/aig_inputs/hwmcc19_fold_fraigy_orchestrate/aig/beem/",
+      "benchmarks_aig/aig_inputs/hwmcc19_fold_fraigy_orchestrate/aig/goel/industry/",
+      "benchmarks_aig/aig_inputs/hwmcc20_fold_fraigy_orchestrate/aig/2019/goel/opensource/",
+      "benchmarks_aig/aig_inputs/hwmcc19_fold_fraigy_orchestrate/aig/wolf/"
+    ]
+  },
+  "inputs": [
+    {
+      "file": "synapse.7.prop1-func-interl.aig",
+      "url": "https://raw.githubusercontent.com/TechnionFV/CAV_2025_artifact/7df3ce27c569615bdd205dbd6b473ab2c33953a7/benchmarks_aig/aig_inputs/hwmcc19_fold_fraigy_orchestrate/aig/beem/synapse.7.prop1-func-interl.aig",
+      "bytes": 20097,
+      "git_blob_sha": "02ceaf8d6a746264c8b8ed60cccbfbef21733c99",
+      "sha256": "326d3aeb574782130fcd582c38212cb9ddebcc2ee493656d3e941f0d9cf7c267"
+    },
+    {
+      "file": "cambridge.7.prop2-back-serstep.aig",
+      "url": "https://raw.githubusercontent.com/TechnionFV/CAV_2025_artifact/7df3ce27c569615bdd205dbd6b473ab2c33953a7/benchmarks_aig/aig_inputs/hwmcc19_fold_fraigy_orchestrate/aig/beem/cambridge.7.prop2-back-serstep.aig",
+      "bytes": 64846,
+      "git_blob_sha": "7bad9023534fc43e05400ece08dd24473f438d79",
+      "sha256": "6a2594b9e36ca08799a97a1bd07c225432106c8d58b1acf75ec278e49f33ba05"
+    },
+    {
+      "file": "cal93.aig",
+      "url": "https://raw.githubusercontent.com/TechnionFV/CAV_2025_artifact/7df3ce27c569615bdd205dbd6b473ab2c33953a7/benchmarks_aig/aig_inputs/hwmcc19_fold_fraigy_orchestrate/aig/goel/industry/cal93/cal93.aig",
+      "bytes": 55579,
+      "git_blob_sha": "98a207285a800d2152f3a17b9b1dd014e181868a",
+      "sha256": "067fae795b91ac4110735aa126f80229213713d049612501c87a71cb3bf66b38"
+    },
+    {
+      "file": "mul10.aig",
+      "url": "https://raw.githubusercontent.com/TechnionFV/CAV_2025_artifact/7df3ce27c569615bdd205dbd6b473ab2c33953a7/benchmarks_aig/aig_inputs/hwmcc19_fold_fraigy_orchestrate/aig/goel/industry/mul10/mul10.aig",
+      "bytes": 49350,
+      "git_blob_sha": "a17aecd4e75769ce32a388edd96a7da8bd297508",
+      "sha256": "93b9a78aa60f9a4d58d8fb4f8dce3eb1988a6b942810dda6efc1a69999622acc"
+    },
+    {
+      "file": "vis_arrays_am2910_p1.aig",
+      "url": "https://raw.githubusercontent.com/TechnionFV/CAV_2025_artifact/7df3ce27c569615bdd205dbd6b473ab2c33953a7/benchmarks_aig/aig_inputs/hwmcc20_fold_fraigy_orchestrate/aig/2019/goel/opensource/vis_arrays_am2910_p1/vis_arrays_am2910_p1.aig",
+      "bytes": 3009,
+      "git_blob_sha": "8fcd194d692672321ad607d706f3fb2f5686aaae",
+      "sha256": "6a5f001a949a605ec530acc8fc0e21aca20730c30e070ce47c6b3aeb480eb3fd"
+    },
+    {
+      "file": "vcegar_arrays_itc99_b12_p2.aig",
+      "url": "https://raw.githubusercontent.com/TechnionFV/CAV_2025_artifact/7df3ce27c569615bdd205dbd6b473ab2c33953a7/benchmarks_aig/aig_inputs/hwmcc20_fold_fraigy_orchestrate/aig/2019/goel/opensource/vcegar_arrays_itc99_b12_p2/vcegar_arrays_itc99_b12_p2.aig",
+      "bytes": 5883,
+      "git_blob_sha": "9cd82363bc89731a908505b02390a13706f7ce3e",
+      "sha256": "646ca41c741987c05e55f9d3bc0825c416373eee28d92b426fdcb9899034b422"
+    },
+    {
+      "file": "qspiflash_qflexpress_divfive-p128.aig",
+      "url": "https://raw.githubusercontent.com/TechnionFV/CAV_2025_artifact/7df3ce27c569615bdd205dbd6b473ab2c33953a7/benchmarks_aig/aig_inputs/hwmcc19_fold_fraigy_orchestrate/aig/wolf/2019C/qspiflash_qflexpress_divfive-p128.aig",
+      "bytes": 4747,
+      "git_blob_sha": "b4ae33304eb294de04c977dc1366957374c0d682",
+      "sha256": "c896b2fb63d6334086b934f536d909af36815d89e9568bf43f1b72d34a010460"
+    },
+    {
+      "file": "zipversa_composecrc_prf-p04.aig",
+      "url": "https://raw.githubusercontent.com/TechnionFV/CAV_2025_artifact/7df3ce27c569615bdd205dbd6b473ab2c33953a7/benchmarks_aig/aig_inputs/hwmcc19_fold_fraigy_orchestrate/aig/wolf/2019C/zipversa_composecrc_prf-p04.aig",
+      "bytes": 5917,
+      "git_blob_sha": "95bd043e2e6dd9fb3f7d1d2da1b14b72737446da",
+      "sha256": "9eac0d397295d8ad702b8779b9b9ac920aabb314f7383ad4bb1fa537662eea1a"
+    }
+  ]
+}
