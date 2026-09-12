@@ -55,15 +55,23 @@ attempt(unsigned profile, bool sat, size_t cutoff)
     o.chrono = profile == 4;
     o.chrono_levels = 0;
     o.vmtf = profile == 4;
-    o.reuse_learnts = profile == 6;
+    o.reuse_learnts = profile == 6 || profile == 8;
+    o.retained_elim = profile == 8;
+    if (profile == 8) o.elim_max_occ = 100;
     o.lrb = profile == 5;
     o.rephase = profile == 5;
     o.factor = profile == 7;
     Solver *s = solver_new_with_opts(&o);
+    FILE *journal = NULL;
 
     if (!s) {
         assert(failed);
         return calls;
+    }
+    if (profile == 8) {
+        journal = tmpfile();
+        assert(journal);
+        s->proof_journal = journal;
     }
     for (unsigned v = 0; v < 8; ++v)
         if (!solver_new_var(s)) goto done;
@@ -98,8 +106,14 @@ attempt(unsigned profile, bool sat, size_t cutoff)
         solver_add_clause(s, a, 2);
         solver_add_clause(s, b, 2);
     }
+    if (profile == 8) {
+        Lit frozen = mkLit(7, false);
+
+        elim_preprocess_frozen(s, &frozen, 1);
+        if (s->error || s->watches->failed) goto done;
+    }
     for (unsigned repeat = 0; repeat < 2; ++repeat) {
-        if (profile == 6 && repeat == 1)
+        if ((profile == 6 || profile == 8) && repeat == 1)
             while (s->num_vars < 130)
                 if (!solver_new_var(s)) goto done;
         lbool r = solver_solve(s);
@@ -115,7 +129,7 @@ attempt(unsigned profile, bool sat, size_t cutoff)
                 for (unsigned v = 1; v <= 6; ++v)
                     assert(solver_model_value(s, v) == TRUE);
         }
-        if (profile == 6 && sat && repeat == 0) {
+        if ((profile == 6 || profile == 8) && sat && repeat == 0) {
             Lit assumption = mkLit(1, true);
 
             r = solver_solve_with_assumptions(s, &assumption, 1);
@@ -137,6 +151,7 @@ done:
         assert(r == UNDEF);
     }
     solver_free(s);
+    if (journal) assert(!fclose(journal));
     return calls;
 }
 
@@ -270,7 +285,7 @@ main(void)
     }
     printf("PASS: %zu SSR replacement allocation failures preserve UNKNOWN/error\n", ssr_count);
 #endif
-    for (unsigned p = 0; p < 8; ++p)
+    for (unsigned p = 0; p < 9; ++p)
         for (unsigned sat = 0; sat < 2; ++sat) {
             size_t count = attempt(p, sat, 0);
 
@@ -300,6 +315,6 @@ main(void)
                 ++injected;
             }
         }
-    printf("PASS: %zu single-allocation failures across 22 profiles/formulas and repeated solves\n",
+    printf("PASS: %zu single-allocation failures across 24 profiles/formulas and repeated solves\n",
            injected);
 }

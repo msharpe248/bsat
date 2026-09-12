@@ -8,6 +8,7 @@ import math
 import os
 from pathlib import Path
 import platform
+import shutil
 import tempfile
 import time
 
@@ -26,12 +27,29 @@ def main():
     for name in ('library', 'circuits', 'checked-report', 'output'):
         p.add_argument('--' + name, type=Path, required=True)
     p.add_argument('--circuit', required=True)
+    p.add_argument('--journal-output', type=Path, help='Save the final conclusive query proof for offline learning analysis')
+    p.add_argument('--profile', choices=('control', 'queue', 'vsids', 'reduce-ternary', 'positive', 'sustained', 'alternating', 'no-rephase', 'fresh', 'fresh-congruence', 'fresh-substitution', 'fresh-elimination', 'iterative', 'glue-three', 'lrb', 'large-db', 'no-reduce', 'dynamic', 'vivify'), default='control')
+    p.add_argument('--also-profile', action='append', default=[],
+                   help='Apply another test-only option profile before input')
     p.add_argument('--accounting', action='store_true')
+    p.add_argument('--causes', action='store_true')
+    p.add_argument('--macos-qos', action='store_true',
+                   help='Request USER_INITIATED QoS for the benchmark thread on macOS')
     p.add_argument('--conflicts', type=int, default=200000)
     p.add_argument('--cpu', type=float, default=300)
     a = p.parse_args()
     if not 0 <= a.conflicts < 2**32 or not math.isfinite(a.cpu) or a.cpu <= 0:
         p.error('positive finite CPU and uint32 conflict budgets required; zero means CPU-only')
+    if a.causes and not a.accounting:
+        p.error('--causes requires --accounting and a diagnostic build')
+    if a.macos_qos:
+        if platform.system() != 'Darwin':
+            p.error('--macos-qos requires macOS')
+        system = C.CDLL('/usr/lib/libSystem.B.dylib')
+        system.pthread_set_qos_class_self_np.argtypes = [C.c_uint, C.c_int]
+        system.pthread_set_qos_class_self_np.restype = C.c_int
+        if system.pthread_set_qos_class_self_np(0x19, 0):
+            p.error('could not request USER_INITIATED QoS')
     checked = json.loads(a.checked_report.read_text())
     assert checked['complete']
     history = [r for r in checked['runs'] if r['circuit'] == a.circuit and
@@ -51,8 +69,13 @@ def main():
     lib.bsat_diagnostic_write.argtypes = [C.c_void_p, C.c_char_p]
     lib.bsat_diagnostic_write.restype = C.c_int
     s = lib.bsat_create(1, 3)
-    assert s and lib.bsat_diagnostic_configure(s, b'control', a.accounting)
+    assert s
+    assert lib.bsat_diagnostic_configure(s, a.profile.encode(), a.accounting), (
+        f'Profile {a.profile!r} is unavailable in {a.library}')
+    for profile in a.also_profile:
+        assert lib.bsat_diagnostic_configure(s, profile.encode(), a.accounting), profile
     report = dict(complete=False, platform=platform.platform(),
+                  macos_qos='USER_INITIATED' if a.macos_qos else 'inherited', profile=a.profile, also_profiles=a.also_profile,
                   library_sha256=sha(a.library), harness_sha256=sha(__file__),
                   checked_report_sha256=sha(a.checked_report), circuit=item,
                   converter_sha256=sha(converter), checker_sha256=sha(checker),
@@ -84,10 +107,18 @@ def main():
             assert digest == expected['input_sha256']
             assert lib.bsat_set_query_limits(s, a.cpu, a.conflicts, 0)
             lib.bsat_diagnostic_begin_query(s)
+            if a.causes:
+                lib.bsat_diagnostic_frames.argtypes = [C.c_void_p, C.c_uint32]
+                lib.bsat_diagnostic_frames.restype = None
+                lib.bsat_diagnostic_frames(s, circuit.maximum)
             start = time.process_time()
             result = lib.bsat_solve(s, literals([assumption]), 1)
             cpu = time.process_time() - start
-            assert result in (0, 10, 20) and not lib.bsat_error(s)
+            error = bool(lib.bsat_error(s))
+            if result not in (0, 10, 20) or error:
+                report['failure_query'] = dict(depth=depth, polarity=polarity, result=result,
+                                               api_error=error, cpu_seconds=cpu, input_sha256=digest)
+                raise AssertionError(f'Invalid query result: {report["failure_query"]}')
             assert not result or not expected['result'] or result == expected['result']
             stats = Stats()
             assert lib.bsat_get_stats(s, C.byref(stats), C.sizeof(stats))
@@ -114,6 +145,8 @@ def main():
                 snapshot = root / 'diagnostic.json'
                 assert lib.bsat_diagnostic_write(s, os.fsencode(snapshot))
                 row['diagnostic'] = json.loads(snapshot.read_text())
+                if a.causes:
+                    assert sum(row['diagnostic']['propagation_source']) == stats.propagations
                 if result:
                     cnf, proof = root / 'input.cnf', root / 'proof.drat'
                     start = time.process_time()
@@ -121,6 +154,9 @@ def main():
                     row['export_cpu_seconds'] = time.process_time() - start
                     assert parse_cnf(cnf.read_text())[1] == exact
                     row['export_proof_bytes'] = proof.stat().st_size
+                    if a.journal_output and expected is history[-1]:
+                        a.journal_output.parent.mkdir(parents=True, exist_ok=True)
+                        shutil.copyfile(proof, a.journal_output)
                     if result == 20:
                         check = verify(cnf, proof, converter, checker, root / 'check', 600, 2048, 512)
                         row['certificate_checks'] = {'bsat-check': check}

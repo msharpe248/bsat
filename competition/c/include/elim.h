@@ -75,6 +75,7 @@ typedef struct ElimState {
     bool *eliminated;       // eliminated[v] = true if v was eliminated
     uint32_t elim_capacity; // Capacity of eliminated array
 
+    uint64_t next_conflict;
     bool occs_complete;
     // Statistics
     uint64_t vars_eliminated;
@@ -140,6 +141,7 @@ bool elim_eliminate_var(struct Solver *s, Var v);
 // Eliminates variables with positive cost-benefit ratio
 // Returns number of variables eliminated
 uint32_t elim_preprocess(struct Solver *s);
+uint32_t elim_preprocess_frozen(struct Solver *s, const Lit *frozen, uint32_t n_frozen);
 
 /*********************************************************************
  * Solution Reconstruction

@@ -93,10 +93,24 @@ bsat_create(uint32_t abi, uint32_t flags)
     o.reuse_learnts = (flags & BSAT_REUSE_LEARNTS) != 0;
     o.probe_on_change = o.reuse_learnts;
     if (flags & BSAT_CERTIFICATES) {
+        /* Ordered queue search for retained certified query histories. */
+        o.vmtf = o.reuse_learnts;
+        o.retain_ternary = o.reuse_learnts;
+        if (o.reuse_learnts) {
+            o.retained_elim = true;
+            o.unbiased_ema = true;
+            o.iterative_minimize = true;
+            o.glucose_fast_alpha = 32.0 / 33.0;
+            o.glucose_slow_alpha = 99999.0 / 100000.0;
+            o.glucose_min_conflicts = 2;
+            o.glucose_k = 1.0 / 1.1;
+            o.elim_max_occ = 100;
+            o.elim_grow = 0;
+        }
         o.restart_assumptions = true;
         o.assumption_lbd = true; /* Score fixed query levels without dropping literals. */
-        /* The journal contains RUP additions only. Keep variable namespace and
-           original formula intact; do not enable equisatisfiable transforms. */
+        /* Root elimination logs RUP resolvents and protects query variables.
+           Rebuilds restore the original namespace before subsequent queries. */
         o.probing = (flags & BSAT_CERTIFIED_PROBING) != 0;
         o.equiv = false;
         o.congruence = false;

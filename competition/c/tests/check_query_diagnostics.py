@@ -43,7 +43,10 @@ with tempfile.TemporaryDirectory() as tmp:
                 if exports:assert exports[0]==exports[1]
             path=root/f'diagnostic-{flags}.json'
             assert diag.bsat_diagnostic_write(handles[1][1],os.fsencode(path))
-            assert json.loads(path.read_text())['conflicts']==rows[-1][1]
+            snapshot=json.loads(path.read_text())
+            assert snapshot['conflicts']==rows[-1][1]
+            assert snapshot['ordered_queue']==(flags==3)
+            assert snapshot['retain_ternary']==(flags==3)
             assert not diag.bsat_diagnostic_write(handles[1][1],os.fsencode(path))
         finally:
             for lib,s in handles:lib.bsat_destroy(s)

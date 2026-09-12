@@ -234,6 +234,7 @@ SolverOpts
 default_opts(void)
 {
     SolverOpts opts = {
+        .retained_elim_budget = 100000000,
         .preprocess_budget = 1000000,
         .subsume_budget = 128,
         .circular = true,
@@ -649,6 +650,9 @@ solver_free(Solver *s)
         s->proof_file = NULL;
     }
 
+#ifdef BSAT_SEARCH_DIAGNOSTICS
+    free(s->accounting.decision_observations);
+#endif
     free(s);
 }
 
@@ -817,6 +821,9 @@ push_trail(Solver *s, Lit lit)
     s->vars[v].reason = INVALID_CLAUSE;
     s->binary_reasons[v] = LIT_UNDEF;
     s->values[v] = sign(lit) ? FALSE : TRUE;
+#ifdef BSAT_SEARCH_DIAGNOSTICS
+    s->vars[v].dominator = s->decision_level ? lit : 0;
+#endif
     s->vars[v].level = s->decision_level;
     s->vars[v].trail_pos = s->trail_size;
 
@@ -828,6 +835,20 @@ push_trail(Solver *s, Lit lit)
         s->vars[v].polarity = !sign(lit);
     }
 }
+
+#ifdef BSAT_SEARCH_DIAGNOSTICS
+static void
+diagnostic_unassign(Solver *s, Var v)
+{
+    if (!SEARCH_DIAGNOSTICS(s)) return;
+    VarInfo *info = &s->vars[v];
+
+    info->removed_value = info->processed_value;
+    info->removed_cause = s->accounting.removal_cause;
+    if (info->processed_value) ++s->accounting.removed_processed[info->removed_cause];
+    info->processed_value = 0;
+}
+#endif
 
 void
 solver_backtrack(Solver *s, Level level)
@@ -848,6 +869,9 @@ solver_backtrack(Solver *s, Level level)
                 s->trail[kept++].lit = lit;
                 ++s->stats.chrono_retained;
             } else {
+#ifdef BSAT_SEARCH_DIAGNOSTICS
+                diagnostic_unassign(s, v);
+#endif
                 s->values[v] = UNDEF;
                 if (s->opts.vmtf) solver_vmtf_unassign(s, v);
                 s->vars[v].level = INVALID_LEVEL;
@@ -866,6 +890,9 @@ solver_backtrack(Solver *s, Level level)
     for (uint32_t i = s->trail_size; i > pos;) {
         Var v = var(s->trail[--i].lit);
 
+#ifdef BSAT_SEARCH_DIAGNOSTICS
+        diagnostic_unassign(s, v);
+#endif
         s->values[v] = UNDEF;
         if (s->opts.vmtf) solver_vmtf_unassign(s, v);
         s->vars[v].level = INVALID_LEVEL;
@@ -1147,6 +1174,7 @@ static bool clause_locked(Solver *s, CRef cr);
 static CRef
 solver_propagate_account_impl(Solver *s)
 {
+
     while (s->qhead < s->trail_size) {
         if ((s->work & 1023) == 0 && solver_budget_exhausted(s)) return INVALID_CLAUSE;
         Lit p = s->trail[s->qhead++].lit;
@@ -1164,6 +1192,27 @@ solver_propagate_account_impl(Solver *s)
         uint32_t i = 0, j = 0;
 
         s->stats.propagations++;
+#ifdef BSAT_SEARCH_DIAGNOSTICS
+        if (SEARCH_DIAGNOSTICS(s)) {
+            Var v = var(p);
+            VarInfo *info = &s->vars[v];
+            SolverAccounting *a = &s->accounting;
+
+            ++a->propagation_source[a->propagation_cause];
+            if (a->propagation_cause == PROP_DECISION && a->observed_decision &&
+                a->observed_decision < a->decision_observations_count)
+                ++a->decision_observations[a->observed_decision].propagations;
+            if (a->frame_width && v > 1) ++a->propagation_frame[MIN((v - 2) / a->frame_width, 63)];
+            if (info->removed_value) {
+                if (info->removed_value == s->values[v])
+                    ++a->replay_same[info->removed_cause];
+                else
+                    ++a->replay_opposite[info->removed_cause];
+                info->removed_value = 0;
+            }
+            info->processed_value = s->values[v];
+        }
+#endif
 
 #ifdef DEBUG
         if (IS_DEBUG(s)) {
@@ -1209,6 +1258,9 @@ solver_propagate_account_impl(Solver *s)
 #endif
                     // Unit propagation via binary clause
                     s->values[v] = sign(q) ? FALSE : TRUE;
+#ifdef BSAT_SEARCH_DIAGNOSTICS
+                    s->vars[v].dominator = s->vars[var(p)].dominator;
+#endif
                     s->vars[v].level = s->opts.chrono ? s->vars[var(p)].level : s->decision_level;
                     s->vars[v].reason = binary_reason;
                     if (binary_reason != INVALID_CLAUSE) {
@@ -1401,6 +1453,31 @@ solver_propagate_account_impl(Solver *s)
                     h->recent_use |= 1;
 #endif
                 }
+#ifdef BSAT_SEARCH_DIAGNOSTICS
+                if (SEARCH_DIAGNOSTICS(s)) {
+                    Lit dominator = 0;
+                    bool common = true;
+
+                    for (uint32_t k = 1; k < size; ++k) {
+                        Lit d = s->vars[var(lits[k])].dominator;
+
+                        if (!d) continue;
+                        if (!dominator)
+                            dominator = d;
+                        else if (dominator != d) {
+                            common = false;
+                            break;
+                        }
+                    }
+                    s->vars[fv].dominator = common ? dominator : first;
+#ifdef BSAT_SEARCH_DIAGNOSTICS
+                    if (SEARCH_DIAGNOSTICS(s) && common && dominator) {
+                        ++s->accounting.hyperbinary_candidates;
+                        if (!clause_learned(s->arena, cref)) ++s->accounting.hyperbinary_original;
+                    }
+#endif
+                }
+#endif
                 // Unit clause - propagate
                 s->values[fv] = sign(first) ? FALSE : TRUE;
                 s->vars[fv].level = reason_level;
@@ -1601,6 +1678,12 @@ solver_analyze_account_impl(Solver *s, CRef conflict, Lit *learnt, uint32_t *lea
 #ifdef BSAT_SEARCH_DIAGNOSTICS
                 if (SEARCH_DIAGNOSTICS(s)) {
                     ClauseHeader *h = CLAUSE_HEADER(s->arena, reason);
+                    unsigned kind = clause_learned(s->arena, reason) ? 3 : size == 3 ? 1 : 2;
+
+                    ++s->accounting.cone_reasons[kind];
+                    if (h->analyses) ++s->accounting.cone_repeated[kind];
+                    if (s->vars[v].dominator && s->vars[v].dominator != p)
+                        ++s->accounting.cone_dominated[kind];
                     if (h->analyses < UINT32_MAX) ++h->analyses;
                     h->recent_use |= 2;
                 }
@@ -1627,6 +1710,9 @@ solver_analyze_account_impl(Solver *s, CRef conflict, Lit *learnt, uint32_t *lea
                     }
                 }
             } else if (s->binary_reasons[v] != LIT_UNDEF) {
+#ifdef BSAT_SEARCH_DIAGNOSTICS
+                if (SEARCH_DIAGNOSTICS(s)) ++s->accounting.cone_reasons[0];
+#endif
                 // Binary propagation - expand binary clause reason
                 // The binary clause is (binary_reasons[v] | p)
                 Lit q = s->binary_reasons[v];
@@ -1712,6 +1798,16 @@ solver_decide(Solver *s)
     Lit dec = mkLit(next, sign);
 
     push_trail(s, dec);
+#ifdef BSAT_SEARCH_DIAGNOSTICS
+    if (SEARCH_DIAGNOSTICS(s)) {
+        s->accounting.propagation_cause = PROP_DECISION;
+        s->accounting.observed_decision = dec;
+        if (dec < s->accounting.decision_observations_count)
+            ++s->accounting.decision_observations[dec].decisions;
+        if (s->accounting.frame_width && next > 1)
+            ++s->accounting.decision_frame[MIN((next - 2) / s->accounting.frame_width, 63)];
+    }
+#endif
 
     s->stats.decisions++;
 
@@ -1946,7 +2042,16 @@ solver_should_restart(Solver *s)
 static void
 record_lbd(Solver *s, uint32_t lbd)
 {
-    if (!s->lbd_samples++)
+    if (s->opts.unbiased_ema) {
+        double fast = 1 - s->opts.glucose_fast_alpha;
+        double slow = 1 - s->opts.glucose_slow_alpha;
+
+        ++s->lbd_samples;
+        s->restart.fast_weight = s->opts.glucose_fast_alpha * s->restart.fast_weight + fast;
+        s->restart.slow_weight = s->opts.glucose_slow_alpha * s->restart.slow_weight + slow;
+        s->restart.fast_ma += fast / s->restart.fast_weight * (lbd - s->restart.fast_ma);
+        s->restart.slow_ma += slow / s->restart.slow_weight * (lbd - s->restart.slow_ma);
+    } else if (!s->lbd_samples++)
         s->restart.fast_ma = s->restart.slow_ma = lbd;
     else {
         s->restart.fast_ma = s->opts.glucose_fast_alpha * s->restart.fast_ma +
@@ -2199,8 +2304,8 @@ solver_reduce_db_account_impl(Solver *s)
                 continue;
             }
         }
-        if (CLAUSE_SIZE(s->arena, cr) <= 2 || clause_lbd(s->arena, cr) <= s->opts.glue_lbd ||
-            clause_locked(s, cr)) {
+        if (CLAUSE_SIZE(s->arena, cr) <= (s->opts.retain_ternary ? 3u : 2u) ||
+            clause_lbd(s->arena, cr) <= s->opts.glue_lbd || clause_locked(s, cr)) {
             account_reduction_use(s, cr, false);
             continue;
         }
@@ -2598,11 +2703,11 @@ failed_literal_probing_account_impl(Solver *s)
  *********************************************************************/
 
 static bool
-solver_rebuild_timed(Solver *s, double start_time, double max_time)
+solver_rebuild_timed(Solver *s, double start_time, double max_time, bool retain)
 {
     if (s->error || s->watches->failed) return false;
-    /* Restore input after destructive preprocessing or an assumption solve.
-       This deliberately sacrifices learned-clause reuse for a simple, safe API. */
+    /* Restore the original variable namespace after destructive preprocessing.
+       Certified retained queries may copy globally entailed facts below. */
     SolverOpts opts = s->opts;
     const char *path = opts.proof_path;
 
@@ -2648,6 +2753,38 @@ solver_rebuild_timed(Solver *s, double start_time, double max_time)
         solver_free(fresh);
         s->error = true;
         return false;
+    }
+    if (retain && s->opts.retained_elim && s->proof_journal && !s->proof_file && !path &&
+        s->opts.reuse_learnts && !s->interrupted && !s->factor_original_vars) {
+        if (solver_propagate(fresh) != INVALID_CLAUSE) fresh->result = FALSE;
+        for (uint32_t i = 0; i < s->trail_size && fresh->result != FALSE; ++i) {
+            if (solver_budget_exhausted(fresh)) goto incomplete;
+            Lit unit = s->trail[i].lit;
+            Var v = var(unit);
+
+            if (s->vars[v].level) continue;
+            if (v > original_vars || elim_is_eliminated(s, v) ||
+                lxor(fresh->values[v], sign(unit)) == TRUE)
+                continue;
+
+            proof_add_clause(fresh, &unit, 1);
+            solver_add_clause(fresh, &unit, 1);
+            if (fresh->error) goto incomplete;
+        }
+        for (uint32_t i = 0; i < s->num_learnts && fresh->result != FALSE; ++i) {
+            if (solver_budget_exhausted(fresh)) goto incomplete;
+            CRef cr = s->learnts[i];
+
+            if (clause_deleted(s->arena, cr)) continue;
+            uint32_t n = CLAUSE_SIZE(s->arena, cr);
+
+            if (n > 8 && (n > 128 || clause_lbd(s->arena, cr) > 3)) continue;
+            Lit *lits = CLAUSE_LITS(s->arena, cr);
+
+            proof_add_clause(fresh, lits, n);
+            solver_add_clause(fresh, lits, n);
+            if (fresh->error) goto incomplete;
+        }
     }
     if (solver_budget_exhausted_now(fresh)) goto incomplete;
     fresh->opts.max_time = opts.max_time;
@@ -2696,6 +2833,9 @@ solver_rebuild_timed(Solver *s, double start_time, double max_time)
     solver_free(fresh);
     return true;
 incomplete:
+    /* The borrowed journal may already contain retained facts even when the
+       rebuild times out. Keep its byte accounting with the surviving solver. */
+    s->journal_bytes = fresh->journal_bytes;
     s->error |= fresh->error;
     s->interrupted |= fresh->interrupted;
     s->cancelled |= fresh->cancelled;
@@ -2706,14 +2846,14 @@ incomplete:
 static bool
 solver_rebuild(Solver *s)
 {
-    return solver_rebuild_timed(s, 0, 0);
+    return solver_rebuild_timed(s, 0, 0, true);
 }
 
 bool
 solver_reset_learning(Solver *s)
 {
     if (!s || s->error || s->watches->failed) return false;
-    return solver_rebuild_timed(s, solver_cpu_time(), s->opts.max_time);
+    return solver_rebuild_timed(s, solver_cpu_time(), s->opts.max_time, false);
 }
 
 /* Fast reuse is deliberately conservative. Reconstruction state, destructive
@@ -2731,7 +2871,8 @@ solver_prepare_next(Solver *s, double start)
                  !s->opts.local_search && !s->opts.inprocess && !s->interrupted;
 
     if (!reuse)
-        return start < 0 ? solver_rebuild(s) : solver_rebuild_timed(s, start, s->opts.max_time);
+        return start < 0 ? solver_rebuild(s)
+                         : solver_rebuild_timed(s, start, s->opts.max_time, true);
     bool unsat = s->base_unsat || (s->result == FALSE && !s->last_assumptions);
 
     /* Database maintenance follows the retained database across short queries,
@@ -2836,6 +2977,17 @@ solver_normalize_conflict(Solver *s, CRef conflict)
         solver_backtrack(s, highest);
     }
     return highest > 0;
+}
+
+enum { RETAINED_ELIM_INTERVAL = 2000 };
+
+static bool
+elimination_due(Solver *s)
+{
+    if (!s->opts.retained_elim || !s->opts.retained_elim_budget || !s->proof_journal ||
+        !s->opts.reuse_learnts || s->stats.conflicts < RETAINED_ELIM_INTERVAL)
+        return false;
+    return !s->elim || s->stats.conflicts >= s->elim->next_conflict;
 }
 
 static lbool solve_internal(Solver *s, const Lit *assumps, uint32_t n_assumps);
@@ -2950,6 +3102,12 @@ solve_internal_account_impl(Solver *s, const Lit *assumps, uint32_t n_assumps)
         if (s->error || s->interrupted) break;
         if (conflict != INVALID_CLAUSE) {
             s->stats.conflicts++;
+#ifdef BSAT_SEARCH_DIAGNOSTICS
+            if (SEARCH_DIAGNOSTICS(s) && s->accounting.propagation_cause == PROP_DECISION &&
+                s->accounting.observed_decision &&
+                s->accounting.observed_decision < s->accounting.decision_observations_count)
+                ++s->accounting.decision_observations[s->accounting.observed_decision].conflicts;
+#endif
             s->restart.conflicts_since++;
             if (SEARCH_DIAGNOSTICS(s)) ++s->accounting.diagnostic_conflicts;
             if (s->opts.chrono && !solver_normalize_conflict(s, conflict)) {
@@ -2994,13 +3152,35 @@ solve_internal_account_impl(Solver *s, const Lit *assumps, uint32_t n_assumps)
                     learnt[i] = tmp;
                 }
             Level assertion_level = backtrack;
+#ifdef BSAT_SEARCH_DIAGNOSTICS
+            if (SEARCH_DIAGNOSTICS(s)) {
+                uint32_t distance = s->decision_level - backtrack;
+                unsigned bin = 0;
+
+                while (distance > 1 && bin < 7) {
+                    distance >>= 1;
+                    ++bin;
+                }
+                ++s->accounting.backjump_distance[bin];
+                s->accounting.backjump_removed[bin] += s->trail_size - s->trail_lims[backtrack + 1];
+                s->accounting.backjump_preservable[bin] +=
+                    s->trail_lims[s->decision_level] - s->trail_lims[backtrack + 1];
+            }
+#endif
 
             if (s->opts.chrono && s->decision_level - 1 - backtrack > s->opts.chrono_levels) {
                 backtrack = s->decision_level - 1;
                 ++s->stats.chronological;
             }
             /* The assertion keeps its logical level, including zero for units. */
+#ifdef BSAT_SEARCH_DIAGNOSTICS
+            s->accounting.removal_cause = REMOVAL_BACKJUMP;
+#endif
             solver_backtrack(s, backtrack);
+#ifdef BSAT_SEARCH_DIAGNOSTICS
+            s->accounting.removal_cause = REMOVAL_OTHER;
+            s->accounting.propagation_cause = PROP_ASSERTION;
+#endif
             proof_add_clause(s, learnt, n);
             if (s->learn_callback && n <= s->learn_max_length) {
                 int *exported = malloc(((size_t)n + 1) * sizeof *exported);
@@ -3067,6 +3247,7 @@ solve_internal_account_impl(Solver *s, const Lit *assumps, uint32_t n_assumps)
                    prefix during preparation. Certified facade policy is opt-in. */
                 if (n_assumps && s->opts.restart_assumptions)
                     level = MIN(s->decision_level, n_assumps);
+                if (elimination_due(s)) level = 0;
 #ifdef BSAT_SEARCH_DIAGNOSTICS
                 if (SEARCH_DIAGNOSTICS(s)) {
                     ++s->accounting.restart_events;
@@ -3074,8 +3255,12 @@ solve_internal_account_impl(Solver *s, const Lit *assumps, uint32_t n_assumps)
                     s->accounting.restart_levels_before += s->decision_level;
                 }
 #endif
+#ifdef BSAT_SEARCH_DIAGNOSTICS
+                s->accounting.removal_cause = REMOVAL_RESTART;
+#endif
                 solver_backtrack(s, level);
 #ifdef BSAT_SEARCH_DIAGNOSTICS
+                s->accounting.removal_cause = REMOVAL_OTHER;
                 if (SEARCH_DIAGNOSTICS(s)) {
                     s->accounting.restart_trail_kept += s->trail_size;
                     s->accounting.restart_levels_kept += s->decision_level;
@@ -3086,6 +3271,47 @@ solve_internal_account_impl(Solver *s, const Lit *assumps, uint32_t n_assumps)
                 if (s->qhead < s->trail_size) continue;
             }
             if (!s->decision_level) {
+                if (elimination_due(s)) {
+                    s->work_limit =
+                        s->work + MIN(s->opts.retained_elim_budget, UINT64_MAX - s->work);
+                    elim_preprocess_frozen(s, assumps, n_assumps);
+                    if (s->elim)
+                        s->elim->next_conflict =
+                            s->stats.conflicts +
+                            MIN(MAX((uint64_t)RETAINED_ELIM_INTERVAL, s->stats.conflicts / 2),
+                                UINT64_MAX - s->stats.conflicts);
+                    s->work_limit = 0;
+                    if (s->error || s->interrupted) break;
+                    for (uint32_t i = 0; i < s->num_learnts; ++i) {
+                        if (solver_budget_exhausted(s)) break;
+                        CRef cr = s->learnts[i];
+
+                        if (clause_deleted(s->arena, cr) || clause_locked(s, cr)) continue;
+                        Lit *lits = CLAUSE_LITS(s->arena, cr);
+                        uint32_t n = CLAUSE_SIZE(s->arena, cr);
+                        bool removed = false;
+
+                        for (uint32_t j = 0; j < n; ++j) {
+                            ++s->work;
+                            if (!(s->work & 1023) && solver_budget_exhausted(s)) break;
+                            if (s->elim->eliminated[var(lits[j])]) {
+                                removed = true;
+                                break;
+                            }
+                        }
+                        if (removed) {
+                            solver_delete_clause(s, cr);
+                            ++s->stats.deleted_clauses;
+                        }
+                    }
+                    if (s->error || s->interrupted) break;
+                    if (s->result == FALSE) {
+                        s->base_unsat = true;
+                        result = FALSE;
+                        break;
+                    }
+                    if (s->qhead < s->trail_size) continue;
+                }
                 if (!solver_simplify(s)) {
                     s->base_unsat = true;
                     result = FALSE;
@@ -3124,6 +3350,9 @@ solve_internal_account_impl(Solver *s, const Lit *assumps, uint32_t n_assumps)
                 s->trail_lims[s->decision_level] = s->trail_size;
                 if (value == UNDEF) {
                     push_trail(s, a);
+#ifdef BSAT_SEARCH_DIAGNOSTICS
+                    s->accounting.propagation_cause = PROP_ASSUMPTION;
+#endif
                     assumption = true;
                     break;
                 }
@@ -3281,7 +3510,7 @@ solver_solve_portfolio(Solver *s, double focused_seconds)
     uint64_t first_conflicts = 0, first_decisions = 0;
 
     /* Repeated calls also charge rebuilding to the total deadline. */
-    if (s->has_solved && !solver_rebuild_timed(s, start, saved.max_time)) goto done;
+    if (s->has_solved && !solver_rebuild_timed(s, start, saved.max_time, false)) goto done;
     attempts = 1;
     s->opts.alternating = false;
     s->opts.max_time = saved.max_time > 0 ? fmin(saved.max_time, focused_seconds) : focused_seconds;
@@ -3298,7 +3527,7 @@ solver_solve_portfolio(Solver *s, double focused_seconds)
     uint64_t conflicts = s->stats.conflicts, decisions = s->stats.decisions;
 
     s->opts = saved;
-    if (!solver_rebuild_timed(s, start, saved.max_time)) goto done;
+    if (!solver_rebuild_timed(s, start, saved.max_time, false)) goto done;
     attempts = 2;
     first_conflicts = conflicts;
     first_decisions = decisions;

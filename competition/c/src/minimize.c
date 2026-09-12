@@ -176,6 +176,21 @@ legacy_minimize_clause(Solver *s, Lit *learnt, uint32_t *learnt_size)
         s->seen[var(learnt[i])] = 1;
     }
 
+#ifdef BSAT_SEARCH_DIAGNOSTICS
+    if (SEARCH_DIAGNOSTICS(s)) {
+        for (uint32_t i = 1; i < *learnt_size; ++i) {
+            Var v = var(learnt[i]);
+            Lit q = s->binary_reasons[v];
+
+            ++s->accounting.boundary_literals;
+            if (s->vars[v].reason != INVALID_CLAUSE || q == LIT_UNDEF) continue;
+            ++s->accounting.boundary_binary;
+            if (s->seen[var(q)] == 1 || !s->vars[var(q)].level)
+                ++s->accounting.boundary_binary_covered;
+        }
+    }
+#endif
+
     // Step 3: Try to remove each literal (except asserting literal at [0])
     uint32_t new_size = 1; // Keep learnt[0] (asserting literal)
 

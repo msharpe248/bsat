@@ -1,5 +1,6 @@
 /* Independent truth/model checks for complete and interrupted BVE passes. */
 #include "../include/solver.h"
+#include "../include/dimacs.h"
 #include <assert.h>
 
 static uint32_t
@@ -115,13 +116,18 @@ residual_models(Solver *s, bool satisfiable)
 int
 main(void)
 {
-    for (unsigned seed = 0; seed < 512; ++seed) {
+    for (unsigned seed = 0; seed < 1024; ++seed) {
         Solver *s = formula(seed);
         bool sat = truth(s);
-        unsigned count = elim_preprocess(s);
+        Lit frozen = mkLit(1, false);
+
+        s->opts.retained_elim = seed >= 512;
+        unsigned count =
+            s->opts.retained_elim ? elim_preprocess_frozen(s, &frozen, 1) : elim_preprocess(s);
 
         assert(!s->error);
         assert(count == s->elim->vars_eliminated);
+        if (s->opts.retained_elim) assert(!elim_is_eliminated(s, 1));
         residual_models(s, sat);
         lbool result = solver_solve(s);
 
@@ -131,14 +137,20 @@ main(void)
     }
     unsigned cutoffs = 0;
 
-    for (unsigned seed = 0; seed < 3; ++seed)
+    for (unsigned seed = 0; seed < 6; ++seed)
         for (unsigned limit = 0; limit <= 512; ++limit) {
             Solver *s = formula(seed + 30);
             bool sat = truth(s);
 
             s->work = 1;
             s->work_limit = 1 + limit;
-            elim_preprocess(s);
+            s->opts.retained_elim = seed >= 3;
+            Lit frozen = mkLit(1, false);
+
+            if (s->opts.retained_elim)
+                elim_preprocess_frozen(s, &frozen, 1);
+            else
+                elim_preprocess(s);
             assert(!s->error);
             for (Var v = 1; v <= s->num_vars; ++v)
                 assert(!s->seen[v]);
@@ -150,5 +162,26 @@ main(void)
             solver_free(s);
             ++cutoffs;
         }
-    printf("PASS: 512 BVE truth/residual-model cases and %u cutoff/resume cases\n", cutoffs);
+    const char *gates[] = {"p cnf 7 7\n-1 2 0\n-1 3 0\n1 -2 -3 0\n1 4 0\n1 5 0\n-1 6 0\n-1 7 0\n",
+                           "p cnf 7 8\n1 2 3 0\n1 -2 -3 0\n-1 -2 3 0\n-1 2 -3 0\n"
+                           "1 4 0\n1 5 0\n-1 6 0\n-1 7 0\n"};
+
+    for (unsigned i = 0; i < 2; ++i) {
+        Solver *s = solver_new();
+        Lit frozen[6];
+
+        assert(s && dimacs_parse_string(s, gates[i]) == DIMACS_OK);
+        s->opts.retained_elim = true;
+        s->opts.probing = false;
+        for (unsigned j = 0; j < 6; ++j)
+            frozen[j] = mkLit(j + 2, false);
+        assert(elim_preprocess_frozen(s, frozen, 6) == 1);
+        assert(elim_is_eliminated(s, 1));
+        for (unsigned j = 2; j <= 7; ++j)
+            assert(!elim_is_eliminated(s, j));
+        residual_models(s, truth(s));
+        solver_free(s);
+    }
+    printf("PASS: 1024 BVE truth/residual-model cases, AND/XOR gates and %u cutoff/resume cases\n",
+           cutoffs);
 }

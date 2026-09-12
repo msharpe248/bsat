@@ -34,6 +34,20 @@
  * retain this fixed algorithm's order, independent of the host C library. */
 #include "../include/reduction_sort.h"
 
+typedef struct {
+    bool (*poll)(void *);
+    void *state;
+    bool stopped;
+} SortBudget;
+
+static bool
+stopped(SortBudget *budget)
+{
+    if (!budget) return false;
+    if (!budget->stopped) budget->stopped = budget->poll(budget->state);
+    return budget->stopped;
+}
+
 static int
 score_cmp(const ClauseScore *a, const ClauseScore *b)
 {
@@ -61,22 +75,26 @@ med3(ClauseScore *a, size_t x, size_t y, size_t z)
 }
 
 static bool
-insertion(ClauseScore *a, size_t n, size_t limit)
+insertion(ClauseScore *a, size_t n, size_t limit, SortBudget *budget)
 {
     size_t swaps = 0;
 
-    for (size_t i = 1; i < n; ++i)
+    for (size_t i = 1; i < n; ++i) {
+        if (stopped(budget)) return false;
         for (size_t j = i; j && score_cmp(a + j - 1, a + j) > 0; --j) {
+            if (stopped(budget)) return false;
             swap(a + j, a + j - 1);
             if (limit && ++swaps > limit) return false;
         }
+    }
     return true;
 }
 
 static void
-sift(ClauseScore *a, size_t root, size_t n)
+sift(ClauseScore *a, size_t root, size_t n, SortBudget *budget)
 {
     while (root < n / 2) {
+        if (stopped(budget)) return;
         size_t child = 2 * root + 1;
 
         if (child + 1 < n && score_cmp(a + child, a + child + 1) < 0) ++child;
@@ -87,34 +105,36 @@ sift(ClauseScore *a, size_t root, size_t n)
 }
 
 static void
-score_heapsort(ClauseScore *a, size_t n)
+score_heapsort(ClauseScore *a, size_t n, SortBudget *budget)
 {
-    for (size_t i = n / 2; i; i--)
-        sift(a, i - 1, n);
-    for (size_t end = n; end > 1; --end) {
+    for (size_t i = n / 2; i && !stopped(budget); i--)
+        sift(a, i - 1, n, budget);
+    for (size_t end = n; end > 1 && !stopped(budget); --end) {
         swap(a, a + end - 1);
-        sift(a, 0, end - 1);
+        sift(a, 0, end - 1, budget);
     }
 }
 
 static void
-vecswap(ClauseScore *a, ClauseScore *b, size_t n)
+vecswap(ClauseScore *a, ClauseScore *b, size_t n, SortBudget *budget)
 {
-    for (size_t i = 0; i < n; ++i)
+    for (size_t i = 0; i < n; ++i) {
+        if (stopped(budget)) return;
         swap(a + i, b + i);
+    }
 }
 
-void
-bsat_sort_clause_scores_depth(ClauseScore *a, size_t n, unsigned depth)
+static void
+sort_depth(ClauseScore *a, size_t n, unsigned depth, SortBudget *budget)
 {
-    while (n > 1) {
+    while (n > 1 && !stopped(budget)) {
         if (!depth) {
-            score_heapsort(a, n);
+            score_heapsort(a, n, budget);
             return;
         }
         --depth;
         if (n <= 7) {
-            (void)insertion(a, n, 0);
+            (void)insertion(a, n, 0, budget);
             return;
         }
         size_t pl = 0, pm = n / 2, pn = n - 1;
@@ -133,7 +153,7 @@ bsat_sort_clause_scores_depth(ClauseScore *a, size_t n, unsigned depth)
         int cmp;
 
         for (;;) {
-            while (pb <= pc && (cmp = score_cmp(a + pb, a)) <= 0) {
+            while (pb <= pc && !stopped(budget) && (cmp = score_cmp(a + pb, a)) <= 0) {
                 if (!cmp) {
                     swapped = true;
                     swap(a + pa, a + pb);
@@ -141,7 +161,7 @@ bsat_sort_clause_scores_depth(ClauseScore *a, size_t n, unsigned depth)
                 }
                 ++pb;
             }
-            while (pb <= pc && (cmp = score_cmp(a + pc, a)) >= 0) {
+            while (pb <= pc && !stopped(budget) && (cmp = score_cmp(a + pc, a)) >= 0) {
                 if (!cmp) {
                     swapped = true;
                     swap(a + pc, a + pd);
@@ -149,6 +169,7 @@ bsat_sort_clause_scores_depth(ClauseScore *a, size_t n, unsigned depth)
                 }
                 --pc;
             }
+            if (budget && budget->stopped) return;
             if (pb > pc) break;
             swap(a + pb, a + pc);
             swapped = true;
@@ -157,23 +178,30 @@ bsat_sort_clause_scores_depth(ClauseScore *a, size_t n, unsigned depth)
         }
         size_t d = pa < pb - pa ? pa : pb - pa;
 
-        vecswap(a, a + pb - d, d);
+        vecswap(a, a + pb - d, d, budget);
         d = pd - pc < n - pd - 1 ? pd - pc : n - pd - 1;
-        vecswap(a + pb, a + n - d, d);
-        if (!swapped && insertion(a, n, 1 + n / 4)) return;
+        vecswap(a + pb, a + n - d, d, budget);
+        if (!swapped && insertion(a, n, 1 + n / 4, budget)) return;
+        if (budget && budget->stopped) return;
         size_t left = pb - pa, right = pd - pc;
 
         if (left <= right) {
-            if (left > 1) bsat_sort_clause_scores_depth(a, left, depth);
+            if (left > 1) sort_depth(a, left, depth, budget);
             if (right <= 1) return;
             a += n - right;
             n = right;
         } else {
-            if (right > 1) bsat_sort_clause_scores_depth(a + n - right, right, depth);
+            if (right > 1) sort_depth(a + n - right, right, depth, budget);
             if (left <= 1) return;
             n = left;
         }
     }
+}
+
+void
+bsat_sort_clause_scores_depth(ClauseScore *a, size_t n, unsigned depth)
+{
+    sort_depth(a, n, depth, NULL);
 }
 
 void
@@ -184,4 +212,16 @@ bsat_sort_clause_scores(ClauseScore *a, size_t n)
     for (size_t k = n; k > 1; k >>= 1)
         ++depth;
     bsat_sort_clause_scores_depth(a, n, 2 * depth);
+}
+
+bool
+bsat_sort_clause_scores_bounded(ClauseScore *a, size_t n, bool (*poll)(void *), void *state)
+{
+    unsigned depth = 0;
+    SortBudget budget = {poll, state, false};
+
+    for (size_t k = n; k > 1; k >>= 1)
+        ++depth;
+    sort_depth(a, n, 2 * depth, poll ? &budget : NULL);
+    return !budget.stopped;
 }

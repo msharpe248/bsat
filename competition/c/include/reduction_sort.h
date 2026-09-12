@@ -12,4 +12,7 @@ typedef struct {
 void bsat_sort_clause_scores(ClauseScore *scores, size_t n);
 /* Internal entry also used to exercise depth-exhaustion in regression tests. */
 void bsat_sort_clause_scores_depth(ClauseScore *scores, size_t n, unsigned depth);
+/* Same ordering; an interrupted sort leaves a permutation and returns false. */
+bool bsat_sort_clause_scores_bounded(ClauseScore *scores, size_t n, bool (*poll)(void *),
+                                     void *state);
 #endif

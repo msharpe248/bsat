@@ -19,6 +19,26 @@ random32(uint32_t *s)
     return *s;
 }
 
+typedef struct {
+    size_t calls, limit;
+} Budget;
+
+static bool
+stop_after(void *state)
+{
+    Budget *budget = state;
+
+    return ++budget->calls > budget->limit;
+}
+
+static int
+by_identity(const void *x, const void *y)
+{
+    const ClauseScore *a = x, *b = y;
+
+    return (a->cref > b->cref) - (a->cref < b->cref);
+}
+
 static void
 check(const ClauseScore *a, const ClauseScore *original, size_t n)
 {
@@ -73,6 +93,20 @@ main(void)
             bsat_sort_clause_scores(a, n);
 #endif
             check(a, orig, n);
+            Budget unlimited = {0, SIZE_MAX};
+
+            memcpy(b, orig, n * sizeof *b);
+            assert(bsat_sort_clause_scores_bounded(b, n, stop_after, &unlimited));
+            assert(!memcmp(a, b, n * sizeof *a));
+            for (size_t limit = 0; limit < unlimited.calls && limit < 128; ++limit) {
+                Budget budget = {0, limit};
+
+                memcpy(b, orig, n * sizeof *b);
+                assert(!bsat_sort_clause_scores_bounded(b, n, stop_after, &budget));
+                assert(budget.calls == limit + 1);
+                qsort(b, n, sizeof *b, by_identity);
+                assert(!memcmp(b, orig, n * sizeof *b));
+            }
             for (size_t i = 0; i < n; ++i) {
                 hash ^= a[i].cref;
                 hash *= UINT64_C(1099511628211);

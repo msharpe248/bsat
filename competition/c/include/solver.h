@@ -21,14 +21,17 @@
 
 typedef struct SolverOpts {
     // Core parameters
-    uint32_t max_conflicts;     // Conflict limit (0 = unlimited)
-    uint32_t max_decisions;     // Decision limit (0 = unlimited)
-    double max_time;            // Time limit in seconds (0 = unlimited)
-    bool equiv;                 // Opt-in binary SCC substitution
-    uint64_t equiv_budget;      // Independent preprocessing work budget
-    bool congruence;            // Experimental AND/XOR/ITE gate congruence
-    uint64_t congruence_budget; // Independent gate extraction/derivation budget
-    bool factor;                // Opt-in proof-producing binary/ternary BVA
+    uint32_t max_conflicts;        // Conflict limit (0 = unlimited)
+    uint32_t max_decisions;        // Decision limit (0 = unlimited)
+    double max_time;               // Time limit in seconds (0 = unlimited)
+    bool retained_elim;            // Root elimination with frozen query assumptions
+    uint64_t retained_elim_budget; // Work limit for each retained elimination pass
+    bool unbiased_ema;             // Normalize restart averages during initialization
+    bool equiv;                    // Opt-in binary SCC substitution
+    uint64_t equiv_budget;         // Independent preprocessing work budget
+    bool congruence;               // Experimental AND/XOR/ITE gate congruence
+    uint64_t congruence_budget;    // Independent gate extraction/derivation budget
+    bool factor;                   // Opt-in proof-producing binary/ternary BVA
     uint64_t factor_budget;
     uint32_t factor_max_variables;
     uint32_t factor_min_gain; // Minimum net clauses removed per rectangle
@@ -81,6 +84,7 @@ typedef struct SolverOpts {
     uint32_t reduce_increment; // Add to interval after each reduction (0: fixed)
     bool binary_minimize;      // Bounded binary-resolution pass on short low-LBD clauses
     bool iterative_minimize;   // Experimental binary-aware traversal (false)
+    bool retain_ternary;       // Keep learned ternary clauses through reduction
     bool protect_used;         // One reduction reprieve for used LBD <= 6 clauses
     bool dynamic_lbd;          // Re-evaluate learned-clause quality during analysis
     uint32_t minimize_budget;  // Work cap per minimization pass (0 disables)
@@ -153,6 +157,10 @@ typedef struct VarInfo {
 
     // Phase saving - 1 byte, naturally packs at end with padding
     bool polarity; // Saved polarity
+#ifdef BSAT_SEARCH_DIAGNOSTICS
+    uint8_t processed_value, removed_value, removed_cause;
+    Lit dominator;
+#endif
 } VarInfo;
 
 /*********************************************************************
@@ -195,6 +203,16 @@ typedef enum {
 #define SEARCH_DIAGNOSTICS(s) false
 #endif
 
+#ifdef BSAT_SEARCH_DIAGNOSTICS
+typedef struct {
+    uint64_t decisions, propagations, conflicts;
+} DecisionObservation;
+
+enum { PROP_OTHER, PROP_ASSUMPTION, PROP_DECISION, PROP_ASSERTION, PROP_CAUSES };
+
+enum { REMOVAL_OTHER, REMOVAL_RESTART, REMOVAL_BACKJUMP, REMOVAL_CAUSES };
+#endif
+
 typedef struct SolverAccounting {
     uint64_t congruence_temporary_peak, rebuild_overlap_peak;
     uint64_t binary_visits, long_visits, blocker_hits, first_hits;
@@ -206,6 +224,19 @@ typedef struct SolverAccounting {
     uint64_t learned_reason_uses, learned_reason_lbd_sum;
     uint64_t reduced_candidates, deleted_without_analysis_use;
 #ifdef BSAT_SEARCH_DIAGNOSTICS
+    /* Query-local causal observations. Sources: other, assumption, decision, assertion. */
+    DecisionObservation *decision_observations;
+    size_t decision_observations_count;
+    Lit observed_decision;
+    uint64_t hyperbinary_candidates, hyperbinary_original;
+    /* Conflict-cone reasons: implicit binary, original ternary, other original, learned. */
+    uint64_t cone_reasons[4], cone_repeated[4], cone_dominated[4];
+    uint64_t boundary_literals, boundary_binary, boundary_binary_covered;
+    uint64_t backjump_distance[8], backjump_removed[8], backjump_preservable[8];
+    uint64_t propagation_source[PROP_CAUSES], propagation_frame[64], decision_frame[64];
+    uint64_t replay_same[REMOVAL_CAUSES], replay_opposite[REMOVAL_CAUSES],
+        removed_processed[REMOVAL_CAUSES];
+    uint32_t frame_width, propagation_cause, removal_cause;
     /* Cumulative restart observations; removed assignments are not measured replays. */
     uint64_t restart_events, restart_trail_before, restart_trail_kept;
     uint64_t restart_levels_before, restart_levels_kept;
@@ -348,6 +379,7 @@ typedef struct Solver {
         // Glucose EMA state
         double slow_ma; // Slow moving average (Glucose EMA)
         double fast_ma; // Fast moving average (Glucose EMA)
+        double fast_weight, slow_weight;
 
         // Glucose sliding window state
         uint32_t *recent_lbds;      // Circular buffer of recent LBDs
