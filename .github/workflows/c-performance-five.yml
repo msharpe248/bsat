@@ -11,6 +11,12 @@ on:
       candidate_flags:
         type: number
         default: 3
+      target_only:
+        type: boolean
+        default: false
+      target_cpu:
+        type: number
+        default: 60
   workflow_dispatch:
     inputs:
       baseline_run:
@@ -24,6 +30,14 @@ on:
         description: Candidate public session flags
         type: number
         default: 3
+      target_only:
+        description: Skip the already completed broad comparison
+        type: boolean
+        default: false
+      target_cpu:
+        description: Matched cal93 CPU limit
+        type: number
+        default: 60
 permissions:
   contents: read
   actions: read
@@ -60,6 +74,7 @@ jobs:
           GH_TOKEN: ${{ github.token }}
           BASELINE_RUN: ${{ inputs.baseline_run }}
           CANDIDATE_FLAGS: ${{ inputs.candidate_flags }}
+          TARGET_ONLY: ${{ inputs.target_only }}
           BSAT_DRAT_TRIM: ${{ runner.temp }}/drat-trim
           BSAT_CAKE_LPR: ${{ runner.temp }}/cake-lpr/cake_lpr
         run: |
@@ -70,16 +85,19 @@ jobs:
           git rev-parse HEAD > "$RUNNER_TEMP/results/revision.txt"
           python3 competition/c/tests/check_retained_certificates.py --driver competition/c/bin/query_certificate_driver_release --output "$RUNNER_TEMP/results/certificates.json"
           python3 competition/c/tests/check_query_diagnostics.py --production competition/c/bin/libbsat_release.so --diagnostic competition/c/bin/libquery_diagnostics_release.so
-          python3 competition/c/tests/confirm_five_linux.py --baseline "$RUNNER_TEMP/baseline/competition/c/bin/libquery_diagnostics_release.so" --candidate competition/c/bin/libbsat_release.so --candidate-flags "$CANDIDATE_FLAGS" --checked "$RUNNER_TEMP/checked/fresh.json" --circuits "$RUNNER_TEMP/circuits" --output "$RUNNER_TEMP/results/paired"
-          python3 competition/c/tests/measure_cnf_search.py --library competition/c/bin/libbsat_release.so --manifest "$RUNNER_TEMP/cnf/manifest.json" --profiles control --flags 11 --cpu 30 --output "$RUNNER_TEMP/results/vsids.json"
+          if [ "$TARGET_ONLY" != true ]; then
+            python3 competition/c/tests/confirm_five_linux.py --baseline "$RUNNER_TEMP/baseline/competition/c/bin/libquery_diagnostics_release.so" --candidate competition/c/bin/libbsat_release.so --candidate-flags "$CANDIDATE_FLAGS" --checked "$RUNNER_TEMP/checked/fresh.json" --circuits "$RUNNER_TEMP/circuits" --output "$RUNNER_TEMP/results/paired"
+            python3 competition/c/tests/measure_cnf_search.py --library competition/c/bin/libbsat_release.so --manifest "$RUNNER_TEMP/cnf/manifest.json" --profiles control --flags 11 --cpu 30 --output "$RUNNER_TEMP/results/vsids.json"
+          fi
       - name: Confirm cal93 with a longer matched budget
         if: inputs.candidate_flags == 19
         env:
           BSAT_DRAT_TRIM: ${{ runner.temp }}/drat-trim
           BSAT_CAKE_LPR: ${{ runner.temp }}/cake-lpr/cake_lpr
+          TARGET_CPU: ${{ inputs.target_cpu }}
         run: |
-          python3 competition/c/tests/measure_search_scaling.py --library "$RUNNER_TEMP/baseline/competition/c/bin/libquery_diagnostics_release.so" --circuits "$RUNNER_TEMP/circuits" --checked-report "$RUNNER_TEMP/checked/fresh.json" --circuit cal93.aig --conflicts 0 --cpu 60 --output "$RUNNER_TEMP/results/cal93-control.json"
-          python3 competition/c/tests/measure_search_scaling.py --library competition/c/bin/libbsat_release.so --flags 19 --circuits "$RUNNER_TEMP/circuits" --checked-report "$RUNNER_TEMP/checked/fresh.json" --circuit cal93.aig --conflicts 0 --cpu 60 --output "$RUNNER_TEMP/results/cal93-candidate.json"
+          python3 competition/c/tests/measure_search_scaling.py --library "$RUNNER_TEMP/baseline/competition/c/bin/libquery_diagnostics_release.so" --circuits "$RUNNER_TEMP/circuits" --checked-report "$RUNNER_TEMP/checked/fresh.json" --circuit cal93.aig --conflicts 0 --cpu "$TARGET_CPU" --output "$RUNNER_TEMP/results/cal93-control.json"
+          python3 competition/c/tests/measure_search_scaling.py --library competition/c/bin/libbsat_release.so --flags 19 --circuits "$RUNNER_TEMP/circuits" --checked-report "$RUNNER_TEMP/checked/fresh.json" --circuit cal93.aig --conflicts 0 --cpu "$TARGET_CPU" --output "$RUNNER_TEMP/results/cal93-candidate.json"
       - uses: actions/upload-artifact@v4
         if: always()
         with:

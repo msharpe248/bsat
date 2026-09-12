@@ -6,11 +6,20 @@ on:
         description: Frozen circuit corpus
         type: choice
         default: original
-        options: [original, performance-five, performance-five-paired, search-gaps]
+        options: [original, performance-five, performance-five-paired, search-gaps, search-gaps-targets]
 permissions:
   contents: read
   actions: read
 jobs:
+  search-gaps-targets:
+    if: inputs.corpus == 'search-gaps-targets'
+    uses: ./.github/workflows/c-performance-five.yml
+    with:
+      baseline_run: '34668344930'
+      baseline_revision: b87b74e835be26251e4224df3377ad4d3caed447
+      candidate_flags: 19
+      target_only: true
+      target_cpu: 120
   search-gaps:
     if: inputs.corpus == 'search-gaps'
     uses: ./.github/workflows/c-performance-five.yml
@@ -24,7 +33,7 @@ jobs:
     with:
       baseline_run: '34668344930'
   compare:
-    if: inputs.corpus != 'performance-five-paired' && inputs.corpus != 'search-gaps'
+    if: inputs.corpus != 'performance-five-paired' && inputs.corpus != 'search-gaps' && inputs.corpus != 'search-gaps-targets'
     runs-on: ubuntu-24.04
     timeout-minutes: 60
     steps:
