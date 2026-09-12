@@ -53,7 +53,7 @@ def main():
     if any(not math.isfinite(x) or x<0 for x in (a.cpu,a.reference_cpu,a.reference_wall)) or not a.cpu or not a.reference_wall or not 0<=a.conflicts<2**32:
         p.error('invalid query limits')
     if a.accounting and not a.profile:p.error('accounting requires a diagnostic profile')
-    if any(f not in (0,1,2,3,6,7,11,15) for f in flags_list) or not flags_list:p.error('invalid flags')
+    if any(f not in (0,1,2,3,6,7,11,15,19,23,27,31) for f in flags_list) or not flags_list:p.error('invalid flags')
     if a.checkpoint_every<0 or any(not math.isfinite(x) or x<=0 for x in (a.fresh_wall,a.checker_wall)):p.error('invalid checkpoint/validation limits')
     if a.checker_heap_mb<=0 or a.checker_stack_mb<=0:p.error('checker heap and stack must be positive')
     if a.profile=='journal-off' and any(not f&2 for f in flags_list):p.error('journal-off requires certificate flags')

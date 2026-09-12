@@ -23,18 +23,29 @@ def main():
     parser.add_argument('--profiles', default='control,alternating,vsids')
     parser.add_argument('--flags', type=int, default=3)
     parser.add_argument('--cpu', type=float, default=30)
+    parser.add_argument('--conflicts', type=int, default=0)
+    parser.add_argument('--accounting', action='store_true')
     args = parser.parse_args()
     if not math.isfinite(args.cpu) or args.cpu <= 0:
         parser.error('CPU limit must be positive and finite')
+    if not 0 <= args.conflicts < 2**32:
+        parser.error('conflict limit must fit uint32; zero means CPU-only')
     lib = library(args.library.resolve())
     diagnostic = hasattr(lib, 'bsat_diagnostic_configure')
+    if args.accounting and not diagnostic:
+        parser.error('accounting requires a diagnostic library')
     if diagnostic:
         lib.bsat_diagnostic_configure.argtypes = [C.c_void_p, C.c_char_p, C.c_int]
         lib.bsat_diagnostic_configure.restype = C.c_int
+        lib.bsat_diagnostic_begin_query.argtypes = [C.c_void_p]
+        lib.bsat_diagnostic_begin_query.restype = None
+        lib.bsat_diagnostic_write.argtypes = [C.c_void_p, C.c_char_p]
+        lib.bsat_diagnostic_write.restype = C.c_int
     elif args.profiles != 'control':
         parser.error('option profiles require the diagnostic library')
     manifest = json.loads(args.manifest.read_text())
     report = dict(complete=False, platform=platform.platform(), cpu=args.cpu,
+                  conflicts=args.conflicts, accounting=args.accounting,
                   flags=args.flags, harness_sha256=hashlib.sha256(Path(__file__).read_bytes()).hexdigest(),
                   library_sha256=hashlib.sha256(args.library.read_bytes()).hexdigest(),
                   manifest_sha256=hashlib.sha256(args.manifest.read_bytes()).hexdigest(),
@@ -52,10 +63,12 @@ def main():
             try:
                 if diagnostic:
                     for option in profile.split('+'):
-                        assert lib.bsat_diagnostic_configure(solver, option.encode(), 0)
+                        assert lib.bsat_diagnostic_configure(solver, option.encode(), args.accounting)
                 for clause in clauses:
                     assert lib.bsat_add_clause(solver, literals(clause), len(clause))
-                assert lib.bsat_set_query_limits(solver, args.cpu, 0, 0)
+                assert lib.bsat_set_query_limits(solver, args.cpu, args.conflicts, 0)
+                if diagnostic:
+                    lib.bsat_diagnostic_begin_query(solver)
                 start = time.process_time()
                 result = lib.bsat_solve(solver, literals([]), 0)
                 elapsed = time.process_time() - start
@@ -66,6 +79,16 @@ def main():
                            result=result, cpu_seconds=elapsed, conflicts=stats.conflicts,
                            decisions=stats.decisions, propagations=stats.propagations,
                            verified=False)
+                if diagnostic:
+                    with tempfile.TemporaryDirectory(prefix='bsat-cnf-diagnostics-') as temp:
+                        snapshot = Path(temp) / 'diagnostic.json'
+                        assert lib.bsat_diagnostic_write(solver, os.fsencode(snapshot))
+                        row['diagnostic'] = json.loads(snapshot.read_text())
+                        if args.accounting:
+                            assert row['diagnostic'].get('accounting_available'), (
+                                'accounting requires a BSAT_SEARCH_DIAGNOSTICS build')
+                if args.conflicts:
+                    assert elapsed < args.cpu and (result or stats.conflicts == args.conflicts)
                 if result == 10:
                     model = 'v ' + ' '.join(str(-v if lib.bsat_value(solver, v) < 0 else v)
                                            for v in range(1, variables + 1)) + ' 0\n'

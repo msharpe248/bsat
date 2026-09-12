@@ -11,12 +11,13 @@ stop(void *p)
 }
 
 static void
-vsids_sessions(void)
+search_policy_sessions(void)
 {
-    for (uint32_t flags = 8; flags < 32; ++flags) {
+    for (uint32_t flags = 8; flags < 64; ++flags) {
         bsat *s = bsat_create(1, flags);
 
-        if (flags != 11 && flags != 15) {
+        if (flags != 11 && flags != 15 && flags != 19 && flags != 23 && flags != 27 &&
+            flags != 31) {
             assert(!s);
             continue;
         }
@@ -42,7 +43,7 @@ vsids_sessions(void)
 int
 main(void)
 {
-    vsids_sessions();
+    search_policy_sessions();
     bsat *s = bsat_create(1, BSAT_REUSE_LEARNTS);
 
     assert(s);

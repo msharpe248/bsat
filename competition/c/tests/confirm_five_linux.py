@@ -12,6 +12,7 @@ def main():
     p = argparse.ArgumentParser(description=__doc__)
     for name in ('baseline', 'candidate', 'checked', 'circuits', 'output'):
         p.add_argument('--' + name, type=Path, required=True)
+    p.add_argument('--candidate-flags', type=int, default=3)
     a = p.parse_args()
     assert sys.platform == 'linux'
     os.sched_setaffinity(0, {min(os.sched_getaffinity(0))})
@@ -19,6 +20,7 @@ def main():
     assert checked['complete'] and all(r['validated'] for r in checked['runs'])
     a.output.mkdir(parents=True, exist_ok=True)
     report = dict(complete=False, cpu=10, schedule='AB on even circuits, BA on odd circuits',
+                  candidate_flags=a.candidate_flags,
                   checked_sha256=hashlib.sha256(a.checked.read_bytes()).hexdigest(),
                   baseline_sha256=hashlib.sha256(a.baseline.read_bytes()).hexdigest(),
                   candidate_sha256=hashlib.sha256(a.candidate.read_bytes()).hexdigest(),
@@ -33,6 +35,7 @@ def main():
                             '--library', str(getattr(a, role)), '--circuits', str(a.circuits),
                             '--checked-report', str(a.checked), '--circuit', item['file'],
                             '--profile', 'control', '--conflicts', '0', '--cpu', '10',
+                            '--flags', str(a.candidate_flags if role == 'candidate' else 3),
                             '--output', str(path)], check=True)
             d = json.loads(path.read_text())
             assert d['complete'] and all(r['validated'] for r in d['runs'])

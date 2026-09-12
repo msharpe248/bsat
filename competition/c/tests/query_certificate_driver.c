@@ -67,10 +67,10 @@ main(int argc, char **argv)
 {
     assert(argc == 2);
     directory = argv[1];
-    for (unsigned mode = 0; mode < 4; ++mode) {
-        uint32_t flags = BSAT_CERTIFICATES | (mode ? BSAT_REUSE_LEARNTS : 0) |
-                         (mode >= 2 ? BSAT_VSIDS : 0) | (mode == 3 ? BSAT_CERTIFIED_PROBING : 0);
-        bsat *s = bsat_create(1, flags);
+    const uint32_t policies[] = {2, 3, 11, 15, 19, 23, 27, 31};
+
+    for (unsigned mode = 0; mode < sizeof policies / sizeof *policies; ++mode) {
+        bsat *s = bsat_create(1, policies[mode]);
 
         assert(s);
         int c[] = {1, 2}, d[] = {-1, 2};
@@ -162,6 +162,14 @@ main(int argc, char **argv)
         query(s, assumptions, 2, 0, 3);
         cancelled = 0;
         query(s, assumptions, 2, 20, 3);
+        char wrong[4096];
+
+        path(wrong, sizeof wrong, id - 1, "wrong-base.cnf");
+        FILE *base = fopen(wrong, "w");
+
+        assert(base);
+        assert(fputs("p cnf 3 2\n-1 2 0\n1 2 3 0\n", base) >= 0);
+        assert(!fclose(base));
         query(s, flipped, 2, 10, 3);
         query(s, NULL, 0, 10, 3);
         assert(bsat_checkpoint(s));

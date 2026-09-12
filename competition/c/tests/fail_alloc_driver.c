@@ -304,7 +304,7 @@ main(void)
             ++injected;
         }
     }
-    const uint32_t certificate_flags[] = {2, 3, 6, 7, 11, 15};
+    const uint32_t certificate_flags[] = {2, 3, 6, 7, 11, 15, 19, 23, 27, 31};
 
     for (unsigned mode = 0; mode < sizeof certificate_flags / sizeof *certificate_flags; ++mode) {
         size_t count = certificate_attempt(certificate_flags[mode], 0);
@@ -315,6 +315,6 @@ main(void)
             ++injected;
         }
     }
-    printf("PASS: %zu single-allocation failures across 26 profiles/formulas and repeated solves\n",
+    printf("PASS: %zu single-allocation failures across 30 profiles/formulas and repeated solves\n",
            injected);
 }

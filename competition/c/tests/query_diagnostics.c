@@ -48,6 +48,9 @@ bsat_diagnostic_configure(bsat *s, const char *profile, int accounting)
     } else if (!strcmp(profile, "vivify")) {
         o->inprocess = true;
         o->restart_assumptions = false;
+    } else if (!strcmp(profile, "protect-learnts")) {
+        o->dynamic_lbd = true;
+        o->protect_used = true;
     } else if (!strcmp(profile, "dynamic")) {
         o->dynamic_lbd = true;
         o->protect_used = true;
@@ -97,7 +100,10 @@ bsat_diagnostic_configure(bsat *s, const char *profile, int accounting)
         o->rephase = false;
     else if (!strcmp(profile, "alternating"))
         o->alternating = true;
-    else if (!strcmp(profile, "chrono"))
+    else if (!strcmp(profile, "chrono-short")) {
+        o->chrono = true;
+        o->chrono_levels = 16;
+    } else if (!strcmp(profile, "chrono"))
         o->chrono = true;
     else if (!strcmp(profile, "growing-reduce"))
         o->reduce_increment = 1000;
@@ -129,6 +135,13 @@ bsat_diagnostic_write(bsat *s, const char *path)
     Solver *core = s->core;
 
     fprintf(f, "{\"ordered_queue\":%s,", core->opts.vmtf ? "true" : "false");
+    fprintf(f, "\"dynamic_lbd\":%s,", core->opts.dynamic_lbd ? "true" : "false");
+    fprintf(f, "\"protect_used\":%s,", core->opts.protect_used ? "true" : "false");
+#ifdef BSAT_SEARCH_DIAGNOSTICS
+    fputs("\"accounting_available\":true,", f);
+#else
+    fputs("\"accounting_available\":false,", f);
+#endif
     fprintf(f, "\"retain_ternary\":%s,", core->opts.retain_ternary ? "true" : "false");
 #ifdef BSAT_CERTIFIED_SSR
     fprintf(f, "\"ssr_candidates\":%llu,\"ssr_inspections\":%llu,\"ssr_strengthened\":%llu,",

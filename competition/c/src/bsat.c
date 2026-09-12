@@ -82,10 +82,12 @@ bsat *
 bsat_create(uint32_t abi, uint32_t flags)
 {
     if (abi != BSAT_ABI_VERSION ||
-        (flags & ~(BSAT_REUSE_LEARNTS | BSAT_CERTIFICATES | BSAT_CERTIFIED_PROBING | BSAT_VSIDS)) ||
+        (flags & ~(BSAT_REUSE_LEARNTS | BSAT_CERTIFICATES | BSAT_CERTIFIED_PROBING | BSAT_VSIDS |
+                   BSAT_PROTECT_LEARNTS)) ||
         ((flags & BSAT_CERTIFIED_PROBING) && !(flags & BSAT_CERTIFICATES)) ||
-        ((flags & BSAT_VSIDS) && (flags & (BSAT_REUSE_LEARNTS | BSAT_CERTIFICATES)) !=
-                                     (BSAT_REUSE_LEARNTS | BSAT_CERTIFICATES)))
+        ((flags & (BSAT_VSIDS | BSAT_PROTECT_LEARNTS)) &&
+         (flags & (BSAT_REUSE_LEARNTS | BSAT_CERTIFICATES)) !=
+             (BSAT_REUSE_LEARNTS | BSAT_CERTIFICATES)))
         return NULL;
     bsat *s = calloc(1, sizeof *s);
 
@@ -99,6 +101,7 @@ bsat_create(uint32_t abi, uint32_t flags)
         o.vmtf = o.reuse_learnts && !(flags & BSAT_VSIDS);
         o.reuse_trail = o.vmtf;
         o.retain_ternary = o.reuse_learnts;
+        o.dynamic_lbd = o.protect_used = (flags & BSAT_PROTECT_LEARNTS) != 0;
         if (o.reuse_learnts) {
             o.retained_elim = true;
             o.unbiased_ema = true;

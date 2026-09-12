@@ -27,6 +27,8 @@ def main():
     for name in ('library', 'circuits', 'checked-report', 'output'):
         p.add_argument('--' + name, type=Path, required=True)
     p.add_argument('--circuit', required=True)
+    p.add_argument('--flags', type=int, default=3,
+                   help='Public session flags; reference contexts remain pinned to flags 3')
     p.add_argument('--journal-output', type=Path, help='Save the final conclusive query proof for offline learning analysis')
     p.add_argument('--profile', choices=('control', 'queue', 'vsids', 'reduce-ternary', 'positive', 'sustained', 'alternating', 'no-rephase', 'fresh', 'fresh-congruence', 'fresh-substitution', 'fresh-elimination', 'iterative', 'glue-three', 'lrb', 'large-db', 'no-reduce', 'dynamic', 'vivify'), default='control')
     p.add_argument('--also-profile', action='append', default=[],
@@ -62,19 +64,25 @@ def main():
     circuit = Circuit.read(source.read_text())
     converter, checker = os.environ['BSAT_DRAT_TRIM'], os.environ['BSAT_CAKE_LPR']
     lib = library(a.library.resolve())
-    lib.bsat_diagnostic_configure.argtypes = [C.c_void_p, C.c_char_p, C.c_int]
-    lib.bsat_diagnostic_configure.restype = C.c_int
-    lib.bsat_diagnostic_begin_query.argtypes = [C.c_void_p]
-    lib.bsat_diagnostic_begin_query.restype = None
-    lib.bsat_diagnostic_write.argtypes = [C.c_void_p, C.c_char_p]
-    lib.bsat_diagnostic_write.restype = C.c_int
-    s = lib.bsat_create(1, 3)
+    diagnostic = hasattr(lib, 'bsat_diagnostic_configure')
+    if not diagnostic and (a.profile != 'control' or a.also_profile or a.accounting or a.causes):
+        p.error('option profiles and accounting require a diagnostic library')
+    if diagnostic:
+        lib.bsat_diagnostic_configure.argtypes = [C.c_void_p, C.c_char_p, C.c_int]
+        lib.bsat_diagnostic_configure.restype = C.c_int
+        lib.bsat_diagnostic_begin_query.argtypes = [C.c_void_p]
+        lib.bsat_diagnostic_begin_query.restype = None
+        lib.bsat_diagnostic_write.argtypes = [C.c_void_p, C.c_char_p]
+        lib.bsat_diagnostic_write.restype = C.c_int
+    s = lib.bsat_create(1, a.flags)
     assert s
-    assert lib.bsat_diagnostic_configure(s, a.profile.encode(), a.accounting), (
-        f'Profile {a.profile!r} is unavailable in {a.library}')
-    for profile in a.also_profile:
-        assert lib.bsat_diagnostic_configure(s, profile.encode(), a.accounting), profile
+    if diagnostic:
+        assert lib.bsat_diagnostic_configure(s, a.profile.encode(), a.accounting), (
+            f'Profile {a.profile!r} is unavailable in {a.library}')
+        for profile in a.also_profile:
+            assert lib.bsat_diagnostic_configure(s, profile.encode(), a.accounting), profile
     report = dict(complete=False, platform=platform.platform(),
+                  flags=a.flags,
                   macos_qos='USER_INITIATED' if a.macos_qos else 'inherited', profile=a.profile, also_profiles=a.also_profile,
                   library_sha256=sha(a.library), harness_sha256=sha(__file__),
                   checked_report_sha256=sha(a.checked_report), circuit=item,
@@ -106,7 +114,8 @@ def main():
             digest = hashlib.sha256(data.encode()).hexdigest()
             assert digest == expected['input_sha256']
             assert lib.bsat_set_query_limits(s, a.cpu, a.conflicts, 0)
-            lib.bsat_diagnostic_begin_query(s)
+            if diagnostic:
+                lib.bsat_diagnostic_begin_query(s)
             if a.causes:
                 lib.bsat_diagnostic_frames.argtypes = [C.c_void_p, C.c_uint32]
                 lib.bsat_diagnostic_frames.restype = None
@@ -125,7 +134,7 @@ def main():
             # A CPU timeout would invalidate the fixed-work comparison.
             if a.conflicts:
                 assert cpu < a.cpu and (result or stats.conflicts == a.conflicts)
-            row = dict(circuit=a.circuit, repeat=0, flags=3, depth=depth, polarity=polarity,
+            row = dict(circuit=a.circuit, repeat=0, flags=a.flags, depth=depth, polarity=polarity,
                        result=result, cpu_seconds=cpu, input_sha256=digest,
                        within_cpu_budget=bool(result and cpu <= a.cpu),
                        cpu_overshoot_seconds=max(0, cpu - a.cpu),
@@ -142,9 +151,13 @@ def main():
                 row['bsat_model_and_simulation'] = True
             with tempfile.TemporaryDirectory(prefix='bsat-search-scaling-') as tmp:
                 root = Path(tmp)
-                snapshot = root / 'diagnostic.json'
-                assert lib.bsat_diagnostic_write(s, os.fsencode(snapshot))
-                row['diagnostic'] = json.loads(snapshot.read_text())
+                if diagnostic:
+                    snapshot = root / 'diagnostic.json'
+                    assert lib.bsat_diagnostic_write(s, os.fsencode(snapshot))
+                    row['diagnostic'] = json.loads(snapshot.read_text())
+                    if a.accounting:
+                        assert row['diagnostic'].get('accounting_available'), (
+                            'accounting requires a BSAT_SEARCH_DIAGNOSTICS build')
                 if a.causes:
                     assert sum(row['diagnostic']['propagation_source']) == stats.propagations
                 if result:

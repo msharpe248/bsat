@@ -19,6 +19,10 @@ extern "C" {
 /* Select heap-based VSIDS with full restarts in a retained certified session.
    Requires BSAT_REUSE_LEARNTS | BSAT_CERTIFICATES. Default remains queue search. */
 #define BSAT_VSIDS 8u
+/* Update learned-clause quality on use and protect recently used low-LBD
+   clauses for one reduction round. Requires REUSE_LEARNTS | CERTIFICATES.
+   Opt-in: improved convergence can trade off against time and memory. */
+#define BSAT_PROTECT_LEARNTS 16u
 #define BSAT_UNKNOWN 0
 #define BSAT_SAT 10
 #define BSAT_UNSAT 20

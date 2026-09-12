@@ -27,7 +27,7 @@ def main():
     a = p.parse_args()
     if a.queries < 1: p.error('queries must be positive')
     flags_list=list(map(int,a.flags.split(',')))
-    if not flags_list or any(f not in (0,1,2,3,6,7) for f in flags_list):p.error('invalid flags')
+    if not flags_list or any(f not in (0,1,2,3,6,7,11,15,19,23,27,31) for f in flags_list):p.error('invalid flags')
     lib = library(a.library.resolve())
     if a.diagnostic_profile:
         lib.bsat_diagnostic_configure.argtypes=[C.c_void_p,C.c_char_p,C.c_int]

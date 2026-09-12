@@ -5,12 +5,25 @@ on:
       baseline_run:
         type: string
         required: true
+      baseline_revision:
+        type: string
+        default: e51d96c9a7002dc30d7215b30bfd5093b7197cb0
+      candidate_flags:
+        type: number
+        default: 3
   workflow_dispatch:
     inputs:
       baseline_run:
         description: Completed frozen eight-circuit baseline run
         required: true
         default: '34668344930'
+      baseline_revision:
+        description: Accepted baseline source revision
+        default: e51d96c9a7002dc30d7215b30bfd5093b7197cb0
+      candidate_flags:
+        description: Candidate public session flags
+        type: number
+        default: 3
 permissions:
   contents: read
   actions: read
@@ -24,8 +37,10 @@ jobs:
         with:
           python-version: '3.12'
       - name: Build matched libraries and independent checkers
+        env:
+          BASELINE_REVISION: ${{ inputs.baseline_revision }}
         run: |
-          git fetch --depth 1 origin e51d96c9a7002dc30d7215b30bfd5093b7197cb0
+          git fetch --depth 1 origin "$BASELINE_REVISION"
           mkdir -p "$RUNNER_TEMP/baseline"
           git archive FETCH_HEAD competition/c/src competition/c/include competition/c/tests competition/c/Makefile competition/c/VERSION | tar -x -C "$RUNNER_TEMP/baseline"
           make -C "$RUNNER_TEMP/baseline/competition/c" -j2 OPTFLAGS='-O3 -flto' query-diagnostics
@@ -44,6 +59,7 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
           BASELINE_RUN: ${{ inputs.baseline_run }}
+          CANDIDATE_FLAGS: ${{ inputs.candidate_flags }}
           BSAT_DRAT_TRIM: ${{ runner.temp }}/drat-trim
           BSAT_CAKE_LPR: ${{ runner.temp }}/cake-lpr/cake_lpr
         run: |
@@ -54,8 +70,16 @@ jobs:
           git rev-parse HEAD > "$RUNNER_TEMP/results/revision.txt"
           python3 competition/c/tests/check_retained_certificates.py --driver competition/c/bin/query_certificate_driver_release --output "$RUNNER_TEMP/results/certificates.json"
           python3 competition/c/tests/check_query_diagnostics.py --production competition/c/bin/libbsat_release.so --diagnostic competition/c/bin/libquery_diagnostics_release.so
-          python3 competition/c/tests/confirm_five_linux.py --baseline "$RUNNER_TEMP/baseline/competition/c/bin/libquery_diagnostics_release.so" --candidate competition/c/bin/libquery_diagnostics_release.so --checked "$RUNNER_TEMP/checked/fresh.json" --circuits "$RUNNER_TEMP/circuits" --output "$RUNNER_TEMP/results/paired"
+          python3 competition/c/tests/confirm_five_linux.py --baseline "$RUNNER_TEMP/baseline/competition/c/bin/libquery_diagnostics_release.so" --candidate competition/c/bin/libbsat_release.so --candidate-flags "$CANDIDATE_FLAGS" --checked "$RUNNER_TEMP/checked/fresh.json" --circuits "$RUNNER_TEMP/circuits" --output "$RUNNER_TEMP/results/paired"
           python3 competition/c/tests/measure_cnf_search.py --library competition/c/bin/libbsat_release.so --manifest "$RUNNER_TEMP/cnf/manifest.json" --profiles control --flags 11 --cpu 30 --output "$RUNNER_TEMP/results/vsids.json"
+      - name: Confirm cal93 with a longer matched budget
+        if: inputs.candidate_flags == 19
+        env:
+          BSAT_DRAT_TRIM: ${{ runner.temp }}/drat-trim
+          BSAT_CAKE_LPR: ${{ runner.temp }}/cake-lpr/cake_lpr
+        run: |
+          python3 competition/c/tests/measure_search_scaling.py --library "$RUNNER_TEMP/baseline/competition/c/bin/libquery_diagnostics_release.so" --circuits "$RUNNER_TEMP/circuits" --checked-report "$RUNNER_TEMP/checked/fresh.json" --circuit cal93.aig --conflicts 0 --cpu 60 --output "$RUNNER_TEMP/results/cal93-control.json"
+          python3 competition/c/tests/measure_search_scaling.py --library competition/c/bin/libbsat_release.so --flags 19 --circuits "$RUNNER_TEMP/circuits" --checked-report "$RUNNER_TEMP/checked/fresh.json" --circuit cal93.aig --conflicts 0 --cpu 60 --output "$RUNNER_TEMP/results/cal93-candidate.json"
       - uses: actions/upload-artifact@v4
         if: always()
         with:
