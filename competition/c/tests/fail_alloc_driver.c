@@ -195,13 +195,12 @@ ipasir_attempt(bool sat, size_t cutoff)
 }
 
 static size_t
-certificate_attempt(bool reuse, bool probing, size_t cutoff)
+certificate_attempt(uint32_t flags, size_t cutoff)
 {
     calls = 0;
     fail_at = cutoff;
     failed = false;
-    bsat *s = bsat_create(1, BSAT_CERTIFICATES | (reuse ? BSAT_REUSE_LEARNTS : 0) |
-                                 (probing ? BSAT_CERTIFIED_PROBING : 0));
+    bsat *s = bsat_create(1, flags);
 
     if (!s) {
         assert(failed);
@@ -305,16 +304,17 @@ main(void)
             ++injected;
         }
     }
-    for (unsigned reuse = 0; reuse < 2; ++reuse)
-        for (unsigned probing = 0; probing < 2; ++probing) {
-            size_t count = certificate_attempt(reuse, probing, 0);
+    const uint32_t certificate_flags[] = {2, 3, 6, 7, 11, 15};
 
-            for (size_t i = 1; i <= count; ++i) {
-                certificate_attempt(reuse, probing, i);
-                assert(failed);
-                ++injected;
-            }
+    for (unsigned mode = 0; mode < sizeof certificate_flags / sizeof *certificate_flags; ++mode) {
+        size_t count = certificate_attempt(certificate_flags[mode], 0);
+
+        for (size_t i = 1; i <= count; ++i) {
+            certificate_attempt(certificate_flags[mode], i);
+            assert(failed);
+            ++injected;
         }
-    printf("PASS: %zu single-allocation failures across 24 profiles/formulas and repeated solves\n",
+    }
+    printf("PASS: %zu single-allocation failures across 26 profiles/formulas and repeated solves\n",
            injected);
 }

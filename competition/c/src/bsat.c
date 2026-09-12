@@ -82,8 +82,10 @@ bsat *
 bsat_create(uint32_t abi, uint32_t flags)
 {
     if (abi != BSAT_ABI_VERSION ||
-        (flags & ~(BSAT_REUSE_LEARNTS | BSAT_CERTIFICATES | BSAT_CERTIFIED_PROBING)) ||
-        ((flags & BSAT_CERTIFIED_PROBING) && !(flags & BSAT_CERTIFICATES)))
+        (flags & ~(BSAT_REUSE_LEARNTS | BSAT_CERTIFICATES | BSAT_CERTIFIED_PROBING | BSAT_VSIDS)) ||
+        ((flags & BSAT_CERTIFIED_PROBING) && !(flags & BSAT_CERTIFICATES)) ||
+        ((flags & BSAT_VSIDS) && (flags & (BSAT_REUSE_LEARNTS | BSAT_CERTIFICATES)) !=
+                                     (BSAT_REUSE_LEARNTS | BSAT_CERTIFICATES)))
         return NULL;
     bsat *s = calloc(1, sizeof *s);
 
@@ -94,7 +96,8 @@ bsat_create(uint32_t abi, uint32_t flags)
     o.probe_on_change = o.reuse_learnts;
     if (flags & BSAT_CERTIFICATES) {
         /* Ordered queue search for retained certified query histories. */
-        o.vmtf = o.reuse_learnts;
+        o.vmtf = o.reuse_learnts && !(flags & BSAT_VSIDS);
+        o.reuse_trail = o.vmtf;
         o.retain_ternary = o.reuse_learnts;
         if (o.reuse_learnts) {
             o.retained_elim = true;

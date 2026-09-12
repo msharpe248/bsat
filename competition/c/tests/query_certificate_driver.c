@@ -67,8 +67,10 @@ main(int argc, char **argv)
 {
     assert(argc == 2);
     directory = argv[1];
-    for (unsigned reuse = 0; reuse < 2; ++reuse) {
-        bsat *s = bsat_create(1, BSAT_CERTIFICATES | (reuse ? BSAT_REUSE_LEARNTS : 0));
+    for (unsigned mode = 0; mode < 4; ++mode) {
+        uint32_t flags = BSAT_CERTIFICATES | (mode ? BSAT_REUSE_LEARNTS : 0) |
+                         (mode >= 2 ? BSAT_VSIDS : 0) | (mode == 3 ? BSAT_CERTIFIED_PROBING : 0);
+        bsat *s = bsat_create(1, flags);
 
         assert(s);
         int c[] = {1, 2}, d[] = {-1, 2};

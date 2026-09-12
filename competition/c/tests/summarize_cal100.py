@@ -53,6 +53,14 @@ result = dict(complete=True, all_conclusive_answers_preserved=True, other_histor
               aggregate_control_cpu=old_sum, aggregate_candidate_cpu=new_sum,
               aggregate_improvement_percent=100 * (1 - new_sum / old_sum),
               cal100_depth8_control=target(old), cal100_depth8_candidate=target(new))
+if (a.input_dir / 'cal100-repeat-candidate.json').exists():
+    repeated_old, repeated_new = read('cal100-repeat-control'), read('cal100-repeat-candidate')
+    compare(repeated_old, repeated_new)
+    assert target(repeated_new)['result'] == 20
+    result['cal100_depth8_repeat_control'] = target(repeated_old)
+    result['cal100_depth8_repeat_candidate'] = target(repeated_new)
+    result['cal100_control_mean_cpu'] = (target(old)['cpu_seconds'] + target(repeated_old)['cpu_seconds']) / 2
+    result['cal100_candidate_mean_cpu'] = (target(new)['cpu_seconds'] + target(repeated_new)['cpu_seconds']) / 2
 a.output.write_text(json.dumps(result, indent=2) + '\n')
 print('PASS: all conclusive answers preserved; cal100 depth 8 independently certified')
 print(f'Other seven histories: {old_sum:.3f} -> {new_sum:.3f} CPU seconds')

@@ -12,6 +12,8 @@ p.add_argument('--protocol', type=Path, required=True)
 p.add_argument('--output-dir', type=Path, required=True)
 p.add_argument('--controls-from', type=Path,
                help='Reuse pinned control reports when rechecking a hardened candidate')
+p.add_argument('--repeat-target', action='store_true',
+               help='Append candidate/control cal100 runs for an ABBA target comparison')
 a = p.parse_args()
 protocol = json.loads(a.protocol.read_text())
 for role in ('control', 'candidate'):
@@ -48,4 +50,7 @@ cal100 = dict(circuit='cal100.aig', circuits='/private/tmp/bsat-expanded-circuit
               checked_report='competition/c/benchmark_results/cal100-search-20260910/baseline.json')
 for role in ('control', 'candidate'):
     run('cal100-' + role, cal100, role, 300)
+if a.repeat_target:
+    for role in ('candidate', 'control'):
+        run('cal100-repeat-' + role, cal100, role, 300)
 print('PASS: serial history comparison completed', flush=True)

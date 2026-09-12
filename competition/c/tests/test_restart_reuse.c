@@ -130,12 +130,13 @@ assumptions(void)
 static void
 assumption_prefixes(void)
 {
-    for (unsigned profile = 0; profile < 4; ++profile) {
+    for (unsigned profile = 0; profile < 8; ++profile) {
         SolverOpts o = default_opts();
 
         o.probing = false;
         o.reuse_learnts = true;
         o.restart_assumptions = true;
+        o.reuse_trail = profile & 4;
         o.assumption_lbd = true;
         o.luby_restart = true;
         o.luby_unit = 1;

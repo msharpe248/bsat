@@ -1,0 +1,63 @@
+name: C solver five-priority confirmation
+on:
+  workflow_call:
+    inputs:
+      baseline_run:
+        type: string
+        required: true
+  workflow_dispatch:
+    inputs:
+      baseline_run:
+        description: Completed frozen eight-circuit baseline run
+        required: true
+        default: '34668344930'
+permissions:
+  contents: read
+  actions: read
+jobs:
+  compare:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Build matched libraries and independent checkers
+        run: |
+          git fetch --depth 1 origin e51d96c9a7002dc30d7215b30bfd5093b7197cb0
+          mkdir -p "$RUNNER_TEMP/baseline"
+          git archive FETCH_HEAD competition/c/src competition/c/include competition/c/tests competition/c/Makefile competition/c/VERSION | tar -x -C "$RUNNER_TEMP/baseline"
+          make -C "$RUNNER_TEMP/baseline/competition/c" -j2 OPTFLAGS='-O3 -flto' query-diagnostics
+          make -C competition/c -j2 OPTFLAGS='-O3 -flto' shared query-diagnostics query-certificate-driver
+          curl -Lf https://raw.githubusercontent.com/marijnheule/drat-trim/2e3b2dc0ecf938addbd779d42877b6ed69d9a985/drat-trim.c -o "$RUNNER_TEMP/drat-trim.c"
+          cc -O2 "$RUNNER_TEMP/drat-trim.c" -o "$RUNNER_TEMP/drat-trim"
+          python3 competition/c/tests/build_verified_checker.py --directory "$RUNNER_TEMP/cake-lpr"
+          git init "$RUNNER_TEMP/aiger"
+          git -C "$RUNNER_TEMP/aiger" remote add origin https://github.com/arminbiere/aiger.git
+          git -C "$RUNNER_TEMP/aiger" fetch --depth 1 origin 039ec1a2cc37d3093ac35c4b6df65336b346f409
+          git -C "$RUNNER_TEMP/aiger" checkout --detach FETCH_HEAD
+          (cd "$RUNNER_TEMP/aiger" && ./configure.sh && make -j2 aigtoaig)
+          python3 competition/c/tests/prepare_industrial_aig.py --aigtoaig "$RUNNER_TEMP/aiger/aigtoaig" --output "$RUNNER_TEMP/circuits" --manifest competition/c/tests/fixtures/performance_five_aig.json
+          python3 competition/c/tests/prepare_linux_baseline.py "$RUNNER_TEMP/cnf"
+      - name: Download checked contexts and measure serially
+        env:
+          GH_TOKEN: ${{ github.token }}
+          BASELINE_RUN: ${{ inputs.baseline_run }}
+          BSAT_DRAT_TRIM: ${{ runner.temp }}/drat-trim
+          BSAT_CAKE_LPR: ${{ runner.temp }}/cake-lpr/cake_lpr
+        run: |
+          gh run download "$BASELINE_RUN" --repo "$GITHUB_REPOSITORY" --name fresh-competitiveness --dir "$RUNNER_TEMP/checked"
+          mkdir -p "$RUNNER_TEMP/results"
+          lscpu > "$RUNNER_TEMP/results/lscpu.txt"
+          cc --version > "$RUNNER_TEMP/results/compiler.txt"
+          git rev-parse HEAD > "$RUNNER_TEMP/results/revision.txt"
+          python3 competition/c/tests/check_retained_certificates.py --driver competition/c/bin/query_certificate_driver_release --output "$RUNNER_TEMP/results/certificates.json"
+          python3 competition/c/tests/check_query_diagnostics.py --production competition/c/bin/libbsat_release.so --diagnostic competition/c/bin/libquery_diagnostics_release.so
+          python3 competition/c/tests/confirm_five_linux.py --baseline "$RUNNER_TEMP/baseline/competition/c/bin/libquery_diagnostics_release.so" --candidate competition/c/bin/libquery_diagnostics_release.so --checked "$RUNNER_TEMP/checked/fresh.json" --circuits "$RUNNER_TEMP/circuits" --output "$RUNNER_TEMP/results/paired"
+          python3 competition/c/tests/measure_cnf_search.py --library competition/c/bin/libbsat_release.so --manifest "$RUNNER_TEMP/cnf/manifest.json" --profiles control --flags 11 --cpu 30 --output "$RUNNER_TEMP/results/vsids.json"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: performance-five-confirmation
+          path: ${{ runner.temp }}/results

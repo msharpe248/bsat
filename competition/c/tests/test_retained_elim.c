@@ -41,6 +41,11 @@ main(void)
     assert(elim_preprocess_frozen(s, frozen, 2) == 1);
     assert(elim_is_eliminated(s, 3));
     assert(s->input_size == input_size);
+    uint64_t after_pass = s->journal_bytes;
+
+    /* Repeated passes need not journal the same known root units again. */
+    assert(!elim_preprocess_frozen(s, frozen, 2));
+    assert(s->journal_bytes == after_pass);
     assert(solver_solve_with_assumptions(s, frozen, 2) == TRUE);
     assert(s->values[3] == TRUE && solver_check_model(s));
 

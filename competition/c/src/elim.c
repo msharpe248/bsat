@@ -638,7 +638,11 @@ elim_preprocess_frozen(Solver *s, const Lit *frozen, uint32_t n_frozen)
         Lit unit = s->trail[i].lit;
         Var v = var(unit);
 
-        proof_add_clause(s, &unit, 1);
+        /* Root assignments without reasons are input units or already logged
+           learned units. Earlier elimination passes also clear logged reasons. */
+        if (!s->proof_journal || s->proof_file || s->vars[v].reason != INVALID_CLAUSE ||
+            s->binary_reasons[v] != LIT_UNDEF)
+            proof_add_clause(s, &unit, 1);
         if (s->error) break;
         s->vars[v].reason = INVALID_CLAUSE;
         s->binary_reasons[v] = LIT_UNDEF;

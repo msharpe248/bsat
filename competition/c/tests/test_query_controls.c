@@ -10,9 +10,39 @@ stop(void *p)
     return *(int *)p;
 }
 
+static void
+vsids_sessions(void)
+{
+    for (uint32_t flags = 8; flags < 32; ++flags) {
+        bsat *s = bsat_create(1, flags);
+
+        if (flags != 11 && flags != 15) {
+            assert(!s);
+            continue;
+        }
+        assert(s);
+        int a[] = {1, 2}, b[] = {-1, 2}, no = -2;
+
+        assert(bsat_add_clause(s, a, 2) && bsat_add_clause(s, b, 2));
+        assert(bsat_solve(s, &no, 1) == BSAT_UNSAT && bsat_failed(s, no));
+        assert(bsat_solve(s, NULL, 0) == BSAT_SAT && bsat_value(s, 2) > 0);
+        assert(bsat_checkpoint(s));
+        int cancel = 1;
+
+        bsat_set_terminate(s, &cancel, stop);
+        assert(bsat_solve(s, NULL, 0) == BSAT_UNKNOWN);
+        cancel = 0;
+        assert(bsat_solve(s, NULL, 0) == BSAT_SAT && bsat_value(s, 2) > 0);
+        assert(bsat_add_clause(s, &no, 1));
+        assert(bsat_solve(s, NULL, 0) == BSAT_UNSAT && !bsat_error(s));
+        bsat_destroy(s);
+    }
+}
+
 int
 main(void)
 {
+    vsids_sessions();
     bsat *s = bsat_create(1, BSAT_REUSE_LEARNTS);
 
     assert(s);

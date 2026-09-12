@@ -59,6 +59,7 @@ LLVMFuzzerTestOneInput(const uint8_t *data, size_t size)
     unsigned flags = data[0] & 3;
 
     if ((flags & BSAT_CERTIFICATES) && (data[1] & 1)) flags |= BSAT_CERTIFIED_PROBING;
+    if ((flags & 3) == 3 && (data[1] & 2)) flags |= BSAT_VSIDS;
     if (ip)
         adapter = ipasir_init();
     else

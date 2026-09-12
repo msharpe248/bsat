@@ -16,6 +16,9 @@ extern "C" {
 /* Optional bounded RUP failed-literal probing. Requires BSAT_CERTIFICATES;
    preserves original variables and future assumptions. Workload-dependent cost. */
 #define BSAT_CERTIFIED_PROBING 4u
+/* Select heap-based VSIDS with full restarts in a retained certified session.
+   Requires BSAT_REUSE_LEARNTS | BSAT_CERTIFICATES. Default remains queue search. */
+#define BSAT_VSIDS 8u
 #define BSAT_UNKNOWN 0
 #define BSAT_SAT 10
 #define BSAT_UNSAT 20

@@ -17,6 +17,10 @@ bsat_diagnostic_configure(bsat *s, const char *profile, int accounting)
     SolverOpts *o = &s->core->opts;
 
     if (!strcmp(profile, "control")) {
+    } else if (!strcmp(profile, "reuse-prefix")) {
+        o->reuse_trail = true;
+    } else if (!strcmp(profile, "no-reuse-prefix")) {
+        o->reuse_trail = false;
     } else if (!strcmp(profile, "no-retained-elim")) {
         o->retained_elim = false;
     } else if (!strcmp(profile, "seeded-ema")) {
@@ -83,9 +87,10 @@ bsat_diagnostic_configure(bsat *s, const char *profile, int accounting)
         o->retain_ternary = false;
     else if (!strcmp(profile, "queue"))
         o->vmtf = true;
-    else if (!strcmp(profile, "vsids"))
+    else if (!strcmp(profile, "vsids")) {
         o->vmtf = false;
-    else if (!strcmp(profile, "positive")) {
+        o->reuse_trail = false;
+    } else if (!strcmp(profile, "positive")) {
         o->phase_saving = false;
         o->rephase = false;
     } else if (!strcmp(profile, "no-rephase"))
@@ -180,6 +185,13 @@ bsat_diagnostic_write(bsat *s, const char *path)
             fprintf(f, "%s%llu", i ? "," : "", (unsigned long long)core->accounting.field[i]);     \
         fputs("],", f);                                                                            \
     } while (0)
+    COUNT(elimination_events);
+    ARRAY(elimination_conflicts);
+    ARRAY(elimination_work);
+    ARRAY(elimination_variables);
+    ARRAY(elimination_journal);
+    ARRAY(elimination_microseconds);
+    ARRAY(elimination_budget_hits);
     fputs("\"decision_observations\":[", f);
     bool first_decision = true;
 
@@ -302,6 +314,13 @@ bsat_diagnostic_begin_query(bsat *s)
     s->core->accounting.minimize_lbd_seconds = 0;
     SolverAccounting *a = &s->core->accounting;
 
+    a->elimination_events = 0;
+    memset(a->elimination_conflicts, 0, sizeof a->elimination_conflicts);
+    memset(a->elimination_work, 0, sizeof a->elimination_work);
+    memset(a->elimination_variables, 0, sizeof a->elimination_variables);
+    memset(a->elimination_journal, 0, sizeof a->elimination_journal);
+    memset(a->elimination_microseconds, 0, sizeof a->elimination_microseconds);
+    memset(a->elimination_budget_hits, 0, sizeof a->elimination_budget_hits);
     memset(a->cone_reasons, 0, sizeof a->cone_reasons);
     memset(a->cone_repeated, 0, sizeof a->cone_repeated);
     memset(a->cone_dominated, 0, sizeof a->cone_dominated);

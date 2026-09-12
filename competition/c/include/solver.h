@@ -263,6 +263,9 @@ typedef struct SolverAccounting {
     uint64_t use_deleted_recent_high_lbd_scans;
     uint64_t use_kept_unused;
     uint64_t use_kept_unused_scans;
+    uint64_t elimination_events;
+    uint64_t elimination_conflicts[32], elimination_work[32], elimination_variables[32];
+    uint64_t elimination_journal[32], elimination_microseconds[32], elimination_budget_hits[32];
 #endif
     double seconds[ACCOUNT_PHASES];
     uint64_t calls[ACCOUNT_PHASES];

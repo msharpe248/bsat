@@ -1956,8 +1956,8 @@ luby_sequence(uint32_t index)
 /* Called only after propagation reaches a consistent fixpoint. Keep a prefix
    whose decisions outrank the next available variable. This is a heuristic,
    not a promise to reproduce all implications of a fresh root restart. */
-Level
-solver_restart_level(Solver *s)
+static Level
+restart_level_from(Solver *s, Level fixed)
 {
     if (!s->opts.reuse_trail || s->opts.alternating || !s->decision_level) return 0;
     Var next = INVALID_VAR;
@@ -1977,7 +1977,7 @@ solver_restart_level(Solver *s)
     }
     if (s->error || s->interrupted) return 0;
     if (next == INVALID_VAR) return s->decision_level;
-    Level retained = 0;
+    Level retained = fixed;
 
     while (retained < s->decision_level) {
         if (!(retained & 127) && solver_budget_exhausted(s)) return 0;
@@ -1993,6 +1993,12 @@ solver_restart_level(Solver *s)
         ++retained;
     }
     return retained;
+}
+
+Level
+solver_restart_level(Solver *s)
+{
+    return restart_level_from(s, 0);
 }
 
 bool
@@ -2781,7 +2787,8 @@ solver_rebuild_timed(Solver *s, double start_time, double max_time, bool retain)
             if (n > 8 && (n > 128 || clause_lbd(s->arena, cr) > 3)) continue;
             Lit *lits = CLAUSE_LITS(s->arena, cr);
 
-            proof_add_clause(fresh, lits, n);
+            /* The append-only journal already contains this learned clause.
+               Rebuilding its working copy needs no duplicate proof record. */
             solver_add_clause(fresh, lits, n);
             if (fresh->error) goto incomplete;
         }
@@ -3242,11 +3249,13 @@ solve_internal_account_impl(Solver *s, const Lit *assumps, uint32_t n_assumps)
             if (solver_should_restart(s)) {
                 Level level = n_assumps ? 0 : solver_restart_level(s);
 
-                /* Keep only established assumptions, never ordinary decisions.
-                   Conflict backjumps remain unrestricted; new queries remove the
-                   prefix during preparation. Certified facade policy is opt-in. */
+                /* Keep established assumptions. Optional priority reuse can
+                   extend beyond them, skipping empty assumption levels.
+                   Conflict backjumps and new-query preparation remain unrestricted. */
                 if (n_assumps && s->opts.restart_assumptions)
                     level = MIN(s->decision_level, n_assumps);
+                if (n_assumps && s->opts.restart_assumptions && s->opts.reuse_trail)
+                    level = restart_level_from(s, MIN(s->decision_level, n_assumps));
                 if (elimination_due(s)) level = 0;
 #ifdef BSAT_SEARCH_DIAGNOSTICS
                 if (SEARCH_DIAGNOSTICS(s)) {
@@ -3272,9 +3281,32 @@ solve_internal_account_impl(Solver *s, const Lit *assumps, uint32_t n_assumps)
             }
             if (!s->decision_level) {
                 if (elimination_due(s)) {
+#ifdef BSAT_SEARCH_DIAGNOSTICS
+                    uint64_t before_work = s->work, before_journal = s->journal_bytes;
+                    double started = solver_account_begin(s);
+#endif
                     s->work_limit =
                         s->work + MIN(s->opts.retained_elim_budget, UINT64_MAX - s->work);
-                    elim_preprocess_frozen(s, assumps, n_assumps);
+                    uint32_t removed = elim_preprocess_frozen(s, assumps, n_assumps);
+
+                    (void)removed;
+#ifdef BSAT_SEARCH_DIAGNOSTICS
+                    if (SEARCH_DIAGNOSTICS(s)) {
+                        uint64_t i = s->accounting.elimination_events++;
+
+                        if (i < 32) {
+                            s->accounting.elimination_conflicts[i] = s->stats.conflicts;
+                            s->accounting.elimination_work[i] = s->work - before_work;
+                            s->accounting.elimination_variables[i] = removed;
+                            s->accounting.elimination_journal[i] =
+                                s->journal_bytes - before_journal;
+                            s->accounting.elimination_microseconds[i] =
+                                (uint64_t)((solver_cpu_time() - started) * 1000000);
+                            s->accounting.elimination_budget_hits[i] = s->work >= s->work_limit;
+                        }
+                        solver_account_end(s, ACCOUNT_PREPROCESS, started);
+                    }
+#endif
                     if (s->elim)
                         s->elim->next_conflict =
                             s->stats.conflicts +

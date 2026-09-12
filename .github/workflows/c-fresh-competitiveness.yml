@@ -6,11 +6,18 @@ on:
         description: Frozen circuit corpus
         type: choice
         default: original
-        options: [original, performance-five]
+        options: [original, performance-five, performance-five-paired]
 permissions:
   contents: read
+  actions: read
 jobs:
+  paired:
+    if: inputs.corpus == 'performance-five-paired'
+    uses: ./.github/workflows/c-performance-five.yml
+    with:
+      baseline_run: '34668344930'
   compare:
+    if: inputs.corpus != 'performance-five-paired'
     runs-on: ubuntu-24.04
     timeout-minutes: 60
     steps:

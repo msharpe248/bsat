@@ -18,7 +18,8 @@ diag.bsat_diagnostic_write.argtypes=[C.c_void_p,C.c_char_p];diag.bsat_diagnostic
 assert not hasattr(base,'bsat_diagnostic_configure'),'test functions leaked into production'
 with tempfile.TemporaryDirectory() as tmp:
     root=Path(tmp)
-    for flags in range(4):
+    flags_list = (0, 1, 2, 3, 11, 15)
+    for flags in flags_list:
         handles=[(base,base.bsat_create(1,flags)),(diag,diag.bsat_create(1,flags))]
         assert all(s for _,s in handles)
         assert not diag.bsat_diagnostic_configure(handles[1][1],b'invalid',0)
@@ -46,8 +47,8 @@ with tempfile.TemporaryDirectory() as tmp:
             snapshot=json.loads(path.read_text())
             assert snapshot['conflicts']==rows[-1][1]
             assert snapshot['ordered_queue']==(flags==3)
-            assert snapshot['retain_ternary']==(flags==3)
+            assert snapshot['retain_ternary']==(flags in (3, 11, 15))
             assert not diag.bsat_diagnostic_write(handles[1][1],os.fsencode(path))
         finally:
             for lib,s in handles:lib.bsat_destroy(s)
-print('PASS: 48 control queries, exact search work/model/export parity, exclusive snapshots, no diagnostic production exports')
+print('PASS: 72 control queries, exact search work/model/export parity, exclusive snapshots, no diagnostic production exports')
