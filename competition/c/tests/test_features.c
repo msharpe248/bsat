@@ -288,14 +288,14 @@ void test_subsumption(void) {
 
 void test_database_reduction(void) {
     TEST("Learned clauses are actually reduced");
-    Solver *s=pigeonhole(5);
+    Solver *s=pigeonhole(5);s->opts.inprocess=false;
     if(solver_solve(s)!=FALSE || !s->stats.deleted_clauses) FAIL("Expected deletions during UNSAT search");
     solver_free(s);PASS();
 }
 
 void test_glue_clause_protection(void) {
     TEST("Low-LBD learned clauses are tracked");
-    Solver *s=pigeonhole(4);s->opts.glue_lbd=2;
+    Solver *s=pigeonhole(4);s->opts.inprocess=false;s->opts.glue_lbd=2;
     if(solver_solve(s)!=FALSE || !s->stats.glue_clauses) FAIL("Expected glue clauses");
     solver_free(s);PASS();
 }

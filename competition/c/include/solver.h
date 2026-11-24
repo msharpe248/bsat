@@ -408,6 +408,8 @@ typedef struct Solver {
     uint64_t next_rephase, mode_ticks_span, next_mode_ticks;
     uint64_t next_inprocess_ticks, inprocess_ticks_span;
     uint32_t inprocess_rounds, proof_root_units;
+    uint64_t tier_used[65];
+    uint32_t tier1_lbd, tier2_lbd;
     CRef     ignore_clause;
     double   clause_inc;
     uint32_t subsume_cursor, vivify_cursor;

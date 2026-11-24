@@ -1794,173 +1794,1001 @@ static bool inproc_probe_hbr(Solver *s, uint64_t tick_budget) {
 }
 
 /* =====================================================================
- * Pass 7: 64-bit Parallel Simulation + Bounded RUP SAT Sweeping
+ * Pass 7A: GF(2) XOR Extraction & RREF Gaussian Elimination
+ *
+ * Extracts exact 2..6-variable XOR parity constraints from live irredundant
+ * clauses and computes Reduced Row Echelon Form over GF(2) to derive
+ * contradictions (0 = 1), root units (x = 0/1), and equivalences (x ^ y = c).
+ * Guarded on non-proof mode so standard DRAT/RUP checks remain 100% sound.
  * ===================================================================== */
 
 typedef struct {
-    uint64_t sig;
-    Var var;
-    bool flipped;
-} SimEntry;
+    Var vars[6];
+    uint8_t k;
+    uint64_t mask;
+} XorSlot;
 
-static int cmp_sim_entry(const void *a, const void *b) {
-    const SimEntry *x = (const SimEntry *)a;
-    const SimEntry *y = (const SimEntry *)b;
-    if (x->sig != y->sig) return (x->sig > y->sig) - (x->sig < y->sig);
-    return (x->var > y->var) - (x->var < y->var);
+static uint64_t hash_xor_tuple(const Var *vs, uint8_t k) {
+    uint64_t h = (uint64_t)k * UINT64_C(0x9e3779b97f4a7c15);
+    for (uint8_t i = 0; i < k; ++i) {
+        h ^= (uint64_t)vs[i] + UINT64_C(0x9e3779b97f4a7c15) + (h << 6) + (h >> 2);
+    }
+    h ^= h >> 30; h *= UINT64_C(0xbf58476d1ce4e5b9);
+    h ^= h >> 27; h *= UINT64_C(0x94d049bb133111eb);
+    return h ^ (h >> 31);
 }
 
-static bool rup_check_binary_or_unit(Solver *s, Lit a, Lit b) {
-    /* Test whether (a | b) [or unit (a) if b == LIT_UNDEF] is RUP via propagation. */
-    s->decision_level = 1;
-    s->trail_lims[1] = s->trail_size;
-    bool confl = false;
+static bool inproc_gauss(Solver *s) {
+    if (s->proof_file || s->proof_journal) return true;
+    if (!s->num_vars || !s->num_clauses || s->num_clauses > 250000 ||
+        s->error || s->result == FALSE || solver_budget_exhausted(s)) return true;
 
-    Lit lits[2] = {a, b};
-    uint32_t count = (b == LIT_UNDEF) ? 1 : 2;
-    for (uint32_t i = 0; i < count; ++i) {
-        Lit l = lits[i];
-        if (lit_is_true(s, l)) { confl = true; break; }
-        if (s->values[var(l)] == UNDEF) {
-            Lit nl = neg(l);
-            Var v = var(nl);
-            s->values[v] = (uint8_t)(2u - sign(nl));
-            s->vars[v].level = 1;
-            s->vars[v].reason = INVALID_CLAUSE;
-            s->binary_reasons[v] = LIT_UNDEF;
-            s->vars[v].trail_pos = s->trail_size;
-            s->trail[s->trail_size++].lit = nl;
-        }
+    /* Count eligible clauses of size 2..6. */
+    uint32_t elig = 0;
+    for (uint32_t i = 0; i < s->num_clauses; ++i) {
+        CRef cr = s->clauses[i];
+        if (cr == INVALID_CLAUSE || clause_deleted(s->arena, cr)) continue;
+        uint32_t sz = CLAUSE_SIZE(s->arena, cr);
+        if (sz >= 2 && sz <= 6) elig++;
     }
-    if (!confl) confl = (solver_propagate(s) != INVALID_CLAUSE);
-    solver_backtrack(s, 0);
-    return confl && !s->error && !s->interrupted;
-}
+    if (elig < 4) return true;
 
-static bool inproc_sweep(Solver *s, uint64_t tick_budget) {
-    if (!s->num_vars || s->num_vars > 200000 || s->error || s->result == FALSE ||
-        solver_budget_exhausted(s)) return true;
+    /* Build open-addressed hash table grouping clauses by sorted variable tuple. */
+    size_t cap = 64;
+    while (cap < (size_t)elig * 2 && cap < (1u << 21)) cap <<= 1;
+    if (cap < (size_t)elig + 16) return true;
+    XorSlot *tab = calloc(cap, sizeof *tab);
+    if (!tab) return true;
 
-    uint64_t *sim = malloc((size_t)(s->num_vars + 1) * sizeof *sim);
-    SimEntry *entries = malloc((size_t)(s->num_vars + 1) * sizeof *entries);
-    if (!sim || !entries) { free(sim); free(entries); return true; }
+    uint32_t *used_slots = malloc(MIN(cap, (size_t)elig + 1) * sizeof *used_slots);
+    if (!used_slots) { free(tab); return true; }
+    uint32_t n_used = 0;
 
-    /* Initialize 64 parallel random assignments (root units fixed across all 64 worlds). */
-    uint32_t rng = s->random_state ^ (uint32_t)(s->inprocess_rounds * 2654435761u + 1u);
-    sim[0] = 0;
-    for (Var v = 1; v <= s->num_vars; ++v) {
-        if (s->values[v] == TRUE) sim[v] = ~UINT64_C(0);
-        else if (s->values[v] == FALSE) sim[v] = 0;
-        else {
-            uint64_t hi = bsat_random(&rng);
-            uint64_t lo = bsat_random(&rng);
-            sim[v] = (hi << 32) | lo;
+    for (uint32_t i = 0; i < s->num_clauses; ++i) {
+        CRef cr = s->clauses[i];
+        if (cr == INVALID_CLAUSE || clause_deleted(s->arena, cr)) continue;
+        uint32_t sz = CLAUSE_SIZE(s->arena, cr);
+        if (sz < 2 || sz > 6) continue;
+        const Lit *ls = CLAUSE_LITS(s->arena, cr);
+        Lit tmp[6];
+        bool skip = false;
+        for (uint32_t j = 0; j < sz; ++j) {
+            if (s->values[var(ls[j])] != UNDEF) { skip = true; break; }
+            tmp[j] = ls[j];
         }
-    }
+        if (skip) continue;
+        /* Sort tmp[0..sz-1] by variable ascending. */
+        for (uint32_t a = 1; a < sz; ++a) {
+            Lit key = tmp[a];
+            uint32_t b = a;
+            while (b > 0 && var(tmp[b - 1]) > var(key)) { tmp[b] = tmp[b - 1]; --b; }
+            tmp[b] = key;
+        }
+        Var vs[6] = {0, 0, 0, 0, 0, 0};
+        uint32_t neg_mask = 0;
+        for (uint32_t j = 0; j < sz; ++j) {
+            vs[j] = var(tmp[j]);
+            if (j > 0 && vs[j] == vs[j - 1]) { skip = true; break; }
+            if (sign(tmp[j])) neg_mask |= (1u << j);
+        }
+        if (skip) continue;
 
-    /* 4 rounds of 64-bit bitwise relaxation over clauses (approximates 64 models!). */
-    for (int round = 0; round < 4; ++round) {
-        for (uint32_t i = 0; i < s->num_clauses; ++i) {
-            CRef cr = s->clauses[i];
-            if (cr == INVALID_CLAUSE || clause_deleted(s->arena, cr)) continue;
-            uint32_t sz = CLAUSE_SIZE(s->arena, cr);
-            if (sz < 2 || sz > 8) continue;
-            const Lit *ls = CLAUSE_LITS(s->arena, cr);
-            uint64_t sat = 0;
-            for (uint32_t j = 0; j < sz; ++j) {
-                uint64_t vbits = sim[var(ls[j])];
-                sat |= sign(ls[j]) ? ~vbits : vbits;
+        size_t pos = (size_t)(hash_xor_tuple(vs, (uint8_t)sz) & (cap - 1));
+        for (;;) {
+            if (tab[pos].k == 0) {
+                tab[pos].k = (uint8_t)sz;
+                memcpy(tab[pos].vars, vs, sizeof vs);
+                tab[pos].mask = UINT64_C(1) << neg_mask;
+                if (n_used < elig) used_slots[n_used++] = (uint32_t)pos;
+                break;
             }
-            uint64_t unsat = ~sat;
-            if (!unsat) continue;
-            /* Flip one unassigned literal in the falsified worlds! */
-            uint32_t pick = (i + (uint32_t)round) % sz;
-            for (uint32_t t = 0; t < sz; ++t) {
-                Lit l = ls[(pick + t) % sz];
-                Var v = var(l);
-                if (s->values[v] == UNDEF) {
-                    sim[v] ^= unsat;
+            if (tab[pos].k == sz && memcmp(tab[pos].vars, vs, (size_t)sz * sizeof(Var)) == 0) {
+                tab[pos].mask |= UINT64_C(1) << neg_mask;
+                break;
+            }
+            pos = (pos + 1) & (cap - 1);
+        }
+    }
+
+    /* Precompute exact even/odd polarity bitmasks for k = 2..6. */
+    uint64_t even_need[7] = {0}, odd_need[7] = {0};
+    for (uint32_t k = 2; k <= 6; ++k) {
+        for (uint32_t m = 0; m < (1u << k); ++m) {
+            uint32_t parity = 0, x = m;
+            while (x) { parity ^= (x & 1u); x >>= 1; }
+            if (parity == 0) even_need[k] |= (UINT64_C(1) << m);
+            else odd_need[k] |= (UINT64_C(1) << m);
+        }
+    }
+
+    /* Collect complete XOR equations (prefer k >= 3; include k == 2 equivs if any k >= 3 exist). */
+    typedef struct { Var vars[6]; uint8_t k; uint8_t rhs; } XorEq;
+    uint32_t n_ge3 = 0, n_eqs = 0;
+    for (uint32_t ui = 0; ui < n_used; ++ui) {
+        XorSlot *sl = &tab[used_slots[ui]];
+        uint8_t k = sl->k;
+        bool has_even = (sl->mask & even_need[k]) == even_need[k];
+        bool has_odd  = (sl->mask & odd_need[k]) == odd_need[k];
+        if (has_even && has_odd) {
+            /* Both parities forbidden -> immediate UNSAT! */
+            free(used_slots); free(tab);
+            s->base_unsat = true; s->result = FALSE;
+            return false;
+        }
+        if (has_even || has_odd) {
+            n_eqs++;
+            if (k >= 3) n_ge3++;
+        }
+    }
+    if (n_ge3 < 2 || n_eqs > 8192) {
+        free(used_slots); free(tab);
+        return true;
+    }
+
+    XorEq *eqs = malloc((size_t)n_eqs * sizeof *eqs);
+    uint32_t *var_to_col = malloc((size_t)(s->num_vars + 1) * sizeof *var_to_col);
+    if (!eqs || !var_to_col) {
+        free(eqs); free(var_to_col); free(used_slots); free(tab);
+        return true;
+    }
+    memset(var_to_col, 0xFF, (size_t)(s->num_vars + 1) * sizeof *var_to_col);
+
+    uint32_t eq_count = 0, n_cols = 0;
+    for (uint32_t ui = 0; ui < n_used; ++ui) {
+        XorSlot *sl = &tab[used_slots[ui]];
+        uint8_t k = sl->k;
+        bool has_even = (sl->mask & even_need[k]) == even_need[k];
+        bool has_odd  = (sl->mask & odd_need[k]) == odd_need[k];
+        if (!has_even && !has_odd) continue;
+        /* Even forbidden clauses -> odd true count (rhs = 1); odd forbidden -> rhs = 0. */
+        XorEq *e = &eqs[eq_count++];
+        e->k = k;
+        e->rhs = has_even ? 1u : 0u;
+        memcpy(e->vars, sl->vars, sizeof e->vars);
+        for (uint8_t j = 0; j < k; ++j) {
+            Var v = sl->vars[j];
+            if (var_to_col[v] == UINT32_MAX) {
+                if (n_cols >= 4096) { n_cols = UINT32_MAX; break; }
+                var_to_col[v] = n_cols++;
+            }
+        }
+        if (n_cols == UINT32_MAX) break;
+    }
+    free(used_slots); free(tab);
+
+    if (n_cols == 0 || n_cols == UINT32_MAX || eq_count > 4096) {
+        free(eqs); free(var_to_col);
+        return true;
+    }
+
+    Var *col_to_var = malloc((size_t)n_cols * sizeof *col_to_var);
+    uint32_t words = (n_cols + 63u) / 64u;
+    uint64_t *mat = calloc((size_t)eq_count * words, sizeof *mat);
+    uint8_t *rhs = calloc(eq_count, sizeof *rhs);
+    if (!col_to_var || !mat || !rhs) {
+        free(col_to_var); free(mat); free(rhs); free(eqs); free(var_to_col);
+        return true;
+    }
+    for (uint32_t i = 0; i < eq_count; ++i) {
+        uint64_t *row = mat + (size_t)i * words;
+        rhs[i] = eqs[i].rhs;
+        for (uint8_t j = 0; j < eqs[i].k; ++j) {
+            uint32_t c = var_to_col[eqs[i].vars[j]];
+            col_to_var[c] = eqs[i].vars[j];
+            row[c >> 6] ^= (UINT64_C(1) << (c & 63u));
+        }
+    }
+    free(eqs);
+    free(var_to_col);
+
+    /* Gauss-Jordan RREF over GF(2). */
+    uint32_t pivot_row = 0;
+    for (uint32_t col = 0; col < n_cols && pivot_row < eq_count; ++col) {
+        uint32_t w = col >> 6;
+        uint64_t bit = UINT64_C(1) << (col & 63u);
+        uint32_t found = eq_count;
+        for (uint32_t r = pivot_row; r < eq_count; ++r) {
+            if (mat[(size_t)r * words + w] & bit) { found = r; break; }
+        }
+        if (found == eq_count) continue;
+        if (found != pivot_row) {
+            uint64_t *ra = mat + (size_t)pivot_row * words;
+            uint64_t *rb = mat + (size_t)found * words;
+            for (uint32_t k = 0; k < words; ++k) {
+                uint64_t t = ra[k]; ra[k] = rb[k]; rb[k] = t;
+            }
+            uint8_t tr = rhs[pivot_row]; rhs[pivot_row] = rhs[found]; rhs[found] = tr;
+        }
+        uint64_t *pr = mat + (size_t)pivot_row * words;
+        uint8_t prhs = rhs[pivot_row];
+        for (uint32_t r = 0; r < eq_count; ++r) {
+            if (r == pivot_row) continue;
+            uint64_t *rr = mat + (size_t)r * words;
+            if (rr[w] & bit) {
+                for (uint32_t k = 0; k < words; ++k) rr[k] ^= pr[k];
+                rhs[r] ^= prhs;
+            }
+        }
+        pivot_row++;
+        s->work += (uint64_t)eq_count * words;
+    }
+
+    /* Harvest contradictions, units, and binary equivalences from RREF rows! */
+    bool unsat = false;
+    bool added_equiv = false;
+    bool added_unit = false;
+    for (uint32_t r = 0; r < eq_count && !unsat && !s->error; ++r) {
+        const uint64_t *rr = mat + (size_t)r * words;
+        uint32_t cnt = 0;
+        uint32_t c0 = 0, c1 = 0;
+        for (uint32_t w = 0; w < words && cnt <= 2; ++w) {
+            uint64_t x = rr[w];
+            while (x) {
+                uint32_t tz = (uint32_t)__builtin_ctzll(x);
+                uint32_t col = (w << 6) + tz;
+                if (cnt == 0) c0 = col;
+                else if (cnt == 1) c1 = col;
+                cnt++;
+                if (cnt > 2) break;
+                x &= x - 1;
+            }
+        }
+        if (cnt == 0) {
+            if (rhs[r]) {
+                s->base_unsat = true; s->result = FALSE;
+                unsat = true;
+                break;
+            }
+        } else if (cnt == 1) {
+            Lit unit = mkLit(col_to_var[c0], rhs[r] == 0);
+            if (!enqueue_root_unit(s, unit)) { unsat = true; break; }
+            added_unit = true;
+        } else if (cnt == 2) {
+            Lit a = mkLit(col_to_var[c0], false);
+            Lit b = mkLit(col_to_var[c1], rhs[r] != 0); /* a == b if rhs==0, else a == ~b */
+            Lit pairs[2][2] = {{neg(a), b}, {neg(b), a}};
+            for (int p = 0; p < 2 && !s->error; ++p) {
+                if (has_binary_watch(s, pairs[p][0], pairs[p][1])) continue;
+                if (s->num_learnts == s->learnts_size) {
+                    uint32_t ncap = s->learnts_size ? s->learnts_size * 2 : 64;
+                    CRef *ptr = realloc(s->learnts, (size_t)ncap * sizeof *ptr);
+                    if (!ptr) { s->error = true; break; }
+                    s->learnts = ptr; s->learnts_size = ncap;
+                }
+                CRef cr = arena_alloc(s->arena, pairs[p], 2, true);
+                if (cr == INVALID_CLAUSE) { s->error = true; break; }
+                set_clause_lbd(s->arena, cr, 2);
+                s->learnts[s->num_learnts++] = cr;
+                CRef wref = arena_binary_watch_ref(cr);
+                watch_add(s->watches, pairs[p][0], wref, pairs[p][1]);
+                watch_add(s->watches, pairs[p][1], wref, pairs[p][0]);
+                added_equiv = true;
+            }
+        }
+    }
+
+    free(col_to_var); free(mat); free(rhs);
+    if (unsat || s->error) return false;
+    if (added_unit && !root_propagate(s)) return false;
+    if (added_equiv && !solver_budget_exhausted(s)) return inproc_decompose(s);
+    return true;
+}
+
+/* =====================================================================
+ * Pass 7B: Transitive Reduction of the Binary Implication Graph
+ *
+ * Deletes transitively redundant binary clauses (RUP-valid!) and catches
+ * failed literals (u => ... => ~u) in O(1) bounded BFS per literal.
+ * ===================================================================== */
+
+typedef struct {
+    Lit to;
+    CRef cref;
+    uint8_t learned;
+} BinEdge;
+
+static bool inproc_transitive(Solver *s, uint64_t tick_budget) {
+    if (!s->num_vars || s->error || s->result == FALSE || solver_budget_exhausted(s)) return true;
+
+    uint32_t nl = 2 * (s->num_vars + 1);
+    uint32_t *head = calloc((size_t)nl + 1, sizeof *head);
+    if (!head) return true;
+
+    /* Count binary clauses (irredundant first, then learned). */
+    uint32_t n_edges = 0;
+    for (uint32_t pass = 0; pass < 2; ++pass) {
+        CRef *arr = pass ? s->learnts : s->clauses;
+        uint32_t cnt = pass ? s->num_learnts : s->num_clauses;
+        for (uint32_t i = 0; i < cnt; ++i) {
+            CRef cr = arr[i];
+            if (cr == INVALID_CLAUSE || clause_deleted(s->arena, cr)) continue;
+            if (CLAUSE_SIZE(s->arena, cr) != 2) continue;
+            const Lit *ls = CLAUSE_LITS(s->arena, cr);
+            if (s->values[var(ls[0])] != UNDEF || s->values[var(ls[1])] != UNDEF) continue;
+            /* Clause (a | b) gives edges ~a -> b and ~b -> a. */
+            head[neg(ls[0]) + 1]++;
+            head[neg(ls[1]) + 1]++;
+            n_edges += 2;
+        }
+    }
+    if (n_edges < 4) { free(head); return true; }
+
+    for (uint32_t l = 1; l <= nl; ++l) head[l] += head[l - 1];
+    BinEdge *edges = malloc((size_t)n_edges * sizeof *edges);
+    uint32_t *cur = malloc((size_t)(nl + 1) * sizeof *cur);
+    uint32_t *seen_any = calloc(nl, sizeof *seen_any);
+    uint32_t *seen_irr = calloc(nl, sizeof *seen_irr);
+    Lit *bfs_q = malloc(128 * sizeof *bfs_q);
+    uint8_t *bfs_irr = malloc(128 * sizeof *bfs_irr);
+    if (!edges || !cur || !seen_any || !seen_irr || !bfs_q || !bfs_irr) {
+        free(head); free(edges); free(cur); free(seen_any); free(seen_irr); free(bfs_q); free(bfs_irr);
+        return true;
+    }
+    memcpy(cur, head, (size_t)(nl + 1) * sizeof *cur);
+
+    for (uint32_t pass = 0; pass < 2; ++pass) {
+        CRef *arr = pass ? s->learnts : s->clauses;
+        uint32_t cnt = pass ? s->num_learnts : s->num_clauses;
+        for (uint32_t i = 0; i < cnt; ++i) {
+            CRef cr = arr[i];
+            if (cr == INVALID_CLAUSE || clause_deleted(s->arena, cr)) continue;
+            if (CLAUSE_SIZE(s->arena, cr) != 2) continue;
+            const Lit *ls = CLAUSE_LITS(s->arena, cr);
+            if (s->values[var(ls[0])] != UNDEF || s->values[var(ls[1])] != UNDEF) continue;
+            edges[cur[neg(ls[0])]++] = (BinEdge){ls[1], cr, (uint8_t)pass};
+            edges[cur[neg(ls[1])]++] = (BinEdge){ls[0], cr, (uint8_t)pass};
+        }
+    }
+    free(cur);
+
+    uint64_t end_work = s->work + tick_budget;
+    uint32_t stamp = 0;
+    bool deleted_any = false, unsat = false;
+    uint32_t units_found = 0;
+
+    for (Lit u = 2; u < nl && s->work < end_work && !unsat && !s->error && !s->interrupted; ++u) {
+        if (s->values[var(u)] != UNDEF) continue;
+        uint32_t bgn = head[u], end = head[u + 1];
+        if (end - bgn < 2) continue;
+        if (++stamp == 0) {
+            memset(seen_any, 0, nl * sizeof *seen_any);
+            memset(seen_irr, 0, nl * sizeof *seen_irr);
+            stamp = 1;
+        }
+        seen_any[u] = stamp;
+        seen_irr[u] = stamp;
+
+        /* Edges are stored irredundant-first! Process direct edges of u one by one. */
+        bool failed = false;
+        for (uint32_t ei = bgn; ei < end && s->work < end_work; ++ei) {
+            BinEdge e = edges[ei];
+            if (clause_deleted(s->arena, e.cref)) continue;
+            Lit target = e.to;
+            if (s->values[var(target)] != UNDEF) continue;
+
+            /* If target is already reachable without using edge e, e is transitively redundant! */
+            bool red = e.learned ? (seen_any[target] == stamp) : (seen_irr[target] == stamp);
+            if (red) {
+                proof_delete_clause(s, CLAUSE_LITS(s->arena, e.cref), 2);
+                arena_delete(s->arena, e.cref);
+                s->stats.subsumed_clauses++;
+                deleted_any = true;
+                continue;
+            }
+
+            /* Keep edge e and expand bounded BFS from target (<= 64 pops). */
+            uint32_t qh = 0, qt = 0;
+            uint8_t start_irr = e.learned ? 0u : 1u;
+            if (seen_any[target] != stamp) {
+                seen_any[target] = stamp;
+                if (start_irr) seen_irr[target] = stamp;
+                bfs_q[qt] = target; bfs_irr[qt] = start_irr; qt++;
+            } else if (start_irr && seen_irr[target] != stamp) {
+                seen_irr[target] = stamp;
+                bfs_q[qt] = target; bfs_irr[qt] = 1u; qt++;
+            }
+            if (target == neg(u)) { failed = true; break; }
+
+            while (qh < qt && qt < 64) {
+                Lit cur_l = bfs_q[qh];
+                uint8_t cur_irr = bfs_irr[qh];
+                qh++;
+                uint32_t nb = head[cur_l], ne = head[cur_l + 1];
+                uint32_t limit = (ne - nb > 32) ? nb + 32 : ne;
+                for (uint32_t j = nb; j < limit; ++j) {
+                    s->work++;
+                    BinEdge ne_edge = edges[j];
+                    if (clause_deleted(s->arena, ne_edge.cref)) continue;
+                    Lit nxt = ne_edge.to;
+                    if (nxt == neg(u)) { failed = true; break; }
+                    if (s->values[var(nxt)] != UNDEF) continue;
+                    uint8_t nxt_irr = (cur_irr && !ne_edge.learned) ? 1u : 0u;
+                    if (seen_any[nxt] != stamp) {
+                        seen_any[nxt] = stamp;
+                        if (nxt_irr) seen_irr[nxt] = stamp;
+                        if (qt < 64) { bfs_q[qt] = nxt; bfs_irr[qt] = nxt_irr; qt++; }
+                    } else if (nxt_irr && seen_irr[nxt] != stamp) {
+                        seen_irr[nxt] = stamp;
+                        if (qt < 64) { bfs_q[qt] = nxt; bfs_irr[qt] = 1u; qt++; }
+                    }
+                }
+                if (failed) break;
+            }
+            if (failed) break;
+        }
+        if (failed) {
+            Lit unit = neg(u);
+            proof_add_clause(s, &unit, 1);
+            if (s->error || !enqueue_root_unit(s, unit) || !root_propagate(s)) {
+                unsat = true; break;
+            }
+            units_found++;
+        }
+    }
+
+    free(head); free(edges); free(seen_any); free(seen_irr); free(bfs_q); free(bfs_irr);
+    if (unsat || s->error) return false;
+    if (deleted_any || units_found) {
+        solver_rebuild_watches(s);
+        if (s->error) return false;
+        if (units_found) return inproc_root_clean(s);
+    }
+    return true;
+}
+
+/* =====================================================================
+ * Pass 7C: Embedded Mini-Kitten CDCL SAT Sweeper (DRAT/RUP-Sound)
+ *
+ * Extracts local COI neighborhoods (<= 192 vars, <= 768 irredundant clauses),
+ * generates 16 exact satisfying models via random-phase Kitten solves to
+ * partition variables by exact semantic signatures, and proves backbones &
+ * equivalences with bounded CDCL + counterexample signature refinement.
+ * Every proved unit/binary is backed by Kitten's RUP proof lemmas!
+ * ===================================================================== */
+
+enum {
+    KITTEN_MAX_VARS    = 256,
+    KITTEN_MAX_LITS    = 2 * (KITTEN_MAX_VARS + 1),
+    KITTEN_MAX_ORIG    = 1024,
+    KITTEN_MAX_CLS     = 3072,
+    KITTEN_POOL_CAP    = 65536
+};
+#define KITTEN_NO_CLAUSE UINT32_MAX
+
+typedef struct {
+    uint32_t off;
+    uint32_t size;
+    uint8_t learned;
+} KClause;
+
+typedef struct {
+    uint32_t cidx;
+    uint16_t blocker;
+} KWatch;
+
+typedef struct {
+    uint32_t nv;
+    Var l2g[KITTEN_MAX_VARS + 1];
+    uint32_t num_orig, num_cls, proof_emitted;
+    uint32_t pool_used;
+    uint16_t pool[KITTEN_POOL_CAP];
+    KClause cls[KITTEN_MAX_CLS];
+
+    /* Watches (dynamic arrays per local literal) */
+    KWatch *wdata[KITTEN_MAX_LITS];
+    uint32_t wsize[KITTEN_MAX_LITS];
+    uint32_t wcap[KITTEN_MAX_LITS];
+
+    /* CDCL state */
+    int8_t val[KITTEN_MAX_VARS + 1];       /* 0=UNDEF, 1=TRUE, -1=FALSE */
+    uint32_t level[KITTEN_MAX_VARS + 1];
+    uint32_t reason[KITTEN_MAX_VARS + 1];
+    uint8_t seen[KITTEN_MAX_VARS + 1];
+    uint8_t phase[KITTEN_MAX_VARS + 1];
+    uint32_t stamp[KITTEN_MAX_VARS + 1];
+    uint32_t bump_clock;
+
+    uint16_t trail[KITTEN_MAX_VARS + 2];
+    uint32_t trail_lim[KITTEN_MAX_VARS + 2];
+    uint32_t trail_sz, qhead, dlevel;
+    uint32_t rng;
+    bool unsat0;
+} Kitten;
+
+static inline int8_t k_lit_val(const Kitten *k, uint16_t l) {
+    int8_t v = k->val[l >> 1];
+    return (l & 1u) ? (int8_t)-v : v;
+}
+
+static bool k_watch_push(Kitten *k, uint16_t l, uint32_t cidx, uint16_t blocker) {
+    if (k->wsize[l] == k->wcap[l]) {
+        uint32_t nc = k->wcap[l] ? k->wcap[l] * 2 : 8;
+        KWatch *p = realloc(k->wdata[l], (size_t)nc * sizeof *p);
+        if (!p) return false;
+        k->wdata[l] = p;
+        k->wcap[l] = nc;
+    }
+    k->wdata[l][k->wsize[l]++] = (KWatch){cidx, blocker};
+    return true;
+}
+
+static void k_init(Kitten *k, uint32_t seed) {
+    memset(k, 0, sizeof *k);
+    k->rng = seed ? seed : 0x12345678u;
+}
+
+static void k_free(Kitten *k) {
+    for (uint32_t l = 0; l < KITTEN_MAX_LITS; ++l) free(k->wdata[l]);
+}
+
+static void k_assign(Kitten *k, uint16_t l, uint32_t r) {
+    uint32_t v = l >> 1;
+    k->val[v] = (l & 1u) ? (int8_t)-1 : (int8_t)1;
+    k->level[v] = k->dlevel;
+    k->reason[v] = r;
+    k->phase[v] = (uint8_t)(l & 1u);
+    k->trail[k->trail_sz++] = l;
+}
+
+static void k_backtrack(Kitten *k, uint32_t target) {
+    if (k->dlevel <= target) return;
+    uint32_t lim = k->trail_lim[target + 1];
+    while (k->trail_sz > lim) {
+        uint16_t l = k->trail[--k->trail_sz];
+        k->val[l >> 1] = 0;
+    }
+    k->qhead = k->trail_sz;
+    k->dlevel = target;
+}
+
+static bool k_add_clause(Kitten *k, const uint16_t *ls, uint32_t sz, bool learned) {
+    if (sz == 0) { k->unsat0 = true; return true; }
+    if (sz == 1) {
+        int8_t v = k_lit_val(k, ls[0]);
+        if (v < 0) { k->unsat0 = true; return true; }
+        if (v == 0) {
+            if (k->num_cls < KITTEN_MAX_CLS && k->pool_used + 1 <= KITTEN_POOL_CAP) {
+                uint32_t cidx = k->num_cls++;
+                k->cls[cidx] = (KClause){k->pool_used, 1, (uint8_t)learned};
+                k->pool[k->pool_used++] = ls[0];
+            }
+            k_assign(k, ls[0], KITTEN_NO_CLAUSE);
+        }
+        return true;
+    }
+    if (k->num_cls >= KITTEN_MAX_CLS || k->pool_used + sz > KITTEN_POOL_CAP) return false;
+    uint32_t cidx = k->num_cls++;
+    uint32_t off = k->pool_used;
+    memcpy(k->pool + off, ls, (size_t)sz * sizeof(uint16_t));
+    k->pool_used += sz;
+    k->cls[cidx] = (KClause){off, sz, (uint8_t)learned};
+    if (!k_watch_push(k, ls[0], cidx, ls[1]) || !k_watch_push(k, ls[1], cidx, ls[0])) return false;
+    return true;
+}
+
+static uint32_t k_propagate(Kitten *k) {
+    while (k->qhead < k->trail_sz) {
+        uint16_t p = k->trail[k->qhead++];
+        uint16_t fl = p ^ 1u;
+        KWatch *ws = k->wdata[fl];
+        uint32_t n = k->wsize[fl], out = 0, i = 0;
+        while (i < n) {
+            KWatch w = ws[i++];
+            if (k_lit_val(k, w.blocker) > 0) { ws[out++] = w; continue; }
+            KClause *c = &k->cls[w.cidx];
+            uint16_t *ls = k->pool + c->off;
+            if (ls[0] == fl) { ls[0] = ls[1]; ls[1] = fl; }
+            uint16_t other = ls[0];
+            if (k_lit_val(k, other) > 0) {
+                ws[out++] = (KWatch){w.cidx, other};
+                continue;
+            }
+            bool found = false;
+            for (uint32_t j = 2; j < c->size; ++j) {
+                if (k_lit_val(k, ls[j]) >= 0) {
+                    ls[1] = ls[j]; ls[j] = fl;
+                    k_watch_push(k, ls[1], w.cidx, other);
+                    found = true;
                     break;
                 }
             }
+            if (found) continue;
+            ws[out++] = (KWatch){w.cidx, other};
+            if (k_lit_val(k, other) < 0) {
+                while (i < n) ws[out++] = ws[i++];
+                k->wsize[fl] = out;
+                return w.cidx;
+            }
+            k_assign(k, other, w.cidx);
         }
+        k->wsize[fl] = out;
     }
+    return KITTEN_NO_CLAUSE;
+}
 
-    /* Normalize signatures (bit 0 = 0) and group identical equivalence candidates. */
-    uint32_t ne = 0;
-    for (Var v = 1; v <= s->num_vars; ++v) {
-        if (s->values[v] != UNDEF || (s->elim && s->elim->eliminated[v])) continue;
-        uint64_t sig = sim[v];
-        bool flipped = (sig & 1u) != 0;
-        if (flipped) sig = ~sig;
-        entries[ne++] = (SimEntry){sig, v, flipped};
+/* Returns: 1 = SAT, -1 = UNSAT, 0 = budget/unknown. */
+static int k_solve(Kitten *k, const uint16_t *assumps, uint32_t na,
+                   uint32_t max_conflicts, bool random_phases, uint64_t *work_acc) {
+    if (k->unsat0) return -1;
+    k_backtrack(k, 0);
+    if (k_propagate(k) != KITTEN_NO_CLAUSE) { k->unsat0 = true; return -1; }
+
+    uint16_t learnt[KITTEN_MAX_VARS + 2];
+    uint32_t conflicts = 0;
+
+    for (;;) {
+        uint32_t confl = k_propagate(k);
+        *work_acc += 4;
+        if (confl != KITTEN_NO_CLAUSE) {
+            if (k->dlevel == 0) { k->unsat0 = true; return -1; }
+            if (k->dlevel <= na) {
+                /* Conflict derived purely under assumptions (via RUP propagation!). */
+                k_backtrack(k, 0);
+                return -1;
+            }
+            if (++conflicts >= max_conflicts || k->num_cls + 2 >= KITTEN_MAX_CLS) {
+                k_backtrack(k, 0);
+                return 0;
+            }
+            /* 1-UIP conflict analysis */
+            uint32_t lsz = 1, pathC = 0;
+            uint32_t idx = k->trail_sz - 1;
+            uint32_t cidx = confl;
+            uint16_t p = 0;
+            do {
+                KClause *c = &k->cls[cidx];
+                const uint16_t *ls = k->pool + c->off;
+                uint32_t start = (cidx == confl) ? 0u : 1u;
+                for (uint32_t i = start; i < c->size; ++i) {
+                    uint16_t q = ls[i];
+                    uint32_t qv = q >> 1;
+                    if (!k->seen[qv] && k->level[qv] > 0) {
+                        k->seen[qv] = 1;
+                        k->stamp[qv] = ++k->bump_clock;
+                        if (k->level[qv] == k->dlevel) pathC++;
+                        else learnt[lsz++] = q;
+                    }
+                }
+                while (!k->seen[k->trail[idx] >> 1]) idx--;
+                p = k->trail[idx--];
+                k->seen[p >> 1] = 0;
+                cidx = k->reason[p >> 1];
+                pathC--;
+            } while (pathC > 0);
+            learnt[0] = p ^ 1u;
+            for (uint32_t i = 1; i < lsz; ++i) k->seen[learnt[i] >> 1] = 0;
+
+            uint32_t bt = 0;
+            if (lsz > 1) {
+                uint32_t best = 1;
+                bt = k->level[learnt[1] >> 1];
+                for (uint32_t i = 2; i < lsz; ++i) {
+                    if (k->level[learnt[i] >> 1] > bt) {
+                        bt = k->level[learnt[i] >> 1];
+                        best = i;
+                    }
+                }
+                uint16_t t = learnt[1]; learnt[1] = learnt[best]; learnt[best] = t;
+            }
+            k_backtrack(k, bt);
+            if (!k_add_clause(k, learnt, lsz, true)) { k_backtrack(k, 0); return 0; }
+            if (lsz > 1) k_assign(k, learnt[0], k->num_cls - 1);
+            continue;
+        }
+
+        /* Assign next assumption if any remain. */
+        if (k->dlevel < na) {
+            uint16_t a = assumps[k->dlevel];
+            int8_t av = k_lit_val(k, a);
+            if (av < 0) { k_backtrack(k, 0); return -1; }
+            k->dlevel++;
+            k->trail_lim[k->dlevel] = k->trail_sz;
+            if (av == 0) k_assign(k, a, KITTEN_NO_CLAUSE);
+            continue;
+        }
+
+        /* Pick next unassigned decision variable (highest bump stamp or random). */
+        uint32_t best_v = 0;
+        if (random_phases && conflicts == 0) {
+            uint32_t start = 1u + (bsat_random(&k->rng) % k->nv);
+            for (uint32_t t = 0; t < k->nv; ++t) {
+                uint32_t v = 1u + ((start - 1u + t) % k->nv);
+                if (k->val[v] == 0) { best_v = v; break; }
+            }
+        } else {
+            uint32_t best_st = 0;
+            for (uint32_t v = 1; v <= k->nv; ++v) {
+                if (k->val[v] == 0 && (best_v == 0 || k->stamp[v] > best_st)) {
+                    best_v = v; best_st = k->stamp[v];
+                }
+            }
+        }
+        if (best_v == 0) return 1; /* All local variables assigned -> SAT! */
+        uint8_t sgn = random_phases ? (uint8_t)(bsat_random(&k->rng) & 1u) : k->phase[best_v];
+        k->dlevel++;
+        k->trail_lim[k->dlevel] = k->trail_sz;
+        k_assign(k, (uint16_t)((best_v << 1) | sgn), KITTEN_NO_CLAUSE);
     }
-    free(sim);
+}
 
-    if (ne < 2) { free(entries); return true; }
-    qsort(entries, ne, sizeof *entries, cmp_sim_entry);
+static void k_flush_proof_lemmas(Solver *s, Kitten *k) {
+    if (!s->proof_file && !s->proof_journal) { k->proof_emitted = k->num_cls; return; }
+    Lit gbuf[KITTEN_MAX_VARS + 2];
+    while (k->proof_emitted < k->num_cls && !s->error) {
+        KClause *c = &k->cls[k->proof_emitted++];
+        if (!c->learned) continue;
+        const uint16_t *ls = k->pool + c->off;
+        for (uint32_t j = 0; j < c->size; ++j) {
+            gbuf[j] = mkLit(k->l2g[ls[j] >> 1], (ls[j] & 1u) != 0);
+        }
+        proof_add_clause(s, gbuf, c->size);
+    }
+}
 
-    bool saved_chrono = s->opts.chrono;
-    bool saved_phase = s->opts.phase_saving;
-    uint64_t saved_wl = s->work_limit;
-    s->opts.chrono = false;
-    s->opts.phase_saving = false;
+static void k_delete_proof_lemmas(Solver *s, Kitten *k) {
+    if (!s->proof_file) return;
+    Lit gbuf[KITTEN_MAX_VARS + 2];
+    for (uint32_t idx = k->proof_emitted; idx > k->num_orig && !s->error; --idx) {
+        KClause *c = &k->cls[idx - 1];
+        if (!c->learned || c->size <= 1) continue; /* Never delete emitted units! */
+        const uint16_t *ls = k->pool + c->off;
+        for (uint32_t j = 0; j < c->size; ++j) {
+            gbuf[j] = mkLit(k->l2g[ls[j] >> 1], (ls[j] & 1u) != 0);
+        }
+        proof_delete_clause(s, gbuf, c->size);
+    }
+}
+
+static bool inproc_sweep(Solver *s, uint64_t tick_budget) {
+    if (!s->num_vars || s->num_vars > 200000 || !s->num_clauses || s->num_clauses > 300000 ||
+        s->error || s->result == FALSE || solver_budget_exhausted(s)) return true;
+
+    /* Build compact irredundant variable->clause CSR (clauses of size 2..10). */
+    uint32_t nv = s->num_vars;
+    uint32_t *vhead = calloc((size_t)nv + 2, sizeof *vhead);
+    uint16_t *g2l = calloc((size_t)nv + 1, sizeof *g2l);
+    uint8_t *swept = calloc((size_t)nv + 1, 1);
+    if (!vhead || !g2l || !swept) { free(vhead); free(g2l); free(swept); return true; }
+
+    uint32_t total_occ = 0;
+    for (uint32_t i = 0; i < s->num_clauses; ++i) {
+        CRef cr = s->clauses[i];
+        if (cr == INVALID_CLAUSE || clause_deleted(s->arena, cr)) continue;
+        uint32_t sz = CLAUSE_SIZE(s->arena, cr);
+        if (sz < 2 || sz > 10) continue;
+        const Lit *ls = CLAUSE_LITS(s->arena, cr);
+        bool skip = false;
+        for (uint32_t j = 0; j < sz; ++j) {
+            if (s->values[var(ls[j])] != UNDEF) { skip = true; break; }
+        }
+        if (skip) continue;
+        for (uint32_t j = 0; j < sz; ++j) vhead[var(ls[j]) + 1]++;
+        total_occ += sz;
+    }
+    if (total_occ == 0) { free(vhead); free(g2l); free(swept); return true; }
+    for (uint32_t v = 1; v <= nv + 1; ++v) vhead[v] += vhead[v - 1];
+
+    uint32_t *vocc = malloc((size_t)total_occ * sizeof *vocc);
+    uint32_t *vcur = malloc((size_t)(nv + 2) * sizeof *vcur);
+    uint8_t *cls_used = calloc(s->num_clauses, 1);
+    uint32_t *used_cls_list = malloc(KITTEN_MAX_ORIG * sizeof *used_cls_list);
+    Kitten *k = malloc(sizeof *k);
+    if (!vocc || !vcur || !cls_used || !used_cls_list || !k) {
+        free(vhead); free(g2l); free(swept); free(vocc); free(vcur);
+        free(cls_used); free(used_cls_list); free(k);
+        return true;
+    }
+    memcpy(vcur, vhead, (size_t)(nv + 2) * sizeof *vcur);
+    for (uint32_t i = 0; i < s->num_clauses; ++i) {
+        CRef cr = s->clauses[i];
+        if (cr == INVALID_CLAUSE || clause_deleted(s->arena, cr)) continue;
+        uint32_t sz = CLAUSE_SIZE(s->arena, cr);
+        if (sz < 2 || sz > 10) continue;
+        const Lit *ls = CLAUSE_LITS(s->arena, cr);
+        bool skip = false;
+        for (uint32_t j = 0; j < sz; ++j) {
+            if (s->values[var(ls[j])] != UNDEF) { skip = true; break; }
+        }
+        if (skip) continue;
+        for (uint32_t j = 0; j < sz; ++j) vocc[vcur[var(ls[j])]++] = i;
+    }
+    free(vcur);
+
     uint64_t end_work = s->work + tick_budget;
-    s->work_limit = end_work;
+    uint32_t env_count = 0;
+    const uint32_t MAX_ENVS = 32;
+    bool unsat = false, added_any = false;
+    uint32_t seed_rng = s->random_state ^ (uint32_t)(s->inprocess_rounds * 2654435761u + 13u);
 
-    bool unsat = false;
-    bool added_any = false;
-    uint32_t probes = 0;
-    const uint32_t MAX_SWEEP_PROBES = 512;
+    /* Rotate starting variable across inprocessing rounds so all cones get swept. */
+    uint32_t start_v = (s->inprocess_rounds > 1 && nv > 1) ? (1u + (bsat_random(&seed_rng) % nv)) : 1u;
 
-    for (uint32_t i = 0; i < ne && probes < MAX_SWEEP_PROBES && s->work < end_work &&
-                         !unsat && !s->error && !s->interrupted;) {
-        uint32_t j = i + 1;
-        while (j < ne && entries[j].sig == entries[i].sig) ++j;
+    for (uint32_t step = 0; step < nv && env_count < MAX_ENVS && s->work < end_work &&
+                            !unsat && !s->error && !s->interrupted; ++step) {
+        Var root = 1u + ((start_v - 1u + step) % nv);
+        if (swept[root] || s->values[root] != UNDEF || (s->elim && s->elim->eliminated[root])) continue;
+        uint32_t rdeg = vhead[root + 1] - vhead[root];
+        if (rdeg < 2 || rdeg > 32) continue;
 
-        /* Check constant backbone candidates (sig == 0 -> all 64 worlds identical!). */
-        if (entries[i].sig == 0 && j - i <= 64) {
-            for (uint32_t k = i; k < j && probes < MAX_SWEEP_PROBES && s->work < end_work; ++k) {
-                Var v = entries[k].var;
-                if (s->values[v] != UNDEF) continue;
-                Lit cand = mkLit(v, !entries[k].flipped);
-                probes++;
-                if (rup_check_binary_or_unit(s, cand, LIT_UNDEF)) {
-                    proof_add_clause(s, &cand, 1);
-                    if (s->error || !enqueue_root_unit(s, cand) || !root_propagate(s)) {
+        /* Extract local BFS neighborhood around root (<= KITTEN_MAX_VARS vars, <= KITTEN_MAX_ORIG clauses). */
+        k_init(k, bsat_random(&seed_rng));
+        k->nv = 1;
+        k->l2g[1] = root;
+        g2l[root] = 1;
+        swept[root] = 1;
+
+        uint32_t n_ucls = 0;
+        uint32_t qh = 1;
+        while (qh <= k->nv && n_ucls < KITTEN_MAX_ORIG) {
+            Var cur_v = k->l2g[qh++];
+            uint32_t ob = vhead[cur_v], oe = vhead[cur_v + 1];
+            if (oe - ob > 48 && qh > 2) continue; /* Skip high-fanout hub vars on deeper hops */
+            for (uint32_t oi = ob; oi < oe && n_ucls < KITTEN_MAX_ORIG; ++oi) {
+                uint32_t ci = vocc[oi];
+                if (cls_used[ci]) continue;
+                CRef cr = s->clauses[ci];
+                if (cr == INVALID_CLAUSE || clause_deleted(s->arena, cr)) continue;
+                uint32_t sz = CLAUSE_SIZE(s->arena, cr);
+                const Lit *ls = CLAUSE_LITS(s->arena, cr);
+                /* Check if adding this clause fits in KITTEN_MAX_VARS. */
+                uint32_t need_new = 0;
+                bool has_assigned = false;
+                for (uint32_t j = 0; j < sz; ++j) {
+                    Var u = var(ls[j]);
+                    if (s->values[u] != UNDEF) { has_assigned = true; break; }
+                    if (!g2l[u]) need_new++;
+                }
+                if (has_assigned || k->nv + need_new > KITTEN_MAX_VARS) continue;
+                uint16_t klits[12];
+                for (uint32_t j = 0; j < sz; ++j) {
+                    Var u = var(ls[j]);
+                    uint16_t lv = g2l[u];
+                    if (!lv) {
+                        lv = (uint16_t)(++k->nv);
+                        g2l[u] = lv;
+                        k->l2g[lv] = u;
+                        swept[u] = 1;
+                    }
+                    klits[j] = (uint16_t)((lv << 1) | sign(ls[j]));
+                }
+                cls_used[ci] = 1;
+                used_cls_list[n_ucls++] = ci;
+                if (!k_add_clause(k, klits, sz, false)) break;
+            }
+        }
+        k->num_orig = k->num_cls;
+        k->proof_emitted = k->num_cls;
+
+        if (k->nv < 4 || n_ucls < 4) {
+            for (uint32_t i = 0; i < n_ucls; ++i) cls_used[used_cls_list[i]] = 0;
+            for (uint32_t i = 1; i <= k->nv; ++i) g2l[k->l2g[i]] = 0;
+            k_free(k);
+            continue;
+        }
+        env_count++;
+
+        /* Step 1: Generate up to 16 exact satisfying models of the local environment! */
+        uint64_t sig[KITTEN_MAX_VARS + 1];
+        memset(sig, 0, sizeof sig);
+        uint32_t n_models = 0;
+        bool env_unsat = false;
+        for (uint32_t m = 0; m < 16 && s->work < end_work; ++m) {
+            int r = k_solve(k, NULL, 0, 128, true, &s->work);
+            if (r < 0) { env_unsat = true; break; }
+            if (r == 0) break;
+            uint64_t bit = UINT64_C(1) << n_models;
+            for (uint32_t lv = 1; lv <= k->nv; ++lv) {
+                if (k->val[lv] > 0) sig[lv] |= bit;
+            }
+            n_models++;
+        }
+
+        if (env_unsat) {
+            k_flush_proof_lemmas(s, k);
+            proof_add_clause(s, NULL, 0);
+            s->base_unsat = true; s->result = FALSE;
+            unsat = true;
+        } else if (n_models >= 4) {
+            uint64_t full_mask = (n_models == 64) ? ~UINT64_C(0) : ((UINT64_C(1) << n_models) - 1u);
+            uint32_t next_bit = n_models;
+
+            /* Step 2: Check constant backbone candidates (sig == 0 or sig == full_mask). */
+            for (uint32_t lv = 1; lv <= k->nv && s->work < end_work && !unsat && !s->error; ++lv) {
+                uint64_t sv = sig[lv] & full_mask;
+                if (sv != 0 && sv != full_mask) continue;
+                bool expect_true = (sv == full_mask);
+                uint16_t neg_cand = (uint16_t)((lv << 1) | (expect_true ? 1u : 0u));
+                int r = k_solve(k, &neg_cand, 1, 96, false, &s->work);
+                if (r > 0) {
+                    /* Counterexample! Refine ALL local signatures with this real model! */
+                    uint32_t b = (next_bit < 64) ? next_bit++ : (bsat_random(&seed_rng) & 63u);
+                    uint64_t bmask = UINT64_C(1) << b;
+                    full_mask |= bmask;
+                    for (uint32_t u = 1; u <= k->nv; ++u) {
+                        if (k->val[u] > 0) sig[u] |= bmask;
+                        else sig[u] &= ~bmask;
+                    }
+                } else if (r < 0) {
+                    /* Proved backbone unit! */
+                    Lit unit = mkLit(k->l2g[lv], !expect_true);
+                    k_flush_proof_lemmas(s, k);
+                    proof_add_clause(s, &unit, 1);
+                    if (s->error || !enqueue_root_unit(s, unit) || !root_propagate(s)) {
                         unsat = true; break;
                     }
+                    uint16_t ku = neg_cand ^ 1u;
+                    k_add_clause(k, &ku, 1, false);
                     added_any = true;
                 }
             }
-        } else if (j - i >= 2 && j - i <= 16) {
-            /* Test equivalence pairs (a <-> b) against the first representative in the bucket! */
-            Lit a = mkLit(entries[i].var, entries[i].flipped);
-            for (uint32_t k = i + 1; k < j && probes < MAX_SWEEP_PROBES && s->work < end_work; ++k) {
-                if (s->values[var(a)] != UNDEF) break;
-                Lit b = mkLit(entries[k].var, entries[k].flipped);
-                if (s->values[var(b)] != UNDEF) continue;
-                /* Test (~a | b) and (~b | a) via RUP propagation. */
-                probes++;
-                bool fwd = has_binary_watch(s, neg(a), b) || rup_check_binary_or_unit(s, neg(a), b);
-                if (s->error || s->interrupted || s->work >= end_work) break;
-                bool bwd = false;
-                if (fwd) {
-                    probes++;
-                    bwd = has_binary_watch(s, neg(b), a) || rup_check_binary_or_unit(s, neg(b), a);
-                }
-                if (s->error || s->interrupted || s->work >= end_work) break;
-                if (fwd && bwd) {
-                    Lit pairs[2][2] = {{neg(a), b}, {neg(b), a}};
+
+            /* Step 3: Check equivalence pairs (lv1 <-> lv2 or lv1 <-> ~lv2) with matching signatures! */
+            uint32_t pair_probes = 0;
+            for (uint32_t a = 1; a <= k->nv && pair_probes < 48 && s->work < end_work &&
+                                 !unsat && !s->error; ++a) {
+                if (s->values[k->l2g[a]] != UNDEF) continue;
+                uint64_t sa = sig[a] & full_mask;
+                if (sa == 0 || sa == full_mask) continue;
+                for (uint32_t b = a + 1; b <= k->nv && pair_probes < 48 && s->work < end_work &&
+                                     !unsat && !s->error; ++b) {
+                    if (s->values[k->l2g[b]] != UNDEF) continue;
+                    uint64_t sb = sig[b] & full_mask;
+                    bool same = (sa == sb);
+                    bool opp  = (sa == (sb ^ full_mask));
+                    if (!same && !opp) continue;
+
+                    uint16_t ka = (uint16_t)(a << 1);
+                    uint16_t kb = (uint16_t)((b << 1) | (opp ? 1u : 0u));
+                    Lit ga = mkLit(k->l2g[a], false);
+                    Lit gb = mkLit(k->l2g[b], opp);
+                    if (has_binary_watch(s, neg(ga), gb) && has_binary_watch(s, neg(gb), ga)) continue;
+
+                    pair_probes++;
+                    /* Test direction 1: {ka, ~kb} -> proves (~ga | gb). */
+                    uint16_t a1[2] = {ka, (uint16_t)(kb ^ 1u)};
+                    int r1 = has_binary_watch(s, neg(ga), gb) ? -1 : k_solve(k, a1, 2, 96, false, &s->work);
+                    if (r1 > 0) {
+                        uint32_t bit = (next_bit < 64) ? next_bit++ : (bsat_random(&seed_rng) & 63u);
+                        uint64_t bmask = UINT64_C(1) << bit;
+                        full_mask |= bmask;
+                        for (uint32_t u = 1; u <= k->nv; ++u) {
+                            if (k->val[u] > 0) sig[u] |= bmask;
+                            else sig[u] &= ~bmask;
+                        }
+                        sa = sig[a] & full_mask;
+                        continue;
+                    }
+                    if (r1 == 0) continue;
+
+                    /* Test direction 2: {~ka, kb} -> proves (~gb | ga). */
+                    uint16_t a2[2] = {(uint16_t)(ka ^ 1u), kb};
+                    int r2 = has_binary_watch(s, neg(gb), ga) ? -1 : k_solve(k, a2, 2, 96, false, &s->work);
+                    if (r2 > 0) {
+                        uint32_t bit = (next_bit < 64) ? next_bit++ : (bsat_random(&seed_rng) & 63u);
+                        uint64_t bmask = UINT64_C(1) << bit;
+                        full_mask |= bmask;
+                        for (uint32_t u = 1; u <= k->nv; ++u) {
+                            if (k->val[u] > 0) sig[u] |= bmask;
+                            else sig[u] &= ~bmask;
+                        }
+                        sa = sig[a] & full_mask;
+                        continue;
+                    }
+                    if (r2 == 0) continue;
+
+                    /* BOTH directions UNSAT -> proved ga <-> gb!! Emit RUP proof lemmas + binaries. */
+                    k_flush_proof_lemmas(s, k);
+                    Lit pairs[2][2] = {{neg(ga), gb}, {neg(gb), ga}};
+                    uint16_t kpairs[2][2] = {{(uint16_t)(ka ^ 1u), kb}, {(uint16_t)(kb ^ 1u), ka}};
                     for (int p = 0; p < 2 && !s->error; ++p) {
                         if (has_binary_watch(s, pairs[p][0], pairs[p][1])) continue;
                         proof_add_clause(s, pairs[p], 2);
                         if (s->error) break;
                         if (s->num_learnts == s->learnts_size) {
-                            uint32_t cap = s->learnts_size ? s->learnts_size * 2 : 64;
-                            CRef *ptr = realloc(s->learnts, (size_t)cap * sizeof *ptr);
+                            uint32_t ncap = s->learnts_size ? s->learnts_size * 2 : 64;
+                            CRef *ptr = realloc(s->learnts, (size_t)ncap * sizeof *ptr);
                             if (!ptr) { s->error = true; break; }
-                            s->learnts = ptr; s->learnts_size = cap;
+                            s->learnts = ptr; s->learnts_size = ncap;
                         }
                         CRef cr = arena_alloc(s->arena, pairs[p], 2, true);
                         if (cr == INVALID_CLAUSE) { s->error = true; break; }
@@ -1969,19 +2797,21 @@ static bool inproc_sweep(Solver *s, uint64_t tick_budget) {
                         CRef wref = arena_binary_watch_ref(cr);
                         watch_add(s->watches, pairs[p][0], wref, pairs[p][1]);
                         watch_add(s->watches, pairs[p][1], wref, pairs[p][0]);
+                        k_add_clause(k, kpairs[p], 2, false);
                         added_any = true;
                     }
                 }
             }
         }
-        i = j;
+
+        if (!unsat) k_delete_proof_lemmas(s, k);
+        for (uint32_t i = 0; i < n_ucls; ++i) cls_used[used_cls_list[i]] = 0;
+        for (uint32_t i = 1; i <= k->nv; ++i) g2l[k->l2g[i]] = 0;
+        k_free(k);
     }
 
-    solver_backtrack(s, 0);
-    s->opts.chrono = saved_chrono;
-    s->opts.phase_saving = saved_phase;
-    s->work_limit = saved_wl;
-    free(entries);
+    free(vhead); free(g2l); free(swept); free(vocc);
+    free(cls_used); free(used_cls_list); free(k);
 
     if (unsat || s->error) return false;
     if (added_any && !solver_budget_exhausted(s)) {
@@ -2183,6 +3013,11 @@ bool solver_inprocess(Solver *s, bool preprocessing) {
     /* 1. Root cleanup */
     if (!inproc_root_clean(s)) goto finish;
 
+    /* 1b. GF(2) XOR extraction & Gaussian elimination (non-proof mode) */
+    if ((preprocessing || (s->inprocess_rounds & 3) == 1) && !solver_budget_exhausted(s)) {
+        if (!inproc_gauss(s)) goto finish;
+    }
+
     /* 2. Failed-literal probing + Hyper-Binary Resolution (feeds SCC & gates!) */
     if (s->opts.probing && !solver_budget_exhausted(s)) {
         if (!inproc_probe_hbr(s, base_budget / 4)) goto finish;
@@ -2193,8 +3028,9 @@ bool solver_inprocess(Solver *s, bool preprocessing) {
     if (!inproc_decompose(s)) goto finish;
     s->work_limit = 0;
 
-    /* 4. 64-bit simulation + bounded RUP SAT sweeping (equivalences & backbones) */
-    if (s->opts.probing && !solver_budget_exhausted(s)) {
+    /* 4. Embedded Mini-Kitten CDCL SAT sweeper (periodic to keep inprocessing lean) */
+    if (s->opts.probing && (preprocessing || (s->inprocess_rounds & 3) == 0) &&
+        s->num_vars >= 250 && !solver_budget_exhausted(s)) {
         if (!inproc_sweep(s, base_budget / 5)) goto finish;
     }
 
@@ -2212,6 +3048,11 @@ bool solver_inprocess(Solver *s, bool preprocessing) {
         s->work_limit = s->work + base_budget / 4;
         if (!inproc_decompose(s)) goto finish;
         s->work_limit = 0;
+    }
+
+    /* 6b. Transitive reduction of binary implication graph AFTER BVE (preserves all gates for BVE!) */
+    if ((preprocessing || (s->inprocess_rounds & 3) == 2) && !solver_budget_exhausted(s)) {
+        if (!inproc_transitive(s, base_budget / 6)) goto finish;
     }
 
     /* 7. O(n) prefix-sharing vivification */

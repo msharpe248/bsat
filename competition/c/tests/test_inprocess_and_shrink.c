@@ -90,6 +90,47 @@ static void test_gate_bve_and_reconstruction(void) {
     solver_free(s);
 }
 
+static void add_xor3(Solver *s, Var a, Var b, Var c, bool rhs) {
+    /* a ^ b ^ c = rhs: forbid all assignments whose true-count mod 2 != rhs. */
+    for (unsigned bits = 0; bits < 8; ++bits) {
+        unsigned pop = (bits & 1u) + ((bits >> 1) & 1u) + ((bits >> 2) & 1u);
+        if ((pop & 1u) == (unsigned)rhs) continue;
+        /* Clause forbidding assignment `bits`: lit is negative iff bit is 1. */
+        Lit cl[3] = {
+            mkLit(a, (bits & 1u) != 0),
+            mkLit(b, (bits & 2u) != 0),
+            mkLit(c, (bits & 4u) != 0)
+        };
+        assert(solver_add_clause(s, cl, 3));
+    }
+}
+
+static void test_gauss_xor_elimination(void) {
+    /* 3-regular Tseitin XOR graph on 8 vertices / 12 edges:
+     * total vertex parity = 1 -> UNSAT in 0 conflicts via GF(2) RREF;
+     * total vertex parity = 0 -> SAT with verified model! */
+    const Var edges[8][3] = {
+        {1, 2, 9},  {2, 3, 10}, {3, 4, 11}, {4, 1, 12},
+        {5, 6, 9},  {6, 7, 10}, {7, 8, 11}, {8, 5, 12}
+    };
+    for (int sat_case = 0; sat_case < 2; ++sat_case) {
+        Solver *s = solver_new(); assert(s);
+        for (Var v = 1; v <= 12; ++v) assert(solver_new_var(s) == v);
+        for (int i = 0; i < 8; ++i) {
+            bool rhs = (i == 0 && !sat_case); /* odd total parity => UNSAT */
+            add_xor3(s, edges[i][0], edges[i][1], edges[i][2], rhs);
+        }
+        lbool ans = solver_solve(s);
+        assert(!s->error);
+        if (sat_case) {
+            assert(ans == TRUE && solver_check_model(s));
+        } else {
+            assert(ans == FALSE && s->stats.conflicts == 0);
+        }
+        solver_free(s);
+    }
+}
+
 static void test_exhaustive_random_inprocessing(void) {
     unsigned sat_cnt = 0, unsat_cnt = 0;
     for (unsigned trial = 0; trial < 256; ++trial) {
@@ -137,6 +178,7 @@ static void test_exhaustive_random_inprocessing(void) {
 int main(void) {
     test_block_shrinking();
     test_gate_bve_and_reconstruction();
+    test_gauss_xor_elimination();
     test_exhaustive_random_inprocessing();
     return 0;
 }

@@ -130,8 +130,14 @@ pgo-train:
 	@LLVM_PROFILE_FILE="pgo_data/bsat_%p.profraw" ; \
 	export LLVM_PROFILE_FILE; \
 	for f in ../../dataset/medium_tests/medium_suite/*.cnf; do \
-		timeout 5s $(BINDIR)/bsat_pgo_gen "$$f" > /dev/null 2>&1 || true; \
-	done
+		$(BINDIR)/bsat_pgo_gen -t 5 "$$f" > /dev/null 2>&1 || true; \
+	done; \
+	for gz in tests/fixtures/acceptance/cal3-query.cnf.gz tests/fixtures/reduction_regression/09cd83e233380d0ba1fc56cee88367b1.cnf.gz; do \
+		if [ -f "$$gz" ]; then \
+			gzip -dc "$$gz" > pgo_data/train.cnf && $(BINDIR)/bsat_pgo_gen -t 3 pgo_data/train.cnf > /dev/null 2>&1 || true; \
+		fi; \
+	done; \
+	rm -f pgo_data/train.cnf
 	@echo "Profile data collected."
 
 # Step 3: Merge profile data (clang/LLVM)

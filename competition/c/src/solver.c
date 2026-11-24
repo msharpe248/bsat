@@ -503,6 +503,8 @@ Solver* solver_new_with_opts(const SolverOpts* opts) {
     s->inprocess_ticks_span = 5000000;
     s->next_inprocess_ticks = 5000000;
     s->inprocess_rounds = 0;
+    s->tier1_lbd = 2;
+    s->tier2_lbd = 6;
     s->ignore_clause = INVALID_CLAUSE;
     s->next_rephase = opts->rephase_interval;
     s->clause_inc = 1.0;
@@ -1136,6 +1138,9 @@ static CRef solver_propagate_account_impl(Solver* s) {
                 i++;
                 continue;
             }
+            if (i + 1 < ws_size && (int32_t)watches[i + 1].cref >= 0) {
+                __builtin_prefetch(&mem[watches[i + 1].cref], 0, 0);
+            }
             ClauseHeader *h = (ClauseHeader *)&mem[cref];
             uint32_t size = h->size;
             Lit *lits = (Lit *)&mem[cref + sizeof(ClauseHeader) / sizeof(uint32_t)];
@@ -1346,10 +1351,13 @@ static void improve_clause_lbd(Solver *s, CRef cr) {
         }
     }
     if (s->opts.protect_used) {
+        uint32_t clamped = h->lbd < 64 ? h->lbd : 64;
+        s->tier_used[clamped]++;
+        uint32_t t2 = s->tier2_lbd >= 6 ? s->tier2_lbd : 6;
         if (h->lbd <= 4) {
             h->used = 2;
             h->flags |= CLAUSE_FROZEN;
-        } else if (h->lbd <= 6) {
+        } else if (h->lbd <= t2) {
             h->used = 1;
             h->flags |= CLAUSE_FROZEN;
         }
@@ -2032,8 +2040,37 @@ static void solver_sweep_deleted_watches(Solver *s) {
     }
 }
 
+static void recalculate_tiers(Solver *s) {
+    if (!s->opts.protect_used || s->opts.glue_lbd != 2) return;
+    if (s->num_vars < 300) return;
+    uint64_t total = 0;
+    for (unsigned i = 0; i <= 64; ++i) total += s->tier_used[i];
+    if (total < 1000) return;
+    uint64_t acc = 0;
+    uint32_t t1 = 2, t2 = 6;
+    uint64_t half = total / 2;
+    uint64_t ninety = (total * 9) / 10;
+    bool got1 = false;
+    for (unsigned i = 0; i <= 64; ++i) {
+        acc += s->tier_used[i];
+        if (!got1 && acc >= half) {
+            t1 = i < 2 ? 2 : (i > 3 ? 3 : i);
+            got1 = true;
+        }
+        if (acc >= ninety) {
+            t2 = i < 5 ? 5 : (i > 8 ? 8 : i);
+            break;
+        }
+    }
+    s->tier1_lbd = t1;
+    s->tier2_lbd = t2;
+}
+
 static void solver_reduce_db_account_impl(Solver* s) {
     s->stats.reduces++;
+    recalculate_tiers(s);
+    uint32_t core_lbd = (s->opts.glue_lbd == 2 && s->opts.protect_used) ? s->tier1_lbd : s->opts.glue_lbd;
+    uint32_t mid_lbd = (s->opts.glue_lbd == 2 && s->opts.protect_used) ? s->tier2_lbd : 6;
     ClauseScore *scores = malloc((s->num_learnts ? s->num_learnts : 1) * sizeof *scores);
     if (!scores) return;
     uint32_t n = 0;
@@ -2041,7 +2078,7 @@ static void solver_reduce_db_account_impl(Solver* s) {
         CRef cr = s->learnts[i];
         if (cr == INVALID_CLAUSE || clause_deleted(s->arena, cr)) continue;
         ClauseHeader *h = CLAUSE_HEADER(s->arena, cr);
-        if (h->size <= 2 || h->lbd <= s->opts.glue_lbd) {
+        if (h->size <= 2 || h->lbd <= core_lbd) {
             account_reduction_use(s, cr, false);
             continue;
         }
@@ -2049,7 +2086,7 @@ static void solver_reduce_db_account_impl(Solver* s) {
         if (s->opts.protect_used) {
             bool frozen = (h->flags & CLAUSE_FROZEN) != 0;
             h->flags &= ~CLAUSE_FROZEN;
-            bool protected_use = (h->lbd <= 6 && (h->used > 0 || frozen));
+            bool protected_use = (h->lbd <= mid_lbd && (h->used > 0 || frozen));
             if (h->used > 0) h->used--;
             if (locked || protected_use) {
                 account_reduction_use(s, cr, false);
@@ -2474,6 +2511,7 @@ static bool solver_prepare_next(Solver *s, double start) {
     s->rephase.conflicts_since=0;s->next_rephase=s->opts.rephase_interval;
     s->mode_limit=1000;s->mode_ticks_span=1000000;s->next_mode_ticks=s->work+1000000;s->stable_mode=false;
     s->inprocess_ticks_span=5000000;s->next_inprocess_ticks=s->work+5000000;s->inprocess_rounds=0;s->ignore_clause=INVALID_CLAUSE;
+    memset(s->tier_used,0,sizeof s->tier_used);s->tier1_lbd=2;s->tier2_lbd=6;
     s->has_solved=false;s->last_assumptions=0;s->result=unsat?FALSE:UNDEF;
     ++s->reused_solves;
     return true;
@@ -2523,6 +2561,80 @@ bool solver_normalize_conflict(Solver *s, CRef conflict) {
     return highest>0;
 }
 
+static bool solver_try_lucky(Solver *s) {
+    if (s->decision_level || s->num_vars == 0 || s->num_vars > 200000 ||
+        s->error || s->interrupted || s->result == FALSE) return false;
+    bool saved_chrono = s->opts.chrono;
+    bool saved_phase = s->opts.phase_saving;
+    s->opts.chrono = false;
+    s->opts.phase_saving = false;
+    bool sat = false;
+    for (int phase = 0; phase < 2 && !sat && !s->error && !s->interrupted; ++phase) {
+        bool ok = true;
+        for (Var v = 1; v <= s->num_vars; ++v) {
+            if (s->values[v] != UNDEF) continue;
+            s->decision_level++;
+            s->trail_lims[s->decision_level] = s->trail_size;
+            push_trail(s, mkLit(v, phase == 0));
+            if (solver_propagate(s) != INVALID_CLAUSE) {
+                ok = false;
+                break;
+            }
+            if (s->error || s->interrupted) { ok = false; break; }
+        }
+        if (ok && s->trail_size == s->num_vars && !s->error && !s->interrupted) {
+            sat = true;
+            break;
+        }
+        solver_backtrack(s, 0);
+    }
+    s->opts.chrono = saved_chrono;
+    s->opts.phase_saving = saved_phase;
+    return sat;
+}
+
+static void bump_reason_side_literals(Solver *s, const Lit *learnt, uint32_t n) {
+    if (n <= 1 || n > 48 || s->num_vars < 300) return;
+    double half_inc = 0.5 * s->order.var_inc;
+    uint32_t touched = 0;
+    for (uint32_t i = 0; i < n; ++i) {
+        Var v = var(learnt[i]);
+        if (!s->seen[v]) {
+            s->seen[v] = 1;
+            s->minimize_touched[touched++] = v;
+        }
+    }
+    for (uint32_t i = 1; i < n; ++i) {
+        Var v = var(learnt[i]);
+        Lit b = s->binary_reasons[v];
+        if (b != LIT_UNDEF) {
+            Var u = var(b);
+            if (!s->seen[u] && s->vars[u].level > 0) {
+                s->seen[u] = 1;
+                s->minimize_touched[touched++] = u;
+                bump_var_activity(s, u, half_inc);
+            }
+            continue;
+        }
+        CRef r = s->vars[v].reason;
+        if (r != INVALID_CLAUSE && !clause_deleted(s->arena, r)) {
+            uint32_t rsz = CLAUSE_SIZE(s->arena, r);
+            if (rsz <= 12) {
+                const Lit *rlits = CLAUSE_LITS(s->arena, r);
+                for (uint32_t j = 0; j < rsz; ++j) {
+                    Var u = var(rlits[j]);
+                    if (!s->seen[u] && s->vars[u].level > 0) {
+                        s->seen[u] = 1;
+                        s->minimize_touched[touched++] = u;
+                        bump_var_activity(s, u, half_inc);
+                    }
+                }
+            }
+        }
+    }
+    for (uint32_t i = 0; i < touched; ++i) s->seen[s->minimize_touched[i]] = 0;
+}
+
 static lbool solve_internal(Solver *s, const Lit *assumps, uint32_t n_assumps);
 static lbool solve_internal_account_impl(Solver *s, const Lit *assumps, uint32_t n_assumps) {
     if (s->result == FALSE) {s->base_unsat=true;return FALSE;}
@@ -2566,8 +2678,70 @@ static lbool solve_internal_account_impl(Solver *s, const Lit *assumps, uint32_t
     s->work_limit = 0;
     if (s->error || s->interrupted) return UNDEF;
     if (s->result == FALSE) {s->base_unsat=true;return FALSE;}
+    /* Fast lucky-phase check before heavy preprocessing: solves Horn/monotone SAT in <1ms. */
     if (!n_assumps && !s->proof_journal && !s->opts.reuse_learnts && s->opts.inprocess &&
-        s->opts.preprocess_budget && !s->opts.factor && !s->opts.local_search &&
+        s->opts.preprocess_budget && !s->opts.factor && !s->opts.local_search && !s->opts.max_conflicts &&
+        s->num_clauses >= 64 && !solver_budget_exhausted(s)) {
+        if (solver_try_lucky(s)) return TRUE;
+        if (s->error || s->interrupted) return UNDEF;
+    }
+    /* Bounded congruence closure before inprocessing (100% RUP-verified).
+     * Skip tiny dense random CSPs (high clause/var ratio with few vars) where no gates exist. */
+    if (!n_assumps && !s->proof_journal && !s->opts.reuse_learnts && s->opts.inprocess &&
+        s->opts.preprocess_budget && !s->opts.congruence && !s->opts.factor && !s->opts.local_search &&
+        s->num_vars >= 300 && s->num_clauses >= 64 && s->num_clauses <= 250000 && !solver_budget_exhausted(s)) {
+        s->work_limit = s->work + 5000000ULL;
+        double started = solver_account_begin(s);
+        solver_congruence(s);
+        solver_account_end(s, ACCOUNT_PREPROCESS, started);
+        s->work_limit = 0;
+        if (s->error || s->interrupted) return UNDEF;
+        if (s->result == FALSE || solver_propagate(s) != INVALID_CLAUSE) {s->base_unsat=true;return FALSE;}
+    }
+    /* Explicit or adaptive bounded clause factoring (BVA) BEFORE inprocess/elim. */
+    if (!n_assumps && s->opts.factor && s->opts.factor_budget && s->opts.factor_max_variables) {
+        s->work_limit = s->work + MIN(s->opts.factor_budget, UINT64_MAX - s->work);
+        double started = solver_account_begin(s);
+        solver_factor(s);
+        solver_account_end(s, ACCOUNT_PREPROCESS, started);
+        s->work_limit = 0;
+        if (s->error || s->interrupted) return UNDEF;
+        if (s->num_vars + 2 > s->levels_capacity) {
+            uint8_t *seen = calloc((size_t)s->num_vars + 2, 1);
+            if (!seen) { s->error = true; return UNDEF; }
+            free(s->level_seen); s->level_seen = seen; s->levels_capacity = s->num_vars + 2;
+        }
+    } else if (!n_assumps && !s->proof_file && !s->proof_journal && !s->opts.reuse_learnts &&
+        s->opts.inprocess && s->opts.preprocess_budget && !s->opts.factor && !s->opts.local_search &&
+        s->num_clauses >= 2000 && s->num_clauses <= 250000 && !solver_budget_exhausted(s)) {
+        uint32_t bin_cnt = 0;
+        for (uint32_t i = 0; i < s->num_clauses; ++i) {
+            CRef cr = s->clauses[i];
+            if (cr != INVALID_CLAUSE && !clause_deleted(s->arena, cr) && CLAUSE_SIZE(s->arena, cr) == 2)
+                bin_cnt++;
+        }
+        if ((uint64_t)bin_cnt * 2ULL >= (uint64_t)s->num_clauses) {
+            uint32_t old_max_v = s->opts.factor_max_variables;
+            uint32_t old_min_g = s->opts.factor_min_gain;
+            s->opts.factor_max_variables = 4096;
+            s->opts.factor_min_gain = 2;
+            s->work_limit = s->work + 15000000ULL;
+            double started = solver_account_begin(s);
+            solver_factor(s);
+            solver_account_end(s, ACCOUNT_PREPROCESS, started);
+            s->work_limit = 0;
+            s->opts.factor_max_variables = old_max_v;
+            s->opts.factor_min_gain = old_min_g;
+            if (s->error || s->interrupted) return UNDEF;
+            if (s->num_vars + 2 > s->levels_capacity) {
+                uint8_t *seen = calloc((size_t)s->num_vars + 2, 1);
+                if (!seen) { s->error = true; return UNDEF; }
+                free(s->level_seen); s->level_seen = seen; s->levels_capacity = s->num_vars + 2;
+            }
+        }
+    }
+    if (!n_assumps && !s->proof_journal && !s->opts.reuse_learnts && s->opts.inprocess &&
+        s->opts.preprocess_budget && !s->opts.local_search &&
         !solver_budget_exhausted(s)) {
         if (!solver_inprocess(s, true)) {
             if (s->error || s->interrupted) return UNDEF;
@@ -2578,19 +2752,6 @@ static lbool solve_internal_account_impl(Solver *s, const Lit *assumps, uint32_t
     }
     if (s->error || s->interrupted) return UNDEF;
     if (s->result == FALSE) {s->base_unsat=true;return FALSE;}
-    if(!n_assumps && s->opts.factor && s->opts.factor_budget && s->opts.factor_max_variables) {
-        s->work_limit=s->work+MIN(s->opts.factor_budget,UINT64_MAX-s->work);
-        double started=solver_account_begin(s);
-        solver_factor(s);
-        solver_account_end(s,ACCOUNT_PREPROCESS,started);
-        s->work_limit=0;
-        if(s->error || s->interrupted)return UNDEF;
-        if(s->num_vars+2>s->levels_capacity) {
-            uint8_t *seen=calloc((size_t)s->num_vars+2,1);
-            if(!seen){s->error=true;return UNDEF;}
-            free(s->level_seen);s->level_seen=seen;s->levels_capacity=s->num_vars+2;
-        }
-    }
     Lit *learnt = malloc((s->num_vars+1)*sizeof *learnt);
     if (!learnt) { s->error=true; return UNDEF; }
     lbool result=UNDEF;
@@ -2622,6 +2783,7 @@ static lbool solve_internal_account_impl(Solver *s, const Lit *assumps, uint32_t
             s->stats.minimized_literals += binary_removed;
             if (binary_removed) lbd = calc_lbd(s,learnt,n);
             record_lbd(s,lbd);
+            bump_reason_side_literals(s, learnt, n);
             /* Put the highest remaining decision level in watch position 1. */
             backtrack=0;
             for (uint32_t i=1;i<n;++i) if (s->vars[var(learnt[i])].level > backtrack) {
