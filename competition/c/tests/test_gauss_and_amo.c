@@ -589,10 +589,63 @@ static void test_frozen_variable_inprocessing(void) {
     solver_free(s);
 }
 
+static void add_maj3_gate(Solver *s, Lit out, Lit a, Lit b, Lit c) {
+    Lit c1[3] = {neg(out), a, b}, c2[3] = {out, neg(a), neg(b)};
+    Lit c3[3] = {neg(out), a, c}, c4[3] = {out, neg(a), neg(c)};
+    Lit c5[3] = {neg(out), b, c}, c6[3] = {out, neg(b), neg(c)};
+    solver_add_clause(s, c1, 3); solver_add_clause(s, c2, 3);
+    solver_add_clause(s, c3, 3); solver_add_clause(s, c4, 3);
+    solver_add_clause(s, c5, 3); solver_add_clause(s, c6, 3);
+}
+
+static void add_xor3_gate(Solver *s, Lit out, Lit a, Lit b, Lit c) {
+    Lit lits[4] = {out, a, b, c};
+    for (unsigned m = 0; m < 16u; ++m) {
+        unsigned pop = ((m >> 0) & 1u) + ((m >> 1) & 1u) + ((m >> 2) & 1u) + ((m >> 3) & 1u);
+        if ((pop & 1u) == 0u) continue;
+        Lit cl[4];
+        for (unsigned j = 0; j < 4u; ++j) cl[j] = ((m >> j) & 1u) ? neg(lits[j]) : lits[j];
+        solver_add_clause(s, cl, 4);
+    }
+}
+
+static void test_full_adder_maj3_xor3_congruence(void) {
+    /* Two parallel 2-stage full-adder chains (a, b, cin -> sum, carry -> sum2, carry2)
+     * with miter asserting carry2_1 != carry2_2 (must collapse to UNSAT in 0 conflicts!). */
+    SolverOpts opts = default_opts();
+    opts.inprocess = true;
+    Solver *s = solver_new_with_opts(&opts);
+    Var a = solver_new_var(s), b = solver_new_var(s), cin = solver_new_var(s), d = solver_new_var(s);
+    Var sum1 = solver_new_var(s), car1 = solver_new_var(s);
+    Var sum2 = solver_new_var(s), car2 = solver_new_var(s);
+    Var out1 = solver_new_var(s), out2 = solver_new_var(s);
+
+    /* Stage 1: two identical full adders on (a, b, cin). */
+    add_xor3_gate(s, mkLit(sum1, false), mkLit(a, false), mkLit(b, false), mkLit(cin, false));
+    add_maj3_gate(s, mkLit(car1, false), mkLit(a, false), mkLit(b, false), mkLit(cin, false));
+    add_xor3_gate(s, mkLit(sum2, false), mkLit(a, false), mkLit(b, false), mkLit(cin, false));
+    add_maj3_gate(s, mkLit(car2, false), mkLit(a, false), mkLit(b, false), mkLit(cin, false));
+
+    /* Stage 2: downstream MAJ3 consuming Stage 1 outputs -> requires iterative fixpoint! */
+    add_maj3_gate(s, mkLit(out1, false), mkLit(sum1, false), mkLit(car1, false), mkLit(d, false));
+    add_maj3_gate(s, mkLit(out2, false), mkLit(sum2, false), mkLit(car2, false), mkLit(d, false));
+
+    /* Miter: out1 != out2 (UNSAT!). */
+    Lit m1[2] = {mkLit(out1, false), mkLit(out2, false)};
+    Lit m2[2] = {mkLit(out1, true), mkLit(out2, true)};
+    solver_add_clause(s, m1, 2);
+    solver_add_clause(s, m2, 2);
+
+    assert(solver_solve(s) == FALSE);
+    assert(s->stats.conflicts == 0);
+    solver_free(s);
+}
+
 int main(void) {
     test_gauss_mixed_sat_and_unsat();
     test_gauss_chain_stitching_and_subsumed_xor();
     test_nary_congruence_and_miter_sweep();
+    test_full_adder_maj3_xor3_congruence();
     test_amo_cliques_sat_and_unsat();
     test_sbva_arbitrary_length_sat_and_unsat();
     test_parallel_portfolio_sat_and_unsat();

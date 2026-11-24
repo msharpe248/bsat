@@ -1885,28 +1885,63 @@ static bool inproc_probe_hbr(Solver *s, uint64_t tick_budget) {
  * dynamic Gaussian elimination now live in src/gauss.c (gauss_extract_and_init). */
 
 /* =====================================================================
- * Pass 2c: N-ary AND Gate Congruence Closure (3..8 inputs, 100% RUP!)
+ * Pass 2c: Iterative Fixpoint Multi-Gate Congruence Closure (100% RUP-Sound)
  *
- * Extracts complete k-input AND gates (k = 3..8):
- *   (out | ~a_1 | ... | ~a_k)  and  (~out | a_i) for all i=1..k.
- * Whenever two gates share the exact same sorted input set, emits both
- * RUP binary equivalences (~out1 | out2) and (~out2 | out1) for SCC.
+ * Extracts:
+ *   - N-ary AND gates (k = 2..8): out <-> a_1 & ... & a_k
+ *   - 3-input Majority gates (MAJ3, full-adder carry): out <-> maj(a, b, c)
+ *   - 3-input XOR gates (XOR3, full-adder sum): out <-> a ^ b ^ c
+ *
+ * Runs an iterative fixpoint union-find closure seeded from live binary
+ * equivalences, propagating discovered equivalences and root units across
+ * gate levels until fixpoint or budget. Every emitted unit/binary is
+ * independently RUP-checked via solver_add_rup_clause (using 1-split RUP for
+ * MAJ3 and 2-split RUP for XOR3).
  * ===================================================================== */
+
+enum {
+    NCONG_AND  = 0,
+    NCONG_MAJ3 = 1,
+    NCONG_XOR3 = 2,
+    NCONG_XOR2 = 3,
+    NCONG_DEAD = 4
+};
 
 typedef struct {
     Lit out;
     Lit in[8];
     uint8_t k;
-} NaryAndGate;
+    uint8_t kind;
+} NaryGate;
 
-static uint64_t hash_nary_inputs(const Lit *in, uint8_t k) {
-    uint64_t h = (uint64_t)k * UINT64_C(0x9e3779b97f4a7c15);
+typedef struct {
+    Var v[3];
+    uint8_t mask;
+} TernCell;
+
+typedef struct {
+    Var v[4];
+    uint16_t mask;
+} QuadCell;
+
+typedef struct {
+    Lit a, b;
+} MajPair;
+
+static uint64_t hash_nary_gate(uint8_t kind, const Lit *in, uint8_t k) {
+    uint64_t h = ((uint64_t)kind * 31u + (uint64_t)k) * UINT64_C(0x9e3779b97f4a7c15);
     for (uint8_t i = 0; i < k; ++i) {
         h ^= (uint64_t)in[i] + UINT64_C(0x9e3779b97f4a7c15) + (h << 6) + (h >> 2);
     }
     h ^= h >> 30; h *= UINT64_C(0xbf58476d1ce4e5b9);
     h ^= h >> 27; h *= UINT64_C(0x94d049bb133111eb);
     return h ^ (h >> 31);
+}
+
+static uint64_t mix64_cong(uint64_t x) {
+    x ^= x >> 30; x *= UINT64_C(0xbf58476d1ce4e5b9);
+    x ^= x >> 27; x *= UINT64_C(0x94d049bb133111eb);
+    return x ^ (x >> 31);
 }
 
 static bool add_rup_binary(Solver *s, Lit a, Lit b) {
@@ -1931,24 +1966,173 @@ static bool add_rup_binary(Solver *s, Lit a, Lit b) {
     return true;
 }
 
-static bool inproc_nary_congruence(Solver *s, uint64_t tick_budget) {
-    if (!s->num_vars || !s->num_clauses || s->num_clauses > 250000 ||
-        s->error || s->result == FALSE || solver_budget_exhausted(s)) return true;
+static bool ncong_rup_split1(Solver *s, const Lit *lits, uint32_t n, Lit split) {
+    if (solver_add_rup_clause(s, lits, n)) return true;
+    if (s->error || s->result == FALSE || split == LIT_UNDEF || solver_budget_exhausted_now(s)) return false;
+    Lit cond[4];
+    memcpy(cond, lits, (size_t)n * sizeof *lits);
+    cond[n] = split;
+    if (!solver_add_rup_clause(s, cond, n + 1u)) return false;
+    cond[n] = neg(split);
+    if (!solver_add_rup_clause(s, cond, n + 1u)) return false;
+    return solver_add_rup_clause(s, lits, n);
+}
 
+static bool ncong_rup_split2(Solver *s, const Lit *lits, uint32_t n, Lit s1, Lit s2) {
+    if (ncong_rup_split1(s, lits, n, s1)) return true;
+    if (s->error || s->result == FALSE || s2 == LIT_UNDEF || solver_budget_exhausted_now(s)) return false;
+    Lit cond[4];
+    memcpy(cond, lits, (size_t)n * sizeof *lits);
+    cond[n] = s2;
+    if (!ncong_rup_split1(s, cond, n + 1u, s1)) return false;
+    cond[n] = neg(s2);
+    if (!ncong_rup_split1(s, cond, n + 1u, s1)) return false;
+    return solver_add_rup_clause(s, lits, n);
+}
+
+static bool ncong_emit_clause(Solver *s, const Lit *lits, uint32_t n, Lit s1, Lit s2) {
+    if (s2 != LIT_UNDEF) return ncong_rup_split2(s, lits, n, s1, s2);
+    if (s1 != LIT_UNDEF) return ncong_rup_split1(s, lits, n, s1);
+    return solver_add_rup_clause(s, lits, n);
+}
+
+static Lit ncong_uf_find(Lit *parent, Lit l) {
+    Lit root = l;
+    while (parent[var(root)] != mkLit(var(root), false)) {
+        root = parent[var(root)] ^ sign(root);
+    }
+    while (var(l) != var(root)) {
+        Lit next = parent[var(l)] ^ sign(l);
+        parent[var(l)] = root ^ sign(l);
+        l = next;
+    }
+    return root;
+}
+
+static bool ncong_merge(Solver *s, Lit *parent, Lit a, Lit b, Lit s1, Lit s2, uint32_t *changes) {
+    a = ncong_uf_find(parent, a);
+    b = ncong_uf_find(parent, b);
+    if (a == b) return true;
+    if (a == neg(b)) {
+        Lit u = a;
+        if (!ncong_emit_clause(s, &u, 1u, s1, s2)) return false;
+        if (s->result != FALSE) {
+            Lit nu = neg(a);
+            (void)ncong_emit_clause(s, &nu, 1u, s1, s2);
+        }
+        (*changes)++;
+        return true;
+    }
+    Lit fwd[2] = {neg(a), b};
+    Lit rev[2] = {neg(b), a};
+    if (!ncong_emit_clause(s, fwd, 2u, s1, s2) || s->result == FALSE || s->error) return false;
+    if (!ncong_emit_clause(s, rev, 2u, s1, s2) || s->result == FALSE || s->error) return false;
+    if (var(a) > var(b)) parent[var(a)] = b ^ sign(a);
+    else parent[var(b)] = a ^ sign(b);
+    (*changes)++;
+    return true;
+}
+
+static bool ncong_emit_unit(Solver *s, Lit u, Lit s1, Lit s2, uint32_t *changes) {
+    if (lxor(s->values[var(u)], sign(u)) == TRUE) return true;
+    if (!ncong_emit_clause(s, &u, 1u, s1, s2)) return false;
+    (*changes)++;
+    return true;
+}
+
+static bool ncong_push_gate(NaryGate **gates, uint32_t *ngates, uint32_t *cap,
+                            uint8_t kind, Lit out, const Lit *in, uint8_t k, Solver *s) {
+    if (*ngates >= 131072u) return true;
+    if (*ngates == *cap) {
+        uint32_t ncap = (*cap) * 2u;
+        if (ncap > 131072u) ncap = 131072u;
+        NaryGate *p = realloc(*gates, (size_t)ncap * sizeof *p);
+        if (!p) { s->error = true; return false; }
+        *gates = p;
+        *cap = ncap;
+    }
+    NaryGate *g = &(*gates)[(*ngates)++];
+    g->out = out;
+    g->k = k;
+    g->kind = kind;
+    memcpy(g->in, in, (size_t)k * sizeof(Lit));
+    return true;
+}
+
+static bool inproc_nary_congruence(Solver *s, uint64_t tick_budget, uint32_t *out_merges) {
+    if (out_merges) *out_merges = 0;
+    if (!s->num_vars || !s->num_clauses || s->error || s->result == FALSE ||
+        solver_budget_exhausted_now(s)) return true;
+
+    /* Count live clauses to gate ceiling on active formula size rather than stale slots. */
+    uint32_t live_clauses = 0, n_tern = 0, n_quad = 0;
+    for (uint32_t i = 0; i < s->num_clauses; ++i) {
+        CRef cr = s->clauses[i];
+        if (cr == INVALID_CLAUSE || clause_deleted(s->arena, cr)) continue;
+        live_clauses++;
+        uint32_t sz = CLAUSE_SIZE(s->arena, cr);
+        if (sz == 3u) n_tern++;
+        else if (sz == 4u) n_quad++;
+    }
+    if (live_clauses == 0 || live_clauses > 600000u) return true;
+
+    uint64_t saved_wl = s->work_limit;
     uint64_t end_work = s->work + tick_budget;
-    uint32_t cap = 256u;
-    uint32_t ngates = 0;
-    NaryAndGate *gates = malloc((size_t)cap * sizeof *gates);
-    if (!gates) { s->error = true; return false; }
+    s->work_limit = end_work;
+
+    uint32_t nv = s->num_vars;
+    Lit *parent = malloc(((size_t)nv + 1u) * sizeof *parent);
+    uint32_t cap = 256u, ngates = 0;
+    NaryGate *gates = malloc((size_t)cap * sizeof *gates);
+    if (!parent || !gates) {
+        free(parent); free(gates);
+        s->work_limit = saved_wl;
+        s->error = true;
+        return false;
+    }
+    for (Var v = 0; v <= nv; ++v) parent[v] = mkLit(v, false);
+
+    /* Seed union-find with all existing binary equivalences: (a | b) and (~a | ~b). */
+    for (uint32_t i = 0; i < s->num_clauses && s->work < end_work; ++i) {
+        CRef cr = s->clauses[i];
+        if (cr == INVALID_CLAUSE || clause_deleted(s->arena, cr) || CLAUSE_SIZE(s->arena, cr) != 2u) continue;
+        const Lit *ls = CLAUSE_LITS(s->arena, cr);
+        if (s->values[var(ls[0])] != UNDEF || s->values[var(ls[1])] != UNDEF) continue;
+        if (has_binary_watch(s, neg(ls[0]), neg(ls[1]))) {
+            Lit a = ncong_uf_find(parent, ls[0]);
+            Lit b = ncong_uf_find(parent, neg(ls[1]));
+            if (a != b && a != neg(b)) {
+                if (var(a) > var(b)) parent[var(a)] = b ^ sign(a);
+                else parent[var(b)] = a ^ sign(b);
+            }
+        }
+    }
+
+    /* Optional hash tables for MAJ3 (ternary) and XOR3 (quaternary) extraction. */
+    size_t tcap = 0, qcap = 0;
+    TernCell *tcells = NULL;
+    QuadCell *qcells = NULL;
+    if (n_tern >= 6u && n_tern <= 250000u) {
+        tcap = 64u;
+        while (tcap < (size_t)n_tern * 2u) tcap <<= 1;
+        tcells = calloc(tcap, sizeof *tcells);
+    }
+    if (n_quad >= 8u && n_quad <= 200000u) {
+        qcap = 64u;
+        while (qcap < (size_t)n_quad * 2u) qcap <<= 1;
+        qcells = calloc(qcap, sizeof *qcells);
+    }
 
     bool unsat = false;
-    bool added_equiv = false;
+    uint32_t total_changes = 0;
+
+    /* 1. Extract N-ary AND (k = 2..8), index ternary & quaternary clauses. */
     for (uint32_t i = 0; i < s->num_clauses && s->work < end_work && !unsat && !s->error; ++i) {
-        if ((i & 1023u) == 0 && solver_budget_exhausted(s)) break;
+        if ((i & 1023u) == 0 && solver_budget_exhausted_now(s)) break;
         CRef cr = s->clauses[i];
         if (cr == INVALID_CLAUSE || clause_deleted(s->arena, cr)) continue;
         uint32_t sz = CLAUSE_SIZE(s->arena, cr);
-        if (sz < 4u || sz > 9u) continue;
+        if (sz < 3u || sz > 9u) continue;
         const Lit *ls = CLAUSE_LITS(s->arena, cr);
         bool skip = false;
         for (uint32_t j = 0; j < sz; ++j) {
@@ -1957,86 +2141,329 @@ static bool inproc_nary_congruence(Solver *s, uint64_t tick_budget) {
         if (skip) continue;
         s->work += sz;
 
-        /* Test each literal in C as candidate output `out` of out <-> &(~ls[m]). */
-        for (uint32_t oi = 0; oi < sz; ++oi) {
-            Lit out = ls[oi];
-            Lit nout = neg(out);
-            /* Quick filter: nout must have at least (sz - 1) binary watches. */
-            if (watch_list(s->watches, nout)->size < sz - 1u) continue;
-            bool all_bin = true;
-            Lit inputs[8];
-            uint8_t k = 0;
-            for (uint32_t m = 0; m < sz; ++m) {
-                if (m == oi) continue;
-                Lit inp = neg(ls[m]);
-                if (!has_binary_watch(s, nout, inp)) { all_bin = false; break; }
-                inputs[k++] = inp;
+        /* Index ternary clause for MAJ3 extraction. */
+        if (sz == 3u && tcells) {
+            Lit sl[3] = {ls[0], ls[1], ls[2]};
+            if (var(sl[0]) > var(sl[1])) { Lit t = sl[0]; sl[0] = sl[1]; sl[1] = t; }
+            if (var(sl[1]) > var(sl[2])) { Lit t = sl[1]; sl[1] = sl[2]; sl[2] = t; }
+            if (var(sl[0]) > var(sl[1])) { Lit t = sl[0]; sl[0] = sl[1]; sl[1] = t; }
+            Var v0 = var(sl[0]), v1 = var(sl[1]), v2 = var(sl[2]);
+            uint8_t bit = (uint8_t)(1u << (sign(sl[0]) | (sign(sl[1]) << 1) | (sign(sl[2]) << 2)));
+            size_t pos = (size_t)(mix64_cong((uint64_t)v0 ^ ((uint64_t)v1 << 21) ^ ((uint64_t)v2 << 42)) & (tcap - 1u));
+            for (;;) {
+                if (!tcells[pos].v[0]) {
+                    tcells[pos].v[0] = v0; tcells[pos].v[1] = v1; tcells[pos].v[2] = v2;
+                    tcells[pos].mask = bit;
+                    break;
+                }
+                if (tcells[pos].v[0] == v0 && tcells[pos].v[1] == v1 && tcells[pos].v[2] == v2) {
+                    tcells[pos].mask |= bit;
+                    break;
+                }
+                pos = (pos + 1u) & (tcap - 1u);
             }
-            if (!all_bin) continue;
+        }
 
-            sort_lits_small(inputs, k);
-            /* Check for complementary inputs (a and ~a -> out MUST be FALSE, 100% RUP!). */
-            bool contra = false;
-            for (uint8_t m = 1; m < k; ++m) {
-                if (inputs[m] == neg(inputs[m - 1u])) { contra = true; break; }
+        /* Index quaternary clause for XOR3 extraction. */
+        if (sz == 4u && qcells) {
+            Lit sl[4] = {ls[0], ls[1], ls[2], ls[3]};
+            for (unsigned a = 1; a < 4; ++a) {
+                Lit key = sl[a];
+                unsigned b = a;
+                while (b > 0 && var(sl[b - 1]) > var(key)) { sl[b] = sl[b - 1]; --b; }
+                sl[b] = key;
             }
-            if (contra) {
-                proof_add_clause(s, &nout, 1);
-                if (s->error || !enqueue_root_unit(s, nout) || !root_propagate(s)) {
-                    unsat = true;
+            Var v0 = var(sl[0]), v1 = var(sl[1]), v2 = var(sl[2]), v3 = var(sl[3]);
+            uint16_t bit = (uint16_t)(1u << (sign(sl[0]) | (sign(sl[1]) << 1) | (sign(sl[2]) << 2) | (sign(sl[3]) << 3)));
+            size_t pos = (size_t)(mix64_cong((uint64_t)v0 ^ ((uint64_t)v1 << 16) ^ ((uint64_t)v2 << 32) ^ ((uint64_t)v3 << 48)) & (qcap - 1u));
+            for (;;) {
+                if (!qcells[pos].v[0]) {
+                    qcells[pos].v[0] = v0; qcells[pos].v[1] = v1; qcells[pos].v[2] = v2; qcells[pos].v[3] = v3;
+                    qcells[pos].mask = bit;
+                    break;
+                }
+                if (qcells[pos].v[0] == v0 && qcells[pos].v[1] == v1 &&
+                    qcells[pos].v[2] == v2 && qcells[pos].v[3] == v3) {
+                    qcells[pos].mask |= bit;
+                    break;
+                }
+                pos = (pos + 1u) & (qcap - 1u);
+            }
+        }
+
+        /* Extract N-ary AND gate (k = 2..8): (out | ~a1 | ... | ~ak) + (~out | ai). */
+        if (sz >= 4u || (sz == 3u && ngates < 65536u)) {
+            for (uint32_t oi = 0; oi < sz; ++oi) {
+                Lit out = ls[oi];
+                Lit nout = neg(out);
+                if (watch_list(s->watches, nout)->size < sz - 1u) continue;
+                bool all_bin = true;
+                Lit inputs[8];
+                uint8_t k = 0;
+                for (uint32_t m = 0; m < sz; ++m) {
+                    if (m == oi) continue;
+                    Lit inp = neg(ls[m]);
+                    if (!has_binary_watch(s, nout, inp)) { all_bin = false; break; }
+                    inputs[k++] = inp;
+                }
+                if (!all_bin) continue;
+                if (!ncong_push_gate(&gates, &ngates, &cap, NCONG_AND, out, inputs, k, s)) {
+                    unsat = true; break;
                 }
                 break;
             }
-            if (ngates == cap) {
-                if (cap >= 65536u) break;
-                uint32_t ncap = cap * 2u;
-                NaryAndGate *p = realloc(gates, (size_t)ncap * sizeof *p);
-                if (!p) { s->error = true; break; }
-                gates = p; cap = ncap;
-            }
-            gates[ngates].out = out;
-            gates[ngates].k = k;
-            memcpy(gates[ngates].in, inputs, (size_t)k * sizeof(Lit));
-            ngates++;
-            break; /* One gate per clause suffices */
         }
     }
 
-    if (!unsat && !s->error && ngates >= 2u) {
-        size_t hcap = 64u;
-        while (hcap < (size_t)ngates * 2u) hcap <<= 1;
-        uint32_t *ht = calloc(hcap, sizeof *ht);
-        if (!ht) { free(gates); s->error = true; return false; }
-        for (uint32_t gi = 0; gi < ngates && !unsat && !s->error; ++gi) {
-            const NaryAndGate *g = &gates[gi];
-            size_t pos = (size_t)(hash_nary_inputs(g->in, g->k) & (hcap - 1u));
-            for (;;) {
-                uint32_t slot = ht[pos];
-                if (!slot) { ht[pos] = gi + 1u; break; }
-                const NaryAndGate *h = &gates[slot - 1u];
-                if (h->k == g->k && memcmp(h->in, g->in, (size_t)g->k * sizeof(Lit)) == 0) {
-                    if (g->out != h->out) {
-                        if (g->out == neg(h->out)) {
-                            proof_add_clause(s, NULL, 0);
-                            s->base_unsat = true; s->result = FALSE;
-                            unsat = true;
-                        } else {
-                            if (!add_rup_binary(s, neg(g->out), h->out) ||
-                                !add_rup_binary(s, neg(h->out), g->out)) break;
-                            added_equiv = true;
+    /* 2. Extract 3-input Majority gates (MAJ3) from complementary ternary pairs. */
+    if (tcells && !unsat && !s->error && s->work < end_work && !solver_budget_exhausted_now(s)) {
+        uint32_t nl = 2u * (nv + 1u);
+        uint8_t *maj_deg = calloc(nl, 1);
+        MajPair *maj_adj = malloc((size_t)nl * 12u * sizeof *maj_adj);
+        if (maj_deg && maj_adj) {
+            for (size_t i = 0; i < tcap; ++i) {
+                if (!tcells[i].v[0]) continue;
+                uint8_t mask = tcells[i].mask;
+                for (unsigned m = 0; m < 4u; ++m) {
+                    if ((mask & (1u << m)) && (mask & (1u << (m ^ 7u)))) {
+                        Lit tl[3];
+                        for (unsigned j = 0; j < 3u; ++j) tl[j] = mkLit(tcells[i].v[j], (m >> j) & 1u);
+                        for (unsigned j = 0; j < 3u; ++j) {
+                            Lit out = tl[j];
+                            Lit a = tl[(j + 1u) % 3u], b = tl[(j + 2u) % 3u];
+                            if (a > b) { Lit t = a; a = b; b = t; }
+                            if (maj_deg[out] < 12u) {
+                                maj_adj[(size_t)out * 12u + maj_deg[out]++] = (MajPair){a, b};
+                            }
+                            Lit nout = neg(out);
+                            Lit na = neg(a), nb = neg(b);
+                            if (na > nb) { Lit t = na; na = nb; nb = t; }
+                            if (maj_deg[nout] < 12u) {
+                                maj_adj[(size_t)nout * 12u + maj_deg[nout]++] = (MajPair){na, nb};
+                            }
                         }
                     }
-                    break;
                 }
-                pos = (pos + 1u) & (hcap - 1u);
             }
+            for (Lit out = 2u; out < nl && !s->error && s->work < end_work; ++out) {
+                uint8_t d = maj_deg[out];
+                if (d < 3u) continue;
+                const MajPair *ps = &maj_adj[(size_t)out * 12u];
+                for (uint8_t p1 = 0; p1 < d; ++p1) {
+                    for (uint8_t p2 = p1 + 1u; p2 < d; ++p2) {
+                        Lit shared = LIT_UNDEF, x = LIT_UNDEF, y = LIT_UNDEF;
+                        if (ps[p1].a == ps[p2].a) { shared = ps[p1].a; x = ps[p1].b; y = ps[p2].b; }
+                        else if (ps[p1].a == ps[p2].b) { shared = ps[p1].a; x = ps[p1].b; y = ps[p2].a; }
+                        else if (ps[p1].b == ps[p2].a) { shared = ps[p1].b; x = ps[p1].a; y = ps[p2].b; }
+                        else if (ps[p1].b == ps[p2].b) { shared = ps[p1].b; x = ps[p1].a; y = ps[p2].a; }
+                        if (shared == LIT_UNDEF || x == y) continue;
+                        if (x > y) { Lit t = x; x = y; y = t; }
+                        for (uint8_t p3 = p2 + 1u; p3 < d; ++p3) {
+                            if (ps[p3].a == x && ps[p3].b == y) {
+                                Lit ins[3] = {neg(shared), neg(x), neg(y)};
+                                (void)ncong_push_gate(&gates, &ngates, &cap, NCONG_MAJ3, out, ins, 3u, s);
+                                break;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        free(maj_deg);
+        free(maj_adj);
+    }
+    free(tcells);
+    tcells = NULL;
+
+    /* 3. Extract 3-input XOR gates (XOR3) from complete 8-clause quaternary parity blocks. */
+    if (qcells && !unsat && !s->error && s->work < end_work && !solver_budget_exhausted_now(s)) {
+        for (size_t i = 0; i < qcap && !s->error; ++i) {
+            if (!qcells[i].v[0]) continue;
+            uint16_t mask = qcells[i].mask;
+            for (unsigned parity = 0; parity < 2u; ++parity) {
+                uint16_t want = parity ? 0x9669u : 0x6996u;
+                if ((mask & want) != want) continue;
+                for (unsigned j = 0; j < 4u; ++j) {
+                    Lit out = mkLit(qcells[i].v[j], parity != 0);
+                    Lit ins[3];
+                    uint8_t k = 0;
+                    for (unsigned m = 0; m < 4u; ++m) {
+                        if (m != j) ins[k++] = mkLit(qcells[i].v[m], false);
+                    }
+                    if (!ncong_push_gate(&gates, &ngates, &cap, NCONG_XOR3, out, ins, 3u, s)) break;
+                }
+            }
+        }
+    }
+    free(qcells);
+    qcells = NULL;
+
+    /* 4. Iterative fixpoint congruence closure across ALL extracted gates! */
+    if (!unsat && !s->error && ngates >= 2u && !solver_budget_exhausted_now(s)) {
+        size_t hcap = 64u;
+        while (hcap < (size_t)ngates * 2u) hcap <<= 1;
+        uint32_t *ht = malloc(hcap * sizeof *ht);
+        if (!ht) {
+            free(parent); free(gates);
+            s->work_limit = saved_wl;
+            s->error = true;
+            return false;
+        }
+
+        for (uint32_t iter = 0; iter < 8u && !unsat && !s->error && s->work < end_work; ++iter) {
+            if (solver_budget_exhausted_now(s)) break;
+            uint32_t before = total_changes;
+            memset(ht, 0, hcap * sizeof *ht);
+
+            for (uint32_t gi = 0; gi < ngates && !unsat && !s->error && s->work < end_work; ++gi) {
+                if ((gi & 255u) == 0 && solver_budget_exhausted_now(s)) break;
+                NaryGate *g = &gates[gi];
+                if (g->kind == NCONG_DEAD) continue;
+                s->work += g->k + 2u;
+
+                g->out = ncong_uf_find(parent, g->out);
+                for (uint8_t j = 0; j < g->k; ++j) g->in[j] = ncong_uf_find(parent, g->in[j]);
+
+                if (g->kind == NCONG_AND) {
+                    Lit nins[8];
+                    uint8_t nk = 0;
+                    bool force_false = false;
+                    for (uint8_t j = 0; j < g->k; ++j) {
+                        Lit l = g->in[j];
+                        lbool v = lxor(s->values[var(l)], sign(l));
+                        if (v == FALSE || l == neg(g->out)) { force_false = true; break; }
+                        if (v == TRUE) continue;
+                        nins[nk++] = l;
+                    }
+                    if (!force_false) {
+                        sort_lits_small(nins, nk);
+                        uint8_t u = 0;
+                        for (uint8_t j = 0; j < nk; ++j) {
+                            if (u > 0 && nins[j] == nins[u - 1u]) continue;
+                            if (u > 0 && nins[j] == neg(nins[u - 1u])) { force_false = true; break; }
+                            nins[u++] = nins[j];
+                        }
+                        nk = u;
+                    }
+                    if (force_false) {
+                        if (ncong_emit_unit(s, neg(g->out), LIT_UNDEF, LIT_UNDEF, &total_changes)) g->kind = NCONG_DEAD;
+                        if (s->result == FALSE) unsat = true;
+                        continue;
+                    }
+                    if (nk == 0) {
+                        if (ncong_emit_unit(s, g->out, LIT_UNDEF, LIT_UNDEF, &total_changes)) g->kind = NCONG_DEAD;
+                        if (s->result == FALSE) unsat = true;
+                        continue;
+                    }
+                    if (nk == 1u) {
+                        if (ncong_merge(s, parent, g->out, nins[0], LIT_UNDEF, LIT_UNDEF, &total_changes)) g->kind = NCONG_DEAD;
+                        if (s->result == FALSE) unsat = true;
+                        continue;
+                    }
+                    g->k = nk;
+                    memcpy(g->in, nins, (size_t)nk * sizeof(Lit));
+                } else if (g->kind == NCONG_MAJ3) {
+                    Lit a = g->in[0], b = g->in[1], c = g->in[2];
+                    lbool va = lxor(s->values[var(a)], sign(a));
+                    lbool vb = lxor(s->values[var(b)], sign(b));
+                    lbool vc = lxor(s->values[var(c)], sign(c));
+                    if (va != UNDEF || vb != UNDEF || vc != UNDEF) {
+                        Lit x = (va != UNDEF) ? b : (vb != UNDEF) ? a : a;
+                        Lit y = (va != UNDEF) ? c : (vb != UNDEF) ? c : b;
+                        lbool cv = (va != UNDEF) ? va : (vb != UNDEF) ? vb : vc;
+                        if (cv == TRUE) { g->out = neg(g->out); x = neg(x); y = neg(y); }
+                        g->in[0] = x; g->in[1] = y; g->k = 2u; g->kind = NCONG_AND;
+                        sort_lits_small(g->in, 2u);
+                        gi--; continue;
+                    }
+                    Lit eq_lit = LIT_UNDEF, sp = LIT_UNDEF;
+                    if (a == b) { eq_lit = a; sp = c; }
+                    else if (a == c) { eq_lit = a; sp = b; }
+                    else if (b == c) { eq_lit = b; sp = a; }
+                    else if (a == neg(b)) { eq_lit = c; sp = a; }
+                    else if (a == neg(c)) { eq_lit = b; sp = a; }
+                    else if (b == neg(c)) { eq_lit = a; sp = b; }
+                    if (eq_lit != LIT_UNDEF) {
+                        if (ncong_merge(s, parent, g->out, eq_lit, sp, LIT_UNDEF, &total_changes)) g->kind = NCONG_DEAD;
+                        if (s->result == FALSE) unsat = true;
+                        continue;
+                    }
+                    unsigned negs = (unsigned)sign(a) + (unsigned)sign(b) + (unsigned)sign(c);
+                    if (negs >= 2u) {
+                        g->out = neg(g->out);
+                        a = neg(a); b = neg(b); c = neg(c);
+                    }
+                    g->in[0] = a; g->in[1] = b; g->in[2] = c;
+                    sort_lits_small(g->in, 3u);
+                } else if (g->kind == NCONG_XOR3 || g->kind == NCONG_XOR2) {
+                    Lit nins[3];
+                    uint8_t nk = 0;
+                    Lit s1 = g->in[0], s2 = (g->k >= 3u) ? g->in[1] : LIT_UNDEF;
+                    for (uint8_t j = 0; j < g->k; ++j) {
+                        Lit l = g->in[j];
+                        lbool v = lxor(s->values[var(l)], sign(l));
+                        if (v != UNDEF) {
+                            if (v == TRUE) g->out = neg(g->out);
+                            continue;
+                        }
+                        if (sign(l)) { g->out = neg(g->out); l = neg(l); }
+                        nins[nk++] = l;
+                    }
+                    sort_lits_small(nins, nk);
+                    uint8_t u = 0;
+                    for (uint8_t j = 0; j < nk; ) {
+                        if (j + 1u < nk && nins[j] == nins[j + 1u]) { j += 2u; }
+                        else { nins[u++] = nins[j++]; }
+                    }
+                    nk = u;
+                    if (nk == 0) {
+                        if (ncong_emit_unit(s, neg(g->out), s1, s2, &total_changes)) g->kind = NCONG_DEAD;
+                        if (s->result == FALSE) unsat = true;
+                        continue;
+                    }
+                    if (nk == 1u) {
+                        if (ncong_merge(s, parent, g->out, nins[0], s1, s2, &total_changes)) g->kind = NCONG_DEAD;
+                        if (s->result == FALSE) unsat = true;
+                        continue;
+                    }
+                    g->k = nk;
+                    g->kind = (nk == 3u) ? NCONG_XOR3 : NCONG_XOR2;
+                    memcpy(g->in, nins, (size_t)nk * sizeof(Lit));
+                }
+
+                size_t pos = (size_t)(hash_nary_gate(g->kind, g->in, g->k) & (hcap - 1u));
+                for (;;) {
+                    uint32_t slot = ht[pos];
+                    if (!slot) { ht[pos] = gi + 1u; break; }
+                    NaryGate *h = &gates[slot - 1u];
+                    if (h->kind == g->kind && h->k == g->k &&
+                        memcmp(h->in, g->in, (size_t)g->k * sizeof(Lit)) == 0) {
+                        if (g->out != h->out) {
+                            Lit sp1 = LIT_UNDEF, sp2 = LIT_UNDEF;
+                            if (g->kind == NCONG_MAJ3 || g->kind == NCONG_XOR2) sp1 = g->in[0];
+                            else if (g->kind == NCONG_XOR3) { sp1 = g->in[0]; sp2 = g->in[1]; }
+                            if (ncong_merge(s, parent, g->out, h->out, sp1, sp2, &total_changes)) {
+                                g->kind = NCONG_DEAD;
+                            }
+                            if (s->result == FALSE) unsat = true;
+                        } else {
+                            g->kind = NCONG_DEAD;
+                        }
+                        break;
+                    }
+                    pos = (pos + 1u) & (hcap - 1u);
+                }
+            }
+            if (total_changes == before) break;
         }
         free(ht);
     }
 
+    free(parent);
     free(gates);
-    if (unsat || s->error) return false;
-    (void)added_equiv;
+    s->work_limit = saved_wl;
+    if (out_merges) *out_merges = total_changes;
+    if (unsat || s->error || s->result == FALSE) return false;
     return true;
 }
 
@@ -3585,20 +4012,32 @@ bool solver_inprocess(Solver *s, bool preprocessing) {
         if (!inproc_probe_hbr(s, base_budget / 4)) goto finish;
     }
 
-    /* 2b. Periodic inprocessing congruence closure (100% RUP-verified; also catches
-     * formulas that were >250k clauses before BVE shrank them below 200k). */
+    /* 2b. Periodic inprocessing congruence closure (100% RUP-verified). */
     if (!preprocessing && (s->inprocess_rounds & 3) == 2 &&
-        s->num_vars >= 300 && s->num_clauses <= 200000 && !solver_budget_exhausted_now(s)) {
-        s->work_limit = s->work + base_budget / 6;
+        s->num_vars >= 300 && s->num_clauses <= 600000 && !solver_budget_exhausted_now(s)) {
+        uint64_t cbud = MAX(base_budget / 4, (uint64_t)s->num_clauses * 40ULL);
+        s->work_limit = s->work + MIN(cbud, 25000000ULL);
         solver_congruence_inproc(s);
         s->work_limit = 0;
         if (s->error || s->interrupted || s->result == FALSE) goto finish;
         if (!root_propagate(s)) goto finish;
     }
 
-    /* 2c. N-ary AND gate congruence closure (3..8 inputs, 100% RUP-verified) */
+    /* 2c. Iterative fixpoint N-ary AND + MAJ3 + XOR3 congruence closure (100% RUP-verified) */
     if ((preprocessing || (s->inprocess_rounds & 3) == 1) && !solver_budget_exhausted_now(s)) {
-        if (!inproc_nary_congruence(s, base_budget / 8)) goto finish;
+        uint32_t ncong_merges = 0;
+        if (!inproc_nary_congruence(s, base_budget / 4, &ncong_merges)) goto finish;
+        /* If multi-gate closure found new equivalences, feed them back into 2-input
+         * AND/XOR/ITE congruence once so mixed circuits close to a joint fixpoint! */
+        if (ncong_merges > 0 && s->num_vars >= 64 && s->num_clauses <= 600000 &&
+            !solver_budget_exhausted_now(s)) {
+            uint64_t cbud = MAX(base_budget / 6, (uint64_t)s->num_clauses * 40ULL);
+            s->work_limit = s->work + MIN(cbud, 25000000ULL);
+            solver_congruence_inproc(s);
+            s->work_limit = 0;
+            if (s->error || s->interrupted || s->result == FALSE) goto finish;
+            if (!root_propagate(s)) goto finish;
+        }
     }
 
     /* 2d. Model-guided global backbone extraction on later rounds (100% RUP-verified) */

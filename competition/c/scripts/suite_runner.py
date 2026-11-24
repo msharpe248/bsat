@@ -181,8 +181,14 @@ def parse_solver_stats(output: str) -> dict:
 
 
 def checker_verified(stdout: str, stderr: str, rc: int) -> bool:
-    combined = (stdout + "\n" + stderr).upper()
-    return rc == 0 and ("S VERIFIED" in combined or "\nVERIFIED" in combined or combined.startswith("VERIFIED"))
+    lines = [ln.strip() for ln in (stdout + "\n" + stderr).splitlines()]
+    has_verified = any(ln.upper() in ("S VERIFIED", "VERIFIED") for ln in lines)
+    if not has_verified:
+        return False
+    if any(ln.startswith("s ") and ln != "s VERIFIED" for ln in lines):
+        return False
+    # drat-trim exits with status 1 on its verified trivial-UNSAT path.
+    return rc == 0 or (rc == 1 and "c trivial UNSAT" in lines)
 
 
 def run_one(solver_name: str, cmd_template: list, instance: dict,

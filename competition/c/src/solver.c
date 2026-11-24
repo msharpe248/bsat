@@ -2961,11 +2961,15 @@ static lbool solve_internal_account_impl(Solver *s, const Lit *assumps, uint32_t
         if (s->error || s->interrupted) return UNDEF;
     }
     /* Bounded congruence closure before inprocessing (100% RUP-verified).
-     * Skip tiny dense random CSPs (high clause/var ratio with few vars) where no gates exist. */
+     * Scale work budget with formula size so large hardware miters (up to 800k clauses)
+     * have enough ticks to index gates and close equivalences before BVE. */
     if (!n_assumps && !s->proof_journal && !s->opts.reuse_learnts && s->opts.inprocess &&
         s->opts.preprocess_budget && !s->opts.congruence && !s->opts.factor && !s->opts.local_search &&
-        s->num_vars >= 300 && s->num_clauses >= 64 && s->num_clauses <= 250000 && !solver_budget_exhausted(s)) {
-        s->work_limit = s->work + 5000000ULL;
+        s->num_vars >= 300 && s->num_clauses >= 64 && s->num_clauses <= 800000 && !solver_budget_exhausted(s)) {
+        uint64_t cong_budget = (uint64_t)s->num_clauses * 160ULL;
+        if (cong_budget < 5000000ULL) cong_budget = 5000000ULL;
+        if (cong_budget > 80000000ULL) cong_budget = 80000000ULL;
+        s->work_limit = s->work + cong_budget;
         double started = solver_account_begin(s);
         solver_congruence(s);
         solver_account_end(s, ACCOUNT_PREPROCESS, started);
