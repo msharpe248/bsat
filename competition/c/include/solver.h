@@ -366,6 +366,10 @@ typedef struct Solver {
     void (*learn_callback)(void *, int *);
     void *learn_state;
     uint32_t learn_max_length;
+    void (*share_export_callback)(void *, const Lit *, uint32_t, uint32_t);
+    void *share_export_state;
+    uint32_t share_export_max_len;
+    uint32_t share_export_max_lbd;
     void (*import_callback)(struct Solver *, void *);
     void *import_state;
 

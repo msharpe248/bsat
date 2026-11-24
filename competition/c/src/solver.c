@@ -3159,6 +3159,10 @@ static lbool solve_internal_account_impl(Solver *s, const Lit *assumps, uint32_t
             s->otfs_count = 0;
             if (s->error) break;
             proof_add_clause(s,learnt,n);
+            if (s->share_export_callback &&
+                (n == 1u || n == 2u || (n <= s->share_export_max_len && lbd <= s->share_export_max_lbd))) {
+                s->share_export_callback(s->share_export_state, learnt, n, lbd);
+            }
             if (s->learn_callback && n<=s->learn_max_length) {
                 int *exported=malloc(((size_t)n+1)*sizeof *exported);
                 if (!exported) {s->error=true;break;}

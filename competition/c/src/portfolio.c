@@ -20,15 +20,24 @@
 #include <time.h>
 
 #define PORTFOLIO_MAX_THREADS    64u
-#define PORTFOLIO_RING_CAP       4096u /* Must be power of 2 */
-#define PORTFOLIO_MAX_SHARE_LEN  4u
-#define PORTFOLIO_IMPORT_BATCH   128u
+#define PORTFOLIO_RING_CAP       8192u /* Must be power of 2 */
+#define PORTFOLIO_UNIT_RING_CAP  4096u /* Dedicated unit broadcast ring (power of 2) */
+#define PORTFOLIO_DEDUP_CAP      16384u /* Hash dedup table size (power of 2) */
+#define PORTFOLIO_MAX_SHARE_LEN  8u
+#define PORTFOLIO_MAX_SHARE_LBD  3u
+#define PORTFOLIO_IMPORT_BATCH   192u
 
 typedef struct {
     uint32_t producer;
     uint8_t  size;
+    uint8_t  lbd;
     Lit      lits[PORTFOLIO_MAX_SHARE_LEN];
 } SharedClause;
+
+typedef struct {
+    uint32_t producer;
+    Lit      unit;
+} SharedUnit;
 
 typedef struct {
     const Lit *input;
@@ -48,19 +57,43 @@ typedef struct {
     uint64_t   total_propagations;
     uint64_t   shared_exported;
     uint64_t   shared_imported;
+    uint64_t   shared_deduped;
 
     pthread_mutex_t ring_mu;
     SharedClause ring[PORTFOLIO_RING_CAP];
     uint64_t   ring_seq;         /* Monotonically increasing write cursor */
+    SharedUnit unit_ring[PORTFOLIO_UNIT_RING_CAP];
+    uint64_t   unit_seq;         /* Monotonically increasing unit write cursor */
+    uint64_t   dedup[PORTFOLIO_DEDUP_CAP];
 } PortfolioCtx;
 
 typedef struct {
     PortfolioCtx *ctx;
     uint32_t      id;
     uint64_t      read_seq;
+    uint64_t      unit_read_seq;
     bool          can_export;
     Solver       *solver;
 } WorkerState;
+
+static inline uint64_t mix64_share(uint64_t x) {
+    x ^= x >> 30; x *= UINT64_C(0xbf58476d1ce4e5b9);
+    x ^= x >> 27; x *= UINT64_C(0x94d049bb133111eb);
+    return x ^ (x >> 31);
+}
+
+static uint64_t hash_shared_clause(const Lit *lits, uint32_t n) {
+    /* Order-independent canonical hash across up to 8 literals. */
+    uint64_t x = UINT64_C(0x9e3779b97f4a7c15) * (uint64_t)n;
+    uint64_t sum = 0;
+    for (uint32_t i = 0; i < n; ++i) {
+        uint64_t m = mix64_share((uint64_t)lits[i] + 1u);
+        x ^= m;
+        sum += m;
+    }
+    uint64_t h = mix64_share(x ^ (sum * UINT64_C(0x517cc1b727220a95)));
+    return h ? h : 1u;
+}
 
 static double wall_time_sec(void) {
     struct timespec ts;
@@ -79,30 +112,40 @@ static int worker_terminate(void *state) {
     return 0;
 }
 
-static void worker_export_clause(void *state, int *dimacs_lits) {
+static void worker_export_lit_clause(void *state, const Lit *lits, uint32_t n, uint32_t lbd) {
     WorkerState *w = (WorkerState *)state;
-    if (!w->can_export) return;
+    if (!w->can_export || n == 0 || n > PORTFOLIO_MAX_SHARE_LEN) return;
     PortfolioCtx *ctx = w->ctx;
     if (atomic_load_explicit(&ctx->done, memory_order_relaxed)) return;
 
-    Lit lits[PORTFOLIO_MAX_SHARE_LEN];
-    uint32_t n = 0;
-    while (dimacs_lits[n] != 0) {
-        if (n >= PORTFOLIO_MAX_SHARE_LEN) return;
-        int d = dimacs_lits[n];
-        Var v = (Var)(d < 0 ? -d : d);
+    for (uint32_t i = 0; i < n; ++i) {
+        Var v = var(lits[i]);
         if (v == 0 || v > ctx->orig_vars) return;
-        lits[n] = mkLit(v, d < 0);
-        n++;
     }
-    if (n == 0) return;
+    uint64_t h = hash_shared_clause(lits, n);
 
     pthread_mutex_lock(&ctx->ring_mu);
-    uint64_t slot = ctx->ring_seq & (PORTFOLIO_RING_CAP - 1u);
-    ctx->ring[slot].producer = w->id;
-    ctx->ring[slot].size = (uint8_t)n;
-    memcpy(ctx->ring[slot].lits, lits, (size_t)n * sizeof(Lit));
-    ctx->ring_seq++;
+    size_t dslot = (size_t)(h & (PORTFOLIO_DEDUP_CAP - 1u));
+    if (ctx->dedup[dslot] == h) {
+        ctx->shared_deduped++;
+        pthread_mutex_unlock(&ctx->ring_mu);
+        return;
+    }
+    ctx->dedup[dslot] = h;
+
+    if (n == 1u) {
+        uint64_t slot = ctx->unit_seq & (PORTFOLIO_UNIT_RING_CAP - 1u);
+        ctx->unit_ring[slot].producer = w->id;
+        ctx->unit_ring[slot].unit = lits[0];
+        ctx->unit_seq++;
+    } else {
+        uint64_t slot = ctx->ring_seq & (PORTFOLIO_RING_CAP - 1u);
+        ctx->ring[slot].producer = w->id;
+        ctx->ring[slot].size = (uint8_t)n;
+        ctx->ring[slot].lbd = (uint8_t)(lbd > 255u ? 255u : lbd);
+        memcpy(ctx->ring[slot].lits, lits, (size_t)n * sizeof(Lit));
+        ctx->ring_seq++;
+    }
     ctx->shared_exported++;
     pthread_mutex_unlock(&ctx->ring_mu);
 }
@@ -112,10 +155,25 @@ static void worker_import_clauses(Solver *s, void *state) {
     PortfolioCtx *ctx = w->ctx;
     if (atomic_load_explicit(&ctx->done, memory_order_relaxed)) return;
 
+    Lit unit_batch[PORTFOLIO_IMPORT_BATCH];
+    uint32_t ucount = 0;
     SharedClause batch[PORTFOLIO_IMPORT_BATCH];
     uint32_t count = 0;
 
     pthread_mutex_lock(&ctx->ring_mu);
+    uint64_t ucur = ctx->unit_seq;
+    if (ucur > w->unit_read_seq) {
+        if (ucur - w->unit_read_seq > PORTFOLIO_UNIT_RING_CAP) {
+            w->unit_read_seq = ucur - PORTFOLIO_UNIT_RING_CAP;
+        }
+        while (w->unit_read_seq < ucur && ucount < PORTFOLIO_IMPORT_BATCH) {
+            SharedUnit su = ctx->unit_ring[w->unit_read_seq & (PORTFOLIO_UNIT_RING_CAP - 1u)];
+            w->unit_read_seq++;
+            if (su.producer != w->id) {
+                unit_batch[ucount++] = su.unit;
+            }
+        }
+    }
     uint64_t cur = ctx->ring_seq;
     if (cur > w->read_seq) {
         if (cur - w->read_seq > PORTFOLIO_RING_CAP) {
@@ -128,10 +186,14 @@ static void worker_import_clauses(Solver *s, void *state) {
                 batch[count++] = sc;
             }
         }
-        ctx->shared_imported += count;
     }
+    ctx->shared_imported += (uint64_t)ucount + (uint64_t)count;
     pthread_mutex_unlock(&ctx->ring_mu);
 
+    /* Import immediate broadcast units FIRST! */
+    for (uint32_t i = 0; i < ucount && !s->error && s->result != FALSE; ++i) {
+        if (!solver_import_clause(s, &unit_batch[i], 1u)) break;
+    }
     for (uint32_t i = 0; i < count && !s->error && s->result != FALSE; ++i) {
         if (!solver_import_clause(s, batch[i].lits, batch[i].size)) break;
     }
@@ -148,13 +210,13 @@ static SolverOpts make_worker_opts(const SolverOpts *base, uint32_t id, bool *ca
     o.seed = base->seed + id * 1009u + 17u;
 
     if (id == 0) {
-        /* Worker 0: Full BSAT defaults (BVE, SBVA, AMO, Gauss, alternating).
-         * Does not export (BVE/SBVA can restrict equisatisfiable models), does import! */
+        /* Worker 0: Full BSAT defaults (BVE, SBVA, Sym, AMO, Gauss, alternating).
+         * Does not export (BVE/SBVA/Sym restrict equisatisfiable models), does import! */
         *can_export = false;
         return o;
     }
 
-    /* Workers 1..N-1: 100% logically-equivalent solvers (no BVE/BCE/SBVA) so every
+    /* Workers 1..N-1: 100% logically-equivalent solvers (no BVE/BCE/SBVA/Sym) so every
      * learned clause is globally entailed by the original formula and safe to share! */
     o.var_elim = false;
     o.elim = false;
@@ -164,7 +226,7 @@ static SolverOpts make_worker_opts(const SolverOpts *base, uint32_t id, bool *ca
     o.factor = false;
     *can_export = true;
 
-    switch (id % 6u) {
+    switch (id % 8u) {
         case 1:
             /* Focused-first VMTF with aggressive Glucose EMA restarts */
             o.vmtf = true;
@@ -198,14 +260,32 @@ static SolverOpts make_worker_opts(const SolverOpts *base, uint32_t id, bool *ca
             o.glucose_k = 0.80;
             break;
         case 5:
-            /* High-retention VSIDS + fast rephasing + WalkSAT hybrid */
+            /* High-retention VSIDS + fast rephasing */
             o.alternating = true;
             o.reduce_interval = 2500;
             o.rephase_interval = 400;
             o.glucose_k = 0.95;
             break;
+        case 6:
+            /* Aggressive clause shrinking + focused low-LBD VMTF */
+            o.vmtf = true;
+            o.alternating = false;
+            o.shrink = true;
+            o.glue_lbd = 3;
+            o.glucose_k = 0.80;
+            o.reduce_interval = 1200;
+            break;
+        case 7:
+            /* Very slow VSIDS decay + short Luby + long rephase window */
+            o.vmtf = false;
+            o.alternating = false;
+            o.luby_restart = true;
+            o.luby_unit = 64;
+            o.var_decay = 0.99;
+            o.rephase_interval = 1500;
+            break;
         default:
-            /* Diversified alternating configuration for id >= 6 */
+            /* Diversified alternating configuration for id >= 8 */
             o.alternating = (id & 1u) == 0;
             o.vmtf = (id & 2u) != 0;
             o.chrono = (id & 4u) == 0;
@@ -242,9 +322,10 @@ static void *portfolio_worker_main(void *arg) {
 
     solver_set_terminate(s, w, worker_terminate);
     if (w->can_export) {
-        s->learn_callback = worker_export_clause;
-        s->learn_state = w;
-        s->learn_max_length = PORTFOLIO_MAX_SHARE_LEN;
+        s->share_export_callback = worker_export_lit_clause;
+        s->share_export_state = w;
+        s->share_export_max_len = PORTFOLIO_MAX_SHARE_LEN;
+        s->share_export_max_lbd = PORTFOLIO_MAX_SHARE_LBD;
     }
     s->import_callback = worker_import_clauses;
     s->import_state = w;
