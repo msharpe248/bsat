@@ -309,8 +309,69 @@ static void test_sbva_arbitrary_length_sat_and_unsat(void) {
     solver_free(s);
 }
 
+static void add_chained_xor(Solver *s, const Var *vars, uint32_t len, uint8_t rhs) {
+    /* Encode x_0 ^ x_1 ^ ... ^ x_{len-1} = rhs as a Tseitin chain of 3-var XORs! */
+    assert(len >= 3);
+    if (len <= 6) {
+        add_xor_clauses(s, vars, len, rhs);
+        return;
+    }
+    Var cur = vars[0];
+    for (uint32_t i = 1; i + 2 < len; ++i) {
+        Var t = solver_new_var(s);
+        Var tri[3] = {cur, vars[i], t};
+        add_xor_clauses(s, tri, 3, 0); /* cur ^ vars[i] = t */
+        cur = t;
+    }
+    Var last[3] = {cur, vars[len - 2], vars[len - 1]};
+    add_xor_clauses(s, last, 3, rhs);
+}
+
+static void test_gauss_chain_stitching_and_subsumed_xor(void) {
+    /* 1. Tseitin-chained 16-variable XOR system (UNSAT in 0 conflicts via chain stitching + RREF!). */
+    SolverOpts opts = default_opts();
+    opts.inprocess = true;
+    Solver *s = solver_new_with_opts(&opts);
+    const uint32_t N = 16;
+    Var base[16];
+    for (uint32_t i = 0; i < N; ++i) base[i] = solver_new_var(s);
+    /* Two contradictory 16-variable Tseitin-chained XORs over the SAME 16 variables! */
+    add_chained_xor(s, base, N, 0);
+    add_chained_xor(s, base, N, 1);
+    lbool r = solver_solve(s);
+    assert(r == FALSE);
+    assert(s->stats.conflicts == 0);
+    solver_free(s);
+
+    /* 2. Subsumed/strengthened 4-var XOR recovery:
+     *    Encode x1^x2^x3^x4 = 0 AND x1^x2^x3^x4 = 1, EXCEPT replace clause (x1|x2|x3|x4)
+     *    in the second XOR by the stronger binary clause (x1|x2)! */
+    Solver *s2 = solver_new_with_opts(&opts);
+    Var vs[4];
+    for (uint32_t i = 0; i < 4; ++i) vs[i] = solver_new_var(s2);
+    add_xor_clauses(s2, vs, 4, 0); /* forbids all odd masks */
+    /* Add all even masks EXCEPT mask 0 (all positive: x1|x2|x3|x4), replaced by binary (x1|x2)! */
+    Lit sub[2] = {mkLit(vs[0], false), mkLit(vs[1], false)};
+    solver_add_clause(s2, sub, 2);
+    for (uint32_t m = 1; m < 16; ++m) {
+        if ((__builtin_popcount(m) & 1) == 0) {
+            Lit cl[4];
+            for (uint32_t i = 0; i < 4; ++i) cl[i] = mkLit(vs[i], ((m >> i) & 1) != 0);
+            solver_add_clause(s2, cl, 4);
+        }
+    }
+    /* Add a dummy 3-XOR so n_ge3 >= 2 triggers Gauss extraction. */
+    Var v5 = solver_new_var(s2);
+    Var tri[3] = {vs[0], vs[1], v5};
+    add_xor_clauses(s2, tri, 3, 0);
+    assert(solver_solve(s2) == FALSE);
+    assert(s2->stats.conflicts == 0);
+    solver_free(s2);
+}
+
 int main(void) {
     test_gauss_mixed_sat_and_unsat();
+    test_gauss_chain_stitching_and_subsumed_xor();
     test_amo_cliques_sat_and_unsat();
     test_sbva_arbitrary_length_sat_and_unsat();
     test_lit_values_external_mutation_safety();

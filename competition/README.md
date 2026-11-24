@@ -106,7 +106,7 @@ competition/
 | Mini-Kitten CDCL SAT Sweeping | ✅ | ❌ | Embedded local CDCL sweeper with 16-model partitioning & RUP proof projection |
 | Gate-Aware BVE & SSR/Subsumption | ✅ | ❌ | Min-degree cascading BVE (AND/XOR/ITE) + 64-bit bloom SSR |
 | Prefix-Sharing Vivification & Transitive Reduction | ✅ | ❌ | O(n) prefix vivification + post-BVE binary transitive reduction |
-| Dynamic GF(2) XOR Gaussian Elimination | ✅ | ❌ | Root RREF + in-search Bird/Han-Jiang two-watched-column matrices (non-proof mode) |
+| Dynamic GF(2) XOR Gaussian Elimination | ✅ | ❌ | 2..7-var XOR + subsumed recovery + Tseitin chain stitching + Bird/Han-Jiang live matrices (non-proof) |
 | AMO Cliques, SBVA & BCE | ✅ | ❌ | Sinz sequential counters (`>=80%` binary), Structured BVA (`--sbva`, 3-hop tie-break), BCE (`--bce`) |
 
 ### Advanced Features

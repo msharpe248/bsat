@@ -86,11 +86,12 @@ Default one-shot solving uses:
   binary watch dispatch, 1-ahead long-clause prefetching, and two-pass
   branchless circular watch scanning (`--no-circular`).
 - **In-search dynamic GF(2) Gaussian elimination** (`src/gauss.c`, non-proof
-  mode): Exact 2..6-variable XOR extraction partitioned into connected
-  components, root Gauss-Jordan RREF (deriving UNSAT, units, and binary
-  equivalences), and live Bird / Han-Jiang two-watched-column GF(2) matrices
-  during CDCL search with zero-undo backtracking, BVE protection, and 1-UIP
-  temporary reason clauses.
+  mode): Exact 2..7-variable XOR extraction with subsumed/strengthened XOR
+  recovery, Tseitin XOR-chain stitching (eliminating internal XOR-only helper
+  variables), connected-component root Gauss-Jordan RREF (deriving UNSAT,
+  units, and binary equivalences), and live Bird / Han-Jiang two-watched-column
+  GF(2) matrices during CDCL search with zero-undo backtracking, BVE
+  protection, and 1-UIP temporary reason clauses.
 - **Tick-budgeted inprocessing** (`--inprocess` / `--no-inprocess`,
   `--inprocess-interval 10000`): Root cleanup, GF(2) XOR extraction & matrix
   initialization, failed-literal probing + HBR + double-lookahead probing

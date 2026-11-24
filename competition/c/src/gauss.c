@@ -226,16 +226,20 @@ static bool gauss_has_binary_watch(Solver *s, Lit a, Lit b) {
     return false;
 }
 
+#define GAUSS_MAX_DIRECT_K   7u
+
 typedef struct {
-    Var vars[6];
+    Var vars[GAUSS_MAX_DIRECT_K];
     uint8_t k;
-    uint64_t mask;
+    uint8_t used_as_xor;
+    uint64_t mask[2]; /* 128 bits: supports up to 2^7 = 128 polarity masks */
 } XorSlot;
 
 typedef struct {
-    Var vars[6];
-    uint8_t k;
+    Var *vars;
+    uint32_t k;
     uint8_t rhs;
+    uint8_t alive;
 } XorEq;
 
 static uint64_t hash_xor_tuple(const Var *vs, uint8_t k) {
@@ -246,6 +250,76 @@ static uint64_t hash_xor_tuple(const Var *vs, uint8_t k) {
     h ^= h >> 30; h *= UINT64_C(0xbf58476d1ce4e5b9);
     h ^= h >> 27; h *= UINT64_C(0x94d049bb133111eb);
     return h ^ (h >> 31);
+}
+
+static inline bool slot_has_mask(const XorSlot *sl, uint32_t m) {
+    return (sl->mask[m >> 6] & (UINT64_C(1) << (m & 63u))) != 0;
+}
+
+static const XorSlot *xor_tab_find(const XorSlot *tab, size_t cap, const Var *vs, uint8_t k) {
+    size_t pos = (size_t)(hash_xor_tuple(vs, k) & (cap - 1u));
+    for (;;) {
+        if (tab[pos].k == 0) return NULL;
+        if (tab[pos].k == k && memcmp(tab[pos].vars, vs, (size_t)k * sizeof(Var)) == 0) {
+            return &tab[pos];
+        }
+        pos = (pos + 1u) & (cap - 1u);
+    }
+}
+
+/* Check whether the clause (vars[0..k-1] with polarity bits `neg_mask`) is
+ * subsumed by an existing shorter live clause (size 2 or k-1) in `tab`. */
+static bool xor_clause_subsumed(const XorSlot *tab, size_t cap,
+                                const Var *vs, uint8_t k, uint32_t neg_mask) {
+    /* 1. Check all binary subsets (size 2). */
+    for (uint8_t i = 0; i < k; ++i) {
+        for (uint8_t j = i + 1u; j < k; ++j) {
+            Var sub[2] = {vs[i], vs[j]};
+            const XorSlot *p = xor_tab_find(tab, cap, sub, 2);
+            if (!p) continue;
+            uint32_t sm = ((neg_mask >> i) & 1u) | (((neg_mask >> j) & 1u) << 1);
+            if (slot_has_mask(p, sm)) return true;
+        }
+    }
+    /* 2. Check all (k-1) subsets when k >= 4. */
+    if (k >= 4) {
+        Var sub[GAUSS_MAX_DIRECT_K];
+        for (uint8_t drop = 0; drop < k; ++drop) {
+            uint8_t dst = 0;
+            uint32_t sm = 0;
+            for (uint8_t i = 0; i < k; ++i) {
+                if (i == drop) continue;
+                sub[dst] = vs[i];
+                if ((neg_mask >> i) & 1u) sm |= (1u << dst);
+                dst++;
+            }
+            const XorSlot *p = xor_tab_find(tab, cap, sub, (uint8_t)(k - 1u));
+            if (p && slot_has_mask(p, sm)) return true;
+        }
+    }
+    return false;
+}
+
+static bool xor_parity_covered(const XorSlot *tab, size_t cap, const XorSlot *sl,
+                               uint64_t need0, uint64_t need1) {
+    uint64_t miss0 = need0 & ~sl->mask[0];
+    uint64_t miss1 = need1 & ~sl->mask[1];
+    if (miss0 == 0 && miss1 == 0) return true;
+    /* Only attempt subsumption recovery for k = 3..6 with <= 4 missing clauses. */
+    if (sl->k < 3 || sl->k > 6) return false;
+    uint32_t n_miss = (uint32_t)__builtin_popcountll(miss0) + (uint32_t)__builtin_popcountll(miss1);
+    if (n_miss > 4u) return false;
+    while (miss0) {
+        uint32_t m = (uint32_t)__builtin_ctzll(miss0);
+        if (!xor_clause_subsumed(tab, cap, sl->vars, sl->k, m)) return false;
+        miss0 &= miss0 - 1;
+    }
+    while (miss1) {
+        uint32_t m = 64u + (uint32_t)__builtin_ctzll(miss1);
+        if (!xor_clause_subsumed(tab, cap, sl->vars, sl->k, m)) return false;
+        miss1 &= miss1 - 1;
+    }
+    return true;
 }
 
 static uint32_t uf_find(uint32_t *parent, uint32_t x) {
@@ -273,13 +347,13 @@ bool gauss_extract_and_init(Solver *s, bool keep_matrices) {
 
     if (keep_matrices) gauss_free(s);
 
-    /* Count eligible clauses of size 2..6. */
+    /* Count eligible clauses of size 2..GAUSS_MAX_DIRECT_K. */
     uint32_t elig = 0;
     for (uint32_t i = 0; i < s->num_clauses; ++i) {
         CRef cr = s->clauses[i];
         if (cr == INVALID_CLAUSE || clause_deleted(s->arena, cr)) continue;
         uint32_t sz = CLAUSE_SIZE(s->arena, cr);
-        if (sz >= 2 && sz <= 6) elig++;
+        if (sz >= 2 && sz <= GAUSS_MAX_DIRECT_K) elig++;
     }
     if (elig < 4) return true;
 
@@ -297,9 +371,9 @@ bool gauss_extract_and_init(Solver *s, bool keep_matrices) {
         CRef cr = s->clauses[i];
         if (cr == INVALID_CLAUSE || clause_deleted(s->arena, cr)) continue;
         uint32_t sz = CLAUSE_SIZE(s->arena, cr);
-        if (sz < 2 || sz > 6) continue;
+        if (sz < 2 || sz > GAUSS_MAX_DIRECT_K) continue;
         const Lit *ls = CLAUSE_LITS(s->arena, cr);
-        Lit tmp[6];
+        Lit tmp[GAUSS_MAX_DIRECT_K];
         bool skip = false;
         for (uint32_t j = 0; j < sz; ++j) {
             if (s->values[var(ls[j])] != UNDEF) { skip = true; break; }
@@ -312,7 +386,7 @@ bool gauss_extract_and_init(Solver *s, bool keep_matrices) {
             while (b > 0 && var(tmp[b - 1]) > var(key)) { tmp[b] = tmp[b - 1]; --b; }
             tmp[b] = key;
         }
-        Var vs[6] = {0, 0, 0, 0, 0, 0};
+        Var vs[GAUSS_MAX_DIRECT_K] = {0};
         uint32_t neg_mask = 0;
         for (uint32_t j = 0; j < sz; ++j) {
             vs[j] = var(tmp[j]);
@@ -326,25 +400,27 @@ bool gauss_extract_and_init(Solver *s, bool keep_matrices) {
             if (tab[pos].k == 0) {
                 tab[pos].k = (uint8_t)sz;
                 memcpy(tab[pos].vars, vs, sizeof vs);
-                tab[pos].mask = UINT64_C(1) << neg_mask;
+                tab[pos].mask[neg_mask >> 6] = UINT64_C(1) << (neg_mask & 63u);
                 if (n_used < elig) used_slots[n_used++] = (uint32_t)pos;
                 break;
             }
             if (tab[pos].k == sz && memcmp(tab[pos].vars, vs, (size_t)sz * sizeof(Var)) == 0) {
-                tab[pos].mask |= UINT64_C(1) << neg_mask;
+                tab[pos].mask[neg_mask >> 6] |= UINT64_C(1) << (neg_mask & 63u);
                 break;
             }
             pos = (pos + 1u) & (cap - 1u);
         }
     }
 
-    uint64_t even_need[7] = {0}, odd_need[7] = {0};
-    for (uint32_t k = 2; k <= 6; ++k) {
+    uint64_t even_need[GAUSS_MAX_DIRECT_K + 1][2];
+    uint64_t odd_need[GAUSS_MAX_DIRECT_K + 1][2];
+    memset(even_need, 0, sizeof even_need);
+    memset(odd_need, 0, sizeof odd_need);
+    for (uint32_t k = 2; k <= GAUSS_MAX_DIRECT_K; ++k) {
         for (uint32_t m = 0; m < (1u << k); ++m) {
-            uint32_t parity = 0, x = m;
-            while (x) { parity ^= (x & 1u); x >>= 1; }
-            if (parity == 0) even_need[k] |= (UINT64_C(1) << m);
-            else odd_need[k] |= (UINT64_C(1) << m);
+            uint32_t parity = (uint32_t)__builtin_popcount(m) & 1u;
+            if (parity == 0) even_need[k][m >> 6] |= (UINT64_C(1) << (m & 63u));
+            else odd_need[k][m >> 6] |= (UINT64_C(1) << (m & 63u));
         }
     }
 
@@ -352,52 +428,234 @@ bool gauss_extract_and_init(Solver *s, bool keep_matrices) {
     for (uint32_t ui = 0; ui < n_used; ++ui) {
         XorSlot *sl = &tab[used_slots[ui]];
         uint8_t k = sl->k;
-        bool has_even = (sl->mask & even_need[k]) == even_need[k];
-        bool has_odd  = (sl->mask & odd_need[k]) == odd_need[k];
+        bool has_even = xor_parity_covered(tab, cap, sl, even_need[k][0], even_need[k][1]);
+        bool has_odd  = xor_parity_covered(tab, cap, sl, odd_need[k][0], odd_need[k][1]);
         if (has_even && has_odd) {
             free(used_slots); free(tab);
             s->base_unsat = true; s->result = FALSE;
             return false;
         }
         if (has_even || has_odd) {
+            sl->used_as_xor = has_even ? 2u : 1u; /* 2 => rhs=1, 1 => rhs=0 */
             n_eqs++;
             if (k >= 3) n_ge3++;
         }
     }
-    if (n_ge3 < 2 || n_eqs > 16384u) {
+    if (n_ge3 < 2 || n_eqs > 32768u) {
         free(used_slots); free(tab);
         return true;
     }
 
-    XorEq *eqs = malloc((size_t)n_eqs * sizeof *eqs);
+    /* Count non-XOR clause occurrences per variable so we can safely stitch
+     * pure Tseitin XOR-chain helper variables (non_xor_occ == 0 && xor_deg == 2). */
+    uint32_t *non_xor_occ = calloc((size_t)(s->num_vars + 1u), sizeof *non_xor_occ);
+    XorEq *eqs = calloc(n_eqs, sizeof *eqs);
+    if (!non_xor_occ || !eqs) {
+        free(non_xor_occ); free(eqs); free(used_slots); free(tab);
+        s->error = true; return false;
+    }
+
+    for (uint32_t i = 0; i < s->num_clauses; ++i) {
+        CRef cr = s->clauses[i];
+        if (cr == INVALID_CLAUSE || clause_deleted(s->arena, cr)) continue;
+        uint32_t sz = CLAUSE_SIZE(s->arena, cr);
+        const Lit *ls = CLAUSE_LITS(s->arena, cr);
+        bool in_xor = false;
+        if (sz >= 2 && sz <= GAUSS_MAX_DIRECT_K) {
+            Var vs[GAUSS_MAX_DIRECT_K] = {0};
+            bool ok_tuple = true;
+            for (uint32_t j = 0; j < sz; ++j) {
+                if (s->values[var(ls[j])] != UNDEF) { ok_tuple = false; break; }
+                vs[j] = var(ls[j]);
+            }
+            if (ok_tuple) {
+                for (uint32_t a = 1; a < sz; ++a) {
+                    Var key = vs[a]; uint32_t b = a;
+                    while (b > 0 && vs[b - 1] > key) { vs[b] = vs[b - 1]; --b; }
+                    vs[b] = key;
+                }
+                const XorSlot *p = xor_tab_find(tab, cap, vs, (uint8_t)sz);
+                if (p && p->used_as_xor) in_xor = true;
+            }
+        }
+        if (!in_xor) {
+            for (uint32_t j = 0; j < sz; ++j) non_xor_occ[var(ls[j])]++;
+        }
+    }
+
+    uint32_t eq_count = 0;
+    bool eq_oom = false;
+    for (uint32_t ui = 0; ui < n_used; ++ui) {
+        XorSlot *sl = &tab[used_slots[ui]];
+        if (!sl->used_as_xor) continue;
+        XorEq *e = &eqs[eq_count];
+        e->vars = malloc((size_t)sl->k * sizeof(Var));
+        if (!e->vars) { eq_oom = true; break; }
+        e->k = sl->k;
+        e->rhs = (sl->used_as_xor == 2u) ? 1u : 0u;
+        e->alive = 1u;
+        memcpy(e->vars, sl->vars, (size_t)sl->k * sizeof(Var));
+        eq_count++;
+    }
+    free(used_slots); free(tab);
+
+    if (eq_oom) {
+        for (uint32_t i = 0; i < eq_count; ++i) free(eqs[i].vars);
+        free(eqs); free(non_xor_occ);
+        s->error = true; return false;
+    }
+
+    /* Tseitin XOR-chain stitching: eliminate any internal XOR-only variable `t`
+     * (non_xor_occ[t] == 0) that appears in exactly two XOR equations E1, E2
+     * by replacing {E1, E2} with {E1 ^ E2} inside the GF(2) system! */
+    {
+        uint32_t *xor_deg = calloc((size_t)(s->num_vars + 1u), sizeof *xor_deg);
+        uint32_t *eq_a = malloc((size_t)(s->num_vars + 1u) * sizeof *eq_a);
+        uint32_t *eq_b = malloc((size_t)(s->num_vars + 1u) * sizeof *eq_b);
+        Var *queue = malloc((size_t)(s->num_vars + 1u) * sizeof *queue);
+        uint8_t *in_q = calloc((size_t)(s->num_vars + 1u), 1);
+        if (!xor_deg || !eq_a || !eq_b || !queue || !in_q) {
+            free(xor_deg); free(eq_a); free(eq_b); free(queue); free(in_q);
+            for (uint32_t i = 0; i < eq_count; ++i) free(eqs[i].vars);
+            free(eqs); free(non_xor_occ);
+            s->error = true; return false;
+        }
+        memset(eq_a, 0xFF, (size_t)(s->num_vars + 1u) * sizeof *eq_a);
+        memset(eq_b, 0xFF, (size_t)(s->num_vars + 1u) * sizeof *eq_b);
+        for (uint32_t ei = 0; ei < eq_count; ++ei) {
+            for (uint32_t j = 0; j < eqs[ei].k; ++j) {
+                Var v = eqs[ei].vars[j];
+                uint32_t d = xor_deg[v]++;
+                if (d == 0) eq_a[v] = ei;
+                else if (d == 1) eq_b[v] = ei;
+            }
+        }
+        uint32_t qh = 0, qt = 0;
+        for (Var v = 1; v <= s->num_vars; ++v) {
+            if (non_xor_occ[v] == 0 && xor_deg[v] == 2) {
+                queue[qt++] = v;
+                in_q[v] = 1;
+            }
+        }
+        bool stitch_unsat = false;
+        while (qh < qt && !stitch_unsat && !eq_oom) {
+            Var t = queue[qh++];
+            in_q[t] = 0;
+            if (non_xor_occ[t] != 0 || xor_deg[t] != 2) continue;
+            uint32_t e1 = eq_a[t], e2 = eq_b[t];
+            if (e1 == UINT32_MAX || e2 == UINT32_MAX || e1 == e2 ||
+                !eqs[e1].alive || !eqs[e2].alive) continue;
+            if (eqs[e1].k + eqs[e2].k > 256u) continue; /* Keep stitched rows sparse */
+
+            /* Compute sorted symmetric difference of eqs[e1].vars and eqs[e2].vars. */
+            uint32_t max_k = eqs[e1].k + eqs[e2].k;
+            Var *merged = malloc((size_t)(max_k ? max_k : 1u) * sizeof(Var));
+            if (!merged) { eq_oom = true; break; }
+            uint32_t i1 = 0, i2 = 0, mk = 0;
+            const Var *v1 = eqs[e1].vars, *v2 = eqs[e2].vars;
+            uint32_t k1 = eqs[e1].k, k2 = eqs[e2].k;
+            while (i1 < k1 && i2 < k2) {
+                if (v1[i1] < v2[i2]) {
+                    merged[mk++] = v1[i1++];
+                } else if (v2[i2] < v1[i1]) {
+                    Var u = v2[i2++];
+                    merged[mk++] = u;
+                    /* u moves from e2 to e1 in eq_a/eq_b tracking */
+                    if (eq_a[u] == e2) eq_a[u] = e1;
+                    else if (eq_b[u] == e2) eq_b[u] = e1;
+                } else {
+                    /* Cancelled variable (including t)! */
+                    Var u = v1[i1];
+                    i1++; i2++;
+                    if (xor_deg[u] >= 2) xor_deg[u] -= 2;
+                    else xor_deg[u] = 0;
+                    if (eq_a[u] == e1 || eq_a[u] == e2) eq_a[u] = UINT32_MAX;
+                    if (eq_b[u] == e1 || eq_b[u] == e2) eq_b[u] = UINT32_MAX;
+                }
+            }
+            while (i1 < k1) merged[mk++] = v1[i1++];
+            while (i2 < k2) {
+                Var u = v2[i2++];
+                merged[mk++] = u;
+                if (eq_a[u] == e2) eq_a[u] = e1;
+                else if (eq_b[u] == e2) eq_b[u] = e1;
+            }
+
+            free(eqs[e1].vars);
+            free(eqs[e2].vars);
+            eqs[e2].vars = NULL;
+            eqs[e2].k = 0;
+            eqs[e2].alive = 0;
+            eqs[e1].vars = merged;
+            eqs[e1].k = mk;
+            eqs[e1].rhs ^= eqs[e2].rhs;
+
+            if (mk == 0) {
+                if (eqs[e1].rhs) { stitch_unsat = true; break; }
+                eqs[e1].alive = 0;
+            }
+        }
+        free(xor_deg); free(eq_a); free(eq_b); free(queue); free(in_q);
+        free(non_xor_occ);
+        if (stitch_unsat) {
+            for (uint32_t i = 0; i < eq_count; ++i) free(eqs[i].vars);
+            free(eqs);
+            s->base_unsat = true; s->result = FALSE;
+            return false;
+        }
+        if (eq_oom) {
+            for (uint32_t i = 0; i < eq_count; ++i) free(eqs[i].vars);
+            free(eqs);
+            s->error = true; return false;
+        }
+    }
+
+    /* Compact alive equations and map variables. */
     uint32_t *var_id = malloc((size_t)(s->num_vars + 1u) * sizeof *var_id);
-    if (!eqs || !var_id) {
-        free(eqs); free(var_id); free(used_slots); free(tab);
+    if (!var_id) {
+        for (uint32_t i = 0; i < eq_count; ++i) free(eqs[i].vars);
+        free(eqs);
         s->error = true; return false;
     }
     memset(var_id, 0xFF, (size_t)(s->num_vars + 1u) * sizeof *var_id);
 
-    uint32_t eq_count = 0, n_all_vars = 0;
-    for (uint32_t ui = 0; ui < n_used; ++ui) {
-        XorSlot *sl = &tab[used_slots[ui]];
-        uint8_t k = sl->k;
-        bool has_even = (sl->mask & even_need[k]) == even_need[k];
-        bool has_odd  = (sl->mask & odd_need[k]) == odd_need[k];
-        if (!has_even && !has_odd) continue;
-        XorEq *e = &eqs[eq_count++];
-        e->k = k;
-        e->rhs = has_even ? 1u : 0u;
-        memcpy(e->vars, sl->vars, sizeof e->vars);
-        for (uint8_t j = 0; j < k; ++j) {
-            Var v = sl->vars[j];
+    uint32_t live_eqs = 0, n_all_vars = 0;
+    bool root_unsat = false;
+    bool stitched_unit = false;
+    for (uint32_t i = 0; i < eq_count; ++i) {
+        if (!eqs[i].alive || eqs[i].k == 0) { free(eqs[i].vars); eqs[i].vars = NULL; continue; }
+        if (eqs[i].k == 1) {
+            Lit unit = mkLit(eqs[i].vars[0], eqs[i].rhs == 0);
+            free(eqs[i].vars); eqs[i].vars = NULL;
+            if (!gauss_enqueue_root_unit(s, unit)) { root_unsat = true; break; }
+            stitched_unit = true;
+            continue;
+        }
+        if (live_eqs != i) {
+            eqs[live_eqs] = eqs[i];
+            eqs[i].vars = NULL;
+        }
+        for (uint32_t j = 0; j < eqs[live_eqs].k; ++j) {
+            Var v = eqs[live_eqs].vars[j];
             if (var_id[v] == UINT32_MAX) var_id[v] = n_all_vars++;
         }
+        live_eqs++;
     }
-    free(used_slots); free(tab);
+    if (root_unsat) {
+        for (uint32_t i = 0; i < eq_count; ++i) free(eqs[i].vars);
+        free(eqs); free(var_id);
+        return false;
+    }
+    eq_count = live_eqs;
 
     if (n_all_vars == 0 || eq_count < 2) {
+        for (uint32_t i = 0; i < eq_count; ++i) free(eqs[i].vars);
         free(eqs); free(var_id);
-        return true;
+        if (stitched_unit && solver_propagate(s) != INVALID_CLAUSE) {
+            s->base_unsat = true; s->result = FALSE;
+            return false;
+        }
+        return !s->error && s->result != FALSE;
     }
 
     /* Partition XOR equations into connected components via Union-Find. */
@@ -408,13 +666,14 @@ bool gauss_extract_and_init(Solver *s, bool keep_matrices) {
     uint32_t *comp_ge3 = calloc(n_all_vars, sizeof *comp_ge3);
     if (!uf || !comp_id || !comp_eqs || !comp_vars || !comp_ge3) {
         free(uf); free(comp_id); free(comp_eqs); free(comp_vars); free(comp_ge3);
+        for (uint32_t i = 0; i < eq_count; ++i) free(eqs[i].vars);
         free(eqs); free(var_id);
         s->error = true; return false;
     }
     for (uint32_t i = 0; i < n_all_vars; ++i) uf[i] = i;
     for (uint32_t i = 0; i < eq_count; ++i) {
         uint32_t r0 = var_id[eqs[i].vars[0]];
-        for (uint8_t j = 1; j < eqs[i].k; ++j) uf_union(uf, r0, var_id[eqs[i].vars[j]]);
+        for (uint32_t j = 1; j < eqs[i].k; ++j) uf_union(uf, r0, var_id[eqs[i].vars[j]]);
     }
 
     memset(comp_id, 0xFF, (size_t)n_all_vars * sizeof *comp_id);
@@ -438,6 +697,7 @@ bool gauss_extract_and_init(Solver *s, bool keep_matrices) {
     if (!comp_off || !comp_cur || !eq_by_comp) {
         free(comp_off); free(comp_cur); free(eq_by_comp);
         free(uf); free(comp_id); free(comp_eqs); free(comp_vars); free(comp_ge3);
+        for (uint32_t i = 0; i < eq_count; ++i) free(eqs[i].vars);
         free(eqs); free(var_id);
         s->error = true; return false;
     }
@@ -456,12 +716,13 @@ bool gauss_extract_and_init(Solver *s, bool keep_matrices) {
     uint32_t n_built = 0;
     uint32_t total_live_rows = 0;
     bool unsat = false;
-    bool added_unit = false;
+    bool added_unit = stitched_unit;
 
     uint32_t *local_col = malloc((size_t)(s->num_vars + 1u) * sizeof *local_col);
     if (!local_col) {
         free(comp_off); free(eq_by_comp);
         free(comp_eqs); free(comp_vars); free(comp_ge3);
+        for (uint32_t i = 0; i < eq_count; ++i) free(eqs[i].vars);
         free(eqs); free(var_id);
         s->error = true; return false;
     }
@@ -489,7 +750,7 @@ bool gauss_extract_and_init(Solver *s, bool keep_matrices) {
             uint32_t r = idx - ob;
             uint64_t *rr = mat + (size_t)r * nwords;
             rhs[r] = e->rhs;
-            for (uint8_t j = 0; j < e->k; ++j) {
+            for (uint32_t j = 0; j < e->k; ++j) {
                 Var v = e->vars[j];
                 uint32_t c = local_col[v];
                 if (c == UINT32_MAX) {
@@ -651,6 +912,7 @@ bool gauss_extract_and_init(Solver *s, bool keep_matrices) {
     free(local_col);
     free(comp_off); free(eq_by_comp);
     free(comp_eqs); free(comp_vars); free(comp_ge3);
+    for (uint32_t i = 0; i < eq_count; ++i) free(eqs[i].vars);
     free(eqs); free(var_id);
 
     if (unsat || s->error) {
