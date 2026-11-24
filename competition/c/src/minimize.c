@@ -1,309 +1,477 @@
-/* Learned-clause minimization: established default and opt-in iterative mode.
+/* Learned-clause shrinking and minimization.
  *
- * The source-clause/implication-closure approach is standard CDCL minimization
- * (see MiniSat and Kissat). The experimental mode uses a bounded work queue:
- * no C recursion, no per-conflict allocation, and successful dependency checks
- * are shared across literals of the same learned clause.
+ * Implements:
+ * 1. Block-level all-UIP shrinking (Fleury & Biere / Kissat shrink.c):
+ *    collapses multi-literal same-level blocks down to a single local UIP
+ *    using a bounded trail-position max-heap, sharing the 3-state minimizer
+ *    for lower-level antecedents.
+ * 2. Fast 3-state binary-aware DFS minimization (MiniSat / Kissat):
+ *    traverses both explicit arena reasons and implicit binary_reasons[],
+ *    caching both REMOVABLE and POISON (failed) subgraphs across all literals
+ *    of the learned clause without clearing between candidates.
+ * 3. Bounded binary-resolution minimization on short low-LBD clauses.
  */
 #include "../include/solver.h"
 
-/* Preserve the conservative coverage and depth rules of the default
- * minimizer, while bounding work and caching proofs within one candidate. */
-// Compute abstract level bitmask (for quick pruning)
-static inline uint64_t abstract_level(Level level) {
-    return (uint64_t)1 << (level & 63);
+enum {
+    MIN_UNSEEN    = 0,
+    MIN_SOURCE    = 1,
+    MIN_REMOVABLE = 2,
+    MIN_POISON    = 3,
+    MIN_EXPLORING = 4,
+    MIN_BLOCK     = 5,
+    MIN_RESOLVED  = 6
+};
+
+#define MIN_MAX_DEPTH 2048u
+#define SHRINK_MAX_BLOCK_TOUCHED 256u
+
+static inline uint64_t level_bit(Level level) {
+    return UINT64_C(1) << (level & 63);
 }
 
-// Check if literal is redundant using recursive deep analysis
-// abstract_levels: bitmask of levels present in learned clause
-// Uses seen array: 0=unseen, 1=in learned clause, 2=exploring,
-// >=3=proven subtree height + 3. Cached heights preserve the depth-128 rule.
-//
-// Returns true if literal p can be proven redundant (its reason chain
-// terminates at literals in the learned clause or level 0).
-static bool lit_redundant(Solver* s, Lit p, uint64_t abstract_levels, unsigned depth,
-                          uint32_t *remaining, uint32_t *touched, unsigned *height) {
-    if (depth > 128) return false;
-    Var v = var(p);
-
-    // Check seen status
-    uint8_t seen_val = s->seen[v];
-    if (seen_val == 1) {
-        *height = 0;
-        return true;   // In learned clause - definitely covered
-    }
-    if (seen_val == 2) {
-        return false;  // Cycle - being explored
-    }
-    if (seen_val >= 3) {
-        *height = seen_val - 3;
-        s->stats.minimize_cache_hits++;
-        return depth + *height <= 128;
-    }
-
-    // Check for reason clause
-    CRef reason = s->vars[v].reason;
-
-    // Skip binary conflict markers
-    if (reason == BINARY_CONFLICT) {
-        return false;
-    }
-
-    // Quick abstract level check: if this level isn't in abstract_levels,
-    // we need to keep this literal (it's at a level not covered)
-    Level level = s->vars[v].level;
-    if (level > 0 && !(abstract_levels & abstract_level(level))) {
-        return false;
-    }
-
-    // Handle binary propagation or decision
-    if (reason == INVALID_CLAUSE) {
-        // Both decision variables and binary propagations are never redundant.
-        // Binary propagations store their reason in binary_reasons[], but we
-        // conservatively treat them as non-redundant to avoid complexity.
-        return false;
-    }
-
-    // Mark as being explored (cycle detection)
-    // Save original value to restore on failure
-    uint8_t orig_seen = s->seen[v];
-    s->seen[v] = 2;
-    unsigned max_height = 0;
-
-    // Check all literals in reason clause (normal clause from arena)
-    uint32_t size = CLAUSE_SIZE(s->arena, reason);
-    Lit* lits = CLAUSE_LITS(s->arena, reason);
-
-    for (uint32_t i = 0; i < size; i++) {
-        /* A depth bound alone does not bound repeated traversal of shared
-           subgraphs. Charge every inspected reason literal and unwind all
-           scratch marks when the clause budget or solver deadline expires. */
-        if (!*remaining) { s->seen[v] = orig_seen; return false; }
-        --*remaining;
-        if ((++s->stats.minimize_inspections & 1023) == 0 && solver_budget_exhausted(s)) {
-            s->seen[v] = orig_seen;
-            return false;
-        }
-        Lit q = lits[i];
-        Var qv = var(q);
-
-        // Skip the literal itself (it's the implied literal)
-        if (qv == v) continue;
-
-        // SAFETY CHECK: If a reason literal is at a higher level than the implied
-        // literal, the reason clause is stale (the variable was reassigned after
-        // the original propagation). This can happen during chronological
-        // backtracking when we backtrack partway, reassign some variables, and
-        // then reach another conflict. In this case, return false to keep the
-        // literal in the learned clause.
-        if (s->vars[qv].level > level) {
-            s->seen[v] = orig_seen;
-            return false;
-        }
-
-        // Root antecedents need no source-clause literal.
-        if (s->vars[qv].level == 0) {
-            continue;
-        }
-
-        // Recursively check if this literal is covered
-        unsigned child_height;
-        if (!lit_redundant(s, q, abstract_levels, depth + 1, remaining, touched, &child_height)) {
-            s->seen[v] = orig_seen;
-            return false;
-        }
-        if (child_height + 1 > max_height) max_height = child_height + 1;
-    }
-
-    // Cache only complete proofs under the current source-literal set. All
-    // cached marks are cleared before considering the next source literal.
-    ASSERT(depth + max_height <= 128);
-    s->seen[v] = (uint8_t)(max_height + 3);
-    ASSERT(*touched < s->num_vars + 1);
-    s->minimize_touched[(*touched)++] = v;
-    *height = max_height;
-    return true;
-}
-
-// Main minimization function - called after conflict analysis
-// learnt[0] is the asserting literal (always kept)
-// Returns number of literals removed
-//
-// Algorithm: For each literal L in the clause, check if all paths from L
-// back to decision variables pass through other literals in the clause.
-// If so, L is redundant and can be removed.
-//
-// Key safety: coverage comes from source literals or fully proved cached
-// subtrees; exploring nodes never count as coverage. Cache lifetime ends before
-// the next candidate, because removal changes the source-literal set.
-static uint32_t legacy_minimize_clause(Solver* s, Lit* learnt, uint32_t* learnt_size) {
-    // Skip if minimization is disabled
-    if (!s->opts.minimize || !s->opts.minimize_budget || s->interrupted) {
-        return 0;
-    }
-
-    if (*learnt_size <= 2) {
-        return 0;  // Don't minimize unit or binary clauses
-    }
-
-    uint32_t original_size = *learnt_size;
-    uint32_t remaining = s->opts.minimize_budget;
-
-    // Step 1: Compute abstract level bitmask for quick filtering
-    uint64_t abstract_levels = 0;
-    for (uint32_t i = 0; i < *learnt_size; i++) {
-        Level level = s->vars[var(learnt[i])].level;
-        abstract_levels |= abstract_level(level);
-    }
-
-    // Step 2: Mark all literals in learned clause (seen = 1)
-    for (uint32_t i = 0; i < *learnt_size; i++) {
-        s->seen[var(learnt[i])] = 1;
-    }
-
-    // Step 3: Try to remove each literal (except asserting literal at [0])
-    uint32_t new_size = 1;  // Keep learnt[0] (asserting literal)
-    for (uint32_t i = 1; i < *learnt_size; i++) {
-        Lit p = learnt[i];
-        Var v = var(p);
-
-        // Skip decision variables and binary propagations
-        if (!remaining || s->interrupted || s->vars[v].reason == INVALID_CLAUSE) {
-            learnt[new_size++] = p;
-            continue;
-        }
-
-        // CRITICAL: Temporarily clear seen[v] before checking redundancy.
-        // This prevents circular dependencies where literal p uses itself
-        // as coverage (e.g., p's reason leads to q, q's reason leads to p).
-        s->seen[v] = 0;
-
-        uint32_t touched = 0;
-        unsigned height;
-        bool redundant = lit_redundant(s, p, abstract_levels, 0, &remaining, &touched, &height);
-        /* Removing this source literal changes coverage for the next check.
-           Never carry a cached proof across that change. */
-        for (uint32_t k = 0; k < touched; ++k) s->seen[s->minimize_touched[k]] = 0;
-        if (!redundant) {
-            // Not redundant - restore and keep
-            s->seen[v] = 1;
-            learnt[new_size++] = p;
-        }
-        // else: redundant, leave seen[v] = 0 so future checks can't use it
-    }
-
-    *learnt_size = new_size;
-    if (!remaining) s->stats.minimize_budget_hits++;
-
-    // Step 4: Clear seen array
-    // Clear remaining literals in the learned clause
-    for (uint32_t i = 0; i < new_size; i++) {
-        s->seen[var(learnt[i])] = 0;
-    }
-
-    return original_size - new_size;
-}
-
-
-enum { UNSEEN, SOURCE, PENDING, REMOVABLE, RETRY };
-
-static uint64_t level_bit(Level level) { return UINT64_C(1) << (level & 63); }
-
-static bool has_reason(const Solver *s, Var v) {
+static inline bool has_reason(const Solver *s, Var v) {
     return s->vars[v].reason != INVALID_CLAUSE || s->binary_reasons[v] != LIT_UNDEF;
 }
 
-/* Success means every antecedent ends at a source literal, an already proven
- * removable literal, or the root. Source literals may themselves be removed
- * later: strict trail ordering makes this dependency relation acyclic.
- * On failure, PENDING entries become RETRY, never a successful cache entry.
- * RETRY also remembers that a variable is already on the cleanup list.
+/* 3-state DFS redundancy check with persistent REMOVABLE and POISON marks.
+ * Returns true iff v is proven covered by MIN_SOURCE literals + root units.
+ * Only marks MIN_POISON on genuine logical failure (not budget/depth/interrupt).
  */
-static bool redundant(Solver *s, Lit lit, uint64_t levels,
-                      uint32_t *remaining, uint32_t *touched) {
-    Var root = var(lit);
-    uint32_t head = 0, tail = 1;
-    s->analyze_stack[0] = lit;
-    s->seen[root] = PENDING;
-    bool success = true;
-    while (head < tail && success) {
-        Var v = var(s->analyze_stack[head++]);
-        CRef reason = s->vars[v].reason;
-        Lit binary = s->binary_reasons[v];
-        bool implicit = reason == INVALID_CLAUSE;
-        if (implicit && binary == LIT_UNDEF) { success = false; break; }
-        if (!implicit && (reason == BINARY_CONFLICT || clause_deleted(s->arena, reason))) {
-            success = false; break;
+static bool dfs_redundant(Solver *s, Var v, uint64_t abstract_levels,
+                          unsigned depth, uint32_t *remaining,
+                          uint32_t *touched, bool *aborted) {
+    uint8_t st = s->seen[v];
+    if (st == MIN_SOURCE) return true;
+    if (st == MIN_REMOVABLE) {
+        s->stats.minimize_cache_hits++;
+        return true;
+    }
+    if (st == MIN_POISON) {
+        s->stats.minimize_cache_hits++;
+        return false;
+    }
+    if (st == MIN_EXPLORING) return false;
+    if (depth >= MIN_MAX_DEPTH) {
+        *aborted = true;
+        return false;
+    }
+
+    Level level = s->vars[v].level;
+    if (level == 0) return true;
+
+    CRef reason = s->vars[v].reason;
+    Lit binary = s->binary_reasons[v];
+    bool implicit = (binary != LIT_UNDEF);
+
+    if ((!implicit && (reason == INVALID_CLAUSE || reason == BINARY_CONFLICT || clause_deleted(s->arena, reason))) ||
+        !(abstract_levels & level_bit(level))) {
+        s->seen[v] = MIN_POISON;
+        s->minimize_touched[(*touched)++] = v;
+        return false;
+    }
+
+    s->seen[v] = MIN_EXPLORING;
+    uint32_t v_pos = s->vars[v].trail_pos;
+
+    bool child_aborted = false;
+    bool ok = true;
+
+    if (implicit) {
+        if (!*remaining) {
+            child_aborted = true;
+            ok = false;
+        } else {
+            --*remaining;
+            s->stats.minimize_binary_steps++;
+            if ((++s->stats.minimize_inspections & 1023) == 0 && solver_budget_exhausted(s)) {
+                child_aborted = true;
+                ok = false;
+            } else {
+                Var u = var(binary);
+                if (s->values[u] == UNDEF || s->vars[u].trail_pos >= v_pos ||
+                    s->vars[u].level > level ||
+                    lxor(s->values[u], sign(binary)) != FALSE) {
+                    ok = false;
+                } else if (s->vars[u].level > 0) {
+                    ok = dfs_redundant(s, u, abstract_levels, depth + 1,
+                                       remaining, touched, &child_aborted);
+                }
+            }
         }
-        uint32_t size = implicit ? 1 : CLAUSE_SIZE(s->arena, reason);
-        if (implicit) s->stats.minimize_binary_steps++;
+    } else {
+        uint32_t size = CLAUSE_SIZE(s->arena, reason);
+        const Lit *lits = CLAUSE_LITS(s->arena, reason);
         for (uint32_t i = 0; i < size; ++i) {
-            if (!*remaining) { success = false; break; }
+            if (!*remaining) {
+                child_aborted = true;
+                ok = false;
+                break;
+            }
             --*remaining;
             if ((++s->stats.minimize_inspections & 1023) == 0 && solver_budget_exhausted(s)) {
-                success = false; break;
+                child_aborted = true;
+                ok = false;
+                break;
             }
-            Lit q = implicit ? binary : CLAUSE_LITS(s->arena, reason)[i];
+            Lit q = lits[i];
             Var u = var(q);
-            if (!implicit && u == v) continue;  // The propagated literal in an explicit reason.
-            /* Reject stale or cyclic reasons rather than making a deletion
-               depend on scratch-mark traversal order. */
-            if (s->values[u] == UNDEF || s->vars[u].trail_pos >= s->vars[v].trail_pos ||
-                lxor(s->values[u], sign(q)) != FALSE) { success = false; break; }
-            if (!s->vars[u].level) continue;
-            uint8_t mark = s->seen[u];
-            if (mark == SOURCE) continue;
-            if (mark == REMOVABLE) { s->stats.minimize_cache_hits++; continue; }
-            if (!(levels & level_bit(s->vars[u].level)) || !has_reason(s, u)) {
-                success = false; break;
+            if (u == v) continue;
+            if (s->values[u] == UNDEF || s->vars[u].trail_pos >= v_pos ||
+                s->vars[u].level > level ||
+                lxor(s->values[u], sign(q)) != FALSE) {
+                ok = false;
+                break;
             }
-            if (mark == PENDING) continue; // Shared earlier node, not a cycle.
-            if (mark == UNSEEN) s->minimize_touched[(*touched)++] = u;
-            s->seen[u] = PENDING;
-            ASSERT(tail < s->num_vars + 1);
-            s->analyze_stack[tail++] = q;
+            if (s->vars[u].level == 0) continue;
+            if (!dfs_redundant(s, u, abstract_levels, depth + 1,
+                               remaining, touched, &child_aborted)) {
+                ok = false;
+                break;
+            }
         }
     }
-    for (uint32_t i = 0; i < tail; ++i)
-        s->seen[var(s->analyze_stack[i])] = success ? REMOVABLE : RETRY;
-    if (!success) s->seen[root] = SOURCE;
-    return success;
+
+    if (child_aborted) {
+        *aborted = true;
+        s->seen[v] = MIN_UNSEEN;
+        return false;
+    }
+
+    s->seen[v] = ok ? MIN_REMOVABLE : MIN_POISON;
+    s->minimize_touched[(*touched)++] = v;
+    return ok;
+}
+
+/* Check whether a MIN_SOURCE literal v is redundant wrt the remaining SOURCE set. */
+static bool source_redundant(Solver *s, Var v, uint64_t abstract_levels,
+                             uint32_t *remaining, uint32_t *touched) {
+    CRef reason = s->vars[v].reason;
+    Lit binary = s->binary_reasons[v];
+    bool implicit = (binary != LIT_UNDEF);
+    if (!implicit && (reason == INVALID_CLAUSE || reason == BINARY_CONFLICT || clause_deleted(s->arena, reason))) return false;
+
+    Level level = s->vars[v].level;
+    if (level == 0) return true;
+
+    uint32_t v_pos = s->vars[v].trail_pos;
+    bool aborted = false;
+
+    /* Temporarily mark as EXPLORING so v cannot cover itself. */
+    s->seen[v] = MIN_EXPLORING;
+    bool ok = true;
+
+    if (implicit) {
+        if (!*remaining) {
+            aborted = true;
+            ok = false;
+        } else {
+            --*remaining;
+            s->stats.minimize_binary_steps++;
+            if ((++s->stats.minimize_inspections & 1023) == 0 && solver_budget_exhausted(s)) {
+                aborted = true;
+                ok = false;
+            } else {
+                Var u = var(binary);
+                if (s->values[u] == UNDEF || s->vars[u].trail_pos >= v_pos ||
+                    s->vars[u].level > level ||
+                    lxor(s->values[u], sign(binary)) != FALSE) {
+                    ok = false;
+                } else if (s->vars[u].level > 0) {
+                    ok = dfs_redundant(s, u, abstract_levels, 1,
+                                       remaining, touched, &aborted);
+                }
+            }
+        }
+    } else {
+        uint32_t size = CLAUSE_SIZE(s->arena, reason);
+        const Lit *lits = CLAUSE_LITS(s->arena, reason);
+        for (uint32_t i = 0; i < size; ++i) {
+            if (!*remaining) {
+                aborted = true;
+                ok = false;
+                break;
+            }
+            --*remaining;
+            if ((++s->stats.minimize_inspections & 1023) == 0 && solver_budget_exhausted(s)) {
+                aborted = true;
+                ok = false;
+                break;
+            }
+            Lit q = lits[i];
+            Var u = var(q);
+            if (u == v) continue;
+            if (s->values[u] == UNDEF || s->vars[u].trail_pos >= v_pos ||
+                s->vars[u].level > level ||
+                lxor(s->values[u], sign(q)) != FALSE) {
+                ok = false;
+                break;
+            }
+            if (s->vars[u].level == 0) continue;
+            if (!dfs_redundant(s, u, abstract_levels, 1,
+                               remaining, touched, &aborted)) {
+                ok = false;
+                break;
+            }
+        }
+    }
+
+    /* Leave removed SOURCE literals marked MIN_REMOVABLE so subsequent checks
+     * can transitively reuse them (acyclic trail order guarantees soundness).
+     * Non-redundant SOURCE literals remain MIN_SOURCE. */
+    s->seen[v] = ok ? MIN_REMOVABLE : MIN_SOURCE;
+    (void)aborted;
+    return ok;
+}
+
+/* Max-heap helpers on trail_pos for block shrinking. */
+static inline void bheap_push(const Solver *s, Var *heap, uint32_t *hsize, Var v) {
+    uint32_t i = (*hsize)++;
+    uint32_t pos = s->vars[v].trail_pos;
+    while (i > 0) {
+        uint32_t p = (i - 1) >> 1;
+        Var pv = heap[p];
+        if (s->vars[pv].trail_pos >= pos) break;
+        heap[i] = pv;
+        i = p;
+    }
+    heap[i] = v;
+}
+
+static inline Var bheap_pop(const Solver *s, Var *heap, uint32_t *hsize) {
+    Var top = heap[0];
+    Var last = heap[--(*hsize)];
+    uint32_t n = *hsize;
+    if (n == 0) return top;
+    uint32_t pos = s->vars[last].trail_pos;
+    uint32_t i = 0;
+    for (;;) {
+        uint32_t c = (i << 1) + 1;
+        if (c >= n) break;
+        if (c + 1 < n && s->vars[heap[c + 1]].trail_pos > s->vars[heap[c]].trail_pos) c++;
+        if (pos >= s->vars[heap[c]].trail_pos) break;
+        heap[i] = heap[c];
+        i = c;
+    }
+    heap[i] = last;
+    return top;
+}
+
+/* Sort learnt[1..n-1] by descending (level, trail_pos) using Shell sort. */
+static void sort_by_level_desc(const Solver *s, Lit *lits, uint32_t count) {
+    for (uint32_t gap = count >> 1; gap > 0; gap >>= 1) {
+        for (uint32_t i = gap; i < count; ++i) {
+            Lit tmp = lits[i];
+            Level tl = s->vars[var(tmp)].level;
+            uint32_t tp = s->vars[var(tmp)].trail_pos;
+            uint32_t j = i;
+            while (j >= gap) {
+                Lit prev = lits[j - gap];
+                Level pl = s->vars[var(prev)].level;
+                if (pl > tl || (pl == tl && s->vars[var(prev)].trail_pos >= tp)) break;
+                lits[j] = prev;
+                j -= gap;
+            }
+            lits[j] = tmp;
+        }
+    }
+}
+
+/* Try to collapse a same-level block [start, end) at level L to a single UIP.
+ * On success, writes the single replacement literal to *out_uip and returns true. */
+static bool shrink_block(Solver *s, const Lit *block, uint32_t k, Level L,
+                         uint64_t abstract_levels, uint32_t *remaining,
+                         uint32_t *touched, Lit *out_uip) {
+    if (k < 2 || k > SHRINK_MAX_BLOCK_TOUCHED) return false;
+
+    Var heap[SHRINK_MAX_BLOCK_TOUCHED];
+    Var btouched[SHRINK_MAX_BLOCK_TOUCHED];
+    uint8_t orig_seen[SHRINK_MAX_BLOCK_TOUCHED];
+    uint32_t hsize = 0, bt_count = 0;
+
+    for (uint32_t i = 0; i < k; ++i) {
+        Var v = var(block[i]);
+        orig_seen[bt_count] = s->seen[v];
+        s->seen[v] = MIN_BLOCK;
+        btouched[bt_count++] = v;
+        bheap_push(s, heap, &hsize, v);
+    }
+
+    bool ok = true;
+    while (hsize > 1 && ok) {
+        Var v = bheap_pop(s, heap, &hsize);
+        s->seen[v] = MIN_RESOLVED;
+        CRef reason = s->vars[v].reason;
+        Lit binary = s->binary_reasons[v];
+        bool implicit = (binary != LIT_UNDEF);
+        if (!implicit && (reason == INVALID_CLAUSE || reason == BINARY_CONFLICT || clause_deleted(s->arena, reason))) {
+            ok = false; break;
+        }
+        uint32_t v_pos = s->vars[v].trail_pos;
+        uint32_t rsize = implicit ? 1 : CLAUSE_SIZE(s->arena, reason);
+        const Lit *rlits = implicit ? &binary : CLAUSE_LITS(s->arena, reason);
+
+        for (uint32_t i = 0; i < rsize; ++i) {
+            if (!*remaining) { ok = false; break; }
+            --*remaining;
+            if ((++s->stats.minimize_inspections & 1023) == 0 && solver_budget_exhausted(s)) {
+                ok = false; break;
+            }
+            Lit q = rlits[i];
+            Var u = var(q);
+            if (!implicit && u == v) continue;
+            if (s->values[u] == UNDEF || s->vars[u].trail_pos >= v_pos ||
+                lxor(s->values[u], sign(q)) != FALSE) {
+                ok = false; break;
+            }
+            Level ul = s->vars[u].level;
+            if (ul == 0) continue;
+            if (ul > L) { ok = false; break; }
+            if (ul == L) {
+                uint8_t st = s->seen[u];
+                if (st == MIN_BLOCK || st == MIN_RESOLVED) continue;
+                if (bt_count >= SHRINK_MAX_BLOCK_TOUCHED) { ok = false; break; }
+                orig_seen[bt_count] = st;
+                s->seen[u] = MIN_BLOCK;
+                btouched[bt_count++] = u;
+                bheap_push(s, heap, &hsize, u);
+            } else {
+                uint8_t st = s->seen[u];
+                if (st == MIN_SOURCE || st == MIN_REMOVABLE) continue;
+                if (st == MIN_POISON) { ok = false; break; }
+                bool aborted = false;
+                if (!dfs_redundant(s, u, abstract_levels, 1, remaining, touched, &aborted)) {
+                    ok = false; break;
+                }
+            }
+        }
+    }
+
+    if (ok && hsize == 1) {
+        Var uip = heap[0];
+        if (s->values[uip] == UNDEF || s->vars[uip].level != L) {
+            ok = false;
+        } else {
+            /* Clear all block marks, then mark the single UIP as SOURCE.
+             * Only push uip onto minimize_touched if it was previously UNSEEN. */
+            uint8_t uip_orig = MIN_UNSEEN;
+            for (uint32_t i = 0; i < bt_count; ++i) {
+                if (btouched[i] == uip) uip_orig = orig_seen[i];
+                s->seen[btouched[i]] = (orig_seen[i] == MIN_SOURCE) ? MIN_UNSEEN : orig_seen[i];
+            }
+            s->seen[uip] = MIN_SOURCE;
+            if (uip_orig == MIN_UNSEEN) s->minimize_touched[(*touched)++] = uip;
+            *out_uip = mkLit(uip, s->values[uip] == TRUE);
+            return true;
+        }
+    }
+
+    /* Rollback: restore exact prior seen[] states for every touched L-variable. */
+    for (uint32_t i = 0; i < bt_count; ++i) s->seen[btouched[i]] = orig_seen[i];
+    return false;
+}
+
+uint32_t solver_shrink_clause(Solver *s, Lit *learnt, uint32_t *size) {
+    if (!s->opts.minimize || !s->opts.shrink || !s->opts.minimize_budget ||
+        s->interrupted || *size <= 2) {
+        return 0;
+    }
+
+    uint32_t original = *size;
+    uint32_t remaining = s->opts.minimize_budget;
+    uint32_t touched = 0;
+    uint64_t abstract_levels = 0;
+
+    /* Sort non-asserting literals by descending (level, trail_pos) so each
+     * decision level forms a contiguous block and higher levels shrink first. */
+    sort_by_level_desc(s, learnt + 1, original - 1);
+
+    for (uint32_t i = 0; i < original; ++i) {
+        Var v = var(learnt[i]);
+        ASSERT(s->seen[v] == MIN_UNSEEN);
+        s->seen[v] = MIN_SOURCE;
+        s->minimize_touched[touched++] = v;
+        abstract_levels |= level_bit(s->vars[v].level);
+    }
+
+    /* Pass 1: Block-level all-UIP shrinking (high level -> low level). */
+    uint32_t out = 1;
+    for (uint32_t i = 1; i < original;) {
+        Level L = s->vars[var(learnt[i])].level;
+        uint32_t end = i + 1;
+        while (end < original && s->vars[var(learnt[end])].level == L) ++end;
+        uint32_t k = end - i;
+        Lit uip = LIT_UNDEF;
+        if (k >= 2 && remaining && !s->interrupted &&
+            shrink_block(s, learnt + i, k, L, abstract_levels, &remaining, &touched, &uip)) {
+            learnt[out++] = uip;
+        } else {
+            for (uint32_t j = i; j < end; ++j) learnt[out++] = learnt[j];
+        }
+        i = end;
+    }
+
+    /* Pass 2: 3-state recursive minimization reusing REMOVABLE/POISON marks. */
+    uint32_t shrunk = out;
+    out = 1;
+    for (uint32_t i = 1; i < shrunk; ++i) {
+        Lit p = learnt[i];
+        Var v = var(p);
+        if (!remaining || s->interrupted || !has_reason(s, v) ||
+            !source_redundant(s, v, abstract_levels, &remaining, &touched)) {
+            learnt[out++] = p;
+        }
+    }
+
+    if (!remaining) s->stats.minimize_budget_hits++;
+    for (uint32_t i = 0; i < touched; ++i) s->seen[s->minimize_touched[i]] = MIN_UNSEEN;
+    *size = out;
+    return original - out;
 }
 
 uint32_t solver_minimize_clause(Solver *s, Lit *learnt, uint32_t *size) {
-    if (!s->opts.iterative_minimize) return legacy_minimize_clause(s, learnt, size);
-    if (!s->opts.minimize || !s->opts.minimize_budget || *size <= 2) return 0;
-    uint32_t original = *size, touched = 0, remaining = s->opts.minimize_budget;
-    uint64_t levels = 0;
+    if (!s->opts.minimize || !s->opts.minimize_budget || s->interrupted || *size <= 2) {
+        return 0;
+    }
+
+    uint32_t original = *size;
+    uint32_t remaining = s->opts.minimize_budget;
+    uint32_t touched = 0;
+    uint64_t abstract_levels = 0;
+
     for (uint32_t i = 0; i < original; ++i) {
         Var v = var(learnt[i]);
-        ASSERT(s->seen[v] == UNSEEN);
-        s->seen[v] = SOURCE;
+        ASSERT(s->seen[v] == MIN_UNSEEN);
+        s->seen[v] = MIN_SOURCE;
         s->minimize_touched[touched++] = v;
-        levels |= level_bit(s->vars[v].level);
+        abstract_levels |= level_bit(s->vars[v].level);
     }
-    uint32_t out = 1; // Preserve the asserting literal.
+
+    uint32_t out = 1;
     for (uint32_t i = 1; i < original; ++i) {
-        Lit lit = learnt[i];
-        Var v = var(lit);
+        Lit p = learnt[i];
+        Var v = var(p);
         if (!remaining || s->interrupted || !has_reason(s, v) ||
-            !redundant(s, lit, levels, &remaining, &touched)) learnt[out++] = lit;
+            !source_redundant(s, v, abstract_levels, &remaining, &touched)) {
+            learnt[out++] = p;
+        }
     }
+
     if (!remaining) s->stats.minimize_budget_hits++;
-    for (uint32_t i = 0; i < touched; ++i) s->seen[s->minimize_touched[i]] = UNSEEN;
+    for (uint32_t i = 0; i < touched; ++i) s->seen[s->minimize_touched[i]] = MIN_UNSEEN;
     *size = out;
     return original - out;
 }
 
 /* Resolve (a | b | rest) with (a | ~b), keeping the asserting literal a.
    Exact signed marks make this independent of the current assignment values.
-   Eager watch deletion guarantees every inspected binary is still active. */
+   Eager/lazy watch invariants: skip deleted clauses if present. */
 uint32_t solver_minimize_binary(Solver *s, Lit *learnt, uint32_t *size, uint32_t lbd) {
     if (!s->opts.binary_minimize || !s->opts.minimize || !s->opts.minimize_budget ||
         *size < 2 || *size > 30 || lbd > 6 || solver_budget_exhausted(s)) return 0;
     uint32_t n = *size;
     for (uint32_t i = 1; i < n; ++i) {
-        Var v = var(learnt[i]);ASSERT(!s->seen[v]);
+        Var v = var(learnt[i]); ASSERT(!s->seen[v]);
         s->seen[v] = 1 + sign(learnt[i]);
     }
     WatchList *wl = watch_list(s->watches, learnt[0]);
@@ -318,10 +486,10 @@ uint32_t solver_minimize_binary(Solver *s, Lit *learnt, uint32_t *size, uint32_t
     }
     uint32_t out = 1;
     for (uint32_t i = 1; i < n; ++i) {
-        Lit lit = learnt[i];Var v = var(lit);
+        Lit lit = learnt[i]; Var v = var(lit);
         if (s->seen[v] != 3) learnt[out++] = lit;
         s->seen[v] = 0;
     }
-    *size = out;s->stats.binary_minimize_removed += n-out;
-    return n-out;
+    *size = out; s->stats.binary_minimize_removed += n - out;
+    return n - out;
 }

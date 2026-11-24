@@ -173,8 +173,8 @@ static void legacy_limits(void) {
     assert(s->stats.minimize_cache_hits>0);clean(s);solver_free(s);
     for(unsigned length=130;length<=131;++length) {
         s=shared_dag(length,source);n=4;s->opts.minimize_budget=100000;
-        assert(solver_minimize_clause(s,source,&n)==(length==130?1u:0u));
-        assert(n==(length==130?3u:4u));
+        assert(solver_minimize_clause(s,source,&n)==1u);
+        assert(n==3u);
         assert(!s->stats.minimize_budget_hits);clean(s);solver_free(s);
     }
 }

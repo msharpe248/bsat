@@ -54,7 +54,7 @@ static void integrated(void) {
 }
 
 static void success_after_nonroot_backjump(void) {
-    SolverOpts o=default_opts();o.local_search=true;o.ls_interval=1;o.probing=false;
+    SolverOpts o=default_opts();o.local_search=true;o.ls_interval=1;o.probing=false;o.inprocess=false;o.alternating=false;
     Solver *s=solver_new_with_opts(&o);assert(s);
     /* The first conflict learns (1 | 3), retaining decision 1=false at level 1. */
     assert(dimacs_parse_string(s,"p cnf 3 3\n1 2 3 0\n1 2 -3 0\n1 -2 3 0\n")==DIMACS_OK);

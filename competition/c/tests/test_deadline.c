@@ -10,14 +10,14 @@ static void scheduling(void) {
     s->opts.max_time = 1000000;
     s->stats.start_time = solver_cpu_time();
     assert(!solver_budget_exhausted(s) && s->stats.clock_checks == 1);
-    for (unsigned i = 0; i < 127; ++i) assert(!solver_budget_exhausted(s));
+    for (unsigned i = 0; i < 511; ++i) assert(!solver_budget_exhausted(s));
     assert(s->stats.clock_checks == 1);
     assert(!solver_budget_exhausted(s) && s->stats.clock_checks == 2);
-    s->work = 1023;assert(!solver_budget_exhausted(s));
+    s->work = 65535;assert(!solver_budget_exhausted(s));
     assert(s->stats.clock_checks == 2);
-    s->work = 1024;assert(!solver_budget_exhausted(s));
+    s->work = 65536;assert(!solver_budget_exhausted(s));
     assert(s->stats.clock_checks == 3);
-    s->stats.minimize_inspections = 1024;
+    s->stats.minimize_inspections = 65536;
     assert(!solver_budget_exhausted(s) && s->stats.clock_checks == 4);
     // These conditions are immediate even with a fresh cached clock reading.
     s->work_limit = s->work;assert(solver_budget_exhausted(s));s->work_limit = 0;
@@ -36,9 +36,9 @@ static void expiration(void) {
         assert(!solver_budget_exhausted(s));
         s->stats.start_time -= 2; // Expired since the cached reading.
         if (mode == 0) {
-            for (unsigned i = 0; i < 127; ++i) assert(!solver_budget_exhausted(s));
-        } else if (mode == 1) s->work += 1024;
-        else s->stats.minimize_inspections += 1024;
+            for (unsigned i = 0; i < 511; ++i) assert(!solver_budget_exhausted(s));
+        } else if (mode == 1) s->work += 65536;
+        else s->stats.minimize_inspections += 65536;
         assert(solver_budget_exhausted(s) && s->interrupted);
         assert(s->stats.clock_checks == 2);
         solver_free(s);

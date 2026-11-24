@@ -133,6 +133,7 @@ static void print_usage(const char* program) {
     printf("  --dynamic-lbd            Refresh learned-clause LBD during analysis\n");
     printf("  --minimize-budget <n>     Work cap per minimization pass (10000)\n");
     printf("  --no-minimize             Disable clause minimization\n");
+    printf("  --no-shrink               Disable block-level all-UIP shrinking\n");
     printf("  --no-subsumption          Disable on-the-fly subsumption\n");
     printf("\n");
     printf("Preprocessing:\n");
@@ -159,7 +160,8 @@ static void print_usage(const char* program) {
     printf("  --no-probing              Disable failed literal probing\n");
     printf("\n");
     printf("Inprocessing:\n");
-    printf("  --inprocess               Enable inprocessing (vivification, etc.)\n");
+    printf("  --inprocess               Enable inprocessing (default: on)\n");
+    printf("  --no-inprocess            Disable inprocessing\n");
     printf("  --inprocess-interval <n>  Conflicts between inprocessing (default: 10000)\n");
     printf("\n");
     printf("Local search hybridization:\n");
@@ -233,6 +235,7 @@ static struct option long_options[] = {
     {"dynamic-lbd", no_argument, 0, 0},
     {"minimize-budget", required_argument, 0, 0},
     {"no-minimize",     no_argument,       0, 0},
+    {"no-shrink",       no_argument,       0, 0},
     {"no-subsumption",  no_argument,       0, 0},
     {"bce", no_argument, 0, 0},
     {"alternating", no_argument, 0, 0},
@@ -256,6 +259,7 @@ static struct option long_options[] = {
     {"factor-min-gain", required_argument, 0, 0},
     {"no-probing",      no_argument,       0, 0},
     {"inprocess",       no_argument,       0, 0},
+    {"no-inprocess",    no_argument,       0, 0},
     {"inprocess-interval", required_argument, 0, 0},
     {"local-search",    no_argument,       0, 0},
     {"ls-interval",     required_argument, 0, 0},
@@ -455,6 +459,8 @@ int main(int argc, char** argv) {
                     opts.minimize_budget = (uint32_t)strtoul(optarg, NULL, 10);
                 } else if (strcmp(long_options[option_index].name, "no-minimize") == 0) {
                     opts.minimize = false;
+                } else if (strcmp(long_options[option_index].name, "no-shrink") == 0) {
+                    opts.shrink = false;
                 } else if (strcmp(long_options[option_index].name, "no-subsumption") == 0) {
                     opts.subsumption = false;
                 } else if (strcmp(long_options[option_index].name, "no-bce") == 0) {
@@ -475,6 +481,8 @@ int main(int argc, char** argv) {
                     opts.probing = false;
                 } else if (strcmp(long_options[option_index].name, "inprocess") == 0) {
                     opts.inprocess = true;
+                } else if (strcmp(long_options[option_index].name, "no-inprocess") == 0) {
+                    opts.inprocess = false;
                 } else if (strcmp(long_options[option_index].name, "inprocess-interval") == 0) {
                     opts.inprocess_interval = (uint32_t)atol(optarg);
                 } else if (strcmp(long_options[option_index].name, "local-search") == 0) {

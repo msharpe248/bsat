@@ -3,7 +3,8 @@
 #include <stdio.h>
 
 static void schedule(void) {
-    SolverOpts o=default_opts();assert(!o.reduce_increment);
+    SolverOpts o=default_opts();assert(o.reduce_increment>0);
+    o.reduce_interval=2000;o.reduce_increment=0;
     Solver *s=solver_new_with_opts(&o);assert(s);
     for(uint64_t c=1;c<=30000;++c) {
         s->stats.conflicts=c;
@@ -25,7 +26,7 @@ static void schedule(void) {
 }
 
 static void search(bool equiv, bool chrono, bool queue) {
-    SolverOpts o=default_opts();o.probing=false;o.equiv=equiv;o.chrono=chrono;
+    SolverOpts o=default_opts();o.probing=false;o.inprocess=false;o.alternating=false;o.protect_used=false;o.equiv=equiv;o.chrono=chrono;
     o.chrono_levels=0;o.vmtf=queue;o.reduce_interval=1;o.reduce_increment=1;
     o.glue_lbd=0;o.max_lbd=1;o.reduce_fraction=0;
     Solver *s=solver_new_with_opts(&o);assert(s);

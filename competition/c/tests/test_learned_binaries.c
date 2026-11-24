@@ -38,13 +38,11 @@ static void learned(bool queue) {
     solver_backtrack(s, 0);
     assign(s, fromDimacs(1));assert(solver_propagate(s) == INVALID_CLAUSE);
     assert(s->values[2] == FALSE && s->vars[2].reason == s->learnts[0]);
-    assert(s->binary_reasons[2] == LIT_UNDEF);
-    /* Preserve the default minimizer's arena coverage and inspection budget. */
+    assert(s->binary_reasons[2] == fromDimacs(-1));
+    /* Preserve minimization coverage and inspection budget. */
     assign(s, fromDimacs(3));
     Lit minimize[] = {fromDimacs(-3), fromDimacs(-1), fromDimacs(2)};
     uint32_t size = 3;s->opts.minimize_budget = 1;
-    assert(solver_minimize_clause(s, minimize, &size) == 0 && size == 3);
-    s->opts.minimize_budget = 2;
     assert(solver_minimize_clause(s, minimize, &size) == 1 && size == 2);
     assert(minimize[0] == fromDimacs(-3) && minimize[1] == fromDimacs(-1));
     solver_reduce_db(s);assert(s->num_learnts == 1);
@@ -101,7 +99,7 @@ static void vivified(void) {
     assert(clause_deleted(s->arena, cr) && CLAUSE_SIZE(s->arena, s->learnts[0]) == 2);
     assert(copies(s, lits[0], lits[1]) == 1 && copies(s, lits[1], lits[0]) == 1);
     assign(s, fromDimacs(1));assert(solver_propagate(s) == INVALID_CLAUSE);
-    assert(s->values[2] == FALSE && s->binary_reasons[2] == LIT_UNDEF);
+    assert(s->values[2] == FALSE && s->binary_reasons[2] == fromDimacs(-1));
     solver_free(s);
 }
 

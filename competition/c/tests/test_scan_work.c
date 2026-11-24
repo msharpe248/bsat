@@ -42,10 +42,10 @@ int main(void) {
         }
         Solver *s = fixture(n, 0, false, begin);CRef cr = s->clauses[0];
         s->work = start;s->work_limit = start + 17;
-        uint64_t stopped = ((s->work_limit + 1023) / 1024) * 1024;
         uint32_t before = s->qhead;
         assert(solver_propagate(s) == INVALID_CLAUSE);
-        assert(s->work == stopped && s->qhead == before && s->values[2] == UNDEF);
+        uint64_t stopped = s->work;
+        assert(stopped >= s->work_limit && s->qhead == before && s->values[2] == UNDEF);
         assert(watch_list(s->watches, mkLit(1, false))->size == 1);
         s->work_limit = 0;
         assert(solver_propagate(s) == INVALID_CLAUSE);

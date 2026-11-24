@@ -4,7 +4,7 @@
 #include <stdio.h>
 
 static Solver *formula(const char *text) {
-    SolverOpts o=default_opts();o.equiv=true;o.probing=false;
+    SolverOpts o=default_opts();o.equiv=true;o.probing=false;o.inprocess=false;
     Solver *s=solver_new_with_opts(&o);assert(s);
     assert(dimacs_parse_string(s,text)==DIMACS_OK);return s;
 }
@@ -85,7 +85,7 @@ static void budget_and_composition(void) {
 static void lbd_state(void) {
     for(unsigned mask=0;mask<8;++mask) {
         SolverOpts o=default_opts();o.equiv=(mask&1)!=0;o.vmtf=(mask&2)!=0;
-        o.chrono=(mask&4)!=0;o.chrono_levels=0;o.probing=false;o.max_conflicts=1;
+        o.chrono=(mask&4)!=0;o.chrono_levels=0;o.probing=false;o.inprocess=false;o.alternating=false;o.max_conflicts=1;
         Solver *s=solver_new_with_opts(&o);assert(s);
         /* Parents 5 and 6 precede child 2 in either decision order. Their
            first conflict learns (5 or 6), with two distinct decision levels.

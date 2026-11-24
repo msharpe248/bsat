@@ -6,7 +6,7 @@
 
 static void growth_and_order(void) {
     Solver *s = solver_new();assert(s);
-    s->opts.random_phase = false;
+    s->opts.random_phase = false;s->opts.alternating = false;s->opts.inprocess = false;
     for (Var v = 1; v <= 8; ++v) {
         assert(solver_new_var(s) == v && s->vars[v].activity == 0);
     }
@@ -31,6 +31,7 @@ static void growth_and_order(void) {
 static void rescale_and_rebuild(void) {
     Solver *s = solver_new();assert(s);
     s->opts.phase_saving = false;s->opts.random_phase = false;s->opts.probing = false;
+    s->opts.alternating = false;s->opts.inprocess = false;
     assert(dimacs_parse_string(s, "p cnf 4 2\n-1 2 0\n-1 -2 0\n") == DIMACS_OK);
     s->vars[1].activity = 1e100;s->vars[2].activity = 5e99;s->order.var_inc = 1e100;
     assert(solver_decide(s) && s->trail[0].lit == mkLit(1, false));
@@ -52,15 +53,18 @@ static void rescale_and_rebuild(void) {
     solver_free(s);
 }
 
-// Independent top-down reference: equality stops and equal children choose left.
+// Independent 4-ary top-down reference: equality stops and equal children choose leftmost.
 static void reference_down(Var *heap, uint32_t n, uint32_t i, const Solver *s) {
     Var v = heap[i];
-    while (2*i+1 < n) {
-        uint32_t child = 2*i+1;
-        if (child+1 < n && s->vars[heap[child+1]].activity > s->vars[heap[child]].activity)
-            ++child;
-        if (s->vars[v].activity >= s->vars[heap[child]].activity) break;
-        heap[i] = heap[child];i = child;
+    for (;;) {
+        uint32_t c = (i << 2) + 1;
+        if (c >= n) break;
+        uint32_t best = c;
+        uint32_t end = c + 4 < n ? c + 4 : n;
+        for (uint32_t k = c + 1; k < end; ++k)
+            if (s->vars[heap[k]].activity > s->vars[heap[best]].activity) best = k;
+        if (s->vars[v].activity >= s->vars[heap[best]].activity) break;
+        heap[i] = heap[best]; i = best;
     }
     heap[i] = v;
 }
@@ -69,7 +73,7 @@ static void extraction_reference(void) {
     uint32_t rng = 20260915;
     for (uint32_t trial = 0; trial < 128; ++trial) {
         Solver *s = solver_new();assert(s);
-        s->opts.random_phase = false;
+        s->opts.random_phase = false;s->opts.alternating = false;s->opts.inprocess = false;
         uint32_t n = trial < 16 ? trial+1 : 1023 + trial%3;
         Var reference[1025];
         for (Var v = 1; v <= n; ++v) {
@@ -78,7 +82,7 @@ static void extraction_reference(void) {
             s->vars[v].activity = trial%4 == 0 ? 0 : rng % (trial%4 == 1 ? 4 : 100000);
             reference[v-1] = v;
         }
-        for (uint32_t i = n/2; i; ) reference_down(reference, n, --i, s);
+        for (uint32_t i = n; i; ) reference_down(reference, n, --i, s);
         for (uint32_t i = 0; i < n; ++i) {
             s->order.heap[i] = reference[i];s->vars[reference[i]].heap_pos = i;
         }

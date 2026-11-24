@@ -83,7 +83,7 @@ static void exhaustive(void) {
 }
 
 static void root_unit(void) {
-    SolverOpts o=default_opts();o.chrono=true;o.chrono_levels=0;o.probing=false;o.vmtf=true;o.max_conflicts=1;
+    SolverOpts o=default_opts();o.chrono=true;o.chrono_levels=0;o.probing=false;o.inprocess=false;o.alternating=false;o.vmtf=true;o.max_conflicts=1;
     Solver *s=solver_new_with_opts(&o);assert(s);
     assert(dimacs_parse_string(s,"p cnf 8 2\n7 8 0\n7 -8 0\n")==DIMACS_OK);
     for(unsigned v=8;v;--v)solver_vmtf_bump(s,v);
@@ -158,7 +158,7 @@ static void reason_maximum(void) {
     solver_free(s);
 }
 int main(void) {
-    assert(!default_opts().chrono && default_opts().chrono_levels==100);
+    assert(default_opts().chrono && default_opts().chrono_levels==100);
     for(unsigned k=0;k<3;++k)for(unsigned q=0;q<2;++q)replay(k,q);
     root_unit();lower_conflicts();late_seen_literal();reason_maximum();exhaustive();puts("PASS: late implications, compacted reasons, root units, conflict watches and current-level UIP selection");return 0;
 }

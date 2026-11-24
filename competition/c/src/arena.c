@@ -188,6 +188,9 @@ CRef arena_alloc(Arena* arena, const Lit* lits, uint32_t size, bool learned) {
     header->size = size;
     header->flags = learned ? CLAUSE_LEARNED : CLAUSE_ORIGINAL;
     header->lbd = 0;
+    header->used = 0;
+    header->vivified = 0;
+    header->hyper = 0;
     header->activity = 0.0f;
 #ifdef BSAT_SEARCH_DIAGNOSTICS
     header->born_lo = header->born_hi = 0;

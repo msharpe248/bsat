@@ -66,7 +66,7 @@ int main(void) {
                 assert(s->trail[next].lit==q[type] && s->vars[v].trail_pos==next);++next;
                 assert(s->vars[v].level==1);
                 assert(s->vars[v].reason==(type==0?INVALID_CLAUSE:cr[type]));
-                if(type==0)assert(s->binary_reasons[v]==p);
+                if(type<=1)assert(s->binary_reasons[v]==p);
                 else assert(CLAUSE_LITS(s->arena,cr[type])[0]==q[type]);
                 if(phases)assert(s->vars[v].polarity==!sign(q[type]));
             } else {

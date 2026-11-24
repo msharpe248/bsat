@@ -4,7 +4,7 @@
 CC = cc
 CFLAGS = -std=c11 -D_POSIX_C_SOURCE=200809L -Wall -Wextra -pedantic
 # Optimization flags for SAT solver performance
-OPTFLAGS = -O3 -march=native -flto
+OPTFLAGS = -O3 -march=native -flto -DNDEBUG
 DEBUGFLAGS = -g -O0 -DDEBUG -fsanitize=address -fsanitize=undefined
 PROFFLAGS = -pg -O2
 
@@ -71,7 +71,7 @@ $(OBJDIR)/%.o: $(SRCDIR)/%.c | dirs
 # Test binaries (match only test_* files to avoid conflict with main solver)
 $(TEST_BINDIR)/test_%: $(TESTDIR)/test_%.c $(filter-out $(OBJDIR)/main.o,$(OBJECTS))
 	@mkdir -p $(TEST_BINDIR)
-	$(CC) $(CFLAGS) -o $@ $(filter %.c %.o,$^) -lm
+	$(CC) $(CFLAGS) -UNDEBUG -o $@ $(filter %.c %.o,$^) -lm
 
 # Build all tests
 tests: dirs $(TEST_BINARIES)
@@ -112,10 +112,12 @@ pgo-generate: clean dirs
 	$(CC) $(CFLAGS) -O3 -march=native -fprofile-instr-generate -c -o $(OBJDIR)/elim.o $(SRCDIR)/elim.c
 	$(CC) $(CFLAGS) -O3 -march=native -fprofile-instr-generate -c -o $(OBJDIR)/equiv.o $(SRCDIR)/equiv.c
 	$(CC) $(CFLAGS) -O3 -march=native -fprofile-instr-generate -c -o $(OBJDIR)/factor.o $(SRCDIR)/factor.c
+	$(CC) $(CFLAGS) -O3 -march=native -fprofile-instr-generate -c -o $(OBJDIR)/inprocess.o $(SRCDIR)/inprocess.c
 	$(CC) $(CFLAGS) -O3 -march=native -fprofile-instr-generate -c -o $(OBJDIR)/ipasir.o $(SRCDIR)/ipasir.c
 	$(CC) $(CFLAGS) -O3 -march=native -fprofile-instr-generate -c -o $(OBJDIR)/local_search.o $(SRCDIR)/local_search.c
 	$(CC) $(CFLAGS) -O3 -march=native -fprofile-instr-generate -c -o $(OBJDIR)/minimize.o $(SRCDIR)/minimize.c
 	$(CC) $(CFLAGS) -O3 -march=native -fprofile-instr-generate -c -o $(OBJDIR)/main.o $(SRCDIR)/main.c
+	$(CC) $(CFLAGS) -O3 -march=native -fprofile-instr-generate -c -o $(OBJDIR)/reduction_sort.o $(SRCDIR)/reduction_sort.c
 	$(CC) $(CFLAGS) -O3 -march=native -fprofile-instr-generate -c -o $(OBJDIR)/solver.o $(SRCDIR)/solver.c
 	$(CC) $(CFLAGS) -O3 -march=native -fprofile-instr-generate -c -o $(OBJDIR)/vmtf.o $(SRCDIR)/vmtf.c
 	$(CC) $(CFLAGS) -O3 -march=native -fprofile-instr-generate -c -o $(OBJDIR)/watch.o $(SRCDIR)/watch.c
@@ -149,10 +151,12 @@ pgo-use: dirs
 	$(CC) $(CFLAGS) -O3 -march=native -flto -fprofile-instr-use=pgo_data/default.profdata -c -o $(OBJDIR)/elim.o $(SRCDIR)/elim.c
 	$(CC) $(CFLAGS) -O3 -march=native -flto -fprofile-instr-use=pgo_data/default.profdata -c -o $(OBJDIR)/equiv.o $(SRCDIR)/equiv.c
 	$(CC) $(CFLAGS) -O3 -march=native -flto -fprofile-instr-use=pgo_data/default.profdata -c -o $(OBJDIR)/factor.o $(SRCDIR)/factor.c
+	$(CC) $(CFLAGS) -O3 -march=native -flto -fprofile-instr-use=pgo_data/default.profdata -c -o $(OBJDIR)/inprocess.o $(SRCDIR)/inprocess.c
 	$(CC) $(CFLAGS) -O3 -march=native -flto -fprofile-instr-use=pgo_data/default.profdata -c -o $(OBJDIR)/ipasir.o $(SRCDIR)/ipasir.c
 	$(CC) $(CFLAGS) -O3 -march=native -flto -fprofile-instr-use=pgo_data/default.profdata -c -o $(OBJDIR)/local_search.o $(SRCDIR)/local_search.c
 	$(CC) $(CFLAGS) -O3 -march=native -flto -fprofile-instr-use=pgo_data/default.profdata -c -o $(OBJDIR)/minimize.o $(SRCDIR)/minimize.c
 	$(CC) $(CFLAGS) -O3 -march=native -flto -fprofile-instr-use=pgo_data/default.profdata -c -o $(OBJDIR)/main.o $(SRCDIR)/main.c
+	$(CC) $(CFLAGS) -O3 -march=native -flto -fprofile-instr-use=pgo_data/default.profdata -c -o $(OBJDIR)/reduction_sort.o $(SRCDIR)/reduction_sort.c
 	$(CC) $(CFLAGS) -O3 -march=native -flto -fprofile-instr-use=pgo_data/default.profdata -c -o $(OBJDIR)/solver.o $(SRCDIR)/solver.c
 	$(CC) $(CFLAGS) -O3 -march=native -flto -fprofile-instr-use=pgo_data/default.profdata -c -o $(OBJDIR)/vmtf.o $(SRCDIR)/vmtf.c
 	$(CC) $(CFLAGS) -O3 -march=native -flto -fprofile-instr-use=pgo_data/default.profdata -c -o $(OBJDIR)/watch.o $(SRCDIR)/watch.c
@@ -239,7 +243,7 @@ build/fault-$(MODE)/%.o: $(SRCDIR)/%.c $(TESTDIR)/fail_alloc.h
 	@mkdir -p $(@D)
 	$(CC) $(CFLAGS) -include $(TESTDIR)/fail_alloc.h -MMD -MP -c -o $@ $<
 $(BINDIR)/fail_alloc_$(MODE): $(TESTDIR)/fail_alloc_driver.c $(FAULT_OBJECTS) | dirs
-	$(CC) $(CFLAGS) -o $@ $^ -lm
+	$(CC) $(CFLAGS) -UNDEBUG -o $@ $^ -lm
 fault-test: $(BINDIR)/fail_alloc_$(MODE)
 	$<
 .PHONY: fault-test
@@ -280,7 +284,7 @@ build/lib-$(MODE)/%.o: $(SRCDIR)/%.c
 $(LIBRARY): $(LIB_OBJECTS) | dirs
 	$(CC) $(CFLAGS) $(SHARED_FLAGS) -o $@ $^ -lm
 $(BINDIR)/embedding_client_$(MODE): $(TESTDIR)/embedding_client.c $(LIBRARY)
-	$(CC) $(CFLAGS) -pthread -o $@ $< -L$(BINDIR) -lbsat_$(MODE) -Wl,-rpath,$(abspath $(BINDIR))
+	$(CC) $(CFLAGS) -UNDEBUG -pthread -o $@ $< -L$(BINDIR) -lbsat_$(MODE) -Wl,-rpath,$(abspath $(BINDIR))
 embedding-test: $(BINDIR)/embedding_client_$(MODE)
 	$<
 shared: $(LIBRARY)
@@ -288,7 +292,7 @@ shared: $(LIBRARY)
 -include $(LIB_OBJECTS:.o=.d)
 
 $(BINDIR)/embedding_soak_$(MODE): $(TESTDIR)/embedding_soak.c $(LIBRARY)
-	$(CC) $(CFLAGS) -o $@ $< -L$(BINDIR) -lbsat_$(MODE) -Wl,-rpath,$(abspath $(BINDIR))
+	$(CC) $(CFLAGS) -UNDEBUG -o $@ $< -L$(BINDIR) -lbsat_$(MODE) -Wl,-rpath,$(abspath $(BINDIR))
 soak-test: $(BINDIR)/embedding_soak_$(MODE)
 	$<
 .PHONY: soak-test
@@ -343,7 +347,7 @@ $(BINDIR)/checkpoint_service_$(MODE): examples/checkpoint_service.c examples/che
 	$(CC) $(CFLAGS) -o $@ $< $(filter-out $(OBJDIR)/main.o,$(OBJECTS)) -lm
 
 $(BINDIR)/recovery_fault_$(MODE): $(TESTDIR)/recovery_fault_driver.c examples/recoverable_service.h $(FAULT_OBJECTS) | dirs
-	$(CC) $(CFLAGS) -o $@ $< $(FAULT_OBJECTS) -lm
+	$(CC) $(CFLAGS) -UNDEBUG -o $@ $< $(FAULT_OBJECTS) -lm
 recovery-fault-test: $(BINDIR)/recovery_fault_$(MODE)
 	$<
 .PHONY: recovery-fault-test

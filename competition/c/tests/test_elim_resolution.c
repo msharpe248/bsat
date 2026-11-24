@@ -24,7 +24,7 @@ static bool tail(unsigned mask,unsigned bits) {
 }
 static void clean(Solver *s) {for(Var v=1;v<=s->num_vars;++v) assert(!s->seen[v]);}
 static void expired_during_pair(void) {
-    const unsigned n=5000;
+    const unsigned n=70000;
     Solver *s=solver_new();assert(s);
     Lit *clause=malloc(n*sizeof *clause);assert(clause);
     for(unsigned i=0;i<n;++i) {assert(solver_new_var(s));clause[i]=mkLit(i+1,false);}
@@ -38,7 +38,7 @@ static void expired_during_pair(void) {
     assert(!elim_eliminate_var(s,1));
     assert(s->interrupted && !s->error && !s->elim->stack_size && s->num_clauses==2);
     assert(s->stats.clock_checks==clocks+1);
-    assert(s->work-before>1024 && s->work-before<=4096); // Includes mandatory cleanup.
+    assert(s->work-before>65536 && s->work-before<=140000); // Includes mandatory cleanup.
     clean(s);solver_free(s);
 }
 int main(void) {

@@ -4,7 +4,7 @@
 #include <stdio.h>
 
 static void prefixes(bool queue) {
-    SolverOpts o=default_opts();o.reuse_trail=true;o.vmtf=queue;
+    SolverOpts o=default_opts();o.reuse_trail=true;o.vmtf=queue;o.alternating=false;
     Solver *s=solver_new_with_opts(&o);assert(s);
     for(unsigned i=0;i<4;++i) assert(solver_new_var(s));
     assert(solver_restart_level(s)==0);
@@ -27,7 +27,7 @@ static void prefixes(bool queue) {
     assert(solver_restart_level(s)==1);
     assert(s->decision_level==3 && s->values[next]==UNDEF);
     s->opts.reuse_trail=false;assert(solver_restart_level(s)==0);s->opts.reuse_trail=true;
-    s->opts.alternating=true;assert(solver_restart_level(s)==0);s->opts.alternating=false;
+    s->opts.alternating=true;s->stable_mode=true;assert(solver_restart_level(s)==0);s->stable_mode=false;s->opts.alternating=false;
     solver_backtrack(s,1);
     assert(s->trail_size==1 && s->values[decisions[0]]!=UNDEF);
     while(solver_decide(s)) {}
@@ -40,7 +40,7 @@ static void prefixes(bool queue) {
 }
 
 static void implications(void) {
-    SolverOpts o=default_opts();o.reuse_trail=true;o.probing=false;
+    SolverOpts o=default_opts();o.reuse_trail=true;o.probing=false;o.alternating=false;
     Solver *s=solver_new_with_opts(&o);assert(s);
     assert(dimacs_parse_string(s,"p cnf 5 2\n1 2 0\n1 -2 3 0\n")==DIMACS_OK);
     assert(solver_decide(s) && var(s->trail[0].lit)==1);

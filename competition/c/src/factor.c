@@ -194,7 +194,7 @@ done:
 }
 uint32_t solver_factor(Solver *s) {
     if(!s || s->decision_level || s->has_solved || s->elim || s->num_learnts ||
-       s->factor_original_vars || s->opts.inprocess || s->opts.local_search ||
+       s->factor_original_vars || s->opts.local_search ||
        s->result==FALSE || !s->num_vars)return 0;
     Factor f={.s=s,.literals=2*(s->num_vars+1)};
     if(graph(&f))for(Lit a=2;a<f.literals;++a) {

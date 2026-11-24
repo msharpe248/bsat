@@ -37,7 +37,10 @@ typedef struct ClauseHeader {
     uint32_t size     : 28;  // Number of literals (max 268M)
     uint32_t flags    : 4;   // Clause flags (learned, deleted, etc.)
     uint32_t search;         // Circular watch search cursor
-    uint32_t lbd;            // Literal Block Distance score
+    uint32_t lbd      : 28;  // Literal Block Distance score
+    uint32_t used     : 2;   // Recent usage counter (0..3) for 3-tier retention
+    uint32_t vivified : 1;   // Already vivified marker
+    uint32_t hyper    : 1;   // Reserved / hyper-binary flag
     float    activity;       // Clause activity for deletion
 #ifdef BSAT_SEARCH_DIAGNOSTICS
     /* Arena records are only 4-byte aligned: do not put uint64_t here. */
@@ -118,7 +121,7 @@ static inline uint32_t clause_lbd(const Arena* arena, CRef cref) {
 
 // Set clause LBD
 static inline void set_clause_lbd(Arena* arena, CRef cref, uint32_t lbd) {
-    CLAUSE_HEADER(arena, cref)->lbd = lbd;
+    CLAUSE_HEADER(arena, cref)->lbd = lbd > ((1u << 28) - 1) ? ((1u << 28) - 1) : lbd;
 }
 
 // Get clause activity

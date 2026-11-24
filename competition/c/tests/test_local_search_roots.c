@@ -72,7 +72,7 @@ static void blocked_root(void) {
 }
 
 static Solver *pigeonhole(bool queue, bool walk) {
-    SolverOpts o=default_opts();o.vmtf=queue;o.reuse_trail=true;o.probing=false;
+    SolverOpts o=default_opts();o.vmtf=queue;o.reuse_trail=true;o.probing=false;o.inprocess=false;
     o.local_search=walk;o.ls_interval=1;o.ls_max_flips=0;
     Solver *s=solver_new_with_opts(&o);assert(s);
     for(unsigned i=0;i<20;++i) assert(solver_new_var(s));

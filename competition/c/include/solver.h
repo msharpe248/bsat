@@ -81,7 +81,8 @@ typedef struct SolverOpts {
     uint32_t reduce_increment;  // Add to interval after each reduction (0: fixed)
     bool     binary_minimize; // Bounded binary-resolution pass on short low-LBD clauses
     bool     iterative_minimize; // Experimental binary-aware traversal (false)
-    bool     protect_used;      // One reduction reprieve for used LBD <= 6 clauses
+    bool     shrink;            // Block-level all-UIP learned-clause shrinking
+    bool     protect_used;      // Tier-2 retention for recently used LBD <= 6 clauses
     bool     dynamic_lbd;       // Re-evaluate learned-clause quality during analysis
     uint32_t minimize_budget;   // Work cap per minimization pass (0 disables)
     bool     minimize;          // Enable clause minimization (true)
@@ -278,6 +279,9 @@ typedef struct Solver {
     uint32_t analyze_toclear; // Number of seen variables to clear
     Lit      binary_conflict_lits[2]; // Literals from binary clause conflict
     Lit*     binary_reasons;  // binary_reasons[v] = other literal if propagated by binary, LIT_UNDEF otherwise
+    CRef     otfs_crefs[8];   // Pending on-the-fly self-subsumed clauses
+    Lit      otfs_pivots[8];  // Pivot literal to remove from each OTFS clause
+    uint32_t otfs_count;      // Number of pending OTFS strengthenings
 
     SolverAccounting accounting;
     size_t trail_limits_capacity;
@@ -331,6 +335,10 @@ typedef struct Solver {
         // Glucose EMA state
         double   slow_ma;            // Slow moving average (Glucose EMA)
         double   fast_ma;            // Fast moving average (Glucose EMA)
+        double   trail_ma;           // Slow moving average of trail size (blocking restarts)
+        uint64_t reluctant_u;        // Reluctant doubling state u
+        uint64_t reluctant_v;        // Reluctant doubling state v
+        uint64_t reluctant_countdown; // Conflicts left in current reluctant interval
 
         // Glucose sliding window state
         uint32_t *recent_lbds;       // Circular buffer of recent LBDs
@@ -397,6 +405,11 @@ typedef struct Solver {
     uint64_t work, work_limit, last_vivify, mode_limit;
     uint64_t garbage_collections, lbd_samples, recent_lbd_sum;
     uint64_t reduce_limit, reduce_span, reduce_conflict_offset;
+    uint64_t next_rephase, mode_ticks_span, next_mode_ticks;
+    uint64_t next_inprocess_ticks, inprocess_ticks_span;
+    uint32_t inprocess_rounds, proof_root_units;
+    CRef     ignore_clause;
+    double   clause_inc;
     uint32_t subsume_cursor, vivify_cursor;
     bool stable_mode;
     /* Portfolio diagnostics: ordinary stats describe the final attempt. */
@@ -489,6 +502,7 @@ void proof_delete_clause(Solver* s, const Lit* lits, uint32_t size);
 CRef solver_propagate(Solver* s);
 
 // Minimize an asserting clause while its reason graph is still assigned.
+uint32_t solver_shrink_clause(Solver *s, Lit *learnt, uint32_t *size);
 uint32_t solver_minimize_binary(Solver *s, Lit *learnt, uint32_t *size, uint32_t lbd);
 uint32_t solver_minimize_clause(Solver* s, Lit* learnt, uint32_t* size);
 

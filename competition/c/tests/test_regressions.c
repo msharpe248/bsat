@@ -234,6 +234,8 @@ static void dynamic_clause_quality(void) {
             solver_reduce_db(s);
             assert(s->num_learnts == (enabled || (protect && initial_lbd <= 6) ? 2u : 0u));
             solver_reduce_db(s);
+            assert(s->num_learnts == (enabled || (protect && initial_lbd <= 4) ? 2u : 0u));
+            solver_reduce_db(s);
             assert(s->num_learnts == (enabled ? 2u : 0u));
         }
         solver_free(s);
@@ -331,7 +333,7 @@ static void restart(void) {
     /* The minimum applies after every restart, not just at startup. */
     const unsigned minimums[] = {1, 10, 100};
     for (unsigned i=0;i<sizeof minimums/sizeof *minimums;++i) {
-        SolverOpts opts=default_opts();opts.glucose_min_conflicts=minimums[i];
+        SolverOpts opts=default_opts();opts.glucose_min_conflicts=minimums[i];opts.glucose_k=0.8;
         Solver *s=solver_new_with_opts(&opts);assert(s);
         s->stats.conflicts=100000;s->lbd_samples=1;
         s->restart.fast_ma=20;s->restart.slow_ma=10;

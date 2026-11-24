@@ -102,7 +102,8 @@ static void integration(void) {
     assumption = neg(assumption);
     assert(solver_solve_with_assumptions(s, &assumption, 1) == TRUE && solver_check_model(s));
     solver_free(s);
-    s = solver_new();assert(s);
+    o = default_opts();o.alternating = false;
+    s = solver_new_with_opts(&o);assert(s);
     assert(solver_new_var(s) == 1 && solver_solve(s) == TRUE && !s->vmtf.nodes);
     solver_free(s);
 }
