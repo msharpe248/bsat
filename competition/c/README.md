@@ -19,9 +19,10 @@ benchmarking.
 
 ```sh
 cd competition/c
-make all test                                            # Release build + 67 unit tests
+make all test                                            # Release build + 68 unit tests
 make all test MODE=debug                                 # Debug build (ASan + UBSan)
 make all test MODE=diagnostic                            # Build with opt-in detailed search counters
+make shared                                              # Build libbsat shared library (also used by Python bsat.solve_c)
 make pgo                                                 # Profile-guided optimization (Clang/LLVM)
 python3 tests/validate.py --solver bin/bsat --cases 200  # Independent oracle, model & RUP check
 ```
@@ -60,13 +61,16 @@ are UNSAT.
 
 **DRAT proofs**: Text (chunked decimal) and binary DRAT are supported across
 search, minimization, block shrinking, OTFS, probing/HBR, probing intersection,
-gate congruence, Tarjan SCC substitution, Mini-Kitten SAT sweeping, global
-backbone extraction, subsumption/SSR, gate-aware BVE, binary transitive
-reduction, BCE, bounded factoring (`--factor`), and prefix-sharing vivification.
-Non-RUP passes (GF(2) Gaussian elimination, exact symmetry breaking, AMO
-sequential-counter re-encoding, and SBVA) are automatically disabled whenever
-`--proof` or `BSAT_CERTIFICATES` is active so standard DRAT/LRAT checkers
-remain strictly valid.
+multi-gate congruence (2-input AND/XOR/ITE + N-ary AND + `MAJ3` + `XOR3`),
+Tarjan SCC substitution, Mini-Kitten SAT sweeping, global backbone extraction,
+subsumption/SSR, gate-aware and semantic Mini-CDCL definition BVE, binary
+transitive reduction, BCE, bounded factoring (`--factor`), proof-producing SBVA
+(`--sbva`, RAT-valid), and prefix-sharing vivification. Non-RUP passes without
+DRAT emission (GF(2) Gaussian elimination, exact symmetry breaking, and AMO
+sequential-counter re-encoding) are automatically disabled whenever `--proof` or
+`BSAT_CERTIFICATES` is active (and SBVA is also disabled in append-only
+`BSAT_CERTIFICATES` journals) so standard DRAT/LRAT checkers remain strictly
+valid.
 
 ---
 
@@ -96,35 +100,42 @@ Default one-shot solving uses:
   1. Root cleanup and unit propagation
   2. Failed-literal probing, Hyper-Binary Resolution (HBR), and RUP-certified
      double-lookahead probing intersection
-  3. Preprocessing & periodic gate congruence closure (2-input AND/XOR/ITE +
-     3..8-input N-ary AND) and model-guided global backbone extraction
+  3. Preprocessing & periodic iterative fixpoint gate congruence closure
+     (2-input AND/XOR/ITE up to `800k` clauses + N-ary AND + 3-input
+     `MAJ3`/`XOR3` full-adder gates) and model-guided global backbone extraction
   4. In-place Tarjan SCC equivalence substitution
   5. Global 64-bit gate-DAG simulation + dual-cone embedded Mini-Kitten CDCL SAT
      sweeping with RUP lemma projection
   6. Forward subsumption and self-subsuming resolution (SSR)
-  7. Gate-aware cascading BVE (AND/XOR/ITE) with compact model reconstruction
+  7. Gate-aware cascading BVE (syntactic AND/XOR/ITE + semantic Mini-CDCL
+     UNSAT-core definitions) with compact model reconstruction
   8. Post-BVE binary transitive reduction
   9. O(n) prefix-sharing clause vivification
-  10. Kissat-style ProbSAT polynomial-weighted phase seeding (`(1 + break)^(-2.3)`)
-      with a 4,000-flip preprocessing warmup on small/medium formulas
-- **Specialized Non-Proof Engines** (one-shot non-proof mode only):
-  - **Dynamic GF(2) Gaussian Elimination** (`src/gauss.c`): 2..7-var XOR
-    extraction with subsumed-XOR recovery, Tseitin XOR-chain stitching, root
+  10. Active-clause-gated, tick-capped Kissat-style ProbSAT phase seeding
+      (`(1 + break)^(-2.3)`, low-energy basin gating)
+- **Proof-Producing SBVA & Specialized Non-Proof Engines**:
+  - **Proof-Producing SBVA** (`--sbva`, `src/sbva.c`): Arbitrary-length
+    Structured Bounded Variable Addition with 3-hop structural tie-breaking;
+    emits RAT-valid DRAT proofs in `--proof` mode (disabled under
+    `BSAT_CERTIFICATES` journals, assumptions, and `BSAT_REUSE_LEARNTS`).
+  - **Dynamic GF(2) Gaussian Elimination** (`src/gauss.c`, non-proof): 2..7-var
+    XOR extraction with subsumed-XOR recovery, Tseitin XOR-chain stitching, root
     Gauss-Jordan RREF, and live Bird/Han-Jiang two-watched-column matrices
     during CDCL search with zero-undo backtracking and temporary 1-UIP reasons.
-  - **Exact Syntactic Symmetry Breaking** (`--sym`, `src/symmetry.c`): Exact
-    clause hash set over level-0-reduced clauses, verified involution
-    automorphisms, variable transposition chains, and BreakID-style disjoint-support
-    matrix row-interchange lex-leader constraints.
-  - **AMO Cliques & SBVA** (`src/inprocess.c`, `--sbva` / `src/sbva.c`):
-    Linear Sinz sequential-counter re-encoding for `>=80%`-binary formulas and
-    arbitrary-length Structured Bounded Variable Addition with 3-hop structural
-    tie-breaking.
+  - **Exact Syntactic Symmetry Breaking** (`--sym`, `src/symmetry.c`, non-proof):
+    Exact clause hash set over level-0-reduced clauses, verified involution
+    automorphisms, variable transposition chains, and BreakID-style
+    disjoint-support matrix row-interchange lex-leader constraints.
+  - **AMO Cliques** (`src/inprocess.c`, non-proof): Linear Sinz
+    sequential-counter re-encoding for `>=80%`-binary formulas.
 - **Multi-Core Clause-Sharing Portfolio** (`-j <N>` / `--threads <N>`,
   `src/portfolio.c`, non-proof mode): Worker 0 runs full BSAT (imports only);
-  Workers `1..N-1` run diversified logically-equivalent profiles (no destructive
-  BVE/BCE/SBVA/symmetry) exporting short learned clauses (`size <= 4`) through a
-  mutex-guarded ring buffer with immediate atomic cancellation on first winner.
+  Workers `1..N-1` run 8 diversified logically-equivalent profiles (no
+  destructive BVE/BCE/SBVA/symmetry) sharing LBD-filtered learned clauses
+  (`size <= 8, LBD <= 3`, plus all units/binaries) through a dedicated unit
+  broadcast ring + mutex-guarded clause ring with 64-bit canonical hash
+  deduplication, 8 MiB worker stacks, and immediate atomic cancellation on first
+  winner.
 - **Incremental Protection**: Destructive inprocessing and non-RUP passes are
   automatically skipped under assumption queries, `BSAT_CERTIFICATES`, and
   `BSAT_REUSE_LEARNTS`. Internal callers can also pin variables against

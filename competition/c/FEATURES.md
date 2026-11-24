@@ -29,7 +29,7 @@ Authoritative reference of currently implemented solver features, defaults
 | Failed-literal probing, HBR & probing intersection | ON | — | `--no-probing` |
 | Tick-budgeted inprocessing pipeline (SCC, congruence, Kitten sweep, global backbone, SSR, gate BVE, transitive reduction, vivify, ProbSAT seeding, dynamic GF(2) Gauss, AMO sequential counters) | ON | `--inprocess` | `--no-inprocess` |
 | Exact syntactic symmetry breaking (non-proof) | ON | `--sym` | `--no-sym` |
-| Structured Bounded Variable Addition (non-proof) | ON | `--sbva` | `--no-sbva` |
+| Structured Bounded Variable Addition (proof-producing DRAT/RAT) | ON | `--sbva` | `--no-sbva` |
 | Standalone blocked clause elimination (BCE) | OFF | `--bce` | `--no-bce` |
 | Standalone legacy BVE / SCC / Congruence / Factoring | OFF | `--elim` / `--equiv` / `--congruence` / `--factor` | `--no-elim` |
 | Standalone WalkSAT local search hybridization | OFF | `--local-search` | — |
@@ -80,47 +80,53 @@ Authoritative reference of currently implemented solver features, defaults
 - **Probing, HBR & Probing Intersection**: root-prioritized failed-literal
   probing, hyper-binary resolution, and RUP-certified double-lookahead backbone
   unit extraction.
-- **Gate Congruence & Tarjan SCC**: preprocessing and periodic 2-input
-  AND/XOR/ITE + 3..8-input N-ary AND congruence closure paired with in-place
-  Tarjan SCC equivalence substitution.
+- **Gate Congruence & Tarjan SCC**: preprocessing (scaled up to `800k` clauses)
+  and periodic iterative fixpoint congruence across 2-input AND/XOR/ITE, N-ary
+  AND (`k = 2..8`), and 3-input `MAJ3`/`XOR3` full-adder gates (1-split/2-split
+  RUP), paired with in-place Tarjan SCC equivalence substitution.
 - **Global Gate-DAG Simulation & Mini-Kitten Sweeping**: 64-bit bit-parallel
   gate-DAG simulation to identify cross-cone equivalence/unit candidates, proven
   via an embedded CDCL Mini-Kitten sweeper with RUP lemma projection.
 - **Model-Guided Global Backbone**: probes candidate backbone literals guided by
   saved phases/models to derive RUP-verified root units.
-- **Forward Subsumption, SSR, Gate-Aware BVE & Transitive Reduction**: 64-bit
-  signature-filtered subsumption/SSR, cascading min-degree BVE with AND/XOR/ITE
-  gate extraction and compact reconstruction records, followed by post-BVE
-  binary transitive reduction.
+- **Forward Subsumption, SSR, Gate-Aware + Semantic BVE & Transitive Reduction**:
+  64-bit signature-filtered subsumption/SSR, cascading min-degree BVE with
+  syntactic AND/XOR/ITE gate extraction and bounded Mini-CDCL UNSAT-core
+  semantic definition extraction plus compact reconstruction records, followed
+  by post-BVE binary transitive reduction.
 - **Prefix-Sharing Vivification**: O(n) frequency-ordered prefix-sharing clause
   strengthening on irredundant and Tier-1/Tier-2 learned clauses.
 - **ProbSAT Phase Seeding**: precomputed `(1 + break)^(-2.3)` polynomial break
-  weights with zero-break fast path, seeding saved polarities and target phases
-  during preprocessing warmup (4,000 flips on `<= 10k` vars / `<= 40k` clauses)
-  and periodic inprocessing rounds (20,000 flips).
+  weights with zero-break fast path, active-var/clause gating (`<= 150k` live
+  vars / `<= 450k` live clauses), explicit tick budget, and low-energy basin
+  filtering before updating saved polarities and target phases.
 
-### 5. Specialized Non-Proof Reasoning (`src/gauss.c`, `src/symmetry.c`, `src/sbva.c`)
-Automatically skipped under `--proof`, `BSAT_CERTIFICATES`, assumptions, or
-`BSAT_REUSE_LEARNTS`:
-- **Dynamic GF(2) Gaussian Elimination (`src/gauss.c`)**: 2..7-var XOR
-  extraction, subsumed/strengthened XOR recovery, Tseitin XOR-chain stitching,
-  connected-component root Gauss-Jordan RREF, and live Bird/Han-Jiang
-  two-watched-column matrices during search with zero-undo backtracking, BVE
-  protection, and temporary 1-UIP reason clauses.
-- **Exact Syntactic Symmetry Breaking (`--sym`, `src/symmetry.c`)**: exact
-  clause hash set over level-0-reduced irredundant clauses, verified involution
-  automorphisms, disjoint variable transposition chains, and BreakID-style
-  matrix row-interchange lex-leader constraints.
-- **AMO Cliques & SBVA (`src/inprocess.c`, `--sbva` / `src/sbva.c`)**: Sinz
-  sequential-counter re-encoding for `>=80%`-binary formulas (`<= 250k` clauses)
-  and arbitrary-length Structured BVA with 3-hop structural tie-breaking.
+### 5. Proof-Producing SBVA & Specialized Non-Proof Reasoning (`src/sbva.c`, `src/gauss.c`, `src/symmetry.c`)
+- **Proof-Producing SBVA (`--sbva`, `src/sbva.c`)**: arbitrary-length Structured
+  BVA with 3-hop structural tie-breaking; emits RAT-valid DRAT proofs under
+  `--proof` (skipped under `BSAT_CERTIFICATES` journals, assumptions, or
+  `BSAT_REUSE_LEARNTS`).
+- Automatically skipped under `--proof`, `BSAT_CERTIFICATES`, assumptions, or
+  `BSAT_REUSE_LEARNTS`:
+  - **Dynamic GF(2) Gaussian Elimination (`src/gauss.c`)**: 2..7-var XOR
+    extraction, subsumed/strengthened XOR recovery, Tseitin XOR-chain stitching,
+    connected-component root Gauss-Jordan RREF, and live Bird/Han-Jiang
+    two-watched-column matrices during search with zero-undo backtracking, BVE
+    protection, and temporary 1-UIP reason clauses.
+  - **Exact Syntactic Symmetry Breaking (`--sym`, `src/symmetry.c`)**: exact
+    clause hash set over level-0-reduced irredundant clauses, verified involution
+    automorphisms, disjoint variable transposition chains, and BreakID-style
+    matrix row-interchange lex-leader constraints.
+  - **AMO Cliques (`src/inprocess.c`)**: Sinz sequential-counter re-encoding for
+    `>=80%`-binary formulas (`<= 250k` clauses).
 
 ### 6. Parallel Portfolio & Operational Controls (`src/portfolio.c`, `src/main.c`, `src/bsat.c`)
 - **Multi-core portfolio (`-j N` / `--threads N`)**: runs `N` isolated worker
-  threads (`1..64`); Worker 0 runs full BSAT (imports only) while Workers
-  `1..N-1` run diversified logically-equivalent profiles sharing clauses of
-  `size <= 4` via a TSan-clean ring buffer with atomic cancellation on first
-  winner.
+  threads (`1..64`, 8 MiB stacks); Worker 0 runs full BSAT (imports only) while
+  Workers `1..N-1` run 8 diversified logically-equivalent profiles exporting
+  units, binaries, and LBD-filtered learned clauses (`size <= 8, LBD <= 3`)
+  through a TSan-clean dedicated unit ring + clause ring with 64-bit canonical
+  hash deduplication and immediate atomic cancellation on first winner.
 - **Frozen-variable API**: `solver_freeze(s, v)`, `solver_melt(s, v)`, and
   `solver_is_frozen(s, v)` protect interface variables from BVE, SCC
   substitution, BCE, and symmetry breaking (persisting across rebuilds).

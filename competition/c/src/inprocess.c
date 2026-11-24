@@ -3930,8 +3930,9 @@ static void inproc_walk_seed_phases(Solver *s, uint32_t max_flips, uint64_t tick
         }
     }
 
-    /* Seed both saved polarities and target best_phase with the best ProbSAT basin! */
-    if (best_unsat < init_unsat || best_unsat <= nc / 20) {
+    /* Seed both saved polarities and target best_phase ONLY when ProbSAT found a
+     * genuinely low-energy basin (avoids scrambling initial phases on huge formulas). */
+    if (best_unsat == 0 || (best_unsat < init_unsat && best_unsat <= live_cls / 20u)) {
         for (Var v = 1; v <= nv; ++v) {
             if (s->values[v] == UNDEF) {
                 bool pol = (best_assign[v] != 0);
@@ -4379,9 +4380,9 @@ bool solver_inprocess(Solver *s, bool preprocessing) {
     /* 8. Scaled tick-capped ProbSAT phase seeding (active-var/clause gated up to
      * 150k live vars / 450k live clauses; strictly bounded by tick budget & deadline). */
     if (!solver_budget_exhausted_now(s)) {
-        if (preprocessing) {
+        if (preprocessing && s->num_vars <= 50000 && s->num_clauses <= 150000) {
             inproc_walk_seed_phases(s, 4000u, base_budget / 6);
-        } else if ((s->inprocess_rounds & 1) == 0) {
+        } else if (!preprocessing && (s->inprocess_rounds & 1) == 0) {
             inproc_walk_seed_phases(s, 20000u, base_budget / 4);
         }
     }

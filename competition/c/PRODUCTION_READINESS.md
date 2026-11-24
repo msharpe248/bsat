@@ -17,8 +17,8 @@ certificate against its exact query.
 | Capability | Current support | Evidence and boundary |
 |---|---|---|
 | One-shot DIMACS solving | CLI (`bin/bsat`), SAT/UNSAT/UNKNOWN, text or binary DRAT | Strict DIMACS parser, model self-check, `validate.py` oracle/RUP suite, independent `drat-trim` CI |
-| Multi-core portfolio solving | `-j <N>` / `--threads <N>` (`1..64`), short-clause sharing (`size <= 4`), atomic stop | Non-proof one-shot mode; TSan-clean ring buffer (`MODE=tsan`), only logically-equivalent workers export clauses |
-| Public C/C++ embedding | Opaque ABI v1 (`bsat.h`), Linux and macOS C11/POSIX | [API_CONTRACT.md](API_CONTRACT.md), [INSTALLING.md](INSTALLING.md); internal `solver.h` layouts are not stable ABI |
+| Multi-core portfolio solving | `-j <N>` / `--threads <N>` (`1..64`), LBD-filtered sharing (`size <= 8, LBD <= 3`), dedicated unit ring, canonical hash dedup, 8 profiles, atomic stop | Non-proof one-shot mode; TSan-clean ring buffers (`MODE=tsan`), 8 MiB worker stacks, only logically-equivalent workers export clauses |
+| Public C/C++ & Python embedding | Opaque ABI v1 (`bsat.h`), Linux and macOS C11/POSIX, plus zero-dependency Python `ctypes` wrapper (`src/bsat/c_solver.py`) | [API_CONTRACT.md](API_CONTRACT.md), [INSTALLING.md](INSTALLING.md), `tests/test_c_solver.py`; internal `solver.h` layouts are not stable ABI |
 | Incremental additions & assumptions | Copied permanent clauses, temporary assumptions, model and sufficient failed core, `solver_freeze`/`solver_melt` | [API_CONTRACT.md](API_CONTRACT.md); destructive inprocessing and non-RUP passes stay disabled on assumption calls |
 | Retained learning | Opt-in `BSAT_REUSE_LEARNTS`, including compatible conditional UNSAT and budget slices | [INCREMENTAL_REUSE.md](docs/INCREMENTAL_REUSE.md); cancellation or incompatible state rebuilds from permanent input |
 | Certified incremental queries | `BSAT_CERTIFICATES`, alone or with reuse; exact CNF and binary proof export | [RETAINED_CERTIFICATES.md](docs/RETAINED_CERTIFICATES.md); conservative non-destructive options, synchronous export |
@@ -35,28 +35,35 @@ certificate against its exact query.
 ## Current Verification & Benchmark Evidence
 
 ### Automated Verification
-- **Unit & integration tests**: `67/67` C tests pass across `release`,
-  `diagnostic`, and `debug` (ASan + UBSan) builds on macOS (Clang) and Linux
-  (GCC & Clang), plus ThreadSanitizer (`MODE=tsan`), `fault-test` (deterministic
-  OOM injection), `recovery-fault-test`, `embedding-test`, `soak-test`,
-  `package-test`, `application_histories`, `check_query_diagnostics`,
-  `check_deadlines` (`0.000 s` release / `0.004 s` debug max CPU overrun),
-  `check_process_failures`, and `validate.py` (`11,316` release + `5,796`
-  ASan/UBSan truth-table, model, and text/binary RUP solves).
+- **Unit & integration tests**: `68/68` C tests (including
+  `test_differential_engines.c` across baseline, full, aggressive BCE/elim/SBVA,
+  and `-j 4` portfolio) pass across `release`, `diagnostic`, and `debug`
+  (ASan + UBSan) builds, plus ThreadSanitizer (`MODE=tsan`), `fault-test`
+  (`3,526` deterministic OOM injection cases), `recovery-fault-test`,
+  `embedding-test`, `soak-test`, `package-test`, `application_histories`,
+  `check_query_diagnostics`, `check_deadlines` (`0.000 s` release / `0.004 s`
+  debug max CPU overrun), `check_process_failures`, `validate.py` with
+  `drat-trim`, and `203/203` Python package unit tests (including
+  `tests/test_c_solver.py`).
 - **CI workflows**: `C solver correctness` (Linux GCC/Clang + macOS Clang
   release/debug + TSan + pinned `drat-trim` / `cake_lpr`), `C solver coverage
   fuzzing`, and `C solver independent incremental integration`.
 
 ### Measured Performance (Release, Non-PGO, Apple Silicon)
-- **Wide-corpus on-demand verification** (`scripts/suite_runner.py`, independent
-  full-clause SAT model verification + known ground-truth checking):
-  - `synthetic-hard` (118 structured problems: `PHP(8..30)`, Tseitin XOR, mixed
-    XOR+3SAT, circuit miters, `k`-coloring, Latin squares, planted 3-SAT):
-    **118/118 solved (100.0%)**, 0 errors, mean PAR-2 `0.039 s`.
-  - `satlib-core` (492 classic SATLIB instances across 16 families):
-    **492/492 solved (100.0%)**, 0 errors, mean PAR-2 `0.051 s`.
-  - `satcomp-2024` (30 balanced SAT/UNSAT Main Track instances `<= 1.5 MB`,
-    10 s single-thread cap): **11/30 solved**, 0 errors.
+- **Wide-corpus & head-to-head verification** (`scripts/suite_runner.py`,
+  independent full-clause SAT model checks, known ground truth, and real
+  `drat-trim` binary DRAT proof checking):
+  - **SAT Competition 2023–2025 head-to-head vs Kissat 4.0.4** (150 balanced
+    Main Track instances `<= 3 MB`, 15 s timeout, 0 errors, 100% agreement):
+    - **`bsat -j 4`**: **43 / 150 solved** (23 SAT, 20 UNSAT), PAR-2 `21.914 s`, median `0.150 s`.
+    - **`kissat 4.0.4`** (1-thread): **40 / 150 solved** (23 SAT, 17 UNSAT), PAR-2 `22.547 s`, median `0.891 s`.
+    - **`bsat`** (1-thread): **39 / 150 solved** (20 SAT, 19 UNSAT), PAR-2 `22.726 s`, median `0.196 s`.
+    - **`bsat --proof --binary-proof` + `drat-trim`**: **16 / 16** solved SAT Comp UNSAT proofs independently verified (`0` failures), including `bv_ILA_Piccolo_BEQ` (`1.54 s`), `bv_ILA_Piccolo_JALR` (`2.89 s`), `clique_n2_k10` (SBVA RAT), and `oddball_20_5` / `oddball_24_4`.
+  - **`synthetic-hard` + `satlib-core`** (610 instances):
+    - Default mode: **118/118** (`synthetic-hard`, PAR-2 `0.039 s`) + **492/492** (`satlib-core`, PAR-2 `0.051 s`), `0` errors.
+    - Binary DRAT `--proof` + `drat-trim`: **206/206** solved UNSAT proofs (including proof-producing SBVA on `php_13_12.cnf` in `2.58 s`) independently verified, `0` failures.
+  - **`satlib-scale`** (6,091 instances): **6,091/6,091 (100.0%)**, `0` errors.
+  - **`satlib-hard`** (919 instances, 10 s cap): **914/919 (99.5%)**, `0` errors.
 - **Frozen industrial & targeted benchmarks**:
   - `cal3-query.cnf` (UNSAT, including verified DRAT proof): **`0.447 s`**
     (`20,294` conflicts, vs. Kissat `1.045 s`).
@@ -71,12 +78,12 @@ certificate against its exact query.
     symmetry breaking.
 
 ### Known Open Gaps
-- Hard cryptographic S-box / stream-cipher attacks, large multiplier-equivalence
-  circuits, and very large scheduling/argumentation instances remain open
-  performance targets.
-- Non-RUP engines (GF(2) Gauss, symmetry breaking, AMO re-encoding, SBVA) do
-  not yet emit DRAT/DSR/VeriPB proofs and are therefore disabled in `--proof`
-  and `BSAT_CERTIFICATES` modes.
+- Hard cryptographic S-box / stream-cipher attacks, GF(2) tensor-rank (`brent_*`),
+  and large scheduling/argumentation instances remain open performance targets.
+- Non-RUP engines without DRAT emission (GF(2) Gauss, symmetry breaking, AMO
+  re-encoding) remain disabled in `--proof` and `BSAT_CERTIFICATES` modes (SBVA
+  emits RAT-valid DRAT in `--proof` mode and stays disabled in append-only
+  `BSAT_CERTIFICATES` journals).
 - Deployment-specific acceptance corpora, numerical SLOs, durable supervision,
   and host OS containment policies remain application-level work.
 

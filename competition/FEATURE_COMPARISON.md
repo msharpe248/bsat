@@ -27,17 +27,17 @@ Current feature comparison between the C competition solver ([`competition/c/`](
 | Phase Saving & 6-Step Target Rephasing | ✅ (default ON) | ✅ (phase saving) | C uses Kissat-style target rephasing + ProbSAT phase seeding |
 | **Preprocessing & Inprocessing** | | | |
 | Failed-Literal Probing, HBR & Intersection | ✅ (default ON) | ✅ (basic probing) | C derives RUP-certified HBR binaries and double-lookahead backbone units |
-| Gate Congruence & Tarjan SCC | ✅ (default ON) | ❌ | C: 2-input AND/XOR/ITE + 3..8-input N-ary AND congruence + in-place SCC |
+| Gate Congruence & Tarjan SCC | ✅ (default ON) | ❌ | C: iterative fixpoint 2-input AND/XOR/ITE + N-ary AND + 3-input `MAJ3`/`XOR3` + in-place SCC |
 | Global Gate-DAG Simulation & Mini-Kitten Sweep | ✅ (default ON) | ❌ | 64-bit simulation + dual-cone CDCL SAT sweeping with RUP lemma projection |
 | Model-Guided Global Backbone | ✅ (default ON) | ❌ | RUP-certified root units |
-| Forward Subsumption, SSR & Gate-Aware BVE | ✅ (default ON) | ❌ | Cascading min-degree BVE (AND/XOR/ITE) + compact model reconstruction |
+| Forward Subsumption, SSR & Gate/Semantic BVE | ✅ (default ON) | ❌ | Cascading min-degree BVE (AND/XOR/ITE + Mini-CDCL semantic definitions) + model reconstruction |
 | Transitive Reduction & Prefix Vivification | ✅ (default ON) | ❌ | Post-BVE binary transitive reduction + O(n) prefix-sharing vivification |
 | Dynamic GF(2) XOR Gaussian Elimination | ✅ (non-proof) | ❌ | 2..7-var XOR, subsumed recovery, Tseitin chain stitching, live Bird/Han-Jiang matrices |
 | Exact Syntactic Symmetry Breaking (`--sym`) | ✅ (non-proof) | ❌ | BreakID-style verified automorphisms + transposition chains + row-interchange lex-leader |
-| AMO Sequential Counters & SBVA (`--sbva`) | ✅ (non-proof) | ❌ | Sinz sequential counters (`>=80%` binary) + 3-hop Structured BVA |
+| AMO Sequential Counters & Proof-Producing SBVA | ✅ | ❌ | Sinz counters (non-proof) + RAT-valid DRAT 3-hop Structured BVA (`--sbva`) |
 | **Proofs, Parallelism & Embedding** | | | |
 | Text & Binary DRAT Proof Logging | ✅ | ❌ | Independently verified with `drat-trim` and `cake_lpr` |
-| Multi-Core Clause-Sharing Portfolio (`-j N`) | ✅ | ❌ | Diversified pthread workers sharing `size <= 4` clauses |
-| Opaque ABI v1 Library, IPASIR 1.0 & Frozen Vars | ✅ | ❌ | `bsat.h`, `ipasir.h`, `BSAT_REUSE_LEARNTS`, `BSAT_CERTIFICATES`, `solver_freeze`/`solver_melt` |
+| Multi-Core Clause-Sharing Portfolio (`-j N`) | ✅ | ❌ | 8 diversified pthread profiles, LBD-filtered sharing (`size <= 8, LBD <= 3`), unit ring, hash dedup |
+| Opaque ABI v1, IPASIR 1.0, Python `ctypes` & Frozen Vars | ✅ | ❌ | `bsat.h`, `ipasir.h`, `bsat.solve_c`/`CSATSolver`, `BSAT_REUSE_LEARNTS`, `BSAT_CERTIFICATES`, `solver_freeze` |
 
 See [`competition/c/FEATURES.md`](c/FEATURES.md) for the complete C CLI reference and [`competition/c/README.md`](c/README.md) for build and benchmarking instructions.
