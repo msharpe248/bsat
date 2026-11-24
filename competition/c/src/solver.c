@@ -3025,9 +3025,10 @@ static lbool solve_internal_account_impl(Solver *s, const Lit *assumps, uint32_t
         if (s->error || s->interrupted) return UNDEF;
         if (s->result == FALSE || solver_propagate(s) != INVALID_CLAUSE) {s->base_unsat=true;return FALSE;}
     }
-    /* Exact syntactic symmetry breaking (BreakID-style, non-proof one-shot mode)
+    /* Exact syntactic symmetry breaking (BreakID-style; emits RAT/RUP DRAT proofs
+     * in --proof mode when trail_size==0 && num_learnts==0, disabled in journals/reuse)
      * BEFORE AMO / SBVA / BVE so row-interchange & transposition symmetries are intact. */
-    if (!n_assumps && !s->proof_file && !s->proof_journal && !s->opts.reuse_learnts &&
+    if (!n_assumps && !s->proof_journal && !s->opts.reuse_learnts &&
         s->opts.inprocess && s->opts.preprocess_budget && !s->opts.factor && !s->opts.local_search &&
         s->opts.sym && !solver_budget_exhausted(s)) {
         double started = solver_account_begin(s);

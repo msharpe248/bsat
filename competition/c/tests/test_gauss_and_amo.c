@@ -702,6 +702,49 @@ static void test_semantic_definition_bve(void) {
     }
 }
 
+static void test_symmetry_breaking_drat_proof(void) {
+    /* PHP(7, 6) has 7*6 = 42 vars and 7 + 6*21 = 133 clauses (>= 64),
+     * so --proof mode triggers O(n) single-pair peeling + failed-literal RUP
+     * and solves in 0 conflicts with 0 residual auxiliary variables! */
+    for (int binary = 0; binary <= 1; ++binary) {
+        SolverOpts opts = default_opts();
+        opts.inprocess = true;
+        opts.sym = true;
+        opts.binary_proof = (binary != 0);
+        Solver *s = solver_new_with_opts(&opts);
+        assert(s != NULL);
+        FILE *pf = tmpfile();
+        assert(pf != NULL);
+        s->proof_file = pf;
+
+        const uint32_t H = 6, P = 7;
+        for (uint32_t i = 0; i < P * H; ++i) solver_new_var(s);
+        for (uint32_t p = 0; p < P; ++p) {
+            Lit alo[6];
+            for (uint32_t h = 0; h < H; ++h) alo[h] = mkLit(p * H + h + 1, false);
+            solver_add_clause(s, alo, H);
+        }
+        for (uint32_t h = 0; h < H; ++h) {
+            for (uint32_t p1 = 0; p1 < P; ++p1) {
+                for (uint32_t p2 = p1 + 1; p2 < P; ++p2) {
+                    Lit pair[2] = {mkLit(p1 * H + h + 1, true), mkLit(p2 * H + h + 1, true)};
+                    solver_add_clause(s, pair, 2);
+                }
+            }
+        }
+        lbool r = solver_solve(s);
+        assert(r == FALSE);
+        assert(!s->error);
+        assert(s->stats.conflicts == 0);
+        assert(s->num_vars == P * H); /* zero residual aux vars */
+        fflush(pf);
+        assert(ftell(pf) > 0);
+        s->proof_file = NULL;
+        fclose(pf);
+        solver_free(s);
+    }
+}
+
 int main(void) {
     test_gauss_mixed_sat_and_unsat();
     test_gauss_chain_stitching_and_subsumed_xor();
@@ -712,6 +755,7 @@ int main(void) {
     test_sbva_arbitrary_length_sat_and_unsat();
     test_parallel_portfolio_sat_and_unsat();
     test_symmetry_breaking_php_and_sat();
+    test_symmetry_breaking_drat_proof();
     test_frozen_variable_inprocessing();
     test_lit_values_external_mutation_safety();
     printf("PASS: test_gauss_and_amo\n");
