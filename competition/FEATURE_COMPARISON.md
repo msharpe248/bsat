@@ -32,9 +32,9 @@ Current feature comparison between the C competition solver ([`competition/c/`](
 | Model-Guided Global Backbone | ✅ (default ON) | ❌ | RUP-certified root units |
 | Forward Subsumption, SSR & Gate/Semantic BVE | ✅ (default ON) | ❌ | Cascading min-degree BVE (AND/XOR/ITE + Mini-CDCL semantic definitions) + model reconstruction |
 | Transitive Reduction & Prefix Vivification | ✅ (default ON) | ❌ | Post-BVE binary transitive reduction + O(n) prefix-sharing vivification |
-| Dynamic GF(2) XOR Gaussian Elimination | ✅ (non-proof) | ❌ | 2..7-var XOR, subsumed recovery, Tseitin chain stitching, live Bird/Han-Jiang matrices |
-| Exact Syntactic Symmetry Breaking (`--sym`) | ✅ (non-proof) | ❌ | BreakID-style verified automorphisms + transposition chains + row-interchange lex-leader |
-| AMO Sequential Counters & Proof-Producing SBVA | ✅ | ❌ | Sinz counters (non-proof) + RAT-valid DRAT 3-hop Structured BVA (`--sbva`) |
+| Dynamic GF(2) XOR Gaussian Elimination | ✅ (root RREF DRAT; live in-search non-proof) | ❌ | 2..7-var XOR, subsumed recovery, Tseitin chain stitching, XOR-chain DRAT root RREF, live Bird/Han-Jiang matrices |
+| Exact Syntactic Symmetry Breaking (`--sym`) | ✅ (DRAT/RAT proof-producing) | ❌ | BreakID-style verified automorphisms + O(n) single-pair peeling / insertion-sort DRAT proofs |
+| AMO Sequential Counters & Structured BVA (`--sbva`) | ✅ (DRAT/RAT proof-producing) | ❌ | Sinz counters + 3-hop Structured BVA, both emitting RAT-valid DRAT proofs under `--proof` |
 | **Proofs, Parallelism & Embedding** | | | |
 | Text & Binary DRAT Proof Logging | ✅ | ❌ | Independently verified with `drat-trim` and `cake_lpr` |
 | Multi-Core Clause-Sharing Portfolio (`-j N`) | ✅ | ❌ | 8 diversified pthread profiles, LBD-filtered sharing (`size <= 8, LBD <= 3`), unit ring, hash dedup |

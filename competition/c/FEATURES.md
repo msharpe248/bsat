@@ -28,7 +28,7 @@ Authoritative reference of currently implemented solver features, defaults
 | On-the-fly subsumption & OTFS | ON | — | `--no-subsumption` |
 | Failed-literal probing, HBR & probing intersection | ON | — | `--no-probing` |
 | Tick-budgeted inprocessing pipeline (SCC, congruence, Kitten sweep, global backbone, SSR, gate BVE, transitive reduction, vivify, ProbSAT seeding, dynamic GF(2) Gauss, AMO sequential counters) | ON | `--inprocess` | `--no-inprocess` |
-| Exact syntactic symmetry breaking (non-proof) | ON | `--sym` | `--no-sym` |
+| Exact syntactic symmetry breaking (proof-producing DRAT/RAT) | ON | `--sym` | `--no-sym` |
 | Structured Bounded Variable Addition (proof-producing DRAT/RAT) | ON | `--sbva` | `--no-sbva` |
 | Standalone blocked clause elimination (BCE) | OFF | `--bce` | `--no-bce` |
 | Standalone legacy BVE / SCC / Congruence / Factoring | OFF | `--elim` / `--equiv` / `--congruence` / `--factor` | `--no-elim` |
@@ -101,32 +101,38 @@ Authoritative reference of currently implemented solver features, defaults
   vars / `<= 450k` live clauses), explicit tick budget, and low-energy basin
   filtering before updating saved polarities and target phases.
 
-### 5. Proof-Producing SBVA & Specialized Non-Proof Reasoning (`src/sbva.c`, `src/gauss.c`, `src/symmetry.c`)
-- **Proof-Producing SBVA (`--sbva`, `src/sbva.c`)**: arbitrary-length Structured
-  BVA with 3-hop structural tie-breaking; emits RAT-valid DRAT proofs under
-  `--proof` (skipped under `BSAT_CERTIFICATES` journals, assumptions, or
-  `BSAT_REUSE_LEARNTS`).
-- Automatically skipped under `--proof`, `BSAT_CERTIFICATES`, assumptions, or
-  `BSAT_REUSE_LEARNTS`:
-  - **Dynamic GF(2) Gaussian Elimination (`src/gauss.c`)**: 2..7-var XOR
-    extraction, subsumed/strengthened XOR recovery, Tseitin XOR-chain stitching,
-    connected-component root Gauss-Jordan RREF, and live Bird/Han-Jiang
-    two-watched-column matrices during search with zero-undo backtracking, BVE
-    protection, and temporary 1-UIP reason clauses.
-  - **Exact Syntactic Symmetry Breaking (`--sym`, `src/symmetry.c`)**: exact
-    clause hash set over level-0-reduced irredundant clauses, verified involution
-    automorphisms, disjoint variable transposition chains, and BreakID-style
-    matrix row-interchange lex-leader constraints.
-  - **AMO Cliques (`src/inprocess.c`)**: Sinz sequential-counter re-encoding for
-    `>=80%`-binary formulas (`<= 250k` clauses).
+### 5. Proof-Producing Structural Engines (`src/sbva.c`, `src/gauss.c`, `src/symmetry.c`, `src/inprocess.c`)
+All four engines emit standard DRAT/RAT proofs in `--proof` mode (and stay
+disabled in append-only `BSAT_CERTIFICATES` journals, assumption calls, and
+`BSAT_REUSE_LEARNTS`):
+- **SBVA (`--sbva`, `src/sbva.c`)**: arbitrary-length Structured BVA with 3-hop
+  structural tie-breaking and RAT-valid DRAT clause emission.
+- **AMO Cliques (`src/inprocess.c`)**: linear Sinz sequential-counter
+  re-encoding for `>=80%`-binary formulas (`<= 250k` clauses), emitting
+  temporary backward RAT definitions + forward RAT/1-step RUP blocking binaries
+  under `--proof`.
+- **Exact Syntactic Symmetry Breaking (`--sym`, `src/symmetry.c`)**: exact
+  clause hash set over level-0-reduced irredundant clauses, verified involution
+  automorphisms, disjoint variable transposition chains, and BreakID-style
+  matrix row-interchange lex-leader constraints; in `--proof` mode uses O(n)
+  single-pair conditional-swap peeling + failed-literal RUP on mutex columns
+  and insertion-sort conditional-swap chains on non-mutex columns with zero
+  residual auxiliary variables.
+- **GF(2) Gaussian Elimination (`src/gauss.c`)**: 2..7-var XOR extraction,
+  subsumed/strengthened XOR recovery, Tseitin XOR-chain stitching, and
+  connected-component root Gauss-Jordan RREF (emitting linear Tseitin XOR-chain
+  addition DRAT proofs from RREF history bitmasks under `--proof`), plus live
+  in-search Bird/Han-Jiang two-watched-column matrices in non-proof mode with
+  zero-undo backtracking, BVE protection, and temporary 1-UIP reason clauses.
 
 ### 6. Parallel Portfolio & Operational Controls (`src/portfolio.c`, `src/main.c`, `src/bsat.c`)
 - **Multi-core portfolio (`-j N` / `--threads N`)**: runs `N` isolated worker
   threads (`1..64`, 8 MiB stacks); Worker 0 runs full BSAT (imports only) while
-  Workers `1..N-1` run 8 diversified logically-equivalent profiles exporting
-  units, binaries, and LBD-filtered learned clauses (`size <= 8, LBD <= 3`)
-  through a TSan-clean dedicated unit ring + clause ring with 64-bit canonical
-  hash deduplication and immediate atomic cancellation on first winner.
+  Workers `1..N-1` run 8 diversified logically-equivalent profiles (including a
+  zero-preprocessing fast-start profile on Worker 2) exporting units, binaries,
+  and LBD-filtered learned clauses (`size <= 8, LBD <= 3`) through a TSan-clean
+  dedicated unit ring + clause ring with 64-bit canonical hash deduplication and
+  immediate atomic cancellation on first winner.
 - **Frozen-variable API**: `solver_freeze(s, v)`, `solver_melt(s, v)`, and
   `solver_is_frozen(s, v)` protect interface variables from BVE, SCC
   substitution, BCE, and symmetry breaking (persisting across rebuilds).
@@ -209,7 +215,7 @@ Authoritative reference of currently implemented solver features, defaults
 --inprocess / --no-inprocess           Full tick-budgeted inprocessing (default: ON)
 --inprocess-interval <n>               Conflicts between rounds (default: 10000)
 --preprocess-budget <n>                Literal-work budget; 0 disables (default: 1000000)
---sbva / --no-sbva                     Structured BVA in non-proof mode (default: ON)
+--sbva / --no-sbva                     Structured BVA, proof-producing DRAT/RAT (default: ON)
 --sym / --no-sym                       Exact syntactic symmetry breaking (default: ON)
 --no-probing                           Disable failed-literal probing
 --bce / --no-bce                       Standalone BCE preprocessing (default: OFF)

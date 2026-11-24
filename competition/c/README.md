@@ -64,13 +64,13 @@ search, minimization, block shrinking, OTFS, probing/HBR, probing intersection,
 multi-gate congruence (2-input AND/XOR/ITE + N-ary AND + `MAJ3` + `XOR3`),
 Tarjan SCC substitution, Mini-Kitten SAT sweeping, global backbone extraction,
 subsumption/SSR, gate-aware and semantic Mini-CDCL definition BVE, binary
-transitive reduction, BCE, bounded factoring (`--factor`), proof-producing SBVA
-(`--sbva`, RAT-valid), and prefix-sharing vivification. Non-RUP passes without
-DRAT emission (GF(2) Gaussian elimination, exact symmetry breaking, and AMO
-sequential-counter re-encoding) are automatically disabled whenever `--proof` or
-`BSAT_CERTIFICATES` is active (and SBVA is also disabled in append-only
-`BSAT_CERTIFICATES` journals) so standard DRAT/LRAT checkers remain strictly
-valid.
+transitive reduction, BCE, bounded factoring (`--factor`), prefix-sharing
+vivification, and **DRAT/RAT proof-producing** SBVA (`--sbva`), AMO Sinz
+sequential-counter re-encoding, exact syntactic symmetry breaking (`--sym`), and
+Root GF(2) XOR-chain RREF (`src/gauss.c`). Only live in-search Bird/Han-Jiang
+GF(2) matrix propagation stays disabled under `--proof`, and all RAT/non-RUP
+passes stay disabled in append-only `BSAT_CERTIFICATES` journals so standard
+DRAT/LRAT checkers remain strictly valid.
 
 ---
 
@@ -81,10 +81,11 @@ Default one-shot solving uses:
 - **Search & Branching**: Tick-based alternation (`--alternating`) between
   **Focused mode** (VMTF conflict-recency queue, fast/slow Biere–Fröhlich LBD
   EMA restarts, trail reuse, saved phases) and **Stable mode** (4-ary heap
-  VSIDS with dynamic decay `0.80 → 0.95`, reluctant doubling restarts, target
-  phases), with chronological backtracking (`--chrono`, `--chrono-levels 100`),
-  reason-side activity bumping (`num_vars >= 300`), and 6-step Kissat-style
-  target rephasing (`--rephase-interval 1000`).
+  VSIDS with dynamic decay `0.80 → 0.95`, reluctant doubling restarts, separated
+  `target_phase[]`), with chronological backtracking (`--chrono`,
+  `--chrono-levels 100`), reason-side activity bumping (`num_vars >= 300`), and
+  level-0 6-step Kissat-style `B/W/I/B/W/O` rephasing
+  (`--rephase-interval 1000`).
 - **Conflict Analysis & Clause DB**: 1-UIP learning, 3-state binary-aware DFS
   minimization (`--minimize-budget 10000`), block-level all-UIP shrinking
   (`--shrink`), binary-resolution minimization (`--binary-minimize`), on-the-fly
@@ -113,29 +114,49 @@ Default one-shot solving uses:
   9. O(n) prefix-sharing clause vivification
   10. Active-clause-gated, tick-capped Kissat-style ProbSAT phase seeding
       (`(1 + break)^(-2.3)`, low-energy basin gating)
-- **Proof-Producing SBVA & Specialized Non-Proof Engines**:
-  - **Proof-Producing SBVA** (`--sbva`, `src/sbva.c`): Arbitrary-length
-    Structured Bounded Variable Addition with 3-hop structural tie-breaking;
-    emits RAT-valid DRAT proofs in `--proof` mode (disabled under
-    `BSAT_CERTIFICATES` journals, assumptions, and `BSAT_REUSE_LEARNTS`).
-  - **Dynamic GF(2) Gaussian Elimination** (`src/gauss.c`, non-proof): 2..7-var
-    XOR extraction with subsumed-XOR recovery, Tseitin XOR-chain stitching, root
-    Gauss-Jordan RREF, and live Bird/Han-Jiang two-watched-column matrices
-    during CDCL search with zero-undo backtracking and temporary 1-UIP reasons.
-  - **Exact Syntactic Symmetry Breaking** (`--sym`, `src/symmetry.c`, non-proof):
-    Exact clause hash set over level-0-reduced clauses, verified involution
+- **Proof-Producing Structural Engines** (all emit standard DRAT/RAT under
+  `--proof`, using monotonic proof-only auxiliary variable IDs where temporary
+  variables are needed; skipped in append-only `BSAT_CERTIFICATES` journals,
+  assumption calls, and `BSAT_REUSE_LEARNTS`):
+  - **SBVA** (`--sbva`, `src/sbva.c`): Arbitrary-length Structured Bounded
+    Variable Addition with 3-hop structural tie-breaking and RAT-valid DRAT
+    emission.
+  - **AMO Cliques** (`src/inprocess.c`): Linear Sinz sequential-counter
+    re-encoding for `>=80%`-binary formulas with temporary backward RAT
+    definitions + 1-step RUP blocking binaries.
+  - **Exact Syntactic Symmetry Breaking** (`--sym`, `src/symmetry.c`): Exact
+    clause hash set over level-0-reduced clauses, verified involution
     automorphisms, variable transposition chains, and BreakID-style
-    disjoint-support matrix row-interchange lex-leader constraints.
-  - **AMO Cliques** (`src/inprocess.c`, non-proof): Linear Sinz
-    sequential-counter re-encoding for `>=80%`-binary formulas.
+    disjoint-support matrix row-interchange breaking; in `--proof` mode emits
+    DRAT/RAT proofs via O(n) single-pair conditional-swap peeling + failed-literal
+    RUP (mutex columns) and insertion-sort conditional-swap chains (non-mutex
+    columns).
+  - **GF(2) Gaussian Elimination** (`src/gauss.c`): 2..7-var XOR extraction with
+    subsumed-XOR recovery, Tseitin XOR-chain stitching, connected-component root
+    Gauss-Jordan RREF (emitting linear Tseitin XOR-chain addition DRAT proofs
+    from RREF history bitmasks under `--proof`), plus live in-search
+    Bird/Han-Jiang two-watched-column matrices in non-proof mode.
 - **Multi-Core Clause-Sharing Portfolio** (`-j <N>` / `--threads <N>`,
   `src/portfolio.c`, non-proof mode): Worker 0 runs full BSAT (imports only);
-  Workers `1..N-1` run 8 diversified logically-equivalent profiles (no
-  destructive BVE/BCE/SBVA/symmetry) sharing LBD-filtered learned clauses
+  Workers `1..N-1` run 8 diversified logically-equivalent profiles (including a
+  zero-preprocessing fast-start profile on Worker 2, with no destructive
+  BVE/BCE/SBVA/symmetry) sharing LBD-filtered learned clauses
   (`size <= 8, LBD <= 3`, plus all units/binaries) through a dedicated unit
   broadcast ring + mutex-guarded clause ring with 64-bit canonical hash
   deduplication, 8 MiB worker stacks, and immediate atomic cancellation on first
   winner.
+- **Deployment & Acceptance Starter Kit**:
+  - [scripts/acceptance_gate.py](scripts/acceptance_gate.py) +
+    [scripts/acceptance_policy.example.json](scripts/acceptance_policy.example.json):
+    turnkey candidate integrity (git rev + binary/checker SHA-256), POSIX
+    `setrlimit` child containment (`RLIMIT_CPU`, `RLIMIT_FSIZE`,
+    `RLIMIT_DATA`/`RLIMIT_AS`), peak RSS (`wait4`), `drat-trim` verification,
+    and numerical SLO evaluation (`min_solve_rate`, `max_bad`, `max_p95_sec`,
+    `max_par2_sec`, `max_rss_mb`, `max_proof_mb`).
+  - [examples/contained_worker.c](examples/contained_worker.c)
+    (`make contained-worker-example`): POSIX supervised worker with a durable
+    `fsync()`'d CRC-framed append-only WAL (torn-tail resilient), `setrlimit`
+    worker containment, SIGKILL recovery, and certified query export.
 - **Incremental Protection**: Destructive inprocessing and non-RUP passes are
   automatically skipped under assumption queries, `BSAT_CERTIFICATES`, and
   `BSAT_REUSE_LEARNTS`. Internal callers can also pin variables against
