@@ -4005,7 +4005,7 @@ static uint32_t amo_find_edge(const AmoEdge *edges, uint32_t lo, uint32_t hi, Li
 }
 
 bool solver_amo_cliques(Solver *s) {
-    if (!s || s->decision_level || s->proof_file || s->proof_journal || s->error ||
+    if (!s || s->decision_level || s->proof_journal || s->error ||
         s->interrupted || s->result == FALSE || s->num_vars == 0 || s->num_clauses < 500 ||
         s->num_clauses > 250000 || solver_budget_exhausted(s)) return true;
 
@@ -4182,16 +4182,39 @@ bool solver_amo_cliques(Solver *s) {
             }
             if (!ok) break;
 
-            /* Emit all 3k-4 binary clauses of the sequential counter. */
+            /* Emit all 3k-4 binary clauses of the Sinz sequential counter.
+             * In --proof mode, also emit temporary backward RAT definitions
+             * (~sv[0] | ~clique[0]) and (~sv[i] | sv[i-1] | ~clique[i]) so every
+             * forward clause is RAT (pivot at index 0) and every AMO blocking clause
+             * (clique[i] | ~sv[i-1]) is 1-step RUP from the original clique! */
             Lit bin[2];
-            bin[0] = clique[0]; bin[1] = mkLit(sv[0], false);
+            if (s->proof_file) {
+                Lit bdef0[2] = {mkLit(sv[0], true), neg(clique[0])};
+                proof_add_clause(s, bdef0, 2);
+                if (s->error) break;
+            }
+            bin[0] = mkLit(sv[0], false); bin[1] = clique[0];
+            proof_add_clause(s, bin, 2);
+            if (s->error) break;
             CRef cr0 = arena_alloc(s->arena, bin, 2, false);
             if (cr0 == INVALID_CLAUSE || !push_original_clause_ref(s, cr0)) { s->error = true; break; }
 
             for (uint32_t i = 1; i < k - 1u && !s->error; ++i) {
-                Lit c1[2] = {clique[i], mkLit(sv[i], false)};
-                Lit c2[2] = {mkLit(sv[i - 1u], true), mkLit(sv[i], false)};
+                /* 1. AMO blocking clause (clique[i] | ~sv[i-1]) — 100% RUP! */
                 Lit c3[2] = {clique[i], mkLit(sv[i - 1u], true)};
+                proof_add_clause(s, c3, 2);
+                if (s->error) break;
+                /* 2. Introduce fresh sv[i] via backward RAT def + 2 forward RAT binaries! */
+                if (s->proof_file) {
+                    Lit bdef[3] = {mkLit(sv[i], true), mkLit(sv[i - 1u], false), neg(clique[i])};
+                    proof_add_clause(s, bdef, 3);
+                    if (s->error) break;
+                }
+                Lit c1[2] = {mkLit(sv[i], false), clique[i]};
+                Lit c2[2] = {mkLit(sv[i], false), mkLit(sv[i - 1u], true)};
+                proof_add_clause(s, c1, 2);
+                proof_add_clause(s, c2, 2);
+                if (s->error) break;
                 CRef r1 = arena_alloc(s->arena, c1, 2, false);
                 CRef r2 = (r1 != INVALID_CLAUSE) ? arena_alloc(s->arena, c2, 2, false) : INVALID_CLAUSE;
                 CRef r3 = (r2 != INVALID_CLAUSE) ? arena_alloc(s->arena, c3, 2, false) : INVALID_CLAUSE;
@@ -4204,6 +4227,8 @@ bool solver_amo_cliques(Solver *s) {
             }
             if (s->error) break;
             bin[0] = clique[k - 1u]; bin[1] = mkLit(sv[k - 2u], true);
+            proof_add_clause(s, bin, 2);
+            if (s->error) break;
             CRef cr_last = arena_alloc(s->arena, bin, 2, false);
             if (cr_last == INVALID_CLAUSE || !push_original_clause_ref(s, cr_last)) { s->error = true; break; }
 
@@ -4224,6 +4249,8 @@ bool solver_amo_cliques(Solver *s) {
                             used[cslot] = 1;
                             CRef old_cr = s->clauses[cslot];
                             if (old_cr != INVALID_CLAUSE && !clause_deleted(s->arena, old_cr)) {
+                                proof_delete_clause(s, CLAUSE_LITS(s->arena, old_cr),
+                                                    CLAUSE_SIZE(s->arena, old_cr));
                                 arena_delete(s->arena, old_cr);
                                 s->clauses[cslot] = INVALID_CLAUSE;
                             }
@@ -4235,6 +4262,16 @@ bool solver_amo_cliques(Solver *s) {
                         }
                         idx++;
                     }
+                }
+            }
+            /* Delete temporary backward RAT definitions from the proof file so the
+             * proof clause set stays synchronized with s->clauses. */
+            if (s->proof_file && !s->error) {
+                Lit bdef0[2] = {mkLit(sv[0], true), neg(clique[0])};
+                proof_delete_clause(s, bdef0, 2);
+                for (uint32_t i = 1; i < k - 1u && !s->error; ++i) {
+                    Lit bdef[3] = {mkLit(sv[i], true), mkLit(sv[i - 1u], false), neg(clique[i])};
+                    proof_delete_clause(s, bdef, 3);
                 }
             }
             cliques_encoded++;

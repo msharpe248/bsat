@@ -3055,11 +3055,9 @@ static lbool solve_internal_account_impl(Solver *s, const Lit *assumps, uint32_t
     } else if (!n_assumps && !s->proof_journal && !s->opts.reuse_learnts &&
         s->opts.inprocess && s->opts.preprocess_budget && !s->opts.factor && !s->opts.local_search &&
         s->num_clauses >= 500 && s->num_clauses <= 250000 && !solver_budget_exhausted(s)) {
-        /* 1. Extract large AMO binary cliques via linear Sinz sequential counters (non-proof). */
-        if (!s->proof_file) {
-            if (!solver_amo_cliques(s)) return UNDEF;
-            if (s->error || s->interrupted) return UNDEF;
-        }
+        /* 1. Extract large AMO binary cliques via proof-producing Sinz sequential counters. */
+        if (!solver_amo_cliques(s)) return UNDEF;
+        if (s->error || s->interrupted) return UNDEF;
         /* 2. Run proof-producing Structured Bounded Variable Addition (SBVA) on structured /
          *    binary-rich or dense formulas (emits RAT-valid DRAT proofs when s->proof_file is set). */
         if (s->opts.sbva) {
