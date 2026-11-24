@@ -25,6 +25,7 @@ This document provides an overview of CDCL and inprocessing optimizations implem
 | On-the-fly subsumption & OTFS | ON | - | `--no-subsumption` |
 | Failed literal probing, HBR & pair intersection | ON | - | `--no-probing` |
 | Full inprocessing pipeline (SCC, congruence, Kitten sweep, SSR, gate BVE, vivify, transitive, dynamic GF(2) Gauss, AMO sequential counters) | ON | `--inprocess` | `--no-inprocess` |
+| Structured Bounded Variable Addition (SBVA, non-proof) | ON | `--sbva` | `--no-sbva` |
 | Blocked clause elimination (standalone preproc) | OFF | `--bce` | `--no-bce` |
 | Standalone legacy BVE / SCC / Congruence / Factoring | OFF | `--elim` / `--equiv` / `--congruence` / `--factor` | `--no-elim` |
 | Local search hybridization (standalone WalkSAT) | OFF | `--local-search` | - |

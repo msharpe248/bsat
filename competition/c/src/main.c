@@ -167,6 +167,8 @@ static void print_usage(const char* program) {
     printf("  --factor-budget <n>       Factoring work budget (100000000)\n");
     printf("  --factor-max-variables <n> Fresh-variable limit (1024)\n");
     printf("  --factor-min-gain <n>      Minimum net clause saving per rectangle (1)\n");
+    printf("  --sbva                    Structured Bounded Variable Addition (default: on, non-proof)\n");
+    printf("  --no-sbva                 Disable Structured Bounded Variable Addition\n");
     printf("  --no-probing              Disable failed literal probing\n");
     printf("\n");
     printf("Inprocessing:\n");
@@ -274,6 +276,8 @@ static struct option long_options[] = {
     {"factor-budget", required_argument, 0, 0},
     {"factor-max-variables", required_argument, 0, 0},
     {"factor-min-gain", required_argument, 0, 0},
+    {"sbva", no_argument, 0, 0},
+    {"no-sbva", no_argument, 0, 0},
     {"no-probing",      no_argument,       0, 0},
     {"inprocess",       no_argument,       0, 0},
     {"no-inprocess",    no_argument,       0, 0},
@@ -510,6 +514,10 @@ int main(int argc, char** argv) {
                     opts.equiv_budget = strtoull(optarg, NULL, 10);
                 } else if (strcmp(long_options[option_index].name, "no-probing") == 0) {
                     opts.probing = false;
+                } else if (strcmp(long_options[option_index].name, "sbva") == 0) {
+                    opts.sbva = true;
+                } else if (strcmp(long_options[option_index].name, "no-sbva") == 0) {
+                    opts.sbva = false;
                 } else if (strcmp(long_options[option_index].name, "inprocess") == 0) {
                     opts.inprocess = true;
                 } else if (strcmp(long_options[option_index].name, "no-inprocess") == 0) {

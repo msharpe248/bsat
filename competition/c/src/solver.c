@@ -175,6 +175,7 @@ SolverOpts default_opts(void) {
         .factor_budget = 100000000,
         .factor_max_variables = 1024,
         .factor_min_gain = 1,
+        .sbva = true,
         .chrono = true,
         .chrono_levels = 100,
         .protect_used = true,
@@ -2915,31 +2916,25 @@ static lbool solve_internal_account_impl(Solver *s, const Lit *assumps, uint32_t
         /* 1. First extract large AMO binary cliques via linear Sinz sequential counters. */
         if (!solver_amo_cliques(s)) return UNDEF;
         if (s->error || s->interrupted) return UNDEF;
-        /* 2. Then run bounded clause factoring (BVA) if significant binaries remain. */
-        uint32_t bin_cnt = 0;
-        for (uint32_t i = 0; i < s->num_clauses; ++i) {
-            CRef cr = s->clauses[i];
-            if (cr != INVALID_CLAUSE && !clause_deleted(s->arena, cr) && CLAUSE_SIZE(s->arena, cr) == 2)
-                bin_cnt++;
-        }
-        if (s->num_clauses >= 2000 && s->num_clauses <= 250000 &&
-            (uint64_t)bin_cnt * 2ULL >= (uint64_t)s->num_clauses) {
-            uint32_t old_max_v = s->opts.factor_max_variables;
-            uint32_t old_min_g = s->opts.factor_min_gain;
-            s->opts.factor_max_variables = 4096;
-            s->opts.factor_min_gain = 2;
-            s->work_limit = s->work + 15000000ULL;
-            double started = solver_account_begin(s);
-            solver_factor(s);
-            solver_account_end(s, ACCOUNT_PREPROCESS, started);
-            s->work_limit = 0;
-            s->opts.factor_max_variables = old_max_v;
-            s->opts.factor_min_gain = old_min_g;
-            if (s->error || s->interrupted) return UNDEF;
-            if (s->num_vars + 2 > s->levels_capacity) {
-                uint8_t *seen = calloc((size_t)s->num_vars + 2, 1);
-                if (!seen) { s->error = true; return UNDEF; }
-                free(s->level_seen); s->level_seen = seen; s->levels_capacity = s->num_vars + 2;
+        /* 2. Run Structured Bounded Variable Addition (SBVA) on structured / binary-rich
+         *    or dense formulas (arbitrary clause length with 3-hop structural tie-breaking). */
+        if (s->opts.sbva) {
+            uint32_t bin_cnt = 0;
+            for (uint32_t i = 0; i < s->num_clauses; ++i) {
+                CRef cr = s->clauses[i];
+                if (cr != INVALID_CLAUSE && !clause_deleted(s->arena, cr) && CLAUSE_SIZE(s->arena, cr) == 2)
+                    bin_cnt++;
+            }
+            if ((uint64_t)bin_cnt * 2ULL >= (uint64_t)s->num_clauses ||
+                (s->num_vars <= 5000 && (uint64_t)s->num_clauses >= (uint64_t)s->num_vars * 8ULL)) {
+                double started = solver_account_begin(s);
+                uint32_t max_aux = MIN(2048u, MAX(64u, s->num_vars));
+                if (!solver_sbva(s, 20000000ULL, max_aux, 2u)) {
+                    solver_account_end(s, ACCOUNT_PREPROCESS, started);
+                    return UNDEF;
+                }
+                solver_account_end(s, ACCOUNT_PREPROCESS, started);
+                if (s->error || s->interrupted) return UNDEF;
             }
         }
     }

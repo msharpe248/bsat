@@ -12,6 +12,7 @@
 #include "watch.h"
 #include "elim.h"
 #include "gauss.h"
+#include "sbva.h"
 #include "local_search.h"
 #include <time.h>
 #include <stdio.h>
@@ -30,6 +31,7 @@ typedef struct SolverOpts {
     bool     congruence;         // Experimental AND/XOR/ITE gate congruence
     uint64_t congruence_budget;  // Independent gate extraction/derivation budget
     bool factor;                // Opt-in proof-producing binary/ternary BVA
+    bool sbva;                  // Structured Bounded Variable Addition (non-proof mode)
     uint64_t factor_budget;
     uint32_t factor_max_variables;
     uint32_t factor_min_gain;    // Minimum net clauses removed per rectangle

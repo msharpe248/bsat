@@ -101,8 +101,9 @@ Default one-shot solving uses:
   reduction, O(n) prefix-sharing vivification, and periodic WalkSAT phase
   seeding, plus preprocessing lucky-phase check, bounded congruence closure,
   AMO binary-clique extraction with linear Sinz sequential-counter re-encoding
-  (non-proof mode on `>=80%` binary formulas), and adaptive BVA factoring
-  (non-proof mode). Destructive inprocessing is automatically skipped for
+  (non-proof mode on `>=80%` binary formulas), and Structured Bounded Variable
+  Addition (`--sbva` / `--no-sbva`, arbitrary-length clause factoring with
+  3-hop structural tie-breaking in non-proof mode). Destructive inprocessing is automatically skipped for
   assumption queries, certified journals (`BSAT_CERTIFICATES`), and
   `BSAT_REUSE_LEARNTS` sessions.
 

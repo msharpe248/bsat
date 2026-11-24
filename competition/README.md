@@ -107,7 +107,7 @@ competition/
 | Gate-Aware BVE & SSR/Subsumption | ✅ | ❌ | Min-degree cascading BVE (AND/XOR/ITE) + 64-bit bloom SSR |
 | Prefix-Sharing Vivification & Transitive Reduction | ✅ | ❌ | O(n) prefix vivification + post-BVE binary transitive reduction |
 | Dynamic GF(2) XOR Gaussian Elimination | ✅ | ❌ | Root RREF + in-search Bird/Han-Jiang two-watched-column matrices (non-proof mode) |
-| AMO Clique Re-encoding, BCE & BVA | ✅ | ❌ | Linear Sinz sequential counters (`>=80%` binary, non-proof), BCE (`--bce`), BVA (`--factor`) |
+| AMO Cliques, SBVA & BCE | ✅ | ❌ | Sinz sequential counters (`>=80%` binary), Structured BVA (`--sbva`, 3-hop tie-break), BCE (`--bce`) |
 
 ### Advanced Features
 

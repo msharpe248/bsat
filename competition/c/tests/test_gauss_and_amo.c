@@ -250,9 +250,69 @@ static void test_lit_values_external_mutation_safety(void) {
     solver_free(s);
 }
 
+static void test_sbva_arbitrary_length_sat_and_unsat(void) {
+    /* Construct a structured 4-SAT biclique (A x B) where |A| = 5, |B| = 6
+     * (30 4-clauses of the form (a_i | b_j1 | b_j2 | b_j3)), which naive 2/3-clause
+     * BVA cannot factor, and verify SBVA compresses it cleanly with SAT model check
+     * and UNSAT equivalence! */
+    SolverOpts opts = default_opts();
+    opts.sbva = true;
+    Solver *s = solver_new_with_opts(&opts);
+    const uint32_t NA = 5, NB = 18;
+    for (uint32_t i = 0; i < NA + NB; ++i) solver_new_var(s);
+    /* 5 literals a_1..a_5 crossed with 6 distinct 3-literal clauses -> 30 4-clauses */
+    for (uint32_t a = 1; a <= NA; ++a) {
+        for (uint32_t b = 0; b < 6; ++b) {
+            Lit c[4] = {
+                mkLit(a, false),
+                mkLit(NA + b * 3 + 1, false),
+                mkLit(NA + b * 3 + 2, false),
+                mkLit(NA + b * 3 + 3, false)
+            };
+            solver_add_clause(s, c, 4);
+        }
+    }
+    /* Add extra clauses so num_clauses >= 64 */
+    for (uint32_t b = 0; b < 6; ++b) {
+        for (uint32_t a = 1; a <= NA; ++a) {
+            Lit c[4] = {
+                mkLit(a, true),
+                mkLit(NA + b * 3 + 1, true),
+                mkLit(NA + b * 3 + 2, false),
+                mkLit(NA + b * 3 + 3, true)
+            };
+            solver_add_clause(s, c, 4);
+        }
+    }
+    for (uint32_t i = 1; i <= 6; ++i) {
+        Lit c[2] = {mkLit(i, false), mkLit(i + 1, true)};
+        solver_add_clause(s, c, 2);
+    }
+    uint32_t orig_nv = s->num_vars;
+    assert(solver_sbva(s, 5000000ULL, 64, 2));
+    assert(s->factor_original_vars == orig_nv);
+    assert(s->num_vars > orig_nv);
+    lbool r = solver_solve(s);
+    assert(r == TRUE);
+    assert(solver_check_model(s));
+
+    /* Now force all a_i = FALSE AND all b_{0,1..3} = FALSE -> UNSAT! */
+    for (uint32_t a = 1; a <= NA; ++a) {
+        Lit u = mkLit(a, true);
+        solver_add_clause(s, &u, 1);
+    }
+    for (uint32_t k = 1; k <= 3; ++k) {
+        Lit u = mkLit(NA + k, true);
+        solver_add_clause(s, &u, 1);
+    }
+    assert(solver_solve(s) == FALSE);
+    solver_free(s);
+}
+
 int main(void) {
     test_gauss_mixed_sat_and_unsat();
     test_amo_cliques_sat_and_unsat();
+    test_sbva_arbitrary_length_sat_and_unsat();
     test_lit_values_external_mutation_safety();
     printf("PASS: test_gauss_and_amo\n");
     return 0;
