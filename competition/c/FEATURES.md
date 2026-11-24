@@ -1,448 +1,222 @@
-> Current default states and CLI flags are updated below (November 2026). For the authoritative capability matrix and verification boundaries, see [PRODUCTION_READINESS.md](PRODUCTION_READINESS.md) and `./bin/bsat --help`.
+# BSAT C Solver — Features & CLI Reference
 
-# BSAT C Solver - Feature Implementation Summary
+Authoritative reference of currently implemented solver features, defaults
+(matching `default_opts()` in `src/solver.c`), and command-line flags (matching
+`./bin/bsat --help` in `src/main.c`).
 
-This document provides an overview of CDCL and inprocessing optimizations implemented in the C solver, including current default states and command-line flags.
+---
 
-## Feature Quick Reference
+## Feature Summary
 
 | Feature | Default | Enable | Disable |
-|---------|---------|--------|---------|
+|---|---:|---|---|
 | Alternating Focused (VMTF) / Stable (4-ary VSIDS) | ON | `--alternating` | `--no-alternating` |
 | VMTF in all modes | OFF | `--vmtf` | `--vsids` |
 | LRB/CHB branching | OFF | `--lrb` | `--vsids` |
-| Chronological backtracking | ON | `--chrono` | `--no-chrono` |
+| Chronological backtracking (`--chrono-levels 100`) | ON | `--chrono` | `--no-chrono` |
 | Restart trail reuse | ON | `--reuse-trail` | `--no-reuse-trail` |
-| Glucose EMA restarts (Focused) / Reluctant (Stable) | ON | `--glucose-restart-ema` | `--no-restarts` / `--luby-restart` |
-| Phase saving | ON | - | `--no-phase-saving` |
-| 6-step target rephasing | ON | - | `--no-rephase` |
-| Random phase | OFF | `--random-phase` | `--no-random-phase` |
-| 3-state binary-aware clause minimization | ON | - | `--no-minimize` |
+| Glucose EMA restarts (Focused) / Reluctant (Stable) | ON | `--glucose-restart-ema` | `--luby-restart` / `--no-restarts` |
+| Phase saving | ON | — | `--no-phase-saving` |
+| 6-step Kissat-style target rephasing | ON | — | `--no-rephase` |
+| Random phase diversification | OFF | `--random-phase` | `--no-random-phase` |
+| Circular replacement watch search | ON | — | `--no-circular` |
+| 3-state binary-aware clause minimization | ON | — | `--no-minimize` |
 | Block-level all-UIP shrinking | ON | `--shrink` | `--no-shrink` |
 | Binary-resolution minimization | ON | `--binary-minimize` | `--no-binary-minimize` |
 | Dynamic LBD updates | ON | `--dynamic-lbd` | `--no-dynamic-lbd` |
 | 3-tier used-clause retention | ON | `--protect-used` | `--no-protect-used` |
-| On-the-fly subsumption & OTFS | ON | - | `--no-subsumption` |
-| Failed literal probing, HBR & pair intersection | ON | - | `--no-probing` |
-| Full inprocessing pipeline (SCC, congruence, Kitten sweep, global backbone, SSR, gate BVE, vivify, transitive, ProbSAT phase seeding, dynamic GF(2) Gauss, AMO sequential counters) | ON | `--inprocess` | `--no-inprocess` |
-| Exact syntactic symmetry breaking (BreakID-style, non-proof) | ON | `--sym` | `--no-sym` |
-| Structured Bounded Variable Addition (SBVA, non-proof) | ON | `--sbva` | `--no-sbva` |
-| Frozen-variable protection (`solver_freeze` / `solver_melt`) | API | `solver_freeze(s, v)` | `solver_melt(s, v)` |
-| Blocked clause elimination (standalone preproc) | OFF | `--bce` | `--no-bce` |
+| On-the-fly subsumption & OTFS | ON | — | `--no-subsumption` |
+| Failed-literal probing, HBR & probing intersection | ON | — | `--no-probing` |
+| Tick-budgeted inprocessing pipeline (SCC, congruence, Kitten sweep, global backbone, SSR, gate BVE, transitive reduction, vivify, ProbSAT seeding, dynamic GF(2) Gauss, AMO sequential counters) | ON | `--inprocess` | `--no-inprocess` |
+| Exact syntactic symmetry breaking (non-proof) | ON | `--sym` | `--no-sym` |
+| Structured Bounded Variable Addition (non-proof) | ON | `--sbva` | `--no-sbva` |
+| Standalone blocked clause elimination (BCE) | OFF | `--bce` | `--no-bce` |
 | Standalone legacy BVE / SCC / Congruence / Factoring | OFF | `--elim` / `--equiv` / `--congruence` / `--factor` | `--no-elim` |
-| Local search hybridization (standalone WalkSAT) | OFF | `--local-search` | - |
+| Standalone WalkSAT local search hybridization | OFF | `--local-search` | — |
 | Multi-core clause-sharing portfolio | 1 thread | `-j <n>` / `--threads <n>` | `-j 1` |
-| DRAT proof logging (text / binary) | OFF | `--proof <file>` / `--binary-proof` | - |
+| Focused-then-alternating sequential portfolio | OFF | `--portfolio <sec>` | — |
+| DRAT proof logging (text / binary) | OFF | `--proof <file>` / `--binary-proof` | — |
+| Frozen-variable protection (C API) | API | `solver_freeze(s, v)` | `solver_melt(s, v)` |
 
 ---
 
-## Core Algorithm: CDCL (Conflict-Driven Clause Learning)
+## Core Engine Components
 
-### 1. **VSIDS (Variable State Independent Decaying Sum)** - DEFAULT: ON
-- **Purpose**: Intelligently choose which variable to assign next
-- **Implementation**: Binary max-heap ordered by activity scores
-- **Activity decay**: 0.95 (configurable via `--var-decay`)
-- **Bump strategy**: Increase activity for variables in conflict clauses
+### 1. Propagation & Memory Layout (`src/solver.c`, `src/arena.c`, `src/watch.c`)
+- **Two-watched literals** with 16-byte `ClauseHeader`, blocking literals,
+  binary-first watch partitioning, implicit/tagged binary watch dispatch,
+  1-ahead long-clause prefetching, and two-pass circular watch scanning.
+- **Literal-indexed `lit_values[]`** shadow byte array during CDCL search for
+  branchless single-load literal evaluation, backed by authoritative `values[]`
+  and 4-byte `Trail` entries.
+- **Forwarding arena garbage collection** (`solver_collect_garbage`) with
+  bounded copy checkpoints and O(1) lazy watch sweeping.
 
-**Configuration:**
-```bash
---vsids              # Use VSIDS (default)
---var-decay <f>      # Activity decay factor (default: 0.95)
---var-inc <f>        # Activity increment (default: 1.0)
-```
+### 2. Branching, Restarts & Phases (`src/solver.c`, `src/vmtf.c`)
+- **Mode alternation** (`--alternating`, default ON): alternates tick-budgeted
+  **Focused** (VMTF queue, Biere–Fröhlich LBD EMA restarts, trail reuse, saved
+  phases) and **Stable** (4-ary max-heap VSIDS with dynamic decay `0.80 → 0.95`,
+  reluctant doubling restarts, target phases) modes.
+- **Reason-side bumping**: boosts non-learned antecedents during conflict
+  analysis on larger formulas (`num_vars >= 300`).
+- **6-step target rephasing**: cycles best-trail target, inverted, original, and
+  flipped polarities every `--rephase-interval` (default `1000`) conflicts.
+- **Alternative heuristics**: pure VMTF (`--vmtf`), recency-weighted LRB/CHB
+  (`--lrb`), pure VSIDS (`--no-alternating --vsids`), sliding-window Glucose
+  restarts (`--glucose-restart-avg`), and Luby restarts (`--luby-restart`).
 
-### 2. **LRB/CHB (Learning Rate Branching)** - DEFAULT: OFF
-- **Purpose**: Alternative to VSIDS based on learning rate
-- **Implementation**: Hybrid VSIDS+LRB with recency-weighted bumps
-- **Strategy**: Variables recently involved in conflicts get higher weight
-- **Reference**: Liang et al. (2016) - "Learning Rate Based Branching Heuristic"
+### 3. Conflict Analysis & Clause Database (`src/solver.c`, `src/minimize.c`, `src/reduction_sort.c`)
+- **1-UIP conflict analysis** with **chronological backtracking** (`--chrono`,
+  threshold `--chrono-levels 100`) and **on-the-fly self-subsumption (OTFS)**.
+- **3-stage learned clause reduction**: 3-state binary-aware DFS minimization,
+  block-level all-UIP shrinking (`--shrink`), and binary-resolution minimization
+  (`--binary-minimize`).
+- **3-tier dynamic clause database**: permanent Tier-1 glue clauses
+  (`LBD <= 2`), used-protected Tier-2 clauses (`LBD <= 6`, `--protect-used`),
+  and LBD/activity-ranked Tier-3 reduction with deterministic portable sorting
+  (`--reduce-interval 1000`, `--reduce-increment 100`, `--reduce-fraction 0.5`).
 
-**Configuration:**
-```bash
---lrb                # Enable LRB/CHB branching
---vsids              # Disable LRB, use VSIDS (default)
-```
+### 4. Inprocessing Engine (`src/inprocess.c`, `src/congruence.c`, `src/elim.c`)
+- **Probing, HBR & Probing Intersection**: root-prioritized failed-literal
+  probing, hyper-binary resolution, and RUP-certified double-lookahead backbone
+  unit extraction.
+- **Gate Congruence & Tarjan SCC**: preprocessing and periodic 2-input
+  AND/XOR/ITE + 3..8-input N-ary AND congruence closure paired with in-place
+  Tarjan SCC equivalence substitution.
+- **Global Gate-DAG Simulation & Mini-Kitten Sweeping**: 64-bit bit-parallel
+  gate-DAG simulation to identify cross-cone equivalence/unit candidates, proven
+  via an embedded CDCL Mini-Kitten sweeper with RUP lemma projection.
+- **Model-Guided Global Backbone**: probes candidate backbone literals guided by
+  saved phases/models to derive RUP-verified root units.
+- **Forward Subsumption, SSR, Gate-Aware BVE & Transitive Reduction**: 64-bit
+  signature-filtered subsumption/SSR, cascading min-degree BVE with AND/XOR/ITE
+  gate extraction and compact reconstruction records, followed by post-BVE
+  binary transitive reduction.
+- **Prefix-Sharing Vivification**: O(n) frequency-ordered prefix-sharing clause
+  strengthening on irredundant and Tier-1/Tier-2 learned clauses.
+- **ProbSAT Phase Seeding**: precomputed `(1 + break)^(-2.3)` polynomial break
+  weights with zero-break fast path, seeding saved polarities and target phases
+  during preprocessing warmup (4,000 flips on `<= 10k` vars / `<= 40k` clauses)
+  and periodic inprocessing rounds (20,000 flips).
 
-**Impact**: Different behavior on different instances - neither universally better.
+### 5. Specialized Non-Proof Reasoning (`src/gauss.c`, `src/symmetry.c`, `src/sbva.c`)
+Automatically skipped under `--proof`, `BSAT_CERTIFICATES`, assumptions, or
+`BSAT_REUSE_LEARNTS`:
+- **Dynamic GF(2) Gaussian Elimination (`src/gauss.c`)**: 2..7-var XOR
+  extraction, subsumed/strengthened XOR recovery, Tseitin XOR-chain stitching,
+  connected-component root Gauss-Jordan RREF, and live Bird/Han-Jiang
+  two-watched-column matrices during search with zero-undo backtracking, BVE
+  protection, and temporary 1-UIP reason clauses.
+- **Exact Syntactic Symmetry Breaking (`--sym`, `src/symmetry.c`)**: exact
+  clause hash set over level-0-reduced irredundant clauses, verified involution
+  automorphisms, disjoint variable transposition chains, and BreakID-style
+  matrix row-interchange lex-leader constraints.
+- **AMO Cliques & SBVA (`src/inprocess.c`, `--sbva` / `src/sbva.c`)**: Sinz
+  sequential-counter re-encoding for `>=80%`-binary formulas (`<= 250k` clauses)
+  and arbitrary-length Structured BVA with 3-hop structural tie-breaking.
 
-### 3. **Two-Watched Literals** - ALWAYS ON
-- **Purpose**: O(1) propagation overhead per clause
-- **Implementation**: Each clause watched by exactly 2 literals
-- **Watch update**: Only when a watched literal becomes false
-
-### 4. **First-UIP Clause Learning** - ALWAYS ON
-- **Purpose**: Learn high-quality clauses from conflicts
-- **Strategy**: First Unique Implication Point (asserting clause)
-- **LBD tracking**: Literal Block Distance for clause quality measurement
-
----
-
-## Phase Management
-
-### 5. **Phase Saving** - DEFAULT: ON
-- **Purpose**: Remember variable polarities across restarts
-- **Strategy**: Save last assigned polarity for each variable
-- **Benefit**: Quickly return to promising search areas
-
-**Configuration:**
-```bash
---no-phase-saving    # Disable phase saving
-```
-
-### 6. **Target Phase Rephasing (Kissat-style)** - DEFAULT: ON
-- **Purpose**: Escape local search areas by resetting phases
-- **Strategy**: Track best assignment seen (most variables assigned before conflict)
-- **Action**: Periodically reset saved phases to best phases
-- **Interval**: Every 1000 conflicts (configurable)
-- **Reference**: Biere et al. (2020) - Kissat solver
-
-**Configuration:**
-```bash
---no-rephase             # Disable rephasing
---rephase-interval <n>   # Conflicts between rephases (default: 1000)
-```
-
-**Impact**: Up to 58% fewer conflicts on some instances.
-
-### 7. **Random Phase Selection** - DEFAULT: OFF
-- **Purpose**: Escape local minima and prevent stuck states
-- **Probability**: 1% when explicitly enabled
-- **Policy**: Fixed, reproducible probability; no stuck-state adaptation in the C implementation
-
-**Configuration:**
-```bash
---random-phase           # Enable random phase (default: off)
---random-prob <f>        # Random phase probability (default: 0.01)
-```
-
----
-
-## Restart Strategies
-
-### 8. **Glucose Adaptive Restarts (EMA)** - DEFAULT: ON
-- **Purpose**: Restart when learning quality degrades
-- **Strategy**: Compare fast vs slow exponential moving averages of LBD
-- **Restart when**: `fast_MA * K > slow_MA`, after the minimum conflicts since the last restart
-- **Implementation**: See [the restart guide](docs/RESTARTS_AND_CLAUSE_MANAGEMENT.md) for the C formulas and interval gates
-
-**Configuration:**
-```bash
---glucose-restart        # Enable Glucose restarts (default)
---glucose-restart-ema    # LBD exponential moving averages
---glucose-fast-alpha <f> # Fast MA decay (default: 0.8)
---glucose-slow-alpha <f> # Slow MA decay (default: 0.9999)
---glucose-min-conflicts <n>  # Min conflicts since last restart (default: 100)
---glucose-k <f>          # Shared EMA/AVG threshold multiplier (default: 0.8)
-```
-
-### 9. **Glucose Adaptive Restarts (AVG)** - DEFAULT: OFF
-- **Purpose**: Compare recent-window and cumulative learned-clause quality
-- **Strategy**: Sliding window averaging
-- **Restart when**: Short-term average * K > cumulative average, after both interval and window gates
-
-**Configuration:**
-```bash
---glucose-restart-avg    # Enable sliding-window mode
---glucose-window-size <n> # Window size (default: 50)
---glucose-k <f>          # Threshold multiplier (default: 0.8)
-```
-
-### 10. **Luby Sequence Restarts** - DEFAULT: OFF
-- **Purpose**: Alternate short and long conflict intervals
-- **Sequence**: 1, 1, 2, 1, 1, 2, 4, 1, 1, 2, 1, 1, 2, 4, 8, ...
-
-**Configuration:**
-```bash
---luby-restart           # Select the Luby policy
---luby-unit <n>          # Base conflict interval (default: 100)
---no-restarts            # Disable all restarts
-```
-
----
-
-## Clause Management
-
-### 11. **MiniSat-Style Clause Minimization** - DEFAULT: ON
-- **Purpose**: Remove redundant literals from learned clauses
-- **Strategy**: Recursive analysis with abstract level pruning
-- **Results**: **67% literal reduction** on test instances
-
-**Configuration:**
-```bash
---no-minimize            # Disable minimization
-```
-
-### 12. **On-the-Fly Backward Subsumption** - DEFAULT: ON
-- **Purpose**: Remove redundant clauses during learning
-- **Strategy**: Check if new learned clause subsumes existing clauses
-- **Results**: **73% subsumption rate** on UNSAT instances
-
-**Configuration:**
-```bash
---no-subsumption         # Disable subsumption
-```
-
-### 13. **LBD-Based Clause Database Reduction** - DEFAULT: ON
-- **Purpose**: Limit memory and focus on high-quality clauses
-- **Strategy**: LBD-based sorting + activity tiebreaking
-- **Keep**: Best 50% of learned clauses
-- **Protection**: Never delete glue clauses (LBD <= 2)
-
-**Configuration:**
-```bash
---max-lbd <n>            # Max LBD for keeping clauses (default: 30)
---glue-lbd <n>           # Glue clause threshold (default: 2)
---reduce-fraction <f>    # Fraction to keep (default: 0.5)
---reduce-interval <n>    # Conflicts between reductions (default: 2000)
-```
-
----
-
-## Preprocessing
-
-### 14. **Failed Literal Probing** - DEFAULT: ON
-- **Purpose**: Discover implied unit clauses
-- **Strategy**: For each variable, try both polarities and check for conflict
-- **When**: Called at start before main CDCL loop
-
-**Configuration:**
-```bash
---no-probing             # Disable probing
-```
-
-### 15. **Blocked Clause Elimination (BCE)** - DEFAULT: OFF
-- **Purpose**: Remove blocked clauses before search
-- **Theory**: A clause is blocked if all resolvents are tautologies
-- **Results**: 10-20% clause elimination on typical instances
-
-**Configuration:**
-```bash
---bce                    # Enable BCE (experimental)
---no-bce                 # Disable BCE (default)
-```
-
-### 16. **Bounded Variable Elimination (BVE)** - DEFAULT: OFF
-- **Purpose**: SatELite-style variable elimination
-- **Strategy**: Resolve away variables if resolvent count doesn't increase
-- **Model Extension**: Reconstructs eliminated variables after solving
-- **Reference**: Een & Biere (2005) - SatELite
-
-**Configuration:**
-```bash
---elim                   # Enable BVE (experimental)
---no-elim                # Disable BVE (default)
---elim-max-occ <n>       # Max occurrences to consider (default: 10)
---elim-grow <n>          # Max clause growth allowed (default: 0)
-```
-
----
-
-## Inprocessing
-
-### 17. **Vivification** - DEFAULT: OFF
-- **Purpose**: Strengthen clauses during search
-- **Strategy**: Check if literals can be proven redundant via propagation
-- **When**: Runs periodically during search
-
-**Configuration:**
-```bash
---inprocess              # Enable vivification
---inprocess-interval <n> # Conflicts between runs (default: 10000)
-```
-
----
-
-## Local Search Hybridization
-
-### 18. **WalkSAT Local Search** - DEFAULT: OFF
-- **Purpose**: Complement CDCL with local search for SAT instances
-- **Strategy**: WalkSAT with configurable noise parameter
-- **When**: Periodically called during CDCL search
-- **Benefits**: Can find SAT solutions faster than pure CDCL
-
-**Configuration:**
-```bash
---local-search           # Enable local search
---ls-interval <n>        # Conflicts between calls (default: 5000)
---ls-max-flips <n>       # Max flips per call (default: 100000)
---ls-noise <f>           # Noise parameter 0.0-1.0 (default: 0.5)
-```
-
-**Impact**: Reduced conflicts on SAT instances (e.g., 500 vs 2114).
-
----
-
-## Proof Logging
-
-### 19. **DRAT Proof Logging** - DEFAULT: OFF
-- **Purpose**: Generate verifiable proofs for UNSAT instances
-- **Format**: DRAT (Deletion Resolution Asymmetric Tautology)
-- **Usage**: Verify with drat-trim or other DRAT checkers
-
-**Configuration:**
-```bash
---proof <file>           # Write DRAT proof to file
---binary-proof           # Use binary format (more compact)
-```
-
-**Verification:**
-```bash
-./bin/bsat --proof proof.drat instance.cnf
-drat-trim instance.cnf proof.drat
-# Expected: s VERIFIED
-```
-
----
-
-## Additional Features
-
-### 20. **Chronological Backtracking** - ALWAYS ON
-- **Purpose**: Preserve more learned information
-- **Strategy**: Backtrack one level at a time checking for unit clauses
-
-### 21. **Signal-Based Progress Monitoring** - ALWAYS ON
-- **Purpose**: Monitor solver progress without interrupting
-- **Method**: Send SIGUSR1 to get current statistics
-
-**Usage:**
-```bash
-./bin/bsat instance.cnf &
-kill -USR1 <pid>         # Get progress update
-```
+### 6. Parallel Portfolio & Operational Controls (`src/portfolio.c`, `src/main.c`, `src/bsat.c`)
+- **Multi-core portfolio (`-j N` / `--threads N`)**: runs `N` isolated worker
+  threads (`1..64`); Worker 0 runs full BSAT (imports only) while Workers
+  `1..N-1` run diversified logically-equivalent profiles sharing clauses of
+  `size <= 4` via a TSan-clean ring buffer with atomic cancellation on first
+  winner.
+- **Frozen-variable API**: `solver_freeze(s, v)`, `solver_melt(s, v)`, and
+  `solver_is_frozen(s, v)` protect interface variables from BVE, SCC
+  substitution, BCE, and symmetry breaking (persisting across rebuilds).
+- **Progress monitoring**: send `SIGUSR1` to the CLI process to print live
+  statistics without stopping search.
 
 ---
 
 ## Complete Command-Line Reference
 
-### Output Control
-```bash
--h, --help               # Show help message
--v, --verbose            # Verbose runtime diagnostics (default: OFF)
-    --debug              # Debug output (default: OFF)
--q, --quiet              # Suppress output except result (default: OFF)
--s, --stats              # Print statistics (default: ON)
+### Output & Diagnostics
+```sh
+-h, --help                    Show help message
+-v, --verbose                 Verbose runtime diagnostics (same as BSAT_VERBOSE=1)
+    --debug                   Debug output (same as DEBUG_CDCL=1)
+-q, --quiet                   Suppress output except result
+-s, --stats                   Print statistics (default: ON)
+    --accounting              Report inclusive phase CPU and owned memory capacities
 ```
 
-### Resource Limits
-```bash
--c, --conflicts <n>      # Max conflicts (default: unlimited)
--d, --decisions <n>      # Max decisions (default: unlimited)
--t, --time <sec>         # Time limit in seconds (default: unlimited)
+### Resource Limits & Parallelism
+```sh
+-c, --conflicts <n>           Maximum conflicts (default: unlimited)
+-d, --decisions <n>           Maximum decisions (default: unlimited)
+-t, --time <sec>              CPU time limit (wall time under -j N; default: unlimited)
+-j, --threads <n>             Parallel portfolio threads, 1..64 (default: 1)
+    --portfolio <sec>         Sequential focused slice then fresh alternating search
+    --seed <n>                Deterministic per-solver random seed (default: 1)
 ```
 
-### Branching Heuristic
-```bash
---vsids                  # Use VSIDS (default: ON)
---lrb                    # Use LRB/CHB (default: OFF)
---var-decay <f>          # VSIDS decay factor (default: 0.95)
---var-inc <f>            # VSIDS increment (default: 1.0)
-```
-
-### Restart Parameters
-```bash
---restart-first <n>      # First restart interval (default: 100)
---restart-inc <f>        # Restart multiplier (default: 1.5)
---glucose-restart        # Glucose EMA restarts (default: ON)
---glucose-restart-ema    # Glucose EMA mode (default: ON)
---glucose-restart-avg    # Glucose AVG mode (default: OFF)
---no-restarts            # Disable all restarts
-```
-
-### Glucose Tuning
-```bash
---glucose-fast-alpha <f>     # Fast MA decay (default: 0.8)
---glucose-slow-alpha <f>     # Slow MA decay (default: 0.9999)
---glucose-min-conflicts <n>  # Min conflicts (default: 100)
---glucose-window-size <n>    # AVG window size (default: 50)
---glucose-k <f>              # AVG threshold (default: 0.8)
-```
-
-### Phase Management
-```bash
---no-phase-saving        # Disable phase saving (default: ON)
---random-phase           # Enable random phase (default: OFF)
---random-prob <f>        # Random probability (default: 0.01)
---no-rephase             # Disable rephasing (default: ON)
---rephase-interval <n>   # Rephase interval (default: 1000)
+### Branching, Restarts & Phases
+```sh
+--alternating / --no-alternating       Focused (VMTF) / Stable (VSIDS) alternation (default: ON)
+--vmtf / --lrb / --vsids               Force VMTF, LRB/CHB, or VSIDS
+--var-decay <f>                        VSIDS decay factor (default: 0.95)
+--var-inc <f>                          VSIDS initial increment (default: 1.0)
+--chrono / --no-chrono                 Chronological backtracking (default: ON)
+--chrono-levels <n>                    Backjump gap threshold (default: 100)
+--reuse-trail / --no-reuse-trail       Restart trail prefix reuse (default: ON)
+--glucose-restart-ema                  LBD EMA restarts (default: ON)
+--glucose-restart-avg                  Sliding-window LBD restarts (default: OFF)
+--glucose-fast-alpha <f>               Fast EMA decay (default: 32/33 ≈ 0.970)
+--glucose-slow-alpha <f>               Slow EMA decay (default: 0.99999)
+--glucose-min-conflicts <n>            Min conflicts between restarts (default: 2)
+--glucose-k <f>                        Threshold multiplier (default: 10/11 ≈ 0.909)
+--glucose-window-size <n>              AVG window size (default: 50)
+--luby-restart / --no-luby-restart     Luby sequence restarts (default: OFF)
+--luby-unit <n>                        Base Luby unit (default: 100)
+--restart-first <n>                    First geometric interval (default: 100)
+--restart-inc <f>                      Geometric multiplier (default: 1.5)
+--no-restarts                          Disable restarts
+--no-phase-saving                      Disable phase saving (default: ON)
+--random-phase / --no-random-phase     Random phase override (default: OFF)
+--random-prob <f>                      Random phase probability (default: 0.01)
+--no-rephase                           Disable target rephasing (default: ON)
+--rephase-interval <n>                 Conflicts between rephases (default: 1000)
 ```
 
 ### Clause Management
-```bash
---max-lbd <n>            # Max LBD (default: 30)
---glue-lbd <n>           # Glue threshold (default: 2)
---reduce-fraction <f>    # Keep fraction (default: 0.5)
---reduce-interval <n>    # Reduce interval (default: 2000)
---no-minimize            # Disable minimization (default: ON)
---no-subsumption         # Disable subsumption (default: ON)
+```sh
+--max-lbd <n>                          Max LBD kept (default: 30)
+--glue-lbd <n>                         Glue clause LBD threshold (default: 2)
+--reduce-fraction <f>                  Fraction kept on reduction (default: 0.5)
+--reduce-interval <n>                  Initial reduction interval (default: 1000)
+--reduce-increment <n>                 Interval growth per reduction (default: 100)
+--protect-used / --no-protect-used     Tier-2 used-clause retention (default: ON)
+--dynamic-lbd / --no-dynamic-lbd       Refresh LBD during analysis (default: ON)
+--shrink / --no-shrink                 Block-level all-UIP shrinking (default: ON)
+--binary-minimize / --no-binary-minimize  Binary-resolution minimization (default: ON)
+--iterative-minimize                   Binary-aware DFS minimization flag
+--minimize-budget <n>                  Work cap per minimization (default: 10000)
+--no-minimize                          Disable clause minimization
+--no-subsumption                       Disable on-the-fly subsumption
+--subsume-budget <n>                   Subsumption candidate cap (default: 128)
+--no-circular                          Disable circular watch scanning
 ```
 
-### Preprocessing
-```bash
---no-bce                 # Disable BCE (default: OFF)
---elim                   # Enable BVE (default: OFF)
---no-elim                # Disable BVE (default)
---elim-max-occ <n>       # BVE max occurrences (default: 10)
---elim-grow <n>          # BVE max growth (default: 0)
---no-probing             # Disable probing (default: ON)
+### Preprocessing, Inprocessing, Local Search & Proofs
+```sh
+--inprocess / --no-inprocess           Full tick-budgeted inprocessing (default: ON)
+--inprocess-interval <n>               Conflicts between rounds (default: 10000)
+--preprocess-budget <n>                Literal-work budget; 0 disables (default: 1000000)
+--sbva / --no-sbva                     Structured BVA in non-proof mode (default: ON)
+--sym / --no-sym                       Exact syntactic symmetry breaking (default: ON)
+--no-probing                           Disable failed-literal probing
+--bce / --no-bce                       Standalone BCE preprocessing (default: OFF)
+--elim / --no-elim                     Standalone legacy BVE (default: OFF)
+--elim-max-occ <n> / --elim-grow <n>   Legacy BVE bounds (defaults: 10 / 0)
+--equiv / --equiv-budget <n>           Standalone SCC pass (default: OFF / 1000000)
+--congruence / --congruence-budget <n> Standalone congruence pass (default: OFF / 100000000)
+--factor / --factor-budget <n>         Proof-producing binary/ternary BVA (default: OFF)
+--factor-max-variables <n>             Fresh-variable cap for --factor (default: 1024)
+--factor-min-gain <n>                  Min net clause saving for --factor (default: 1)
+--local-search                         Standalone WalkSAT hybridization (default: OFF)
+--ls-interval <n> / --ls-max-flips <n> WalkSAT interval / flip cap (5000 / 100000)
+--ls-noise <f> / --ls-save-phases      WalkSAT noise (0.5) & phase feedback
+--proof <file>                         Write DRAT proof to file
+--binary-proof                         Use binary DRAT format
 ```
-
-### Inprocessing
-```bash
---inprocess              # Enable vivification (default: OFF)
---inprocess-interval <n> # Vivification interval (default: 10000)
-```
-
-### Local Search
-```bash
---local-search           # Enable local search (default: OFF)
---ls-interval <n>        # LS interval (default: 5000)
---ls-max-flips <n>       # Max flips (default: 100000)
---ls-noise <f>           # Noise parameter (default: 0.5)
-```
-
-### Proof Logging
-```bash
---proof <file>           # Write DRAT proof (default: OFF)
---binary-proof           # Binary format (default: OFF)
-```
-
----
-
-## Performance Results
-
-### Test Suite: 53 Medium/Hard Instances
-- **All tests pass**: 53/53 passed
-- **Correctness**: All SAT/UNSAT results verified
-- **DRAT proofs**: All UNSAT proofs verify
-
-### Performance vs Python CDCL
-
-| Test Set | C Solver | Python Solver | Speedup |
-|----------|----------|---------------|---------|
-| 5 hard instances | 0.010s | 2.258s | **226x** |
-| 53 all instances | 0.082s | ~60s | **700x+** |
-
-### Feature Impact
-
-| Feature | Impact |
-|---------|--------|
-| Clause minimization | 67% literal reduction |
-| On-the-fly subsumption | 73% clauses subsumed |
-| Target rephasing | Up to 58% fewer conflicts |
-| Local search | Instant SAT solutions |
-
----
-
-## References
-
-- **MiniSat**: Eén & Sörensson (2003)
-- **Glucose**: Audemard & Simon (2009)
-- **Chaff/VSIDS**: Moskewicz et al. (2001)
-- **MapleSat/LRB**: Liang et al. (2016)
-- **Lingeling**: Biere (2010-2020)
-- **Kissat**: Biere et al. (2020)
-- **SatELite**: Eén & Biere (2005)
-
----
-
-**Last Updated**: December 2025 | **Version**: 1.2

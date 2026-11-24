@@ -1,14 +1,30 @@
-# BSAT - Boolean Satisfiability Package
+# BSAT - Boolean Satisfiability Package & C Competition Solver
 
-A Python package for learning and solving Boolean satisfiability (SAT) problems using Conjunctive Normal Form (CNF).
+BSAT combines a high-performance **C11 CDCL competition SAT solver** (`competition/c/`) with a **Python SAT library and research suite** (`src/bsat/`, `research/`) for learning, encoding, and experimenting with Boolean satisfiability (SAT).
 
-The actively developed [C implementation](competition/c/README.md) has an opaque
-embedding API, incremental certificates and independent validation. See its
-[production-readiness gates](competition/c/PRODUCTION_READINESS.md) and
-[current milestones](competition/c/SEARCH_USE_MILESTONES.md); its
-`1.0.0-dev` designation does not claim deployment certification.
+## C Competition Solver (`competition/c/`)
 
-## Features
+The actively developed [C solver](competition/c/README.md) (`bsat`) is a standalone C11/POSIX CDCL solver, DRAT proof producer, and embeddable library (opaque ABI v1 `bsat.h` + IPASIR 1.0):
+
+- **Core CDCL & BCP**: Tick-based Focused (VMTF + Biere–Fröhlich LBD EMA restarts + trail reuse) / Stable (4-ary heap VSIDS + reluctant doubling + target phases) alternation, chronological backtracking, literal-indexed `lit_values[]` BCP with binary-first watch lists and 1-ahead prefetching, 3-state minimization, block-level all-UIP shrinking, OTFS, dynamic LBD updates, and a 3-tier learned clause database.
+- **Inprocessing & Reasoning**: Root cleanup, failed-literal probing + HBR + RUP-certified double-lookahead probing intersection, gate congruence (2-input AND/XOR/ITE + 3..8-input N-ary AND), in-place Tarjan SCC, global 64-bit gate-DAG simulation + dual-cone Mini-Kitten CDCL SAT sweeping, model-guided global backbone extraction, forward subsumption/SSR, gate-aware BVE with model reconstruction, binary transitive reduction, prefix-sharing vivification, and Kissat-style ProbSAT `(1+break)^(-2.3)` phase seeding.
+- **Specialized Non-Proof Engines** (automatically disabled under `--proof` / `BSAT_CERTIFICATES`): Dynamic in-search Bird/Han-Jiang GF(2) Gaussian elimination (2..7-var XOR extraction, subsumed XOR recovery, Tseitin chain stitching, root RREF), BreakID-style exact syntactic symmetry breaking (`--sym`), AMO clique Sinz sequential-counter re-encoding, and Structured Bounded Variable Addition (`--sbva`).
+- **Multi-Core & Incremental**: Parallel clause-sharing portfolio (`-j <N>` / `--threads <N>`), frozen-variable protection (`solver_freeze`/`solver_melt`), opt-in `BSAT_REUSE_LEARNTS`, and retained-session `BSAT_CERTIFICATES` query export.
+- **Wide On-Demand Testing**: Fetch and verify hundreds to thousands of SATLIB, SAT Competition 2023–2025, and synthetic structured instances on demand via `make -C competition/c wide-fetch` / `wide-test`.
+
+```bash
+cd competition/c
+make all test                          # Build release binary and run 67 unit tests
+./bin/bsat input.cnf                   # Solve a DIMACS CNF file
+./bin/bsat -j 4 input.cnf              # 4-thread clause-sharing portfolio
+./bin/bsat --proof out.drat input.cnf  # Emit DRAT proof for UNSAT verification
+```
+
+See [competition/c/README.md](competition/c/README.md), [competition/c/FEATURES.md](competition/c/FEATURES.md), [competition/c/API_CONTRACT.md](competition/c/API_CONTRACT.md), and [competition/c/PRODUCTION_READINESS.md](competition/c/PRODUCTION_READINESS.md) for complete documentation (`1.0.0-dev` does not claim deployment-specific certification).
+
+---
+
+## Python Package Features
 
 ### Production Solvers
 ✅ **CNF Data Structures**: Clean, Pythonic representation (Literal, Clause, CNFExpression)
