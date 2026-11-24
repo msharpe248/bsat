@@ -1,27 +1,34 @@
-> Historical development snapshot. Current behavior and validation status are documented in [PRODUCTION_READINESS.md](PRODUCTION_READINESS.md); older defaults and production-readiness claims below are not current.
+> Current default states and CLI flags are updated below (November 2026). For the authoritative capability matrix and verification boundaries, see [PRODUCTION_READINESS.md](PRODUCTION_READINESS.md) and `./bin/bsat --help`.
 
 # BSAT C Solver - Feature Implementation Summary
 
-This document provides a comprehensive overview of all CDCL optimizations implemented in the C solver, including default states and command-line flags.
+This document provides an overview of CDCL and inprocessing optimizations implemented in the C solver, including current default states and command-line flags.
 
 ## Feature Quick Reference
 
 | Feature | Default | Enable | Disable |
 |---------|---------|--------|---------|
-| VSIDS branching | ON | `--vsids` | `--lrb` |
+| Alternating Focused (VMTF) / Stable (4-ary VSIDS) | ON | `--alternating` | `--no-alternating` |
+| VMTF in all modes | OFF | `--vmtf` | `--vsids` |
 | LRB/CHB branching | OFF | `--lrb` | `--vsids` |
-| Glucose EMA restarts | ON | `--glucose-restart-ema` | `--no-restarts` |
+| Chronological backtracking | ON | `--chrono` | `--no-chrono` |
+| Restart trail reuse | ON | `--reuse-trail` | `--no-reuse-trail` |
+| Glucose EMA restarts (Focused) / Reluctant (Stable) | ON | `--glucose-restart-ema` | `--no-restarts` / `--luby-restart` |
 | Phase saving | ON | - | `--no-phase-saving` |
-| Target rephasing | ON | - | `--no-rephase` |
-| Random phase | ON | `--random-phase` | - |
-| Clause minimization | ON | - | `--no-minimize` |
-| On-the-fly subsumption | ON | - | `--no-subsumption` |
-| Failed literal probing | ON | - | `--no-probing` |
-| Blocked clause elimination | OFF | `--bce` | `--no-bce` |
-| Bounded variable elimination | OFF | `--elim` | `--no-elim` |
-| Vivification inprocessing | OFF | `--inprocess` | - |
-| Local search | OFF | `--local-search` | - |
-| DRAT proof logging | OFF | `--proof <file>` | - |
+| 6-step target rephasing | ON | - | `--no-rephase` |
+| Random phase | OFF | `--random-phase` | `--no-random-phase` |
+| 3-state binary-aware clause minimization | ON | - | `--no-minimize` |
+| Block-level all-UIP shrinking | ON | `--shrink` | `--no-shrink` |
+| Binary-resolution minimization | ON | `--binary-minimize` | `--no-binary-minimize` |
+| Dynamic LBD updates | ON | `--dynamic-lbd` | `--no-dynamic-lbd` |
+| 3-tier used-clause retention | ON | `--protect-used` | `--no-protect-used` |
+| On-the-fly subsumption & OTFS | ON | - | `--no-subsumption` |
+| Failed literal probing & HBR | ON | - | `--no-probing` |
+| Full inprocessing pipeline (SCC, Kitten sweep, SSR, gate BVE, vivify, transitive, Gauss) | ON | `--inprocess` | `--no-inprocess` |
+| Blocked clause elimination (standalone preproc) | OFF | `--bce` | `--no-bce` |
+| Standalone legacy BVE / SCC / Congruence / Factoring | OFF | `--elim` / `--equiv` / `--congruence` / `--factor` | `--no-elim` |
+| Local search hybridization (standalone WalkSAT) | OFF | `--local-search` | - |
+| DRAT proof logging (text / binary) | OFF | `--proof <file>` / `--binary-proof` | - |
 
 ---
 

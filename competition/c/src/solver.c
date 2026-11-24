@@ -2072,7 +2072,7 @@ static void solver_reduce_db_account_impl(Solver* s) {
     uint32_t core_lbd = (s->opts.glue_lbd == 2 && s->opts.protect_used) ? s->tier1_lbd : s->opts.glue_lbd;
     uint32_t mid_lbd = (s->opts.glue_lbd == 2 && s->opts.protect_used) ? s->tier2_lbd : 6;
     ClauseScore *scores = malloc((s->num_learnts ? s->num_learnts : 1) * sizeof *scores);
-    if (!scores) return;
+    if (!scores) { s->error = true; return; }
     uint32_t n = 0;
     for (uint32_t i = 0; i < s->num_learnts; ++i) {
         CRef cr = s->learnts[i];
@@ -2808,7 +2808,7 @@ static lbool solve_internal_account_impl(Solver *s, const Lit *assumps, uint32_t
                 uint32_t old_lbd = clause_lbd(s->arena, ocr);
                 Lit small_buf[64];
                 Lit *nbuf = osize <= 64 ? small_buf : malloc((size_t)osize * sizeof *nbuf);
-                if (!nbuf) continue;
+                if (!nbuf) { s->error = true; break; }
                 const Lit *olits = CLAUSE_LITS(s->arena, ocr);
                 uint32_t nsz = 0;
                 for (uint32_t k = 0; k < osize; ++k) {
@@ -2828,11 +2828,14 @@ static lbool solve_internal_account_impl(Solver *s, const Lit *assumps, uint32_t
                             if (s->num_learnts == s->learnts_size) {
                                 uint32_t cap = s->learnts_size ? s->learnts_size * 2 : 64;
                                 CRef *p = realloc(s->learnts, cap * sizeof *p);
-                                if (p) { s->learnts = p; s->learnts_size = cap; }
+                                if (!p) { s->error = true; }
+                                else { s->learnts = p; s->learnts_size = cap; }
                             }
-                            if (s->num_learnts < s->learnts_size) {
+                            if (!s->error && s->num_learnts < s->learnts_size) {
                                 CRef ncr = arena_alloc(s->arena, nbuf, nsz, true);
-                                if (ncr != INVALID_CLAUSE) {
+                                if (ncr == INVALID_CLAUSE) {
+                                    s->error = true;
+                                } else {
                                     uint32_t nlbd = old_lbd > 1 ? old_lbd - 1 : 1;
                                     set_clause_lbd(s->arena, ncr, MIN(nlbd, nsz));
                                     CLAUSE_HEADER(s->arena, ncr)->used = 2;
@@ -2850,6 +2853,7 @@ static lbool solve_internal_account_impl(Solver *s, const Lit *assumps, uint32_t
                 if (nbuf != small_buf) free(nbuf);
             }
             s->otfs_count = 0;
+            if (s->error) break;
             proof_add_clause(s,learnt,n);
             if (s->learn_callback && n<=s->learn_max_length) {
                 int *exported=malloc(((size_t)n+1)*sizeof *exported);

@@ -536,7 +536,7 @@ static bool inproc_subsume(Solver *s, uint64_t tick_budget) {
     uint8_t *marks = calloc(s->num_vars + 1, sizeof *marks);
     if (!cands || !occs || !marks) {
         free(cands); free(occs); free(marks);
-        return true;
+        s->error = true; return false;
     }
 
     /* Map CRef -> index in cands? Use direct occurrence lists storing indices into cands! */
@@ -567,7 +567,7 @@ static bool inproc_subsume(Solver *s, uint64_t tick_budget) {
         const Lit *lits = CLAUSE_LITS(s->arena, cr);
         for (uint32_t j = 0; j < sz; ++j) {
             if (occs[lits[j]].size < MAX_OCC_SUB) {
-                if (!occ_push(&occs[lits[j]], idx)) goto cleanup;
+                if (!occ_push(&occs[lits[j]], idx)) { s->error = true; goto cleanup; }
             }
         }
     }
@@ -1065,7 +1065,7 @@ static bool inproc_elim(Solver *s, uint64_t tick_budget, uint32_t grow_bound) {
     if (!occs || !live_occ || !q.vars || !q.pos || !q.score || !lit_seen || !gate_pos || !gate_neg || !stage_lits || !stage_off) {
         free(occs); free(live_occ); free(q.vars); free(q.pos); free(q.score);
         free(lit_seen); free(gate_pos); free(gate_neg); free(stage_lits); free(stage_off);
-        return true;
+        s->error = true; return false;
     }
     for (Var v = 0; v <= s->num_vars; ++v) q.pos[v] = UINT32_MAX;
 
@@ -1076,7 +1076,7 @@ static bool inproc_elim(Solver *s, uint64_t tick_budget, uint32_t grow_bound) {
         uint32_t sz = CLAUSE_SIZE(s->arena, cr);
         const Lit *ls = CLAUSE_LITS(s->arena, cr);
         for (uint32_t j = 0; j < sz; ++j) {
-            if (!occ_push(&occs[ls[j]], cr)) goto done;
+            if (!occ_push(&occs[ls[j]], cr)) { s->error = true; goto done; }
             live_occ[ls[j]]++;
         }
     }
@@ -1402,12 +1402,13 @@ static uint32_t vivify_analyze(Solver *s, CRef confl, Lit implied, Lit *out) {
 static bool inproc_vivify(Solver *s, uint64_t tick_budget) {
     if (s->error || s->result == FALSE || solver_budget_exhausted(s)) return true;
     uint32_t nl = 2 * (s->num_vars + 1);
-    uint32_t *lit_freq = calloc(nl, sizeof *lit_freq);
     uint32_t max_c = s->num_clauses + s->num_learnts;
-    if (!max_c || !lit_freq) { free(lit_freq); return true; }
+    if (!max_c) return true;
+    uint32_t *lit_freq = calloc(nl, sizeof *lit_freq);
+    if (!lit_freq) { s->error = true; return false; }
 
     VivCand *cands = malloc((size_t)max_c * sizeof *cands);
-    if (!cands) { free(lit_freq); return true; }
+    if (!cands) { free(lit_freq); s->error = true; return false; }
 
     uint32_t nc = 0;
     /* Collect irredundant clauses (size 3..64) and Tier-1/Tier-2 learned clauses (size 3..32). */
@@ -1673,7 +1674,7 @@ static bool inproc_probe_hbr(Solver *s, uint64_t tick_budget) {
     if (s->error || s->result == FALSE || solver_budget_exhausted(s)) return true;
     uint32_t nl = 2 * (s->num_vars + 1);
     ProbeCand *cands = malloc((size_t)nl * sizeof *cands);
-    if (!cands) return true;
+    if (!cands) { s->error = true; return false; }
 
     /* Score each unassigned literal u by outgoing binary implications (~u watches).
      * Favor roots (literals with 0 incoming binary edges) with a bonus! */
@@ -1838,10 +1839,10 @@ static bool inproc_gauss(Solver *s) {
     while (cap < (size_t)elig * 2 && cap < (1u << 21)) cap <<= 1;
     if (cap < (size_t)elig + 16) return true;
     XorSlot *tab = calloc(cap, sizeof *tab);
-    if (!tab) return true;
+    if (!tab) { s->error = true; return false; }
 
     uint32_t *used_slots = malloc(MIN(cap, (size_t)elig + 1) * sizeof *used_slots);
-    if (!used_slots) { free(tab); return true; }
+    if (!used_slots) { free(tab); s->error = true; return false; }
     uint32_t n_used = 0;
 
     for (uint32_t i = 0; i < s->num_clauses; ++i) {
@@ -1929,7 +1930,7 @@ static bool inproc_gauss(Solver *s) {
     uint32_t *var_to_col = malloc((size_t)(s->num_vars + 1) * sizeof *var_to_col);
     if (!eqs || !var_to_col) {
         free(eqs); free(var_to_col); free(used_slots); free(tab);
-        return true;
+        s->error = true; return false;
     }
     memset(var_to_col, 0xFF, (size_t)(s->num_vars + 1) * sizeof *var_to_col);
 
@@ -1967,7 +1968,7 @@ static bool inproc_gauss(Solver *s) {
     uint8_t *rhs = calloc(eq_count, sizeof *rhs);
     if (!col_to_var || !mat || !rhs) {
         free(col_to_var); free(mat); free(rhs); free(eqs); free(var_to_col);
-        return true;
+        s->error = true; return false;
     }
     for (uint32_t i = 0; i < eq_count; ++i) {
         uint64_t *row = mat + (size_t)i * words;
@@ -2092,7 +2093,7 @@ static bool inproc_transitive(Solver *s, uint64_t tick_budget) {
 
     uint32_t nl = 2 * (s->num_vars + 1);
     uint32_t *head = calloc((size_t)nl + 1, sizeof *head);
-    if (!head) return true;
+    if (!head) { s->error = true; return false; }
 
     /* Count binary clauses (irredundant first, then learned). */
     uint32_t n_edges = 0;
@@ -2122,7 +2123,7 @@ static bool inproc_transitive(Solver *s, uint64_t tick_budget) {
     uint8_t *bfs_irr = malloc(128 * sizeof *bfs_irr);
     if (!edges || !cur || !seen_any || !seen_irr || !bfs_q || !bfs_irr) {
         free(head); free(edges); free(cur); free(seen_any); free(seen_irr); free(bfs_q); free(bfs_irr);
-        return true;
+        s->error = true; return false;
     }
     memcpy(cur, head, (size_t)(nl + 1) * sizeof *cur);
 
@@ -2293,6 +2294,7 @@ typedef struct {
     uint32_t trail_sz, qhead, dlevel;
     uint32_t rng;
     bool unsat0;
+    bool oom;
 } Kitten;
 
 static inline int8_t k_lit_val(const Kitten *k, uint16_t l) {
@@ -2304,7 +2306,7 @@ static bool k_watch_push(Kitten *k, uint16_t l, uint32_t cidx, uint16_t blocker)
     if (k->wsize[l] == k->wcap[l]) {
         uint32_t nc = k->wcap[l] ? k->wcap[l] * 2 : 8;
         KWatch *p = realloc(k->wdata[l], (size_t)nc * sizeof *p);
-        if (!p) return false;
+        if (!p) { k->oom = true; return false; }
         k->wdata[l] = p;
         k->wcap[l] = nc;
     }
@@ -2548,7 +2550,7 @@ static bool inproc_sweep(Solver *s, uint64_t tick_budget) {
     uint32_t *vhead = calloc((size_t)nv + 2, sizeof *vhead);
     uint16_t *g2l = calloc((size_t)nv + 1, sizeof *g2l);
     uint8_t *swept = calloc((size_t)nv + 1, 1);
-    if (!vhead || !g2l || !swept) { free(vhead); free(g2l); free(swept); return true; }
+    if (!vhead || !g2l || !swept) { free(vhead); free(g2l); free(swept); s->error = true; return false; }
 
     uint32_t total_occ = 0;
     for (uint32_t i = 0; i < s->num_clauses; ++i) {
@@ -2576,7 +2578,7 @@ static bool inproc_sweep(Solver *s, uint64_t tick_budget) {
     if (!vocc || !vcur || !cls_used || !used_cls_list || !k) {
         free(vhead); free(g2l); free(swept); free(vocc); free(vcur);
         free(cls_used); free(used_cls_list); free(k);
-        return true;
+        s->error = true; return false;
     }
     memcpy(vcur, vhead, (size_t)(nv + 2) * sizeof *vcur);
     for (uint32_t i = 0; i < s->num_clauses; ++i) {
@@ -2804,7 +2806,8 @@ static bool inproc_sweep(Solver *s, uint64_t tick_budget) {
             }
         }
 
-        if (!unsat) k_delete_proof_lemmas(s, k);
+        if (k->oom) s->error = true;
+        if (!unsat && !s->error) k_delete_proof_lemmas(s, k);
         for (uint32_t i = 0; i < n_ucls; ++i) cls_used[used_cls_list[i]] = 0;
         for (uint32_t i = 1; i <= k->nv; ++i) g2l[k->l2g[i]] = 0;
         k_free(k);
@@ -2840,6 +2843,7 @@ static void inproc_walk_seed_phases(Solver *s) {
     uint32_t *occ_head = calloc((size_t)(2 * (nv + 1)) + 1, sizeof *occ_head);
     if (!assign || !best_assign || !sat_cnt || !unsat_list || !unsat_pos || !occ_head) {
         free(assign); free(best_assign); free(sat_cnt); free(unsat_list); free(unsat_pos); free(occ_head);
+        s->error = true;
         return;
     }
 
@@ -2859,6 +2863,7 @@ static void inproc_walk_seed_phases(Solver *s) {
     if (!occ_clauses || !cursor) {
         free(assign); free(best_assign); free(sat_cnt); free(unsat_list); free(unsat_pos);
         free(occ_head); free(occ_clauses); free(cursor);
+        s->error = true;
         return;
     }
     memcpy(cursor, occ_head, (size_t)(nl + 1) * sizeof *cursor);

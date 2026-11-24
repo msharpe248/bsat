@@ -88,30 +88,35 @@ static void print_usage(const char* program) {
     printf("  --var-inc <f>             Variable activity increment (default: 1.0)\n");
     printf("\n");
     printf("Restart parameters:\n");
-    printf("  --reuse-trail            Reuse high-priority restart prefixes (experimental)\n");
-    printf("  --chrono                 Experimental chronological backtracking\n");
-    printf("  --chrono-levels <n>      Maximum ordinary jump before chronological backtracking (100)\n");
+    printf("  --reuse-trail             Reuse high-priority restart prefixes (default: on)\n");
+    printf("  --no-reuse-trail          Disable restart trail reuse\n");
+    printf("  --chrono                  Enable chronological backtracking (default: on)\n");
+    printf("  --no-chrono               Disable chronological backtracking\n");
+    printf("  --chrono-levels <n>       Maximum ordinary jump before chronological backtracking (100)\n");
     printf("  --restart-first <n>       First restart interval (default: 100)\n");
     printf("  --restart-inc <f>         Restart multiplier (default: 1.5)\n");
     printf("  --glucose-restart         Use Glucose adaptive restarts (EMA mode)\n");
     printf("  --glucose-restart-ema     Use LBD exponential moving averages (default)\n");
     printf("  --glucose-restart-avg     Use recent-window and cumulative LBD averages\n");
+    printf("  --luby-restart            Use Luby restart sequence instead of Glucose\n");
+    printf("  --no-luby-restart         Disable Luby restarts (re-enable Glucose)\n");
+    printf("  --luby-unit <n>           Base unit for Luby restarts (default: 100)\n");
     printf("  --no-restarts             Disable restarts\n");
     printf("\n");
     printf("Glucose tuning (EMA and sliding-window modes):\n");
-    printf("  --glucose-min-conflicts <n>  Minimum conflicts since last restart (default: 100)\n");
-    printf("  --glucose-k <f>           Threshold multiplier (default: 0.8)\n");
+    printf("  --glucose-min-conflicts <n>  Minimum conflicts since last restart (default: 2)\n");
+    printf("  --glucose-k <f>           Threshold multiplier (default: 0.909)\n");
     printf("Glucose EMA tuning:\n");
-    printf("  --glucose-fast-alpha <f>  Fast MA decay factor (default: 0.8)\n");
-    printf("  --glucose-slow-alpha <f>  Slow MA decay factor (default: 0.9999)\n");
+    printf("  --glucose-fast-alpha <f>  Fast MA decay factor (default: 0.970)\n");
+    printf("  --glucose-slow-alpha <f>  Slow MA decay factor (default: 0.99999)\n");
     printf("\n");
     printf("Glucose AVG tuning (only with --glucose-restart-avg):\n");
     printf("  --glucose-window-size <n> Window size for short-term average (default: 50)\n");
     printf("\n");
     printf("Branching heuristic:\n");
-    printf("  --vmtf                   Use a move-to-front variable queue (experimental)\n");
+    printf("  --vmtf                    Use move-to-front variable queue in all modes\n");
     printf("  --lrb                     Use LRB/CHB instead of VSIDS\n");
-    printf("  --vsids                   Use VSIDS (default)\n");
+    printf("  --vsids                   Use VSIDS (default in stable mode)\n");
     printf("\n");
     printf("Phase saving:\n");
     printf("  --no-phase-saving         Disable phase saving\n");
@@ -125,20 +130,25 @@ static void print_usage(const char* program) {
     printf("  --max-lbd <n>             Max LBD for keeping clauses (default: 30)\n");
     printf("  --glue-lbd <n>            LBD threshold for glue clauses (default: 2)\n");
     printf("  --reduce-fraction <f>     Fraction of clauses to keep (default: 0.5)\n");
-    printf("  --reduce-interval <n>     Conflicts between reductions (default: 2000)\n");
-    printf("  --reduce-increment <n>    Grow interval after each reduction (default: 0)\n");
-    printf("  --binary-minimize        Binary-resolution minimization (experimental)\n");
-    printf("  --iterative-minimize     Experimental binary-aware minimization\n");
-    printf("  --protect-used           Temporarily retain used learned clauses with LBD <= 6\n");
-    printf("  --dynamic-lbd            Refresh learned-clause LBD during analysis\n");
+    printf("  --reduce-interval <n>     Conflicts between reductions (default: 1000)\n");
+    printf("  --reduce-increment <n>    Grow interval after each reduction (default: 100)\n");
+    printf("  --binary-minimize         Binary-resolution minimization (default: on)\n");
+    printf("  --no-binary-minimize      Disable binary-resolution minimization\n");
+    printf("  --iterative-minimize      Binary-aware DFS minimization (always active when minimizing)\n");
+    printf("  --protect-used            Temporarily retain used learned clauses (default: on)\n");
+    printf("  --no-protect-used         Disable used-clause retention\n");
+    printf("  --dynamic-lbd             Refresh learned-clause LBD during analysis (default: on)\n");
+    printf("  --no-dynamic-lbd          Disable dynamic LBD updates\n");
     printf("  --minimize-budget <n>     Work cap per minimization pass (10000)\n");
     printf("  --no-minimize             Disable clause minimization\n");
+    printf("  --shrink                  Enable block-level all-UIP shrinking (default: on)\n");
     printf("  --no-shrink               Disable block-level all-UIP shrinking\n");
     printf("  --no-subsumption          Disable on-the-fly subsumption\n");
     printf("\n");
-    printf("Preprocessing:\n");
-    printf("  --bce                    Enable bounded blocked clause elimination\n");
-    printf("  --alternating            Experimental focused/stable search modes\n");
+    printf("Preprocessing & Modes:\n");
+    printf("  --bce                     Enable bounded blocked clause elimination\n");
+    printf("  --alternating             Focused (VMTF) / stable (VSIDS) mode alternation (default: on)\n");
+    printf("  --no-alternating          Disable focused/stable mode alternation\n");
     printf("  --portfolio <sec>        Focused CPU slice, then fresh alternating search (experimental)\n");
     printf("  --no-circular            Disable circular replacement watch search\n");
     printf("  --seed <n>               Deterministic per-solver random seed\n");
@@ -213,7 +223,9 @@ static struct option long_options[] = {
     {"glucose-window-size", required_argument, 0, 0},
     {"glucose-k",       required_argument, 0, 0},
     {"reuse-trail", no_argument, 0, 0},
+    {"no-reuse-trail", no_argument, 0, 0},
     {"chrono", no_argument, 0, 0},
+    {"no-chrono", no_argument, 0, 0},
     {"chrono-levels", required_argument, 0, 0},
     {"vmtf", no_argument, 0, 0},
     {"lrb",             no_argument,       0, 0},
@@ -230,15 +242,20 @@ static struct option long_options[] = {
     {"reduce-interval", required_argument, 0, 0},
     {"reduce-increment", required_argument, 0, 0},
     {"binary-minimize", no_argument, 0, 0},
+    {"no-binary-minimize", no_argument, 0, 0},
     {"iterative-minimize", no_argument, 0, 0},
     {"protect-used", no_argument, 0, 0},
+    {"no-protect-used", no_argument, 0, 0},
     {"dynamic-lbd", no_argument, 0, 0},
+    {"no-dynamic-lbd", no_argument, 0, 0},
     {"minimize-budget", required_argument, 0, 0},
     {"no-minimize",     no_argument,       0, 0},
+    {"shrink",          no_argument,       0, 0},
     {"no-shrink",       no_argument,       0, 0},
     {"no-subsumption",  no_argument,       0, 0},
     {"bce", no_argument, 0, 0},
     {"alternating", no_argument, 0, 0},
+    {"no-alternating", no_argument, 0, 0},
     {"portfolio", required_argument, 0, 0},
     {"no-circular", no_argument, 0, 0},
     {"seed", required_argument, 0, 0},
@@ -350,6 +367,8 @@ int main(int argc, char** argv) {
                     opts.bce = true;
                 } else if (strcmp(long_options[option_index].name, "alternating") == 0) {
                     opts.alternating = true;
+                } else if (strcmp(long_options[option_index].name, "no-alternating") == 0) {
+                    opts.alternating = false;
                 } else if (strcmp(long_options[option_index].name, "congruence") == 0) {
                     opts.congruence = true;
                 } else if (strcmp(long_options[option_index].name, "factor") == 0) {
@@ -415,8 +434,12 @@ int main(int argc, char** argv) {
                     opts.glucose_k = atof(optarg);
                 } else if (strcmp(long_options[option_index].name, "reuse-trail") == 0) {
                     opts.reuse_trail = true;
+                } else if (strcmp(long_options[option_index].name, "no-reuse-trail") == 0) {
+                    opts.reuse_trail = false;
                 } else if (strcmp(long_options[option_index].name, "chrono") == 0) {
                     opts.chrono = true;
+                } else if (strcmp(long_options[option_index].name, "no-chrono") == 0) {
+                    opts.chrono = false;
                 } else if (strcmp(long_options[option_index].name, "chrono-levels") == 0) {
                     opts.chrono_levels = (uint32_t)strtoul(optarg,NULL,10);
                 } else if (strcmp(long_options[option_index].name, "vmtf") == 0) {
@@ -449,16 +472,24 @@ int main(int argc, char** argv) {
                     opts.reduce_increment = (uint32_t)strtoul(optarg, NULL, 10);
                 } else if (strcmp(long_options[option_index].name, "binary-minimize") == 0) {
                     opts.binary_minimize = true;
+                } else if (strcmp(long_options[option_index].name, "no-binary-minimize") == 0) {
+                    opts.binary_minimize = false;
                 } else if (strcmp(long_options[option_index].name, "iterative-minimize") == 0) {
                     opts.iterative_minimize = true;
                 } else if (strcmp(long_options[option_index].name, "protect-used") == 0) {
                     opts.protect_used = true;
+                } else if (strcmp(long_options[option_index].name, "no-protect-used") == 0) {
+                    opts.protect_used = false;
                 } else if (strcmp(long_options[option_index].name, "dynamic-lbd") == 0) {
                     opts.dynamic_lbd = true;
+                } else if (strcmp(long_options[option_index].name, "no-dynamic-lbd") == 0) {
+                    opts.dynamic_lbd = false;
                 } else if (strcmp(long_options[option_index].name, "minimize-budget") == 0) {
                     opts.minimize_budget = (uint32_t)strtoul(optarg, NULL, 10);
                 } else if (strcmp(long_options[option_index].name, "no-minimize") == 0) {
                     opts.minimize = false;
+                } else if (strcmp(long_options[option_index].name, "shrink") == 0) {
+                    opts.shrink = true;
                 } else if (strcmp(long_options[option_index].name, "no-shrink") == 0) {
                     opts.shrink = false;
                 } else if (strcmp(long_options[option_index].name, "no-subsumption") == 0) {

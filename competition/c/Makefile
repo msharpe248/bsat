@@ -206,32 +206,32 @@ check: all test
 parse-benchmark: $(BINDIR)/parse_benchmark_$(MODE)
 
 $(BINDIR)/parse_benchmark_$(MODE): $(TESTDIR)/parse_benchmark.c $(filter-out $(OBJDIR)/main.o,$(OBJECTS)) | dirs
-	$(CC) $(CFLAGS) -o $@ $< $(OBJDIR)/dimacs.o $(filter-out $(OBJDIR)/main.o $(OBJDIR)/dimacs.o,$(OBJECTS)) -lm
+	$(CC) $(CFLAGS) -UNDEBUG -o $@ $< $(OBJDIR)/dimacs.o $(filter-out $(OBJDIR)/main.o $(OBJDIR)/dimacs.o,$(OBJECTS)) -lm
 
 .PHONY: binary-watches-benchmark
 binary-watches-benchmark: $(BINDIR)/binary_watches_benchmark_$(MODE)
 
 $(BINDIR)/binary_watches_benchmark_$(MODE): $(TESTDIR)/benchmark_binary_watches.c $(filter-out $(OBJDIR)/main.o,$(OBJECTS)) | dirs
-	$(CC) $(CFLAGS) -o $@ $^ -lm
+	$(CC) $(CFLAGS) -UNDEBUG -o $@ $^ -lm
 
 .PHONY: clause-locks-benchmark
 clause-locks-benchmark: $(BINDIR)/clause_locks_benchmark_$(MODE)
 
 $(BINDIR)/clause_locks_benchmark_$(MODE): $(TESTDIR)/benchmark_clause_locks.c $(filter-out $(OBJDIR)/main.o,$(OBJECTS)) | dirs
-	$(CC) $(CFLAGS) -o $@ $^ -lm
+	$(CC) $(CFLAGS) -UNDEBUG -o $@ $^ -lm
 
 .PHONY: local-search-benchmark
 local-search-benchmark: $(BINDIR)/local_search_benchmark_$(MODE)
 
 $(BINDIR)/local_search_benchmark_$(MODE): $(TESTDIR)/benchmark_local_search.c $(filter-out $(OBJDIR)/main.o,$(OBJECTS)) | dirs
-	$(CC) $(CFLAGS) -o $@ $^ -lm
+	$(CC) $(CFLAGS) -UNDEBUG -o $@ $^ -lm
 
 # Isolated BVE resolution benchmark (not part of normal solver builds).
 ELIM_DRIVER = $(BINDIR)/elim_driver$(if $(filter release,$(MODE)),,_$(MODE))
 elim-driver: dirs $(ELIM_DRIVER)
 
 $(ELIM_DRIVER): $(TESTDIR)/elim_driver.c $(filter-out $(OBJDIR)/main.o,$(OBJECTS))
-	$(CC) $(CFLAGS) -o $@ $^ -lm
+	$(CC) $(CFLAGS) -UNDEBUG -o $@ $^ -lm
 
 .PHONY: elim-driver
 
@@ -239,7 +239,7 @@ GC_DRIVER = $(BINDIR)/gc_driver$(if $(filter release,$(MODE)),,_$(MODE))
 gc-driver: dirs $(GC_DRIVER)
 
 $(GC_DRIVER): $(TESTDIR)/gc_driver.c $(filter-out $(OBJDIR)/main.o,$(OBJECTS))
-	$(CC) $(CFLAGS) -o $@ $^ -lm
+	$(CC) $(CFLAGS) -UNDEBUG -o $@ $^ -lm
 
 .PHONY: gc-driver
 
@@ -271,7 +271,7 @@ fuzzers: $(BINDIR)/fuzz_api $(BINDIR)/fuzz_dimacs $(BINDIR)/fuzz_public
 -include $(FUZZ_OBJECTS:.o=.d)
 
 $(BINDIR)/incremental_benchmark_$(MODE): $(TESTDIR)/incremental_driver.c $(filter-out $(OBJDIR)/main.o,$(OBJECTS)) | dirs
-	$(CC) $(CFLAGS) -o $@ $^ -lm
+	$(CC) $(CFLAGS) -UNDEBUG -o $@ $^ -lm
 incremental-benchmark: $(BINDIR)/incremental_benchmark_$(MODE)
 .PHONY: incremental-benchmark
 
@@ -337,12 +337,12 @@ package-test: all $(PACKAGE_LIBRARY)
 .PHONY: install package-test
 
 $(BINDIR)/query_certificate_driver_$(MODE): $(TESTDIR)/query_certificate_driver.c $(LIBRARY)
-	$(CC) $(CFLAGS) -o $@ $< -L$(BINDIR) -lbsat_$(MODE) -Wl,-rpath,$(abspath $(BINDIR))
+	$(CC) $(CFLAGS) -UNDEBUG -o $@ $< -L$(BINDIR) -lbsat_$(MODE) -Wl,-rpath,$(abspath $(BINDIR))
 query-certificate-driver: $(BINDIR)/query_certificate_driver_$(MODE)
 .PHONY: query-certificate-driver
 
 $(BINDIR)/application_histories_$(MODE): $(TESTDIR)/application_histories.c $(LIBRARY)
-	$(CC) $(CFLAGS) -o $@ $< -L$(BINDIR) -lbsat_$(MODE) -Wl,-rpath,$(abspath $(BINDIR))
+	$(CC) $(CFLAGS) -UNDEBUG -o $@ $< -L$(BINDIR) -lbsat_$(MODE) -Wl,-rpath,$(abspath $(BINDIR))
 application-histories: $(BINDIR)/application_histories_$(MODE)
 .PHONY: application-histories
 
@@ -350,7 +350,7 @@ application-histories: $(BINDIR)/application_histories_$(MODE)
 .PHONY: checkpoint-example
 checkpoint-example: $(BINDIR)/checkpoint_service_$(MODE)
 $(BINDIR)/checkpoint_service_$(MODE): examples/checkpoint_service.c examples/checkpoint_policy.h $(filter-out $(OBJDIR)/main.o,$(OBJECTS)) | dirs
-	$(CC) $(CFLAGS) -o $@ $< $(filter-out $(OBJDIR)/main.o,$(OBJECTS)) -lm
+	$(CC) $(CFLAGS) -UNDEBUG -o $@ $< $(filter-out $(OBJDIR)/main.o,$(OBJECTS)) -lm
 
 $(BINDIR)/recovery_fault_$(MODE): $(TESTDIR)/recovery_fault_driver.c examples/recoverable_service.h $(FAULT_OBJECTS) | dirs
 	$(CC) $(CFLAGS) -UNDEBUG -o $@ $< $(FAULT_OBJECTS) -lm
@@ -360,7 +360,7 @@ recovery-fault-test: $(BINDIR)/recovery_fault_$(MODE)
 $(TEST_BINDIR)/test_recovery_service: examples/recoverable_service.h
 
 $(BINDIR)/recovery_supervisor_$(MODE): examples/recovery_supervisor.c examples/recoverable_service.h $(filter-out $(OBJDIR)/main.o,$(OBJECTS)) | dirs
-	$(CC) $(CFLAGS) -o $@ $< $(filter-out $(OBJDIR)/main.o,$(OBJECTS)) -lm
+	$(CC) $(CFLAGS) -UNDEBUG -o $@ $< $(filter-out $(OBJDIR)/main.o,$(OBJECTS)) -lm
 recovery-example: $(BINDIR)/recovery_supervisor_$(MODE)
 .PHONY: recovery-example
 

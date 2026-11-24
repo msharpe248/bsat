@@ -37,7 +37,30 @@ Passing finite tests is not a formal proof of the complete C implementation.
 
 ## Current evidence and unresolved gaps
 
-Latest status: the certified LBD runtime c6b4ac8 passes correctness, independent
+**November 2026 CDCL & inprocessing overhaul**: Default one-shot solving now
+enables alternating Focused (VMTF) / Stable (4-ary VSIDS) modes, chronological
+backtracking, trail reuse, 3-state binary-aware minimization, block-level
+all-UIP shrinking, OTFS, dynamic 3-tier clause management, reason-side bumping,
+1-ahead BCP watch prefetching, and a tick-budgeted inprocessing engine
+(probing/HBR, in-place Tarjan SCC, embedded Mini-Kitten CDCL SAT sweeping with
+RUP lemma projection, forward subsumption/SSR, gate-aware BVE with model
+reconstruction, post-BVE binary transitive reduction, prefix-sharing
+vivification, and WalkSAT phase seeding). Non-RUP passes (GF(2) XOR Gaussian
+elimination and adaptive BVA factoring) are skipped whenever `--proof` or
+`BSAT_CERTIFICATES` is active, and destructive inprocessing is automatically
+gated off for assumption queries, certified proof journals, and
+`BSAT_REUSE_LEARNTS` sessions so the public ABI and certified incremental
+invariants are preserved.
+
+Measured on the frozen Apple Silicon industrial fixtures versus the pre-overhaul
+baseline and recorded Kissat timings:
+- `cal3-query.cnf` (UNSAT): `22.7 s → 0.575 s` (PGO) / `0.631 s` (vs. Kissat `1.045 s`), including verified DRAT proof emission.
+- `16c999d0` (planning, 50k vars / 284k clauses, UNSAT): `>60 s → 44.36 s` (`20.6M` props/s, vs. Kissat `47.33 s`).
+- `09cd83e2` (belpyramid, UNSAT): `2.193 s → 0.274 s`.
+- `42f1311c` (Tseitin XOR, UNSAT): `>15 s → 0.003 s` (0 conflicts via GF(2) RREF in non-proof mode).
+- Verification: 66/66 C unit tests pass across `release`, `diagnostic`, and ASan/UBSan `debug` builds, plus `embedding-test`, `soak-test`, `package-test`, `fault-test`, `recovery-fault-test`, `application_histories`, `check_query_diagnostics`, `check_deadlines`, `check_process_failures`, and `validate.py` (`8,832/8,832` solves across ASan/UBSan and release with independent truth-table, model, and text/binary RUP checking). Hard multiplier-equivalence, crypto, coloring, and large AMO scheduling instances still remain open performance targets.
+
+Historical campaign summary (pre-overhaul September 2026 baseline): the certified LBD runtime c6b4ac8 passes correctness, independent
 integration and coverage-fuzz CI. The [fresh four-circuit baseline](FRESH_COMPETITIVENESS.md)
 checks 64/64 BSAT queries versus 62/64 retained CaDiCaL queries within equal CPU
 budgets, adding strengths on cal162 and a selected PicoRV32 case. The

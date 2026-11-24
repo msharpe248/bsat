@@ -64,52 +64,55 @@ competition/
 
 | Feature | C | Python | Notes |
 |---------|---|--------|-------|
-| Two-Watched Literals | ✅ | ✅ | Blocking literal optimization |
-| First UIP Conflict Analysis | ✅ | ✅ | Standard 1-UIP scheme |
-| MiniSat Clause Minimization | ✅ | ✅ | 67% literal reduction |
-| LBD Calculation | ✅ | ✅ | Clause quality metric |
-| Clause Database Reduction | ✅ | ✅ | LBD-based with glue protection |
+| Two-Watched Literals | ✅ | ✅ | Binary-first watches, blocking literals, 1-ahead prefetch, circular scan |
+| First UIP Conflict Analysis | ✅ | ✅ | Standard 1-UIP scheme with On-the-Fly Self-Subsumption (OTFS) |
+| Clause Minimization & Shrinking | ✅ | ✅ | 3-state binary-aware DFS + block-level all-UIP shrinking + binary resolution |
+| LBD & 3-Tier Clause DB | ✅ | ✅ | Dynamic LBD updates, adaptive Tier-1/Tier-2 retention, lazy watch sweep |
 | On-the-Fly Subsumption | ✅ | ✅ | Remove subsumed clauses |
 
 ### Variable Ordering
 
 | Feature | C | Python | Notes |
 |---------|---|--------|-------|
-| VSIDS | ✅ | ✅ | Heap-based with activity decay |
-| LRB/CHB | ✅ | ❌ | Learning Rate Branching |
+| 4-ary Heap VSIDS + VMTF Alternation | ✅ | ✅ (VSIDS) | Tick-based Focused (VMTF) / Stable (4-ary VSIDS) alternation + reason bumping |
+| LRB/CHB | ✅ | ❌ | Learning Rate Branching (`--lrb`) |
 
 ### Phase Management
 
 | Feature | C | Python | Notes |
 |---------|---|--------|-------|
 | Phase Saving | ✅ | ✅ | Remember variable polarities |
-| Target Rephasing | ✅ | ❌ | Kissat-style periodic reset |
-| Random Phase Selection | ✅ | ✅ | Escape local minima |
+| 6-Step Target Rephasing | ✅ | ❌ | Kissat-style cycling target/original/inverted/flipped rephasing |
+| Random Phase Selection | ✅ | ✅ | Opt-in diversification (`--random-phase`) |
 
 ### Restart Strategies
 
 | Feature | C | Python | Notes |
 |---------|---|--------|-------|
-| Luby Sequence | ✅ | ✅ | Provably good for all instances |
-| Glucose EMA | ✅ | ✅ | Conservative adaptive restarts |
-| Glucose AVG | ✅ | ✅ | Aggressive sliding window |
+| Glucose EMA + Reluctant Doubling | ✅ | ✅ (EMA) | Fast/slow Biere-Fröhlich LBD EMA (Focused) + reluctant doubling (Stable) |
+| Luby Sequence | ✅ | ✅ | Optional (`--luby-restart`) |
+| Glucose AVG | ✅ | ✅ | Optional sliding window (`--glucose-restart-avg`) |
 
-### Preprocessing
+### Preprocessing & Inprocessing
 
 | Feature | C | Python | Notes |
 |---------|---|--------|-------|
-| Failed Literal Probing | ✅ | ✅ | Discover implied units |
-| Blocked Clause Elimination | ✅ | ✅ | Remove redundant clauses |
-| Bounded Variable Elimination | ✅ | ✅ | SatELite-style BVE |
+| Failed Literal Probing & HBR | ✅ | ✅ (probing) | Root-prioritized probing + Hyper-Binary Resolution |
+| Tarjan SCC & Congruence Closure | ✅ | ❌ | In-place equivalence substitution + AND/XOR/ITE gate congruence |
+| Mini-Kitten CDCL SAT Sweeping | ✅ | ❌ | Embedded local CDCL sweeper with 16-model partitioning & RUP proof projection |
+| Gate-Aware BVE & SSR/Subsumption | ✅ | ❌ | Min-degree cascading BVE (AND/XOR/ITE) + 64-bit bloom SSR |
+| Prefix-Sharing Vivification & Transitive Reduction | ✅ | ❌ | O(n) prefix vivification + post-BVE binary transitive reduction |
+| GF(2) XOR Gaussian Elimination | ✅ | ❌ | Exact 2..6-var XOR extraction & bit-packed RREF (non-proof mode) |
+| Blocked Clause Elimination & Factoring (BVA) | ✅ | ❌ | Linear BCE (`--bce`) + bounded clause factoring (`--factor` / adaptive) |
 
 ### Advanced Features
 
 | Feature | C | Python | Notes |
 |---------|---|--------|-------|
-| Vivification Inprocessing | ✅ | ❌ | Strengthen learned clauses |
-| Local Search Hybridization | ✅ | ❌ | WalkSAT for SAT instances |
-| DRAT Proof Logging | ✅ | ❌ | Verifiable UNSAT proofs |
-| Chronological Backtracking | ✅ | ✅ | Preserve more assignments |
+| Local Search Hybridization | ✅ | ❌ | Periodic WalkSAT phase seeding + standalone WalkSAT (`--local-search`) |
+| DRAT Proof Logging | ✅ | ❌ | Independently verifiable text & binary DRAT proofs |
+| Chronological Backtracking | ✅ | ✅ | Enabled by default (`--chrono` / `--no-chrono`) |
+| Profile-Guided Optimization (PGO) | ✅ | ❌ | `make -C competition/c pgo` (Clang/LLVM) |
 
 ---
 

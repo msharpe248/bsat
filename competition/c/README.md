@@ -1,14 +1,13 @@
 # BSAT C solver
 
-BSAT is a CDCL solver under active development. The September 2026 hardening
-work fixes known wrong-answer and memory-management defects and adds independent
-certificate validation. Passing these tests does not establish production
-readiness for arbitrary workloads. Start with
-[Production readiness](PRODUCTION_READINESS.md), the authoritative capability
-matrix, evidence limits and release gates. The current batch is recorded in
-[SEARCH_USE_MILESTONES.md](SEARCH_USE_MILESTONES.md).
-[HARDENING.md](HARDENING.md) and earlier milestone reports preserve historical
-changes and measurements. Reproducible checks are indexed in
+BSAT is a modern CDCL SAT solver written in C11 with a full tick-budgeted
+inprocessing engine, DRAT proof logging, and an opaque ABI-v1 C/C++ embedding
+library (plus IPASIR 1.0). Start with
+[Production readiness](PRODUCTION_READINESS.md) for the capability matrix,
+evidence boundaries, and release gates. Historical hardening and milestone
+reports (including [HARDENING.md](HARDENING.md) and
+[SEARCH_USE_MILESTONES.md](SEARCH_USE_MILESTONES.md)) preserve earlier
+experiments and measurements. Reproducible checks are indexed in
 [tests/FEATURE_COVERAGE.md](tests/FEATURE_COVERAGE.md).
 
 ## Build and verify
@@ -19,6 +18,7 @@ Requires a C11/POSIX compiler, make, and Python 3 for validation and benchmarks.
 cd competition/c
 make all test
 make all test MODE=debug
+make pgo                       # Profile-guided optimization (Clang/LLVM)
 python3 tests/validate.py --solver bin/bsat --cases 200
 python3 tests/validate.py --solver bin/bsat_debug --cases 100 --checker /path/to/drat-trim
 ```
@@ -42,13 +42,16 @@ checker, tries option combinations, and minimizes failing formulas.
 
 Exit codes: 10 SAT, 20 UNSAT, 0 UNKNOWN/resource limit, 1 input/internal/I/O error.
 Every returned SAT model is checked against the retained original input. Proof
-logging covers search, minimization, probing, gate congruence, equivalence substitution, bounded factoring, BVE, BCE
-deletion and vivification;
-UNSAT certificates end with an empty clause. Text and binary DRAT are supported.
-The search algorithm is the same with proof logging enabled or disabled.
-Text proofs use chunked decimal encoding. See [CHUNKED_TEXT_PROOFS.md](CHUNKED_TEXT_PROOFS.md)
-for byte/error tests, measured text-proof CPU savings and the larger-input
-comparison with Kissat.
+logging covers search, minimization, block shrinking, OTFS, probing/HBR,
+gate congruence, Tarjan SCC equivalence substitution, Mini-Kitten SAT sweeping,
+subsumption/SSR, gate-aware BVE, binary transitive reduction, BCE, bounded
+factoring, and prefix-sharing vivification; UNSAT certificates end with an empty
+clause. Text and binary DRAT are supported. Non-RUP passes (GF(2) Gaussian
+elimination and adaptive BVA clause factoring) are automatically skipped when
+`--proof` or `BSAT_CERTIFICATES` is enabled so standard RUP/DRAT checkers remain
+strictly valid. Text proofs use chunked decimal encoding. See
+[CHUNKED_TEXT_PROOFS.md](CHUNKED_TEXT_PROOFS.md) for byte/error tests, measured
+text-proof CPU savings and the larger-input comparison with Kissat.
 
 DIMACS input uses a fixed 64 KiB reader to reduce per-byte stdio overhead.
 Embedded NULs in tokens are rejected and stream failures report file errors.
@@ -60,7 +63,45 @@ zero-terminated clauses. Clauses may span lines, and multiple clauses may share
 one line. Duplicates and tautologies are normalized. Numeric overflow and
 unfinished clauses are errors. Empty formulas are SAT; empty clauses are UNSAT.
 
-## Search controls
+## Current defaults and search controls
+
+Default one-shot solving uses:
+- **Search & branching**: Tick-based Focused (VMTF + fast/slow Biere-Fröhlich
+  LBD EMA restarts + trail reuse + saved phases) / Stable (4-ary heap VSIDS
+  with dynamic decay `0.80→0.95` + reluctant doubling + target phases)
+  alternation (`--alternating` / `--no-alternating`), chronological
+  backtracking (`--chrono` / `--no-chrono`, threshold `--chrono-levels 100`),
+  reason-side activity bumping (for `num_vars >= 300`), and 6-step Kissat-style
+  target rephasing (`--no-rephase`, `--rephase-interval 1000`).
+- **Conflict analysis & clause DB**: 1-UIP learning with 3-state binary-aware
+  DFS minimization (`--no-minimize`), block-level all-UIP shrinking (`--shrink`
+  / `--no-shrink`), binary-resolution minimization (`--binary-minimize` /
+  `--no-binary-minimize`), on-the-fly self-subsumption (OTFS), dynamic LBD
+  updates (`--dynamic-lbd` / `--no-dynamic-lbd`), and a 3-tier dynamic clause
+  database (`--protect-used` / `--no-protect-used`, `--reduce-interval 1000`,
+  `--reduce-increment 100`) with O(1) lazy watch sweeping.
+- **Hot-loop BCP**: Binary-first watch partitioning, single-instruction binary
+  watch dispatch, 1-ahead long-clause prefetching, and two-pass branchless
+  circular watch scanning (`--no-circular`).
+- **Tick-budgeted inprocessing** (`--inprocess` / `--no-inprocess`,
+  `--inprocess-interval 10000`): Root cleanup, GF(2) XOR extraction & RREF
+  Gaussian elimination (non-proof mode), failed-literal probing + HBR,
+  in-place Tarjan SCC equivalence substitution, embedded Mini-Kitten CDCL SAT
+  sweeping, forward subsumption & SSR, gate-aware BVE (AND/XOR/ITE) with
+  model reconstruction, post-BVE binary transitive reduction, O(n)
+  prefix-sharing vivification, and periodic WalkSAT phase seeding, plus
+  preprocessing lucky-phase check, bounded congruence closure, and adaptive
+  BVA factoring on binary-dense formulas (non-proof mode). Destructive
+  inprocessing is automatically skipped for assumption queries, certified
+  journals (`BSAT_CERTIFICATES`), and `BSAT_REUSE_LEARNTS` sessions.
+
+Run `./bin/bsat --help` for the complete list of options and current defaults.
+
+### Diagnostic builds and historical experiment notes
+
+The notes below preserve earlier option histories and rejected/archived
+experiments (many options originally labeled "experimental" above are now
+enabled by default and can be disabled with their `--no-*` counterparts).
 
 Use `make MODE=diagnostic` and `bin/bsat_diagnostic --accounting` for detailed
 watch/scan and learned-reason counters. These counters are compiled out of ordinary
