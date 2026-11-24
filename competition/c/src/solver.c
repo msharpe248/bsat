@@ -3004,14 +3004,16 @@ static lbool solve_internal_account_impl(Solver *s, const Lit *assumps, uint32_t
             if (!seen) { s->error = true; return UNDEF; }
             free(s->level_seen); s->level_seen = seen; s->levels_capacity = s->num_vars + 2;
         }
-    } else if (!n_assumps && !s->proof_file && !s->proof_journal && !s->opts.reuse_learnts &&
+    } else if (!n_assumps && !s->proof_journal && !s->opts.reuse_learnts &&
         s->opts.inprocess && s->opts.preprocess_budget && !s->opts.factor && !s->opts.local_search &&
         s->num_clauses >= 500 && s->num_clauses <= 250000 && !solver_budget_exhausted(s)) {
-        /* 1. First extract large AMO binary cliques via linear Sinz sequential counters. */
-        if (!solver_amo_cliques(s)) return UNDEF;
-        if (s->error || s->interrupted) return UNDEF;
-        /* 2. Run Structured Bounded Variable Addition (SBVA) on structured / binary-rich
-         *    or dense formulas (arbitrary clause length with 3-hop structural tie-breaking). */
+        /* 1. Extract large AMO binary cliques via linear Sinz sequential counters (non-proof). */
+        if (!s->proof_file) {
+            if (!solver_amo_cliques(s)) return UNDEF;
+            if (s->error || s->interrupted) return UNDEF;
+        }
+        /* 2. Run proof-producing Structured Bounded Variable Addition (SBVA) on structured /
+         *    binary-rich or dense formulas (emits RAT-valid DRAT proofs when s->proof_file is set). */
         if (s->opts.sbva) {
             uint32_t bin_cnt = 0;
             for (uint32_t i = 0; i < s->num_clauses; ++i) {

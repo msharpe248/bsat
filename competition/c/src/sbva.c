@@ -362,7 +362,7 @@ static uint64_t structural_tie_score(SbvaState *st, Lit cand) {
  * ===================================================================== */
 
 bool solver_sbva(Solver *s, uint64_t tick_budget, uint32_t max_aux_vars, uint32_t min_gain) {
-    if (!s || s->decision_level || s->proof_file || s->proof_journal || s->error ||
+    if (!s || s->decision_level || s->proof_journal || s->error ||
         s->interrupted || s->result == FALSE || s->num_vars == 0 || s->num_clauses < 64 ||
         max_aux_vars == 0 || solver_budget_exhausted(s)) return true;
 
@@ -633,10 +633,14 @@ bool solver_sbva(Solver *s, uint64_t tick_budget, uint32_t max_aux_vars, uint32_
         Lit pos_x = mkLit(x, false);
         Lit neg_x = mkLit(x, true);
 
-        /* 1. Add (x | m_lits[i]) for i = 0..m_lit_n-1. */
+        /* 1. Add (x | m_lits[i]) for i = 0..m_lit_n-1.
+         * DRAT RAT validity: fresh variable x appears negatively nowhere yet, so with
+         * pivot pos_x at index 0 each defining binary is vacuously RAT! */
         bool ok = true;
         for (uint32_t mi = 0; mi < m_lit_n && ok; ++mi) {
             Lit pair[2] = {pos_x, m_lits[mi]};
+            proof_add_clause(s, pair, 2);
+            if (s->error) { ok = false; break; }
             CRef cr = arena_alloc(s->arena, pair, 2, false);
             uint32_t slot = 0;
             if (cr == INVALID_CLAUSE || !sbva_push_original_clause(s, cr, &slot) ||
@@ -645,7 +649,9 @@ bool solver_sbva(Solver *s, uint64_t tick_budget, uint32_t max_aux_vars, uint32_
             }
         }
 
-        /* 2. Add (~x | (C \ {l0})) for each C in M_cls. */
+        /* 2. Add (~x | (C \ {l0})) for each C in M_cls.
+         * DRAT RAT validity: with pivot neg_x at index 0, resolving against every
+         * (x | m_lits[i]) produces (m_lits[i] | C \ {l0}), which is STILL live in F! */
         Lit rbuf[SBVA_MAX_CLAUSE_LEN + 1u];
         for (uint32_t ci = 0; ci < m_cls_n && ok; ++ci) {
             const SbvaClause *c0 = &st.cls[st.m_cls[ci]];
@@ -654,6 +660,8 @@ bool solver_sbva(Solver *s, uint64_t tick_budget, uint32_t max_aux_vars, uint32_
             for (uint32_t j = 0; j < c0->size; ++j) {
                 if (c0->lits[j] != l0) rbuf[rn++] = c0->lits[j];
             }
+            proof_add_clause(s, rbuf, rn);
+            if (s->error) { ok = false; break; }
             CRef cr = arena_alloc(s->arena, rbuf, rn, false);
             uint32_t slot = 0;
             if (cr == INVALID_CLAUSE || !sbva_push_original_clause(s, cr, &slot) ||
@@ -663,13 +671,14 @@ bool solver_sbva(Solver *s, uint64_t tick_budget, uint32_t max_aux_vars, uint32_
         }
         if (!ok) { st.oom = true; break; }
 
-        /* 3. Delete all m_lit_n * m_cls_n replaced original clauses. */
+        /* 3. Emit DRAT deletions and remove all m_lit_n * m_cls_n replaced clauses. */
         for (uint32_t idx = 0; idx < total_del; ++idx) {
             uint32_t did = st.twin_grid[idx];
             SbvaClause *d = &st.cls[did];
             if (!d->alive) continue;
             d->alive = 0;
             if (d->cref != INVALID_CLAUSE && !clause_deleted(s->arena, d->cref)) {
+                proof_delete_clause(s, CLAUSE_LITS(s->arena, d->cref), CLAUSE_SIZE(s->arena, d->cref));
                 arena_delete(s->arena, d->cref);
                 s->clauses[d->cslot] = INVALID_CLAUSE;
             }
