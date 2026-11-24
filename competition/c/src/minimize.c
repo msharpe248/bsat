@@ -34,14 +34,20 @@ static inline bool has_reason(const Solver *s, Var v) {
     return s->vars[v].reason != INVALID_CLAUSE || s->binary_reasons[v] != LIT_UNDEF;
 }
 
-/* 3-state DFS redundancy check with persistent REMOVABLE and POISON marks.
- * Returns true iff v is proven covered by MIN_SOURCE literals + root units.
+typedef struct {
+    Var v;
+    uint32_t next_idx;
+} MinFrame;
+
+/* Iterative 3-state DFS redundancy check with persistent REMOVABLE and POISON marks.
+ * Uses a compact explicit stack (zero C call-stack recursion, safe on small pthread stacks).
+ * Returns true iff root is proven covered by MIN_SOURCE literals + root units.
  * Only marks MIN_POISON on genuine logical failure (not budget/depth/interrupt).
  */
-static bool dfs_redundant(Solver *s, Var v, uint64_t abstract_levels,
-                          unsigned depth, uint32_t *remaining,
+static bool dfs_redundant(Solver *s, Var root, uint64_t abstract_levels,
+                          unsigned start_depth, uint32_t *remaining,
                           uint32_t *touched, bool *aborted) {
-    uint8_t st = s->seen[v];
+    uint8_t st = s->seen[root];
     if (st == MIN_SOURCE) return true;
     if (st == MIN_REMOVABLE) {
         s->stats.minimize_cache_hits++;
@@ -52,95 +58,167 @@ static bool dfs_redundant(Solver *s, Var v, uint64_t abstract_levels,
         return false;
     }
     if (st == MIN_EXPLORING) return false;
-    if (depth >= MIN_MAX_DEPTH) {
+    if (start_depth >= MIN_MAX_DEPTH) {
         *aborted = true;
         return false;
     }
 
-    Level level = s->vars[v].level;
-    if (level == 0) return true;
+    Level root_level = s->vars[root].level;
+    if (root_level == 0) return true;
 
-    CRef reason = s->vars[v].reason;
-    Lit binary = s->binary_reasons[v];
-    bool implicit = (binary != LIT_UNDEF);
-
-    if ((!implicit && (reason == INVALID_CLAUSE || reason == BINARY_CONFLICT || clause_deleted(s->arena, reason))) ||
-        !(abstract_levels & level_bit(level))) {
-        s->seen[v] = MIN_POISON;
-        s->minimize_touched[(*touched)++] = v;
+    CRef root_reason = s->vars[root].reason;
+    bool root_implicit = (s->binary_reasons[root] != LIT_UNDEF);
+    if ((!root_implicit && (root_reason == INVALID_CLAUSE || root_reason == BINARY_CONFLICT ||
+                            clause_deleted(s->arena, root_reason))) ||
+        !(abstract_levels & level_bit(root_level))) {
+        s->seen[root] = MIN_POISON;
+        s->minimize_touched[(*touched)++] = root;
         return false;
     }
 
-    s->seen[v] = MIN_EXPLORING;
-    uint32_t v_pos = s->vars[v].trail_pos;
+    MinFrame stack[MIN_MAX_DEPTH];
+    s->seen[root] = MIN_EXPLORING;
+    stack[0] = (MinFrame){root, 0u};
+    uint32_t top = 1u;
+    bool result_ok = true;
+    bool any_aborted = false;
 
-    bool child_aborted = false;
-    bool ok = true;
+    while (top > 0u) {
+        MinFrame *f = &stack[top - 1u];
+        Var v = f->v;
 
-    if (implicit) {
-        if (!*remaining) {
-            child_aborted = true;
-            ok = false;
-        } else {
+        if (!result_ok) {
+            --top;
+            if (any_aborted) {
+                s->seen[v] = MIN_UNSEEN;
+            } else {
+                s->seen[v] = MIN_POISON;
+                s->minimize_touched[(*touched)++] = v;
+            }
+            continue;
+        }
+
+        Level level = s->vars[v].level;
+        uint32_t v_pos = s->vars[v].trail_pos;
+        CRef reason = s->vars[v].reason;
+        Lit binary = s->binary_reasons[v];
+        bool implicit = (binary != LIT_UNDEF);
+
+        if (implicit) {
+            if (f->next_idx > 0u) {
+                --top;
+                s->seen[v] = MIN_REMOVABLE;
+                s->minimize_touched[(*touched)++] = v;
+                continue;
+            }
+            f->next_idx = 1u;
+            if (!*remaining) {
+                any_aborted = true;
+                result_ok = false;
+                continue;
+            }
             --*remaining;
             s->stats.minimize_binary_steps++;
             if ((++s->stats.minimize_inspections & 1023) == 0 && solver_budget_exhausted(s)) {
-                child_aborted = true;
-                ok = false;
-            } else {
-                Var u = var(binary);
-                if (s->values[u] == UNDEF || s->vars[u].trail_pos >= v_pos ||
-                    s->vars[u].level > level ||
-                    lxor(s->values[u], sign(binary)) != FALSE) {
-                    ok = false;
-                } else if (s->vars[u].level > 0) {
-                    ok = dfs_redundant(s, u, abstract_levels, depth + 1,
-                                       remaining, touched, &child_aborted);
-                }
+                any_aborted = true;
+                result_ok = false;
+                continue;
             }
-        }
-    } else {
-        uint32_t size = CLAUSE_SIZE(s->arena, reason);
-        const Lit *lits = CLAUSE_LITS(s->arena, reason);
-        for (uint32_t i = 0; i < size; ++i) {
-            if (!*remaining) {
-                child_aborted = true;
-                ok = false;
-                break;
-            }
-            --*remaining;
-            if ((++s->stats.minimize_inspections & 1023) == 0 && solver_budget_exhausted(s)) {
-                child_aborted = true;
-                ok = false;
-                break;
-            }
-            Lit q = lits[i];
-            Var u = var(q);
-            if (u == v) continue;
+            Var u = var(binary);
             if (s->values[u] == UNDEF || s->vars[u].trail_pos >= v_pos ||
                 s->vars[u].level > level ||
-                lxor(s->values[u], sign(q)) != FALSE) {
-                ok = false;
-                break;
+                lxor(s->values[u], sign(binary)) != FALSE) {
+                result_ok = false;
+                continue;
             }
             if (s->vars[u].level == 0) continue;
-            if (!dfs_redundant(s, u, abstract_levels, depth + 1,
-                               remaining, touched, &child_aborted)) {
-                ok = false;
+
+            uint8_t ust = s->seen[u];
+            if (ust == MIN_SOURCE) continue;
+            if (ust == MIN_REMOVABLE) { s->stats.minimize_cache_hits++; continue; }
+            if (ust == MIN_POISON) { s->stats.minimize_cache_hits++; result_ok = false; continue; }
+            if (ust == MIN_EXPLORING) { result_ok = false; continue; }
+            if (start_depth + top >= MIN_MAX_DEPTH) {
+                any_aborted = true;
+                result_ok = false;
+                continue;
+            }
+            Level ul = s->vars[u].level;
+            CRef ur = s->vars[u].reason;
+            bool uimp = (s->binary_reasons[u] != LIT_UNDEF);
+            if ((!uimp && (ur == INVALID_CLAUSE || ur == BINARY_CONFLICT ||
+                           clause_deleted(s->arena, ur))) ||
+                !(abstract_levels & level_bit(ul))) {
+                s->seen[u] = MIN_POISON;
+                s->minimize_touched[(*touched)++] = u;
+                result_ok = false;
+                continue;
+            }
+            s->seen[u] = MIN_EXPLORING;
+            stack[top++] = (MinFrame){u, 0u};
+        } else {
+            uint32_t size = CLAUSE_SIZE(s->arena, reason);
+            const Lit *lits = CLAUSE_LITS(s->arena, reason);
+            bool pushed = false;
+            while (f->next_idx < size) {
+                if (!*remaining) {
+                    any_aborted = true;
+                    result_ok = false;
+                    break;
+                }
+                --*remaining;
+                if ((++s->stats.minimize_inspections & 1023) == 0 && solver_budget_exhausted(s)) {
+                    any_aborted = true;
+                    result_ok = false;
+                    break;
+                }
+                Lit q = lits[f->next_idx++];
+                Var u = var(q);
+                if (u == v) continue;
+                if (s->values[u] == UNDEF || s->vars[u].trail_pos >= v_pos ||
+                    s->vars[u].level > level ||
+                    lxor(s->values[u], sign(q)) != FALSE) {
+                    result_ok = false;
+                    break;
+                }
+                if (s->vars[u].level == 0) continue;
+
+                uint8_t ust = s->seen[u];
+                if (ust == MIN_SOURCE) continue;
+                if (ust == MIN_REMOVABLE) { s->stats.minimize_cache_hits++; continue; }
+                if (ust == MIN_POISON) { s->stats.minimize_cache_hits++; result_ok = false; break; }
+                if (ust == MIN_EXPLORING) { result_ok = false; break; }
+                if (start_depth + top >= MIN_MAX_DEPTH) {
+                    any_aborted = true;
+                    result_ok = false;
+                    break;
+                }
+                Level ul = s->vars[u].level;
+                CRef ur = s->vars[u].reason;
+                bool uimp = (s->binary_reasons[u] != LIT_UNDEF);
+                if ((!uimp && (ur == INVALID_CLAUSE || ur == BINARY_CONFLICT ||
+                               clause_deleted(s->arena, ur))) ||
+                    !(abstract_levels & level_bit(ul))) {
+                    s->seen[u] = MIN_POISON;
+                    s->minimize_touched[(*touched)++] = u;
+                    result_ok = false;
+                    break;
+                }
+                s->seen[u] = MIN_EXPLORING;
+                stack[top++] = (MinFrame){u, 0u};
+                pushed = true;
                 break;
+            }
+            if (!pushed && result_ok) {
+                --top;
+                s->seen[v] = MIN_REMOVABLE;
+                s->minimize_touched[(*touched)++] = v;
             }
         }
     }
 
-    if (child_aborted) {
-        *aborted = true;
-        s->seen[v] = MIN_UNSEEN;
-        return false;
-    }
-
-    s->seen[v] = ok ? MIN_REMOVABLE : MIN_POISON;
-    s->minimize_touched[(*touched)++] = v;
-    return ok;
+    if (any_aborted) *aborted = true;
+    return result_ok;
 }
 
 /* Check whether a MIN_SOURCE literal v is redundant wrt the remaining SOURCE set. */

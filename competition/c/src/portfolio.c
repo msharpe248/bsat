@@ -310,18 +310,27 @@ lbool solver_solve_parallel(Solver *master, uint32_t num_threads) {
     pthread_mutex_init(&ctx->result_mu, NULL);
     pthread_mutex_init(&ctx->ring_mu, NULL);
 
+    pthread_attr_t attr;
+    bool has_attr = (pthread_attr_init(&attr) == 0);
+    if (has_attr) {
+        /* macOS defaults worker threads to 512 KiB (musl Linux to 128 KiB);
+         * request an 8 MiB stack matching the main thread for deep search/ASan frames. */
+        (void)pthread_attr_setstacksize(&attr, 8u * 1024u * 1024u);
+    }
+
     uint32_t launched = 0;
     for (uint32_t i = 0; i < num_threads; ++i) {
         workers[i].ctx = ctx;
         workers[i].id = i;
         workers[i].read_seq = 0;
-        if (pthread_create(&threads[i], NULL, portfolio_worker_main, &workers[i]) != 0) {
+        if (pthread_create(&threads[i], has_attr ? &attr : NULL, portfolio_worker_main, &workers[i]) != 0) {
             atomic_store_explicit(&ctx->done, 1, memory_order_release);
             master->error = true;
             break;
         }
         launched++;
     }
+    if (has_attr) pthread_attr_destroy(&attr);
     for (uint32_t i = 0; i < launched; ++i) {
         pthread_join(threads[i], NULL);
     }
