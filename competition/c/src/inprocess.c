@@ -3030,13 +3030,29 @@ static bool inproc_sweep(Solver *s, uint64_t tick_budget) {
 }
 
 /* =====================================================================
- * Pass 8: Lightweight WalkSAT Phase Seeding (for SAT guidance)
+ * Pass 8: Kissat-style ProbSAT Phase Seeding (Polynomial Break Weights)
+ *
+ * Uses precomputed ProbSAT polynomial break-count weights (1 + brk)^(-2.3)
+ * with zero-break fast path to find low-energy partial assignments and
+ * seed both saved polarities and Stable-mode target phases (best_phase).
  * ===================================================================== */
 
-static void inproc_walk_seed_phases(Solver *s) {
+static void inproc_walk_seed_phases(Solver *s, uint32_t max_flips) {
     if (!s->opts.phase_saving || !s->opts.rephase || !s->rephase.best_phase) return;
     if (s->num_vars == 0 || s->num_vars > 50000 || s->num_clauses == 0 || s->num_clauses > 150000) return;
     if (solver_budget_exhausted(s)) return;
+
+    /* Precomputed ProbSAT weights: w[b] = (1 + b)^(-2.3) for b = 0..63. */
+    static const double probsat_w[64] = {
+        1.000000, 0.203063, 0.079914, 0.041235, 0.024675, 0.016224, 0.011386, 0.008373,
+        0.006378, 0.004998, 0.004008, 0.003276, 0.002721, 0.002291, 0.001952, 0.001681,
+        0.001461, 0.001280, 0.001129, 0.001003, 0.000896, 0.000805, 0.000726, 0.000658,
+        0.000599, 0.000547, 0.000501, 0.000461, 0.000425, 0.000394, 0.000365, 0.000340,
+        0.000317, 0.000296, 0.000277, 0.000260, 0.000244, 0.000230, 0.000217, 0.000205,
+        0.000194, 0.000183, 0.000174, 0.000165, 0.000157, 0.000149, 0.000142, 0.000136,
+        0.000129, 0.000124, 0.000118, 0.000113, 0.000108, 0.000104, 0.000100, 0.000096,
+        0.000092, 0.000088, 0.000085, 0.000082, 0.000079, 0.000076, 0.000073, 0.000071
+    };
 
     uint32_t nv = s->num_vars;
     uint32_t nc = s->num_clauses;
@@ -3081,9 +3097,10 @@ static void inproc_walk_seed_phases(Solver *s) {
     }
     free(cursor);
 
-    /* Initialize assignment from current saved polarities + root units. */
+    /* Initialize assignment from target/saved polarities + root units. */
     for (Var v = 1; v <= nv; ++v) {
         if (s->values[v] != UNDEF) assign[v] = (s->values[v] == TRUE);
+        else if (s->rephase.best_phase[v] != UNDEF) assign[v] = (s->rephase.best_phase[v] == TRUE);
         else assign[v] = s->vars[v].polarity ? 1 : 0;
     }
 
@@ -3105,10 +3122,13 @@ static void inproc_walk_seed_phases(Solver *s) {
         }
     }
 
+    uint32_t init_unsat = n_unsat;
     uint32_t best_unsat = n_unsat;
     memcpy(best_assign, assign, (size_t)(nv + 1));
     uint32_t rng = s->random_state ^ (uint32_t)(s->inprocess_rounds * 0x9e3779b9u + 7u);
-    const uint32_t MAX_FLIPS = 15000;
+    const uint32_t MAX_FLIPS = max_flips;
+    Var cand_vars[64];
+    double cand_w[64];
 
     for (uint32_t flip = 0; flip < MAX_FLIPS && n_unsat > 0; ++flip) {
         if ((flip & 1023) == 0 && solver_budget_exhausted(s)) break;
@@ -3117,30 +3137,41 @@ static void inproc_walk_seed_phases(Solver *s) {
         uint32_t sz = CLAUSE_SIZE(s->arena, cr);
         const Lit *ls = CLAUSE_LITS(s->arena, cr);
 
-        /* Pick variable in ci with minimum break count (or random with prob 0.35). */
+        /* ProbSAT selection: pick zero-break move immediately, else sample
+         * proportional to (1 + break)^(-2.3) across literals in `ci`. */
         Var chosen = INVALID_VAR;
-        uint32_t best_brk = UINT32_MAX;
-        bool do_rand = (bsat_random(&rng) % 100) < 35;
-        if (do_rand) {
-            uint32_t start = bsat_random(&rng) % sz;
-            for (uint32_t k = 0; k < sz; ++k) {
-                Var v = var(ls[(start + k) % sz]);
-                if (s->values[v] == UNDEF) { chosen = v; break; }
+        uint32_t ncands = 0;
+        double total_w = 0.0;
+        uint32_t scan_sz = MIN(sz, 64u);
+        for (uint32_t k = 0; k < scan_sz; ++k) {
+            Var v = var(ls[k]);
+            if (s->values[v] != UNDEF) continue;
+            Lit true_lit = mkLit(v, !assign[v]);
+            uint32_t brk = 0;
+            uint32_t ob = occ_head[true_lit], oe = occ_head[true_lit + 1];
+            for (uint32_t o = ob; o < oe; ++o) {
+                if (sat_cnt[occ_clauses[o]] == 1) {
+                    brk++;
+                    if (brk >= 63u) break;
+                }
             }
+            if (brk == 0) { chosen = v; break; }
+            double w = probsat_w[brk];
+            cand_vars[ncands] = v;
+            cand_w[ncands] = w;
+            total_w += w;
+            ncands++;
         }
         if (chosen == INVALID_VAR) {
-            for (uint32_t k = 0; k < sz; ++k) {
-                Var v = var(ls[k]);
-                if (s->values[v] != UNDEF) continue;
-                Lit true_lit = mkLit(v, !assign[v]);
-                uint32_t brk = 0;
-                for (uint32_t o = occ_head[true_lit]; o < occ_head[true_lit + 1]; ++o) {
-                    if (sat_cnt[occ_clauses[o]] == 1) { brk++; if (brk >= best_brk) break; }
-                }
-                if (brk < best_brk) { best_brk = brk; chosen = v; if (brk == 0) break; }
+            if (ncands == 0) break;
+            double pick = ((double)(bsat_random(&rng) & 0xFFFFFFu) / (double)0x1000000u) * total_w;
+            double acc = 0.0;
+            chosen = cand_vars[ncands - 1u];
+            for (uint32_t k = 0; k < ncands; ++k) {
+                acc += cand_w[k];
+                if (pick <= acc) { chosen = cand_vars[k]; break; }
             }
         }
-        if (chosen == INVALID_VAR) break;
 
         Lit old_true = mkLit(chosen, !assign[chosen]);
         Lit new_true = neg(old_true);
@@ -3169,10 +3200,16 @@ static void inproc_walk_seed_phases(Solver *s) {
         }
     }
 
-    /* Seed saved polarities with the best low-unsat assignment found! */
-    if (best_unsat < n_unsat || best_unsat <= nc / 20) {
+    /* Seed both saved polarities and target best_phase with the best ProbSAT basin! */
+    if (best_unsat < init_unsat || best_unsat <= nc / 20) {
         for (Var v = 1; v <= nv; ++v) {
-            if (s->values[v] == UNDEF) s->vars[v].polarity = (best_assign[v] != 0);
+            if (s->values[v] == UNDEF) {
+                bool pol = (best_assign[v] != 0);
+                s->vars[v].polarity = pol;
+                if (best_unsat == 0 || s->rephase.best_phase[v] == UNDEF) {
+                    s->rephase.best_phase[v] = pol ? TRUE : FALSE;
+                }
+            }
         }
     }
 
@@ -3593,9 +3630,14 @@ bool solver_inprocess(Solver *s, bool preprocessing) {
         if (!inproc_vivify(s, base_budget / 2)) goto finish;
     }
 
-    /* 8. Lightweight WalkSAT phase seeding (helps SAT instances find models fast) */
-    if (!preprocessing && (s->inprocess_rounds & 1) == 0 && !solver_budget_exhausted(s)) {
-        inproc_walk_seed_phases(s);
+    /* 8. Kissat-style ProbSAT phase seeding (short warmup in preprocessing on
+     * small/medium formulas + full 20k-flip re-seeding on even inproc rounds). */
+    if (!solver_budget_exhausted(s)) {
+        if (preprocessing && s->num_vars <= 10000 && s->num_clauses <= 40000) {
+            inproc_walk_seed_phases(s, 4000u);
+        } else if (!preprocessing && (s->inprocess_rounds & 1) == 0) {
+            inproc_walk_seed_phases(s, 20000u);
+        }
     }
 
     /* 8b. Refresh/sync live GF(2) matrices after SCC/BVE/units */

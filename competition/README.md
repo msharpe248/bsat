@@ -113,7 +113,7 @@ competition/
 
 | Feature | C | Python | Notes |
 |---------|---|--------|-------|
-| Local Search Hybridization | ✅ | ❌ | Periodic WalkSAT phase seeding + standalone WalkSAT (`--local-search`) |
+| Local Search / ProbSAT Hybrid | ✅ | ❌ | Kissat-style ProbSAT `(1+break)^(-2.3)` phase seeding + standalone WalkSAT (`--local-search`) |
 | DRAT Proof Logging | ✅ | ❌ | Independently verifiable text & binary DRAT proofs |
 | Chronological Backtracking | ✅ | ✅ | Enabled by default (`--chrono` / `--no-chrono`) |
 | Multi-Core Portfolio (`-j N`) | ✅ | ❌ | Diversified pthread workers with short clause sharing (`size <= 4`) & atomic stop |

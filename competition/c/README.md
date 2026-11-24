@@ -108,8 +108,9 @@ Default one-shot solving uses:
   substitution, embedded Mini-Kitten CDCL SAT sweeping with global 64-bit
   gate-DAG simulation for cross-cone equivalences, forward subsumption & SSR, gate-aware
   BVE (AND/XOR/ITE) with model reconstruction, post-BVE binary transitive
-  reduction, O(n) prefix-sharing vivification, and periodic WalkSAT phase
-  seeding, plus preprocessing lucky-phase check, bounded congruence closure,
+  reduction, O(n) prefix-sharing vivification, and Kissat-style ProbSAT
+  polynomial-weighted phase seeding (`(1 + break)^(-2.3)`, preprocessing warmup
+  + periodic target re-seeding), plus preprocessing lucky-phase check, bounded congruence closure,
   AMO binary-clique extraction with linear Sinz sequential-counter re-encoding
   (non-proof mode on `>=80%` binary formulas), and Structured Bounded Variable
   Addition (`--sbva` / `--no-sbva`, arbitrary-length clause factoring with
