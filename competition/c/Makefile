@@ -112,6 +112,7 @@ pgo-generate: clean dirs
 	$(CC) $(CFLAGS) -O3 -march=native -fprofile-instr-generate -c -o $(OBJDIR)/elim.o $(SRCDIR)/elim.c
 	$(CC) $(CFLAGS) -O3 -march=native -fprofile-instr-generate -c -o $(OBJDIR)/equiv.o $(SRCDIR)/equiv.c
 	$(CC) $(CFLAGS) -O3 -march=native -fprofile-instr-generate -c -o $(OBJDIR)/factor.o $(SRCDIR)/factor.c
+	$(CC) $(CFLAGS) -O3 -march=native -fprofile-instr-generate -c -o $(OBJDIR)/gauss.o $(SRCDIR)/gauss.c
 	$(CC) $(CFLAGS) -O3 -march=native -fprofile-instr-generate -c -o $(OBJDIR)/inprocess.o $(SRCDIR)/inprocess.c
 	$(CC) $(CFLAGS) -O3 -march=native -fprofile-instr-generate -c -o $(OBJDIR)/ipasir.o $(SRCDIR)/ipasir.c
 	$(CC) $(CFLAGS) -O3 -march=native -fprofile-instr-generate -c -o $(OBJDIR)/local_search.o $(SRCDIR)/local_search.c
@@ -157,6 +158,7 @@ pgo-use: dirs
 	$(CC) $(CFLAGS) -O3 -march=native -flto -fprofile-instr-use=pgo_data/default.profdata -c -o $(OBJDIR)/elim.o $(SRCDIR)/elim.c
 	$(CC) $(CFLAGS) -O3 -march=native -flto -fprofile-instr-use=pgo_data/default.profdata -c -o $(OBJDIR)/equiv.o $(SRCDIR)/equiv.c
 	$(CC) $(CFLAGS) -O3 -march=native -flto -fprofile-instr-use=pgo_data/default.profdata -c -o $(OBJDIR)/factor.o $(SRCDIR)/factor.c
+	$(CC) $(CFLAGS) -O3 -march=native -flto -fprofile-instr-use=pgo_data/default.profdata -c -o $(OBJDIR)/gauss.o $(SRCDIR)/gauss.c
 	$(CC) $(CFLAGS) -O3 -march=native -flto -fprofile-instr-use=pgo_data/default.profdata -c -o $(OBJDIR)/inprocess.o $(SRCDIR)/inprocess.c
 	$(CC) $(CFLAGS) -O3 -march=native -flto -fprofile-instr-use=pgo_data/default.profdata -c -o $(OBJDIR)/ipasir.o $(SRCDIR)/ipasir.c
 	$(CC) $(CFLAGS) -O3 -march=native -flto -fprofile-instr-use=pgo_data/default.profdata -c -o $(OBJDIR)/local_search.o $(SRCDIR)/local_search.c

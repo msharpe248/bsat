@@ -560,6 +560,7 @@ error:
 void solver_free(Solver* s) {
     if (!s) return;
 
+    gauss_free(s);
     arena_free(s->arena);
     watch_free(s->watches);
 
@@ -569,6 +570,7 @@ void solver_free(Solver* s) {
     free(s->lrb_last_conflict);
     free(s->vars);
     free(s->values);
+    free(s->lit_values);
     free(s->trail);
     free(s->trail_lims);
     free(s->clauses);
@@ -626,6 +628,10 @@ static bool grow_var_arrays(Solver* s, uint32_t new_capacity) {
     uint8_t *new_values = realloc(s->values, alloc_size * sizeof *new_values);
     if (!new_values) return false;
     s->values = new_values;
+
+    uint8_t *new_lit_values = realloc(s->lit_values, (size_t)alloc_size * 2u * sizeof *new_lit_values);
+    if (!new_lit_values) return false;
+    s->lit_values = new_lit_values;
 
     // Grow trail
     Trail* new_trail = (Trail*)realloc(s->trail, alloc_size * sizeof(Trail));
@@ -715,6 +721,8 @@ Var solver_new_var(Solver* s) {
     // Initialize new variable
     memset(&s->vars[v], 0, sizeof(VarInfo));
     s->values[v] = UNDEF;
+    s->lit_values[v << 1] = UNDEF;
+    s->lit_values[(v << 1) | 1u] = UNDEF;
     if (s->lrb_last_conflict) s->lrb_last_conflict[v] = 0;
     s->vars[v].level = INVALID_LEVEL;
     s->vars[v].reason = INVALID_CLAUSE;
@@ -737,6 +745,19 @@ Var solver_new_var(Solver* s) {
  * Trail Management
  *********************************************************************/
 
+static inline void sync_lit_values(Solver *s) {
+    if (!s->lit_values || SEARCH_DIAGNOSTICS(s)) { s->lit_values_live = false; return; }
+    uint8_t * restrict lv = s->lit_values;
+    const uint8_t * restrict vals = s->values;
+    lv[0] = UNDEF; lv[1] = UNDEF;
+    for (Var v = 1; v <= s->num_vars; ++v) {
+        uint8_t val = vals[v];
+        lv[v << 1] = val;
+        lv[(v << 1) | 1u] = (val == UNDEF) ? UNDEF : (uint8_t)(3u - val);
+    }
+    s->lit_values_live = true;
+}
+
 static inline void push_trail(Solver* s, Lit lit) {
     Var v = var(lit);
     ASSERT(s->values[v] == UNDEF);
@@ -744,6 +765,10 @@ static inline void push_trail(Solver* s, Lit lit) {
     s->vars[v].reason = INVALID_CLAUSE;
     s->binary_reasons[v] = LIT_UNDEF;
     s->values[v] = sign(lit) ? FALSE : TRUE;
+    if (s->lit_values_live) {
+        s->lit_values[lit] = TRUE;
+        s->lit_values[lit ^ 1u] = FALSE;
+    }
     s->vars[v].level = s->decision_level;
     s->vars[v].trail_pos = s->trail_size;
 
@@ -769,6 +794,10 @@ void solver_backtrack(Solver* s, Level level) {
                 ++s->stats.chrono_retained;
             } else {
                 s->values[v]=UNDEF;
+                if (s->lit_values_live) {
+                    s->lit_values[v << 1] = UNDEF;
+                    s->lit_values[(v << 1) | 1u] = UNDEF;
+                }
                 if (track_vmtf(s)) solver_vmtf_unassign(s,v);
                 s->vars[v].level=INVALID_LEVEL;s->vars[v].reason=INVALID_CLAUSE;
                 s->binary_reasons[v]=LIT_UNDEF;
@@ -779,12 +808,17 @@ void solver_backtrack(Solver* s, Level level) {
         /* Revisit retained late implications: their watches may have changed
            while assignments from higher levels were still present. */
         if (s->qhead>pos) s->qhead=pos;
+        if (s->gauss) gauss_backtrack(s, pos);
         s->decision_level=level;
         return;
     }
     for (uint32_t i = s->trail_size; i > pos;) {
         Var v = var(s->trail[--i].lit);
         s->values[v] = UNDEF;
+        if (s->lit_values_live) {
+            s->lit_values[v << 1] = UNDEF;
+            s->lit_values[(v << 1) | 1u] = UNDEF;
+        }
         if (track_vmtf(s)) solver_vmtf_unassign(s, v);
         s->vars[v].level = INVALID_LEVEL;
         s->vars[v].reason = INVALID_CLAUSE;
@@ -793,6 +827,7 @@ void solver_backtrack(Solver* s, Level level) {
     }
     s->trail_size = pos;
     if (s->qhead > pos) s->qhead = pos;
+    if (s->gauss) gauss_backtrack(s, pos);
     s->decision_level = level;
 }
 
@@ -1037,6 +1072,166 @@ static CRef solver_propagate_account_impl(Solver* s) {
     uint64_t skipped = 0;
     uint32_t poll_counter = 0;
     CRef conflict = INVALID_CLAUSE;
+
+    /* Hot literal-indexed BCP fast path (active only inside CDCL search loop). */
+    if (s->lit_values_live && !diag && !has_work_limit) {
+        uint8_t * restrict lval = s->lit_values;
+        while (qhead < trail_size) {
+            if (has_poll && (++poll_counter & 63) == 0) {
+                s->work += ticks; ticks = 0;
+                if (solver_budget_exhausted(s)) {
+                    s->qhead = qhead; s->trail_size = trail_size;
+                    s->stats.propagations += props; wm->visits += visits; wm->skipped += skipped;
+                    return INVALID_CLAUSE;
+                }
+            }
+
+            Lit p = trail[qhead++].lit;
+            Lit neg_p = neg(p);
+            Level p_level = chrono ? vars[var(p)].level : dec_level;
+
+            WatchList *ws = &wlists[toInt(neg_p)];
+            Watch *watches = ws->watches;
+            uint32_t ws_size = ws->size;
+            uint32_t i = 0, j = 0;
+
+            props++;
+
+            while (i < ws_size) {
+                ticks++;
+                visits++;
+                Watch w = watches[i];
+
+                if ((int32_t)w.cref < 0) {
+                    Lit q = w.blocker;
+                    uint8_t qv = lval[q];
+                    if (qv == UNDEF) {
+                        Var v = var(q);
+                        values[v] = (uint8_t)(2u - sign(q));
+                        lval[q] = TRUE;
+                        lval[q ^ 1u] = FALSE;
+                        vars[v].level = p_level;
+                        vars[v].reason = watch_clause(w);
+                        vars[v].trail_pos = trail_size;
+                        binary_reasons[v] = neg_p;
+                        trail[trail_size++].lit = q;
+                        if (save_phase) vars[v].polarity = !sign(q);
+                    } else if (qv == FALSE) {
+                        CRef binary_reason = watch_clause(w);
+                        s->binary_conflict_lits[0] = neg_p;
+                        s->binary_conflict_lits[1] = q;
+                        while (i < ws_size) watches[j++] = watches[i++];
+                        ws->size = j;
+                        conflict = (binary_reason != INVALID_CLAUSE) ? binary_reason : BINARY_CONFLICT;
+                        goto done;
+                    }
+                    watches[j++] = w;
+                    i++;
+                    continue;
+                }
+
+                if (lval[w.blocker] == TRUE) {
+                    watches[j++] = w;
+                    i++;
+                    skipped++;
+                    continue;
+                }
+
+                CRef cref = w.cref;
+                if (ignore_cr != INVALID_CLAUSE && cref == ignore_cr) {
+                    watches[j++] = w;
+                    i++;
+                    continue;
+                }
+                if (i + 1 < ws_size && (int32_t)watches[i + 1].cref >= 0) {
+                    __builtin_prefetch(&mem[watches[i + 1].cref], 0, 0);
+                }
+                ClauseHeader *h = (ClauseHeader *)&mem[cref];
+                uint32_t size = h->size;
+                Lit *lits = (Lit *)&mem[cref + sizeof(ClauseHeader) / sizeof(uint32_t)];
+
+                if (lits[0] == neg_p) {
+                    lits[0] = lits[1];
+                    lits[1] = neg_p;
+                }
+                ASSERT(lits[1] == neg_p);
+
+                Lit first = lits[0];
+                uint8_t fval = lval[first];
+                if (fval == TRUE) {
+                    watches[j++] = (Watch){cref, first};
+                    i++;
+                    continue;
+                }
+
+                bool found = false;
+                uint32_t begin = circular ? h->search : 2;
+                if (begin < 2 || begin >= size) begin = 2;
+
+                for (uint32_t k = begin; k < size; ++k) {
+                    ticks++;
+                    Lit lit = lits[k];
+                    if (lval[lit] != FALSE) {
+                        lits[1] = lit;
+                        lits[k] = neg_p;
+                        h->search = k;
+                        watch_add_inline(wm, lit, cref, first);
+                        found = true;
+                        break;
+                    }
+                }
+                if (!found) {
+                    for (uint32_t k = 2; k < begin; ++k) {
+                        ticks++;
+                        Lit lit = lits[k];
+                        if (lval[lit] != FALSE) {
+                            lits[1] = lit;
+                            lits[k] = neg_p;
+                            h->search = k;
+                            watch_add_inline(wm, lit, cref, first);
+                            found = true;
+                            break;
+                        }
+                    }
+                }
+                if (found) {
+                    i++;
+                    continue;
+                }
+
+                watches[j++] = w;
+                i++;
+
+                if (fval == UNDEF) {
+                    Level reason_level = p_level;
+                    if (chrono) {
+                        for (uint32_t k = 2; k < size; ++k) {
+                            Level kl = vars[var(lits[k])].level;
+                            if (kl > reason_level) reason_level = kl;
+                        }
+                    }
+                    Var fv = var(first);
+                    values[fv] = (uint8_t)(2u - sign(first));
+                    lval[first] = TRUE;
+                    lval[first ^ 1u] = FALSE;
+                    vars[fv].level = reason_level;
+                    vars[fv].reason = cref;
+                    vars[fv].trail_pos = trail_size;
+                    binary_reasons[fv] = LIT_UNDEF;
+                    trail[trail_size++].lit = first;
+                    if (save_phase) vars[fv].polarity = !sign(first);
+                } else {
+                    while (i < ws_size) watches[j++] = watches[i++];
+                    ws->size = j;
+                    conflict = cref;
+                    goto done;
+                }
+            }
+
+            ws->size = j;
+        }
+        goto done;
+    }
 
     while (qhead < trail_size) {
         if (has_poll) {
@@ -1903,7 +2098,7 @@ static void solver_collect_garbage_account_impl(Solver *s) {
     if (solver_budget_exhausted_now(s)) return;
     Arena *old = s->arena;
     Arena *fresh = arena_init(MAX((size_t)1024, old->size - old->wasted + 1));
-    if (!fresh) return;
+    if (!fresh) { s->error = true; return; }
     fresh->verbose=s->opts.verbose;
     for (size_t at = 1; at < old->size;) {
         if (solver_budget_exhausted(s)) { arena_free(fresh); return; }
@@ -1970,6 +2165,7 @@ static void solver_collect_garbage_account_impl(Solver *s) {
         if (cr != INVALID_CLAUSE && CLAUSE_HEADER(old, cr)->search != INVALID_CLAUSE) s->learnts[out++] = CLAUSE_HEADER(old, cr)->search;
     }
     s->num_learnts = out;
+    if (s->gauss) gauss_relocate_clauses(s, old);
     fresh->peak_size = MAX(old->peak_size, fresh->peak_size);
     fresh->num_growths += old->num_growths;
     s->arena = fresh;
@@ -2489,7 +2685,7 @@ bool solver_reset_learning(Solver *s) {
 static bool solver_prepare_next(Solver *s, double start) {
     if (s->error || s->watches->failed) return false;
     bool reuse=s->opts.reuse_learnts && !s->factor_original_vars && !s->proof_file && !s->opts.proof_path &&
-        !s->elim && !s->opts.elim && !s->opts.bce && !s->opts.local_search &&
+        !s->elim && !s->gauss && !s->opts.elim && !s->opts.bce && !s->opts.local_search &&
         !s->interrupted;
     if (!reuse) return start<0 ? solver_rebuild(s) : solver_rebuild_timed(s,start,s->opts.max_time);
     bool unsat=s->base_unsat || (s->result==FALSE && !s->last_assumptions);
@@ -2580,8 +2776,10 @@ static bool solver_try_lucky(Solver *s) {
                 ok = false;
                 break;
             }
+            if (s->watches->failed) s->error = true;
             if (s->error || s->interrupted) { ok = false; break; }
         }
+        if (s->watches->failed) s->error = true;
         if (ok && s->trail_size == s->num_vars && !s->error && !s->interrupted) {
             sat = true;
             break;
@@ -2713,14 +2911,19 @@ static lbool solve_internal_account_impl(Solver *s, const Lit *assumps, uint32_t
         }
     } else if (!n_assumps && !s->proof_file && !s->proof_journal && !s->opts.reuse_learnts &&
         s->opts.inprocess && s->opts.preprocess_budget && !s->opts.factor && !s->opts.local_search &&
-        s->num_clauses >= 2000 && s->num_clauses <= 250000 && !solver_budget_exhausted(s)) {
+        s->num_clauses >= 500 && s->num_clauses <= 250000 && !solver_budget_exhausted(s)) {
+        /* 1. First extract large AMO binary cliques via linear Sinz sequential counters. */
+        if (!solver_amo_cliques(s)) return UNDEF;
+        if (s->error || s->interrupted) return UNDEF;
+        /* 2. Then run bounded clause factoring (BVA) if significant binaries remain. */
         uint32_t bin_cnt = 0;
         for (uint32_t i = 0; i < s->num_clauses; ++i) {
             CRef cr = s->clauses[i];
             if (cr != INVALID_CLAUSE && !clause_deleted(s->arena, cr) && CLAUSE_SIZE(s->arena, cr) == 2)
                 bin_cnt++;
         }
-        if ((uint64_t)bin_cnt * 2ULL >= (uint64_t)s->num_clauses) {
+        if (s->num_clauses >= 2000 && s->num_clauses <= 250000 &&
+            (uint64_t)bin_cnt * 2ULL >= (uint64_t)s->num_clauses) {
             uint32_t old_max_v = s->opts.factor_max_variables;
             uint32_t old_min_g = s->opts.factor_min_gain;
             s->opts.factor_max_variables = 4096;
@@ -2761,10 +2964,22 @@ static lbool solve_internal_account_impl(Solver *s, const Lit *assumps, uint32_t
         s->reduce_span = s->opts.reduce_interval;
         s->reduce_limit = s->reduce_span;
     }
+    sync_lit_values(s);
     for (;;) {
         if (solver_budget_exhausted(s)) break;
         CRef conflict=solver_propagate(s);
+        if (conflict == INVALID_CLAUSE && s->gauss && !s->error && !s->interrupted && s->result != FALSE) {
+            while (conflict == INVALID_CLAUSE && gauss_has_work(s) &&
+                   !s->error && !s->interrupted && s->result != FALSE) {
+                conflict = gauss_propagate(s);
+                if (conflict == INVALID_CLAUSE && s->qhead < s->trail_size &&
+                    !s->error && !s->interrupted && s->result != FALSE) {
+                    conflict = solver_propagate(s);
+                }
+            }
+        }
         if (s->error || s->interrupted) break;
+        if (s->result == FALSE) { s->base_unsat = true; result = FALSE; break; }
         if (conflict != INVALID_CLAUSE) {
             s->stats.conflicts++; s->restart.conflicts_since++;
             if(SEARCH_DIAGNOSTICS(s)) ++s->accounting.diagnostic_conflicts;
@@ -2909,17 +3124,21 @@ static lbool solve_internal_account_impl(Solver *s, const Lit *assumps, uint32_t
                     (s->work >= s->next_inprocess_ticks ||
                      s->stats.conflicts >= s->last_vivify + s->opts.inprocess_interval)) {
                     s->last_vivify = s->stats.conflicts;
+                    s->lit_values_live = false;
                     if (!solver_inprocess(s, false)) {
                         if (s->error || s->interrupted) break;
                         s->base_unsat = true; result = FALSE; break;
                     }
+                    sync_lit_values(s);
                     uint64_t next_span = s->inprocess_ticks_span + (s->inprocess_ticks_span >> 1);
                     if (next_span > 50000000ULL) next_span = 50000000ULL;
                     s->inprocess_ticks_span = next_span;
                     s->next_inprocess_ticks = s->work + next_span;
                     if (s->qhead < s->trail_size) continue;
                 } else {
+                    s->lit_values_live = false;
                     if (!solver_simplify(s)) {s->base_unsat=true;result=FALSE;break;}
+                    sync_lit_values(s);
                     if (s->qhead<s->trail_size) continue;
                 }
             }
@@ -2930,7 +3149,9 @@ static lbool solve_internal_account_impl(Solver *s, const Lit *assumps, uint32_t
                 s->stats.conflicts >= s->local_search.conflicts_since+s->opts.ls_interval) {
                 // The walk owns a separate assignment; failed walks must not
                 // discard the CDCL trail or turn into uncounted root restarts.
+                s->lit_values_live = false;
                 bool found=solver_try_local_search(s);
+                sync_lit_values(s);
                 s->local_search.conflicts_since=s->stats.conflicts;
                 if (found) { result=TRUE;break; }
             }
@@ -2953,6 +3174,7 @@ static lbool solve_internal_account_impl(Solver *s, const Lit *assumps, uint32_t
             (s->opts.max_decisions && s->stats.decisions>=s->opts.max_decisions)) break;
     }
 done:
+    s->lit_values_live = false;
     free(learnt);
     return result;
 }

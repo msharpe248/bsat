@@ -38,7 +38,7 @@ combining experimental policies.
 Restart requests backtrack to decision level zero by default. Experimental
 `--reuse-trail` can retain a priority-selected decision prefix with heap or
 VMTF ordering; assumption solves and alternating mode retain root restarts.
-See [the reuse experiment](../RESTART_REUSE_EXPERIMENT.md) for its mixed results.
+See [the reuse experiment](RESTART_REUSE_EXPERIMENT.md) for its mixed results.
 There is currently no trail
 length postponement in the search loop: the legacy `restart_postpone` options
 field is not consulted. Earlier versions of this guide described postponement
@@ -59,7 +59,7 @@ Watch lists are contiguous dynamic arrays; they are not linked lists.
 
 ## Evidence and tuning
 
-The [restart minimum experiment](../RESTART_MINIMUM_EXPERIMENT.md) compares
+The [restart minimum experiment](RESTART_MINIMUM_EXPERIMENT.md) compares
 100, 10 and 1 conflicts with certified results and explicit resource limits.
 Use `tests/benchmark.py` for comparisons with model/proof verification and
 process timing. The historical `tests/compare_restart_strategies.sh` does not

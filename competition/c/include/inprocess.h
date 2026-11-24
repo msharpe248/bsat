@@ -24,6 +24,11 @@ struct Solver;
  * Returns false if root UNSAT is derived (sets s->base_unsat / s->result = FALSE). */
 bool solver_inprocess(struct Solver *s, bool preprocessing);
 
+/* Extract large edge-disjoint AMO binary cliques (size >= 7) and re-encode
+ * them via linear Sinz sequential counters (3k-4 binaries, k-1 aux vars).
+ * Guarded on non-proof, non-assumption, non-reuse mode. Returns false on error. */
+bool solver_amo_cliques(struct Solver *s);
+
 /* Rebuild all watch lists cleanly from active clauses in s->clauses and s->learnts. */
 void solver_rebuild_watches(struct Solver *s);
 

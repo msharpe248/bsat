@@ -1087,7 +1087,8 @@ static bool inproc_elim(Solver *s, uint64_t tick_budget, uint32_t grow_bound) {
 
     /* Enqueue candidate variables ordered by pos * neg. */
     for (Var v = 1; v <= s->num_vars; ++v) {
-        if (s->values[v] != UNDEF || s->elim->eliminated[v]) continue;
+        if (s->values[v] != UNDEF || s->elim->eliminated[v] || gauss_var_protected(s, v)) continue;
+        if (s->factor_original_vars && v > s->factor_original_vars) continue;
         uint32_t p = occs[mkLit(v, false)].size;
         uint32_t n = occs[mkLit(v, true)].size;
         if (p == 0 && n == 0) continue;
@@ -1103,7 +1104,8 @@ static bool inproc_elim(Solver *s, uint64_t tick_budget, uint32_t grow_bound) {
     while (q.size > 0 && s->work < end_work && !unsat && !s->error) {
         if ((vars_elim_this_round & 31) == 0 && solver_budget_exhausted(s)) break;
         Var v = eq_pop(&q);
-        if (s->values[v] != UNDEF || s->elim->eliminated[v]) continue;
+        if (s->values[v] != UNDEF || s->elim->eliminated[v] || gauss_var_protected(s, v)) continue;
+        if (s->factor_original_vars && v > s->factor_original_vars) continue;
 
         Lit pos_v = mkLit(v, false), neg_v = mkLit(v, true);
         InprocOcc *po = &occs[pos_v];
@@ -1716,6 +1718,15 @@ static bool inproc_probe_hbr(Solver *s, uint64_t tick_budget) {
     uint32_t hbr_added = 0;
     const uint32_t MAX_HBR_PER_ROUND = 2000;
     Lit hbr_buf[32];
+    Lit both_buf[32];
+    uint32_t *imp_stamp = calloc(nl, sizeof *imp_stamp);
+    uint8_t *pair_done = calloc((size_t)(s->num_vars + 1), 1);
+    if (!imp_stamp || !pair_done) {
+        free(imp_stamp); free(pair_done); free(cands);
+        s->opts.chrono = saved_chrono; s->opts.phase_saving = saved_phase; s->work_limit = saved_wl;
+        s->error = true; return false;
+    }
+    uint32_t cur_stamp = 0;
 
     uint32_t max_probes = MIN(nc, 4096u);
     for (uint32_t ci = 0; ci < max_probes && s->work < end_work && !unsat && !s->error && !s->interrupted; ++ci) {
@@ -1750,6 +1761,18 @@ static bool inproc_probe_hbr(Solver *s, uint64_t tick_budget) {
         } else {
             /* Collect hyper-binary resolvents (~u | q) for literals q implied by long clauses. */
             uint32_t n_hbr = 0;
+            uint32_t prop_cnt = s->trail_size - (root_trail + 1);
+            /* Run double-lookahead pair intersection on small/medium formulas (<= 5k vars)
+             * during later rounds so preprocessing HBR on large planning/circuit instances
+             * is completely undisturbed. */
+            bool try_pair = (s->num_vars <= 5000u && s->inprocess_rounds >= 2 && ci < 256u &&
+                             !pair_done[uv] && prop_cnt >= 4 && prop_cnt <= 128 && cur_stamp < UINT32_MAX - 2u);
+            if (try_pair) {
+                cur_stamp++;
+                for (uint32_t t = root_trail + 1; t < s->trail_size; ++t) {
+                    imp_stamp[s->trail[t].lit] = cur_stamp;
+                }
+            }
             if (hbr_added < MAX_HBR_PER_ROUND) {
                 for (uint32_t t = root_trail + 1; t < s->trail_size && n_hbr < 32; ++t) {
                     Lit q = s->trail[t].lit;
@@ -1783,6 +1806,55 @@ static bool inproc_probe_hbr(Solver *s, uint64_t tick_budget) {
                 if (s->watches->failed) { s->error = true; break; }
                 hbr_added++;
             }
+
+            /* Probing intersection (double lookahead): probe ~u and harvest backbone units
+             * q implied by BOTH u and ~u (100% RUP-certified via (~u | q), (q))! */
+            if (try_pair && !s->error && !s->interrupted && s->work < end_work && s->values[uv] == UNDEF) {
+                pair_done[uv] = 1;
+                Lit nu = neg(u);
+                uint32_t r2 = s->trail_size;
+                s->decision_level = 1;
+                s->trail_lims[1] = r2;
+                s->values[uv] = (uint8_t)(2u - sign(nu));
+                s->vars[uv].level = 1;
+                s->vars[uv].reason = INVALID_CLAUSE;
+                s->binary_reasons[uv] = LIT_UNDEF;
+                s->vars[uv].trail_pos = r2;
+                s->trail[s->trail_size++].lit = nu;
+
+                CRef c2 = solver_propagate(s);
+                if (s->error || s->interrupted || s->work >= end_work) {
+                    solver_backtrack(s, 0);
+                    break;
+                }
+                if (c2 != INVALID_CLAUSE) {
+                    solver_backtrack(s, 0);
+                    proof_add_clause(s, &u, 1);
+                    if (s->error || !enqueue_root_unit(s, u) || !root_propagate(s)) {
+                        unsat = true; break;
+                    }
+                } else {
+                    uint32_t n_both = 0;
+                    for (uint32_t t = r2 + 1; t < s->trail_size && n_both < 32; ++t) {
+                        Lit q = s->trail[t].lit;
+                        if (imp_stamp[q] == cur_stamp) both_buf[n_both++] = q;
+                    }
+                    solver_backtrack(s, 0);
+                    for (uint32_t b = 0; b < n_both && !unsat && !s->error; ++b) {
+                        Lit q = both_buf[b];
+                        if (lit_is_true(s, q)) continue;
+                        Lit bridge[2] = {neg(u), q};
+                        proof_add_clause(s, bridge, 2);
+                        if (s->error) break;
+                        proof_add_clause(s, &q, 1);
+                        if (s->error) break;
+                        proof_delete_clause(s, bridge, 2);
+                        if (!enqueue_root_unit(s, q) || !root_propagate(s)) {
+                            unsat = true; break;
+                        }
+                    }
+                }
+            }
         }
     }
 
@@ -1790,290 +1862,14 @@ static bool inproc_probe_hbr(Solver *s, uint64_t tick_budget) {
     s->opts.chrono = saved_chrono;
     s->opts.phase_saving = saved_phase;
     s->work_limit = saved_wl;
+    free(imp_stamp);
+    free(pair_done);
     free(cands);
     return !unsat && !s->error;
 }
 
-/* =====================================================================
- * Pass 7A: GF(2) XOR Extraction & RREF Gaussian Elimination
- *
- * Extracts exact 2..6-variable XOR parity constraints from live irredundant
- * clauses and computes Reduced Row Echelon Form over GF(2) to derive
- * contradictions (0 = 1), root units (x = 0/1), and equivalences (x ^ y = c).
- * Guarded on non-proof mode so standard DRAT/RUP checks remain 100% sound.
- * ===================================================================== */
-
-typedef struct {
-    Var vars[6];
-    uint8_t k;
-    uint64_t mask;
-} XorSlot;
-
-static uint64_t hash_xor_tuple(const Var *vs, uint8_t k) {
-    uint64_t h = (uint64_t)k * UINT64_C(0x9e3779b97f4a7c15);
-    for (uint8_t i = 0; i < k; ++i) {
-        h ^= (uint64_t)vs[i] + UINT64_C(0x9e3779b97f4a7c15) + (h << 6) + (h >> 2);
-    }
-    h ^= h >> 30; h *= UINT64_C(0xbf58476d1ce4e5b9);
-    h ^= h >> 27; h *= UINT64_C(0x94d049bb133111eb);
-    return h ^ (h >> 31);
-}
-
-static bool inproc_gauss(Solver *s) {
-    if (s->proof_file || s->proof_journal) return true;
-    if (!s->num_vars || !s->num_clauses || s->num_clauses > 250000 ||
-        s->error || s->result == FALSE || solver_budget_exhausted(s)) return true;
-
-    /* Count eligible clauses of size 2..6. */
-    uint32_t elig = 0;
-    for (uint32_t i = 0; i < s->num_clauses; ++i) {
-        CRef cr = s->clauses[i];
-        if (cr == INVALID_CLAUSE || clause_deleted(s->arena, cr)) continue;
-        uint32_t sz = CLAUSE_SIZE(s->arena, cr);
-        if (sz >= 2 && sz <= 6) elig++;
-    }
-    if (elig < 4) return true;
-
-    /* Build open-addressed hash table grouping clauses by sorted variable tuple. */
-    size_t cap = 64;
-    while (cap < (size_t)elig * 2 && cap < (1u << 21)) cap <<= 1;
-    if (cap < (size_t)elig + 16) return true;
-    XorSlot *tab = calloc(cap, sizeof *tab);
-    if (!tab) { s->error = true; return false; }
-
-    uint32_t *used_slots = malloc(MIN(cap, (size_t)elig + 1) * sizeof *used_slots);
-    if (!used_slots) { free(tab); s->error = true; return false; }
-    uint32_t n_used = 0;
-
-    for (uint32_t i = 0; i < s->num_clauses; ++i) {
-        CRef cr = s->clauses[i];
-        if (cr == INVALID_CLAUSE || clause_deleted(s->arena, cr)) continue;
-        uint32_t sz = CLAUSE_SIZE(s->arena, cr);
-        if (sz < 2 || sz > 6) continue;
-        const Lit *ls = CLAUSE_LITS(s->arena, cr);
-        Lit tmp[6];
-        bool skip = false;
-        for (uint32_t j = 0; j < sz; ++j) {
-            if (s->values[var(ls[j])] != UNDEF) { skip = true; break; }
-            tmp[j] = ls[j];
-        }
-        if (skip) continue;
-        /* Sort tmp[0..sz-1] by variable ascending. */
-        for (uint32_t a = 1; a < sz; ++a) {
-            Lit key = tmp[a];
-            uint32_t b = a;
-            while (b > 0 && var(tmp[b - 1]) > var(key)) { tmp[b] = tmp[b - 1]; --b; }
-            tmp[b] = key;
-        }
-        Var vs[6] = {0, 0, 0, 0, 0, 0};
-        uint32_t neg_mask = 0;
-        for (uint32_t j = 0; j < sz; ++j) {
-            vs[j] = var(tmp[j]);
-            if (j > 0 && vs[j] == vs[j - 1]) { skip = true; break; }
-            if (sign(tmp[j])) neg_mask |= (1u << j);
-        }
-        if (skip) continue;
-
-        size_t pos = (size_t)(hash_xor_tuple(vs, (uint8_t)sz) & (cap - 1));
-        for (;;) {
-            if (tab[pos].k == 0) {
-                tab[pos].k = (uint8_t)sz;
-                memcpy(tab[pos].vars, vs, sizeof vs);
-                tab[pos].mask = UINT64_C(1) << neg_mask;
-                if (n_used < elig) used_slots[n_used++] = (uint32_t)pos;
-                break;
-            }
-            if (tab[pos].k == sz && memcmp(tab[pos].vars, vs, (size_t)sz * sizeof(Var)) == 0) {
-                tab[pos].mask |= UINT64_C(1) << neg_mask;
-                break;
-            }
-            pos = (pos + 1) & (cap - 1);
-        }
-    }
-
-    /* Precompute exact even/odd polarity bitmasks for k = 2..6. */
-    uint64_t even_need[7] = {0}, odd_need[7] = {0};
-    for (uint32_t k = 2; k <= 6; ++k) {
-        for (uint32_t m = 0; m < (1u << k); ++m) {
-            uint32_t parity = 0, x = m;
-            while (x) { parity ^= (x & 1u); x >>= 1; }
-            if (parity == 0) even_need[k] |= (UINT64_C(1) << m);
-            else odd_need[k] |= (UINT64_C(1) << m);
-        }
-    }
-
-    /* Collect complete XOR equations (prefer k >= 3; include k == 2 equivs if any k >= 3 exist). */
-    typedef struct { Var vars[6]; uint8_t k; uint8_t rhs; } XorEq;
-    uint32_t n_ge3 = 0, n_eqs = 0;
-    for (uint32_t ui = 0; ui < n_used; ++ui) {
-        XorSlot *sl = &tab[used_slots[ui]];
-        uint8_t k = sl->k;
-        bool has_even = (sl->mask & even_need[k]) == even_need[k];
-        bool has_odd  = (sl->mask & odd_need[k]) == odd_need[k];
-        if (has_even && has_odd) {
-            /* Both parities forbidden -> immediate UNSAT! */
-            free(used_slots); free(tab);
-            s->base_unsat = true; s->result = FALSE;
-            return false;
-        }
-        if (has_even || has_odd) {
-            n_eqs++;
-            if (k >= 3) n_ge3++;
-        }
-    }
-    if (n_ge3 < 2 || n_eqs > 8192) {
-        free(used_slots); free(tab);
-        return true;
-    }
-
-    XorEq *eqs = malloc((size_t)n_eqs * sizeof *eqs);
-    uint32_t *var_to_col = malloc((size_t)(s->num_vars + 1) * sizeof *var_to_col);
-    if (!eqs || !var_to_col) {
-        free(eqs); free(var_to_col); free(used_slots); free(tab);
-        s->error = true; return false;
-    }
-    memset(var_to_col, 0xFF, (size_t)(s->num_vars + 1) * sizeof *var_to_col);
-
-    uint32_t eq_count = 0, n_cols = 0;
-    for (uint32_t ui = 0; ui < n_used; ++ui) {
-        XorSlot *sl = &tab[used_slots[ui]];
-        uint8_t k = sl->k;
-        bool has_even = (sl->mask & even_need[k]) == even_need[k];
-        bool has_odd  = (sl->mask & odd_need[k]) == odd_need[k];
-        if (!has_even && !has_odd) continue;
-        /* Even forbidden clauses -> odd true count (rhs = 1); odd forbidden -> rhs = 0. */
-        XorEq *e = &eqs[eq_count++];
-        e->k = k;
-        e->rhs = has_even ? 1u : 0u;
-        memcpy(e->vars, sl->vars, sizeof e->vars);
-        for (uint8_t j = 0; j < k; ++j) {
-            Var v = sl->vars[j];
-            if (var_to_col[v] == UINT32_MAX) {
-                if (n_cols >= 4096) { n_cols = UINT32_MAX; break; }
-                var_to_col[v] = n_cols++;
-            }
-        }
-        if (n_cols == UINT32_MAX) break;
-    }
-    free(used_slots); free(tab);
-
-    if (n_cols == 0 || n_cols == UINT32_MAX || eq_count > 4096) {
-        free(eqs); free(var_to_col);
-        return true;
-    }
-
-    Var *col_to_var = malloc((size_t)n_cols * sizeof *col_to_var);
-    uint32_t words = (n_cols + 63u) / 64u;
-    uint64_t *mat = calloc((size_t)eq_count * words, sizeof *mat);
-    uint8_t *rhs = calloc(eq_count, sizeof *rhs);
-    if (!col_to_var || !mat || !rhs) {
-        free(col_to_var); free(mat); free(rhs); free(eqs); free(var_to_col);
-        s->error = true; return false;
-    }
-    for (uint32_t i = 0; i < eq_count; ++i) {
-        uint64_t *row = mat + (size_t)i * words;
-        rhs[i] = eqs[i].rhs;
-        for (uint8_t j = 0; j < eqs[i].k; ++j) {
-            uint32_t c = var_to_col[eqs[i].vars[j]];
-            col_to_var[c] = eqs[i].vars[j];
-            row[c >> 6] ^= (UINT64_C(1) << (c & 63u));
-        }
-    }
-    free(eqs);
-    free(var_to_col);
-
-    /* Gauss-Jordan RREF over GF(2). */
-    uint32_t pivot_row = 0;
-    for (uint32_t col = 0; col < n_cols && pivot_row < eq_count; ++col) {
-        uint32_t w = col >> 6;
-        uint64_t bit = UINT64_C(1) << (col & 63u);
-        uint32_t found = eq_count;
-        for (uint32_t r = pivot_row; r < eq_count; ++r) {
-            if (mat[(size_t)r * words + w] & bit) { found = r; break; }
-        }
-        if (found == eq_count) continue;
-        if (found != pivot_row) {
-            uint64_t *ra = mat + (size_t)pivot_row * words;
-            uint64_t *rb = mat + (size_t)found * words;
-            for (uint32_t k = 0; k < words; ++k) {
-                uint64_t t = ra[k]; ra[k] = rb[k]; rb[k] = t;
-            }
-            uint8_t tr = rhs[pivot_row]; rhs[pivot_row] = rhs[found]; rhs[found] = tr;
-        }
-        uint64_t *pr = mat + (size_t)pivot_row * words;
-        uint8_t prhs = rhs[pivot_row];
-        for (uint32_t r = 0; r < eq_count; ++r) {
-            if (r == pivot_row) continue;
-            uint64_t *rr = mat + (size_t)r * words;
-            if (rr[w] & bit) {
-                for (uint32_t k = 0; k < words; ++k) rr[k] ^= pr[k];
-                rhs[r] ^= prhs;
-            }
-        }
-        pivot_row++;
-        s->work += (uint64_t)eq_count * words;
-    }
-
-    /* Harvest contradictions, units, and binary equivalences from RREF rows! */
-    bool unsat = false;
-    bool added_equiv = false;
-    bool added_unit = false;
-    for (uint32_t r = 0; r < eq_count && !unsat && !s->error; ++r) {
-        const uint64_t *rr = mat + (size_t)r * words;
-        uint32_t cnt = 0;
-        uint32_t c0 = 0, c1 = 0;
-        for (uint32_t w = 0; w < words && cnt <= 2; ++w) {
-            uint64_t x = rr[w];
-            while (x) {
-                uint32_t tz = (uint32_t)__builtin_ctzll(x);
-                uint32_t col = (w << 6) + tz;
-                if (cnt == 0) c0 = col;
-                else if (cnt == 1) c1 = col;
-                cnt++;
-                if (cnt > 2) break;
-                x &= x - 1;
-            }
-        }
-        if (cnt == 0) {
-            if (rhs[r]) {
-                s->base_unsat = true; s->result = FALSE;
-                unsat = true;
-                break;
-            }
-        } else if (cnt == 1) {
-            Lit unit = mkLit(col_to_var[c0], rhs[r] == 0);
-            if (!enqueue_root_unit(s, unit)) { unsat = true; break; }
-            added_unit = true;
-        } else if (cnt == 2) {
-            Lit a = mkLit(col_to_var[c0], false);
-            Lit b = mkLit(col_to_var[c1], rhs[r] != 0); /* a == b if rhs==0, else a == ~b */
-            Lit pairs[2][2] = {{neg(a), b}, {neg(b), a}};
-            for (int p = 0; p < 2 && !s->error; ++p) {
-                if (has_binary_watch(s, pairs[p][0], pairs[p][1])) continue;
-                if (s->num_learnts == s->learnts_size) {
-                    uint32_t ncap = s->learnts_size ? s->learnts_size * 2 : 64;
-                    CRef *ptr = realloc(s->learnts, (size_t)ncap * sizeof *ptr);
-                    if (!ptr) { s->error = true; break; }
-                    s->learnts = ptr; s->learnts_size = ncap;
-                }
-                CRef cr = arena_alloc(s->arena, pairs[p], 2, true);
-                if (cr == INVALID_CLAUSE) { s->error = true; break; }
-                set_clause_lbd(s->arena, cr, 2);
-                s->learnts[s->num_learnts++] = cr;
-                CRef wref = arena_binary_watch_ref(cr);
-                watch_add(s->watches, pairs[p][0], wref, pairs[p][1]);
-                watch_add(s->watches, pairs[p][1], wref, pairs[p][0]);
-                added_equiv = true;
-            }
-        }
-    }
-
-    free(col_to_var); free(mat); free(rhs);
-    if (unsat || s->error) return false;
-    if (added_unit && !root_propagate(s)) return false;
-    if (added_equiv && !solver_budget_exhausted(s)) return inproc_decompose(s);
-    return true;
-}
+/* Pass 7A: GF(2) XOR extraction, root RREF, and in-search Bird/Han-Jiang
+ * dynamic Gaussian elimination now live in src/gauss.c (gauss_extract_and_init). */
 
 /* =====================================================================
  * Pass 7B: Transitive Reduction of the Binary Implication Graph
@@ -2976,6 +2772,308 @@ static void inproc_walk_seed_phases(Solver *s) {
 }
 
 /* =====================================================================
+ * Pass 9: AMO Clique Extraction & Sinz Sequential-Counter Re-encoding
+ *
+ * On binary-dense formulas (scheduling, coloring, argumentation, battleship),
+ * extracts edge-disjoint cliques of size k >= 7 in the irredundant binary
+ * conflict graph (where every pair (a_i | a_j) exists, meaning at most one
+ * of ~a_0, ..., ~a_{k-1} is true) and replaces the k*(k-1)/2 binary clauses
+ * with an exact, arc-consistent Sinz sequential counter (k-1 auxiliary vars,
+ * 3k-4 binary clauses). Guarded on non-proof, non-assumption, non-reuse mode.
+ * ===================================================================== */
+
+typedef struct {
+    Lit other;
+    uint32_t cslot;
+} AmoEdge;
+
+typedef struct {
+    Lit lit;
+    uint32_t deg;
+} AmoSeed;
+
+static int cmp_amo_edge(const void *a, const void *b) {
+    Lit x = ((const AmoEdge *)a)->other;
+    Lit y = ((const AmoEdge *)b)->other;
+    return (x > y) - (x < y);
+}
+
+static int cmp_amo_seed(const void *a, const void *b) {
+    uint32_t da = ((const AmoSeed *)a)->deg;
+    uint32_t db = ((const AmoSeed *)b)->deg;
+    if (da != db) return (db > da) - (db < da);
+    Lit la = ((const AmoSeed *)a)->lit;
+    Lit lb = ((const AmoSeed *)b)->lit;
+    return (la > lb) - (la < lb);
+}
+
+static uint32_t amo_find_edge(const AmoEdge *edges, uint32_t lo, uint32_t hi, Lit target) {
+    while (lo < hi) {
+        uint32_t mid = lo + ((hi - lo) >> 1);
+        Lit m = edges[mid].other;
+        if (m < target) lo = mid + 1;
+        else if (m > target) hi = mid;
+        else return mid;
+    }
+    return UINT32_MAX;
+}
+
+bool solver_amo_cliques(Solver *s) {
+    if (!s || s->decision_level || s->proof_file || s->proof_journal || s->error ||
+        s->interrupted || s->result == FALSE || s->num_vars == 0 || s->num_clauses < 500 ||
+        s->num_clauses > 250000 || solver_budget_exhausted(s)) return true;
+
+    const uint32_t orig_nv = s->num_vars;
+    const uint32_t orig_nc = s->num_clauses;
+    const uint32_t nl = 2u * (orig_nv + 1u);
+
+    /* Count live irredundant binary clauses with both literals unassigned. */
+    uint32_t bin_cnt = 0;
+    for (uint32_t i = 0; i < orig_nc; ++i) {
+        CRef cr = s->clauses[i];
+        if (cr == INVALID_CLAUSE || clause_deleted(s->arena, cr)) continue;
+        if (CLAUSE_SIZE(s->arena, cr) != 2) continue;
+        const Lit *ls = CLAUSE_LITS(s->arena, cr);
+        if (s->values[var(ls[0])] != UNDEF || s->values[var(ls[1])] != UNDEF) continue;
+        if (var(ls[0]) == var(ls[1])) continue;
+        bin_cnt++;
+    }
+    /* Only trigger on truly binary-dominated formulas (>= 80% binary clauses,
+     * e.g., AMO/scheduling/argumentation/coloring/battleship) so gate-rich
+     * planning/verification formulas keep all binaries intact for BVE. */
+    if (bin_cnt < 500 || (uint64_t)bin_cnt * 10ULL < (uint64_t)orig_nc * 8ULL) return true;
+
+    uint32_t *head = calloc((size_t)nl + 1u, sizeof *head);
+    uint32_t *cur = malloc(((size_t)nl + 1u) * sizeof *cur);
+    uint32_t *deg = calloc(nl, sizeof *deg);
+    uint8_t *used = calloc(orig_nc, 1);
+    AmoEdge *edges = malloc((size_t)bin_cnt * 2u * sizeof *edges);
+    if (!head || !cur || !deg || !used || !edges) {
+        free(head); free(cur); free(deg); free(used); free(edges);
+        s->error = true; return false;
+    }
+
+    for (uint32_t i = 0; i < orig_nc; ++i) {
+        CRef cr = s->clauses[i];
+        if (cr == INVALID_CLAUSE || clause_deleted(s->arena, cr)) continue;
+        if (CLAUSE_SIZE(s->arena, cr) != 2) continue;
+        const Lit *ls = CLAUSE_LITS(s->arena, cr);
+        if (s->values[var(ls[0])] != UNDEF || s->values[var(ls[1])] != UNDEF) continue;
+        if (var(ls[0]) == var(ls[1])) continue;
+        head[ls[0] + 1u]++;
+        head[ls[1] + 1u]++;
+    }
+    for (uint32_t l = 1; l <= nl; ++l) head[l] += head[l - 1u];
+    memcpy(cur, head, ((size_t)nl + 1u) * sizeof *cur);
+
+    for (uint32_t i = 0; i < orig_nc; ++i) {
+        CRef cr = s->clauses[i];
+        if (cr == INVALID_CLAUSE || clause_deleted(s->arena, cr)) continue;
+        if (CLAUSE_SIZE(s->arena, cr) != 2) continue;
+        const Lit *ls = CLAUSE_LITS(s->arena, cr);
+        if (s->values[var(ls[0])] != UNDEF || s->values[var(ls[1])] != UNDEF) continue;
+        if (var(ls[0]) == var(ls[1])) continue;
+        edges[cur[ls[0]]++] = (AmoEdge){ls[1], i};
+        edges[cur[ls[1]]++] = (AmoEdge){ls[0], i};
+    }
+    free(cur);
+
+    /* Sort each adjacency list and deduplicate parallel binary clauses cleanly. */
+    AmoSeed *seeds = malloc((size_t)nl * sizeof *seeds);
+    uint32_t *mark = calloc(nl, sizeof *mark);
+    uint8_t *var_in_clique = calloc((size_t)orig_nv + 1u, 1);
+    Lit *cands = malloc((size_t)nl * sizeof *cands);
+    Lit *next_cands = malloc((size_t)nl * sizeof *next_cands);
+    if (!seeds || !mark || !var_in_clique || !cands || !next_cands) {
+        free(head); free(deg); free(used); free(edges);
+        free(seeds); free(mark); free(var_in_clique); free(cands); free(next_cands);
+        s->error = true; return false;
+    }
+
+    uint32_t n_seeds = 0;
+    for (Lit l = 2; l < nl; ++l) {
+        uint32_t lo = head[l], hi = head[l + 1u];
+        if (hi - lo > 1u) qsort(edges + lo, hi - lo, sizeof *edges, cmp_amo_edge);
+        /* Count unique neighbors as initial active degree. */
+        uint32_t udeg = 0;
+        for (uint32_t e = lo; e < hi; ++e) {
+            if (e == lo || edges[e].other != edges[e - 1u].other) udeg++;
+        }
+        deg[l] = udeg;
+        if (udeg >= 6u) seeds[n_seeds++] = (AmoSeed){l, udeg};
+    }
+
+    if (n_seeds < 7u) {
+        free(head); free(deg); free(used); free(edges);
+        free(seeds); free(mark); free(var_in_clique); free(cands); free(next_cands);
+        return true;
+    }
+    qsort(seeds, n_seeds, sizeof *seeds, cmp_amo_seed);
+
+    const uint32_t MIN_CLIQUE = 7u;
+    const uint32_t MAX_CLIQUE = 128u;
+    const uint32_t MAX_AUX_VARS = 4096u;
+    uint32_t aux_added = 0;
+    uint32_t cliques_encoded = 0;
+    uint32_t stamp = 0;
+    Lit clique[MAX_CLIQUE];
+
+    for (uint32_t si = 0; si < n_seeds && aux_added < MAX_AUX_VARS && !s->error && !s->interrupted; ++si) {
+        if ((si & 63u) == 0 && solver_budget_exhausted(s)) break;
+        Lit u = seeds[si].lit;
+        if (deg[u] < MIN_CLIQUE - 1u) continue;
+
+        /* Repeat on seed u while it can still form edge-disjoint cliques of size >= MIN_CLIQUE. */
+        while (deg[u] >= MIN_CLIQUE - 1u && aux_added < MAX_AUX_VARS && !s->error) {
+            uint32_t nc = 0;
+            uint32_t lo = head[u], hi = head[u + 1u];
+            if (++stamp == 0) { memset(mark, 0, (size_t)nl * sizeof *mark); stamp = 1; }
+            for (uint32_t e = lo; e < hi; ++e) {
+                if (used[edges[e].cslot]) continue;
+                Lit w = edges[e].other;
+                if (deg[w] < MIN_CLIQUE - 1u || var(w) == var(u) || mark[w] == stamp) continue;
+                mark[w] = stamp;
+                cands[nc++] = w;
+            }
+            if (nc < MIN_CLIQUE - 1u) break;
+
+            uint32_t k = 1;
+            clique[0] = u;
+            var_in_clique[var(u)] = 1;
+
+            while (nc > 0 && k < MAX_CLIQUE) {
+                /* Pick candidate w in cands with highest active degree (tie-break by lit). */
+                Lit best_w = cands[0];
+                uint32_t best_d = deg[best_w];
+                for (uint32_t i = 1; i < nc; ++i) {
+                    Lit w = cands[i];
+                    if (deg[w] > best_d) { best_d = deg[w]; best_w = w; }
+                }
+                if (var_in_clique[var(best_w)]) {
+                    /* Remove best_w and continue. */
+                    uint32_t nnc = 0;
+                    for (uint32_t i = 0; i < nc; ++i) {
+                        if (var(cands[i]) != var(best_w)) next_cands[nnc++] = cands[i];
+                    }
+                    memcpy(cands, next_cands, (size_t)nnc * sizeof(Lit));
+                    nc = nnc;
+                    continue;
+                }
+                clique[k++] = best_w;
+                var_in_clique[var(best_w)] = 1;
+
+                /* Intersect cands with active neighbors of best_w. */
+                if (++stamp == 0) { memset(mark, 0, (size_t)nl * sizeof *mark); stamp = 1; }
+                uint32_t wlo = head[best_w], whi = head[best_w + 1u];
+                for (uint32_t e = wlo; e < whi; ++e) {
+                    if (used[edges[e].cslot]) continue;
+                    mark[edges[e].other] = stamp;
+                }
+                uint32_t nnc = 0;
+                for (uint32_t i = 0; i < nc; ++i) {
+                    Lit c = cands[i];
+                    if (c != best_w && !var_in_clique[var(c)] && mark[c] == stamp) {
+                        next_cands[nnc++] = c;
+                    }
+                }
+                memcpy(cands, next_cands, (size_t)nnc * sizeof(Lit));
+                nc = nnc;
+                s->work += (whi - wlo) + nc;
+                if (k + nc < MIN_CLIQUE) break;
+            }
+
+            for (uint32_t i = 0; i < k; ++i) var_in_clique[var(clique[i])] = 0;
+            if (k < MIN_CLIQUE || aux_added + (k - 1u) > MAX_AUX_VARS) break;
+
+            /* Re-encode clique[0..k-1] with Sinz sequential counter (k-1 aux vars, 3k-4 binaries). */
+            if (!s->factor_original_vars) s->factor_original_vars = s->num_vars;
+            Var sv[MAX_CLIQUE];
+            bool ok = true;
+            for (uint32_t i = 0; i < k - 1u; ++i) {
+                sv[i] = solver_new_var(s);
+                if (sv[i] == INVALID_VAR || s->error) { ok = false; break; }
+                aux_added++;
+            }
+            if (!ok) break;
+
+            /* Emit all 3k-4 binary clauses of the sequential counter. */
+            Lit bin[2];
+            bin[0] = clique[0]; bin[1] = mkLit(sv[0], false);
+            CRef cr0 = arena_alloc(s->arena, bin, 2, false);
+            if (cr0 == INVALID_CLAUSE || !push_original_clause_ref(s, cr0)) { s->error = true; break; }
+
+            for (uint32_t i = 1; i < k - 1u && !s->error; ++i) {
+                Lit c1[2] = {clique[i], mkLit(sv[i], false)};
+                Lit c2[2] = {mkLit(sv[i - 1u], true), mkLit(sv[i], false)};
+                Lit c3[2] = {clique[i], mkLit(sv[i - 1u], true)};
+                CRef r1 = arena_alloc(s->arena, c1, 2, false);
+                CRef r2 = (r1 != INVALID_CLAUSE) ? arena_alloc(s->arena, c2, 2, false) : INVALID_CLAUSE;
+                CRef r3 = (r2 != INVALID_CLAUSE) ? arena_alloc(s->arena, c3, 2, false) : INVALID_CLAUSE;
+                if (r1 == INVALID_CLAUSE || r2 == INVALID_CLAUSE || r3 == INVALID_CLAUSE ||
+                    !push_original_clause_ref(s, r1) ||
+                    !push_original_clause_ref(s, r2) ||
+                    !push_original_clause_ref(s, r3)) {
+                    s->error = true; break;
+                }
+            }
+            if (s->error) break;
+            bin[0] = clique[k - 1u]; bin[1] = mkLit(sv[k - 2u], true);
+            CRef cr_last = arena_alloc(s->arena, bin, 2, false);
+            if (cr_last == INVALID_CLAUSE || !push_original_clause_ref(s, cr_last)) { s->error = true; break; }
+
+            /* Delete all original binary clauses (clique[i] | clique[j]) for 0 <= i < j < k. */
+            for (uint32_t i = 0; i < k; ++i) {
+                Lit a = clique[i];
+                uint32_t alo = head[a], ahi = head[a + 1u];
+                for (uint32_t j = i + 1u; j < k; ++j) {
+                    Lit b = clique[j];
+                    uint32_t idx = amo_find_edge(edges, alo, ahi, b);
+                    if (idx == UINT32_MAX) continue;
+                    /* Back up to first duplicate with other == b, delete all matching slots. */
+                    while (idx > alo && edges[idx - 1u].other == b) idx--;
+                    bool decremented = false;
+                    while (idx < ahi && edges[idx].other == b) {
+                        uint32_t cslot = edges[idx].cslot;
+                        if (!used[cslot]) {
+                            used[cslot] = 1;
+                            CRef old_cr = s->clauses[cslot];
+                            if (old_cr != INVALID_CLAUSE && !clause_deleted(s->arena, old_cr)) {
+                                arena_delete(s->arena, old_cr);
+                                s->clauses[cslot] = INVALID_CLAUSE;
+                            }
+                            if (!decremented) {
+                                if (deg[a] > 0) deg[a]--;
+                                if (deg[b] > 0) deg[b]--;
+                                decremented = true;
+                            }
+                        }
+                        idx++;
+                    }
+                }
+            }
+            cliques_encoded++;
+        }
+    }
+
+    free(head); free(deg); free(used); free(edges);
+    free(seeds); free(mark); free(var_in_clique); free(cands); free(next_cands);
+
+    if (s->error) return false;
+    if (cliques_encoded > 0) {
+        if (s->num_vars + 2u > s->levels_capacity) {
+            uint8_t *seen = calloc((size_t)s->num_vars + 2u, 1);
+            if (!seen) { s->error = true; return false; }
+            free(s->level_seen);
+            s->level_seen = seen;
+            s->levels_capacity = s->num_vars + 2u;
+        }
+        solver_rebuild_watches(s);
+        if (s->error) return false;
+    }
+    return true;
+}
+
+/* =====================================================================
  * Main Inprocessing Orchestrator
  * ===================================================================== */
 
@@ -3018,14 +3116,25 @@ bool solver_inprocess(Solver *s, bool preprocessing) {
     /* 1. Root cleanup */
     if (!inproc_root_clean(s)) goto finish;
 
-    /* 1b. GF(2) XOR extraction & Gaussian elimination (non-proof mode) */
+    /* 1b. GF(2) XOR extraction, root RREF, and in-search Bird/Han-Jiang matrix init */
     if ((preprocessing || (s->inprocess_rounds & 3) == 1) && !solver_budget_exhausted(s)) {
-        if (!inproc_gauss(s)) goto finish;
+        if (!gauss_extract_and_init(s, true)) goto finish;
     }
 
     /* 2. Failed-literal probing + Hyper-Binary Resolution (feeds SCC & gates!) */
     if (s->opts.probing && !solver_budget_exhausted(s)) {
         if (!inproc_probe_hbr(s, base_budget / 4)) goto finish;
+    }
+
+    /* 2b. Periodic inprocessing congruence closure (100% RUP-verified; also catches
+     * formulas that were >250k clauses before BVE shrank them below 200k). */
+    if (!preprocessing && (s->inprocess_rounds & 3) == 2 &&
+        s->num_vars >= 300 && s->num_clauses <= 200000 && !solver_budget_exhausted(s)) {
+        s->work_limit = s->work + base_budget / 6;
+        solver_congruence_inproc(s);
+        s->work_limit = 0;
+        if (s->error || s->interrupted || s->result == FALSE) goto finish;
+        if (!root_propagate(s)) goto finish;
     }
 
     /* 3. In-place Tarjan SCC equivalence substitution */
@@ -3070,11 +3179,15 @@ bool solver_inprocess(Solver *s, bool preprocessing) {
         inproc_walk_seed_phases(s);
     }
 
+    /* 8b. Refresh/sync live GF(2) matrices after SCC/BVE/units */
+    if (!gauss_sync_after_inprocess(s)) goto finish;
+
     /* 9. Compact arena if deletions created significant waste */
     s->work_limit = 0;
     solver_collect_garbage(s);
 
 finish:
+    if (s->watches->failed) s->error = true;
     s->work_limit = saved_wl;
     solver_account_end(s, preprocessing ? ACCOUNT_PREPROCESS : ACCOUNT_SIMPLIFY, started);
     return s->result != FALSE && !s->error;

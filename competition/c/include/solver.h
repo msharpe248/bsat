@@ -11,6 +11,7 @@
 #include "arena.h"
 #include "watch.h"
 #include "elim.h"
+#include "gauss.h"
 #include "local_search.h"
 #include <time.h>
 #include <stdio.h>
@@ -242,6 +243,8 @@ typedef struct Solver {
     uint64_t*     lrb_last_conflict; // Optional recency timestamps for LRB only
     VarInfo*      vars;        // Variable information, separate from hot values
     uint8_t*      values;      // One authoritative UNDEF/FALSE/TRUE byte per variable
+    uint8_t*      lit_values;  // Literal-indexed UNDEF/FALSE/TRUE shadow array for hot BCP
+    bool          lit_values_live; // True only inside solve_internal's CDCL search loop
 
     // Trail (assignment stack)
     Trail*   trail;           // Assignment trail
@@ -361,6 +364,9 @@ typedef struct Solver {
     // Variable Elimination (BVE)
     ElimState* elim;          // Elimination state (NULL if not using BVE)
 
+    // In-search Dynamic GF(2) Gaussian Elimination
+    GaussState* gauss;        // Active GF(2) XOR matrices (NULL if none)
+
     // DRAT Proof Logging
     FILE* proof_file;         // Owned ordinary proof output
     FILE* proof_journal;      // Borrowed append-only RUP journal; no deletions
@@ -461,6 +467,7 @@ lbool solver_solve_portfolio(Solver* s, double focused_seconds);
 /* Root-only preprocessing helpers. Derived clauses never enter immutable input. */
 bool solver_add_rup_clause(Solver* s, const Lit* lits, uint32_t size);
 uint32_t solver_congruence(Solver* s);
+uint32_t solver_congruence_inproc(Solver* s);
 uint32_t solver_factor(Solver* s);
 /* Internal conflict preparation for chronological search.
    False means a root conflict or a resource/error stop; inspect solver flags. */

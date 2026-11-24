@@ -25,7 +25,7 @@ typedef enum { UNDEF = 0, FALSE = 1, TRUE = 2 } lbool;
 `Solver.values` and `Solver.rephase.best_phase` store these three truth codes in
 `uint8_t` arrays. Target storage is optional when rephasing is disabled; its
 entries preserve UNDEF independently of saved boolean polarities. See
-[compact target phases](../COMPACT_TARGET_PHASES.md) for layout and validation.
+[compact target phases](COMPACT_TARGET_PHASES.md) for layout and validation.
 
 ### Literal Encoding
 
@@ -70,7 +70,7 @@ typedef struct VarInfo {
 
 The record occupies 32 bytes on the measured arm64 ABI. LRB alone allocates
 `s->lrb_last_conflict[v]`, a separate 64-bit timestamp per variable. See
-[compact variable measurements](../COMPACT_VARIABLES.md).
+[compact variable measurements](COMPACT_VARIABLES.md).
 
 **Key fields:**
 - **s->values[v]**: Authoritative assignment byte (TRUE/FALSE/UNDEF)

@@ -66,7 +66,7 @@ The larger frozen application screen complements these constructed stress cases.
 
 The supported API, concurrency, cancellation and reuse boundaries are explicit
 in [API_CONTRACT.md](../API_CONTRACT.md). Conditional certificates use a separate
-augmented-input workflow. [PRODUCTION_GAPS.md](../PRODUCTION_GAPS.md) tracks the
+augmented-input workflow. [PRODUCTION_GAPS.md](../docs/PRODUCTION_GAPS.md) tracks the
 latest milestones and evidence.
 Older experiment records are historical snapshots; their counts and performance
 claims apply only to their pinned binaries and workloads.
@@ -90,7 +90,7 @@ and frozen summary integrity (six missing/context/contradiction/deadline tests).
 `measure_retained_resources.py` isolates one solver/embedding process per circuit;
 its RSS includes Python encoding/model validation and excludes proof checkers.
 
-The archived [certified SSR experiment](../CERTIFIED_SSR_MILESTONES.md) adds
+The archived [certified SSR experiment](../docs/CERTIFIED_SSR_MILESTONES.md) adds
 `test_certified_ssr`: normal builds exercise future assumptions, permanent
 additions and checkpoint behavior in four certified modes. Applying the archived
 runtime patch and enabling `BSAT_CERTIFIED_SSR` additionally tests 352 exhaustive
@@ -99,7 +99,7 @@ work and journal limits. Its fault driver adds 202 focused allocation cutoffs;
 its certificate driver adds 24 independently checked queries (77 total per build).
 These experimental cases do not imply SSR is enabled in the production library.
 
-The [search usefulness campaign](../SEARCH_USE_MILESTONES.md) adds
+The [search usefulness campaign](../docs/SEARCH_USE_MILESTONES.md) adds
 `test_clause_use` for diagnostic binary reuse, deletion/retention partitions,
 recent-use expiry and GC preservation. Analysis fixtures verify observational
 LBD counters without changing scores. `test_certified_refresh` tests the gated

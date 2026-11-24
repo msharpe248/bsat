@@ -45,8 +45,12 @@ competition/
 │   ├── include/                # Header files
 │   ├── tests/                  # Unit tests
 │   ├── scripts/                # Test and benchmark scripts
+│   ├── docs/                   # Historical experiment & milestone reports
 │   ├── README.md               # C solver documentation
-│   └── FEATURES.md             # Detailed feature list
+│   ├── FEATURES.md             # Detailed feature list
+│   ├── PRODUCTION_READINESS.md # Capability matrix & release gates
+│   ├── API_CONTRACT.md         # Public C/C++ ABI v1 contract
+│   └── INSTALLING.md           # Build & packaging guide
 │
 ├── python/                     # Python Implementation
 │   ├── cdcl_optimized.py       # Optimized CDCL solver
@@ -64,7 +68,7 @@ competition/
 
 | Feature | C | Python | Notes |
 |---------|---|--------|-------|
-| Two-Watched Literals | ✅ | ✅ | Binary-first watches, blocking literals, 1-ahead prefetch, circular scan |
+| Two-Watched Literals | ✅ | ✅ | Literal-indexed `lit_values[]` fast path, binary-first watches, blocking literals, 1-ahead prefetch, circular scan |
 | First UIP Conflict Analysis | ✅ | ✅ | Standard 1-UIP scheme with On-the-Fly Self-Subsumption (OTFS) |
 | Clause Minimization & Shrinking | ✅ | ✅ | 3-state binary-aware DFS + block-level all-UIP shrinking + binary resolution |
 | LBD & 3-Tier Clause DB | ✅ | ✅ | Dynamic LBD updates, adaptive Tier-1/Tier-2 retention, lazy watch sweep |
@@ -97,13 +101,13 @@ competition/
 
 | Feature | C | Python | Notes |
 |---------|---|--------|-------|
-| Failed Literal Probing & HBR | ✅ | ✅ (probing) | Root-prioritized probing + Hyper-Binary Resolution |
-| Tarjan SCC & Congruence Closure | ✅ | ❌ | In-place equivalence substitution + AND/XOR/ITE gate congruence |
+| Failed Literal Probing, HBR & Intersection | ✅ | ✅ (probing) | Root-prioritized probing, HBR, and RUP-certified double-lookahead backbone units |
+| Tarjan SCC & Congruence Closure | ✅ | ❌ | In-place equivalence substitution + preprocessing & inprocessing AND/XOR/ITE congruence |
 | Mini-Kitten CDCL SAT Sweeping | ✅ | ❌ | Embedded local CDCL sweeper with 16-model partitioning & RUP proof projection |
 | Gate-Aware BVE & SSR/Subsumption | ✅ | ❌ | Min-degree cascading BVE (AND/XOR/ITE) + 64-bit bloom SSR |
 | Prefix-Sharing Vivification & Transitive Reduction | ✅ | ❌ | O(n) prefix vivification + post-BVE binary transitive reduction |
-| GF(2) XOR Gaussian Elimination | ✅ | ❌ | Exact 2..6-var XOR extraction & bit-packed RREF (non-proof mode) |
-| Blocked Clause Elimination & Factoring (BVA) | ✅ | ❌ | Linear BCE (`--bce`) + bounded clause factoring (`--factor` / adaptive) |
+| Dynamic GF(2) XOR Gaussian Elimination | ✅ | ❌ | Root RREF + in-search Bird/Han-Jiang two-watched-column matrices (non-proof mode) |
+| AMO Clique Re-encoding, BCE & BVA | ✅ | ❌ | Linear Sinz sequential counters (`>=80%` binary, non-proof), BCE (`--bce`), BVA (`--factor`) |
 
 ### Advanced Features
 
@@ -171,4 +175,4 @@ No build required. Uses Python 3.7+ with no external dependencies.
 
 ---
 
-**Last updated**: December 2025
+**Last updated**: November 2026

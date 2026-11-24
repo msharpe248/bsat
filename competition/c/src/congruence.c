@@ -389,9 +389,7 @@ static bool simplify(Closure *c, Gate *g) {
     return true;
 }
 
-uint32_t solver_congruence(Solver *s) {
-    if (!s || s->decision_level || s->has_solved || s->elim || s->num_learnts ||
-        s->stats.decisions || s->result == FALSE || !s->num_clauses || solver_budget_exhausted(s)) return 0;
+static uint32_t run_congruence(Solver *s) {
     Closure c={.s=s};
     /* Bound temporary gate storage even if conditional alternatives produce
        a large Cartesian product. Retaining a prefix is sound but incomplete. */
@@ -439,4 +437,16 @@ uint32_t solver_congruence(Solver *s) {
     account_temporary(&c);
     free(c.cells);free(c.branches);free(c.alternatives);free(c.gates);free(c.parent);free(c.table);
     return c.changes;
+}
+
+uint32_t solver_congruence(Solver *s) {
+    if (!s || s->decision_level || s->has_solved || s->elim || s->num_learnts ||
+        s->stats.decisions || s->result == FALSE || !s->num_clauses || solver_budget_exhausted(s)) return 0;
+    return run_congruence(s);
+}
+
+uint32_t solver_congruence_inproc(Solver *s) {
+    if (!s || s->decision_level || s->error || s->result == FALSE ||
+        !s->num_clauses || solver_budget_exhausted(s)) return 0;
+    return run_congruence(s);
 }
