@@ -908,7 +908,14 @@ bool solver_break_symmetries(Solver *s, uint64_t tick_budget) {
     }
     if (s->proof_file && s->trail_size > 0) return true;
 
-    Var next_pvar = s->num_vars + 1u;
+    if (s->proof_file && s->proof_aux_next == 0) {
+        s->proof_aux_base = s->num_vars + 32768u;
+        s->proof_aux_next = s->proof_aux_base;
+    }
+    if (s->proof_file && s->proof_aux_next <= s->num_vars) {
+        s->proof_aux_next = s->num_vars + 32768u;
+    }
+    Var *next_pvar_ptr = &s->proof_aux_next;
 
     const uint32_t orig_nv = s->num_vars;
     SymState st;
@@ -1084,7 +1091,7 @@ bool solver_break_symmetries(Solver *s, uint64_t tick_budget) {
                         uint32_t plen = MIN(clen, 32u);
                         Var srows[32][SYM_MAX_ROW_LEN];
                         for (uint32_t k = 0; k < plen; ++k) srows[k][0] = chain[k];
-                        if (sym_prove_column_chain_drat(s, srows, plen, 1u, 0u, &next_pvar, st.end_work)) {
+                        if (sym_prove_column_chain_drat(s, srows, plen, 1u, 0u, next_pvar_ptr, st.end_work)) {
                             for (uint32_t k = 0; k < plen; ++k) used_var[chain[k]] = 1;
                             for (uint32_t k = 0; k + 1u < plen && !s->error; ++k) {
                                 Lit sb[2] = {mkLit(chain[k], true), mkLit(chain[k + 1u], false)};
@@ -1263,7 +1270,7 @@ bool solver_break_symmetries(Solver *s, uint64_t tick_budget) {
                                         break;
                                     }
                                     if (!sym_prove_pair_drat(s, rem_rows[r], rem_rows[r + 1u],
-                                                             act_cols, 0u, &next_pvar, st.end_work)) {
+                                                             act_cols, 0u, next_pvar_ptr, st.end_work)) {
                                         break;
                                     }
                                     Lit c0[2] = {mkLit(rem_rows[r][0], true),
@@ -1281,7 +1288,7 @@ bool solver_break_symmetries(Solver *s, uint64_t tick_budget) {
                             } else {
                                 if (act_rows > 16u) break;
                                 if (!sym_prove_column_chain_drat(s, rem_rows, act_rows, act_cols, 0u,
-                                                                 &next_pvar, st.end_work)) {
+                                                                 next_pvar_ptr, st.end_work)) {
                                     break;
                                 }
                                 for (uint32_t r = 0; r + 1u < act_rows && !s->error; ++r) {

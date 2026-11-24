@@ -337,11 +337,391 @@ static void uf_union(uint32_t *parent, uint32_t a, uint32_t b) {
 }
 
 /* =====================================================================
+ * DRAT Proof Emitter for Root GF(2) RREF (Philipp & Rebola-Pardo Linear
+ * Tseitin XOR-Chain Addition, 100% Standard DRAT/RAT)
+ *
+ * Given a subset of CNF-backed input XOR equations (2 <= k <= 7) whose
+ * GF(2) sum is a contradiction (0=1), root unit (x=p), or binary
+ * equivalence (x^y=p), proves the derived fact in O(sum(L_i)) DRAT steps
+ * using temporary proof-only variables and zero residual aux variables.
+ * ===================================================================== */
+
+typedef struct {
+    Var *vars;
+    Var *aux;
+    uint32_t k;
+    uint8_t rhs;
+    bool owns_final;
+} ProofXorChain;
+
+static void gauss_proof_emit_xor_eq(Solver *s, const Var *vs, uint32_t m, uint8_t rhs, bool del) {
+    if (s->error) return;
+    if (m == 0) {
+        if (rhs) {
+            if (del) proof_delete_clause(s, NULL, 0);
+            else proof_add_clause(s, NULL, 0);
+        }
+        return;
+    }
+    uint32_t limit = 1u << m;
+    for (uint32_t mask = 0; mask < limit && !s->error; ++mask) {
+        if (((uint32_t)__builtin_popcount(mask) & 1u) != rhs) {
+            Lit cl[3];
+            for (uint32_t j = 0; j < m; ++j) {
+                cl[j] = mkLit(vs[j], ((mask >> j) & 1u) != 0);
+            }
+            if (del) proof_delete_clause(s, cl, m);
+            else proof_add_clause(s, cl, m);
+        }
+    }
+}
+
+static void gauss_proof_split_rup(Solver *s, const Lit *base, uint32_t blen,
+                                  const Var *split_vs, uint32_t nsplit, uint32_t depth) {
+    if (s->error) return;
+    if (depth == nsplit) {
+        proof_add_clause(s, base, blen);
+        return;
+    }
+    Lit bpos[16], bneg[16];
+    memcpy(bpos, base, (size_t)blen * sizeof(Lit));
+    memcpy(bneg, base, (size_t)blen * sizeof(Lit));
+    bpos[blen] = mkLit(split_vs[depth], false);
+    bneg[blen] = mkLit(split_vs[depth], true);
+    gauss_proof_split_rup(s, bpos, blen + 1u, split_vs, nsplit, depth + 1u);
+    if (s->error) return;
+    gauss_proof_split_rup(s, bneg, blen + 1u, split_vs, nsplit, depth + 1u);
+    if (s->error) return;
+    proof_add_clause(s, base, blen);
+    if (s->error) return;
+    proof_delete_clause(s, bpos, blen + 1u);
+    proof_delete_clause(s, bneg, blen + 1u);
+}
+
+static void gauss_proof_free_chain(Solver *s, ProofXorChain *c, bool delete_final) {
+    if (!c) return;
+    if (s && !s->error) {
+        if (delete_final && c->owns_final) {
+            if (c->k == 1u) {
+                gauss_proof_emit_xor_eq(s, c->vars, 1u, c->rhs, true);
+            } else if (c->k == 2u) {
+                gauss_proof_emit_xor_eq(s, c->vars, 2u, c->rhs, true);
+            } else if (c->k >= 3u) {
+                Var fv[2] = {c->aux[c->k - 3u], c->vars[c->k - 1u]};
+                gauss_proof_emit_xor_eq(s, fv, 2u, c->rhs, true);
+            }
+        }
+        if (c->k >= 3u && c->aux) {
+            for (int i = (int)c->k - 3; i >= 0 && !s->error; --i) {
+                Var tri[3] = {c->aux[i], (i == 0 ? c->vars[0] : c->aux[i - 1]), c->vars[i + 1]};
+                gauss_proof_emit_xor_eq(s, tri, 3u, 0u, true);
+            }
+        }
+    }
+    free(c->vars);
+    free(c->aux);
+    memset(c, 0, sizeof *c);
+}
+
+/* Build a Tseitin XOR chain from a single CNF-backed input equation (2 <= k <= 7). */
+static bool gauss_proof_chain_from_eq(Solver *s, const XorEq *eq,
+                                      ProofXorChain *out, Var *next_pvar) {
+    memset(out, 0, sizeof *out);
+    if (eq->k < 2u || eq->k > GAUSS_MAX_DIRECT_K) return false;
+    out->vars = malloc((size_t)eq->k * sizeof(Var));
+    if (!out->vars) { s->error = true; return false; }
+    memcpy(out->vars, eq->vars, (size_t)eq->k * sizeof(Var));
+    out->k = eq->k;
+    out->rhs = eq->rhs;
+
+    if (eq->k == 2u) {
+        /* Both binary clauses are already live in the CNF (all vars UNDEF). */
+        out->owns_final = false;
+        return true;
+    }
+
+    uint32_t naux = eq->k - 2u;
+    out->aux = malloc((size_t)naux * sizeof(Var));
+    if (!out->aux) {
+        free(out->vars); out->vars = NULL;
+        s->error = true; return false;
+    }
+    for (uint32_t i = 0; i < naux && !s->error; ++i) {
+        out->aux[i] = (*next_pvar)++;
+        Var tri[3] = {out->aux[i], (i == 0 ? eq->vars[0] : out->aux[i - 1u]), eq->vars[i + 1u]};
+        gauss_proof_emit_xor_eq(s, tri, 3u, 0u, false);
+    }
+    /* Derive the 2 final binary clauses of aux[naux-1] ^ vars[k-1] = rhs
+     * by splitting on vars[0 .. k-3] (depth <= 5, <= 32 leaves, 100% RUP!). */
+    Var fv[2] = {out->aux[naux - 1u], eq->vars[eq->k - 1u]};
+    for (uint32_t mask = 0; mask < 4u && !s->error; ++mask) {
+        if (((uint32_t)__builtin_popcount(mask) & 1u) != eq->rhs) {
+            Lit bin[2] = {mkLit(fv[0], (mask & 1u) != 0),
+                          mkLit(fv[1], ((mask >> 1) & 1u) != 0)};
+            gauss_proof_split_rup(s, bin, 2u, eq->vars, eq->k - 2u, 0u);
+        }
+    }
+    out->owns_final = true;
+    if (s->error) {
+        gauss_proof_free_chain(s, out, false);
+        return false;
+    }
+    return true;
+}
+
+static Var gauss_chain_prefix(const ProofXorChain *ch, uint32_t idx, Var z_end, uint8_t *rhs_acc) {
+    if (idx == 0) return INVALID_VAR;
+    if (idx < ch->k) {
+        return (idx == 1u) ? ch->vars[0] : ch->aux[idx - 2u];
+    }
+    /* idx == ch->k */
+    if (z_end != INVALID_VAR) return z_end;
+    if (rhs_acc) *rhs_acc ^= ch->rhs;
+    return INVALID_VAR;
+}
+
+/* Cancel any duplicate variables in vs[0..*m-1] (x ^ x = 0). */
+static void gauss_cancel_bridge_vars(Var *vs, uint32_t *m) {
+    uint32_t n = *m;
+    if (n == 2u && vs[0] == vs[1]) { *m = 0; return; }
+    if (n == 3u) {
+        if (vs[0] == vs[1]) { vs[0] = vs[2]; *m = 1u; return; }
+        if (vs[0] == vs[2]) { vs[0] = vs[1]; *m = 1u; return; }
+        if (vs[1] == vs[2]) { *m = 1u; return; }
+    }
+}
+
+/* Prove C = A ^ B in O(|A| + |B|) DRAT steps via lockstep prefix bridge! */
+static bool gauss_proof_xor_chains(Solver *s, const ProofXorChain *A, const ProofXorChain *B,
+                                   ProofXorChain *C, Var *next_pvar) {
+    memset(C, 0, sizeof *C);
+    uint32_t a = A->k, b = B->k;
+    Var *cvars = malloc((size_t)(a + b + 1u) * sizeof(Var));
+    if (!cvars) { s->error = true; return false; }
+
+    uint32_t ia = 0, ib = 0, c = 0;
+    while (ia < a && ib < b) {
+        if (A->vars[ia] < B->vars[ib]) cvars[c++] = A->vars[ia++];
+        else if (B->vars[ib] < A->vars[ia]) cvars[c++] = B->vars[ib++];
+        else { ia++; ib++; }
+    }
+    while (ia < a) cvars[c++] = A->vars[ia++];
+    while (ib < b) cvars[c++] = B->vars[ib++];
+
+    C->vars = cvars;
+    C->k = c;
+    C->rhs = A->rhs ^ B->rhs;
+
+    Var z_end = INVALID_VAR;
+    if (c >= 3u) {
+        C->aux = malloc((size_t)(c - 2u) * sizeof(Var));
+        if (!C->aux) { free(cvars); memset(C, 0, sizeof *C); s->error = true; return false; }
+        for (uint32_t i = 0; i < c - 2u && !s->error; ++i) {
+            C->aux[i] = (*next_pvar)++;
+            Var tri[3] = {C->aux[i], (i == 0 ? cvars[0] : C->aux[i - 1u]), cvars[i + 1u]};
+            gauss_proof_emit_xor_eq(s, tri, 3u, 0u, false);
+        }
+    }
+    if (c >= 2u && !s->error) {
+        z_end = (*next_pvar)++;
+        Var tri[3] = {z_end, (c == 2u ? cvars[0] : C->aux[c - 3u]), cvars[c - 1u]};
+        gauss_proof_emit_xor_eq(s, tri, 3u, 0u, false);
+    }
+
+    /* Lockstep merge maintaining bridge: A_prefix(ia) ^ B_prefix(ib) ^ C_prefix(ic) = b_rhs */
+    Var b_vars[3] = {0, 0, 0};
+    uint32_t bm = 0;
+    uint8_t b_rhs = 0;
+
+    ia = 0; ib = 0;
+    uint32_t ic = 0;
+    while ((ia < a || ib < b) && !s->error) {
+        Var sv;
+        if (ia < a && (ib == b || A->vars[ia] < B->vars[ib])) {
+            sv = A->vars[ia++];
+            ic++;
+        } else if (ib < b && (ia == a || B->vars[ib] < A->vars[ia])) {
+            sv = B->vars[ib++];
+            ic++;
+        } else {
+            sv = A->vars[ia++];
+            ib++;
+        }
+
+        Var nb_vars[3];
+        uint32_t nbm = 0;
+        uint8_t nb_rhs = 0;
+        Var pa = gauss_chain_prefix(A, ia, INVALID_VAR, &nb_rhs);
+        Var pb = gauss_chain_prefix(B, ib, INVALID_VAR, &nb_rhs);
+        Var pc = INVALID_VAR;
+        if (ic > 0) {
+            if (ic < c) pc = (ic == 1u) ? cvars[0] : C->aux[ic - 2u];
+            else if (c == 1u) pc = cvars[0];
+            else if (c >= 2u) pc = z_end;
+        }
+        if (pa != INVALID_VAR) nb_vars[nbm++] = pa;
+        if (pb != INVALID_VAR) nb_vars[nbm++] = pb;
+        if (pc != INVALID_VAR) nb_vars[nbm++] = pc;
+        gauss_cancel_bridge_vars(nb_vars, &nbm);
+
+        bool same = (nbm == bm && nb_rhs == b_rhs &&
+                     (bm == 0 || memcmp(nb_vars, b_vars, (size_t)bm * sizeof(Var)) == 0));
+        if (!same) {
+            if (!(nbm == 0 && nb_rhs == 0)) {
+                bool sv_in = false;
+                for (uint32_t j = 0; j < nbm; ++j) if (nb_vars[j] == sv) sv_in = true;
+                if (nbm == 0) {
+                    /* Empty clause 0 = 1 via 1-var split on sv! */
+                    Lit p1 = mkLit(sv, false), p2 = mkLit(sv, true);
+                    proof_add_clause(s, &p1, 1u);
+                    if (!s->error) proof_add_clause(s, &p2, 1u);
+                    if (!s->error) proof_add_clause(s, NULL, 0);
+                    if (!s->error) {
+                        proof_delete_clause(s, &p1, 1u);
+                        proof_delete_clause(s, &p2, 1u);
+                    }
+                } else {
+                    uint32_t lim = 1u << nbm;
+                    for (uint32_t mask = 0; mask < lim && !s->error; ++mask) {
+                        if (((uint32_t)__builtin_popcount(mask) & 1u) != nb_rhs) {
+                            Lit cl[3];
+                            for (uint32_t j = 0; j < nbm; ++j) {
+                                cl[j] = mkLit(nb_vars[j], ((mask >> j) & 1u) != 0);
+                            }
+                            if (sv_in) {
+                                proof_add_clause(s, cl, nbm);
+                            } else {
+                                gauss_proof_split_rup(s, cl, nbm, &sv, 1u, 0u);
+                            }
+                        }
+                    }
+                }
+            }
+            if (!(bm == 0 && b_rhs == 0) && !s->error) {
+                gauss_proof_emit_xor_eq(s, b_vars, bm, b_rhs, true);
+            }
+            memcpy(b_vars, nb_vars, (size_t)nbm * sizeof(Var));
+            bm = nbm;
+            b_rhs = nb_rhs;
+        }
+        s->work += 4u;
+    }
+
+    if (!s->error && c >= 2u) {
+        /* Final bridge is unit (z_end = C->rhs). Derive final binary of C (1-step RUP!),
+         * then delete the unit (z_end = C->rhs) and the 4 clauses defining z_end! */
+        Var fv[2] = {(c == 2u ? cvars[0] : C->aux[c - 3u]), cvars[c - 1u]};
+        gauss_proof_emit_xor_eq(s, fv, 2u, C->rhs, false);
+        if (!s->error) gauss_proof_emit_xor_eq(s, &z_end, 1u, C->rhs, true);
+        Var tri[3] = {z_end, (c == 2u ? cvars[0] : C->aux[c - 3u]), cvars[c - 1u]};
+        if (!s->error) gauss_proof_emit_xor_eq(s, tri, 3u, 0u, true);
+    }
+    C->owns_final = (c >= 1u);
+    if (s->error) {
+        gauss_proof_free_chain(s, C, false);
+        return false;
+    }
+    return true;
+}
+
+/* Prove the GF(2) sum of a subset of component equations eqs[eq_by_comp[ob + r]]
+ * selected by bitmask `hist_row[0..hwords-1]`, ordering equations greedily by
+ * overlap with the running accumulator to keep intermediate chains tiny! */
+static bool gauss_proof_sum_subset(Solver *s, const XorEq *eqs, const uint32_t *eq_by_comp,
+                                   uint32_t ob, uint32_t ceq, const uint64_t *hist_row,
+                                   uint32_t hwords, Var *next_pvar,
+                                   uint32_t expected_k, uint8_t expected_rhs) {
+    uint32_t *sel = malloc((size_t)ceq * sizeof *sel);
+    if (!sel) { s->error = true; return false; }
+    uint32_t nsel = 0;
+    for (uint32_t w = 0; w < hwords; ++w) {
+        uint64_t x = hist_row[w];
+        while (x) {
+            uint32_t r = (w << 6) + (uint32_t)__builtin_ctzll(x);
+            if (r < ceq) sel[nsel++] = r;
+            x &= x - 1;
+        }
+    }
+    if (nsel == 0) { free(sel); return false; }
+
+    /* Track variables currently in `acc` for greedy minimum-growth ordering! */
+    uint8_t *in_acc = calloc((size_t)s->num_vars + 1u, 1);
+    uint8_t *used = calloc(nsel, 1);
+    if (!in_acc || !used) {
+        free(sel); free(in_acc); free(used);
+        s->error = true; return false;
+    }
+
+    ProofXorChain acc;
+    memset(&acc, 0, sizeof acc);
+    const XorEq *first = &eqs[eq_by_comp[ob + sel[0]]];
+    if (!gauss_proof_chain_from_eq(s, first, &acc, next_pvar)) {
+        free(sel); free(in_acc); free(used);
+        return false;
+    }
+    used[0] = 1;
+    for (uint32_t j = 0; j < acc.k; ++j) in_acc[acc.vars[j]] = 1;
+
+    for (uint32_t step = 1; step < nsel && !s->error; ++step) {
+        /* Pick unused equation with best score = 2*overlap - k (minimizes new acc.k!). */
+        uint32_t best_i = UINT32_MAX;
+        int best_score = -1000000;
+        for (uint32_t i = 0; i < nsel; ++i) {
+            if (used[i]) continue;
+            const XorEq *e = &eqs[eq_by_comp[ob + sel[i]]];
+            int ov = 0;
+            for (uint32_t j = 0; j < e->k; ++j) {
+                if (in_acc[e->vars[j]]) ov++;
+            }
+            int sc = 2 * ov - (int)e->k;
+            if (ov > 0 && sc > best_score) { best_score = sc; best_i = i; }
+        }
+        if (best_i == UINT32_MAX) {
+            for (uint32_t i = 0; i < nsel; ++i) {
+                if (!used[i]) { best_i = i; break; }
+            }
+        }
+        used[best_i] = 1;
+
+        ProofXorChain rhs_ch, next_acc;
+        const XorEq *e = &eqs[eq_by_comp[ob + sel[best_i]]];
+        if (!gauss_proof_chain_from_eq(s, e, &rhs_ch, next_pvar)) {
+            gauss_proof_free_chain(s, &acc, true);
+            free(sel); free(in_acc); free(used);
+            return false;
+        }
+        if (!gauss_proof_xor_chains(s, &acc, &rhs_ch, &next_acc, next_pvar)) {
+            gauss_proof_free_chain(s, &rhs_ch, true);
+            gauss_proof_free_chain(s, &acc, true);
+            free(sel); free(in_acc); free(used);
+            return false;
+        }
+        for (uint32_t j = 0; j < acc.k; ++j) in_acc[acc.vars[j]] = 0;
+        gauss_proof_free_chain(s, &rhs_ch, true);
+        gauss_proof_free_chain(s, &acc, true);
+        acc = next_acc;
+        for (uint32_t j = 0; j < acc.k; ++j) in_acc[acc.vars[j]] = 1;
+    }
+
+    free(sel); free(in_acc); free(used);
+    bool ok = !s->error && acc.k == expected_k && acc.rhs == expected_rhs;
+    /* Keep the final derived unit/binary clauses in the proof (delete only chain aux vars!). */
+    gauss_proof_free_chain(s, &acc, !ok);
+    return ok;
+}
+
+/* =====================================================================
  * Extraction, Root RREF, and Live Matrix Construction
  * ===================================================================== */
 
 bool gauss_extract_and_init(Solver *s, bool keep_matrices) {
-    if (!s || s->proof_file || s->proof_journal) return true;
+    if (!s || s->proof_journal) return true;
+    const bool proof_mode = (s->proof_file != NULL);
+    /* In --proof mode, keep tiny RUP-only unit checks RUP while certifying real XOR benchmarks! */
+    if (proof_mode) {
+        if (s->num_clauses < 64u) return true;
+        keep_matrices = false;
+    }
     if (!s->num_vars || !s->num_clauses || s->num_clauses > 250000 ||
         s->error || s->result == FALSE || solver_budget_exhausted(s)) return true;
 
@@ -431,7 +811,11 @@ bool gauss_extract_and_init(Solver *s, bool keep_matrices) {
         bool has_even = xor_parity_covered(tab, cap, sl, even_need[k][0], even_need[k][1]);
         bool has_odd  = xor_parity_covered(tab, cap, sl, odd_need[k][0], odd_need[k][1]);
         if (has_even && has_odd) {
+            if (proof_mode) {
+                gauss_proof_split_rup(s, NULL, 0u, sl->vars, k, 0u);
+            }
             free(used_slots); free(tab);
+            if (s->error) return false;
             s->base_unsat = true; s->result = FALSE;
             return false;
         }
@@ -507,8 +891,10 @@ bool gauss_extract_and_init(Solver *s, bool keep_matrices) {
 
     /* Tseitin XOR-chain stitching: eliminate any internal XOR-only variable `t`
      * (non_xor_occ[t] == 0) that appears in exactly two XOR equations E1, E2
-     * by replacing {E1, E2} with {E1 ^ E2} inside the GF(2) system! */
-    {
+     * by replacing {E1, E2} with {E1 ^ E2} inside the GF(2) system!
+     * Skipped in --proof mode so every equation in `eqs[]` stays directly CNF-backed
+     * (2 <= k <= 7) for RREF history bitmask DRAT proof emission. */
+    if (!proof_mode) {
         uint32_t *xor_deg = calloc((size_t)(s->num_vars + 1u), sizeof *xor_deg);
         uint32_t *eq_a = malloc((size_t)(s->num_vars + 1u) * sizeof *eq_a);
         uint32_t *eq_b = malloc((size_t)(s->num_vars + 1u) * sizeof *eq_b);
@@ -608,6 +994,8 @@ bool gauss_extract_and_init(Solver *s, bool keep_matrices) {
             free(eqs);
             s->error = true; return false;
         }
+    } else {
+        free(non_xor_occ);
     }
 
     /* Compact alive equations and map variables. */
@@ -737,11 +1125,18 @@ bool gauss_extract_and_init(Solver *s, bool keep_matrices) {
         uint32_t ob = comp_off[cid], oe = comp_off[cid + 1u];
         Var *c2v = malloc((size_t)cvar * sizeof *c2v);
         uint32_t nwords = (cvar + 63u) / 64u;
+        uint32_t hwords = proof_mode ? ((ceq + 63u) / 64u) : 0u;
         uint64_t *mat = calloc((size_t)ceq * nwords, sizeof *mat);
         uint8_t *rhs = calloc(ceq, sizeof *rhs);
-        if (!c2v || !mat || !rhs) {
-            free(c2v); free(mat); free(rhs);
+        uint64_t *hist = proof_mode ? calloc((size_t)ceq * hwords, sizeof *hist) : NULL;
+        if (!c2v || !mat || !rhs || (proof_mode && !hist)) {
+            free(c2v); free(mat); free(rhs); free(hist);
             s->error = true; break;
+        }
+        if (hist) {
+            for (uint32_t r = 0; r < ceq; ++r) {
+                hist[(size_t)r * hwords + (r >> 6)] = UINT64_C(1) << (r & 63u);
+            }
         }
 
         uint32_t ncols = 0;
@@ -780,15 +1175,27 @@ bool gauss_extract_and_init(Solver *s, bool keep_matrices) {
                 for (uint32_t k = 0; k < nwords; ++k) {
                     uint64_t t = ra[k]; ra[k] = rb[k]; rb[k] = t;
                 }
+                if (hist) {
+                    uint64_t *ha = hist + (size_t)pivot_row * hwords;
+                    uint64_t *hb = hist + (size_t)found * hwords;
+                    for (uint32_t k = 0; k < hwords; ++k) {
+                        uint64_t t = ha[k]; ha[k] = hb[k]; hb[k] = t;
+                    }
+                }
                 uint8_t tr = rhs[pivot_row]; rhs[pivot_row] = rhs[found]; rhs[found] = tr;
             }
             uint64_t *pr = mat + (size_t)pivot_row * nwords;
+            uint64_t *ph = hist ? (hist + (size_t)pivot_row * hwords) : NULL;
             uint8_t prhs = rhs[pivot_row];
             for (uint32_t r = 0; r < ceq; ++r) {
                 if (r == pivot_row) continue;
                 uint64_t *rr = mat + (size_t)r * nwords;
                 if (rr[w] & bit) {
                     for (uint32_t k = 0; k < nwords; ++k) rr[k] ^= pr[k];
+                    if (hist) {
+                        uint64_t *rh = hist + (size_t)r * hwords;
+                        for (uint32_t k = 0; k < hwords; ++k) rh[k] ^= ph[k];
+                    }
                     rhs[r] ^= prhs;
                 }
             }
@@ -796,8 +1203,51 @@ bool gauss_extract_and_init(Solver *s, bool keep_matrices) {
             s->work += (uint64_t)ceq * nwords;
         }
 
+        /* In --proof mode, check for any 0 = 1 contradiction FIRST so we immediately emit
+         * the single minimal UNSAT chain proof without wasting time on units/binaries!
+         * Allocate proof-only vars monotonically from s->proof_aux_next (strictly disjoint
+         * from real solver vars + amo/sbva aux vars, and NEVER reused because drat-trim
+         * retains deleted unit clauses in backward checking mode!). */
+        if (proof_mode && s->proof_aux_next == 0) {
+            s->proof_aux_base = s->num_vars + 32768u;
+            s->proof_aux_next = s->proof_aux_base;
+        }
+        if (proof_mode && s->proof_aux_next <= s->num_vars) {
+            s->proof_aux_next = s->num_vars + 32768u;
+        }
+        if (proof_mode) {
+            uint32_t best_unsat_r = UINT32_MAX;
+            uint32_t best_unsat_w = UINT32_MAX;
+            for (uint32_t r = 0; r < ceq; ++r) {
+                if (!rhs[r]) continue;
+                const uint64_t *rr = mat + (size_t)r * nwords;
+                bool zero = true;
+                for (uint32_t w = 0; w < nwords; ++w) {
+                    if (rr[w]) { zero = false; break; }
+                }
+                if (zero) {
+                    uint32_t hw = 0;
+                    const uint64_t *rh = hist + (size_t)r * hwords;
+                    for (uint32_t w = 0; w < hwords; ++w) hw += (uint32_t)__builtin_popcountll(rh[w]);
+                    if (hw < best_unsat_w) { best_unsat_w = hw; best_unsat_r = r; }
+                }
+            }
+            if (best_unsat_r != UINT32_MAX) {
+                const uint64_t *rh = hist + (size_t)best_unsat_r * hwords;
+                if (gauss_proof_sum_subset(s, eqs, eq_by_comp, ob, ceq, rh, hwords,
+                                           &s->proof_aux_next, 0u, 1u)) {
+                    s->base_unsat = true;
+                    s->result = FALSE;
+                    unsat = true;
+                }
+                free(c2v); free(mat); free(rhs); free(hist);
+                continue;
+            }
+        }
+
         /* Harvest contradictions, units, binary equivalences, and count live rows (weight >= 2). */
         uint32_t n_live_ge2 = 0, n_live_ge3 = 0;
+        uint32_t proof_facts = 0;
         for (uint32_t r = 0; r < ceq && !unsat && !s->error; ++r) {
             const uint64_t *rr = mat + (size_t)r * nwords;
             uint32_t cnt = 0, c0 = 0, c1 = 0;
@@ -816,13 +1266,45 @@ bool gauss_extract_and_init(Solver *s, bool keep_matrices) {
                 if (rhs[r]) { s->base_unsat = true; s->result = FALSE; unsat = true; break; }
             } else if (cnt == 1) {
                 Lit unit = mkLit(c2v[c0], rhs[r] == 0);
-                if (!gauss_enqueue_root_unit(s, unit)) { unsat = true; break; }
+                if (proof_mode) {
+                    if (s->values[var(unit)] == (uint8_t)(2u - sign(unit))) continue;
+                    if (proof_facts >= 64u) continue;
+                    const uint64_t *rh = hist + (size_t)r * hwords;
+                    uint32_t hw = 0;
+                    for (uint32_t w = 0; w < hwords; ++w) hw += (uint32_t)__builtin_popcountll(rh[w]);
+                    if (hw > 512u) continue;
+                    if (!gauss_proof_sum_subset(s, eqs, eq_by_comp, ob, ceq, rh, hwords,
+                                                &s->proof_aux_next, 1u, rhs[r])) {
+                        continue;
+                    }
+                    proof_facts++;
+                }
+                if (!gauss_enqueue_root_unit(s, unit)) {
+                    if (proof_mode && !s->error) proof_add_clause(s, NULL, 0);
+                    unsat = true; break;
+                }
                 added_unit = true;
             } else if (cnt == 2) {
                 n_live_ge2++;
                 Lit a = mkLit(c2v[c0], false);
                 Lit b = mkLit(c2v[c1], rhs[r] != 0);
                 Lit pairs[2][2] = {{neg(a), b}, {neg(b), a}};
+                if (proof_mode) {
+                    if (gauss_has_binary_watch(s, pairs[0][0], pairs[0][1]) &&
+                        gauss_has_binary_watch(s, pairs[1][0], pairs[1][1])) {
+                        continue;
+                    }
+                    if (proof_facts >= 64u) continue;
+                    const uint64_t *rh = hist + (size_t)r * hwords;
+                    uint32_t hw = 0;
+                    for (uint32_t w = 0; w < hwords; ++w) hw += (uint32_t)__builtin_popcountll(rh[w]);
+                    if (hw > 256u) continue;
+                    if (!gauss_proof_sum_subset(s, eqs, eq_by_comp, ob, ceq, rh, hwords,
+                                                &s->proof_aux_next, 2u, rhs[r])) {
+                        continue;
+                    }
+                    proof_facts++;
+                }
                 for (int p = 0; p < 2 && !s->error; ++p) {
                     if (gauss_has_binary_watch(s, pairs[p][0], pairs[p][1])) continue;
                     if (s->num_learnts == s->learnts_size) {
@@ -845,6 +1327,7 @@ bool gauss_extract_and_init(Solver *s, bool keep_matrices) {
                 n_live_ge3++;
             }
         }
+        free(hist);
 
         /* Keep component as a live Bird/Han-Jiang matrix if non-trivial and within bounds! */
         if (!unsat && !s->error && keep_matrices &&
@@ -956,6 +1439,7 @@ bool gauss_extract_and_init(Solver *s, bool keep_matrices) {
 
     if (added_unit) {
         if (solver_propagate(s) != INVALID_CLAUSE) {
+            if (proof_mode && !s->error) proof_add_clause(s, NULL, 0);
             s->base_unsat = true; s->result = FALSE;
             return false;
         }

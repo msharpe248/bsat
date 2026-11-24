@@ -383,6 +383,8 @@ typedef struct Solver {
     FILE* proof_file;         // Owned ordinary proof output
     FILE* proof_journal;      // Borrowed append-only RUP journal; no deletions
     uint64_t journal_bytes, journal_limit;
+    Var proof_aux_base;       // Base of monotonically allocated proof-only aux vars
+    Var proof_aux_next;       // Next unused proof-only aux var ID (never reused!)
 
     // Rephasing state (Kissat-style separated best + target phases)
     struct {

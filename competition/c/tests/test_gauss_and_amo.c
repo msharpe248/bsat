@@ -745,9 +745,45 @@ static void test_symmetry_breaking_drat_proof(void) {
     }
 }
 
+static void test_gauss_rref_drat_proof(void) {
+    /* 16-variable contradictory Tseitin-chained XOR system (>= 64 clauses) in --proof mode
+     * (both ASCII and binary DRAT): root GF(2) RREF emits a linear XOR-chain DRAT proof
+     * and solves UNSAT in 0 conflicts with 0 residual auxiliary variables! */
+    for (int binary = 0; binary <= 1; ++binary) {
+        SolverOpts opts = default_opts();
+        opts.inprocess = true;
+        opts.binary_proof = (binary != 0);
+        Solver *s = solver_new_with_opts(&opts);
+        assert(s != NULL);
+        FILE *pf = tmpfile();
+        assert(pf != NULL);
+        s->proof_file = pf;
+
+        const uint32_t N = 16;
+        Var base[16];
+        for (uint32_t i = 0; i < N; ++i) base[i] = solver_new_var(s);
+        add_chained_xor(s, base, N, 0);
+        add_chained_xor(s, base, N, 1);
+        uint32_t orig_nv = s->num_vars;
+        assert(s->num_clauses >= 64u);
+
+        lbool r = solver_solve(s);
+        assert(r == FALSE);
+        assert(!s->error);
+        assert(s->stats.conflicts == 0);
+        assert(s->num_vars == orig_nv); /* zero residual aux vars */
+        fflush(pf);
+        assert(ftell(pf) > 0);
+        s->proof_file = NULL;
+        fclose(pf);
+        solver_free(s);
+    }
+}
+
 int main(void) {
     test_gauss_mixed_sat_and_unsat();
     test_gauss_chain_stitching_and_subsumed_xor();
+    test_gauss_rref_drat_proof();
     test_nary_congruence_and_miter_sweep();
     test_full_adder_maj3_xor3_congruence();
     test_semantic_definition_bve();
