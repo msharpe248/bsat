@@ -3748,10 +3748,25 @@ static bool inproc_sweep(Solver *s, uint64_t tick_budget) {
  * seed both saved polarities and Stable-mode target phases (best_phase).
  * ===================================================================== */
 
-static void inproc_walk_seed_phases(Solver *s, uint32_t max_flips) {
+static void inproc_walk_seed_phases(Solver *s, uint32_t max_flips, uint64_t tick_budget) {
     if (!s->opts.phase_saving || !s->opts.rephase || !s->rephase.best_phase) return;
-    if (s->num_vars == 0 || s->num_vars > 50000 || s->num_clauses == 0 || s->num_clauses > 150000) return;
-    if (solver_budget_exhausted(s)) return;
+    if (s->num_vars == 0 || s->num_vars > 250000 || s->num_clauses == 0 || s->num_clauses > 700000) return;
+    if (tick_budget == 0 || solver_budget_exhausted_now(s)) return;
+
+    uint32_t nv = s->num_vars;
+    uint32_t nc = s->num_clauses;
+    uint32_t live_vars = 0, live_cls = 0;
+    for (Var v = 1; v <= nv; ++v) {
+        if (s->values[v] == UNDEF && (!s->elim || !s->elim->eliminated[v])) live_vars++;
+    }
+    if (live_vars == 0 || live_vars > 150000u) return;
+    for (uint32_t i = 0; i < nc; ++i) {
+        CRef cr = s->clauses[i];
+        if (cr != INVALID_CLAUSE && !clause_deleted(s->arena, cr)) live_cls++;
+    }
+    if (live_cls == 0 || live_cls > 450000u) return;
+
+    uint64_t end_work = s->work + tick_budget;
 
     /* Precomputed ProbSAT weights: w[b] = (1 + b)^(-2.3) for b = 0..63. */
     static const double probsat_w[64] = {
@@ -3765,8 +3780,6 @@ static void inproc_walk_seed_phases(Solver *s, uint32_t max_flips) {
         0.000092, 0.000088, 0.000085, 0.000082, 0.000079, 0.000076, 0.000073, 0.000071
     };
 
-    uint32_t nv = s->num_vars;
-    uint32_t nc = s->num_clauses;
     uint8_t *assign = malloc((size_t)(nv + 1));
     uint8_t *best_assign = malloc((size_t)(nv + 1));
     uint32_t *sat_cnt = calloc(nc, sizeof *sat_cnt);
@@ -3789,6 +3802,7 @@ static void inproc_walk_seed_phases(Solver *s, uint32_t max_flips) {
         for (uint32_t j = 0; j < sz; ++j) occ_head[ls[j] + 1]++;
         total_lits += sz;
     }
+    s->work += total_lits;
     for (uint32_t l = 1; l <= nl; ++l) occ_head[l] += occ_head[l - 1];
     uint32_t *occ_clauses = malloc((size_t)(total_lits ? total_lits : 1) * sizeof *occ_clauses);
     uint32_t *cursor = malloc((size_t)(nl + 1) * sizeof *cursor);
@@ -3841,8 +3855,8 @@ static void inproc_walk_seed_phases(Solver *s, uint32_t max_flips) {
     Var cand_vars[64];
     double cand_w[64];
 
-    for (uint32_t flip = 0; flip < MAX_FLIPS && n_unsat > 0; ++flip) {
-        if ((flip & 255) == 0 && solver_budget_exhausted_now(s)) break;
+    for (uint32_t flip = 0; flip < MAX_FLIPS && n_unsat > 0 && s->work < end_work; ++flip) {
+        if ((flip & 127u) == 0 && solver_budget_exhausted_now(s)) break;
         uint32_t ci = unsat_list[bsat_random(&rng) % n_unsat];
         CRef cr = s->clauses[ci];
         uint32_t sz = CLAUSE_SIZE(s->arena, cr);
@@ -3860,13 +3874,15 @@ static void inproc_walk_seed_phases(Solver *s, uint32_t max_flips) {
             Lit true_lit = mkLit(v, !assign[v]);
             uint32_t brk = 0;
             uint32_t ob = occ_head[true_lit], oe = occ_head[true_lit + 1];
-            for (uint32_t o = ob; o < oe; ++o) {
+            uint32_t ostop = (oe - ob > 512u) ? (ob + 512u) : oe;
+            for (uint32_t o = ob; o < ostop; ++o) {
                 if (sat_cnt[occ_clauses[o]] == 1) {
                     brk++;
                     if (brk >= 63u) break;
                 }
             }
-            if (brk == 0) { chosen = v; break; }
+            s->work += (ostop - ob) + 2u;
+            if (brk == 0 && ostop == oe) { chosen = v; break; }
             double w = probsat_w[brk];
             cand_vars[ncands] = v;
             cand_w[ncands] = w;
@@ -3888,14 +3904,16 @@ static void inproc_walk_seed_phases(Solver *s, uint32_t max_flips) {
         Lit new_true = neg(old_true);
         assign[chosen] ^= 1;
 
-        for (uint32_t o = occ_head[old_true]; o < occ_head[old_true + 1]; ++o) {
+        uint32_t ob0 = occ_head[old_true], oe0 = occ_head[old_true + 1];
+        for (uint32_t o = ob0; o < oe0; ++o) {
             uint32_t c = occ_clauses[o];
             if (--sat_cnt[c] == 0) {
                 unsat_pos[c] = n_unsat;
                 unsat_list[n_unsat++] = c;
             }
         }
-        for (uint32_t o = occ_head[new_true]; o < occ_head[new_true + 1]; ++o) {
+        uint32_t ob1 = occ_head[new_true], oe1 = occ_head[new_true + 1];
+        for (uint32_t o = ob1; o < oe1; ++o) {
             uint32_t c = occ_clauses[o];
             if (sat_cnt[c]++ == 0) {
                 uint32_t pos = unsat_pos[c];
@@ -3905,6 +3923,7 @@ static void inproc_walk_seed_phases(Solver *s, uint32_t max_flips) {
                 unsat_pos[c] = UINT32_MAX;
             }
         }
+        s->work += (oe0 - ob0) + (oe1 - ob1) + 4u;
         if (n_unsat < best_unsat) {
             best_unsat = n_unsat;
             memcpy(best_assign, assign, (size_t)(nv + 1));
@@ -4357,13 +4376,13 @@ bool solver_inprocess(Solver *s, bool preprocessing) {
         if (!inproc_vivify(s, base_budget / 2)) goto finish;
     }
 
-    /* 8. Kissat-style ProbSAT phase seeding (short warmup in preprocessing on
-     * small/medium formulas + full 20k-flip re-seeding on even inproc rounds). */
+    /* 8. Scaled tick-capped ProbSAT phase seeding (active-var/clause gated up to
+     * 150k live vars / 450k live clauses; strictly bounded by tick budget & deadline). */
     if (!solver_budget_exhausted_now(s)) {
-        if (preprocessing && s->num_vars <= 10000 && s->num_clauses <= 40000) {
-            inproc_walk_seed_phases(s, 4000u);
-        } else if (!preprocessing && (s->inprocess_rounds & 1) == 0) {
-            inproc_walk_seed_phases(s, 20000u);
+        if (preprocessing) {
+            inproc_walk_seed_phases(s, 4000u, base_budget / 6);
+        } else if ((s->inprocess_rounds & 1) == 0) {
+            inproc_walk_seed_phases(s, 20000u, base_budget / 4);
         }
     }
 

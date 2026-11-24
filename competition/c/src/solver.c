@@ -729,6 +729,12 @@ Var solver_new_var(Solver* s) {
         s->var_capacity = new_capacity;
     }
 
+    // Keep ElimState arrays synchronized whenever auxiliary variables are added post-elim_init.
+    if (s->elim && v >= s->elim->elim_capacity) {
+        elim_init(s);
+        if (s->error) { s->num_vars--; return INVALID_VAR; }
+    }
+
     // Initialize new variable
     memset(&s->vars[v], 0, sizeof(VarInfo));
     s->values[v] = UNDEF;

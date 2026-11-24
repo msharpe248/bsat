@@ -6,14 +6,32 @@
 #include <limits.h>
 
 void elim_init(Solver *s) {
-    if (s->elim) return;
-    s->elim = calloc(1, sizeof *s->elim);
-    if (!s->elim) { s->error = true; return; }
-    s->elim->occs_capacity = 2 * (s->num_vars + 1);
-    s->elim->elim_capacity = s->num_vars + 1;
-    s->elim->occs = calloc(s->elim->occs_capacity, sizeof(OccList));
-    s->elim->eliminated = calloc(s->elim->elim_capacity, sizeof(bool));
-    if (!s->elim->occs || !s->elim->eliminated) s->error = true;
+    if (!s->elim) {
+        s->elim = calloc(1, sizeof *s->elim);
+        if (!s->elim) { s->error = true; return; }
+    }
+    uint32_t need_vars = s->num_vars + 1u;
+    if (need_vars > s->elim->elim_capacity) {
+        uint32_t new_ecap = s->elim->elim_capacity ? s->elim->elim_capacity * 2u : need_vars;
+        if (new_ecap < need_vars) new_ecap = need_vars;
+        bool *ne = realloc(s->elim->eliminated, (size_t)new_ecap * sizeof(bool));
+        if (!ne) { s->error = true; return; }
+        memset(ne + s->elim->elim_capacity, 0,
+               (size_t)(new_ecap - s->elim->elim_capacity) * sizeof(bool));
+        s->elim->eliminated = ne;
+        s->elim->elim_capacity = new_ecap;
+    }
+    uint32_t need_occs = 2u * (s->num_vars + 1u);
+    if (need_occs > s->elim->occs_capacity) {
+        uint32_t new_ocap = s->elim->occs_capacity ? s->elim->occs_capacity * 2u : need_occs;
+        if (new_ocap < need_occs) new_ocap = need_occs;
+        OccList *no = realloc(s->elim->occs, (size_t)new_ocap * sizeof(OccList));
+        if (!no) { s->error = true; return; }
+        memset(no + s->elim->occs_capacity, 0,
+               (size_t)(new_ocap - s->elim->occs_capacity) * sizeof(OccList));
+        s->elim->occs = no;
+        s->elim->occs_capacity = new_ocap;
+    }
 }
 void elim_free(Solver *s) {
     ElimState *e = s->elim;
