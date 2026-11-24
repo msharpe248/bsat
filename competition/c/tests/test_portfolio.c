@@ -52,7 +52,7 @@ static void truth_tables(void) {
 }
 
 static Solver *pigeonhole(void) {
-    SolverOpts o = default_opts();o.probing = false;o.sym = false;
+    SolverOpts o = default_opts();o.probing = false;o.sym = false;o.inprocess = false;
     Solver *s = solver_new_with_opts(&o);assert(s);
     for (unsigned v = 0; v < 90; ++v) assert(solver_new_var(s));
     for (unsigned p = 0; p < 10; ++p) {

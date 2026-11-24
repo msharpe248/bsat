@@ -589,7 +589,7 @@ static bool inproc_subsume(Solver *s, uint64_t tick_budget) {
     Lit small_buf[128];
 
     for (uint32_t ci = 0; ci < nc && s->work < end_work && !unsat && !s->error; ++ci) {
-        if ((ci & 63) == 0 && solver_budget_exhausted(s)) break;
+        if ((ci & 63) == 0 && solver_budget_exhausted_now(s)) break;
         CRef cr = cands[ci].cref;
         if (cr == INVALID_CLAUSE || clause_deleted(s->arena, cr)) continue;
         uint32_t csize = CLAUSE_SIZE(s->arena, cr);
@@ -1114,7 +1114,7 @@ static bool inproc_elim(Solver *s, uint64_t tick_budget, uint32_t grow_bound) {
     uint32_t vars_elim_this_round = 0;
 
     while (q.size > 0 && s->work < end_work && !unsat && !s->error) {
-        if ((vars_elim_this_round & 31) == 0 && solver_budget_exhausted(s)) break;
+        if ((vars_elim_this_round & 15) == 0 && solver_budget_exhausted_now(s)) break;
         Var v = eq_pop(&q);
         if (s->values[v] != UNDEF || s->elim->eliminated[v] || gauss_var_protected(s, v) || solver_is_frozen(s, v)) continue;
         if (s->factor_original_vars && v > s->factor_original_vars) continue;
@@ -1484,6 +1484,7 @@ static bool inproc_vivify(Solver *s, uint64_t tick_budget) {
     bool any_change = false;
 
     for (uint32_t ci = 0; ci < nc && s->work < end_work && !unsat && !s->error && !s->interrupted; ++ci) {
+        if ((ci & 31) == 0 && solver_budget_exhausted_now(s)) break;
         CRef cr = cands[ci].cref;
         if (cr == INVALID_CLAUSE || clause_deleted(s->arena, cr)) continue;
         uint32_t sz = CLAUSE_SIZE(s->arena, cr);
@@ -3143,7 +3144,7 @@ static void inproc_walk_seed_phases(Solver *s, uint32_t max_flips) {
     double cand_w[64];
 
     for (uint32_t flip = 0; flip < MAX_FLIPS && n_unsat > 0; ++flip) {
-        if ((flip & 1023) == 0 && solver_budget_exhausted(s)) break;
+        if ((flip & 255) == 0 && solver_budget_exhausted_now(s)) break;
         uint32_t ci = unsat_list[bsat_random(&rng) % n_unsat];
         CRef cr = s->clauses[ci];
         uint32_t sz = CLAUSE_SIZE(s->arena, cr);
@@ -3575,19 +3576,19 @@ bool solver_inprocess(Solver *s, bool preprocessing) {
     if (!inproc_root_clean(s)) goto finish;
 
     /* 1b. GF(2) XOR extraction, root RREF, and in-search Bird/Han-Jiang matrix init */
-    if ((preprocessing || (s->inprocess_rounds & 3) == 1) && !solver_budget_exhausted(s)) {
+    if ((preprocessing || (s->inprocess_rounds & 3) == 1) && !solver_budget_exhausted_now(s)) {
         if (!gauss_extract_and_init(s, true)) goto finish;
     }
 
     /* 2. Failed-literal probing + Hyper-Binary Resolution (feeds SCC & gates!) */
-    if (s->opts.probing && !solver_budget_exhausted(s)) {
+    if (s->opts.probing && !solver_budget_exhausted_now(s)) {
         if (!inproc_probe_hbr(s, base_budget / 4)) goto finish;
     }
 
     /* 2b. Periodic inprocessing congruence closure (100% RUP-verified; also catches
      * formulas that were >250k clauses before BVE shrank them below 200k). */
     if (!preprocessing && (s->inprocess_rounds & 3) == 2 &&
-        s->num_vars >= 300 && s->num_clauses <= 200000 && !solver_budget_exhausted(s)) {
+        s->num_vars >= 300 && s->num_clauses <= 200000 && !solver_budget_exhausted_now(s)) {
         s->work_limit = s->work + base_budget / 6;
         solver_congruence_inproc(s);
         s->work_limit = 0;
@@ -3596,55 +3597,59 @@ bool solver_inprocess(Solver *s, bool preprocessing) {
     }
 
     /* 2c. N-ary AND gate congruence closure (3..8 inputs, 100% RUP-verified) */
-    if ((preprocessing || (s->inprocess_rounds & 3) == 1) && !solver_budget_exhausted(s)) {
+    if ((preprocessing || (s->inprocess_rounds & 3) == 1) && !solver_budget_exhausted_now(s)) {
         if (!inproc_nary_congruence(s, base_budget / 8)) goto finish;
     }
 
     /* 2d. Model-guided global backbone extraction on later rounds (100% RUP-verified) */
-    if (!preprocessing && (s->inprocess_rounds & 1) == 1 && s->opts.probing && !solver_budget_exhausted(s)) {
+    if (!preprocessing && (s->inprocess_rounds & 1) == 1 && s->opts.probing && !solver_budget_exhausted_now(s)) {
         if (!inproc_backbone(s, base_budget / 8)) goto finish;
     }
 
     /* 3. In-place Tarjan SCC equivalence substitution */
-    s->work_limit = s->work + base_budget / 3;
-    if (!inproc_decompose(s)) goto finish;
-    s->work_limit = 0;
-
-    /* 4. Embedded Mini-Kitten CDCL SAT sweeper (periodic to keep inprocessing lean) */
-    if (s->opts.probing && (preprocessing || (s->inprocess_rounds & 3) == 0) &&
-        s->num_vars >= 250 && !solver_budget_exhausted(s)) {
-        if (!inproc_sweep(s, base_budget / 5)) goto finish;
-    }
-
-    /* 5. Forward subsumption & self-subsuming resolution (SSR) */
-    if (s->opts.subsumption && !solver_budget_exhausted(s)) {
-        if (!inproc_subsume(s, base_budget / 2)) goto finish;
-    }
-
-    /* 6. Gate-aware BVE (cascading with SSR + SCC) */
-    if (s->opts.var_elim && !solver_budget_exhausted(s)) {
-        if (!inproc_elim(s, base_budget, grow_bound)) goto finish;
-        if (s->opts.subsumption && !solver_budget_exhausted(s)) {
-            if (!inproc_subsume(s, base_budget / 3)) goto finish;
-        }
-        s->work_limit = s->work + base_budget / 4;
+    if (!solver_budget_exhausted_now(s)) {
+        s->work_limit = s->work + base_budget / 3;
         if (!inproc_decompose(s)) goto finish;
         s->work_limit = 0;
     }
 
+    /* 4. Embedded Mini-Kitten CDCL SAT sweeper (periodic to keep inprocessing lean) */
+    if (s->opts.probing && (preprocessing || (s->inprocess_rounds & 3) == 0) &&
+        s->num_vars >= 250 && !solver_budget_exhausted_now(s)) {
+        if (!inproc_sweep(s, base_budget / 5)) goto finish;
+    }
+
+    /* 5. Forward subsumption & self-subsuming resolution (SSR) */
+    if (s->opts.subsumption && !solver_budget_exhausted_now(s)) {
+        if (!inproc_subsume(s, base_budget / 2)) goto finish;
+    }
+
+    /* 6. Gate-aware BVE (cascading with SSR + SCC) */
+    if (s->opts.var_elim && !solver_budget_exhausted_now(s)) {
+        if (!inproc_elim(s, base_budget, grow_bound)) goto finish;
+        if (s->opts.subsumption && !solver_budget_exhausted_now(s)) {
+            if (!inproc_subsume(s, base_budget / 3)) goto finish;
+        }
+        if (!solver_budget_exhausted_now(s)) {
+            s->work_limit = s->work + base_budget / 4;
+            if (!inproc_decompose(s)) goto finish;
+            s->work_limit = 0;
+        }
+    }
+
     /* 6b. Transitive reduction of binary implication graph AFTER BVE (preserves all gates for BVE!) */
-    if ((preprocessing || (s->inprocess_rounds & 3) == 2) && !solver_budget_exhausted(s)) {
+    if ((preprocessing || (s->inprocess_rounds & 3) == 2) && !solver_budget_exhausted_now(s)) {
         if (!inproc_transitive(s, base_budget / 6)) goto finish;
     }
 
     /* 7. O(n) prefix-sharing vivification */
-    if (!solver_budget_exhausted(s)) {
+    if (!solver_budget_exhausted_now(s)) {
         if (!inproc_vivify(s, base_budget / 2)) goto finish;
     }
 
     /* 8. Kissat-style ProbSAT phase seeding (short warmup in preprocessing on
      * small/medium formulas + full 20k-flip re-seeding on even inproc rounds). */
-    if (!solver_budget_exhausted(s)) {
+    if (!solver_budget_exhausted_now(s)) {
         if (preprocessing && s->num_vars <= 10000 && s->num_clauses <= 40000) {
             inproc_walk_seed_phases(s, 4000u);
         } else if (!preprocessing && (s->inprocess_rounds & 1) == 0) {
