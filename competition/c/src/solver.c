@@ -1642,6 +1642,7 @@ static void solver_analyze_account_impl(Solver* s, CRef conflict, Lit* learnt, u
         }
 #endif
         // Regular conflict from arena
+        if (s->proof_file && s->gauss) gauss_ensure_clause_proved(s, conflict);
         improve_clause_lbd(s, conflict);
         bump_learned_clause_activity(s, conflict);
         uint32_t size = CLAUSE_SIZE(s->arena, conflict);
@@ -1706,6 +1707,7 @@ static void solver_analyze_account_impl(Solver* s, CRef conflict, Lit* learnt, u
                 }
             } else if (reason != INVALID_CLAUSE) {
                 // Expand reason clause
+                if (s->proof_file && s->gauss) gauss_ensure_clause_proved(s, reason);
                 improve_clause_lbd(s, reason);
                 uint32_t size = CLAUSE_SIZE(s->arena, reason);
                 Lit* lits = CLAUSE_LITS(s->arena, reason);
@@ -1749,7 +1751,8 @@ static void solver_analyze_account_impl(Solver* s, CRef conflict, Lit* learnt, u
                  * the current resolvent is already in reason, then (reason \ {p})
                  * is strictly stronger and RUP. Strengthen learned reason after backtrack. */
                 if (size >= 3 && seen_in_R == expected_in_C &&
-                    clause_learned(s->arena, reason) && s->otfs_count < 8) {
+                    clause_learned(s->arena, reason) && !gauss_is_temp_clause(s, reason) &&
+                    s->otfs_count < 8) {
                     s->otfs_crefs[s->otfs_count] = reason;
                     s->otfs_pivots[s->otfs_count] = p;
                     s->otfs_count++;
@@ -3122,10 +3125,18 @@ static lbool solve_internal_account_impl(Solver *s, const Lit *assumps, uint32_t
             s->stats.conflicts++; s->restart.conflicts_since++;
             if(SEARCH_DIAGNOSTICS(s)) ++s->accounting.diagnostic_conflicts;
             if (s->opts.chrono && !solver_normalize_conflict(s,conflict)) {
+                if (s->proof_file && s->gauss && conflict != BINARY_CONFLICT) {
+                    gauss_ensure_clause_proved(s, conflict);
+                }
                 if (!solver_budget_exhausted(s)) {s->base_unsat=true;result=FALSE;}
                 break;
             }
-            if (!s->decision_level) {s->base_unsat=true;result=FALSE;break;}
+            if (!s->decision_level) {
+                if (s->proof_file && s->gauss && conflict != BINARY_CONFLICT) {
+                    gauss_ensure_clause_proved(s, conflict);
+                }
+                s->base_unsat=true;result=FALSE;break;
+            }
             uint32_t n; Level backtrack;
             solver_analyze(s, conflict, learnt, &n, &backtrack);
             s->stats.minimized_literals += s->opts.shrink

@@ -378,6 +378,7 @@ typedef struct Solver {
 
     // In-search Dynamic GF(2) Gaussian Elimination
     GaussState* gauss;        // Active GF(2) XOR matrices (NULL if none)
+    uint64_t gauss_proof_merges; // Cumulative proof-mode pivot chain merges across solve
 
     // DRAT Proof Logging
     FILE* proof_file;         // Owned ordinary proof output

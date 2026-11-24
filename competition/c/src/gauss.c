@@ -26,12 +26,32 @@
 #define GAUSS_MAX_ROWS       2048u
 #define GAUSS_MIN_LIVE_ROWS  8u
 #define GAUSS_MAX_TOTAL_ROWS 4096u
+#define GAUSS_MAX_PROOF_MERGES 2048u
 
 typedef struct {
     uint32_t *data;
     uint32_t size;
     uint32_t cap;
 } GaussWatchList;
+
+#define GAUSS_MAX_DIRECT_K   7u
+
+typedef struct {
+    Var *vars;
+    uint32_t k;
+    uint8_t rhs;
+    uint8_t alive;
+    uint32_t *raw_ids; /* proof_mode only: raw CNF eq indices stitched into this XorEq */
+    uint32_t n_raw;
+} XorEq;
+
+typedef struct {
+    Var *vars;
+    Var *aux;
+    uint32_t k;
+    uint8_t rhs;
+    bool owns_final;
+} ProofXorChain;
 
 typedef struct {
     uint32_t ncols;
@@ -44,7 +64,16 @@ typedef struct {
     uint32_t *nb_col;        /* nrows: second watched col, or UINT32_MAX if weight 1 */
     uint32_t *basic_row;     /* ncols: row where col is basic, or UINT32_MAX */
     GaussWatchList *nb_watches; /* ncols */
+    /* Persistent DRAT Tseitin XOR chains for live rows (NULL in non-proof mode). */
+    ProofXorChain *chains;   /* nrows */
 } GaussMatrix;
+
+typedef struct {
+    CRef cref;
+    bool proved;
+} TempClauseRec;
+
+static void gauss_proof_free_chain(Solver *s, ProofXorChain *c, bool delete_final);
 
 struct GaussState {
     GaussMatrix *mats;
@@ -53,7 +82,7 @@ struct GaussState {
     uint16_t *var_mat;       /* var_cap: matrix index or UINT16_MAX */
     uint32_t *var_col;       /* var_cap: local column index */
     uint32_t qhead;
-    CRef *temp_clauses;
+    TempClauseRec *temp_clauses;
     uint32_t temp_size;
     uint32_t temp_cap;
     Lit *clause_buf;
@@ -61,6 +90,8 @@ struct GaussState {
     uint64_t propagations;
     uint64_t conflicts;
     uint64_t pivots;
+    uint64_t proof_merges;
+    bool proof_budget_exceeded;
 };
 
 /* =====================================================================
@@ -102,11 +133,17 @@ static void nb_watch_remove(GaussMatrix *m, uint32_t col, uint32_t r) {
     }
 }
 
-static void free_matrix(GaussMatrix *m) {
+static void free_matrix(Solver *s, GaussMatrix *m) {
     if (!m) return;
     if (m->nb_watches) {
         for (uint32_t c = 0; c < m->ncols; ++c) free(m->nb_watches[c].data);
         free(m->nb_watches);
+    }
+    if (m->chains) {
+        for (uint32_t r = 0; r < m->nrows; ++r) {
+            gauss_proof_free_chain(s, &m->chains[r], m->chains[r].k >= 2u);
+        }
+        free(m->chains);
     }
     free(m->col_to_var);
     free(m->rows);
@@ -131,11 +168,16 @@ static void gauss_gc_temp_clauses(Solver *s) {
     if (!g || g->temp_size == 0) return;
     uint32_t out = 0;
     for (uint32_t i = 0; i < g->temp_size; ++i) {
-        CRef cr = g->temp_clauses[i];
+        TempClauseRec rec = g->temp_clauses[i];
+        CRef cr = rec.cref;
         if (cr == INVALID_CLAUSE || clause_deleted(s->arena, cr)) continue;
         if (temp_clause_locked(s, cr)) {
-            g->temp_clauses[out++] = cr;
+            g->temp_clauses[out++] = rec;
         } else {
+            if (rec.proved && s->proof_file && !s->error) {
+                uint32_t sz = CLAUSE_SIZE(s->arena, cr);
+                if (sz >= 2u) proof_delete_clause(s, CLAUSE_LITS(s->arena, cr), sz);
+            }
             arena_delete(s->arena, cr);
         }
     }
@@ -147,12 +189,17 @@ void gauss_free(Solver *s) {
     GaussState *g = s->gauss;
     /* Delete any unlocked temp clauses cleanly (none are in watches or learnts). */
     for (uint32_t i = 0; i < g->temp_size; ++i) {
-        CRef cr = g->temp_clauses[i];
+        TempClauseRec rec = g->temp_clauses[i];
+        CRef cr = rec.cref;
         if (cr != INVALID_CLAUSE && !clause_deleted(s->arena, cr)) {
+            if (rec.proved && s->proof_file && !s->error) {
+                uint32_t sz = CLAUSE_SIZE(s->arena, cr);
+                if (sz >= 2u) proof_delete_clause(s, CLAUSE_LITS(s->arena, cr), sz);
+            }
             arena_delete(s->arena, cr);
         }
     }
-    for (uint32_t mi = 0; mi < g->nmats; ++mi) free_matrix(&g->mats[mi]);
+    for (uint32_t mi = 0; mi < g->nmats; ++mi) free_matrix(s, &g->mats[mi]);
     free(g->mats);
     free(g->var_mat);
     free(g->var_col);
@@ -176,6 +223,13 @@ void gauss_backtrack(Solver *s, uint32_t trail_pos) {
     if (!g) return;
     if (g->qhead > trail_pos) g->qhead = trail_pos;
     if (g->temp_size > 0) gauss_gc_temp_clauses(s);
+    if (g->proof_budget_exceeded && s->decision_level == 0 && g->temp_size == 0) {
+        gauss_free(s);
+        /* Let inprocessing/BVE simplify newly unprotected XOR variables promptly. */
+        if (s->next_inprocess_ticks > s->work) {
+            s->next_inprocess_ticks = s->work;
+        }
+    }
 }
 
 void gauss_relocate_clauses(Solver *s, const Arena *old_arena) {
@@ -183,12 +237,28 @@ void gauss_relocate_clauses(Solver *s, const Arena *old_arena) {
     if (!g || g->temp_size == 0) return;
     uint32_t out = 0;
     for (uint32_t i = 0; i < g->temp_size; ++i) {
-        CRef old_cr = g->temp_clauses[i];
+        TempClauseRec rec = g->temp_clauses[i];
+        CRef old_cr = rec.cref;
         if (old_cr == INVALID_CLAUSE) continue;
         CRef new_cr = CLAUSE_HEADER(old_arena, old_cr)->search;
-        if (new_cr != INVALID_CLAUSE) g->temp_clauses[out++] = new_cr;
+        if (new_cr != INVALID_CLAUSE) {
+            rec.cref = new_cr;
+            g->temp_clauses[out++] = rec;
+        } else if (rec.proved && s->proof_file && !s->error) {
+            uint32_t sz = CLAUSE_SIZE(old_arena, old_cr);
+            if (sz >= 2u) proof_delete_clause(s, CLAUSE_LITS(old_arena, old_cr), sz);
+        }
     }
     g->temp_size = out;
+}
+
+bool gauss_is_temp_clause(const Solver *s, CRef cr) {
+    if (!s || !s->gauss || cr == INVALID_CLAUSE || cr == BINARY_CONFLICT) return false;
+    const GaussState *g = s->gauss;
+    for (uint32_t i = 0; i < g->temp_size; ++i) {
+        if (g->temp_clauses[i].cref == cr) return true;
+    }
+    return false;
 }
 
 /* =====================================================================
@@ -226,21 +296,12 @@ static bool gauss_has_binary_watch(Solver *s, Lit a, Lit b) {
     return false;
 }
 
-#define GAUSS_MAX_DIRECT_K   7u
-
 typedef struct {
     Var vars[GAUSS_MAX_DIRECT_K];
     uint8_t k;
     uint8_t used_as_xor;
     uint64_t mask[2]; /* 128 bits: supports up to 2^7 = 128 polarity masks */
 } XorSlot;
-
-typedef struct {
-    Var *vars;
-    uint32_t k;
-    uint8_t rhs;
-    uint8_t alive;
-} XorEq;
 
 static uint64_t hash_xor_tuple(const Var *vs, uint8_t k) {
     uint64_t h = (uint64_t)k * UINT64_C(0x9e3779b97f4a7c15);
@@ -337,22 +398,15 @@ static void uf_union(uint32_t *parent, uint32_t a, uint32_t b) {
 }
 
 /* =====================================================================
- * DRAT Proof Emitter for Root GF(2) RREF (Philipp & Rebola-Pardo Linear
- * Tseitin XOR-Chain Addition, 100% Standard DRAT/RAT)
- *
- * Given a subset of CNF-backed input XOR equations (2 <= k <= 7) whose
- * GF(2) sum is a contradiction (0=1), root unit (x=p), or binary
- * equivalence (x^y=p), proves the derived fact in O(sum(L_i)) DRAT steps
- * using temporary proof-only variables and zero residual aux variables.
+ * DRAT Proof Emitter for Root GF(2) RREF & Persistent Live Row Chains
+ * (Philipp & Rebola-Pardo Linear Tseitin XOR-Chain Addition, Standard DRAT)
  * ===================================================================== */
 
 typedef struct {
-    Var *vars;
-    Var *aux;
-    uint32_t k;
-    uint8_t rhs;
-    bool owns_final;
-} ProofXorChain;
+    uint32_t a;
+    uint32_t b;
+    uint8_t is_swap;
+} RrefOp;
 
 static void gauss_proof_emit_xor_eq(Solver *s, const Var *vs, uint32_t m, uint8_t rhs, bool del) {
     if (s->error) return;
@@ -624,51 +678,47 @@ static bool gauss_proof_xor_chains(Solver *s, const ProofXorChain *A, const Proo
     return true;
 }
 
-/* Prove the GF(2) sum of a subset of component equations eqs[eq_by_comp[ob + r]]
- * selected by bitmask `hist_row[0..hwords-1]`, ordering equations greedily by
- * overlap with the running accumulator to keep intermediate chains tiny! */
-static bool gauss_proof_sum_subset(Solver *s, const XorEq *eqs, const uint32_t *eq_by_comp,
-                                   uint32_t ob, uint32_t ceq, const uint64_t *hist_row,
-                                   uint32_t hwords, Var *next_pvar,
-                                   uint32_t expected_k, uint8_t expected_rhs) {
-    uint32_t *sel = malloc((size_t)ceq * sizeof *sel);
-    if (!sel) { s->error = true; return false; }
-    uint32_t nsel = 0;
-    for (uint32_t w = 0; w < hwords; ++w) {
-        uint64_t x = hist_row[w];
-        while (x) {
-            uint32_t r = (w << 6) + (uint32_t)__builtin_ctzll(x);
-            if (r < ceq) sel[nsel++] = r;
-            x &= x - 1;
-        }
+/* Build a ProofXorChain equal to the GF(2) sum of raw CNF-backed equations
+ * `raw_eqs[ids[0..nids-1]]` (2 <= k <= 7 each), ordering greedily by variable
+ * overlap to keep intermediate chains minimal! */
+static bool gauss_proof_sum_raw_list(Solver *s, const XorEq *raw_eqs,
+                                     const uint32_t *ids, uint32_t nids,
+                                     Var *next_pvar, ProofXorChain *out) {
+    memset(out, 0, sizeof *out);
+    if (nids == 0) return false;
+    if (*next_pvar == 0) {
+        s->proof_aux_base = s->num_vars + 32768u;
+        *next_pvar = s->proof_aux_base;
     }
-    if (nsel == 0) { free(sel); return false; }
+    if (*next_pvar <= s->num_vars) {
+        *next_pvar = s->num_vars + 32768u;
+    }
+    if (nids == 1u) {
+        return gauss_proof_chain_from_eq(s, &raw_eqs[ids[0]], out, next_pvar);
+    }
 
-    /* Track variables currently in `acc` for greedy minimum-growth ordering! */
     uint8_t *in_acc = calloc((size_t)s->num_vars + 1u, 1);
-    uint8_t *used = calloc(nsel, 1);
+    uint8_t *used = calloc(nids, 1);
     if (!in_acc || !used) {
-        free(sel); free(in_acc); free(used);
+        free(in_acc); free(used);
         s->error = true; return false;
     }
 
     ProofXorChain acc;
     memset(&acc, 0, sizeof acc);
-    const XorEq *first = &eqs[eq_by_comp[ob + sel[0]]];
-    if (!gauss_proof_chain_from_eq(s, first, &acc, next_pvar)) {
-        free(sel); free(in_acc); free(used);
+    if (!gauss_proof_chain_from_eq(s, &raw_eqs[ids[0]], &acc, next_pvar)) {
+        free(in_acc); free(used);
         return false;
     }
     used[0] = 1;
     for (uint32_t j = 0; j < acc.k; ++j) in_acc[acc.vars[j]] = 1;
 
-    for (uint32_t step = 1; step < nsel && !s->error; ++step) {
-        /* Pick unused equation with best score = 2*overlap - k (minimizes new acc.k!). */
+    for (uint32_t step = 1; step < nids && !s->error; ++step) {
         uint32_t best_i = UINT32_MAX;
         int best_score = -1000000;
-        for (uint32_t i = 0; i < nsel; ++i) {
+        for (uint32_t i = 0; i < nids; ++i) {
             if (used[i]) continue;
-            const XorEq *e = &eqs[eq_by_comp[ob + sel[i]]];
+            const XorEq *e = &raw_eqs[ids[i]];
             int ov = 0;
             for (uint32_t j = 0; j < e->k; ++j) {
                 if (in_acc[e->vars[j]]) ov++;
@@ -677,37 +727,89 @@ static bool gauss_proof_sum_subset(Solver *s, const XorEq *eqs, const uint32_t *
             if (ov > 0 && sc > best_score) { best_score = sc; best_i = i; }
         }
         if (best_i == UINT32_MAX) {
-            for (uint32_t i = 0; i < nsel; ++i) {
+            for (uint32_t i = 0; i < nids; ++i) {
                 if (!used[i]) { best_i = i; break; }
             }
         }
         used[best_i] = 1;
 
         ProofXorChain rhs_ch, next_acc;
-        const XorEq *e = &eqs[eq_by_comp[ob + sel[best_i]]];
-        if (!gauss_proof_chain_from_eq(s, e, &rhs_ch, next_pvar)) {
-            gauss_proof_free_chain(s, &acc, true);
-            free(sel); free(in_acc); free(used);
+        if (!gauss_proof_chain_from_eq(s, &raw_eqs[ids[best_i]], &rhs_ch, next_pvar)) {
+            gauss_proof_free_chain(s, &acc, acc.k >= 2u);
+            free(in_acc); free(used);
             return false;
         }
         if (!gauss_proof_xor_chains(s, &acc, &rhs_ch, &next_acc, next_pvar)) {
-            gauss_proof_free_chain(s, &rhs_ch, true);
-            gauss_proof_free_chain(s, &acc, true);
-            free(sel); free(in_acc); free(used);
+            gauss_proof_free_chain(s, &rhs_ch, rhs_ch.k >= 2u);
+            gauss_proof_free_chain(s, &acc, acc.k >= 2u);
+            free(in_acc); free(used);
             return false;
         }
         for (uint32_t j = 0; j < acc.k; ++j) in_acc[acc.vars[j]] = 0;
-        gauss_proof_free_chain(s, &rhs_ch, true);
-        gauss_proof_free_chain(s, &acc, true);
+        gauss_proof_free_chain(s, &rhs_ch, rhs_ch.k >= 2u);
+        gauss_proof_free_chain(s, &acc, acc.k >= 2u);
         acc = next_acc;
         for (uint32_t j = 0; j < acc.k; ++j) in_acc[acc.vars[j]] = 1;
     }
 
-    free(sel); free(in_acc); free(used);
+    free(in_acc); free(used);
+    if (s->error) {
+        gauss_proof_free_chain(s, &acc, false);
+        return false;
+    }
+    *out = acc;
+    return true;
+}
+
+/* Prove the GF(2) sum of a subset of (possibly stitched) component equations
+ * eqs[eq_by_comp[ob + r]] selected by bitmask `hist_row[0..hwords-1]`. */
+static bool gauss_proof_sum_subset(Solver *s, const XorEq *raw_eqs, const XorEq *eqs,
+                                   const uint32_t *eq_by_comp,
+                                   uint32_t ob, uint32_t ceq, const uint64_t *hist_row,
+                                   uint32_t hwords, Var *next_pvar,
+                                   uint32_t expected_k, uint8_t expected_rhs) {
+    uint32_t total_raw = 0;
+    for (uint32_t w = 0; w < hwords; ++w) {
+        uint64_t x = hist_row[w];
+        while (x) {
+            uint32_t r = (w << 6) + (uint32_t)__builtin_ctzll(x);
+            if (r < ceq) total_raw += eqs[eq_by_comp[ob + r]].n_raw;
+            x &= x - 1;
+        }
+    }
+    if (total_raw == 0) return false;
+    uint32_t *ids = malloc((size_t)total_raw * sizeof *ids);
+    if (!ids) { s->error = true; return false; }
+    uint32_t nids = 0;
+    for (uint32_t w = 0; w < hwords; ++w) {
+        uint64_t x = hist_row[w];
+        while (x) {
+            uint32_t r = (w << 6) + (uint32_t)__builtin_ctzll(x);
+            if (r < ceq) {
+                const XorEq *e = &eqs[eq_by_comp[ob + r]];
+                memcpy(ids + nids, e->raw_ids, (size_t)e->n_raw * sizeof(uint32_t));
+                nids += e->n_raw;
+            }
+            x &= x - 1;
+        }
+    }
+
+    ProofXorChain acc;
+    bool built = gauss_proof_sum_raw_list(s, raw_eqs, ids, nids, next_pvar, &acc);
+    free(ids);
+    if (!built) return false;
+
     bool ok = !s->error && acc.k == expected_k && acc.rhs == expected_rhs;
     /* Keep the final derived unit/binary clauses in the proof (delete only chain aux vars!). */
-    gauss_proof_free_chain(s, &acc, !ok);
+    gauss_proof_free_chain(s, &acc, !ok && acc.k >= 2u);
     return ok;
+}
+
+void gauss_ensure_clause_proved(Solver *s, CRef cr) {
+    /* With persistent live row chains m->chains[], every Gauss reason/conflict
+     * clause is already emitted as a 1-step RUP clause at creation time! */
+    (void)s;
+    (void)cr;
 }
 
 /* =====================================================================
@@ -718,10 +820,7 @@ bool gauss_extract_and_init(Solver *s, bool keep_matrices) {
     if (!s || s->proof_journal) return true;
     const bool proof_mode = (s->proof_file != NULL);
     /* In --proof mode, keep tiny RUP-only unit checks RUP while certifying real XOR benchmarks! */
-    if (proof_mode) {
-        if (s->num_clauses < 64u) return true;
-        keep_matrices = false;
-    }
+    if (proof_mode && s->num_clauses < 64u) return true;
     if (!s->num_vars || !s->num_clauses || s->num_clauses > 250000 ||
         s->error || s->result == FALSE || solver_budget_exhausted(s)) return true;
 
@@ -869,7 +968,10 @@ bool gauss_extract_and_init(Solver *s, bool keep_matrices) {
 
     uint32_t eq_count = 0;
     bool eq_oom = false;
-    for (uint32_t ui = 0; ui < n_used; ++ui) {
+    XorEq *raw_eqs = proof_mode ? calloc(n_eqs, sizeof *raw_eqs) : NULL;
+    uint32_t raw_eq_count = 0;
+    if (proof_mode && !raw_eqs) eq_oom = true;
+    for (uint32_t ui = 0; ui < n_used && !eq_oom; ++ui) {
         XorSlot *sl = &tab[used_slots[ui]];
         if (!sl->used_as_xor) continue;
         XorEq *e = &eqs[eq_count];
@@ -879,12 +981,33 @@ bool gauss_extract_and_init(Solver *s, bool keep_matrices) {
         e->rhs = (sl->used_as_xor == 2u) ? 1u : 0u;
         e->alive = 1u;
         memcpy(e->vars, sl->vars, (size_t)sl->k * sizeof(Var));
+        if (proof_mode) {
+            e->raw_ids = malloc(sizeof(uint32_t));
+            raw_eqs[eq_count].vars = malloc((size_t)sl->k * sizeof(Var));
+            if (!e->raw_ids || !raw_eqs[eq_count].vars) {
+                free(e->raw_ids); e->raw_ids = NULL;
+                free(raw_eqs[eq_count].vars); raw_eqs[eq_count].vars = NULL;
+                eq_oom = true;
+                break;
+            }
+            e->raw_ids[0] = eq_count;
+            e->n_raw = 1u;
+            memcpy(raw_eqs[eq_count].vars, sl->vars, (size_t)sl->k * sizeof(Var));
+            raw_eqs[eq_count].k = sl->k;
+            raw_eqs[eq_count].rhs = e->rhs;
+            raw_eqs[eq_count].alive = 1u;
+            raw_eq_count = eq_count + 1u;
+        }
         eq_count++;
     }
     free(used_slots); free(tab);
 
     if (eq_oom) {
-        for (uint32_t i = 0; i < eq_count; ++i) free(eqs[i].vars);
+        for (uint32_t i = 0; i < eq_count; ++i) { free(eqs[i].vars); free(eqs[i].raw_ids); }
+        if (raw_eqs) {
+            for (uint32_t i = 0; i < raw_eq_count; ++i) free(raw_eqs[i].vars);
+            free(raw_eqs);
+        }
         free(eqs); free(non_xor_occ);
         s->error = true; return false;
     }
@@ -892,9 +1015,9 @@ bool gauss_extract_and_init(Solver *s, bool keep_matrices) {
     /* Tseitin XOR-chain stitching: eliminate any internal XOR-only variable `t`
      * (non_xor_occ[t] == 0) that appears in exactly two XOR equations E1, E2
      * by replacing {E1, E2} with {E1 ^ E2} inside the GF(2) system!
-     * Skipped in --proof mode so every equation in `eqs[]` stays directly CNF-backed
-     * (2 <= k <= 7) for RREF history bitmask DRAT proof emission. */
-    if (!proof_mode) {
+     * In --proof mode, tracks raw_ids[] so stitched equations reconstruct their
+     * DRAT chains directly from raw_eqs[]. */
+    {
         uint32_t *xor_deg = calloc((size_t)(s->num_vars + 1u), sizeof *xor_deg);
         uint32_t *eq_a = malloc((size_t)(s->num_vars + 1u) * sizeof *eq_a);
         uint32_t *eq_b = malloc((size_t)(s->num_vars + 1u) * sizeof *eq_b);
@@ -902,7 +1025,11 @@ bool gauss_extract_and_init(Solver *s, bool keep_matrices) {
         uint8_t *in_q = calloc((size_t)(s->num_vars + 1u), 1);
         if (!xor_deg || !eq_a || !eq_b || !queue || !in_q) {
             free(xor_deg); free(eq_a); free(eq_b); free(queue); free(in_q);
-            for (uint32_t i = 0; i < eq_count; ++i) free(eqs[i].vars);
+            for (uint32_t i = 0; i < eq_count; ++i) { free(eqs[i].vars); free(eqs[i].raw_ids); }
+            if (raw_eqs) {
+                for (uint32_t i = 0; i < raw_eq_count; ++i) free(raw_eqs[i].vars);
+                free(raw_eqs);
+            }
             free(eqs); free(non_xor_occ);
             s->error = true; return false;
         }
@@ -924,6 +1051,7 @@ bool gauss_extract_and_init(Solver *s, bool keep_matrices) {
             }
         }
         bool stitch_unsat = false;
+        uint32_t stitch_unsat_e = UINT32_MAX;
         while (qh < qt && !stitch_unsat && !eq_oom) {
             Var t = queue[qh++];
             in_q[t] = 0;
@@ -937,6 +1065,15 @@ bool gauss_extract_and_init(Solver *s, bool keep_matrices) {
             uint32_t max_k = eqs[e1].k + eqs[e2].k;
             Var *merged = malloc((size_t)(max_k ? max_k : 1u) * sizeof(Var));
             if (!merged) { eq_oom = true; break; }
+            uint32_t *mraw = NULL;
+            uint32_t mnraw = 0;
+            if (proof_mode) {
+                mnraw = eqs[e1].n_raw + eqs[e2].n_raw;
+                mraw = malloc((size_t)mnraw * sizeof(uint32_t));
+                if (!mraw) { free(merged); eq_oom = true; break; }
+                memcpy(mraw, eqs[e1].raw_ids, (size_t)eqs[e1].n_raw * sizeof(uint32_t));
+                memcpy(mraw + eqs[e1].n_raw, eqs[e2].raw_ids, (size_t)eqs[e2].n_raw * sizeof(uint32_t));
+            }
             uint32_t i1 = 0, i2 = 0, mk = 0;
             const Var *v1 = eqs[e1].vars, *v2 = eqs[e2].vars;
             uint32_t k1 = eqs[e1].k, k2 = eqs[e2].k;
@@ -969,39 +1106,63 @@ bool gauss_extract_and_init(Solver *s, bool keep_matrices) {
 
             free(eqs[e1].vars);
             free(eqs[e2].vars);
+            free(eqs[e1].raw_ids);
+            free(eqs[e2].raw_ids);
             eqs[e2].vars = NULL;
+            eqs[e2].raw_ids = NULL;
+            eqs[e2].n_raw = 0;
             eqs[e2].k = 0;
             eqs[e2].alive = 0;
             eqs[e1].vars = merged;
+            eqs[e1].raw_ids = mraw;
+            eqs[e1].n_raw = mnraw;
             eqs[e1].k = mk;
             eqs[e1].rhs ^= eqs[e2].rhs;
 
             if (mk == 0) {
-                if (eqs[e1].rhs) { stitch_unsat = true; break; }
+                if (eqs[e1].rhs) { stitch_unsat = true; stitch_unsat_e = e1; break; }
                 eqs[e1].alive = 0;
             }
         }
         free(xor_deg); free(eq_a); free(eq_b); free(queue); free(in_q);
         free(non_xor_occ);
         if (stitch_unsat) {
-            for (uint32_t i = 0; i < eq_count; ++i) free(eqs[i].vars);
+            if (proof_mode && stitch_unsat_e != UINT32_MAX) {
+                ProofXorChain ch;
+                if (gauss_proof_sum_raw_list(s, raw_eqs, eqs[stitch_unsat_e].raw_ids,
+                                             eqs[stitch_unsat_e].n_raw, &s->proof_aux_next, &ch)) {
+                    gauss_proof_free_chain(s, &ch, false);
+                }
+            }
+            for (uint32_t i = 0; i < eq_count; ++i) { free(eqs[i].vars); free(eqs[i].raw_ids); }
+            if (raw_eqs) {
+                for (uint32_t i = 0; i < raw_eq_count; ++i) free(raw_eqs[i].vars);
+                free(raw_eqs);
+            }
             free(eqs);
+            if (s->error) return false;
             s->base_unsat = true; s->result = FALSE;
             return false;
         }
         if (eq_oom) {
-            for (uint32_t i = 0; i < eq_count; ++i) free(eqs[i].vars);
+            for (uint32_t i = 0; i < eq_count; ++i) { free(eqs[i].vars); free(eqs[i].raw_ids); }
+            if (raw_eqs) {
+                for (uint32_t i = 0; i < raw_eq_count; ++i) free(raw_eqs[i].vars);
+                free(raw_eqs);
+            }
             free(eqs);
             s->error = true; return false;
         }
-    } else {
-        free(non_xor_occ);
     }
 
     /* Compact alive equations and map variables. */
     uint32_t *var_id = malloc((size_t)(s->num_vars + 1u) * sizeof *var_id);
     if (!var_id) {
-        for (uint32_t i = 0; i < eq_count; ++i) free(eqs[i].vars);
+        for (uint32_t i = 0; i < eq_count; ++i) { free(eqs[i].vars); free(eqs[i].raw_ids); }
+        if (raw_eqs) {
+            for (uint32_t i = 0; i < raw_eq_count; ++i) free(raw_eqs[i].vars);
+            free(raw_eqs);
+        }
         free(eqs);
         s->error = true; return false;
     }
@@ -1011,17 +1172,34 @@ bool gauss_extract_and_init(Solver *s, bool keep_matrices) {
     bool root_unsat = false;
     bool stitched_unit = false;
     for (uint32_t i = 0; i < eq_count; ++i) {
-        if (!eqs[i].alive || eqs[i].k == 0) { free(eqs[i].vars); eqs[i].vars = NULL; continue; }
+        if (!eqs[i].alive || eqs[i].k == 0) {
+            free(eqs[i].vars); eqs[i].vars = NULL;
+            free(eqs[i].raw_ids); eqs[i].raw_ids = NULL;
+            continue;
+        }
         if (eqs[i].k == 1) {
             Lit unit = mkLit(eqs[i].vars[0], eqs[i].rhs == 0);
+            if (proof_mode) {
+                ProofXorChain uch;
+                if (gauss_proof_sum_raw_list(s, raw_eqs, eqs[i].raw_ids, eqs[i].n_raw,
+                                             &s->proof_aux_next, &uch)) {
+                    gauss_proof_free_chain(s, &uch, false);
+                }
+            }
             free(eqs[i].vars); eqs[i].vars = NULL;
-            if (!gauss_enqueue_root_unit(s, unit)) { root_unsat = true; break; }
+            free(eqs[i].raw_ids); eqs[i].raw_ids = NULL;
+            if (s->error) { root_unsat = true; break; }
+            if (!gauss_enqueue_root_unit(s, unit)) {
+                if (proof_mode && !s->error) proof_add_clause(s, NULL, 0);
+                root_unsat = true; break;
+            }
             stitched_unit = true;
             continue;
         }
         if (live_eqs != i) {
             eqs[live_eqs] = eqs[i];
             eqs[i].vars = NULL;
+            eqs[i].raw_ids = NULL;
         }
         for (uint32_t j = 0; j < eqs[live_eqs].k; ++j) {
             Var v = eqs[live_eqs].vars[j];
@@ -1030,16 +1208,25 @@ bool gauss_extract_and_init(Solver *s, bool keep_matrices) {
         live_eqs++;
     }
     if (root_unsat) {
-        for (uint32_t i = 0; i < eq_count; ++i) free(eqs[i].vars);
+        for (uint32_t i = 0; i < eq_count; ++i) { free(eqs[i].vars); free(eqs[i].raw_ids); }
+        if (raw_eqs) {
+            for (uint32_t i = 0; i < raw_eq_count; ++i) free(raw_eqs[i].vars);
+            free(raw_eqs);
+        }
         free(eqs); free(var_id);
         return false;
     }
     eq_count = live_eqs;
 
     if (n_all_vars == 0 || eq_count < 2) {
-        for (uint32_t i = 0; i < eq_count; ++i) free(eqs[i].vars);
+        for (uint32_t i = 0; i < eq_count; ++i) { free(eqs[i].vars); free(eqs[i].raw_ids); }
+        if (raw_eqs) {
+            for (uint32_t i = 0; i < raw_eq_count; ++i) free(raw_eqs[i].vars);
+            free(raw_eqs);
+        }
         free(eqs); free(var_id);
         if (stitched_unit && solver_propagate(s) != INVALID_CLAUSE) {
+            if (proof_mode && !s->error) proof_add_clause(s, NULL, 0);
             s->base_unsat = true; s->result = FALSE;
             return false;
         }
@@ -1054,7 +1241,11 @@ bool gauss_extract_and_init(Solver *s, bool keep_matrices) {
     uint32_t *comp_ge3 = calloc(n_all_vars, sizeof *comp_ge3);
     if (!uf || !comp_id || !comp_eqs || !comp_vars || !comp_ge3) {
         free(uf); free(comp_id); free(comp_eqs); free(comp_vars); free(comp_ge3);
-        for (uint32_t i = 0; i < eq_count; ++i) free(eqs[i].vars);
+        for (uint32_t i = 0; i < eq_count; ++i) { free(eqs[i].vars); free(eqs[i].raw_ids); }
+        if (raw_eqs) {
+            for (uint32_t i = 0; i < raw_eq_count; ++i) free(raw_eqs[i].vars);
+            free(raw_eqs);
+        }
         free(eqs); free(var_id);
         s->error = true; return false;
     }
@@ -1085,7 +1276,11 @@ bool gauss_extract_and_init(Solver *s, bool keep_matrices) {
     if (!comp_off || !comp_cur || !eq_by_comp) {
         free(comp_off); free(comp_cur); free(eq_by_comp);
         free(uf); free(comp_id); free(comp_eqs); free(comp_vars); free(comp_ge3);
-        for (uint32_t i = 0; i < eq_count; ++i) free(eqs[i].vars);
+        for (uint32_t i = 0; i < eq_count; ++i) { free(eqs[i].vars); free(eqs[i].raw_ids); }
+        if (raw_eqs) {
+            for (uint32_t i = 0; i < raw_eq_count; ++i) free(raw_eqs[i].vars);
+            free(raw_eqs);
+        }
         free(eqs); free(var_id);
         s->error = true; return false;
     }
@@ -1110,7 +1305,11 @@ bool gauss_extract_and_init(Solver *s, bool keep_matrices) {
     if (!local_col) {
         free(comp_off); free(eq_by_comp);
         free(comp_eqs); free(comp_vars); free(comp_ge3);
-        for (uint32_t i = 0; i < eq_count; ++i) free(eqs[i].vars);
+        for (uint32_t i = 0; i < eq_count; ++i) { free(eqs[i].vars); free(eqs[i].raw_ids); }
+        if (raw_eqs) {
+            for (uint32_t i = 0; i < raw_eq_count; ++i) free(raw_eqs[i].vars);
+            free(raw_eqs);
+        }
         free(eqs); free(var_id);
         s->error = true; return false;
     }
@@ -1159,7 +1358,13 @@ bool gauss_extract_and_init(Solver *s, bool keep_matrices) {
         /* Clear local_col marks immediately. */
         for (uint32_t c = 0; c < ncols; ++c) local_col[c2v[c]] = UINT32_MAX;
 
-        /* Gauss-Jordan RREF over GF(2). */
+        /* Gauss-Jordan RREF over GF(2), recording row ops for O(n_ops) persistent
+         * chain replay if this component becomes a live in-search matrix under --proof. */
+        RrefOp *rref_ops = NULL;
+        uint32_t n_ops = 0, ops_cap = 0;
+        bool ops_overflow = false;
+        const bool rec_ops = proof_mode && keep_matrices;
+
         uint32_t pivot_row = 0;
         for (uint32_t col = 0; col < ncols && pivot_row < ceq; ++col) {
             uint32_t w = col >> 6;
@@ -1183,6 +1388,15 @@ bool gauss_extract_and_init(Solver *s, bool keep_matrices) {
                     }
                 }
                 uint8_t tr = rhs[pivot_row]; rhs[pivot_row] = rhs[found]; rhs[found] = tr;
+                if (rec_ops && !ops_overflow) {
+                    if (n_ops == ops_cap) {
+                        uint32_t nc = ops_cap ? ops_cap * 2u : 256u;
+                        RrefOp *p = realloc(rref_ops, (size_t)nc * sizeof *p);
+                        if (!p) { s->error = true; break; }
+                        rref_ops = p; ops_cap = nc;
+                    }
+                    rref_ops[n_ops++] = (RrefOp){pivot_row, found, 1u};
+                }
             }
             uint64_t *pr = mat + (size_t)pivot_row * nwords;
             uint64_t *ph = hist ? (hist + (size_t)pivot_row * hwords) : NULL;
@@ -1197,10 +1411,28 @@ bool gauss_extract_and_init(Solver *s, bool keep_matrices) {
                         for (uint32_t k = 0; k < hwords; ++k) rh[k] ^= ph[k];
                     }
                     rhs[r] ^= prhs;
+                    if (rec_ops && !ops_overflow) {
+                        if (n_ops >= 60000u) {
+                            ops_overflow = true;
+                        } else {
+                            if (n_ops == ops_cap) {
+                                uint32_t nc = ops_cap ? ops_cap * 2u : 256u;
+                                RrefOp *p = realloc(rref_ops, (size_t)nc * sizeof *p);
+                                if (!p) { s->error = true; break; }
+                                rref_ops = p; ops_cap = nc;
+                            }
+                            rref_ops[n_ops++] = (RrefOp){r, pivot_row, 0u};
+                        }
+                    }
                 }
             }
+            if (s->error) break;
             pivot_row++;
             s->work += (uint64_t)ceq * nwords;
+        }
+        if (s->error) {
+            free(rref_ops); free(c2v); free(mat); free(rhs); free(hist);
+            break;
         }
 
         /* In --proof mode, check for any 0 = 1 contradiction FIRST so we immediately emit
@@ -1234,13 +1466,13 @@ bool gauss_extract_and_init(Solver *s, bool keep_matrices) {
             }
             if (best_unsat_r != UINT32_MAX) {
                 const uint64_t *rh = hist + (size_t)best_unsat_r * hwords;
-                if (gauss_proof_sum_subset(s, eqs, eq_by_comp, ob, ceq, rh, hwords,
+                if (gauss_proof_sum_subset(s, raw_eqs, eqs, eq_by_comp, ob, ceq, rh, hwords,
                                            &s->proof_aux_next, 0u, 1u)) {
                     s->base_unsat = true;
                     s->result = FALSE;
                     unsat = true;
                 }
-                free(c2v); free(mat); free(rhs); free(hist);
+                free(rref_ops); free(c2v); free(mat); free(rhs); free(hist);
                 continue;
             }
         }
@@ -1273,7 +1505,7 @@ bool gauss_extract_and_init(Solver *s, bool keep_matrices) {
                     uint32_t hw = 0;
                     for (uint32_t w = 0; w < hwords; ++w) hw += (uint32_t)__builtin_popcountll(rh[w]);
                     if (hw > 512u) continue;
-                    if (!gauss_proof_sum_subset(s, eqs, eq_by_comp, ob, ceq, rh, hwords,
+                    if (!gauss_proof_sum_subset(s, raw_eqs, eqs, eq_by_comp, ob, ceq, rh, hwords,
                                                 &s->proof_aux_next, 1u, rhs[r])) {
                         continue;
                     }
@@ -1299,7 +1531,7 @@ bool gauss_extract_and_init(Solver *s, bool keep_matrices) {
                     uint32_t hw = 0;
                     for (uint32_t w = 0; w < hwords; ++w) hw += (uint32_t)__builtin_popcountll(rh[w]);
                     if (hw > 256u) continue;
-                    if (!gauss_proof_sum_subset(s, eqs, eq_by_comp, ob, ceq, rh, hwords,
+                    if (!gauss_proof_sum_subset(s, raw_eqs, eqs, eq_by_comp, ob, ceq, rh, hwords,
                                                 &s->proof_aux_next, 2u, rhs[r])) {
                         continue;
                     }
@@ -1327,10 +1559,11 @@ bool gauss_extract_and_init(Solver *s, bool keep_matrices) {
                 n_live_ge3++;
             }
         }
-        free(hist);
-
         /* Keep component as a live Bird/Han-Jiang matrix if non-trivial and within bounds! */
         if (!unsat && !s->error && keep_matrices &&
+            (!proof_mode || (!ops_overflow &&
+                             s->gauss_proof_merges + n_ops <= GAUSS_MAX_PROOF_MERGES &&
+                             n_live_ge2 <= 128u)) &&
             n_built < GAUSS_MAX_MATS &&
             n_live_ge3 >= GAUSS_MIN_LIVE_ROWS &&
             ncols <= GAUSS_MAX_COLS &&
@@ -1348,10 +1581,56 @@ bool gauss_extract_and_init(Solver *s, bool keep_matrices) {
             m.nb_col = malloc(m.nrows * sizeof(uint32_t));
             m.basic_row = malloc(ncols * sizeof(uint32_t));
             m.nb_watches = calloc(ncols, sizeof(GaussWatchList));
-            if (!m.rows || !m.rhs || !m.basic_col || !m.nb_col || !m.basic_row || !m.nb_watches) {
-                free_matrix(&m);
-                free(mat); free(rhs);
+            if (proof_mode) {
+                m.chains = calloc(m.nrows, sizeof *m.chains);
+            }
+            if (!m.rows || !m.rhs || !m.basic_col || !m.nb_col || !m.basic_row || !m.nb_watches ||
+                (proof_mode && !m.chains)) {
+                free_matrix(s, &m);
+                free(rref_ops); free(mat); free(rhs); free(hist);
                 s->error = true; break;
+            }
+            ProofXorChain *rch = NULL;
+            if (proof_mode) {
+                rch = calloc(ceq, sizeof *rch);
+                if (!rch) {
+                    free_matrix(s, &m);
+                    free(rref_ops); free(mat); free(rhs); free(hist);
+                    s->error = true; break;
+                }
+                bool ch_ok = true;
+                for (uint32_t r = 0; r < ceq && ch_ok; ++r) {
+                    const XorEq *src = &eqs[eq_by_comp[ob + r]];
+                    if (!gauss_proof_sum_raw_list(s, raw_eqs, src->raw_ids, src->n_raw,
+                                                  &s->proof_aux_next, &rch[r])) ch_ok = false;
+                }
+                for (uint32_t oi = 0; oi < n_ops && ch_ok && !s->error; ++oi) {
+                    RrefOp op = rref_ops[oi];
+                    if (op.is_swap) {
+                        ProofXorChain tmp = rch[op.a];
+                        rch[op.a] = rch[op.b];
+                        rch[op.b] = tmp;
+                    } else {
+                        ProofXorChain nxt;
+                        if (!gauss_proof_xor_chains(s, &rch[op.a], &rch[op.b], &nxt, &s->proof_aux_next)) {
+                            ch_ok = false;
+                            break;
+                        }
+                        gauss_proof_free_chain(s, &rch[op.a], rch[op.a].k >= 2u);
+                        rch[op.a] = nxt;
+                        s->gauss_proof_merges++;
+                    }
+                }
+                if (!ch_ok || s->error) {
+                    for (uint32_t r = 0; r < ceq; ++r) {
+                        gauss_proof_free_chain(s, &rch[r], rch[r].k >= 2u);
+                    }
+                    free(rch);
+                    free_matrix(s, &m);
+                    free(rref_ops); free(mat); free(rhs); free(hist);
+                    if (s->error) break;
+                    continue;
+                }
             }
             memset(m.basic_row, 0xFF, ncols * sizeof(uint32_t));
 
@@ -1372,6 +1651,10 @@ bool gauss_extract_and_init(Solver *s, bool keep_matrices) {
                 if (c0 == UINT32_MAX || c1 == UINT32_MAX) continue; /* weight 0 or 1 */
                 memcpy(mat_row(&m, dst), rr, (size_t)nwords * sizeof(uint64_t));
                 m.rhs[dst] = rhs[r];
+                if (rch) {
+                    m.chains[dst] = rch[r];
+                    memset(&rch[r], 0, sizeof rch[r]);
+                }
                 /* In RREF, c0 (the leading 1 of row r) is guaranteed to be 0 in ALL other rows! */
                 m.basic_col[dst] = c0;
                 m.basic_row[c0] = dst;
@@ -1379,27 +1662,37 @@ bool gauss_extract_and_init(Solver *s, bool keep_matrices) {
                 if (!nb_watch_add(s, &m, c1, dst)) { ok = false; break; }
                 dst++;
             }
-            free(mat); free(rhs);
+            if (rch) {
+                for (uint32_t r = 0; r < ceq; ++r) {
+                    gauss_proof_free_chain(s, &rch[r], rch[r].k >= 2u);
+                }
+                free(rch);
+            }
+            free(rref_ops); free(mat); free(rhs); free(hist);
             if (!ok) {
-                free_matrix(&m);
+                free_matrix(s, &m);
                 break;
             }
             m.nrows = dst;
             built_mats[n_built++] = m;
             total_live_rows += dst;
         } else {
-            free(c2v); free(mat); free(rhs);
+            free(rref_ops); free(c2v); free(mat); free(rhs); free(hist);
         }
     }
 
     free(local_col);
     free(comp_off); free(eq_by_comp);
     free(comp_eqs); free(comp_vars); free(comp_ge3);
-    for (uint32_t i = 0; i < eq_count; ++i) free(eqs[i].vars);
+    for (uint32_t i = 0; i < eq_count; ++i) { free(eqs[i].vars); free(eqs[i].raw_ids); }
+    if (raw_eqs) {
+        for (uint32_t i = 0; i < raw_eq_count; ++i) free(raw_eqs[i].vars);
+        free(raw_eqs);
+    }
     free(eqs); free(var_id);
 
     if (unsat || s->error) {
-        for (uint32_t mi = 0; mi < n_built; ++mi) free_matrix(&built_mats[mi]);
+        for (uint32_t mi = 0; mi < n_built; ++mi) free_matrix(s, &built_mats[mi]);
         return false;
     }
 
@@ -1408,7 +1701,7 @@ bool gauss_extract_and_init(Solver *s, bool keep_matrices) {
         GaussState *g = calloc(1, sizeof *g);
         uint32_t vcap = s->num_vars + 1u;
         if (!g) {
-            for (uint32_t mi = 0; mi < n_built; ++mi) free_matrix(&built_mats[mi]);
+            for (uint32_t mi = 0; mi < n_built; ++mi) free_matrix(s, &built_mats[mi]);
             s->error = true; return false;
         }
         g->mats = malloc((size_t)n_built * sizeof *g->mats);
@@ -1418,7 +1711,7 @@ bool gauss_extract_and_init(Solver *s, bool keep_matrices) {
         g->clause_buf = malloc((size_t)g->clause_buf_cap * sizeof(Lit));
         if (!g->mats || !g->var_mat || !g->var_col || !g->clause_buf) {
             free(g->mats); free(g->var_mat); free(g->var_col); free(g->clause_buf); free(g);
-            for (uint32_t mi = 0; mi < n_built; ++mi) free_matrix(&built_mats[mi]);
+            for (uint32_t mi = 0; mi < n_built; ++mi) free_matrix(s, &built_mats[mi]);
             s->error = true; return false;
         }
         g->nmats = n_built;
@@ -1455,6 +1748,7 @@ bool gauss_extract_and_init(Solver *s, bool keep_matrices) {
         if (s->error) return false;
         if (s->qhead < s->trail_size) {
             if (solver_propagate(s) != INVALID_CLAUSE) {
+                if (proof_mode && !s->error) proof_add_clause(s, NULL, 0);
                 s->base_unsat = true; s->result = FALSE;
                 return false;
             }
@@ -1466,7 +1760,9 @@ bool gauss_extract_and_init(Solver *s, bool keep_matrices) {
 bool gauss_sync_after_inprocess(Solver *s) {
     if (!s || !s->gauss) return true;
     GaussState *g = s->gauss;
-    bool stale = false;
+    /* In --proof mode, always refresh live matrices after inprocessing so every
+     * matrix's orig_eqs[] stays 100% backed by current post-SCC/BVE/subsume CNF clauses! */
+    bool stale = (s->proof_file != NULL);
     for (uint32_t mi = 0; mi < g->nmats && !stale; ++mi) {
         GaussMatrix *m = &g->mats[mi];
         for (uint32_t c = 0; c < m->ncols; ++c) {
@@ -1482,11 +1778,16 @@ bool gauss_sync_after_inprocess(Solver *s) {
     while (g->qhead < s->trail_size && !s->error && !s->interrupted && s->result != FALSE) {
         CRef confl = gauss_propagate(s);
         if (confl != INVALID_CLAUSE || s->result == FALSE) {
+            if (s->proof_file && !s->error) {
+                if (confl != INVALID_CLAUSE) gauss_ensure_clause_proved(s, confl);
+                proof_add_clause(s, NULL, 0);
+            }
             s->base_unsat = true; s->result = FALSE;
             return false;
         }
         if (s->qhead < s->trail_size) {
             if (solver_propagate(s) != INVALID_CLAUSE) {
+                if (s->proof_file && !s->error) proof_add_clause(s, NULL, 0);
                 s->base_unsat = true; s->result = FALSE;
                 return false;
             }
@@ -1542,15 +1843,15 @@ static uint8_t eval_row_parity(const Solver *s, const GaussMatrix *m,
     return parity;
 }
 
-static bool record_temp_clause(Solver *s, GaussState *g, CRef cr) {
+static bool record_temp_clause(Solver *s, GaussState *g, CRef cr, bool proved) {
     if (g->temp_size == g->temp_cap) {
         uint32_t ncap = g->temp_cap ? g->temp_cap * 2u : 64u;
-        CRef *p = realloc(g->temp_clauses, (size_t)ncap * sizeof *p);
+        TempClauseRec *p = realloc(g->temp_clauses, (size_t)ncap * sizeof *p);
         if (!p) { s->error = true; return false; }
         g->temp_clauses = p;
         g->temp_cap = ncap;
     }
-    g->temp_clauses[g->temp_size++] = cr;
+    g->temp_clauses[g->temp_size++] = (TempClauseRec){cr, proved};
     return true;
 }
 
@@ -1587,12 +1888,23 @@ static void enqueue_gauss_prop(Solver *s, GaussState *g, const GaussMatrix *m,
     }
 
     if (s->decision_level == 0) {
-        gauss_enqueue_root_unit(s, imp_lit);
+        if (m->chains && m->chains[r].k >= 2u) {
+            proof_add_clause(s, &imp_lit, 1u);
+            if (s->error) return;
+        }
+        if (!gauss_enqueue_root_unit(s, imp_lit)) {
+            if (s->proof_file && !s->error) proof_add_clause(s, NULL, 0);
+            return;
+        }
         g->propagations++;
         return;
     }
     if (n == 1) {
-        /* Weight-1 row discovered mid-search -> level-0 unit! Defer backtrack until pivot ends. */
+        /* Weight-1 row discovered mid-search -> level-0 unit! */
+        if (m->chains && m->chains[r].k >= 2u) {
+            proof_add_clause(s, &imp_lit, 1u);
+            if (s->error) return;
+        }
         *need_root_unit = true;
         *root_unit_lit = imp_lit;
         return;
@@ -1607,7 +1919,18 @@ static void enqueue_gauss_prop(Solver *s, GaussState *g, const GaussMatrix *m,
     if (cr == INVALID_CLAUSE) { s->error = true; return; }
     set_clause_lbd(s->arena, cr, MIN(n, 30u));
     CLAUSE_HEADER(s->arena, cr)->used = 0;
-    if (!record_temp_clause(s, g, cr)) { arena_delete(s->arena, cr); return; }
+    bool proved = false;
+    if (m->chains) {
+        /* 1-step RUP directly from persistent live row chain m->chains[r]! */
+        proof_add_clause(s, lits, n);
+        if (s->error) { arena_delete(s->arena, cr); return; }
+        proved = true;
+    }
+    if (!record_temp_clause(s, g, cr, proved)) {
+        if (proved && !s->error && n >= 2u) proof_delete_clause(s, lits, n);
+        arena_delete(s->arena, cr);
+        return;
+    }
 
     s->values[imp_v] = need_true ? TRUE : FALSE;
     if (s->lit_values_live) {
@@ -1652,12 +1975,19 @@ static CRef build_gauss_conflict(Solver *s, GaussState *g, const GaussMatrix *m,
     }
 
     if (n == 0 || first_lvl == 0) {
+        if (m->chains && !(m->chains[r].k == 0 && m->chains[r].rhs == 1u)) {
+            proof_add_clause(s, NULL, 0u);
+        }
         s->base_unsat = true;
         s->result = FALSE;
         return INVALID_CLAUSE;
     }
     if (n == 1) {
         /* Weight-1 row violated at decision level > 0 -> lits[0] is a level-0 unit! */
+        if (m->chains && m->chains[r].k >= 2u) {
+            proof_add_clause(s, &lits[0], 1u);
+            if (s->error) return INVALID_CLAUSE;
+        }
         *need_root_unit = true;
         *root_unit_lit = lits[0];
         return INVALID_CLAUSE;
@@ -1676,14 +2006,27 @@ static CRef build_gauss_conflict(Solver *s, GaussState *g, const GaussMatrix *m,
     if (cr == INVALID_CLAUSE) { s->error = true; return INVALID_CLAUSE; }
     set_clause_lbd(s->arena, cr, MIN(n, 30u));
     CLAUSE_HEADER(s->arena, cr)->used = 0;
-    if (!record_temp_clause(s, g, cr)) { arena_delete(s->arena, cr); return INVALID_CLAUSE; }
+    bool proved = false;
+    if (m->chains) {
+        /* 1-step RUP directly from persistent live row chain m->chains[r]! */
+        proof_add_clause(s, lits, n);
+        if (s->error) { arena_delete(s->arena, cr); return INVALID_CLAUSE; }
+        proved = true;
+    }
+    if (!record_temp_clause(s, g, cr, proved)) {
+        if (proved && !s->error && n >= 2u) proof_delete_clause(s, lits, n);
+        arena_delete(s->arena, cr);
+        return INVALID_CLAUSE;
+    }
     g->conflicts++;
     return cr;
 }
 
 CRef gauss_propagate(Solver *s) {
     GaussState *g = s->gauss;
-    if (!g || s->error || s->interrupted || s->result == FALSE) return INVALID_CLAUSE;
+    if (!g || g->proof_budget_exceeded || s->error || s->interrupted || s->result == FALSE) {
+        return INVALID_CLAUSE;
+    }
     if (g->temp_size > 256u) gauss_gc_temp_clauses(s);
 
     while (g->qhead < s->trail_size) {
@@ -1725,7 +2068,10 @@ CRef gauss_propagate(Solver *s) {
                 if (s->error || s->result == FALSE) return INVALID_CLAUSE;
                 if (need_root_unit) {
                     solver_backtrack(s, 0);
-                    if (!gauss_enqueue_root_unit(s, root_unit_lit)) return INVALID_CLAUSE;
+                    if (!gauss_enqueue_root_unit(s, root_unit_lit)) {
+                        if (s->proof_file && !s->error) proof_add_clause(s, NULL, 0);
+                        return INVALID_CLAUSE;
+                    }
                     goto next_trail_entry;
                 }
             } else {
@@ -1735,7 +2081,10 @@ CRef gauss_propagate(Solver *s) {
                     if (s->error || s->result == FALSE) return INVALID_CLAUSE;
                     if (need_root_unit) {
                         solver_backtrack(s, 0);
-                        if (!gauss_enqueue_root_unit(s, root_unit_lit)) return INVALID_CLAUSE;
+                        if (!gauss_enqueue_root_unit(s, root_unit_lit)) {
+                            if (s->proof_file && !s->error) proof_add_clause(s, NULL, 0);
+                            return INVALID_CLAUSE;
+                        }
                         goto next_trail_entry;
                     }
                     return confl;
@@ -1752,6 +2101,12 @@ CRef gauss_propagate(Solver *s) {
 
             uint32_t c_new = find_undef_col(s, m, rr, nb);
             if (c_new != UINT32_MAX) {
+                /* In --proof mode, check merge budget BEFORE starting a pivot so RREF
+                 * stays 100% intact and proof size stays tightly bounded! */
+                if (m->chains && s->gauss_proof_merges >= GAUSS_MAX_PROOF_MERGES) {
+                    g->proof_budget_exceeded = true;
+                    return INVALID_CLAUSE;
+                }
                 /* Pivot basic column of row r from `col` to `c_new`!
                  * Eliminate `c_new` from ALL other rows before returning any conflict
                  * so the RREF basic-column invariant is ALWAYS preserved. */
@@ -1772,6 +2127,16 @@ CRef gauss_propagate(Solver *s) {
 
                     for (uint32_t k = 0; k < m->nwords; ++k) rr2[k] ^= rr[k];
                     m->rhs[r2] ^= prhs;
+                    if (m->chains) {
+                        ProofXorChain next_ch;
+                        if (!gauss_proof_xor_chains(s, &m->chains[r2], &m->chains[r],
+                                                    &next_ch, &s->proof_aux_next)) {
+                            return INVALID_CLAUSE;
+                        }
+                        gauss_proof_free_chain(s, &m->chains[r2], m->chains[r2].k >= 2u);
+                        m->chains[r2] = next_ch;
+                        s->gauss_proof_merges++;
+                    }
                     s->work += m->nwords;
 
                     /* Repair nb_col[r2] if cleared or assigned. */
@@ -1797,7 +2162,8 @@ CRef gauss_propagate(Solver *s) {
                                 !s->error && s->result != FALSE) {
                                 Var bv2 = m->col_to_var[b2];
                                 if (s->values[bv2] == UNDEF) {
-                                    enqueue_gauss_prop(s, g, m, r2, b2, &need_root_unit, &root_unit_lit);
+                                    enqueue_gauss_prop(s, g, m, r2, b2,
+                                                       &need_root_unit, &root_unit_lit);
                                 } else {
                                     uint8_t par2 = eval_row_parity(s, m, rr2, UINT32_MAX);
                                     if (par2 != m->rhs[r2]) {
@@ -1813,7 +2179,10 @@ CRef gauss_propagate(Solver *s) {
                 if (s->error || s->result == FALSE) return INVALID_CLAUSE;
                 if (need_root_unit) {
                     solver_backtrack(s, 0);
-                    if (!gauss_enqueue_root_unit(s, root_unit_lit)) return INVALID_CLAUSE;
+                    if (!gauss_enqueue_root_unit(s, root_unit_lit)) {
+                        if (s->proof_file && !s->error) proof_add_clause(s, NULL, 0);
+                        return INVALID_CLAUSE;
+                    }
                     goto next_trail_entry;
                 }
                 if (pending_confl != INVALID_CLAUSE) return pending_confl;
@@ -1826,7 +2195,10 @@ CRef gauss_propagate(Solver *s) {
                         if (s->error || s->result == FALSE) return INVALID_CLAUSE;
                         if (need_root_unit) {
                             solver_backtrack(s, 0);
-                            if (!gauss_enqueue_root_unit(s, root_unit_lit)) return INVALID_CLAUSE;
+                            if (!gauss_enqueue_root_unit(s, root_unit_lit)) {
+                                if (s->proof_file && !s->error) proof_add_clause(s, NULL, 0);
+                                return INVALID_CLAUSE;
+                            }
                             goto next_trail_entry;
                         }
                         return confl;
@@ -1836,7 +2208,10 @@ CRef gauss_propagate(Solver *s) {
                     if (s->error || s->result == FALSE) return INVALID_CLAUSE;
                     if (need_root_unit) {
                         solver_backtrack(s, 0);
-                        if (!gauss_enqueue_root_unit(s, root_unit_lit)) return INVALID_CLAUSE;
+                        if (!gauss_enqueue_root_unit(s, root_unit_lit)) {
+                            if (s->proof_file && !s->error) proof_add_clause(s, NULL, 0);
+                            return INVALID_CLAUSE;
+                        }
                         goto next_trail_entry;
                     }
                 } else {
@@ -1846,7 +2221,10 @@ CRef gauss_propagate(Solver *s) {
                         if (s->error || s->result == FALSE) return INVALID_CLAUSE;
                         if (need_root_unit) {
                             solver_backtrack(s, 0);
-                            if (!gauss_enqueue_root_unit(s, root_unit_lit)) return INVALID_CLAUSE;
+                            if (!gauss_enqueue_root_unit(s, root_unit_lit)) {
+                                if (s->proof_file && !s->error) proof_add_clause(s, NULL, 0);
+                                return INVALID_CLAUSE;
+                            }
                             goto next_trail_entry;
                         }
                         return confl;

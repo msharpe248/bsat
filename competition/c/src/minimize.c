@@ -12,6 +12,7 @@
  * 3. Bounded binary-resolution minimization on short low-LBD clauses.
  */
 #include "../include/solver.h"
+#include "../include/gauss.h"
 
 enum {
     MIN_UNSEEN    = 0,
@@ -157,6 +158,7 @@ static bool dfs_redundant(Solver *s, Var root, uint64_t abstract_levels,
             s->seen[u] = MIN_EXPLORING;
             stack[top++] = (MinFrame){u, 0u};
         } else {
+            if (s->proof_file && s->gauss) gauss_ensure_clause_proved(s, reason);
             uint32_t size = CLAUSE_SIZE(s->arena, reason);
             const Lit *lits = CLAUSE_LITS(s->arena, reason);
             bool pushed = false;
@@ -262,6 +264,7 @@ static bool source_redundant(Solver *s, Var v, uint64_t abstract_levels,
             }
         }
     } else {
+        if (s->proof_file && s->gauss) gauss_ensure_clause_proved(s, reason);
         uint32_t size = CLAUSE_SIZE(s->arena, reason);
         const Lit *lits = CLAUSE_LITS(s->arena, reason);
         for (uint32_t i = 0; i < size; ++i) {
@@ -386,6 +389,7 @@ static bool shrink_block(Solver *s, const Lit *block, uint32_t k, Level L,
             ok = false; break;
         }
         uint32_t v_pos = s->vars[v].trail_pos;
+        if (!implicit && s->proof_file && s->gauss) gauss_ensure_clause_proved(s, reason);
         uint32_t rsize = implicit ? 1 : CLAUSE_SIZE(s->arena, reason);
         const Lit *rlits = implicit ? &binary : CLAUSE_LITS(s->arena, reason);
 

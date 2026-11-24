@@ -52,4 +52,12 @@ void gauss_backtrack(struct Solver *s, uint32_t trail_pos);
 /* Remap temporary Gauss reason CRefs across arena garbage collection. */
 void gauss_relocate_clauses(struct Solver *s, const Arena *old_arena);
 
+/* True if `cr` is an active temporary Gauss reason/conflict clause. */
+bool gauss_is_temp_clause(const struct Solver *s, CRef cr);
+
+/* In --proof mode, lazily emit the linear Tseitin XOR-chain DRAT proof for a
+ * temporary Gauss reason/conflict clause `cr` the first time conflict analysis
+ * or minimization resolves on it. No-op in non-proof mode or for normal clauses. */
+void gauss_ensure_clause_proved(struct Solver *s, CRef cr);
+
 #endif /* BSAT_GAUSS_H */

@@ -780,10 +780,66 @@ static void test_gauss_rref_drat_proof(void) {
     }
 }
 
+static void test_gauss_insearch_drat_proof(void) {
+    /* Coupled rank-deficient XOR + blocking clauses (UNSAT only via in-search
+     * Bird/Han-Jiang GF(2) propagation + lazy XOR-chain DRAT proof emission!). */
+    for (int binary = 0; binary <= 1; ++binary) {
+        SolverOpts opts = default_opts();
+        opts.inprocess = true;
+        opts.binary_proof = (binary != 0);
+        Solver *s = solver_new_with_opts(&opts);
+        assert(s != NULL);
+        FILE *pf = tmpfile();
+        assert(pf != NULL);
+        s->proof_file = pf;
+
+        /* 16 vars: 3 free vars (1..3) + 13 independent 4-XOR equations (vars 4..16).
+         * 13 * 8 = 104 clauses (>= 64), 8 XOR solutions, each blocked by a 3-clause. */
+        const uint32_t N = 16, NFREE = 3;
+        for (uint32_t i = 0; i < N; ++i) solver_new_var(s);
+        uint32_t ps[17][3];
+        uint8_t eq_rhs[17];
+        uint32_t st = 0x13579BDFu;
+        for (uint32_t v = NFREE + 1; v <= N; ++v) {
+            uint32_t a = 1u + (rng_next(&st) % (v - 1u));
+            uint32_t b = a;
+            while (b == a) b = 1u + (rng_next(&st) % (v - 1u));
+            uint32_t c = a;
+            while (c == a || c == b) c = 1u + (rng_next(&st) % (v - 1u));
+            ps[v][0] = a; ps[v][1] = b; ps[v][2] = c;
+            eq_rhs[v] = (uint8_t)(rng_next(&st) & 1u);
+            Var vs[4] = {a, b, c, v};
+            add_xor_clauses(s, vs, 4, eq_rhs[v]);
+        }
+        for (uint32_t fm = 0; fm < (1u << NFREE); ++fm) {
+            uint8_t val[17] = {0};
+            for (uint32_t i = 0; i < NFREE; ++i) val[i + 1u] = (uint8_t)((fm >> i) & 1u);
+            for (uint32_t v = NFREE + 1; v <= N; ++v) {
+                val[v] = (uint8_t)(val[ps[v][0]] ^ val[ps[v][1]] ^ val[ps[v][2]] ^ eq_rhs[v]);
+            }
+            Var c0 = NFREE + 1u + (fm % (N - NFREE));
+            Var c1 = NFREE + 1u + ((fm + 3u) % (N - NFREE));
+            Var c2 = NFREE + 1u + ((fm + 7u) % (N - NFREE));
+            Lit blk[3] = {mkLit(c0, val[c0] != 0), mkLit(c1, val[c1] != 0), mkLit(c2, val[c2] != 0)};
+            solver_add_clause(s, blk, 3);
+        }
+
+        lbool r = solver_solve(s);
+        assert(r == FALSE);
+        assert(!s->error);
+        fflush(pf);
+        assert(ftell(pf) > 0);
+        s->proof_file = NULL;
+        fclose(pf);
+        solver_free(s);
+    }
+}
+
 int main(void) {
     test_gauss_mixed_sat_and_unsat();
     test_gauss_chain_stitching_and_subsumed_xor();
     test_gauss_rref_drat_proof();
+    test_gauss_insearch_drat_proof();
     test_nary_congruence_and_miter_sweep();
     test_full_adder_maj3_xor3_congruence();
     test_semantic_definition_bve();
