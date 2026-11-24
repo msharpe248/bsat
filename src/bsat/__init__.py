@@ -35,6 +35,16 @@ from .preprocessing import (
     PreprocessingResult,
     PreprocessingStats
 )
+from .c_solver import (
+    BSAT_SAT,
+    BSAT_UNSAT,
+    BSAT_UNKNOWN,
+    CSolverStats,
+    CSATSolver,
+    is_c_solver_available,
+    solve_c,
+    get_c_solver_stats,
+)
 
 __all__ = [
     'Literal',
@@ -89,6 +99,14 @@ __all__ = [
     'decompose_into_components',
     'decompose_and_preprocess',
     'PreprocessingResult',
-    'PreprocessingStats'
+    'PreprocessingStats',
+    'BSAT_SAT',
+    'BSAT_UNSAT',
+    'BSAT_UNKNOWN',
+    'CSolverStats',
+    'CSATSolver',
+    'is_c_solver_available',
+    'solve_c',
+    'get_c_solver_stats',
 ]
 __version__ = '0.1.0'
