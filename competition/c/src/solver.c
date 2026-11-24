@@ -176,6 +176,7 @@ SolverOpts default_opts(void) {
         .factor_max_variables = 1024,
         .factor_min_gain = 1,
         .sbva = true,
+        .sym = true,
         .chrono = true,
         .chrono_levels = 100,
         .protect_used = true,
@@ -571,6 +572,7 @@ void solver_free(Solver* s) {
     free(s->lrb_last_conflict);
     free(s->vars);
     free(s->values);
+    free(s->frozen);
     free(s->lit_values);
     free(s->trail);
     free(s->trail_lims);
@@ -629,6 +631,14 @@ static bool grow_var_arrays(Solver* s, uint32_t new_capacity) {
     uint8_t *new_values = realloc(s->values, alloc_size * sizeof *new_values);
     if (!new_values) return false;
     s->values = new_values;
+
+    uint8_t *new_frozen = realloc(s->frozen, alloc_size * sizeof *new_frozen);
+    if (!new_frozen) return false;
+    s->frozen = new_frozen;
+    {
+        uint32_t old_init = s->var_capacity ? s->var_capacity + 1u : 0u;
+        memset(s->frozen + old_init, 0, (size_t)(alloc_size - old_init));
+    }
 
     uint8_t *new_lit_values = realloc(s->lit_values, (size_t)alloc_size * 2u * sizeof *new_lit_values);
     if (!new_lit_values) return false;
@@ -722,6 +732,7 @@ Var solver_new_var(Solver* s) {
     // Initialize new variable
     memset(&s->vars[v], 0, sizeof(VarInfo));
     s->values[v] = UNDEF;
+    s->frozen[v] = 0;
     s->lit_values[v << 1] = UNDEF;
     s->lit_values[(v << 1) | 1u] = UNDEF;
     if (s->lrb_last_conflict) s->lrb_last_conflict[v] = 0;
@@ -740,6 +751,18 @@ Var solver_new_var(Solver* s) {
     heap_insert(s, v);
 
     return v;
+}
+
+void solver_freeze(Solver* s, Var v) {
+    if (s && v && v <= s->num_vars && s->frozen) s->frozen[v] = 1;
+}
+
+void solver_melt(Solver* s, Var v) {
+    if (s && v && v <= s->num_vars && s->frozen) s->frozen[v] = 0;
+}
+
+bool solver_is_frozen(const Solver* s, Var v) {
+    return s && v && v <= s->num_vars && s->frozen && s->frozen[v] != 0;
 }
 
 /*********************************************************************
@@ -2607,7 +2630,7 @@ static uint32_t solver_eliminate_blocked_clauses_account_impl(Solver *s) {
         if (size < 2) continue;
         for (uint32_t j = 0; j < size && !solver_budget_exhausted(s); ++j) {
             Lit pivot = lits[j];
-            if (s->values[var(pivot)] != UNDEF) continue;
+            if (s->values[var(pivot)] != UNDEF || solver_is_frozen(s, var(pivot))) continue;
             OccList *o = elim_get_occs(s, neg(pivot));
             bool blocked = true;
             for (uint32_t k = 0; k < o->size; ++k) {
@@ -2677,6 +2700,9 @@ static bool solver_rebuild_timed(Solver *s, double start_time, double max_time) 
     while (fresh->num_vars < original_vars) {
         if (solver_budget_exhausted(fresh)) goto incomplete;
         if (!solver_new_var(fresh)) { solver_free(fresh); s->error=true; return false; }
+    }
+    if (s->frozen && fresh->frozen) {
+        for (Var v = 1; v <= original_vars; ++v) fresh->frozen[v] = s->frozen[v];
     }
     fresh->internal_add=true; /* Borrow original input until commit, never duplicate it. */
     size_t start = 0;
@@ -2946,6 +2972,20 @@ static lbool solve_internal_account_impl(Solver *s, const Lit *assumps, uint32_t
         s->work_limit = 0;
         if (s->error || s->interrupted) return UNDEF;
         if (s->result == FALSE || solver_propagate(s) != INVALID_CLAUSE) {s->base_unsat=true;return FALSE;}
+    }
+    /* Exact syntactic symmetry breaking (BreakID-style, non-proof one-shot mode)
+     * BEFORE AMO / SBVA / BVE so row-interchange & transposition symmetries are intact. */
+    if (!n_assumps && !s->proof_file && !s->proof_journal && !s->opts.reuse_learnts &&
+        s->opts.inprocess && s->opts.preprocess_budget && !s->opts.factor && !s->opts.local_search &&
+        s->opts.sym && !solver_budget_exhausted(s)) {
+        double started = solver_account_begin(s);
+        bool sym_ok = solver_break_symmetries(s, 15000000ULL);
+        solver_account_end(s, ACCOUNT_PREPROCESS, started);
+        if (!sym_ok) {
+            if (s->error || s->interrupted) return UNDEF;
+            s->base_unsat = true;
+            return FALSE;
+        }
     }
     /* Explicit or adaptive bounded clause factoring (BVA) BEFORE inprocess/elim. */
     if (!n_assumps && s->opts.factor && s->opts.factor_budget && s->opts.factor_max_variables) {

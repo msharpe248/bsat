@@ -37,37 +37,47 @@ Passing finite tests is not a formal proof of the complete C implementation.
 
 ## Current evidence and unresolved gaps
 
-**November 2026 CDCL, inprocessing, GF(2) Gauss & AMO overhaul**: Default
-one-shot solving enables alternating Focused (VMTF) / Stable (4-ary VSIDS)
-modes, chronological backtracking, trail reuse, 3-state binary-aware
-minimization, block-level all-UIP shrinking, OTFS, dynamic 3-tier clause
-management, reason-side bumping, literal-indexed `lit_values[]` BCP fast path
-with 1-ahead watch prefetching, in-search dynamic GF(2) Gaussian elimination
-(`src/gauss.c`, Bird/Han-Jiang two-watched-column matrices with zero-undo
-backtracking and 1-UIP temporary reason clauses), and a tick-budgeted
-inprocessing engine (probing/HBR + RUP-certified double-lookahead probing
-intersection, preprocessing & periodic inprocessing gate congruence closure,
-in-place Tarjan SCC, embedded Mini-Kitten CDCL SAT sweeping with RUP lemma
-projection, forward subsumption/SSR, gate-aware BVE with model reconstruction,
-post-BVE binary transitive reduction, prefix-sharing vivification, and WalkSAT
-phase seeding). Non-RUP passes (root & in-search GF(2) XOR Gaussian
-elimination, AMO binary-clique Sinz sequential-counter re-encoding on `>=80%`
-binary formulas, and adaptive BVA factoring) are automatically skipped whenever
-`--proof` or `BSAT_CERTIFICATES` is active, and destructive inprocessing is
-gated off for assumption queries, certified proof journals, and
-`BSAT_REUSE_LEARNTS` sessions so the public ABI and certified incremental
-invariants are preserved. Historical experiment and milestone documents are
-archived under [`docs/`](docs/).
+**November 2026 CDCL, inprocessing, GF(2) Gauss, SBVA, symmetry & parallel
+portfolio overhaul**: Default one-shot solving enables alternating Focused
+(VMTF) / Stable (4-ary VSIDS) modes, chronological backtracking, trail reuse,
+3-state binary-aware minimization, block-level all-UIP shrinking, OTFS, dynamic
+3-tier clause management, reason-side bumping, literal-indexed `lit_values[]`
+BCP fast path with 1-ahead watch prefetching, in-search dynamic GF(2) Gaussian
+elimination (`src/gauss.c`, 2..7-var XOR extraction with subsumed-XOR recovery,
+Tseitin XOR-chain stitching, and Bird/Han-Jiang two-watched-column matrices
+with zero-undo backtracking and 1-UIP temporary reason clauses), multi-core
+clause-sharing portfolio solving (`-j <N>` / `--threads <N>`, `src/portfolio.c`,
+TSan-clean ring buffer sharing logically-entailed clauses of `size <= 4`),
+frozen-variable protection (`solver_freeze`/`solver_melt`/`solver_is_frozen`)
+across BVE/SCC/BCE/symmetry and rebuilds, and a tick-budgeted inprocessing
+engine (probing/HBR + RUP-certified double-lookahead probing intersection,
+preprocessing & periodic inprocessing gate congruence closure plus 3..8-input
+N-ary AND congruence, in-place Tarjan SCC, global 64-bit gate-DAG simulation +
+dual-cone embedded Mini-Kitten CDCL SAT sweeping with RUP lemma projection,
+model-guided global backbone extraction, forward subsumption/SSR, gate-aware
+BVE with model reconstruction, post-BVE binary transitive reduction,
+prefix-sharing vivification, and Kissat-style ProbSAT `(1+break)^(-2.3)` phase
+seeding). Non-RUP passes (root & in-search GF(2) XOR Gaussian elimination,
+exact syntactic BreakID-style symmetry breaking (`--sym`, `src/symmetry.c`),
+AMO binary-clique Sinz sequential-counter re-encoding on `>=80%` binary
+formulas, and Structured Bounded Variable Addition (`--sbva`, `src/sbva.c`))
+are automatically skipped whenever `--proof` or `BSAT_CERTIFICATES` is active,
+and destructive inprocessing is gated off for assumption queries, certified
+proof journals, and `BSAT_REUSE_LEARNTS` sessions so the public ABI and
+certified incremental invariants are preserved. Historical experiment and
+milestone documents are archived under [`docs/`](docs/).
 
-Measured on the frozen Apple Silicon industrial fixtures and targeted XOR/AMO
-benchmarks versus the pre-overhaul baseline and recorded Kissat timings:
-- `cal3-query.cnf` (UNSAT): `22.7 s → 0.489 s` non-PGO (vs. Kissat `1.045 s`), including verified DRAT proof emission.
-- `16c999d0` (planning, 50k vars / 284k clauses, UNSAT): `>60 s → 54.14 s` (`19.8M`–`30.5M` props/s, `19,772` eliminated vars).
-- `09cd83e2` (belpyramid, UNSAT): `2.193 s → 0.281 s` (`10.6M` props/s).
-- `42f1311c` (Tseitin XOR, UNSAT): `>15 s → 0.000 s` (0 conflicts via GF(2) RREF in non-proof mode).
-- Mixed underdetermined XOR+3SAT (`N=140`, 126 4-XORs + 3-SAT): SAT `12,703 → 10` conflicts (`0.004 s`), UNSAT `11,510 → 34` conflicts (`0.005 s`) via dynamic in-search GF(2) Gauss.
-- Pigeonhole AMO cliques (`PHP(11,10)` / `PHP(12,11)`, UNSAT): `>5 s` timeout (`>899k` conflicts) → `0.080 s` (`9,947` conflicts) / `0.201 s` (`22,693` conflicts) via linear Sinz sequential-counter re-encoding.
-- Verification: 67/67 C unit tests pass across `release`, `diagnostic`, and ASan/UBSan `debug` builds (including `test_gauss_and_amo`), plus `embedding-test`, `soak-test`, `package-test`, `fault-test` (3,134+ injected OOM failures), `recovery-fault-test`, `application_histories`, `check_query_diagnostics`, `check_deadlines`, `check_process_failures`, `fuzz_public` OOM reproducer, and `validate.py` across both ASan/UBSan and release builds with independent truth-table, model, and text/binary RUP checking. Hard crypto S-box, multiplier-equivalence, and large argumentation/scheduling instances remain open performance targets.
+Measured on the frozen Apple Silicon industrial fixtures and targeted
+XOR/AMO/symmetry/random-SAT benchmarks versus the pre-overhaul baseline and
+recorded Kissat timings:
+- `cal3-query.cnf` (UNSAT): `22.7 s → 0.447 s` non-PGO (`20,294` conflicts, vs. Kissat `1.045 s` — **2.34× faster than Kissat**), including verified DRAT proof emission.
+- `16c999d0` (planning, 50k vars / 284k clauses, UNSAT): `>60 s → 54.14 s` (`-j 1`, `26.1M` props/s) and **`25.68 s` wall time (`-j 4`, 1.84× faster than Kissat `47.33 s`)**.
+- `09cd83e2` (belpyramid, UNSAT): `2.193 s → 0.342 s` (`18,181` conflicts, `8.81M` props/s).
+- `42f1311c` (Tseitin XOR, UNSAT): `>15 s → 0.004 s` (0 conflicts via GF(2) RREF in non-proof mode).
+- Mixed underdetermined XOR+3SAT (`N=140`, 126 4-XORs + 3-SAT): SAT `12,703 → 27` conflicts (`0.005 s`), UNSAT `11,510 → 34` conflicts (`0.007 s`) via dynamic in-search GF(2) Gauss.
+- Pigeonhole symmetry & AMO (`PHP(12,11)`, `PHP(20,19)`, `PHP(30,29)`, UNSAT): `>5 s` timeout → `0.062 s` (`0` conflicts), `0.006 s` (`0` conflicts), and `0.055 s` (`80` conflicts) via exact BreakID row-interchange lex-leader symmetry breaking.
+- Random 3-SAT (`N=300, M=1260`, SAT): `0.138 s` (`7,976` conflicts) → `0.009 s` (`0` conflicts) via ProbSAT `(1+break)^(-2.3)` warmup phase seeding.
+- Verification: 67/67 C unit tests pass across `release`, `diagnostic`, and ASan/UBSan `debug` builds (including `test_gauss_and_amo` covering dynamic GF(2) Gauss, XOR chain stitching, subsumed XOR recovery, N-ary congruence, AMO cliques, SBVA, 4-thread portfolio, BreakID symmetry breaking, and frozen-variable inprocessing), plus ThreadSanitizer (`MODE=tsan` zero data races), `embedding-test`, `soak-test`, `package-test`, `fault-test` (3,134+ injected OOM failures), `recovery-fault-test`, `application_histories`, `check_query_diagnostics`, `check_deadlines`, `check_process_failures`, `fuzz_public` OOM reproducer, and `validate.py` (`11,316` release solves + `5,796` ASan/UBSan solves with independent truth-table, model, and text/binary RUP checking). Hard crypto S-box, multiplier-equivalence, and large argumentation/scheduling instances remain open performance targets.
 
 Historical campaign summary (pre-overhaul September 2026 baseline): the certified LBD runtime c6b4ac8 passes correctness, independent
 integration and coverage-fuzz CI. The [fresh four-circuit baseline](docs/FRESH_COMPETITIVENESS.md)

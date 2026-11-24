@@ -107,7 +107,8 @@ competition/
 | Gate-Aware BVE & SSR/Subsumption | ✅ | ❌ | Min-degree cascading BVE (AND/XOR/ITE) + 64-bit bloom SSR |
 | Prefix-Sharing Vivification & Transitive Reduction | ✅ | ❌ | O(n) prefix vivification + post-BVE binary transitive reduction |
 | Dynamic GF(2) XOR Gaussian Elimination | ✅ | ❌ | 2..7-var XOR + subsumed recovery + Tseitin chain stitching + Bird/Han-Jiang live matrices (non-proof) |
-| AMO Cliques, SBVA & BCE | ✅ | ❌ | Sinz sequential counters (`>=80%` binary), Structured BVA (`--sbva`, 3-hop tie-break), BCE (`--bce`) |
+| AMO Cliques, SBVA, Symmetry & BCE | ✅ | ❌ | Sinz sequential counters, Structured BVA (`--sbva`), exact BreakID symmetry breaking (`--sym`), BCE (`--bce`) |
+| Frozen-Variable Simplification | ✅ | ❌ | `solver_freeze` / `solver_melt` / `solver_is_frozen` protect incremental interface vars |
 
 ### Advanced Features
 

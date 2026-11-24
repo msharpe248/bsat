@@ -449,6 +449,113 @@ static void test_parallel_portfolio_sat_and_unsat(void) {
     solver_free(su);
 }
 
+static void test_symmetry_breaking_php_and_sat(void) {
+    /* 1. PHP(15, 14) UNSAT: exponential for resolution, solved near-instantly via
+     *    BreakID-style exact row-interchange lex-leader symmetry breaking! */
+    SolverOpts opts = default_opts();
+    opts.sym = true;
+    Solver *su = solver_new_with_opts(&opts);
+    const uint32_t H = 14, P = 15;
+    for (uint32_t i = 0; i < P * H; ++i) solver_new_var(su);
+    for (uint32_t p = 0; p < P; ++p) {
+        Lit alo[14];
+        for (uint32_t h = 0; h < H; ++h) alo[h] = mkLit(p * H + h + 1, false);
+        solver_add_clause(su, alo, H);
+    }
+    for (uint32_t h = 0; h < H; ++h) {
+        for (uint32_t p1 = 0; p1 < P; ++p1) {
+            for (uint32_t p2 = p1 + 1; p2 < P; ++p2) {
+                Lit pair[2] = {mkLit(p1 * H + h + 1, true), mkLit(p2 * H + h + 1, true)};
+                solver_add_clause(su, pair, 2);
+            }
+        }
+    }
+    assert(solver_solve(su) == FALSE);
+    assert(su->stats.conflicts < 500);
+    solver_free(su);
+
+    /* 2. PHP(10, 10) SAT: symmetric matrix must remain SAT with a 100% valid model! */
+    Solver *ss = solver_new_with_opts(&opts);
+    const uint32_t N = 10;
+    for (uint32_t i = 0; i < N * N; ++i) solver_new_var(ss);
+    for (uint32_t p = 0; p < N; ++p) {
+        Lit alo[10];
+        for (uint32_t h = 0; h < N; ++h) alo[h] = mkLit(p * N + h + 1, false);
+        solver_add_clause(ss, alo, N);
+    }
+    for (uint32_t h = 0; h < N; ++h) {
+        for (uint32_t p1 = 0; p1 < N; ++p1) {
+            for (uint32_t p2 = p1 + 1; p2 < N; ++p2) {
+                Lit pair[2] = {mkLit(p1 * N + h + 1, true), mkLit(p2 * N + h + 1, true)};
+                solver_add_clause(ss, pair, 2);
+            }
+        }
+    }
+    assert(solver_solve(ss) == TRUE);
+    assert(solver_check_model(ss));
+    solver_free(ss);
+}
+
+static void test_frozen_variable_inprocessing(void) {
+    /* Build an AND-gate chain with frozen interface variables (a, b, out) and
+     * unfrozen internal Tseitin helpers (t1, t2), run inprocessing, and verify:
+     *  - frozen vars are never eliminated or substituted away;
+     *  - unfrozen internal helpers ARE eliminated by BVE;
+     *  - incremental assumptions on frozen vars produce exact SAT/UNSAT answers. */
+    SolverOpts opts = default_opts();
+    opts.inprocess = true;
+    Solver *s = solver_new_with_opts(&opts);
+    Var a = solver_new_var(s);
+    Var b = solver_new_var(s);
+    Var t1 = solver_new_var(s);
+    Var t2 = solver_new_var(s);
+    Var out = solver_new_var(s);
+
+    /* t1 <-> (a & b) */
+    Lit g1[3] = {mkLit(t1, false), mkLit(a, true), mkLit(b, true)};
+    Lit g2[2] = {mkLit(t1, true), mkLit(a, false)};
+    Lit g3[2] = {mkLit(t1, true), mkLit(b, false)};
+    solver_add_clause(s, g1, 3);
+    solver_add_clause(s, g2, 2);
+    solver_add_clause(s, g3, 2);
+    /* t2 <-> t1 */
+    Lit e1[2] = {mkLit(t1, true), mkLit(t2, false)};
+    Lit e2[2] = {mkLit(t2, true), mkLit(t1, false)};
+    solver_add_clause(s, e1, 2);
+    solver_add_clause(s, e2, 2);
+    /* out <-> t2 */
+    Lit e3[2] = {mkLit(t2, true), mkLit(out, false)};
+    Lit e4[2] = {mkLit(out, true), mkLit(t2, false)};
+    solver_add_clause(s, e3, 2);
+    solver_add_clause(s, e4, 2);
+
+    solver_freeze(s, a);
+    solver_freeze(s, b);
+    solver_freeze(s, out);
+    assert(solver_is_frozen(s, a) && solver_is_frozen(s, b) && solver_is_frozen(s, out));
+    assert(!solver_is_frozen(s, t1) && !solver_is_frozen(s, t2));
+
+    assert(solver_inprocess(s, true));
+    /* Frozen interface vars must remain live, while internal helpers get simplified away! */
+    assert(!elim_is_eliminated(s, a));
+    assert(!elim_is_eliminated(s, b));
+    assert(!elim_is_eliminated(s, out));
+    assert(elim_is_eliminated(s, t1) || elim_is_eliminated(s, t2));
+
+    /* Assumptions on frozen vars: (a=T, b=T, out=F) -> UNSAT; (a=T, b=T, out=T) -> SAT. */
+    Lit bad[3] = {mkLit(a, false), mkLit(b, false), mkLit(out, true)};
+    assert(solver_solve_with_assumptions(s, bad, 3) == FALSE);
+    /* Verify frozen status persists across incremental rebuilds! */
+    assert(solver_is_frozen(s, a) && solver_is_frozen(s, b) && solver_is_frozen(s, out));
+    Lit good[3] = {mkLit(a, false), mkLit(b, false), mkLit(out, false)};
+    assert(solver_solve_with_assumptions(s, good, 3) == TRUE);
+    assert(solver_check_model(s));
+
+    solver_melt(s, a);
+    assert(!solver_is_frozen(s, a));
+    solver_free(s);
+}
+
 int main(void) {
     test_gauss_mixed_sat_and_unsat();
     test_gauss_chain_stitching_and_subsumed_xor();
@@ -456,6 +563,8 @@ int main(void) {
     test_amo_cliques_sat_and_unsat();
     test_sbva_arbitrary_length_sat_and_unsat();
     test_parallel_portfolio_sat_and_unsat();
+    test_symmetry_breaking_php_and_sat();
+    test_frozen_variable_inprocessing();
     test_lit_values_external_mutation_safety();
     printf("PASS: test_gauss_and_amo\n");
     return 0;

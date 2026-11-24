@@ -13,6 +13,7 @@
 #include "elim.h"
 #include "gauss.h"
 #include "sbva.h"
+#include "symmetry.h"
 #include "portfolio.h"
 #include "local_search.h"
 #include <time.h>
@@ -33,6 +34,7 @@ typedef struct SolverOpts {
     uint64_t congruence_budget;  // Independent gate extraction/derivation budget
     bool factor;                // Opt-in proof-producing binary/ternary BVA
     bool sbva;                  // Structured Bounded Variable Addition (non-proof mode)
+    bool sym;                   // Exact syntactic symmetry breaking (non-proof mode)
     uint64_t factor_budget;
     uint32_t factor_max_variables;
     uint32_t factor_min_gain;    // Minimum net clauses removed per rectangle
@@ -246,6 +248,7 @@ typedef struct Solver {
     uint64_t*     lrb_last_conflict; // Optional recency timestamps for LRB only
     VarInfo*      vars;        // Variable information, separate from hot values
     uint8_t*      values;      // One authoritative UNDEF/FALSE/TRUE byte per variable
+    uint8_t*      frozen;      // Non-zero for variables protected from elimination/substitution
     uint8_t*      lit_values;  // Literal-indexed UNDEF/FALSE/TRUE shadow array for hot BCP
     bool          lit_values_live; // True only inside solve_internal's CDCL search loop
 
@@ -456,6 +459,11 @@ bool solver_reset_learning(Solver *s);
 
 // Add a variable (returns variable index)
 Var solver_new_var(Solver* s);
+
+// Freeze/melt a variable so BVE/BCE/SCC/symmetry never eliminates or substitutes it
+void solver_freeze(Solver* s, Var v);
+void solver_melt(Solver* s, Var v);
+bool solver_is_frozen(const Solver* s, Var v);
 
 // Copies literals. False means a contradiction or error; inspect Solver.error.
 bool solver_add_clause(Solver* s, const Lit* lits, uint32_t size);

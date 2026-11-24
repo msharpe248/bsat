@@ -36,7 +36,7 @@ static int tests_passed = 0;
     } while (0)
 
 static Solver *pigeonhole(unsigned holes) {
-    SolverOpts opts=default_opts();opts.probing=false;
+    SolverOpts opts=default_opts();opts.probing=false;opts.sym=false;
     opts.reduce_interval=2;opts.glue_lbd=0;opts.reduce_fraction=0;
     Solver *s=solver_new_with_opts(&opts);
     for(unsigned i=0;i<(holes+1)*holes;++i) solver_new_var(s);

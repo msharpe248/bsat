@@ -110,7 +110,7 @@ static void integration(void) {
 
 static Solver *pigeonhole(bool weighted) {
     SolverOpts o = default_opts();o.vmtf = true;o.lrb = weighted;
-    o.max_conflicts = 200;o.probing = false;
+    o.max_conflicts = 200;o.probing = false;o.sym = false;
     if (weighted) { o.var_inc = 1e99;o.var_decay = 0.01; }
     Solver *s = solver_new_with_opts(&o);assert(s);
     enum { H = 6, P = 7 };

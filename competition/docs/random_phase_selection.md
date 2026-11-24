@@ -11,7 +11,7 @@
 The measurements below describe the October 2025 Python experiment. They do not
 establish the behavior or performance of the current C solver. The C solver uses
 an opt-in fixed seeded probability, with no automatic stuck-state adaptation. Current
-comparisons are recorded in [the C phase-policy evaluation](../c/NO_RANDOM_PHASE_EVALUATION.md).
+comparisons are recorded in [the C phase-policy evaluation](../c/docs/NO_RANDOM_PHASE_EVALUATION.md).
 A conflict-limit timeout in these examples is not evidence of an infinite loop
 or a requirement to randomize for correctness.
 

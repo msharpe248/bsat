@@ -321,12 +321,17 @@ static bool inproc_decompose(Solver *s) {
                     if (low[u] < low[parent]) low[parent] = low[u];
                 }
                 if (low[u] == idx[u]) {
-                    /* Pop SCC and pick minimum literal (by canonical variable order) as representative. */
+                    /* Pop SCC and pick minimum literal (preferring frozen vars) as representative. */
                     uint32_t scc_start = ttop;
                     Lit min_lit = u;
+                    bool min_frozen = solver_is_frozen(s, var(u));
                     while (scc_start > 0) {
                         Lit x = tarjan[--scc_start];
-                        if (x < min_lit) min_lit = x;
+                        bool xf = solver_is_frozen(s, var(x));
+                        if ((xf && !min_frozen) || (xf == min_frozen && x < min_lit)) {
+                            min_lit = x;
+                            min_frozen = xf;
+                        }
                         if (x == u) break;
                     }
                     for (uint32_t k = scc_start; k < ttop; ++k) {
@@ -358,11 +363,18 @@ static bool inproc_decompose(Solver *s) {
             free(repr);
             return false;
         }
-        /* Pick the smaller representative consistently between p and ~p. */
-        if (var(repr[p]) < var(repr[np])) {
-            repr[np] = neg(repr[p]);
+        /* Never substitute frozen variables; otherwise prefer frozen representatives consistently. */
+        if (solver_is_frozen(s, v)) {
+            repr[p] = p;
+            repr[np] = np;
         } else {
-            repr[p] = neg(repr[np]);
+            bool fp = solver_is_frozen(s, var(repr[p]));
+            bool fn = solver_is_frozen(s, var(repr[np]));
+            if ((fp && !fn) || (fp == fn && var(repr[p]) < var(repr[np]))) {
+                repr[np] = neg(repr[p]);
+            } else {
+                repr[p] = neg(repr[np]);
+            }
         }
         if (repr[p] != p) substituted++;
     }
@@ -1087,7 +1099,7 @@ static bool inproc_elim(Solver *s, uint64_t tick_budget, uint32_t grow_bound) {
 
     /* Enqueue candidate variables ordered by pos * neg. */
     for (Var v = 1; v <= s->num_vars; ++v) {
-        if (s->values[v] != UNDEF || s->elim->eliminated[v] || gauss_var_protected(s, v)) continue;
+        if (s->values[v] != UNDEF || s->elim->eliminated[v] || gauss_var_protected(s, v) || solver_is_frozen(s, v)) continue;
         if (s->factor_original_vars && v > s->factor_original_vars) continue;
         uint32_t p = occs[mkLit(v, false)].size;
         uint32_t n = occs[mkLit(v, true)].size;
@@ -1104,7 +1116,7 @@ static bool inproc_elim(Solver *s, uint64_t tick_budget, uint32_t grow_bound) {
     while (q.size > 0 && s->work < end_work && !unsat && !s->error) {
         if ((vars_elim_this_round & 31) == 0 && solver_budget_exhausted(s)) break;
         Var v = eq_pop(&q);
-        if (s->values[v] != UNDEF || s->elim->eliminated[v] || gauss_var_protected(s, v)) continue;
+        if (s->values[v] != UNDEF || s->elim->eliminated[v] || gauss_var_protected(s, v) || solver_is_frozen(s, v)) continue;
         if (s->factor_original_vars && v > s->factor_original_vars) continue;
 
         Lit pos_v = mkLit(v, false), neg_v = mkLit(v, true);
@@ -1132,7 +1144,7 @@ static bool inproc_elim(Solver *s, uint64_t tick_budget, uint32_t grow_bound) {
                         Lit kl = ls[k];
                         if (live_occ[kl] > 0) live_occ[kl]--;
                         Var u = var(kl);
-                        if (u != v && !s->elim->eliminated[u] && s->values[u] == UNDEF) {
+                        if (u != v && !s->elim->eliminated[u] && !solver_is_frozen(s, u) && s->values[u] == UNDEF) {
                             uint32_t up = live_occ[mkLit(u, false)];
                             uint32_t un = live_occ[mkLit(u, true)];
                             if (up <= MAX_OCC_GATE && un <= MAX_OCC_GATE)
@@ -1270,7 +1282,7 @@ static bool inproc_elim(Solver *s, uint64_t tick_budget, uint32_t grow_bound) {
                 }
                 for (uint32_t k = 0; k < sz; ++k) {
                     Var u = var(ls[k]);
-                    if (u != v && !s->elim->eliminated[u] && s->values[u] == UNDEF) {
+                    if (u != v && !s->elim->eliminated[u] && !solver_is_frozen(s, u) && s->values[u] == UNDEF) {
                         uint32_t up = live_occ[mkLit(u, false)];
                         uint32_t un = live_occ[mkLit(u, true)];
                         if (up <= MAX_OCC_GATE && un <= MAX_OCC_GATE) {

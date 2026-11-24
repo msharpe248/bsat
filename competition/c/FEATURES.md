@@ -24,8 +24,10 @@ This document provides an overview of CDCL and inprocessing optimizations implem
 | 3-tier used-clause retention | ON | `--protect-used` | `--no-protect-used` |
 | On-the-fly subsumption & OTFS | ON | - | `--no-subsumption` |
 | Failed literal probing, HBR & pair intersection | ON | - | `--no-probing` |
-| Full inprocessing pipeline (SCC, congruence, Kitten sweep, SSR, gate BVE, vivify, transitive, dynamic GF(2) Gauss, AMO sequential counters) | ON | `--inprocess` | `--no-inprocess` |
+| Full inprocessing pipeline (SCC, congruence, Kitten sweep, global backbone, SSR, gate BVE, vivify, transitive, ProbSAT phase seeding, dynamic GF(2) Gauss, AMO sequential counters) | ON | `--inprocess` | `--no-inprocess` |
+| Exact syntactic symmetry breaking (BreakID-style, non-proof) | ON | `--sym` | `--no-sym` |
 | Structured Bounded Variable Addition (SBVA, non-proof) | ON | `--sbva` | `--no-sbva` |
+| Frozen-variable protection (`solver_freeze` / `solver_melt`) | API | `solver_freeze(s, v)` | `solver_melt(s, v)` |
 | Blocked clause elimination (standalone preproc) | OFF | `--bce` | `--no-bce` |
 | Standalone legacy BVE / SCC / Congruence / Factoring | OFF | `--elim` / `--equiv` / `--congruence` / `--factor` | `--no-elim` |
 | Local search hybridization (standalone WalkSAT) | OFF | `--local-search` | - |

@@ -32,7 +32,7 @@ SolverMemory solver_memory(const Solver *s) {
     m.references=(uint64_t)(s->clauses_capacity)*sizeof(CRef)+(uint64_t)s->learnts_size*sizeof(CRef);
     uint64_t n=(uint64_t)s->var_capacity+1;
 #define VAR_BYTES(field) do { if (s->field) m.variables+=n*sizeof *s->field; } while (0)
-    VAR_BYTES(vars);VAR_BYTES(values);VAR_BYTES(trail);VAR_BYTES(order.heap);
+    VAR_BYTES(vars);VAR_BYTES(values);VAR_BYTES(frozen);VAR_BYTES(trail);VAR_BYTES(order.heap);
     VAR_BYTES(seen);VAR_BYTES(analyze_stack);VAR_BYTES(minimize_touched);
     VAR_BYTES(binary_reasons);VAR_BYTES(lrb_last_conflict);VAR_BYTES(rephase.best_phase);
 #undef VAR_BYTES

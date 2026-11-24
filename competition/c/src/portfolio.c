@@ -160,6 +160,7 @@ static SolverOpts make_worker_opts(const SolverOpts *base, uint32_t id, bool *ca
     o.elim = false;
     o.bce = false;
     o.sbva = false;
+    o.sym = false;
     o.factor = false;
     *can_export = true;
 

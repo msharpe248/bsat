@@ -165,6 +165,7 @@ static bool staging_exhausted(Solver *s) {
 }
 
 bool elim_eliminate_var(Solver *s, Var v) {
+    if (solver_is_frozen(s, v)) return false;
     int cost = elim_cost(s, v);
     if (cost < 0) return false;
     OccList *p = &s->elim->occs[mkLit(v, false)], *n = &s->elim->occs[mkLit(v, true)];

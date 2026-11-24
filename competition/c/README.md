@@ -48,10 +48,11 @@ inprocessing), Tarjan SCC equivalence substitution, Mini-Kitten SAT sweeping,
 subsumption/SSR, gate-aware BVE, binary transitive reduction, BCE, bounded
 factoring, and prefix-sharing vivification; UNSAT certificates end with an empty
 clause. Text and binary DRAT are supported. Non-RUP passes (root & in-search
-GF(2) Gaussian elimination, AMO clique sequential-counter re-encoding, and
-adaptive BVA clause factoring) are automatically skipped when `--proof` or
-`BSAT_CERTIFICATES` is enabled so standard RUP/DRAT checkers remain strictly
-valid. Historical experiment and milestone reports live in [`docs/`](docs/). Text proofs use chunked decimal encoding. See
+GF(2) Gaussian elimination, exact syntactic symmetry breaking, AMO clique
+sequential-counter re-encoding, and SBVA/BVA clause factoring) are
+automatically skipped when `--proof` or `BSAT_CERTIFICATES` is enabled so
+standard RUP/DRAT checkers remain strictly valid. Historical experiment and
+milestone reports live in [`docs/`](docs/). Text proofs use chunked decimal encoding. See
 [CHUNKED_TEXT_PROOFS.md](docs/CHUNKED_TEXT_PROOFS.md) for byte/error tests, measured
 text-proof CPU savings and the larger-input comparison with Kissat.
 
@@ -112,9 +113,15 @@ Default one-shot solving uses:
   polynomial-weighted phase seeding (`(1 + break)^(-2.3)`, preprocessing warmup
   + periodic target re-seeding), plus preprocessing lucky-phase check, bounded congruence closure,
   AMO binary-clique extraction with linear Sinz sequential-counter re-encoding
-  (non-proof mode on `>=80%` binary formulas), and Structured Bounded Variable
-  Addition (`--sbva` / `--no-sbva`, arbitrary-length clause factoring with
-  3-hop structural tie-breaking in non-proof mode). Destructive inprocessing is automatically skipped for
+  (non-proof mode on `>=80%` binary formulas), exact syntactic symmetry breaking
+  (`--sym` / `--no-sym`, `src/symmetry.c`, BreakID-style exact automorphism
+  verification + disjoint-support transposition chains and matrix
+  row-interchange lex-leader clauses in non-proof mode), and Structured Bounded
+  Variable Addition (`--sbva` / `--no-sbva`, arbitrary-length clause factoring
+  with 3-hop structural tie-breaking in non-proof mode). Variables can also be
+  pinned against elimination, substitution, BCE, and symmetry breaking via
+  `solver_freeze` / `solver_melt` / `solver_is_frozen` for incremental
+  simplification. Destructive inprocessing is automatically skipped for
   assumption queries, certified journals (`BSAT_CERTIFICATES`), and
   `BSAT_REUSE_LEARNTS` sessions.
 

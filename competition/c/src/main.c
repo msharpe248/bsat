@@ -170,6 +170,8 @@ static void print_usage(const char* program) {
     printf("  --factor-min-gain <n>      Minimum net clause saving per rectangle (1)\n");
     printf("  --sbva                    Structured Bounded Variable Addition (default: on, non-proof)\n");
     printf("  --no-sbva                 Disable Structured Bounded Variable Addition\n");
+    printf("  --sym                     Exact syntactic symmetry breaking (default: on, non-proof)\n");
+    printf("  --no-sym                  Disable syntactic symmetry breaking\n");
     printf("  --no-probing              Disable failed literal probing\n");
     printf("\n");
     printf("Inprocessing:\n");
@@ -280,6 +282,8 @@ static struct option long_options[] = {
     {"factor-min-gain", required_argument, 0, 0},
     {"sbva", no_argument, 0, 0},
     {"no-sbva", no_argument, 0, 0},
+    {"sym", no_argument, 0, 0},
+    {"no-sym", no_argument, 0, 0},
     {"no-probing",      no_argument,       0, 0},
     {"inprocess",       no_argument,       0, 0},
     {"no-inprocess",    no_argument,       0, 0},
@@ -531,6 +535,10 @@ int main(int argc, char** argv) {
                     opts.sbva = true;
                 } else if (strcmp(long_options[option_index].name, "no-sbva") == 0) {
                     opts.sbva = false;
+                } else if (strcmp(long_options[option_index].name, "sym") == 0) {
+                    opts.sym = true;
+                } else if (strcmp(long_options[option_index].name, "no-sym") == 0) {
+                    opts.sym = false;
                 } else if (strcmp(long_options[option_index].name, "inprocess") == 0) {
                     opts.inprocess = true;
                 } else if (strcmp(long_options[option_index].name, "no-inprocess") == 0) {
