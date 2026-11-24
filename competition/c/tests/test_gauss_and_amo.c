@@ -641,11 +641,73 @@ static void test_full_adder_maj3_xor3_congruence(void) {
     solver_free(s);
 }
 
+static void test_semantic_definition_bve(void) {
+    /* Non-syntactic semantic definition for v:
+     *   G_pos = {(v | a), (v | b)}
+     *   G_neg = {(~v | ~a | c), (~v | ~b | ~c)}
+     * Note G_pos' U G_neg' = {a, b, (~a|c), (~b|~c)} is UNSAT, yet G_pos x G_neg
+     * contains the non-tautological resolvent (a | ~b | ~c) and (b | ~a | c)!
+     * Add extra non-gate clauses R_pos and R_neg so plain BVE exceeds grow_bound,
+     * forcing semantic definition extraction; verify exact SAT model under all
+     * critical assignments (including a=0, b=1, c=1 where v would conflict if GxG were dropped!). */
+    for (int mode = 0; mode < 2; ++mode) {
+        SolverOpts opts = default_opts();
+        opts.inprocess = true;
+        Solver *s = solver_new_with_opts(&opts);
+        Var v = solver_new_var(s);
+        Var a = solver_new_var(s), b = solver_new_var(s), c = solver_new_var(s);
+        Var r1 = solver_new_var(s), r2 = solver_new_var(s), r3 = solver_new_var(s);
+        Var s1 = solver_new_var(s), s2 = solver_new_var(s), s3 = solver_new_var(s);
+
+        Lit gp1[2] = {mkLit(v, false), mkLit(a, false)};
+        Lit gp2[2] = {mkLit(v, false), mkLit(b, false)};
+        Lit gn1[3] = {mkLit(v, true), mkLit(a, true), mkLit(c, false)};
+        Lit gn2[3] = {mkLit(v, true), mkLit(b, true), mkLit(c, true)};
+        solver_add_clause(s, gp1, 2);
+        solver_add_clause(s, gp2, 2);
+        solver_add_clause(s, gn1, 3);
+        solver_add_clause(s, gn2, 3);
+
+        Lit rp1[2] = {mkLit(v, false), mkLit(r1, false)};
+        Lit rp2[2] = {mkLit(v, false), mkLit(r2, false)};
+        Lit rp3[2] = {mkLit(v, false), mkLit(r3, false)};
+        Lit rn1[2] = {mkLit(v, true), mkLit(s1, false)};
+        Lit rn2[2] = {mkLit(v, true), mkLit(s2, false)};
+        Lit rn3[2] = {mkLit(v, true), mkLit(s3, false)};
+        solver_add_clause(s, rp1, 2);
+        solver_add_clause(s, rp2, 2);
+        solver_add_clause(s, rp3, 2);
+        solver_add_clause(s, rn1, 2);
+        solver_add_clause(s, rn2, 2);
+        solver_add_clause(s, rn3, 2);
+
+        if (mode == 0) {
+            /* Force a=0, b=1, c=1: MUST be UNSAT because gp1 forces v=1 and gn2 forces v=0! */
+            Lit u1 = mkLit(a, true), u2 = mkLit(b, false), u3 = mkLit(c, false);
+            solver_add_clause(s, &u1, 1);
+            solver_add_clause(s, &u2, 1);
+            solver_add_clause(s, &u3, 1);
+            assert(solver_solve(s) == FALSE);
+        } else {
+            /* Force a=0, b=0, c=1: SAT with v=1 and s1=s2=s3=1! */
+            Lit u1 = mkLit(a, true), u2 = mkLit(b, true), u3 = mkLit(c, false);
+            solver_add_clause(s, &u1, 1);
+            solver_add_clause(s, &u2, 1);
+            solver_add_clause(s, &u3, 1);
+            assert(solver_solve(s) == TRUE);
+            assert(solver_check_model(s));
+            assert(solver_model_value(s, v) == TRUE);
+        }
+        solver_free(s);
+    }
+}
+
 int main(void) {
     test_gauss_mixed_sat_and_unsat();
     test_gauss_chain_stitching_and_subsumed_xor();
     test_nary_congruence_and_miter_sweep();
     test_full_adder_maj3_xor3_congruence();
+    test_semantic_definition_bve();
     test_amo_cliques_sat_and_unsat();
     test_sbva_arbitrary_length_sat_and_unsat();
     test_parallel_portfolio_sat_and_unsat();

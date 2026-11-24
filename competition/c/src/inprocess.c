@@ -1011,6 +1011,268 @@ static bool extract_gate(Solver *s, Var v, const InprocOcc *pos_occ, const Inpro
     return false;
 }
 
+/* Semantic definition extraction via tiny bounded core-tracking CDCL (Kissat definition.c).
+ * Checks whether the stripped occurrence clauses (P \ {v}) U (N \ {~v}) are UNSAT;
+ * if so, returns the exact UNSAT core in gate_pos/gate_neg (allowing R_pos x R_neg
+ * resolvents to be skipped while retaining G_pos x G_neg for full soundness!). */
+static bool extract_semantic_gate(Solver *s, Var v, const InprocOcc *pos_occ, const InprocOcc *neg_occ,
+                                  uint8_t *gate_pos, uint8_t *gate_neg) {
+    uint32_t np = pos_occ->size, nn = neg_occ->size;
+    if (np < 2u || nn < 2u || np + nn > 64u) return false;
+
+    enum { DK_MAX_VARS = 128, DK_MAX_CLS = 192, DK_POOL = 2048 };
+    Var l2g[DK_MAX_VARS + 1];
+    uint32_t nvars = 0;
+
+    uint16_t pool[DK_POOL];
+    uint32_t pool_used = 0;
+    uint32_t coff[DK_MAX_CLS];
+    uint16_t csz[DK_MAX_CLS];
+    uint64_t cmask[DK_MAX_CLS];
+    uint32_t ncls = 0;
+
+    int8_t val[DK_MAX_VARS + 1];
+    uint32_t lvl[DK_MAX_VARS + 1];
+    uint32_t rsn[DK_MAX_VARS + 1];
+    uint64_t rmask0[DK_MAX_VARS + 1];
+    uint8_t seen[DK_MAX_VARS + 1];
+    uint16_t trail[DK_MAX_VARS + 2];
+    uint32_t tlim[DK_MAX_VARS + 2];
+    uint32_t tsz = 0, qhead = 0, dlvl = 0;
+
+    memset(val, 0, sizeof val);
+    memset(lvl, 0, sizeof lvl);
+    memset(rmask0, 0, sizeof rmask0);
+    memset(seen, 0, sizeof seen);
+
+    bool unsat0 = false;
+    uint64_t core_mask = 0;
+
+    /* Helper macro to map global Var -> local 1..DK_MAX_VARS. */
+    for (uint32_t side = 0; side < 2u && !unsat0; ++side) {
+        const InprocOcc *occ = side ? neg_occ : pos_occ;
+        uint32_t base_bit = side ? np : 0u;
+        for (uint32_t ci = 0; ci < occ->size && !unsat0; ++ci) {
+            CRef cr = occ->clauses[ci];
+            uint32_t sz = CLAUSE_SIZE(s->arena, cr);
+            if (sz > 16u) continue;
+            const Lit *ls = CLAUSE_LITS(s->arena, cr);
+            uint16_t loc[16];
+            uint32_t ln = 0;
+            bool skip = false;
+            for (uint32_t k = 0; k < sz; ++k) {
+                Lit l = ls[k];
+                Var gv = var(l);
+                if (gv == v) continue;
+                lbool lv = lxor(s->values[gv], sign(l));
+                if (lv == TRUE) { skip = true; break; }
+                if (lv == FALSE) continue;
+                uint32_t lv_id = 0;
+                for (uint32_t m = 1u; m <= nvars; ++m) {
+                    if (l2g[m] == gv) { lv_id = m; break; }
+                }
+                if (!lv_id) {
+                    if (nvars >= DK_MAX_VARS) return false;
+                    lv_id = ++nvars;
+                    l2g[lv_id] = gv;
+                }
+                uint16_t ll = (uint16_t)((lv_id << 1) | (uint32_t)sign(l));
+                bool dup = false;
+                for (uint32_t m = 0; m < ln; ++m) {
+                    if (loc[m] == ll) { dup = true; break; }
+                    if (loc[m] == (ll ^ 1u)) { skip = true; break; }
+                }
+                if (skip) break;
+                if (!dup) loc[ln++] = ll;
+            }
+            if (skip) continue;
+            uint64_t bit = UINT64_C(1) << (base_bit + ci);
+            if (ln == 0) { unsat0 = true; core_mask = bit; break; }
+            if (ln == 1u) {
+                uint32_t lv_id = loc[0] >> 1;
+                int8_t want = (loc[0] & 1u) ? (int8_t)-1 : (int8_t)1;
+                if (val[lv_id] == -want) {
+                    unsat0 = true;
+                    core_mask = bit | rmask0[lv_id];
+                    break;
+                }
+                if (val[lv_id] == 0) {
+                    val[lv_id] = want;
+                    lvl[lv_id] = 0;
+                    rsn[lv_id] = UINT32_MAX;
+                    rmask0[lv_id] = bit;
+                    trail[tsz++] = loc[0];
+                }
+                continue;
+            }
+            if (ncls >= DK_MAX_CLS || pool_used + ln > DK_POOL) return false;
+            coff[ncls] = pool_used;
+            csz[ncls] = (uint16_t)ln;
+            cmask[ncls] = bit;
+            memcpy(pool + pool_used, loc, (size_t)ln * sizeof(uint16_t));
+            pool_used += ln;
+            ncls++;
+        }
+    }
+
+    if (!unsat0 && nvars == 0) return false;
+
+    uint32_t conflicts = 0;
+    uint16_t learnt[DK_MAX_VARS + 2];
+
+    while (!unsat0) {
+        /* Simple scan propagation (ncls <= 192, ultra-fast in L1 cache!). */
+        uint32_t confl = UINT32_MAX;
+        while (qhead <= tsz && confl == UINT32_MAX) {
+            qhead = tsz;
+            bool progressed = false;
+            for (uint32_t ci = 0; ci < ncls; ++ci) {
+                const uint16_t *ls = pool + coff[ci];
+                uint32_t sz = csz[ci];
+                uint32_t undef_cnt = 0;
+                uint16_t undef_lit = 0;
+                bool sat = false;
+                for (uint32_t k = 0; k < sz; ++k) {
+                    uint16_t l = ls[k];
+                    int8_t lv = (l & 1u) ? (int8_t)-val[l >> 1] : val[l >> 1];
+                    if (lv > 0) { sat = true; break; }
+                    if (lv == 0) { undef_cnt++; undef_lit = l; if (undef_cnt > 1u) break; }
+                }
+                if (sat || undef_cnt > 1u) continue;
+                if (undef_cnt == 0) { confl = ci; break; }
+                uint32_t u = undef_lit >> 1;
+                val[u] = (undef_lit & 1u) ? (int8_t)-1 : (int8_t)1;
+                lvl[u] = dlvl;
+                rsn[u] = ci;
+                if (dlvl == 0) {
+                    uint64_t m0 = cmask[ci];
+                    for (uint32_t k = 0; k < sz; ++k) {
+                        uint32_t uv = ls[k] >> 1;
+                        if (uv != u) m0 |= rmask0[uv];
+                    }
+                    rmask0[u] = m0;
+                }
+                trail[tsz++] = undef_lit;
+                progressed = true;
+            }
+            s->work += ncls;
+            if (!progressed) break;
+        }
+
+        if (confl != UINT32_MAX) {
+            if (dlvl == 0) {
+                unsat0 = true;
+                core_mask = cmask[confl];
+                const uint16_t *ls = pool + coff[confl];
+                for (uint32_t k = 0; k < csz[confl]; ++k) core_mask |= rmask0[ls[k] >> 1];
+                break;
+            }
+            if (++conflicts > 64u || ncls >= DK_MAX_CLS) return false;
+
+            /* 1-UIP conflict analysis with exact bitmask core propagation! */
+            uint32_t lsz = 1u, pathC = 0;
+            uint32_t idx = tsz - 1u;
+            uint32_t cidx = confl;
+            uint64_t lmask = 0;
+            uint16_t p = 0;
+            do {
+                lmask |= cmask[cidx];
+                const uint16_t *ls = pool + coff[cidx];
+                uint32_t sz = csz[cidx];
+                for (uint32_t k = 0; k < sz; ++k) {
+                    uint16_t q = ls[k];
+                    uint32_t qv = q >> 1;
+                    if (cidx != confl && qv == (p >> 1)) continue;
+                    if (lvl[qv] == 0) {
+                        lmask |= rmask0[qv];
+                        continue;
+                    }
+                    if (!seen[qv]) {
+                        seen[qv] = 1;
+                        if (lvl[qv] == dlvl) pathC++;
+                        else learnt[lsz++] = q;
+                    }
+                }
+                while (!seen[trail[idx] >> 1]) idx--;
+                p = trail[idx--];
+                seen[p >> 1] = 0;
+                cidx = rsn[p >> 1];
+                pathC--;
+            } while (pathC > 0);
+            learnt[0] = p ^ 1u;
+            for (uint32_t k = 1u; k < lsz; ++k) seen[learnt[k] >> 1] = 0;
+
+            uint32_t bt = 0;
+            for (uint32_t k = 1u; k < lsz; ++k) {
+                if (lvl[learnt[k] >> 1] > bt) bt = lvl[learnt[k] >> 1];
+            }
+            /* Backtrack to bt */
+            while (dlvl > bt) {
+                uint32_t lim = tlim[dlvl--];
+                while (tsz > lim) { val[trail[--tsz] >> 1] = 0; }
+            }
+            qhead = tsz;
+
+            if (lsz == 1u) {
+                uint32_t u = learnt[0] >> 1;
+                int8_t want = (learnt[0] & 1u) ? (int8_t)-1 : (int8_t)1;
+                if (val[u] == -want) {
+                    unsat0 = true;
+                    core_mask = lmask | rmask0[u];
+                    break;
+                }
+                if (val[u] == 0) {
+                    val[u] = want;
+                    lvl[u] = 0;
+                    rsn[u] = UINT32_MAX;
+                    rmask0[u] = lmask;
+                    trail[tsz++] = learnt[0];
+                }
+            } else {
+                if (pool_used + lsz > DK_POOL) return false;
+                uint32_t nc = ncls++;
+                coff[nc] = pool_used;
+                csz[nc] = (uint16_t)lsz;
+                cmask[nc] = lmask;
+                memcpy(pool + pool_used, learnt, (size_t)lsz * sizeof(uint16_t));
+                pool_used += lsz;
+                uint32_t u = learnt[0] >> 1;
+                val[u] = (learnt[0] & 1u) ? (int8_t)-1 : (int8_t)1;
+                lvl[u] = dlvl;
+                rsn[u] = nc;
+                trail[tsz++] = learnt[0];
+            }
+            continue;
+        }
+
+        /* Pick first unassigned local variable. */
+        uint32_t pick = 0;
+        for (uint32_t u = 1u; u <= nvars; ++u) {
+            if (val[u] == 0) { pick = u; break; }
+        }
+        if (!pick) return false; /* SAT -> no semantic definition! */
+        tlim[++dlvl] = tsz;
+        val[pick] = 1;
+        lvl[pick] = dlvl;
+        rsn[pick] = UINT32_MAX;
+        trail[tsz++] = (uint16_t)(pick << 1);
+    }
+
+    if (!unsat0 || !core_mask) return false;
+
+    uint32_t gp_cnt = 0, gn_cnt = 0;
+    memset(gate_pos, 0, np);
+    memset(gate_neg, 0, nn);
+    for (uint32_t i = 0; i < np; ++i) {
+        if ((core_mask >> i) & 1u) { gate_pos[i] = 1; gp_cnt++; }
+    }
+    for (uint32_t j = 0; j < nn; ++j) {
+        if ((core_mask >> (np + j)) & 1u) { gate_neg[j] = 1; gn_cnt++; }
+    }
+    /* Useful only if at least one non-gate clause exists on BOTH sides so R x R skips work! */
+    return gp_cnt < np && gn_cnt < nn;
+}
+
 /* Resolve clauses ca and cb on pivot v into out_buf (size <= max_len).
  * Returns -1 if tautology or satisfied, -2 if exceeds max_len, else resolvent length. */
 static int fast_resolve(Solver *s, CRef ca, CRef cb, Var pivot,
@@ -1163,8 +1425,15 @@ static bool inproc_elim(Solver *s, uint64_t tick_budget, uint32_t grow_bound) {
             continue;
         }
 
-        /* Try gate extraction! */
-        bool has_gate = extract_gate(s, v, po, no, gate_pos, gate_neg, lit_seen);
+        /* Try syntactic gate extraction first, then bounded semantic Mini-CDCL definition! */
+        uint8_t gate_kind = extract_gate(s, v, po, no, gate_pos, gate_neg, lit_seen) ? 1u : 0u;
+        if (!gate_kind && np >= 2u && nn >= 2u && np + nn <= 64u &&
+            np * nn > np + nn + grow_bound && s->work < end_work) {
+            if (extract_semantic_gate(s, v, po, no, gate_pos, gate_neg)) {
+                gate_kind = 2u;
+            }
+        }
+        bool has_gate = (gate_kind != 0u);
         if (!has_gate && (np > MAX_OCC_PLAIN || nn > MAX_OCC_PLAIN)) continue;
 
         /* Stage all resolvents into flat buffer, checking clause budget. */
@@ -1176,8 +1445,10 @@ static bool inproc_elim(Solver *s, uint64_t tick_budget, uint32_t grow_bound) {
         for (uint32_t i = 0; i < np && !too_many; ++i) {
             CRef ca = po->clauses[i];
             for (uint32_t j = 0; j < nn && !too_many; ++j) {
-                /* With a gate, skip GxG (tautologies) and RxR (redundant)! */
-                if (has_gate && (gate_pos[i] == gate_neg[j])) continue;
+                /* Syntactic gates: skip GxG (tautologies) and RxR (redundant).
+                 * Semantic gates: skip RxR (redundant), KEEP GxG (may contain non-tautologies)! */
+                if (gate_kind == 1u && (gate_pos[i] == gate_neg[j])) continue;
+                if (gate_kind == 2u && (!gate_pos[i] && !gate_neg[j])) continue;
                 CRef cb = no->clauses[j];
                 s->work += CLAUSE_SIZE(s->arena, ca) + CLAUSE_SIZE(s->arena, cb);
 
