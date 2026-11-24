@@ -1,0 +1,22 @@
+{
+  "name": "bsat-synthetic-hard-certified-v1",
+  "corpus": "synthetic-hard",
+  "timeout_sec": 15.0,
+  "check_timeout_sec": 60.0,
+  "workers": 8,
+  "proof": true,
+  "binary_proof": true,
+  "require_drat_trim": true,
+  "require_clean_git": false,
+  "solver_args": [],
+  "rlimit_fsize_mb": 128,
+  "rlimit_mem_mb": 2048,
+  "slos": {
+    "max_bad": 0,
+    "min_solve_rate": 1.0,
+    "max_p95_sec": 1.0,
+    "max_par2_sec": 0.5,
+    "max_rss_mb": 256.0,
+    "max_proof_mb": 64.0
+  }
+}

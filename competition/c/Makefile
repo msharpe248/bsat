@@ -372,6 +372,11 @@ $(BINDIR)/recovery_supervisor_$(MODE): examples/recovery_supervisor.c examples/r
 recovery-example: $(BINDIR)/recovery_supervisor_$(MODE)
 .PHONY: recovery-example
 
+$(BINDIR)/contained_worker_$(MODE): examples/contained_worker.c $(filter-out $(OBJDIR)/main.o,$(OBJECTS)) | dirs
+	$(CC) $(CFLAGS) -UNDEBUG -o $@ $< $(filter-out $(OBJDIR)/main.o,$(OBJECTS)) -lm
+contained-worker-example: $(BINDIR)/contained_worker_$(MODE)
+.PHONY: contained-worker-example
+
 # Separate test facade, never linked into LIBRARY or package targets.
 DIAGNOSTIC_LIBRARY = $(subst libbsat_,libquery_diagnostics_,$(LIBRARY))
 $(DIAGNOSTIC_LIBRARY): tests/query_diagnostics.c src/bsat.c $(filter-out build/lib-$(MODE)/bsat.o,$(LIB_OBJECTS)) | dirs
