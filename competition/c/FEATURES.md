@@ -29,6 +29,7 @@ This document provides an overview of CDCL and inprocessing optimizations implem
 | Blocked clause elimination (standalone preproc) | OFF | `--bce` | `--no-bce` |
 | Standalone legacy BVE / SCC / Congruence / Factoring | OFF | `--elim` / `--equiv` / `--congruence` / `--factor` | `--no-elim` |
 | Local search hybridization (standalone WalkSAT) | OFF | `--local-search` | - |
+| Multi-core clause-sharing portfolio | 1 thread | `-j <n>` / `--threads <n>` | `-j 1` |
 | DRAT proof logging (text / binary) | OFF | `--proof <file>` / `--binary-proof` | - |
 
 ---

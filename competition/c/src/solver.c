@@ -2469,6 +2469,56 @@ bool solver_add_rup_clause(Solver *s, const Lit *lits, uint32_t size) {
     return !s->error && !s->interrupted;
 }
 
+bool solver_import_clause(Solver *s, const Lit *lits, uint32_t size) {
+    if (!s || s->decision_level != 0 || s->error || s->result == FALSE || size == 0) return false;
+    Var max_v = s->factor_original_vars ? s->factor_original_vars : s->num_vars;
+    Lit buf[16];
+    if (size > 16) return true;
+    uint32_t n = 0;
+    for (uint32_t i = 0; i < size; ++i) {
+        Lit l = lits[i];
+        Var v = var(l);
+        if (v == 0 || v > max_v || elim_is_eliminated(s, v)) return true;
+        uint8_t val = s->values[v];
+        if (val != UNDEF) {
+            if (val == (uint8_t)(2u - sign(l))) return true;
+            continue;
+        }
+        bool dup = false;
+        for (uint32_t j = 0; j < n; ++j) {
+            if (buf[j] == l) { dup = true; break; }
+            if (buf[j] == neg(l)) return true;
+        }
+        if (!dup) buf[n++] = l;
+    }
+    if (n == 0) {
+        s->base_unsat = true;
+        s->result = FALSE;
+        return false;
+    }
+    if (n == 1) {
+        if (s->values[var(buf[0])] == UNDEF) push_trail(s, buf[0]);
+        return true;
+    }
+    if (s->num_learnts == s->learnts_size) {
+        uint32_t cap = s->learnts_size ? s->learnts_size * 2u : 64u;
+        CRef *p = realloc(s->learnts, (size_t)cap * sizeof *p);
+        if (!p) { s->error = true; return false; }
+        s->learnts = p;
+        s->learnts_size = cap;
+    }
+    CRef cr = arena_alloc(s->arena, buf, n, true);
+    if (cr == INVALID_CLAUSE) { s->error = true; return false; }
+    set_clause_lbd(s->arena, cr, MIN(n, 3u));
+    CLAUSE_HEADER(s->arena, cr)->used = 2;
+    s->learnts[s->num_learnts++] = cr;
+    CRef watched = (n == 2) ? arena_binary_watch_ref(cr) : cr;
+    watch_add(s->watches, buf[0], watched, buf[1]);
+    watch_add(s->watches, buf[1], watched, buf[0]);
+    if (s->watches->failed) { s->error = true; return false; }
+    return true;
+}
+
 static bool solver_simplify_account_impl(Solver *s) {
     if (s->decision_level || !s->opts.inprocess || !s->opts.preprocess_budget ||
         s->stats.conflicts < s->last_vivify + s->opts.inprocess_interval) return true;
@@ -3114,6 +3164,14 @@ static lbool solve_internal_account_impl(Solver *s, const Lit *assumps, uint32_t
                 if (s->qhead<s->trail_size) continue;
             }
             if (!s->decision_level) {
+                if (s->import_callback) {
+                    s->lit_values_live = false;
+                    s->import_callback(s, s->import_state);
+                    sync_lit_values(s);
+                    if (s->error || s->interrupted) break;
+                    if (s->result == FALSE) { s->base_unsat = true; result = FALSE; break; }
+                    if (s->qhead < s->trail_size) continue;
+                }
                 if (!n_assumps && !s->proof_journal && !s->opts.reuse_learnts && s->opts.inprocess &&
                     !s->opts.factor && !s->opts.local_search &&
                     (s->work >= s->next_inprocess_ticks ||

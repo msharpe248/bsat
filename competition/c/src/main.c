@@ -82,6 +82,7 @@ static void print_usage(const char* program) {
     printf("  -c, --conflicts <n>       Maximum number of conflicts\n");
     printf("  -d, --decisions <n>       Maximum number of decisions\n");
     printf("  -t, --time <sec>          Time limit in seconds\n");
+    printf("  -j, --threads <n>         Parallel clause-sharing portfolio threads (default: 1)\n");
     printf("\n");
     printf("VSIDS parameters:\n");
     printf("  --var-decay <f>           Variable activity decay (default: 0.95)\n");
@@ -208,6 +209,7 @@ static struct option long_options[] = {
     {"conflicts",       required_argument, 0, 'c'},
     {"decisions",       required_argument, 0, 'd'},
     {"time",            required_argument, 0, 't'},
+    {"threads",         required_argument, 0, 'j'},
     {"var-decay",       required_argument, 0, 0},
     {"var-inc",         required_argument, 0, 0},
     {"restart-first",   required_argument, 0, 0},
@@ -310,12 +312,13 @@ int main(int argc, char** argv) {
 
 
     double portfolio_seconds = 0;
+    uint32_t num_threads = 1;
 
     // Parse command line options
     int c;
     int option_index = 0;
 
-    while ((c = getopt_long(argc, argv, "hvqsc:d:t:", long_options, &option_index)) != -1) {
+    while ((c = getopt_long(argc, argv, "hvqsc:d:t:j:", long_options, &option_index)) != -1) {
         if (optarg && !(c == 0 && !strcmp(long_options[option_index].name, "proof"))) {
             const char *name = c == 0 ? long_options[option_index].name : "";
             bool floating = c == 't' || strstr(name, "decay") || strstr(name, "alpha") ||
@@ -364,6 +367,16 @@ int main(int argc, char** argv) {
             case 't':
                 opts.max_time = atof(optarg);
                 break;
+
+            case 'j': {
+                unsigned long nt = strtoul(optarg, NULL, 10);
+                if (nt == 0 || nt > 64) {
+                    fprintf(stderr, "Error: --threads must be between 1 and 64\n");
+                    return 1;
+                }
+                num_threads = (uint32_t)nt;
+                break;
+            }
 
             case 0:
                 // Long option
@@ -564,6 +577,11 @@ int main(int argc, char** argv) {
         fprintf(stderr,"Error: input and proof must be different files\n");return 1;
     }
 
+    if (num_threads > 1 && opts.proof_path) {
+        fprintf(stderr, "Error: --proof is not supported with --threads > 1\n");
+        return 1;
+    }
+
     // Print header
     if (!opts.quiet) {
         printf("c BSAT Competition Solver v1.0\n");
@@ -602,7 +620,9 @@ int main(int argc, char** argv) {
     solver_set_terminate(solver,solver,cli_progress);
     // Solve
     double start_time = (double)clock() / CLOCKS_PER_SEC;
-    lbool result = portfolio_seconds ? solver_solve_portfolio(solver, portfolio_seconds) : solver_solve(solver);
+    lbool result = (num_threads > 1)
+        ? solver_solve_parallel(solver, num_threads)
+        : (portfolio_seconds ? solver_solve_portfolio(solver, portfolio_seconds) : solver_solve(solver));
     double solve_time = (double)clock() / CLOCKS_PER_SEC - start_time;
 
     if (solver->error) fprintf(stderr, "Error: solver allocation, certificate, or model validation failure\n");

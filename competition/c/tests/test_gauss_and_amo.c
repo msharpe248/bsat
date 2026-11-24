@@ -400,12 +400,62 @@ static void test_nary_congruence_and_miter_sweep(void) {
     solver_free(s);
 }
 
+static void test_parallel_portfolio_sat_and_unsat(void) {
+    /* 1. SAT mixed 3-SAT solved with 4 parallel clause-sharing threads! */
+    SolverOpts opts = default_opts();
+    opts.quiet = true;
+    opts.stats = false;
+    Solver *s = solver_new_with_opts(&opts);
+    const uint32_t N = 50;
+    for (uint32_t i = 0; i < N; ++i) solver_new_var(s);
+    uint32_t st = 0xCAFEBABEu;
+    uint8_t sol[51];
+    for (uint32_t v = 1; v <= N; ++v) sol[v] = (uint8_t)(rng_next(&st) & 1u);
+    for (uint32_t c = 0; c < 200; ++c) {
+        Lit cl[3];
+        bool sat = false;
+        for (uint32_t j = 0; j < 3; ++j) {
+            Var v = 1u + (rng_next(&st) % N);
+            bool neg_s = (rng_next(&st) & 1u) != 0;
+            cl[j] = mkLit(v, neg_s);
+            if ((sol[v] != 0) == !neg_s) sat = true;
+        }
+        if (!sat) cl[0] = neg(cl[0]);
+        solver_add_clause(s, cl, 3);
+    }
+    lbool r = solver_solve_parallel(s, 4);
+    assert(r == TRUE);
+    assert(solver_check_model(s));
+    solver_free(s);
+
+    /* 2. UNSAT Pigeonhole PHP(7, 6) solved with 4 parallel clause-sharing threads! */
+    Solver *su = solver_new_with_opts(&opts);
+    const uint32_t H = 6, P = 7;
+    for (uint32_t i = 0; i < P * H; ++i) solver_new_var(su);
+    for (uint32_t p = 0; p < P; ++p) {
+        Lit alo[6];
+        for (uint32_t h = 0; h < H; ++h) alo[h] = mkLit(p * H + h + 1, false);
+        solver_add_clause(su, alo, H);
+    }
+    for (uint32_t h = 0; h < H; ++h) {
+        for (uint32_t p1 = 0; p1 < P; ++p1) {
+            for (uint32_t p2 = p1 + 1; p2 < P; ++p2) {
+                Lit pair[2] = {mkLit(p1 * H + h + 1, true), mkLit(p2 * H + h + 1, true)};
+                solver_add_clause(su, pair, 2);
+            }
+        }
+    }
+    assert(solver_solve_parallel(su, 4) == FALSE);
+    solver_free(su);
+}
+
 int main(void) {
     test_gauss_mixed_sat_and_unsat();
     test_gauss_chain_stitching_and_subsumed_xor();
     test_nary_congruence_and_miter_sweep();
     test_amo_cliques_sat_and_unsat();
     test_sbva_arbitrary_length_sat_and_unsat();
+    test_parallel_portfolio_sat_and_unsat();
     test_lit_values_external_mutation_safety();
     printf("PASS: test_gauss_and_amo\n");
     return 0;

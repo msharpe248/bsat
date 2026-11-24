@@ -2,7 +2,7 @@
 
 # Compiler and flags
 CC = cc
-CFLAGS = -std=c11 -D_POSIX_C_SOURCE=200809L -Wall -Wextra -pedantic
+CFLAGS = -std=c11 -D_POSIX_C_SOURCE=200809L -pthread -Wall -Wextra -pedantic
 # Optimization flags for SAT solver performance
 OPTFLAGS = -O3 -march=native -flto -DNDEBUG
 DEBUGFLAGS = -g -O0 -DDEBUG -fsanitize=address -fsanitize=undefined
@@ -117,6 +117,7 @@ pgo-generate: clean dirs
 	$(CC) $(CFLAGS) -O3 -march=native -fprofile-instr-generate -c -o $(OBJDIR)/ipasir.o $(SRCDIR)/ipasir.c
 	$(CC) $(CFLAGS) -O3 -march=native -fprofile-instr-generate -c -o $(OBJDIR)/local_search.o $(SRCDIR)/local_search.c
 	$(CC) $(CFLAGS) -O3 -march=native -fprofile-instr-generate -c -o $(OBJDIR)/minimize.o $(SRCDIR)/minimize.c
+	$(CC) $(CFLAGS) -O3 -march=native -fprofile-instr-generate -c -o $(OBJDIR)/portfolio.o $(SRCDIR)/portfolio.c
 	$(CC) $(CFLAGS) -O3 -march=native -fprofile-instr-generate -c -o $(OBJDIR)/main.o $(SRCDIR)/main.c
 	$(CC) $(CFLAGS) -O3 -march=native -fprofile-instr-generate -c -o $(OBJDIR)/reduction_sort.o $(SRCDIR)/reduction_sort.c
 	$(CC) $(CFLAGS) -O3 -march=native -fprofile-instr-generate -c -o $(OBJDIR)/sbva.o $(SRCDIR)/sbva.c
@@ -164,6 +165,7 @@ pgo-use: dirs
 	$(CC) $(CFLAGS) -O3 -march=native -flto -fprofile-instr-use=pgo_data/default.profdata -c -o $(OBJDIR)/ipasir.o $(SRCDIR)/ipasir.c
 	$(CC) $(CFLAGS) -O3 -march=native -flto -fprofile-instr-use=pgo_data/default.profdata -c -o $(OBJDIR)/local_search.o $(SRCDIR)/local_search.c
 	$(CC) $(CFLAGS) -O3 -march=native -flto -fprofile-instr-use=pgo_data/default.profdata -c -o $(OBJDIR)/minimize.o $(SRCDIR)/minimize.c
+	$(CC) $(CFLAGS) -O3 -march=native -flto -fprofile-instr-use=pgo_data/default.profdata -c -o $(OBJDIR)/portfolio.o $(SRCDIR)/portfolio.c
 	$(CC) $(CFLAGS) -O3 -march=native -flto -fprofile-instr-use=pgo_data/default.profdata -c -o $(OBJDIR)/main.o $(SRCDIR)/main.c
 	$(CC) $(CFLAGS) -O3 -march=native -flto -fprofile-instr-use=pgo_data/default.profdata -c -o $(OBJDIR)/reduction_sort.o $(SRCDIR)/reduction_sort.c
 	$(CC) $(CFLAGS) -O3 -march=native -flto -fprofile-instr-use=pgo_data/default.profdata -c -o $(OBJDIR)/sbva.o $(SRCDIR)/sbva.c
@@ -262,7 +264,7 @@ fault-test: $(BINDIR)/fail_alloc_$(MODE)
 # Coverage-guided fuzzers use isolated Clang/ASan/UBSan objects and allocator hooks.
 FUZZ_CC ?= clang
 FUZZ_ENGINE ?= -fsanitize=fuzzer
-FUZZ_FLAGS = -std=c11 -D_POSIX_C_SOURCE=200809L -DDEBUG -g -O1 -I$(INCDIR) -fsanitize=fuzzer-no-link,address,undefined
+FUZZ_FLAGS = -std=c11 -D_POSIX_C_SOURCE=200809L -pthread -DDEBUG -g -O1 -I$(INCDIR) -fsanitize=fuzzer-no-link,address,undefined
 FUZZ_OBJECTS := $(patsubst $(SRCDIR)/%.c,build/fuzz/%.o,$(filter-out $(SRCDIR)/main.c,$(SOURCES)))
 build/fuzz/%.o: $(SRCDIR)/%.c $(TESTDIR)/fail_alloc.h
 	@mkdir -p $(@D)

@@ -35,6 +35,7 @@ checker, tries option combinations, and minimizes failing formulas.
 
 ```sh
 ./bin/bsat input.cnf
+./bin/bsat -j 4 input.cnf              # Multi-core clause-sharing portfolio
 ./bin/bsat --proof proof.drat input.cnf
 ./bin/bsat --binary-proof --proof proof.drat input.cnf
 /path/to/drat-trim input.cnf proof.drat
@@ -81,6 +82,12 @@ Default one-shot solving uses:
   updates (`--dynamic-lbd` / `--no-dynamic-lbd`), and a 3-tier dynamic clause
   database (`--protect-used` / `--no-protect-used`, `--reduce-interval 1000`,
   `--reduce-increment 100`) with O(1) lazy watch sweeping.
+- **Multi-core clause-sharing portfolio** (`-j <N>` / `--threads <N>`,
+  `src/portfolio.c`, non-proof mode): Runs `N` diversified isolated solver
+  threads (full-inprocessing BSAT + focused VMTF, stable Luby VSIDS, LRB/CHB,
+  and diversified chrono/rephase profiles) sharing logically-entailed short
+  learned clauses (`size <= 4`) through a TSan-clean ring buffer with instant
+  atomic cancellation on first winner.
 - **Hot-loop BCP**: Literal-indexed `lit_values[]` shadow array for 1-byte
   lookup during search, binary-first watch partitioning, single-instruction
   binary watch dispatch, 1-ahead long-clause prefetching, and two-pass

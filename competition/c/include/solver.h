@@ -13,6 +13,7 @@
 #include "elim.h"
 #include "gauss.h"
 #include "sbva.h"
+#include "portfolio.h"
 #include "local_search.h"
 #include <time.h>
 #include <stdio.h>
@@ -362,6 +363,8 @@ typedef struct Solver {
     void (*learn_callback)(void *, int *);
     void *learn_state;
     uint32_t learn_max_length;
+    void (*import_callback)(struct Solver *, void *);
+    void *import_state;
 
     // Variable Elimination (BVE)
     ElimState* elim;          // Elimination state (NULL if not using BVE)
@@ -536,5 +539,8 @@ Level solver_restart_level(Solver* s);
 
 // Simplify clause database
 bool solver_simplify(Solver* s);
+
+// Import a globally-entailed shared clause at decision level 0 (for parallel portfolio).
+bool solver_import_clause(Solver* s, const Lit* lits, uint32_t size);
 
 #endif // BSAT_SOLVER_H
