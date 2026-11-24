@@ -1872,6 +1872,246 @@ static bool inproc_probe_hbr(Solver *s, uint64_t tick_budget) {
  * dynamic Gaussian elimination now live in src/gauss.c (gauss_extract_and_init). */
 
 /* =====================================================================
+ * Pass 2c: N-ary AND Gate Congruence Closure (3..8 inputs, 100% RUP!)
+ *
+ * Extracts complete k-input AND gates (k = 3..8):
+ *   (out | ~a_1 | ... | ~a_k)  and  (~out | a_i) for all i=1..k.
+ * Whenever two gates share the exact same sorted input set, emits both
+ * RUP binary equivalences (~out1 | out2) and (~out2 | out1) for SCC.
+ * ===================================================================== */
+
+typedef struct {
+    Lit out;
+    Lit in[8];
+    uint8_t k;
+} NaryAndGate;
+
+static uint64_t hash_nary_inputs(const Lit *in, uint8_t k) {
+    uint64_t h = (uint64_t)k * UINT64_C(0x9e3779b97f4a7c15);
+    for (uint8_t i = 0; i < k; ++i) {
+        h ^= (uint64_t)in[i] + UINT64_C(0x9e3779b97f4a7c15) + (h << 6) + (h >> 2);
+    }
+    h ^= h >> 30; h *= UINT64_C(0xbf58476d1ce4e5b9);
+    h ^= h >> 27; h *= UINT64_C(0x94d049bb133111eb);
+    return h ^ (h >> 31);
+}
+
+static bool add_rup_binary(Solver *s, Lit a, Lit b) {
+    if (has_binary_watch(s, a, b)) return true;
+    Lit pair[2] = {a, b};
+    proof_add_clause(s, pair, 2);
+    if (s->error) return false;
+    if (s->num_learnts == s->learnts_size) {
+        uint32_t ncap = s->learnts_size ? s->learnts_size * 2u : 64u;
+        CRef *ptr = realloc(s->learnts, (size_t)ncap * sizeof *ptr);
+        if (!ptr) { s->error = true; return false; }
+        s->learnts = ptr; s->learnts_size = ncap;
+    }
+    CRef cr = arena_alloc(s->arena, pair, 2, true);
+    if (cr == INVALID_CLAUSE) { s->error = true; return false; }
+    set_clause_lbd(s->arena, cr, 2);
+    s->learnts[s->num_learnts++] = cr;
+    CRef wref = arena_binary_watch_ref(cr);
+    watch_add(s->watches, pair[0], wref, pair[1]);
+    watch_add(s->watches, pair[1], wref, pair[0]);
+    if (s->watches->failed) { s->error = true; return false; }
+    return true;
+}
+
+static bool inproc_nary_congruence(Solver *s, uint64_t tick_budget) {
+    if (!s->num_vars || !s->num_clauses || s->num_clauses > 250000 ||
+        s->error || s->result == FALSE || solver_budget_exhausted(s)) return true;
+
+    uint64_t end_work = s->work + tick_budget;
+    uint32_t cap = 256u;
+    uint32_t ngates = 0;
+    NaryAndGate *gates = malloc((size_t)cap * sizeof *gates);
+    if (!gates) { s->error = true; return false; }
+
+    bool unsat = false;
+    bool added_equiv = false;
+    for (uint32_t i = 0; i < s->num_clauses && s->work < end_work && !unsat && !s->error; ++i) {
+        if ((i & 1023u) == 0 && solver_budget_exhausted(s)) break;
+        CRef cr = s->clauses[i];
+        if (cr == INVALID_CLAUSE || clause_deleted(s->arena, cr)) continue;
+        uint32_t sz = CLAUSE_SIZE(s->arena, cr);
+        if (sz < 4u || sz > 9u) continue;
+        const Lit *ls = CLAUSE_LITS(s->arena, cr);
+        bool skip = false;
+        for (uint32_t j = 0; j < sz; ++j) {
+            if (s->values[var(ls[j])] != UNDEF) { skip = true; break; }
+        }
+        if (skip) continue;
+        s->work += sz;
+
+        /* Test each literal in C as candidate output `out` of out <-> &(~ls[m]). */
+        for (uint32_t oi = 0; oi < sz; ++oi) {
+            Lit out = ls[oi];
+            Lit nout = neg(out);
+            /* Quick filter: nout must have at least (sz - 1) binary watches. */
+            if (watch_list(s->watches, nout)->size < sz - 1u) continue;
+            bool all_bin = true;
+            Lit inputs[8];
+            uint8_t k = 0;
+            for (uint32_t m = 0; m < sz; ++m) {
+                if (m == oi) continue;
+                Lit inp = neg(ls[m]);
+                if (!has_binary_watch(s, nout, inp)) { all_bin = false; break; }
+                inputs[k++] = inp;
+            }
+            if (!all_bin) continue;
+
+            sort_lits_small(inputs, k);
+            /* Check for complementary inputs (a and ~a -> out MUST be FALSE, 100% RUP!). */
+            bool contra = false;
+            for (uint8_t m = 1; m < k; ++m) {
+                if (inputs[m] == neg(inputs[m - 1u])) { contra = true; break; }
+            }
+            if (contra) {
+                proof_add_clause(s, &nout, 1);
+                if (s->error || !enqueue_root_unit(s, nout) || !root_propagate(s)) {
+                    unsat = true;
+                }
+                break;
+            }
+            if (ngates == cap) {
+                if (cap >= 65536u) break;
+                uint32_t ncap = cap * 2u;
+                NaryAndGate *p = realloc(gates, (size_t)ncap * sizeof *p);
+                if (!p) { s->error = true; break; }
+                gates = p; cap = ncap;
+            }
+            gates[ngates].out = out;
+            gates[ngates].k = k;
+            memcpy(gates[ngates].in, inputs, (size_t)k * sizeof(Lit));
+            ngates++;
+            break; /* One gate per clause suffices */
+        }
+    }
+
+    if (!unsat && !s->error && ngates >= 2u) {
+        size_t hcap = 64u;
+        while (hcap < (size_t)ngates * 2u) hcap <<= 1;
+        uint32_t *ht = calloc(hcap, sizeof *ht);
+        if (!ht) { free(gates); s->error = true; return false; }
+        for (uint32_t gi = 0; gi < ngates && !unsat && !s->error; ++gi) {
+            const NaryAndGate *g = &gates[gi];
+            size_t pos = (size_t)(hash_nary_inputs(g->in, g->k) & (hcap - 1u));
+            for (;;) {
+                uint32_t slot = ht[pos];
+                if (!slot) { ht[pos] = gi + 1u; break; }
+                const NaryAndGate *h = &gates[slot - 1u];
+                if (h->k == g->k && memcmp(h->in, g->in, (size_t)g->k * sizeof(Lit)) == 0) {
+                    if (g->out != h->out) {
+                        if (g->out == neg(h->out)) {
+                            proof_add_clause(s, NULL, 0);
+                            s->base_unsat = true; s->result = FALSE;
+                            unsat = true;
+                        } else {
+                            if (!add_rup_binary(s, neg(g->out), h->out) ||
+                                !add_rup_binary(s, neg(h->out), g->out)) break;
+                            added_equiv = true;
+                        }
+                    }
+                    break;
+                }
+                pos = (pos + 1u) & (hcap - 1u);
+            }
+        }
+        free(ht);
+    }
+
+    free(gates);
+    if (unsat || s->error) return false;
+    (void)added_equiv;
+    return true;
+}
+
+/* =====================================================================
+ * Pass 2d: Model-Guided Global Backbone Extraction (100% RUP-Sound)
+ *
+ * Probes high-activity unassigned variables (including those with zero
+ * binary watches, missed by inproc_probe_hbr) using the negation of their
+ * best/saved polarity to harvest RUP-certified global backbone units.
+ * ===================================================================== */
+
+typedef struct {
+    Var v;
+    double score;
+} BackboneCand;
+
+static int cmp_bb_cand(const void *a, const void *b) {
+    double sa = ((const BackboneCand *)a)->score;
+    double sb = ((const BackboneCand *)b)->score;
+    if (sa != sb) return (sb > sa) - (sb < sa);
+    Var va = ((const BackboneCand *)a)->v;
+    Var vb = ((const BackboneCand *)b)->v;
+    return (va > vb) - (va < vb);
+}
+
+static bool inproc_backbone(Solver *s, uint64_t tick_budget) {
+    if (!s->num_vars || s->error || s->result == FALSE || solver_budget_exhausted(s)) return true;
+
+    uint32_t nv = s->num_vars;
+    BackboneCand *cands = malloc((size_t)nv * sizeof *cands);
+    if (!cands) { s->error = true; return false; }
+    uint32_t nc = 0;
+    for (Var v = 1; v <= nv; ++v) {
+        if (s->values[v] != UNDEF || (s->elim && s->elim->eliminated[v])) continue;
+        cands[nc++] = (BackboneCand){v, s->vars[v].activity};
+    }
+    if (nc == 0) { free(cands); return true; }
+    qsort(cands, nc, sizeof *cands, cmp_bb_cand);
+
+    bool saved_chrono = s->opts.chrono;
+    bool saved_phase = s->opts.phase_saving;
+    uint64_t saved_wl = s->work_limit;
+    s->opts.chrono = false;
+    s->opts.phase_saving = false;
+    uint64_t end_work = s->work + tick_budget;
+    s->work_limit = end_work;
+
+    bool unsat = false;
+    uint32_t max_test = MIN(nc, 512u);
+    for (uint32_t i = 0; i < max_test && s->work < end_work && !unsat && !s->error && !s->interrupted; ++i) {
+        Var v = cands[i].v;
+        if (s->values[v] != UNDEF) continue;
+        /* Pick likely-TRUE polarity from best_phase / saved polarity, and probe its NEGATION! */
+        bool likely_true = s->vars[v].polarity;
+        if (s->rephase.best_phase && s->rephase.best_phase[v] != UNDEF) {
+            likely_true = (s->rephase.best_phase[v] == TRUE);
+        }
+        Lit probe = mkLit(v, likely_true); /* If likely_true, probe ~v (sign=1); else probe v (sign=0) */
+        uint32_t root_trail = s->trail_size;
+        s->decision_level = 1;
+        s->trail_lims[1] = root_trail;
+        s->values[v] = (uint8_t)(2u - sign(probe));
+        s->vars[v].level = 1;
+        s->vars[v].reason = INVALID_CLAUSE;
+        s->binary_reasons[v] = LIT_UNDEF;
+        s->vars[v].trail_pos = root_trail;
+        s->trail[s->trail_size++].lit = probe;
+
+        CRef confl = solver_propagate(s);
+        solver_backtrack(s, 0);
+        if (s->error || s->interrupted || s->work >= end_work) break;
+        if (confl != INVALID_CLAUSE) {
+            Lit unit = neg(probe);
+            proof_add_clause(s, &unit, 1);
+            if (s->error || !enqueue_root_unit(s, unit) || !root_propagate(s)) {
+                unsat = true; break;
+            }
+        }
+    }
+
+    s->opts.chrono = saved_chrono;
+    s->opts.phase_saving = saved_phase;
+    s->work_limit = saved_wl;
+    free(cands);
+    return !unsat && !s->error;
+}
+
+/* =====================================================================
  * Pass 7B: Transitive Reduction of the Binary Implication Graph
  *
  * Deletes transitively redundant binary clauses (RUP-valid!) and catches
@@ -2394,9 +2634,178 @@ static bool inproc_sweep(Solver *s, uint64_t tick_budget) {
 
     uint64_t end_work = s->work + tick_budget;
     uint32_t env_count = 0;
-    const uint32_t MAX_ENVS = 32;
+    const uint32_t MAX_ENVS = 40;
     bool unsat = false, added_any = false;
     uint32_t seed_rng = s->random_state ^ (uint32_t)(s->inprocess_rounds * 2654435761u + 13u);
+
+    /* Phase A: Global Gate-DAG 64-bit random simulation for cross-cone equivalence
+     * discovery (key for miters & multiplier equivalence where cones are >5 hops apart). */
+    if (nv <= 50000 && s->num_clauses <= 150000 && s->work < end_work) {
+        typedef struct { Var out; Lit a, b; uint8_t kind; /* 1=AND, 2=XOR */ uint8_t out_neg; } SimGate;
+        SimGate *sg = calloc((size_t)nv + 1u, sizeof *sg);
+        uint32_t *indeg = calloc((size_t)nv + 1u, sizeof *indeg);
+        if (sg && indeg) {
+            uint32_t n_sg = 0;
+            /* Fast extraction of 2-input AND gates (out <-> a & b) from ternary clauses. */
+            for (uint32_t i = 0; i < s->num_clauses; ++i) {
+                CRef cr = s->clauses[i];
+                if (cr == INVALID_CLAUSE || clause_deleted(s->arena, cr)) continue;
+                if (CLAUSE_SIZE(s->arena, cr) != 3) continue;
+                const Lit *ls = CLAUSE_LITS(s->arena, cr);
+                if (s->values[var(ls[0])] != UNDEF || s->values[var(ls[1])] != UNDEF ||
+                    s->values[var(ls[2])] != UNDEF) continue;
+                for (int oi = 0; oi < 3; ++oi) {
+                    Lit out = ls[oi];
+                    Var ov = var(out);
+                    if (sg[ov].kind) continue;
+                    Lit a = neg(ls[(oi + 1) % 3]);
+                    Lit b = neg(ls[(oi + 2) % 3]);
+                    if (has_binary_watch(s, neg(out), a) && has_binary_watch(s, neg(out), b)) {
+                        sg[ov] = (SimGate){ov, a, b, 1u, (uint8_t)sign(out)};
+                        n_sg++;
+                        break;
+                    }
+                }
+            }
+            if (n_sg >= 16u) {
+                /* Build fanout CSR for topological 64-bit bit-parallel simulation. */
+                uint32_t *fhead = calloc((size_t)nv + 2u, sizeof *fhead);
+                uint64_t *gsig = malloc(((size_t)nv + 1u) * sizeof *gsig);
+                Var *tq = malloc(((size_t)nv + 1u) * sizeof *tq);
+                if (fhead && gsig && tq) {
+                    for (Var v = 1; v <= nv; ++v) {
+                        if (sg[v].kind) {
+                            fhead[var(sg[v].a) + 1u]++;
+                            fhead[var(sg[v].b) + 1u]++;
+                            indeg[v] = 2u;
+                        }
+                    }
+                    for (Var v = 1; v <= nv + 1u; ++v) fhead[v] += fhead[v - 1u];
+                    uint32_t *fcur = malloc(((size_t)nv + 2u) * sizeof *fcur);
+                    Var *fedge = malloc((size_t)(fhead[nv + 1u] ? fhead[nv + 1u] : 1u) * sizeof *fedge);
+                    if (fcur && fedge) {
+                        memcpy(fcur, fhead, ((size_t)nv + 2u) * sizeof *fcur);
+                        for (Var v = 1; v <= nv; ++v) {
+                            if (sg[v].kind) {
+                                fedge[fcur[var(sg[v].a)]++] = v;
+                                fedge[fcur[var(sg[v].b)]++] = v;
+                            }
+                        }
+                        uint32_t tqh = 0, tqt = 0;
+                        for (Var v = 1; v <= nv; ++v) {
+                            uint64_t rlo = bsat_random(&seed_rng);
+                            uint64_t rhi = bsat_random(&seed_rng);
+                            gsig[v] = (rhi << 32) | rlo;
+                            if (indeg[v] == 0) tq[tqt++] = v;
+                        }
+                        while (tqh < tqt) {
+                            Var u = tq[tqh++];
+                            for (uint32_t ei = fhead[u]; ei < fhead[u + 1u]; ++ei) {
+                                Var w = fedge[ei];
+                                if (--indeg[w] == 0) {
+                                    uint64_t sa = sign(sg[w].a) ? ~gsig[var(sg[w].a)] : gsig[var(sg[w].a)];
+                                    uint64_t sb = sign(sg[w].b) ? ~gsig[var(sg[w].b)] : gsig[var(sg[w].b)];
+                                    uint64_t res = (sg[w].kind == 1u) ? (sa & sb) : (sa ^ sb);
+                                    gsig[w] = sg[w].out_neg ? ~res : res;
+                                    tq[tqt++] = w;
+                                }
+                            }
+                        }
+                        /* Hash gate outputs by canonical 64-bit signature to find cross-cone pairs! */
+                        size_t shcap = 64u;
+                        while (shcap < (size_t)n_sg * 2u) shcap <<= 1;
+                        Var *sht = calloc(shcap, sizeof *sht);
+                        if (sht) {
+                            uint32_t cross_tried = 0;
+                            for (Var v = 1; v <= nv && cross_tried < 12u && s->work < end_work &&
+                                                !unsat && !s->error && !s->interrupted; ++v) {
+                                if (!sg[v].kind || s->values[v] != UNDEF) continue;
+                                uint64_t sv = gsig[v];
+                                if (sv == 0 || sv == ~UINT64_C(0)) continue;
+                                uint64_t canon = (sv & 1u) ? ~sv : sv;
+                                size_t pos = (size_t)((canon ^ (canon >> 33)) * UINT64_C(0xff51afd7ed558ccd)) & (shcap - 1u);
+                                Var partner = 0;
+                                for (;;) {
+                                    if (!sht[pos]) { sht[pos] = v; break; }
+                                    Var u = sht[pos];
+                                    uint64_t su = gsig[u];
+                                    if (su == sv || su == ~sv) { partner = u; break; }
+                                    pos = (pos + 1u) & (shcap - 1u);
+                                }
+                                if (!partner || s->values[partner] != UNDEF) continue;
+                                bool opp = (gsig[partner] != gsig[v]);
+                                Lit ga = mkLit(partner, false), gb = mkLit(v, opp);
+                                if (has_binary_watch(s, neg(ga), gb) && has_binary_watch(s, neg(gb), ga)) continue;
+
+                                /* Build dual-cone Kitten environment seeded from BOTH partner and v! */
+                                cross_tried++;
+                                k_init(k, bsat_random(&seed_rng));
+                                k->nv = 2;
+                                k->l2g[1] = partner; g2l[partner] = 1;
+                                k->l2g[2] = v;       g2l[v] = 2;
+                                uint32_t n_ucls = 0, qh2 = 1;
+                                while (qh2 <= k->nv && n_ucls < KITTEN_MAX_ORIG) {
+                                    Var cur_v = k->l2g[qh2++];
+                                    uint32_t ob = vhead[cur_v], oe = vhead[cur_v + 1u];
+                                    if (oe - ob > 48u && qh2 > 3u) continue;
+                                    for (uint32_t oi = ob; oi < oe && n_ucls < KITTEN_MAX_ORIG; ++oi) {
+                                        uint32_t ci = vocc[oi];
+                                        if (cls_used[ci]) continue;
+                                        CRef cr = s->clauses[ci];
+                                        if (cr == INVALID_CLAUSE || clause_deleted(s->arena, cr)) continue;
+                                        uint32_t sz = CLAUSE_SIZE(s->arena, cr);
+                                        const Lit *ls = CLAUSE_LITS(s->arena, cr);
+                                        uint32_t need_new = 0; bool has_asgn = false;
+                                        for (uint32_t j = 0; j < sz; ++j) {
+                                            Var u2 = var(ls[j]);
+                                            if (s->values[u2] != UNDEF) { has_asgn = true; break; }
+                                            if (!g2l[u2]) need_new++;
+                                        }
+                                        if (has_asgn || k->nv + need_new > KITTEN_MAX_VARS) continue;
+                                        uint16_t klits[12];
+                                        for (uint32_t j = 0; j < sz; ++j) {
+                                            Var u2 = var(ls[j]);
+                                            uint16_t lv = g2l[u2];
+                                            if (!lv) { lv = (uint16_t)(++k->nv); g2l[u2] = lv; k->l2g[lv] = u2; }
+                                            klits[j] = (uint16_t)((lv << 1) | sign(ls[j]));
+                                        }
+                                        cls_used[ci] = 1;
+                                        used_cls_list[n_ucls++] = ci;
+                                        if (!k_add_clause(k, klits, sz, false)) break;
+                                    }
+                                }
+                                k->num_orig = k->num_cls;
+                                k->proof_emitted = k->num_cls;
+                                uint16_t ka = (uint16_t)(1u << 1);
+                                uint16_t kb = (uint16_t)((2u << 1) | (opp ? 1u : 0u));
+                                uint16_t a1[2] = {ka, (uint16_t)(kb ^ 1u)};
+                                uint16_t a2[2] = {(uint16_t)(ka ^ 1u), kb};
+                                int r1 = has_binary_watch(s, neg(ga), gb) ? -1 : k_solve(k, a1, 2, 128, false, &s->work);
+                                int r2 = (r1 < 0) ? (has_binary_watch(s, neg(gb), ga) ? -1 : k_solve(k, a2, 2, 128, false, &s->work)) : 0;
+                                if (r1 < 0 && r2 < 0) {
+                                    k_flush_proof_lemmas(s, k);
+                                    if (!add_rup_binary(s, neg(ga), gb) || !add_rup_binary(s, neg(gb), ga)) {
+                                        /* s->error set inside add_rup_binary */
+                                    } else {
+                                        added_any = true;
+                                    }
+                                }
+                                if (k->oom) s->error = true;
+                                if (!unsat && !s->error) k_delete_proof_lemmas(s, k);
+                                for (uint32_t i = 0; i < n_ucls; ++i) cls_used[used_cls_list[i]] = 0;
+                                for (uint32_t i = 1; i <= k->nv; ++i) g2l[k->l2g[i]] = 0;
+                                k_free(k);
+                            }
+                            free(sht);
+                        }
+                    }
+                    free(fcur); free(fedge);
+                }
+                free(fhead); free(gsig); free(tq);
+            }
+        }
+        free(sg); free(indeg);
+    }
 
     /* Rotate starting variable across inprocessing rounds so all cones get swept. */
     uint32_t start_v = (s->inprocess_rounds > 1 && nv > 1) ? (1u + (bsat_random(&seed_rng) % nv)) : 1u;
@@ -3135,6 +3544,16 @@ bool solver_inprocess(Solver *s, bool preprocessing) {
         s->work_limit = 0;
         if (s->error || s->interrupted || s->result == FALSE) goto finish;
         if (!root_propagate(s)) goto finish;
+    }
+
+    /* 2c. N-ary AND gate congruence closure (3..8 inputs, 100% RUP-verified) */
+    if ((preprocessing || (s->inprocess_rounds & 3) == 1) && !solver_budget_exhausted(s)) {
+        if (!inproc_nary_congruence(s, base_budget / 8)) goto finish;
+    }
+
+    /* 2d. Model-guided global backbone extraction on later rounds (100% RUP-verified) */
+    if (!preprocessing && (s->inprocess_rounds & 1) == 1 && s->opts.probing && !solver_budget_exhausted(s)) {
+        if (!inproc_backbone(s, base_budget / 8)) goto finish;
     }
 
     /* 3. In-place Tarjan SCC equivalence substitution */

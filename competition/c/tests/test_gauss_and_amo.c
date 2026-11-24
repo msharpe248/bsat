@@ -369,9 +369,41 @@ static void test_gauss_chain_stitching_and_subsumed_xor(void) {
     solver_free(s2);
 }
 
+static void test_nary_congruence_and_miter_sweep(void) {
+    /* 1. Two 5-input AND gates with identical inputs (z1 = a1&a2&a3&a4&a5,
+     *    z2 = a1&a2&a3&a4&a5) plus miter constraint z1 != z2 -> UNSAT in 0 conflicts
+     *    via N-ary AND congruence + Tarjan SCC (100% RUP-certified!). */
+    SolverOpts opts = default_opts();
+    opts.inprocess = true;
+    Solver *s = solver_new_with_opts(&opts);
+    Var a[5];
+    for (int i = 0; i < 5; ++i) a[i] = solver_new_var(s);
+    Var z1 = solver_new_var(s), z2 = solver_new_var(s);
+    Var outs[2] = {z1, z2};
+    for (int g = 0; g < 2; ++g) {
+        Lit big[6];
+        big[0] = mkLit(outs[g], false);
+        for (int i = 0; i < 5; ++i) {
+            big[i + 1] = mkLit(a[i], true);
+            Lit b[2] = {mkLit(outs[g], true), mkLit(a[i], false)};
+            solver_add_clause(s, b, 2);
+        }
+        solver_add_clause(s, big, 6);
+    }
+    /* Assert z1 != z2: (z1 | z2) and (~z1 | ~z2). */
+    Lit d1[2] = {mkLit(z1, false), mkLit(z2, false)};
+    Lit d2[2] = {mkLit(z1, true), mkLit(z2, true)};
+    solver_add_clause(s, d1, 2);
+    solver_add_clause(s, d2, 2);
+    assert(solver_solve(s) == FALSE);
+    assert(s->stats.conflicts == 0);
+    solver_free(s);
+}
+
 int main(void) {
     test_gauss_mixed_sat_and_unsat();
     test_gauss_chain_stitching_and_subsumed_xor();
+    test_nary_congruence_and_miter_sweep();
     test_amo_cliques_sat_and_unsat();
     test_sbva_arbitrary_length_sat_and_unsat();
     test_lit_values_external_mutation_safety();

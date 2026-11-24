@@ -102,8 +102,8 @@ competition/
 | Feature | C | Python | Notes |
 |---------|---|--------|-------|
 | Failed Literal Probing, HBR & Intersection | ✅ | ✅ (probing) | Root-prioritized probing, HBR, and RUP-certified double-lookahead backbone units |
-| Tarjan SCC & Congruence Closure | ✅ | ❌ | In-place equivalence substitution + preprocessing & inprocessing AND/XOR/ITE congruence |
-| Mini-Kitten CDCL SAT Sweeping | ✅ | ❌ | Embedded local CDCL sweeper with 16-model partitioning & RUP proof projection |
+| Tarjan SCC & Congruence Closure | ✅ | ❌ | In-place SCC + 2-input AND/XOR/ITE & 3..8-input N-ary AND congruence (RUP-verified) |
+| Mini-Kitten CDCL SAT Sweeping & Backbone | ✅ | ❌ | Global 64-bit gate-DAG simulation + cross-cone Kitten sweeping + model-guided backbone (RUP) |
 | Gate-Aware BVE & SSR/Subsumption | ✅ | ❌ | Min-degree cascading BVE (AND/XOR/ITE) + 64-bit bloom SSR |
 | Prefix-Sharing Vivification & Transitive Reduction | ✅ | ❌ | O(n) prefix vivification + post-BVE binary transitive reduction |
 | Dynamic GF(2) XOR Gaussian Elimination | ✅ | ❌ | 2..7-var XOR + subsumed recovery + Tseitin chain stitching + Bird/Han-Jiang live matrices (non-proof) |

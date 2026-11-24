@@ -96,8 +96,10 @@ Default one-shot solving uses:
   `--inprocess-interval 10000`): Root cleanup, GF(2) XOR extraction & matrix
   initialization, failed-literal probing + HBR + double-lookahead probing
   intersection (RUP-certified backbone units), periodic gate congruence closure
-  (`solver_congruence_inproc`), in-place Tarjan SCC equivalence substitution,
-  embedded Mini-Kitten CDCL SAT sweeping, forward subsumption & SSR, gate-aware
+  (`solver_congruence_inproc` plus 3..8-input N-ary AND gate congruence),
+  model-guided global backbone extraction, in-place Tarjan SCC equivalence
+  substitution, embedded Mini-Kitten CDCL SAT sweeping with global 64-bit
+  gate-DAG simulation for cross-cone equivalences, forward subsumption & SSR, gate-aware
   BVE (AND/XOR/ITE) with model reconstruction, post-BVE binary transitive
   reduction, O(n) prefix-sharing vivification, and periodic WalkSAT phase
   seeding, plus preprocessing lucky-phase check, bounded congruence closure,
