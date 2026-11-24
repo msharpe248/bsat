@@ -153,11 +153,12 @@ cython_debug/
 .DS_Store
 Thumbs.db
 
-# Dataset - ignore large CNF files but keep directory structure and docs
+# Dataset - ignore large CNF files and on-demand fetched corpora
 dataset/**/*.cnf
 dataset/**/*.cnf.xz
 dataset/**/*.tar.gz
 dataset/**/*.zip
+dataset/corpora/
 
 # Ignore temporary/auto-generated result directories (except named ones we want to keep)
 dataset/results/results-*/

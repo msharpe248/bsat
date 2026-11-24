@@ -199,13 +199,21 @@ bool solver_break_symmetries(Solver *s, uint64_t tick_budget) {
         return true;
     }
 
+    if (solver_propagate(s) != INVALID_CLAUSE) {
+        s->base_unsat = true;
+        s->result = FALSE;
+        return false;
+    }
+
     const uint32_t orig_nv = s->num_vars;
     SymState st;
     memset(&st, 0, sizeof st);
     st.s = s;
     st.end_work = s->work + tick_budget;
 
-    /* Count live irredundant clauses with all literals UNDEF. */
+    /* Count live unsatisfied irredundant clauses (stripping level-0 FALSE literals!).
+     * Never skip an unsatisfied clause containing a falsified root literal — doing so
+     * would omit active constraints from automorphism verification! */
     uint32_t live_cnt = 0;
     uint32_t max_len = 0;
     uint64_t total_occ = 0;
@@ -213,16 +221,23 @@ bool solver_break_symmetries(Solver *s, uint64_t tick_budget) {
         CRef cr = s->clauses[i];
         if (cr == INVALID_CLAUSE || clause_deleted(s->arena, cr)) continue;
         uint32_t sz = CLAUSE_SIZE(s->arena, cr);
-        if (sz < 2) continue;
         const Lit *ls = CLAUSE_LITS(s->arena, cr);
-        bool skip = false;
+        bool sat = false;
+        uint32_t kept = 0;
         for (uint32_t j = 0; j < sz; ++j) {
-            if (s->values[var(ls[j])] != UNDEF) { skip = true; break; }
+            uint8_t val = s->values[var(ls[j])];
+            if (val == UNDEF) kept++;
+            else if (val == (uint8_t)(2u - sign(ls[j]))) { sat = true; break; }
         }
-        if (skip) continue;
+        if (sat) continue;
+        if (kept < 2) {
+            /* Unpropagated unit/empty clause shouldn't exist after solver_propagate,
+             * bail out safely without breaking symmetry. */
+            return true;
+        }
         live_cnt++;
-        if (sz > max_len) max_len = sz;
-        total_occ += sz;
+        if (kept > max_len) max_len = kept;
+        total_occ += kept;
     }
     if (live_cnt < 8 || total_occ > 2000000ULL) return true;
 
@@ -261,22 +276,24 @@ bool solver_break_symmetries(Solver *s, uint64_t tick_budget) {
         CRef cr = s->clauses[i];
         if (cr == INVALID_CLAUSE || clause_deleted(s->arena, cr)) continue;
         uint32_t sz = CLAUSE_SIZE(s->arena, cr);
-        if (sz < 2) continue;
         const Lit *ls = CLAUSE_LITS(s->arena, cr);
-        bool skip = false;
+        bool sat = false;
+        uint32_t kept = 0;
         for (uint32_t j = 0; j < sz; ++j) {
-            if (s->values[var(ls[j])] != UNDEF) { skip = true; break; }
+            uint8_t val = s->values[var(ls[j])];
+            if (val == UNDEF) st.tmp_lits[kept++] = ls[j];
+            else if (val == (uint8_t)(2u - sign(ls[j]))) { sat = true; break; }
         }
-        if (skip) continue;
+        if (sat || kept < 2) continue;
 
         Lit *dst = lit_pool + pool_off;
-        pool_off += sz;
-        memcpy(dst, ls, (size_t)sz * sizeof(Lit));
-        sym_sort_lits(dst, sz);
-        uint64_t h = sym_hash_clause(dst, sz);
+        pool_off += kept;
+        memcpy(dst, st.tmp_lits, (size_t)kept * sizeof(Lit));
+        sym_sort_lits(dst, kept);
+        uint64_t h = sym_hash_clause(dst, kept);
 
         uint32_t cid = st.n_cls++;
-        st.cls[cid] = (SymClause){dst, sz, h};
+        st.cls[cid] = (SymClause){dst, kept, h};
 
         /* Insert into exact clause hash set (deduplicating identical clauses). */
         size_t pos = (size_t)(h & (st.ht_cap - 1u));
@@ -287,17 +304,17 @@ bool solver_break_symmetries(Solver *s, uint64_t tick_budget) {
             }
             if (st.ht[pos].hash == h) {
                 const SymClause *ex = &st.cls[st.ht[pos].cidx - 1u];
-                if (ex->size == sz && memcmp(ex->lits, dst, (size_t)sz * sizeof(Lit)) == 0) break;
+                if (ex->size == kept && memcmp(ex->lits, dst, (size_t)kept * sizeof(Lit)) == 0) break;
             }
             pos = (pos + 1u) & (st.ht_cap - 1u);
         }
 
-        for (uint32_t j = 0; j < sz; ++j) {
+        for (uint32_t j = 0; j < kept; ++j) {
             Var v = var(dst[j]);
             st.vhead[v + 1u]++;
             if (sign(dst[j])) neg_deg[v]++;
             else pos_deg[v]++;
-            var_sig_acc[v] += sym_mix(((uint64_t)sz << 1) | sign(dst[j]));
+            var_sig_acc[v] += sym_mix(((uint64_t)kept << 1) | sign(dst[j]));
         }
     }
 

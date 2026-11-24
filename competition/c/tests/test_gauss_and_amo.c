@@ -494,6 +494,39 @@ static void test_symmetry_breaking_php_and_sat(void) {
     assert(solver_solve(ss) == TRUE);
     assert(solver_check_model(ss));
     solver_free(ss);
+
+    /* 3. Regression: clauses containing a level-0 FALSE literal remain active and
+     *    must NOT be skipped during symmetry automorphism verification!
+     *    Here u=FALSE reduces (u | a | ~b) to (a | ~b). Combined with (a | b) and
+     *    (~a | ~b), the unique model is a=TRUE, b=FALSE. Skipping (u | a | ~b) would
+     *    falsely think a<->b is a symmetry and emit (~a | b), turning SAT into UNSAT! */
+    Solver *sr = solver_new_with_opts(&opts);
+    Var u = solver_new_var(sr);
+    Var a = solver_new_var(sr);
+    Var b = solver_new_var(sr);
+    Var pad1 = solver_new_var(sr);
+    Var pad2 = solver_new_var(sr);
+    Lit lu = mkLit(u, true);
+    solver_add_clause(sr, &lu, 1); /* u = FALSE at level 0 */
+    Lit asym[3] = {mkLit(u, false), mkLit(a, false), mkLit(b, true)};
+    solver_add_clause(sr, asym, 3); /* reduces to (a | ~b) */
+    Lit neq1[2] = {mkLit(a, false), mkLit(b, false)};
+    Lit neq2[2] = {mkLit(a, true), mkLit(b, true)};
+    solver_add_clause(sr, neq1, 2);
+    solver_add_clause(sr, neq2, 2);
+    /* Pad with symmetric clauses so live_cnt >= 8 triggers solver_break_symmetries. */
+    for (int k = 0; k < 2; ++k) {
+        Lit p1[3] = {mkLit(a, k != 0), mkLit(b, k != 0), mkLit(pad1, false)};
+        Lit p2[3] = {mkLit(a, k != 0), mkLit(b, k != 0), mkLit(pad2, false)};
+        Lit p3[3] = {mkLit(a, k != 0), mkLit(b, k != 0), mkLit(pad1, true)};
+        solver_add_clause(sr, p1, 3);
+        solver_add_clause(sr, p2, 3);
+        solver_add_clause(sr, p3, 3);
+    }
+    assert(solver_solve(sr) == TRUE);
+    assert(solver_check_model(sr));
+    assert(solver_model_value(sr, a) == TRUE && solver_model_value(sr, b) == FALSE);
+    solver_free(sr);
 }
 
 static void test_frozen_variable_inprocessing(void) {

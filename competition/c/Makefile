@@ -378,3 +378,16 @@ $(DIAGNOSTIC_LIBRARY): tests/query_diagnostics.c src/bsat.c $(filter-out build/l
 	$(CC) $(CFLAGS) -fPIC -fvisibility=hidden $(subst libbsat_,libquery_diagnostics_,$(SHARED_FLAGS)) -o $@ $< $(filter %.o,$^) -lm
 query-diagnostics: $(DIAGNOSTIC_LIBRARY)
 .PHONY: query-diagnostics
+
+# On-demand wide benchmark & proving suites (not part of 'make test' or CI).
+PACK ?= satlib-core
+CORPUS ?= synthetic-hard
+TIMEOUT ?= 10
+WORKERS ?= 4
+.PHONY: wide-list wide-fetch wide-test
+wide-list:
+	python3 scripts/fetch_corpora.py list
+wide-fetch:
+	python3 scripts/fetch_corpora.py fetch $(PACK)
+wide-test: $(TARGET)
+	python3 scripts/suite_runner.py --corpus $(CORPUS) --timeout $(TIMEOUT) --workers $(WORKERS) --solver bsat=$(TARGET)

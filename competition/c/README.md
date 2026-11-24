@@ -31,6 +31,32 @@ assumption sequences, clause reduction, locked reasons, and garbage collection.
 The Python validator uses its own truth-table oracle, model parser and RUP
 checker, tries option combinations, and minimizes failing formulas.
 
+### On-demand wide benchmark & proving suites (hundreds to thousands of problems)
+
+For wider on-demand testing beyond the fast check-in tests, use the corpus
+fetcher and parallel verification runner (`scripts/fetch_corpora.py` and
+`scripts/suite_runner.py`; downloaded corpora live in gitignored
+`dataset/corpora/`):
+
+```sh
+cd competition/c
+make wide-list                                  # List available packs (offline, SATLIB, SAT Comp 2023-2025)
+make wide-fetch PACK="synthetic-hard satlib-core"
+make wide-test CORPUS=satlib-core TIMEOUT=10 WORKERS=4
+
+# Fetch size-filtered SAT Competition 2024 instances with known SAT/UNSAT labels:
+python3 scripts/fetch_corpora.py fetch satcomp-2024 --limit 60 --max-mb 2
+
+# Compare single-thread vs 4-thread portfolio side by side with full SAT model & ground-truth checks:
+python3 scripts/suite_runner.py --corpus satcomp-2024 --timeout 20 --workers 2 \
+    --solver bsat=bin/bsat --solver "bsat-j4=bin/bsat -j 4" --output /tmp/wide_results.json
+```
+
+Every SAT answer is independently verified against all clauses of the original
+CNF, every answer is checked against known ground truth (and cross-solver
+agreement when comparing multiple solvers), and optional `--proof --checker
+/path/to/drat-trim` enables external DRAT proof verification.
+
 ## Run
 
 ```sh

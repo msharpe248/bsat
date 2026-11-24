@@ -99,8 +99,19 @@ cd ../research/benchmarks
 ./create_small_test_set.py
 ```
 
-### Download competition benchmarks:
-See `sat_competition2025/README.md` for download instructions.
+### Download competition benchmarks & wide SATLIB suites (on-demand)
+Use the on-demand corpus fetcher and parallel verification runner (stores
+downloaded suites in gitignored `dataset/corpora/`):
+
+```bash
+python3 competition/c/scripts/fetch_corpora.py list
+python3 competition/c/scripts/fetch_corpora.py fetch synthetic-hard satlib-core
+python3 competition/c/scripts/fetch_corpora.py fetch satcomp-2024 --limit 60 --max-mb 2
+python3 competition/c/scripts/suite_runner.py --corpus satlib-core --timeout 10 --workers 4
+```
+
+See `sat_competition2025/README.md` for background on the full 54 GB SAT
+Competition 2025 archive.
 
 ## Running Benchmarks
 
