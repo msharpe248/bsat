@@ -1827,7 +1827,7 @@ bool solver_decide(Solver* s) {
     bool sign = s->opts.phase_saving ? !s->vars[next].polarity : false;
     if (s->opts.alternating && s->stable_mode && s->rephase.best_phase) {
         uint8_t tp = s->rephase.target_phase ? s->rephase.target_phase[next] : UNDEF;
-        if (tp == UNDEF) tp = s->rephase.best_phase[next];
+        if (tp == UNDEF && s->rephase.rephase_count == 0) tp = s->rephase.best_phase[next];
         if (tp != UNDEF) sign = (tp == FALSE);
     }
     if (s->opts.random_phase && (bsat_random(&s->random_state) / 4294967296.0) < s->opts.random_phase_prob)
@@ -1873,12 +1873,11 @@ void solver_maybe_save_best_phases(Solver* s) {
         s->rephase.best_prefix_valid = true;
     }
 
-    // 2. Update active Stable-mode target phase (reset on EVERY rephase)
-    if (s->rephase.target_phase && s->trail_size > s->rephase.target_trail_size) {
+    // 2. Update active Stable-mode target phase (reset height on EVERY rephase,
+    //    never clearing unassigned entries so rephased/walked target phases persist!)
+    if (s->rephase.target_phase && (!s->opts.alternating || s->stable_mode) &&
+        s->trail_size > s->rephase.target_trail_size) {
         uint32_t first = s->rephase.target_prefix_valid ? s->rephase.target_trail_size : 0;
-        if (!s->rephase.target_prefix_valid) {
-            memset(s->rephase.target_phase, 0, (s->num_vars+1)*sizeof *s->rephase.target_phase);
-        }
         for (uint32_t i = first; i < s->trail_size; i++) {
             Lit lit = s->trail[i].lit;
             Var v = var(lit);
@@ -1935,7 +1934,8 @@ static void solver_rephase(Solver* s) {
 
     s->rephase.conflicts_since = 0;
     s->rephase.rephase_count++;
-    uint64_t interval = (uint64_t)s->opts.rephase_interval + 100ULL * s->rephase.rephase_count;
+    uint64_t interval = (uint64_t)s->opts.rephase_interval * (1ULL + s->rephase.rephase_count);
+    if (interval > 20000ULL) interval = 20000ULL;
     s->next_rephase = s->stats.conflicts + interval;
 
     if (IS_VERBOSE(s)) {
@@ -2708,6 +2708,8 @@ static uint32_t solver_eliminate_blocked_clauses_account_impl(Solver *s) {
 static int failed_literal_probing(Solver *s);
 static int failed_literal_probing_account_impl(Solver *s) {
     int found = 0;
+    bool save_phases = s->opts.phase_saving;
+    s->opts.phase_saving = false;
     for (Var v = 1; v <= s->num_vars && !solver_budget_exhausted(s); ++v) {
         if (s->values[v] != UNDEF || elim_is_eliminated(s, v)) continue;
         for (unsigned polarity = 0; polarity < 2; ++polarity) {
@@ -2719,11 +2721,15 @@ static int failed_literal_probing_account_impl(Solver *s) {
                 /* Root propagation is mandatory even after the probing budget. */
                 uint64_t budget = s->work_limit; s->work_limit = 0;
                 CRef conflict = solver_propagate(s); s->work_limit = budget;
-                if (conflict != INVALID_CLAUSE) return -1;
+                if (conflict != INVALID_CLAUSE) {
+                    s->opts.phase_saving = save_phases;
+                    return -1;
+                }
                 break;
             }
         }
     }
+    s->opts.phase_saving = save_phases;
     return found;
 }
 
@@ -3075,7 +3081,7 @@ static lbool solve_internal_account_impl(Solver *s, const Lit *assumps, uint32_t
                 (s->num_vars <= 5000 && (uint64_t)s->num_clauses >= (uint64_t)s->num_vars * 8ULL)) {
                 double started = solver_account_begin(s);
                 uint32_t max_aux = MIN(2048u, MAX(64u, s->num_vars));
-                if (!solver_sbva(s, 20000000ULL, max_aux, 2u)) {
+                if (!solver_sbva(s, 20000000ULL, max_aux, 4u)) {
                     solver_account_end(s, ACCOUNT_PREPROCESS, started);
                     return UNDEF;
                 }
@@ -3087,12 +3093,18 @@ static lbool solve_internal_account_impl(Solver *s, const Lit *assumps, uint32_t
     if (!n_assumps && !s->proof_journal && !s->opts.reuse_learnts && s->opts.inprocess &&
         s->opts.preprocess_budget && !s->opts.local_search &&
         !solver_budget_exhausted(s)) {
+        uint64_t prep_start = s->work;
         if (!solver_inprocess(s, true)) {
             if (s->error || s->interrupted) return UNDEF;
             s->base_unsat = true;
             return FALSE;
         }
-        s->next_inprocess_ticks = s->work + s->inprocess_ticks_span;
+        uint64_t prep_spent = (s->work > prep_start) ? (s->work - prep_start) : 0;
+        uint64_t init_span = MAX(5000000ULL, (uint64_t)s->num_clauses * 80ULL);
+        if (prep_spent * 4ULL > init_span) init_span = prep_spent * 4ULL;
+        if (init_span > 80000000ULL) init_span = 80000000ULL;
+        s->inprocess_ticks_span = init_span;
+        s->next_inprocess_ticks = s->work + init_span;
     }
     if (s->error || s->interrupted) return UNDEF;
     if (s->result == FALSE) {s->base_unsat=true;return FALSE;}
@@ -3282,28 +3294,34 @@ static lbool solve_internal_account_impl(Solver *s, const Lit *assumps, uint32_t
                 }
                 if (!n_assumps && !s->proof_journal && !s->opts.reuse_learnts && s->opts.inprocess &&
                     !s->opts.factor && !s->opts.local_search &&
-                    (s->work >= s->next_inprocess_ticks ||
-                     s->stats.conflicts >= s->last_vivify + s->opts.inprocess_interval)) {
+                    s->work >= s->next_inprocess_ticks) {
                     s->last_vivify = s->stats.conflicts;
                     s->lit_values_live = false;
+                    uint64_t inproc_start = s->work;
                     if (!solver_inprocess(s, false)) {
                         if (s->error || s->interrupted) break;
                         s->base_unsat = true; result = FALSE; break;
                     }
                     sync_lit_values(s);
+                    uint64_t spent = (s->work > inproc_start) ? (s->work - inproc_start) : 0;
                     uint64_t next_span = s->inprocess_ticks_span + (s->inprocess_ticks_span >> 1);
-                    if (next_span > 50000000ULL) next_span = 50000000ULL;
+                    if (spent * 5ULL > next_span) next_span = spent * 5ULL;
+                    if (next_span > 250000000ULL) next_span = 250000000ULL;
                     s->inprocess_ticks_span = next_span;
                     s->next_inprocess_ticks = s->work + next_span;
                     if (s->qhead < s->trail_size) continue;
-                } else {
+                } else if ((n_assumps || s->proof_journal || s->opts.reuse_learnts ||
+                            s->opts.factor || s->opts.local_search) &&
+                           s->opts.inprocess && s->opts.preprocess_budget &&
+                           s->stats.conflicts >= s->last_vivify + s->opts.inprocess_interval) {
                     s->lit_values_live = false;
                     if (!solver_simplify(s)) {s->base_unsat=true;result=FALSE;break;}
                     sync_lit_values(s);
                     if (s->qhead<s->trail_size) continue;
                 }
             }
-            if (s->opts.rephase && s->stats.conflicts >= s->next_rephase) {
+            if (s->opts.rephase && (!s->opts.alternating || s->stable_mode) &&
+                s->stats.conflicts >= s->next_rephase) {
                 if (!n_assumps && s->decision_level) {
                     solver_backtrack(s, 0);
                 }
