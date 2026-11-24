@@ -3748,10 +3748,10 @@ static bool inproc_sweep(Solver *s, uint64_t tick_budget) {
  * seed both saved polarities and Stable-mode target phases (best_phase).
  * ===================================================================== */
 
-static void inproc_walk_seed_phases(Solver *s, uint32_t max_flips, uint64_t tick_budget) {
-    if (!s->opts.phase_saving || !s->opts.rephase || !s->rephase.best_phase) return;
-    if (s->num_vars == 0 || s->num_vars > 250000 || s->num_clauses == 0 || s->num_clauses > 700000) return;
-    if (tick_budget == 0 || solver_budget_exhausted_now(s)) return;
+static bool inproc_walk_seed_phases(Solver *s, uint32_t max_flips, uint64_t tick_budget) {
+    if (!s->opts.phase_saving || !s->opts.rephase || !s->rephase.best_phase) return false;
+    if (s->num_vars == 0 || s->num_vars > 250000 || s->num_clauses == 0 || s->num_clauses > 700000) return false;
+    if (tick_budget == 0 || solver_budget_exhausted_now(s)) return false;
 
     uint32_t nv = s->num_vars;
     uint32_t nc = s->num_clauses;
@@ -3759,12 +3759,12 @@ static void inproc_walk_seed_phases(Solver *s, uint32_t max_flips, uint64_t tick
     for (Var v = 1; v <= nv; ++v) {
         if (s->values[v] == UNDEF && (!s->elim || !s->elim->eliminated[v])) live_vars++;
     }
-    if (live_vars == 0 || live_vars > 150000u) return;
+    if (live_vars == 0 || live_vars > 150000u) return false;
     for (uint32_t i = 0; i < nc; ++i) {
         CRef cr = s->clauses[i];
         if (cr != INVALID_CLAUSE && !clause_deleted(s->arena, cr)) live_cls++;
     }
-    if (live_cls == 0 || live_cls > 450000u) return;
+    if (live_cls == 0 || live_cls > 450000u) return false;
 
     uint64_t end_work = s->work + tick_budget;
 
@@ -3788,8 +3788,7 @@ static void inproc_walk_seed_phases(Solver *s, uint32_t max_flips, uint64_t tick
     uint32_t *occ_head = calloc((size_t)(2 * (nv + 1)) + 1, sizeof *occ_head);
     if (!assign || !best_assign || !sat_cnt || !unsat_list || !unsat_pos || !occ_head) {
         free(assign); free(best_assign); free(sat_cnt); free(unsat_list); free(unsat_pos); free(occ_head);
-        s->error = true;
-        return;
+        return false;
     }
 
     uint32_t nl = 2 * (nv + 1);
@@ -3809,8 +3808,7 @@ static void inproc_walk_seed_phases(Solver *s, uint32_t max_flips, uint64_t tick
     if (!occ_clauses || !cursor) {
         free(assign); free(best_assign); free(sat_cnt); free(unsat_list); free(unsat_pos);
         free(occ_head); free(occ_clauses); free(cursor);
-        s->error = true;
-        return;
+        return false;
     }
     memcpy(cursor, occ_head, (size_t)(nl + 1) * sizeof *cursor);
     for (uint32_t i = 0; i < nc; ++i) {
@@ -3930,13 +3928,18 @@ static void inproc_walk_seed_phases(Solver *s, uint32_t max_flips, uint64_t tick
         }
     }
 
-    /* Seed both saved polarities and target best_phase ONLY when ProbSAT found a
+    /* Seed both saved polarities and target phases ONLY when ProbSAT found a
      * genuinely low-energy basin (avoids scrambling initial phases on huge formulas). */
+    bool updated = false;
     if (best_unsat == 0 || (best_unsat < init_unsat && best_unsat <= live_cls / 20u)) {
+        updated = true;
         for (Var v = 1; v <= nv; ++v) {
             if (s->values[v] == UNDEF) {
                 bool pol = (best_assign[v] != 0);
                 s->vars[v].polarity = pol;
+                if (s->rephase.target_phase) {
+                    s->rephase.target_phase[v] = pol ? TRUE : FALSE;
+                }
                 if (best_unsat == 0 || s->rephase.best_phase[v] == UNDEF) {
                     s->rephase.best_phase[v] = pol ? TRUE : FALSE;
                 }
@@ -3946,6 +3949,12 @@ static void inproc_walk_seed_phases(Solver *s, uint32_t max_flips, uint64_t tick
 
     free(assign); free(best_assign); free(sat_cnt); free(unsat_list);
     free(unsat_pos); free(occ_head); free(occ_clauses);
+    return updated;
+}
+
+bool solver_walk_rephase(Solver *s, uint32_t max_flips, uint64_t tick_budget) {
+    if (!s || s->decision_level || s->error || s->interrupted || s->result == FALSE) return false;
+    return inproc_walk_seed_phases(s, max_flips, tick_budget);
 }
 
 /* =====================================================================

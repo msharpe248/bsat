@@ -32,4 +32,7 @@ bool solver_amo_cliques(struct Solver *s);
 /* Rebuild all watch lists cleanly from active clauses in s->clauses and s->learnts. */
 void solver_rebuild_watches(struct Solver *s);
 
+/* Bounded ProbSAT phase-seeding walk for Kissat-style rephasing. */
+bool solver_walk_rephase(struct Solver *s, uint32_t max_flips, uint64_t tick_budget);
+
 #endif // BSAT_INPROCESS_H

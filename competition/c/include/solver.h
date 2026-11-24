@@ -384,13 +384,16 @@ typedef struct Solver {
     FILE* proof_journal;      // Borrowed append-only RUP journal; no deletions
     uint64_t journal_bytes, journal_limit;
 
-    // Rephasing state (Kissat-style target phases)
+    // Rephasing state (Kissat-style separated best + target phases)
     struct {
-        uint8_t* best_phase;      // UNDEF/FALSE/TRUE target value for each variable
-        uint32_t best_trail_size; // Trail size when best assignment was saved
-        bool best_prefix_valid;  // Saved target is still a prefix of the current trail
-        uint32_t conflicts_since; // Conflicts since last rephase
-        uint32_t rephase_count;   // Number of rephases performed
+        uint8_t* best_phase;        // Global best trail assignment (UNDEF/FALSE/TRUE)
+        uint32_t best_trail_size;   // Trail size when best assignment was saved
+        bool best_prefix_valid;     // Saved best is still a prefix of the current trail
+        uint8_t* target_phase;      // Active Stable-mode target phases (reset on every rephase)
+        uint32_t target_trail_size; // Longest trail since last rephase
+        bool target_prefix_valid;   // Saved target is still a prefix of the current trail
+        uint32_t conflicts_since;   // Conflicts since last rephase
+        uint32_t rephase_count;     // Number of rephases performed
     } rephase;
 
     // Local search state

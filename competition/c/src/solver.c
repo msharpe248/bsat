@@ -541,6 +541,10 @@ Solver* solver_new_with_opts(const SolverOpts* opts) {
     // Initialize rephasing state
     s->rephase.best_phase = NULL;  // Allocated on demand in grow_var_arrays
     s->rephase.best_trail_size = 0;
+    s->rephase.best_prefix_valid = false;
+    s->rephase.target_phase = NULL;
+    s->rephase.target_trail_size = 0;
+    s->rephase.target_prefix_valid = false;
     s->rephase.conflicts_since = 0;
     s->rephase.rephase_count = 0;
 
@@ -586,6 +590,7 @@ void solver_free(Solver* s) {
     free(s->binary_reasons);
     free(s->restart.recent_lbds);  // Free Glucose sliding window buffer
     free(s->rephase.best_phase);   // Free rephasing best phase array
+    free(s->rephase.target_phase); // Free Stable-mode target phase array
 
     // Free local search state
     if (s->local_search.state) {
@@ -679,14 +684,18 @@ static bool grow_var_arrays(Solver* s, uint32_t new_capacity) {
     if (!new_binary_reasons) return false;
     s->binary_reasons = new_binary_reasons;
 
-    // Grow best phase array (for rephasing)
+    // Grow best and target phase arrays (for rephasing)
     if (s->opts.rephase) {
         uint8_t* new_best_phase = realloc(s->rephase.best_phase, alloc_size * sizeof *new_best_phase);
         if (!new_best_phase) return false;
         s->rephase.best_phase = new_best_phase;
-        // New variables have no known target phase.
+        uint8_t* new_target_phase = realloc(s->rephase.target_phase, alloc_size * sizeof *new_target_phase);
+        if (!new_target_phase) return false;
+        s->rephase.target_phase = new_target_phase;
+        // New variables have no known best/target phase.
         for (uint32_t i = s->var_capacity + 1; i <= new_capacity; i++) {
             s->rephase.best_phase[i] = UNDEF;
+            s->rephase.target_phase[i] = UNDEF;
         }
     }
 
@@ -815,6 +824,7 @@ void solver_backtrack(Solver* s, Level level) {
     if (level >= s->decision_level) return;
     uint32_t pos = s->trail_lims[level + 1];
     if (pos < s->rephase.best_trail_size) s->rephase.best_prefix_valid = false;
+    if (pos < s->rephase.target_trail_size) s->rephase.target_prefix_valid = false;
     if (s->opts.chrono) {
         uint32_t kept=pos;
         for (uint32_t i=pos;i<s->trail_size;++i) {
@@ -1812,8 +1822,11 @@ bool solver_decide(Solver* s) {
     }
 
     bool sign = s->opts.phase_saving ? !s->vars[next].polarity : false;
-    if (s->opts.alternating && s->stable_mode && s->rephase.best_phase && s->rephase.best_phase[next] != UNDEF)
-        sign = s->rephase.best_phase[next] == FALSE;
+    if (s->opts.alternating && s->stable_mode && s->rephase.best_phase) {
+        uint8_t tp = s->rephase.target_phase ? s->rephase.target_phase[next] : UNDEF;
+        if (tp == UNDEF) tp = s->rephase.best_phase[next];
+        if (tp != UNDEF) sign = (tp == FALSE);
+    }
     if (s->opts.random_phase && (bsat_random(&s->random_state) / 4294967296.0) < s->opts.random_phase_prob)
         sign = (bsat_random(&s->random_state) & 1) != 0;
 
@@ -1834,58 +1847,87 @@ bool solver_decide(Solver* s) {
  *********************************************************************/
 
 /**
- * Save current assignment as best if we've assigned more variables than ever before.
- * This tracks the assignment that got closest to a solution.
+ * Save current assignment as best/target if we've assigned more variables than
+ * the global best or current-epoch target high-water mark.
  */
 void solver_maybe_save_best_phases(Solver* s) {
     if (!s->opts.rephase || !s->rephase.best_phase) return;
 
-    // Only save if we've assigned more variables than the previous best
+    // 1. Update global best phase high-water mark (reset on rephase_best)
     if (s->trail_size > s->rephase.best_trail_size) {
         uint32_t first = s->rephase.best_prefix_valid ? s->rephase.best_trail_size : 0;
         if (!s->rephase.best_prefix_valid) {
             memset(s->rephase.best_phase, 0, (s->num_vars+1)*sizeof *s->rephase.best_phase);
             s->stats.target_cleared += (uint64_t)s->num_vars + 1;
         }
-        // Save the partial target assignment
         for (uint32_t i = first; i < s->trail_size; i++) {
             Lit lit = s->trail[i].lit;
             Var v = var(lit);
-            // Save polarity: true=positive, false=negative
             s->rephase.best_phase[v] = sign(lit) ? FALSE : TRUE;
         }
         s->stats.target_copied += s->trail_size - first;
         s->rephase.best_trail_size = s->trail_size;
         s->rephase.best_prefix_valid = true;
     }
+
+    // 2. Update active Stable-mode target phase (reset on EVERY rephase)
+    if (s->rephase.target_phase && s->trail_size > s->rephase.target_trail_size) {
+        uint32_t first = s->rephase.target_prefix_valid ? s->rephase.target_trail_size : 0;
+        if (!s->rephase.target_prefix_valid) {
+            memset(s->rephase.target_phase, 0, (s->num_vars+1)*sizeof *s->rephase.target_phase);
+        }
+        for (uint32_t i = first; i < s->trail_size; i++) {
+            Lit lit = s->trail[i].lit;
+            Var v = var(lit);
+            s->rephase.target_phase[v] = sign(lit) ? FALSE : TRUE;
+        }
+        s->rephase.target_trail_size = s->trail_size;
+        s->rephase.target_prefix_valid = true;
+    }
 }
 
 /**
- * Perform Kissat-style cycling rephasing: alternate best, original, inverted,
- * and flipped polarities, resetting the high-water target periodically so
- * search cannot stay trapped in a dead-end partial assignment.
+ * Perform Kissat-style cycling rephasing: B, W, I, B, W, O.
+ * Copies the rephased saved polarities directly into Stable-mode target_phase[]
+ * and resets target_trail_size so Stable mode immediately explores the new basin!
  */
 static void solver_rephase(Solver* s) {
     if (!s->opts.rephase || !s->rephase.best_phase) return;
 
     unsigned phase_kind = s->rephase.rephase_count % 6;
-    if (phase_kind == 0 || phase_kind == 2 || phase_kind == 4) {
-        // Copy best phases to saved polarities
+    if (phase_kind == 0 || phase_kind == 3) {
+        // B: Copy best phases to saved polarities, then reset best high-water mark
         for (Var v = 1; v <= s->num_vars; v++) {
             if (s->rephase.best_phase[v] != UNDEF)
                 s->vars[v].polarity = s->rephase.best_phase[v] == TRUE;
         }
-    } else if (phase_kind == 1) {
-        // Original (negative) phase
-        for (Var v = 1; v <= s->num_vars; v++) s->vars[v].polarity = false;
-    } else if (phase_kind == 3) {
-        // Inverted (positive) phase
-        for (Var v = 1; v <= s->num_vars; v++) s->vars[v].polarity = true;
-    } else {
-        // Flip saved polarities and reset stale high-water mark
-        for (Var v = 1; v <= s->num_vars; v++) s->vars[v].polarity = !s->vars[v].polarity;
         s->rephase.best_trail_size = 0;
         s->rephase.best_prefix_valid = false;
+    } else if (phase_kind == 1 || phase_kind == 4) {
+        // W: Bounded ProbSAT walk (falls back to flipping saved polarities if skipped)
+        bool walked = false;
+        if (!s->proof_journal && s->num_clauses >= 64 && !solver_budget_exhausted_now(s)) {
+            walked = solver_walk_rephase(s, 10000u, 15000000ULL);
+        }
+        if (!walked) {
+            for (Var v = 1; v <= s->num_vars; v++) s->vars[v].polarity = !s->vars[v].polarity;
+        }
+    } else if (phase_kind == 2) {
+        // I: Inverted (all positive) phase
+        for (Var v = 1; v <= s->num_vars; v++) s->vars[v].polarity = true;
+    } else {
+        // O: Original (all negative) phase
+        for (Var v = 1; v <= s->num_vars; v++) s->vars[v].polarity = false;
+    }
+
+    /* Crucially sync Stable-mode target_phase[] to the newly rephased saved polarities
+     * and reset target_trail_size so Stable mode actually leaves stale basins! */
+    if (s->rephase.target_phase) {
+        for (Var v = 1; v <= s->num_vars; v++) {
+            s->rephase.target_phase[v] = s->vars[v].polarity ? TRUE : FALSE;
+        }
+        s->rephase.target_trail_size = 0;
+        s->rephase.target_prefix_valid = false;
     }
 
     s->rephase.conflicts_since = 0;
@@ -3252,7 +3294,13 @@ static lbool solve_internal_account_impl(Solver *s, const Lit *assumps, uint32_t
                 }
             }
             if (s->opts.rephase && s->stats.conflicts >= s->next_rephase) {
+                if (!n_assumps && s->decision_level) {
+                    solver_backtrack(s, 0);
+                }
+                s->lit_values_live = false;
                 solver_rephase(s);
+                sync_lit_values(s);
+                if (s->qhead < s->trail_size) continue;
             }
             if (!n_assumps && !s->elim && s->opts.local_search &&
                 s->stats.conflicts >= s->local_search.conflicts_since+s->opts.ls_interval) {

@@ -235,12 +235,11 @@ static SolverOpts make_worker_opts(const SolverOpts *base, uint32_t id, bool *ca
             o.reduce_interval = 1500;
             break;
         case 2:
-            /* Stable 4-ary VSIDS + Luby restarts + non-chrono */
-            o.vmtf = false;
-            o.alternating = false;
-            o.luby_restart = true;
-            o.luby_unit = 128;
-            o.chrono = false;
+            /* Zero-preprocessing fast-start alternating CDCL + aggressive target rephasing */
+            o.inprocess = false;
+            o.alternating = true;
+            o.chrono = true;
+            o.rephase_interval = 500;
             o.var_decay = 0.95;
             break;
         case 3:

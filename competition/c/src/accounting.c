@@ -34,7 +34,7 @@ SolverMemory solver_memory(const Solver *s) {
 #define VAR_BYTES(field) do { if (s->field) m.variables+=n*sizeof *s->field; } while (0)
     VAR_BYTES(vars);VAR_BYTES(values);VAR_BYTES(frozen);VAR_BYTES(trail);VAR_BYTES(order.heap);
     VAR_BYTES(seen);VAR_BYTES(analyze_stack);VAR_BYTES(minimize_touched);
-    VAR_BYTES(binary_reasons);VAR_BYTES(lrb_last_conflict);VAR_BYTES(rephase.best_phase);
+    VAR_BYTES(binary_reasons);VAR_BYTES(lrb_last_conflict);VAR_BYTES(rephase.best_phase);VAR_BYTES(rephase.target_phase);
 #undef VAR_BYTES
     m.variables+=(uint64_t)s->trail_limits_capacity*sizeof(Level);
     if (s->vmtf.nodes) m.variables+=((uint64_t)s->vmtf.capacity+1)*sizeof(VmtfNode);
