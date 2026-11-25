@@ -65,19 +65,15 @@ class DPLLSolver:
             List of all satisfying assignments found
 
         Note:
-            If unit propagation or pure literal elimination is enabled,
-            some solutions may be grouped. To find ALL distinct solutions,
-            create solver with use_unit_propagation=False and use_pure_literal=False.
+            Every distinct satisfying assignment is returned. Pure literal
+            elimination is never used during enumeration (it would discard
+            solutions), regardless of the use_pure_literal setting; unit
+            propagation is used because it cannot lose solutions.
 
         Example:
             >>> cnf = CNFExpression.parse("(x | y)")
-            >>> # With optimizations: may find fewer solutions
-            >>> solver1 = DPLLSolver(cnf)
-            >>> len(solver1.find_all_solutions())  # May be < 3
-            2
-            >>> # Without optimizations: finds all distinct solutions
-            >>> solver2 = DPLLSolver(cnf, use_unit_propagation=False, use_pure_literal=False)
-            >>> len(solver2.find_all_solutions())  # All 3: {x:T,y:F}, {x:F,y:T}, {x:T,y:T}
+            >>> solver = DPLLSolver(cnf)
+            >>> len(solver.find_all_solutions())  # {x:T,y:F}, {x:F,y:T}, {x:T,y:T}
             3
         """
         self.num_decisions = 0
@@ -253,20 +249,11 @@ class DPLLSolver:
                 del assignment[var]
                 return
 
-        # Pure Literal Elimination
-        if self.use_pure_literal:
-            pure_literal = self._find_pure_literal(simplified_clauses, assignment)
-            if pure_literal is not None:
-                var = pure_literal.variable
-                value = not pure_literal.negated
-
-                self.num_pure_literals += 1
-                assignment[var] = value
-                self._dpll_all(assignment, simplified_clauses)
-
-                # Backtrack
-                del assignment[var]
-                return
+        # Note: pure literal elimination is deliberately NOT applied here.
+        # It preserves satisfiability but not the set of solutions: fixing a
+        # pure variable to one value discards every solution in which it takes
+        # the other value. Unit propagation is safe because the propagated
+        # value is forced in every solution.
 
         # Choose next unassigned variable
         unassigned = self._get_unassigned_variable(assignment)

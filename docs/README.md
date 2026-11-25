@@ -12,7 +12,7 @@ Welcome to the BSAT (Boolean Satisfiability) package documentation! This guide w
    - [2SAT Solver](2sat-solver.md) - Polynomial-time algorithm for 2SAT
    - [DPLL Solver](dpll-solver.md) - Classic backtracking algorithm for general SAT
    - [CDCL Solver](cdcl-solver.md) - Conflict-Driven Clause Learning (modern SAT solving)
-   - [Horn-SAT Solver](hornsat-solver.md) - Polynomial-time solver for Horn formulas
+   - [Horn-SAT Solver](hornsat-solver.md) - Linear-time solver for Horn formulas
    - [XOR-SAT Solver](xorsat-solver.md) - Polynomial-time solver for XOR constraints
    - [WalkSAT Solver](walksat-solver.md) - Randomized local search (incomplete but fast)
    - [Schöning's Algorithm](schoening-solver.md) - Provably O(1.334^n) randomized algorithm for k-SAT
@@ -104,7 +104,7 @@ For example:
 - ✅ **DPLL Solver**: Classic backtracking algorithm for general SAT/3SAT
 - ✅ **CDCL Solver**: Conflict-Driven Clause Learning with VSIDS and restarts (modern SAT solving)
 - ✅ **Davis-Putnam Solver**: The original 1960 resolution-based algorithm (educational)
-- ✅ **Horn-SAT Solver**: Polynomial-time solver for Horn formulas using unit propagation (logic programming)
+- ✅ **Horn-SAT Solver**: Linear-time solver for Horn formulas using unit propagation (logic programming)
 - ✅ **XOR-SAT Solver**: O(n³) polynomial-time solver using Gaussian elimination over GF(2)
 - ✅ **WalkSAT Solver**: Randomized local search (incomplete but often very fast)
 - ✅ **Schöning's Algorithm**: Randomized k-SAT solver with provably O(1.334^n) expected runtime for 3SAT

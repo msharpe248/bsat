@@ -15,10 +15,10 @@ sys.path.insert(0, str(Path(__file__).parent.parent))
 from tests.benchmarks import (
     get_benchmark, list_benchmarks, benchmark_stats,
     random_3sat, phase_transition_3sat, pigeon_hole,
-    graph_coloring_hard, xor_chain
+    graph_coloring_hard, xor_chain, xor_chain_contradiction
 )
 from bsat import (
-    solve_sat, solve_2sat, solve_horn_sat, solve_cdcl,
+    DPLLSolver, solve_sat, solve_2sat, solve_horn_sat, solve_cdcl,
     solve_walksat, solve_xorsat, is_2sat, is_horn_formula
 )
 
@@ -73,6 +73,26 @@ class TestBenchmarkGeneration(unittest.TestCase):
         cnf = xor_chain(5, value=True)
         stats = benchmark_stats(cnf)
         self.assertGreater(stats['num_clauses'], 0)
+
+    def test_xor_chain_parity(self):
+        """Every model of the chain must have the requested parity."""
+        x_vars = [f"x{i}" for i in range(1, 6)]
+        for value in (True, False):
+            cnf = xor_chain(5, value=value)
+            solutions = DPLLSolver(cnf).find_all_solutions()
+            # Each of the 2^4 assignments of x with the right parity extends uniquely
+            self.assertEqual(len(solutions), 16)
+            for sol in solutions:
+                parity = sum(sol[v] for v in x_vars) % 2 == 1
+                self.assertEqual(parity, value)
+
+    def test_xor_chain_contradiction_is_unsat(self):
+        """Requiring both parities at once is unsatisfiable."""
+        cnf = xor_chain_contradiction(6)
+        self.assertIsNone(solve_sat(cnf))
+        self.assertIsNone(solve_cdcl(cnf))
+        self.assertIsNone(solve_cdcl(get_benchmark("xor_chain_unsat")))
+        self.assertIsNotNone(solve_cdcl(get_benchmark("xor_chain_sat")))
 
 
 class TestBenchmarkSuite(unittest.TestCase):

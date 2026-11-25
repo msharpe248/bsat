@@ -247,10 +247,12 @@ else:
     print("UNSAT")
 ```
 
-> **Caveat (current implementation)**: the SAT/UNSAT verdict is reliable, but when the resolution
-> rule was needed, the returned assignment is not fully reconstructed for the eliminated variables
-> and may not satisfy the formula. Check it with `cnf.evaluate(result)`, or use `solve_sat()` /
-> `solve_cdcl()` when you need a guaranteed model.
+> **How the model is rebuilt**: resolution only decides satisfiability - once a variable has been
+> resolved away, nothing in the remaining clauses says what value it should take. The solver
+> therefore saves the clauses that mentioned each eliminated variable and restores the variables in
+> reverse order of elimination: `x` is set to True exactly when some saved clause `(x ∨ A)` has `A`
+> false under the assignment built so far, and to False otherwise. The returned assignment always
+> satisfies the formula (`cnf.evaluate(result)` is `True`).
 
 ### With Statistics
 
@@ -297,8 +299,8 @@ from bsat import solve_davis_putnam, CNFExpression
 cnf = CNFExpression.parse("(x | y) & (~x | z)")
 result = solve_davis_putnam(cnf)
 
-# Possible result: {'x': False, 'y': True, 'z': True}
-# (solved by pure literal elimination alone; the exact assignment can vary between runs)
+# Result: {'y': True, 'z': True, 'x': False}
+# (solved by pure literal elimination alone)
 ```
 
 ### Example 2: Simple UNSAT

@@ -104,23 +104,46 @@ class TwoSATSolver:
             self.reverse_graph[key1].append(neg_key2)
 
     def _kosaraju_first_dfs(self, node: str, visited: Set[str], stack: List[str]):
-        """First DFS pass for Kosaraju's algorithm (on original graph)."""
+        """
+        First DFS pass for Kosaraju's algorithm (on original graph).
+
+        Appends nodes to `stack` in order of DFS finish time. The traversal
+        keeps its own explicit stack instead of recursing, so long implication
+        chains cannot exceed Python's recursion limit.
+        """
         visited.add(node)
+        # Each entry is (node, iterator over its not-yet-explored neighbours)
+        work = [(node, iter(self.implication_graph[node]))]
 
-        for neighbor in self.implication_graph[node]:
-            if neighbor not in visited:
-                self._kosaraju_first_dfs(neighbor, visited, stack)
-
-        stack.append(node)
+        while work:
+            current, neighbors = work[-1]
+            for neighbor in neighbors:
+                if neighbor not in visited:
+                    visited.add(neighbor)
+                    work.append((neighbor, iter(self.implication_graph[neighbor])))
+                    break
+            else:
+                # All neighbours explored: this node is finished
+                work.pop()
+                stack.append(current)
 
     def _kosaraju_second_dfs(self, node: str, visited: Set[str], component: List[str]):
-        """Second DFS pass for Kosaraju's algorithm (on reverse graph)."""
-        visited.add(node)
-        component.append(node)
+        """
+        Second DFS pass for Kosaraju's algorithm (on reverse graph).
 
-        for neighbor in self.reverse_graph[node]:
-            if neighbor not in visited:
-                self._kosaraju_second_dfs(neighbor, visited, component)
+        Collects every node reachable from `node` into `component`.
+        Iterative for the same reason as the first pass.
+        """
+        visited.add(node)
+        work = [node]
+
+        while work:
+            current = work.pop()
+            component.append(current)
+            for neighbor in self.reverse_graph[current]:
+                if neighbor not in visited:
+                    visited.add(neighbor)
+                    work.append(neighbor)
 
     def _find_sccs(self) -> List[List[str]]:
         """
@@ -141,7 +164,8 @@ class TwoSATSolver:
         visited = set()
         stack = []
 
-        for node in all_nodes:
+        # Visit nodes in sorted order so the result is the same on every run
+        for node in sorted(all_nodes):
             if node not in visited:
                 self._kosaraju_first_dfs(node, visited, stack)
 

@@ -20,20 +20,22 @@ def example1_basic_enumeration():
     print(f"Formula: {cnf}")
     print(f"\nFinding ALL solutions...")
 
-    # With optimizations (may find fewer distinct solutions)
+    # The convenience function returns every distinct satisfying assignment
     solutions = find_all_sat_solutions(cnf)
-    print(f"\nWith optimizations: {len(solutions)} solution(s)")
+    print(f"\nfind_all_sat_solutions: {len(solutions)} solution(s)")
     for i, sol in enumerate(solutions, 1):
         print(f"  {i}. {sol} → {cnf.evaluate(sol)}")
 
-    # Without optimizations (finds ALL distinct solutions)
+    # Plain backtracking with every optimization switched off finds the same set
     solver = DPLLSolver(cnf, use_unit_propagation=False, use_pure_literal=False)
     all_solutions = solver.find_all_solutions()
-    print(f"\nWithout optimizations: {all_solutions} solution(s)")
+    print(f"\nPlain backtracking (no optimizations): {len(all_solutions)} solution(s)")
     for i, sol in enumerate(all_solutions, 1):
         print(f"  {i}. {sol} → {cnf.evaluate(sol)}")
 
-    print("\n💡 Pure literal elimination groups some solutions together!")
+    print("\n💡 Both agree: enumeration never uses pure literal elimination, because")
+    print("   fixing a pure variable to one value would discard the solutions where")
+    print("   it takes the other value.")
     print()
 
 

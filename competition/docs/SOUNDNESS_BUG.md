@@ -1,6 +1,6 @@
 # CRITICAL SOUNDNESS BUG: Watched Literals Implementation
 
-> **Historical record (October 2025, Python prototype).** Status lines, line numbers, results, and "next steps" below describe `competition/python/` at that date and are not kept up to date. For the current solver see [competition/c/README.md](../c/README.md). Current results of `test_soundness.py` (which differ from those quoted below) are recorded in [competition/python/tests/README.md](../python/tests/README.md).
+> **Historical record (October 2025, Python prototype).** Status lines, line numbers, results, and "next steps" below describe `competition/python/` at that date and are not kept up to date. For the current solver see [competition/c/README.md](../c/README.md). Current results of `test_soundness.py` are recorded in [competition/python/tests/README.md](../python/tests/README.md).
 
 **Status**: ✅ FIXED - Safe to use `use_watched_literals=True`
 **Discovered**: 2025-10-20

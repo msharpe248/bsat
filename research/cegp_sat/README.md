@@ -172,9 +172,9 @@ def evolve_clauses(population):
         mutated = mutate(clause, available_vars)
         new_clauses.append(mutated)
 
-    # Add to database
+    # Add to database (only clauses implied by the formula; see Limitations)
     for clause in new_clauses:
-        if not is_tautology(clause):
+        if not is_tautology(clause) and is_implied_by_propagation(clause):
             add_learned_clause(clause)
 ```
 
@@ -263,13 +263,14 @@ if result:
 3. **CEGPSATSolver** (`cegp_solver.py`):
    - Extends CDCLSolver with evolution
    - Periodic evolution (every N conflicts)
-   - Adds evolved clauses to learned clause database
+   - Adds evolved clauses that pass an implication (reverse unit propagation) check to the learned clause database
    - Extended statistics
 
 ### Metrics Tracked
 
 - `evolutions`: Number of evolution rounds
 - `evolved_clauses`: Total evolved clauses added
+- `rejected_clauses`: Evolved candidates discarded because they failed the implication check (on `solver.stats` only; not in `get_evolution_statistics()`)
 - `crossovers`: Crossover operations performed
 - `mutations`: Mutation operations performed
 - `propagation_count`: Per-clause propagation counter (currently never incremented by the solver)
@@ -284,7 +285,7 @@ if result:
 1. **Randomness**: Evolution is stochastic, results vary
 2. **Quality**: No guarantee evolved clauses help
 3. **Overhead**: Genetic operations add computational cost
-4. **Unsound UNSAT answers**: Evolved clauses (crossover/mutation results) are added to the clause database without checking that they are implied by the formula. A returned model always satisfies the original formula, but `None` (UNSAT) is **not trustworthy** once evolution has run: with `evolution_frequency=5` on random 30-variable 3-SAT at ratio 4.2, 7 of 22 satisfiable instances were reported UNSAT. With `use_evolution=False` the solver behaves as plain CDCL.
+4. **Evolved clauses are filtered, not trusted**: Crossover/mutation results are arbitrary clauses, so each one is added only if it passes a reverse-unit-propagation check (`_is_implied_by_propagation`), i.e. it is provably implied by the clause database; the rest are discarded and counted in `stats.rejected_clauses`. Evolution runs from decision level 0. This keeps both SAT and UNSAT answers sound (earlier versions added evolved clauses unchecked and could report false UNSAT), but it also means evolution can only add clauses that unit propagation could already derive. With `use_evolution=False` the solver behaves as plain CDCL.
 5. **Small instances never evolve**: Evolution only triggers every `evolution_frequency` conflicts (default 500); the bundled `example.py` formulas finish with 0 conflicts, so they show 0 evolutions.
 
 **Recommendation**: Use standard CDCL for production. Use CEGP-SAT for education/research/experimentation.

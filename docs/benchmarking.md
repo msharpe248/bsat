@@ -47,7 +47,7 @@ cnf = read_dimacs_file("uf50-218.cnf")  # Uniform random 3-SAT, 50 vars, 218 cla
 result = solve_sat(cnf)
 ```
 
-Note: many SATLIB files (including the `uf*` series) end with a `%` line followed by `0`. BSAT's parser rejects that trailer, so delete those last lines before loading (see [DIMACS Format](dimacs.md)).
+Note: many SATLIB files (including the `uf*` series) end with a `%` line followed by `0`. BSAT's parser stops reading at the `%` line, so these files load as they are (see [DIMACS Format](dimacs.md)).
 
 ### Pre-defined Benchmarks
 
@@ -81,7 +81,7 @@ cnf = get_benchmark("phase_transition_20")
 | **Graph Coloring** | `graph_coloring_sat` | SAT | 8 vertices, 4 colors |
 | | `graph_coloring_unsat` | UNSAT | 8 vertices, 2 colors |
 | **XOR Chains** | `xor_chain_sat` | SAT | XOR chain = True |
-| | `xor_chain_unsat` | SAT | XOR chain = False (despite its name, a single parity constraint is always satisfiable) |
+| | `xor_chain_unsat` | UNSAT | The same chain required to be both True and False |
 
 `phase_transition_20` is SAT and `phase_transition_30` is UNSAT with the fixed seeds used in the suite.
 
@@ -269,7 +269,7 @@ from tests.benchmarks import xor_chain
 cnf = xor_chain(length=20, value=True)
 ```
 
-The result is plain CNF, so solve it with DPLL/CDCL (not `solve_xorsat`, which interprets each clause as an XOR). A single chain is satisfiable for either `value` and is easy for all solvers; parity constraints only become hard for DPLL/CDCL when many of them are combined into an inconsistent system.
+The result is plain CNF, so solve it with DPLL/CDCL (not `solve_xorsat`, which interprets each clause as an XOR). A single chain is satisfiable for either `value` and is easy for all solvers. `xor_chain_contradiction(length)` combines the `True` and `False` chains over the same variables into an unsatisfiable instance; parity constraints become hard for DPLL/CDCL when many of them are combined into an inconsistent system.
 
 ---
 
@@ -282,7 +282,7 @@ Different solvers have different theoretical complexities:
 | Solver | Worst Case | Typical Performance |
 |--------|-----------|-------------------|
 | **2SAT** | O(n+m) | Linear - very fast |
-| **Horn-SAT** | O(n+m) (O(n·m) for this implementation) | Polynomial - very fast |
+| **Horn-SAT** | O(n+m) | Linear - very fast |
 | **XOR-SAT** | O(n³) | Cubic - fast for XOR |
 | **DPLL** | O(2ⁿ) | Exponential - slow on hard instances |
 | **CDCL** | O(2ⁿ) | Much faster than DPLL in practice |

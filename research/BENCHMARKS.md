@@ -100,9 +100,9 @@ cd research/benchmarks
 ./reproduce_validation.sh
 ```
 
-This runs the validation levels and writes logs and reports to `validation_results/`. The scripts need the
-`tabulate` package (`pip install tabulate`), and the script's final step (`run_full_benchmark.py`) no longer
-exists and fails; see `benchmarks/VALIDATION_GUIDE.md`.
+This runs the validation levels and writes logs and reports to `validation_results/`. The final step runs
+`benchmark.py --all` (the original `run_full_benchmark.py` is no longer in the repository); see
+`benchmarks/VALIDATION_GUIDE.md`.
 
 **Quick validation:**
 ```bash

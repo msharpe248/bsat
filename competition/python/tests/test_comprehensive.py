@@ -127,7 +127,7 @@ def run_test_suite():
     test_cases.extend([
         ("(x) & (x | y) & (~y | z)", "Simple propagation chain", True),
         ("(a) & (a | b) & (b | c) & (c | d)", "Long propagation chain", True),
-        ("(x) & (x | y) & (~x | z) & (~y | ~z)", "Propagation leading to UNSAT", False),
+        ("(x) & (~x | y) & (~x | z) & (~y | ~z)", "Propagation leading to UNSAT", False),
         ("(a) & (a | b) & (a | c) & (~b | d) & (~c | d)", "Branching propagation", True),
     ])
 
@@ -135,7 +135,7 @@ def run_test_suite():
     print("[5/10] Backtracking")
     test_cases.extend([
         ("(a | b) & (~a | c) & (b | ~c) & (~b | c)", "Requires backtracking SAT", True),
-        ("(x | y | z) & (~x | y) & (x | ~y) & (~x | ~y | ~z)", "Backtracking UNSAT", False),
+        ("(x | y) & (~x | y) & (x | ~y) & (~x | ~y)", "Backtracking UNSAT", False),
         ("(a | b | c) & (~a | ~b) & (~a | ~c) & (~b | ~c) & (a | b | c)", "Multiple backtracks", True),
     ])
 
@@ -178,7 +178,9 @@ def run_test_suite():
     print("[10/10] Structured Instances")
     test_cases.extend([
         # Symmetric structure
-        ("(a | b) & (b | c) & (c | d) & (d | a) & (~a | ~c) & (~b | ~d)", "Cycle structure", True),
+        ("(a | b) & (b | c) & (c | d) & (d | a) & (~a | ~b) & (~c | ~d)", "Cycle structure", True),
+        # Every cover of the 4-cycle needs {a, c} or {b, d}, and both are forbidden
+        ("(a | b) & (b | c) & (c | d) & (d | a) & (~a | ~c) & (~b | ~d)", "Cycle structure UNSAT", False),
         # Tree structure
         ("(root) & (root | left) & (root | right) & (left | ll) & (left | lr) & (right | rl) & (right | rr)", "Tree structure", True),
     ])

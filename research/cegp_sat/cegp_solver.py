@@ -25,6 +25,7 @@ class CEGPStats(CDCLStats):
         super().__init__()
         self.evolutions = 0
         self.evolved_clauses = 0
+        self.rejected_clauses = 0  # Evolved clauses that failed the implication check
         self.crossovers = 0
         self.mutations = 0
 
@@ -33,6 +34,7 @@ class CEGPStats(CDCLStats):
         cegp_stats = (
             f"  Evolutions: {self.evolutions}\n"
             f"  Evolved clauses: {self.evolved_clauses}\n"
+            f"  Rejected (not implied): {self.rejected_clauses}\n"
             f"  Crossovers: {self.crossovers}\n"
             f"  Mutations: {self.mutations}\n"
         )
@@ -93,6 +95,7 @@ class CEGPSATSolver(CDCLSolver):
 
         # Extended statistics
         self.stats = CEGPStats()
+        self._last_evolution_conflicts = -1
 
     def _add_learned_clause(self, clause: Clause):
         """
@@ -149,9 +152,16 @@ class CEGPSATSolver(CDCLSolver):
             new_clauses.append(mutated)
             self.stats.mutations += 1
 
-        # Add evolved clauses to learned clause database
+        # Add evolved clauses to learned clause database.
+        # Crossover and mutation produce arbitrary clauses, most of which are
+        # NOT consequences of the formula; adding one of those could turn a
+        # satisfiable formula into an unsatisfiable one. Only clauses that pass
+        # a reverse-unit-propagation check (and are therefore implied) are kept.
         for clause in new_clauses:
             if len(clause.literals) > 0 and not self._is_tautology(clause):
+                if not self._is_implied_by_propagation(clause):
+                    self.stats.rejected_clauses += 1
+                    continue
                 # Add to clause database
                 if len(self.clauses) < self.learned_clause_limit:
                     self.clauses.append(clause)
@@ -164,6 +174,51 @@ class CEGPSATSolver(CDCLSolver):
                     # CDCL's propagation mechanism (no need to manually update watch lists)
 
         self.stats.evolutions += 1
+
+    def _is_implied_by_propagation(self, clause: Clause) -> bool:
+        """
+        Reverse unit propagation (RUP) check.
+
+        Assume every literal of the clause is false and run unit propagation
+        over the clause database, independently of the current search state.
+        If that yields a conflict, the clause is a logical consequence of the
+        database and is safe to add. The check is sound but incomplete: some
+        implied clauses are rejected, but no non-implied clause is accepted.
+
+        Args:
+            clause: Candidate clause
+
+        Returns:
+            True if the clause is implied by unit propagation
+        """
+        values: Dict[str, bool] = {}
+        for lit in clause.literals:
+            values[lit.variable] = lit.negated  # Makes the literal false
+
+        changed = True
+        while changed:
+            changed = False
+            for other in self.clauses:
+                if not other.literals:
+                    continue
+                unassigned = None
+                num_unassigned = 0
+                satisfied = False
+                for lit in other.literals:
+                    if lit.variable not in values:
+                        num_unassigned += 1
+                        unassigned = lit
+                    elif values[lit.variable] != lit.negated:
+                        satisfied = True
+                        break
+                if satisfied:
+                    continue
+                if num_unassigned == 0:
+                    return True  # Conflict: the clause is implied
+                if num_unassigned == 1:
+                    values[unassigned.variable] = not unassigned.negated
+                    changed = True
+        return False
 
     def _is_tautology(self, clause: Clause) -> bool:
         """Check if clause is a tautology."""
@@ -199,8 +254,16 @@ class CEGPSATSolver(CDCLSolver):
             # Evolve clauses periodically
             if (self.use_evolution and
                 self.stats.conflicts > 0 and
-                self.stats.conflicts % self.evolution_frequency == 0):
+                self.stats.conflicts % self.evolution_frequency == 0 and
+                self.stats.conflicts != self._last_evolution_conflicts):
+                self._last_evolution_conflicts = self.stats.conflicts
+                # Evolve from decision level 0 so that newly added clauses are
+                # propagated from a clean state, like after a restart.
+                self._unassign_to_level(0)
                 self._evolve_clauses()
+                conflict = self._propagate()
+                if conflict is not None:
+                    return None  # UNSAT (every added clause is implied)
 
             # Pick branching variable (VSIDS)
             var = self._pick_branching_variable()

@@ -31,7 +31,26 @@ import time
 import random
 from typing import Dict, List, Optional, Tuple
 from dataclasses import dataclass
-from tabulate import tabulate
+try:
+    from tabulate import tabulate
+except ImportError:
+    def tabulate(rows, headers, tablefmt="grid"):
+        """Minimal stand-in used when the optional 'tabulate' package is absent."""
+        table = [[str(cell) for cell in row] for row in [list(headers)] + list(rows)]
+        widths = [max(len(row[i]) for row in table) for i in range(len(table[0]))]
+
+        def fmt(row):
+            return "| " + " | ".join(cell.ljust(w) for cell, w in zip(row, widths)) + " |"
+
+        if tablefmt == "pipe":
+            rule = "|" + "|".join("-" * (w + 2) for w in widths) + "|"
+            return "\n".join([fmt(table[0]), rule] + [fmt(row) for row in table[1:]])
+
+        rule = "+" + "+".join("-" * (w + 2) for w in widths) + "+"
+        lines = [rule, fmt(table[0]), rule.replace("-", "=")]
+        for row in table[1:]:
+            lines.extend([fmt(row), rule])
+        return "\n".join(lines)
 
 # Add paths
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '../../src'))

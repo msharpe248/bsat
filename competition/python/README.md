@@ -42,7 +42,7 @@ Main competition solver implementation with:
 - **Opt-in (default off)**: failed literal probing (`enable_probing`), blocked clause elimination (`enable_bce`), chronological backtracking (`enable_chrono_bt`), vivification (`enable_vivification`)
 - **Initial unit clause propagation**: Fixed soundness bug (October 20, 2025)
 
-**Status**: Prototype. The default configuration (`use_watched_literals=True`) passes the shared fixtures and agrees with the C solver on them; 114-188× average speedup over the original `src/bsat/cdcl.py` was measured in October 2025 on medium/competition instances. The legacy naive propagation mode (`use_watched_literals=False`) is **not reliable**: `tests/test_soundness.py` currently shows it reporting UNSAT on satisfiable instances (see [tests/README.md](tests/README.md)).
+**Status**: Prototype. The default configuration (`use_watched_literals=True`) passes the shared fixtures and agrees with the C solver on them; 114-188× average speedup over the original `src/bsat/cdcl.py` was measured in October 2025 on medium/competition instances. The legacy naive propagation mode (`use_watched_literals=False`) is kept for comparison; it agrees with the default mode on all 10 instances of `tests/test_soundness.py` (see [tests/README.md](tests/README.md)).
 
 ### competition_solver.py
 Command-line wrapper that reads a DIMACS file and prints competition-format output (`s SATISFIABLE` / `s UNSATISFIABLE` / `s UNKNOWN`, `v ... 0`):
@@ -171,5 +171,5 @@ Run before committing changes:
 python test_common_fixtures.py     # 10 shared fixtures, all pass
 cd tests/
 python test_correctness.py         # 13 formulas vs the original solver, all pass
-python test_comprehensive.py       # 31 formulas; 28 pass (3 have wrong expected values, see tests/README.md)
+python test_comprehensive.py       # 32 formulas, all pass
 ```

@@ -63,10 +63,11 @@ class CDCLStats:
 
 class CDCLSolver:
     """
-    CDCL SAT Solver using watched literals and VSIDS heuristic.
+    CDCL SAT Solver with clause learning and the VSIDS heuristic.
 
-    The solver implements the modern CDCL algorithm with:
-    - Two-watched literal scheme for efficient unit propagation
+    The solver implements the core CDCL algorithm with:
+    - Unit propagation (a simple scan of all clauses; the two-watched-literal
+      optimization is deliberately left out to keep the code readable)
     - First UIP (Unique Implication Point) clause learning
     - VSIDS variable selection heuristic
     - Luby restart strategy
@@ -303,7 +304,7 @@ class CDCLSolver:
         self.vsids_increment /= self.vsids_decay
 
     def _should_restart(self) -> bool:
-        """Check if we should restart (Luby sequence)."""
+        """Check if enough conflicts have occurred since the last restart."""
         return self.stats.conflicts >= self.conflicts_until_restart
 
     def _restart(self):
@@ -312,8 +313,12 @@ class CDCLSolver:
         self.stats.restarts += 1
         self.restart_count += 1
 
-        # Luby sequence for restart intervals
-        self.conflicts_until_restart = self._luby(self.restart_count) * self.restart_base
+        # The next restart comes after luby(k) * restart_base MORE conflicts,
+        # where k counts restart intervals: 1, 1, 2, 1, 1, 2, 4, 1, 1, 2, ...
+        # The interval is measured from this restart, so the threshold is an
+        # offset from the current conflict count rather than an absolute value.
+        interval = self._luby(self.restart_count + 1) * self.restart_base
+        self.conflicts_until_restart = self.stats.conflicts + interval
 
     def _luby(self, i: int) -> int:
         """Compute Luby sequence value."""

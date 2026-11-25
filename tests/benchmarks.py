@@ -154,58 +154,79 @@ def graph_coloring_hard(num_vertices: int, num_colors: int, density: float = 0.5
     return CNFExpression(clauses)
 
 
-def xor_chain(length: int, value: bool = True) -> CNFExpression:
+def xor_chain(length: int, value: bool = True, aux_prefix: str = "t") -> CNFExpression:
     """
     Generate XOR chain instance.
 
     x1 ⊕ x2 ⊕ ... ⊕ xn = value
 
-    This is easy for XOR-SAT solver but can be hard for DPLL/CDCL.
+    The parity constraint is encoded as ordinary CNF with auxiliary variables:
+    x1 ⊕ x2 = t1, t1 ⊕ x3 = t2, ..., and finally t(n-2) ⊕ xn = value.
+
+    A single chain is always satisfiable (for either value) and easy for every
+    solver. See xor_chain_contradiction() for an unsatisfiable variant.
 
     Args:
-        length: Number of variables in chain
+        length: Number of variables in chain (at least 3)
         value: Target value (True = 1, False = 0)
+        aux_prefix: Name prefix for the auxiliary chain variables
 
     Returns:
         CNF encoding XOR chain
     """
+    if length < 3:
+        raise ValueError("xor_chain requires length >= 3")
+
     clauses = []
 
-    # XOR can be encoded as: (a ⊕ b) = (a ∨ b) ∧ (¬a ∨ ¬b)
-    # Build chain: x1 ⊕ x2 = t1, t1 ⊕ x3 = t2, ...
+    def add_xor_equals(a: str, b: str, out: str):
+        """Add the four clauses encoding a ⊕ b = out."""
+        clauses.append(Clause([Literal(a, False), Literal(b, False), Literal(out, True)]))
+        clauses.append(Clause([Literal(a, False), Literal(b, True), Literal(out, False)]))
+        clauses.append(Clause([Literal(a, True), Literal(b, False), Literal(out, False)]))
+        clauses.append(Clause([Literal(a, True), Literal(b, True), Literal(out, True)]))
 
-    for i in range(1, length):
-        if i == 1:
-            # x1 ⊕ x2 = t1
-            clauses.append(Clause([Literal("x1", False), Literal("x2", False), Literal("t1", True)]))
-            clauses.append(Clause([Literal("x1", False), Literal("x2", True), Literal("t1", False)]))
-            clauses.append(Clause([Literal("x1", True), Literal("x2", False), Literal("t1", False)]))
-            clauses.append(Clause([Literal("x1", True), Literal("x2", True), Literal("t1", True)]))
-        elif i < length - 1:
-            # ti ⊕ x(i+1) = t(i+1)
-            t_prev = f"t{i-1}"
-            x_curr = f"x{i+1}"
-            t_curr = f"t{i}"
+    # x1 ⊕ x2 = t1
+    add_xor_equals("x1", "x2", f"{aux_prefix}1")
 
-            clauses.append(Clause([Literal(t_prev, False), Literal(x_curr, False), Literal(t_curr, True)]))
-            clauses.append(Clause([Literal(t_prev, False), Literal(x_curr, True), Literal(t_curr, False)]))
-            clauses.append(Clause([Literal(t_prev, True), Literal(x_curr, False), Literal(t_curr, False)]))
-            clauses.append(Clause([Literal(t_prev, True), Literal(x_curr, True), Literal(t_curr, True)]))
-        else:
-            # Final: t(n-2) ⊕ xn = value
-            t_prev = f"t{i-1}"
-            x_last = f"x{length}"
+    # t(i-1) ⊕ x(i+1) = t(i)
+    for i in range(2, length - 1):
+        add_xor_equals(f"{aux_prefix}{i-1}", f"x{i+1}", f"{aux_prefix}{i}")
 
-            if value:
-                # Result must be True
-                clauses.append(Clause([Literal(t_prev, False), Literal(x_last, True)]))
-                clauses.append(Clause([Literal(t_prev, True), Literal(x_last, False)]))
-            else:
-                # Result must be False
-                clauses.append(Clause([Literal(t_prev, False), Literal(x_last, False)]))
-                clauses.append(Clause([Literal(t_prev, True), Literal(x_last, True)]))
+    # Final link: t(n-2) ⊕ xn = value
+    t_last = f"{aux_prefix}{length - 2}"
+    x_last = f"x{length}"
+
+    if value:
+        # t ⊕ x = 1: the two must differ
+        clauses.append(Clause([Literal(t_last, False), Literal(x_last, False)]))
+        clauses.append(Clause([Literal(t_last, True), Literal(x_last, True)]))
+    else:
+        # t ⊕ x = 0: the two must be equal
+        clauses.append(Clause([Literal(t_last, False), Literal(x_last, True)]))
+        clauses.append(Clause([Literal(t_last, True), Literal(x_last, False)]))
 
     return CNFExpression(clauses)
+
+
+def xor_chain_contradiction(length: int) -> CNFExpression:
+    """
+    Generate an unsatisfiable pair of XOR chains.
+
+    Requires both x1 ⊕ ... ⊕ xn = 1 and x1 ⊕ ... ⊕ xn = 0 over the same
+    variables, each chain with its own auxiliary variables. Gaussian
+    elimination sees the contradiction immediately; a resolution-based solver
+    has to work for it.
+
+    Args:
+        length: Number of variables in each chain (at least 3)
+
+    Returns:
+        Unsatisfiable CNF
+    """
+    odd = xor_chain(length, value=True, aux_prefix="t")
+    even = xor_chain(length, value=False, aux_prefix="u")
+    return CNFExpression(list(odd.clauses) + list(even.clauses))
 
 
 def mutilated_chessboard(size: int = 8) -> CNFExpression:
@@ -300,7 +321,7 @@ BENCHMARK_SUITE = {
 
     # XOR chains
     "xor_chain_sat": xor_chain(10, value=True),
-    "xor_chain_unsat": xor_chain(10, value=False),
+    "xor_chain_unsat": xor_chain_contradiction(10),
 }
 
 

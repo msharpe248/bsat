@@ -147,10 +147,11 @@ except DIMACSParseError as e:
 
 **Parser behaviour and limitations:**
 - DIMACS variable `N` becomes the BSAT variable named `xN` (`1` → `x1`, `-2` → `¬x2`)
-- Each clause must be on a single line ending with `0` (clauses spanning several lines are rejected)
-- The `%` / `0` trailer found in some SATLIB files (e.g. `uf20-*.cnf`) is rejected as an invalid literal - strip it first
+- A clause may continue across several lines; it ends at its `0`
+- The terminating `0` must be the last token on its line, so two clauses on one line (`1 2 0 -1 0`) are rejected
+- A line starting with `%` ends the formula, so SATLIB files with a `%` / `0` trailer (e.g. `uf20-*.cnf`) load as they are
 - A mismatch between the declared and actual number of clauses is ignored
-- An empty clause (a line containing only `0`) is currently skipped rather than kept, so a formula that is UNSAT only because of an explicit empty clause will not be reported as UNSAT
+- An empty clause (a line containing only `0`) is kept; it is always false, so the formula is UNSAT
 
 ---
 

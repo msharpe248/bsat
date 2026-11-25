@@ -40,6 +40,7 @@ python tests/test_reductions.py
 python tests/test_dimacs.py
 python tests/test_benchmarks.py
 python tests/test_davis_putnam.py
+python tests/test_regressions.py   # regression tests for previously fixed bugs
 python tests/test_c_solver.py   # optional C bindings; skips if libbsat is not built
 
 # Run all tests with pytest (if installed)
@@ -160,7 +161,7 @@ Each solver is implemented as both a class (for advanced usage) and convenience 
    - Davis-Putnam-Logemann-Loveland (1962) backtracking algorithm
    - Class: `DPLLSolver`
    - Functions: `solve_sat(cnf)`, `find_all_sat_solutions(cnf)`, `count_sat_solutions(cnf)`
-   - Note: the enumeration/counting helpers run with pure literal elimination on and can skip solutions; use `DPLLSolver(cnf, use_pure_literal=False)` for exact enumeration
+   - Enumeration/counting returns every distinct satisfying assignment (pure literal elimination is never applied while enumerating)
    - Optimizations: Unit propagation, pure literal elimination
    - Use as default for simple/educational SAT solving
 
@@ -172,11 +173,11 @@ Each solver is implemented as both a class (for advanced usage) and convenience 
    - Best for structured/industrial problems with patterns
 
 5. **Horn-SAT** (`hornsat.py`) - *Logic Programming*
-   - Polynomial-time solver (Horn-SAT is solvable in O(n+m); this implementation is a simpler rescan-to-fixpoint loop, O(n·m) worst case)
+   - O(n+m) linear-time solver
    - Class: `HornSATSolver`
    - Functions: `solve_horn_sat(cnf)`, `is_horn_formula(cnf)`
    - Only works if each clause has ≤1 positive literal
-   - Implementation: Unit propagation on Horn clauses
+   - Implementation: Counter-based forward chaining (Dowling & Gallier 1984)
 
 6. **XOR-SAT** (`xorsat.py`) - *Cryptography/Coding Theory*
    - O(n³) polynomial-time solver using Gaussian elimination over GF(2)
@@ -273,6 +274,7 @@ tests/
 ├── test_dimacs.py
 ├── test_benchmarks.py
 ├── test_c_solver.py              # Optional C bindings
+├── test_regressions.py           # Regression tests for previously fixed bugs
 └── benchmarks.py                 # Benchmark utilities used by test_benchmarks.py
 
 examples/
@@ -368,7 +370,7 @@ print(f"Decisions: {stats.decisions}, Conflicts: {stats.conflicts}")
 - **Dev Dependencies**: pytest, black, flake8, mypy (optional, in `[dev]` extra)
 - **Visualization Server**: Separate dependencies (FastAPI, uvicorn, websockets) in `visualization_server/requirements.txt`
 - **Performance**: CDCL is fastest for structured problems; specialized solvers (2SAT, Horn-SAT, XOR-SAT) are polynomial when applicable
-- **Solver Choice**: Always use specialized solver if formula matches (2SAT, Horn-SAT, XOR-SAT are all polynomial); otherwise use CDCL for large/structured or DPLL for simple cases
+- **Solver Choice**: Always use specialized solver if formula matches (2SAT → O(n+m), Horn → O(n+m), XOR → O(n³)); otherwise use CDCL for large/structured or DPLL for simple cases
 - **Variable Names**: Must be valid Python identifiers matching `[a-zA-Z_][a-zA-Z0-9_]*`
 - **DIMACS Integration**: Use for importing benchmark instances or interfacing with other SAT solvers
 

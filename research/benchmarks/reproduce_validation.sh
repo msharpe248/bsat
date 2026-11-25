@@ -14,7 +14,10 @@
 #   ./reproduce_validation.sh --help       # Show help
 #
 
-set -e  # Exit on error
+# Each step's exit status is checked explicitly below. pipefail makes a
+# 'python ... | tee log' pipeline report Python's status rather than tee's,
+# so a crashed step is reported as a failure instead of a pass.
+set -o pipefail
 
 # Colors for output
 RED='\033[0;31m'
@@ -49,7 +52,7 @@ while [[ $# -gt 0 ]]; do
             echo "  1. Correctness Verification (validate_correctness.py)"
             echo "  2. Statistical Validation (statistical_benchmark.py)"
             echo "  3. Profiling Analysis (profile_solvers.py)"
-            echo "  4. Full Benchmark Suite (run_full_benchmark.py)"
+            echo "  4. Full Benchmark Suite (benchmark.py --all)"
             exit 0
             ;;
         *)
@@ -189,18 +192,15 @@ echo "Running comprehensive benchmark across all problem types"
 echo ""
 
 START=$(date +%s)
-python3 run_full_benchmark.py 2>&1 | tee "$OUTPUT_DIR/full_benchmark.log"
+python3 benchmark.py --all --output "$OUTPUT_DIR/benchmark_results_full.md" \
+    2>&1 | tee "$OUTPUT_DIR/full_benchmark.log"
 BENCHMARK_EXIT_CODE=$?
 END=$(date +%s)
 DURATION=$((END - START))
 
 if [ $BENCHMARK_EXIT_CODE -eq 0 ]; then
     echo -e "${GREEN}✅ FULL BENCHMARK COMPLETED${NC} (${DURATION}s)"
-    echo "   Results: benchmark_results_full.md"
-    # Copy to output directory
-    if [ -f "benchmark_results_full.md" ]; then
-        cp benchmark_results_full.md "$OUTPUT_DIR/"
-    fi
+    echo "   Results: $OUTPUT_DIR/benchmark_results_full.md"
 else
     echo -e "${YELLOW}⚠️  FULL BENCHMARK HAD ISSUES${NC} (${DURATION}s)"
     echo "   Check logs: $OUTPUT_DIR/full_benchmark.log"

@@ -223,7 +223,7 @@ CDCL periodically restarts the search from decision level 0, keeping all learned
 
 **BSAT uses Luby sequence**: 1, 1, 2, 1, 1, 2, 4, 1, 1, 2, 1, 1, 2, 4, 8, ...
 
-The first restart happens after `restart_base` conflicts. After the k-th restart the next threshold is `luby(k) × restart_base`; note that the current implementation compares this threshold against the *total* conflict count (not conflicts since the last restart), so restarts do not follow exact Luby intervals.
+Each number is multiplied by `restart_base` to give the number of conflicts between one restart and the next. With the default `restart_base=100`, the first restart comes after 100 conflicts, the second 100 conflicts later, the third 200 conflicts after that, and so on. (The check is made once a conflict has been fully handled, so an interval can run a conflict over.)
 
 ---
 

@@ -30,8 +30,8 @@ Solver names accepted by `-s`: `DPLL`, `CDCL`, `CoBD-SAT`, `BB-CDCL`, `LA-CDCL`,
 
 **Dependencies**: `run_all_benchmarks.py` and the generators need only the standard library.
 `benchmark.py` and the scripts that import it (`validate_correctness.py`,
-`statistical_benchmark.py`, `profile_solvers.py`, `competition_benchmark.py`) additionally
-require the third-party `tabulate` package (`pip install tabulate`).
+`statistical_benchmark.py`, `profile_solvers.py`, `competition_benchmark.py`) use the third-party
+`tabulate` package for table formatting if it is installed and fall back to a built-in formatter otherwise.
 
 ## Test Suites
 
@@ -86,7 +86,7 @@ require the third-party `tabulate` package (`pip install tabulate`).
 ### Validation
 - `validate_correctness.py` - Verify solver correctness on 8 generated problems (no arguments)
 - `reproduce_validation.sh` - Runs the validation scripts in sequence (`--quick`, `--help`); its
-  final step calls `run_full_benchmark.py`, which no longer exists, so that step fails
+  final step runs `benchmark.py --all`
 - See `VALIDATION_GUIDE.md` for details
 
 ### Competition Benchmarks

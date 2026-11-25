@@ -11,9 +11,9 @@ both solvers live one level up (`../test_common_fixtures.py`, see
 ### Core Test Suite
 - **test_simple.py**: Quick smoke test (2 basic cases) — passes
 - **test_correctness.py**: Correctness validation vs original solver (13 formulas) — passes
-- **test_comprehensive.py**: 31 test cases across all problem types — 28 pass. The 3 reported failures ("Propagation leading to UNSAT", "Backtracking UNSAT", "Cycle structure") are wrong expected values in the test script: all three solver configurations agree with each other, and the formulas are respectively SAT, SAT, and UNSAT
+- **test_comprehensive.py**: 32 test cases across all problem types — all pass (32/32)
 - **test_competition_solver.py**: Runs `../competition_solver.py` on a few `dataset/` instances — passes
-- **test_soundness.py**: Compares watched-literal mode against the solver's legacy naive propagation mode (`use_watched_literals=False`) on 10 `dataset/` instances — currently 6/10. In all 4 mismatches the default watched-literal mode returns a verified satisfying assignment while the naive mode reports UNSAT after a handful of conflicts, i.e. the naive mode is the unsound one. Do not rely on `use_watched_literals=False`
+- **test_soundness.py**: Compares watched-literal mode against the solver's legacy naive propagation mode (`use_watched_literals=False`) on 10 `dataset/` instances — passes (10/10). The naive mode used to report false UNSAT on some of these (it treated the empty-clause tombstones left by on-the-fly subsumption as conflicts); that has been fixed
 
 ### Inprocessing Tests
 - **test_inprocessing.py**: Basic inprocessing functionality tests
@@ -72,7 +72,7 @@ PYTHONPATH=..:../../../src python benchmark_inprocessing.py
 
 ## Status
 
-- Default configuration (watched literals): `test_simple.py`, `test_correctness.py`, `test_competition_solver.py`, and the shared fixture tests pass; `test_comprehensive.py` passes except for its 3 incorrect expectations.
-- Legacy naive mode (`use_watched_literals=False`): unsound on some instances (`test_soundness.py`, 6/10).
+- Default configuration (watched literals): `test_simple.py`, `test_correctness.py`, `test_comprehensive.py` (32/32), `test_competition_solver.py`, and the shared fixture tests pass.
+- Legacy naive mode (`use_watched_literals=False`): agrees with watched-literal mode on all 10 `test_soundness.py` instances (10/10).
 - Inprocessing algorithms are disabled by default (too slow in Python).
 - The prototype is no longer under active development; current solver work is in [`../../c/`](../../c/README.md).

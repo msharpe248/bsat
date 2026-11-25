@@ -143,7 +143,7 @@ cnf = CNFExpression.parse("(x | y) & (~x | z) & (~y | z)")
 
 result = solve_2sat(cnf)
 print(f"Result: {result}")
-# Possible output: {'x': False, 'y': True, 'z': True}
+# Output: Result: {'x': True, 'y': True, 'z': True}
 
 # Verify
 print(f"Verification: {cnf.evaluate(result)}")  # True
@@ -192,7 +192,8 @@ cnf = CNFExpression.parse("(a | b) & (~a | ~b)")
 
 result = solve_2sat(cnf)
 print(f"Solution: {result}")
-# Possible: {'a': True, 'b': False} or {'a': False, 'b': True}
+# Output: Solution: {'a': True, 'b': False}
+# ({'a': False, 'b': True} is the other valid assignment)
 ```
 
 ### Example 4: Graph Coloring
@@ -306,7 +307,7 @@ This ensures all implications are satisfied!
 - ✅ Binary constraints (if-then, equivalence, XOR)
 - ✅ Graph problems (2-coloring, matching)
 - ✅ Planning with binary choices
-- ✅ Large instances (the algorithm is linear; note this implementation's DFS is recursive, so very long implication chains can hit Python's recursion limit)
+- ✅ Large instances (the algorithm is linear, and the SCC search is iterative, so long implication chains are not a problem)
 
 ### Not Good For:
 - ❌ Problems requiring 3+ literals per constraint
@@ -345,7 +346,7 @@ cnf = CNFExpression.parse("(x | x) & (y | z)")
 ```python
 result = solve_2sat(cnf)
 # result might be any of multiple valid solutions!
-# (and which one you get can differ between runs)
+# (the same one on every run, but not necessarily the one you had in mind)
 ```
 
 **Note**: 2SAT solver returns *one* solution, but there may be many.

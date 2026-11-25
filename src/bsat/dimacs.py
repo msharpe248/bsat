@@ -59,6 +59,8 @@ def parse_dimacs(content: str) -> CNFExpression:
     num_vars = None
     num_clauses = None
     var_map = {}  # Map DIMACS variable numbers to our variable names
+    pending: List[Literal] = []  # Literals of a clause continued across lines
+    pending_start = None         # Line where the pending clause began
 
     for line_num, line in enumerate(lines, 1):
         line = line.strip()
@@ -70,6 +72,11 @@ def parse_dimacs(content: str) -> CNFExpression:
         # Comment line
         if line.startswith('c'):
             continue
+
+        # SATLIB benchmark files end with a '%' line followed by a lone '0'.
+        # Everything from the '%' onwards is a trailer, not part of the formula.
+        if line.startswith('%'):
+            break
 
         # Problem line
         if line.startswith('p'):
@@ -102,20 +109,15 @@ def parse_dimacs(content: str) -> CNFExpression:
                 f"Line {line_num}: Invalid literal in clause '{line}'"
             )
 
-        if not tokens or tokens[-1] != 0:
-            raise DIMACSParseError(
-                f"Line {line_num}: Clause must end with 0"
-            )
-
-        # Remove trailing 0
-        tokens = tokens[:-1]
-
-        if not tokens:
-            # Empty clause (always false) - valid in DIMACS
-            continue
+        # A clause may be continued over several lines; it ends at its 0.
+        # The terminating 0 must be the last token on its line.
+        terminated = tokens[-1] == 0
+        if terminated:
+            tokens = tokens[:-1]
+        if pending_start is None:
+            pending_start = line_num
 
         # Convert to our Literal format
-        literals = []
         for lit in tokens:
             if lit == 0:
                 raise DIMACSParseError(
@@ -134,9 +136,19 @@ def parse_dimacs(content: str) -> CNFExpression:
 
             var_name = var_map[var_num]
             negated = (lit < 0)
-            literals.append(Literal(var_name, negated))
+            pending.append(Literal(var_name, negated))
 
-        clauses.append(Clause(literals))
+        if terminated:
+            # A lone 0 is the empty clause, which is always false. It must be
+            # kept: dropping it would turn an UNSAT formula into a SAT one.
+            clauses.append(Clause(pending))
+            pending = []
+            pending_start = None
+
+    if pending:
+        raise DIMACSParseError(
+            f"Line {pending_start}: Clause must end with 0"
+        )
 
     # Verify we got expected number of clauses
     if num_clauses is not None and len(clauses) != num_clauses:

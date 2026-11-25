@@ -192,32 +192,30 @@ print(f"Independent components: {len(components)}")
 solution = forced.copy()
 for comp in components:
     sol = solve_sat(comp)
-    if sol:
-        solution.update(sol)
+    if sol is None:  # one UNSAT component makes the whole formula UNSAT
+        solution = None
+        break
+    solution.update(sol)
 ```
 
 ### Solution Enumeration
 
 ```python
-from bsat import DPLLSolver, CNFExpression
+from bsat import find_all_sat_solutions, count_sat_solutions, CNFExpression
 
 cnf = CNFExpression.parse("(x | y)")
 
-# Disable pure literal elimination to enumerate every distinct assignment
-solver = DPLLSolver(cnf, use_pure_literal=False)
-
-all_solutions = solver.find_all_solutions()
+# Enumerate every distinct satisfying assignment
+all_solutions = find_all_sat_solutions(cnf)
 print(f"Found {len(all_solutions)} solutions:")  # 3
 for sol in all_solutions:
     print(f"  {sol}")
 
-print(f"Total solutions: {solver.count_solutions()}")
+print(f"Total solutions: {count_sat_solutions(cnf)}")
 
 # Limit the search for formulas with many solutions
-some = solver.find_all_solutions(max_solutions=100)
+some = find_all_sat_solutions(cnf, max_solutions=100)
 ```
-
-The convenience functions `find_all_sat_solutions()` and `count_sat_solutions()` run with pure literal elimination enabled, which fixes pure variables to one value and can therefore skip solutions (they report 2 for `(x | y)`). Use the `DPLLSolver` form above when you need an exact count.
 
 ### k-SAT to 3-SAT Reduction
 
@@ -242,8 +240,8 @@ print(f"Solution: {solution}")  # Only original variables
 
 | Problem Type | Solver | Complexity | Complete | Use When |
 |-------------|---------|-----------|----------|----------|
-| **2SAT** | `solve_2sat()` | Polynomial (linear-time algorithm) | ✅ | Every clause has exactly 2 literals |
-| **Horn-SAT** | `solve_horn_sat()` | Polynomial | ✅ | At most 1 positive literal per clause |
+| **2SAT** | `solve_2sat()` | O(n+m) (linear time) | ✅ | Every clause has exactly 2 literals |
+| **Horn-SAT** | `solve_horn_sat()` | O(n+m) (linear time) | ✅ | At most 1 positive literal per clause |
 | **XOR-SAT** | `solve_xorsat()` | O(n³) | ✅ | Parity constraints |
 | **General SAT** | `solve_sat()` | O(2ⁿ)* | ✅ | Small formulas; reading how DPLL works |
 | **General SAT** | `solve_cdcl()` | O(2ⁿ)* | ✅ | Larger or structured formulas |
@@ -355,6 +353,7 @@ python tests/test_preprocessing.py
 python tests/test_reductions.py
 python tests/test_dimacs.py
 python tests/test_benchmarks.py
+python tests/test_regressions.py   # regression tests for previously fixed bugs
 python tests/test_c_solver.py      # optional; skipped unless the C library is built
 ```
 

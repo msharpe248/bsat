@@ -538,7 +538,7 @@ print(f"Is 2SAT? {is_2sat(cnf)}")  # True
 
 result = solve_2sat(cnf)
 print(f"Solution: {result}")
-# Possible output: {'x': True, 'y': False, 'z': True}
+# Output: Solution: {'x': True, 'y': False, 'z': True}
 ```
 
 **Complexity:** O(n + m) using SCC algorithm (Kosaraju or Tarjan)

@@ -21,7 +21,7 @@ result = solve_2sat(cnf)
 
 **Pros**:
 - ✅ Guaranteed polynomial time
-- ✅ Very fast even for large instances (the DFS is recursive, so very large dense instances can hit Python's recursion limit)
+- ✅ Very fast even for large instances
 - ✅ Always finds solution if one exists
 
 **Cons**:
@@ -161,7 +161,7 @@ result = solve_xorsat(cnf)  # {'x': True, 'y': False}
 ### Horn-SAT Solver ✅
 **Status**: Implemented
 **Algorithm**: Unit propagation with all-false initialization
-**Complexity**: Polynomial time - O(n+m) for the optimal algorithm; this implementation's fixpoint loop is O(n·m) worst case
+**Complexity**: Linear time - O(n+m)
 **Use Case**: Horn clauses (at most 1 positive literal per clause)
 
 [Read more →](hornsat-solver.md)
@@ -212,7 +212,7 @@ print(f"Total flips: {stats.total_flips}")
 - ✅ Extremely simple algorithm
 - ✅ Low memory usage
 - ✅ Great for educational purposes
-- ✅ Reproducible with seed parameter (within one Python process)
+- ✅ Reproducible with seed parameter
 - ✅ Statistics tracking
 
 **Cons**:
@@ -373,13 +373,13 @@ These are rough guidelines for the pure-Python implementations in this package (
 - **Variables**: Up to ~100,000 on sparse instances
 - **Clauses**: Up to ~100,000
 - **Time**: Milliseconds to about a second
-- **Note**: Linear time, but the recursive DFS can raise `RecursionError` on large instances with long implication chains
+- **Note**: Linear time; the SCC search is iterative, so long implication chains are fine (a 200,000-clause chain takes a couple of seconds)
 
 ### Horn-SAT
 - **Variables**: Up to ~100,000
 - **Clauses**: Up to ~500,000
 - **Time**: Milliseconds to seconds
-- **Note**: Polynomial; the fixpoint loop is O(n·m) in the worst case
+- **Note**: Linear time (counter-based unit propagation)
 
 ### DPLL with Optimizations
 - **Variables**: Up to ~100-200

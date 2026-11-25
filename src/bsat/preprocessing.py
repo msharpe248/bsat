@@ -416,7 +416,13 @@ def decompose_and_preprocess(cnf: CNFExpression,
         **preprocess_args: Arguments to pass to preprocessing
 
     Returns:
-        Tuple of (component_list, forced_assignments, combined_stats)
+        Tuple of (component_list, forced_assignments, combined_stats).
+
+        If preprocessing proves a component unsatisfiable, that component is
+        returned as a formula containing only the empty clause (⊥). Every
+        solver reports UNSAT for it, so a caller that solves each returned
+        component and treats any UNSAT result as UNSAT for the whole formula
+        gets the right answer.
 
     Example:
         >>> cnf = CNFExpression.parse("(a | b) & a & (c | d) & c")
@@ -441,12 +447,20 @@ def decompose_and_preprocess(cnf: CNFExpression,
     for component in components:
         result = preprocess_cnf(component, **preprocess_args)
 
-        # Only add non-trivial components
-        if result.is_sat is None and len(result.simplified.clauses) > 0:
-            simplified_components.append(result.simplified)
+        if result.is_sat is False:
+            # Preprocessing proved this component unsatisfiable, which makes the
+            # whole formula unsatisfiable. Report it as a component consisting
+            # of the empty clause, so that solving the returned components
+            # yields UNSAT. Its partial assignments are meaningless, so they
+            # are not collected.
+            simplified_components.append(CNFExpression([Clause([])]))
+        else:
+            # Only add non-trivial components
+            if result.is_sat is None and len(result.simplified.clauses) > 0:
+                simplified_components.append(result.simplified)
 
-        # Collect assignments
-        all_assignments.update(result.assignments)
+            # Collect assignments
+            all_assignments.update(result.assignments)
 
         # Aggregate stats
         combined_stats.unit_propagations += result.stats.unit_propagations

@@ -208,8 +208,7 @@ solver_both = DPLLSolver(cnf)
 
 ### Solution Enumeration
 
-The DPLL solver can enumerate satisfying assignments, not just find one. To get **every** distinct
-solution, pure literal elimination must be disabled (see the note below):
+The DPLL solver can enumerate **every** distinct satisfying assignment, not just find one:
 
 ```python
 from bsat import DPLLSolver, find_all_sat_solutions, count_sat_solutions, CNFExpression
@@ -217,21 +216,20 @@ from bsat import DPLLSolver, find_all_sat_solutions, count_sat_solutions, CNFExp
 formula = "(x | y)"
 cnf = CNFExpression.parse(formula)
 
-# Method 1: Solver class with pure literal elimination disabled - ALL solutions
-solver = DPLLSolver(cnf, use_pure_literal=False)
-all_solutions = solver.find_all_solutions()
+# Method 1: Convenience function - ALL solutions
+all_solutions = find_all_sat_solutions(cnf)
 print(f"Found {len(all_solutions)} solutions")   # Found 3 solutions
 for sol in all_solutions:
     print(f"  {sol}")
-print(f"Total solutions: {solver.count_solutions()}")   # Total solutions: 3
 
-# Method 2: Convenience functions (default optimizations, may return fewer)
-some_solutions = find_all_sat_solutions(cnf)
-print(f"Found {len(some_solutions)} solutions")   # Found 2 solutions
-
-# Method 3: Just count (same caveat; equivalent to len(find_all_sat_solutions(cnf)))
+# Method 2: Just count (equivalent to len(find_all_sat_solutions(cnf)))
 count = count_sat_solutions(cnf)
-print(f"Total solutions: {count}")                # Total solutions: 2
+print(f"Total solutions: {count}")                # Total solutions: 3
+
+# Method 3: Using the solver class
+solver = DPLLSolver(cnf)
+print(f"Found {len(solver.find_all_solutions())} solutions")   # Found 3 solutions
+print(f"Total solutions: {solver.count_solutions()}")           # Total solutions: 3
 ```
 
 **Limiting the Search**:
@@ -249,24 +247,24 @@ solutions = solver.find_all_solutions(max_solutions=100)
 
 **Important Note on Optimizations**:
 
-When optimizations are enabled (default), pure literal elimination fixes each pure variable to a single
-value, so solutions with the other value are skipped. This also applies to the convenience functions
-`find_all_sat_solutions()` and `count_sat_solutions()`, which always use the default settings - they
-return a subset of the solutions (a lower bound on the count), not necessarily all of them. Unit
-propagation never loses solutions.
+Pure literal elimination preserves satisfiability but not the *set* of solutions: it fixes each pure
+variable to a single value, so every solution in which that variable takes the other value would be
+lost. Enumeration therefore never applies it, whatever the `use_pure_literal` setting (the setting
+still applies to `solve()`). Unit propagation is kept, because a propagated value is forced in every
+solution and so can never lose one.
 
 ```python
-# With optimizations (default)
+# Default settings
 solver1 = DPLLSolver(cnf)
 solutions1 = solver1.find_all_solutions()
-# May find fewer distinct solutions (2 of 3 for "(x | y)")
+# Finds ALL distinct solutions (3 for "(x | y)")
 
-# Without pure literal elimination
+# Plain backtracking, every optimization off
 solver2 = DPLLSolver(cnf,
                      use_unit_propagation=False,
                      use_pure_literal=False)
 solutions2 = solver2.find_all_solutions()
-# Finds ALL distinct solutions (3 for "(x | y)")
+# Same 3 solutions - only the amount of search differs
 ```
 
 **Why enumerate solutions?**
@@ -405,7 +403,7 @@ print(f"Result: {result}")  # None (UNSAT as expected)
 Find all satisfying assignments for a formula:
 
 ```python
-from bsat import DPLLSolver, CNFExpression
+from bsat import find_all_sat_solutions, CNFExpression
 
 # Scheduling problem: tasks a, b, c
 # Constraint: if a is scheduled, b must be scheduled
@@ -413,10 +411,7 @@ formula = "(~a | b)"
 cnf = CNFExpression.parse(formula)
 
 # Find all valid schedules
-solver = DPLLSolver(cnf,
-                    use_unit_propagation=False,
-                    use_pure_literal=False)
-solutions = solver.find_all_solutions()
+solutions = find_all_sat_solutions(cnf)
 
 print(f"Found {len(solutions)} valid schedules:")
 for i, sol in enumerate(solutions, 1):
@@ -434,13 +429,13 @@ for i, sol in enumerate(solutions, 1):
 **Model Counting Example**:
 
 ```python
-from bsat import DPLLSolver, CNFExpression
+from bsat import count_sat_solutions, CNFExpression
 
 formula = "(x | y) & (~x | z)"
 cnf = CNFExpression.parse(formula)
 
-# Count satisfying assignments (pure literal elimination off for an exact count)
-count = DPLLSolver(cnf, use_pure_literal=False).count_solutions()
+# Count satisfying assignments
+count = count_sat_solutions(cnf)
 total_possible = 2 ** len(cnf.get_variables())
 
 print(f"Satisfying assignments: {count}/{total_possible}")

@@ -301,7 +301,7 @@ This is 2SAT - solvable in polynomial time!
 SAT: {'x': True, 'y': False, 'z': True}
 ```
 
-(The solver may instead return `{'x': False, 'y': True, 'z': False}` — both assignments are valid and which one you get can vary between runs.)
+(`{'x': False, 'y': True, 'z': False}` is also a valid assignment; the solver returns the same one on every run.)
 
 #### Implication Graph Example
 

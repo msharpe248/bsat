@@ -139,8 +139,17 @@ class DavisPutnamSolver:
             DPLL or CDCL solvers.
         """
         # Copy clauses for solving (will be modified)
-        working_clauses = [Clause(list(c.literals)) for c in self.clauses]
+        # Tautological clauses such as (x ∨ ¬x ∨ a) are always true; drop them
+        # up front so resolution never has to resolve a clause with itself.
+        working_clauses = [
+            Clause(list(c.literals)) for c in self.clauses if not self._is_tautology(c)
+        ]
         self.assignment = {}
+
+        # Variables eliminated by resolution, with the clauses that mentioned
+        # them at the time. Resolution only decides satisfiability; these saved
+        # clauses are what lets us rebuild a model afterwards.
+        eliminated: List[Tuple[str, List[Clause]]] = []
 
         # Track maximum clause count for educational purposes
         self.stats.max_clauses = len(working_clauses)
@@ -185,7 +194,12 @@ class DavisPutnamSolver:
                 # No more variables - formula satisfied!
                 break
 
-            # Perform resolution on this variable
+            # Remember the clauses mentioning this variable, then resolve it away
+            eliminated.append((
+                var_to_eliminate,
+                [c for c in working_clauses
+                 if any(lit.variable == var_to_eliminate for lit in c.literals)]
+            ))
             working_clauses = self._resolve_variable(working_clauses, var_to_eliminate)
 
             # Check for empty clause (UNSAT)
@@ -196,28 +210,37 @@ class DavisPutnamSolver:
             self.stats.variables_eliminated += 1
             self.stats.max_clauses = max(self.stats.max_clauses, len(working_clauses))
 
-        # No clauses remain - formula is satisfiable
-        # Complete assignment for any unassigned variables
-        # Use arbitrary values (formula is already satisfied)
-        for var in self.variables:
-            if var not in self.assignment:
-                self.assignment[var] = False  # Arbitrary choice (formula already SAT)
-
+        # No clauses remain - formula is satisfiable.
         self.stats.final_clauses = len(working_clauses)
 
-        # Verify the solution is valid
-        if not self.original_cnf.evaluate(self.assignment):
-            # This shouldn't happen, but if it does, try to fix it
-            # by checking which variables need to be flipped
-            for var in self.variables:
-                if var not in self.assignment:
+        # Model reconstruction.
+        # Variables that simply dropped out of the formula are unconstrained.
+        eliminated_vars = {var for var, _ in eliminated}
+        for var in self.variables:
+            if var not in self.assignment and var not in eliminated_vars:
+                self.assignment[var] = False  # Arbitrary choice
+
+        # Variables removed by resolution are restored in reverse order of
+        # elimination. When x was eliminated, every clause (x ∨ A) and (¬x ∨ B)
+        # was replaced by its resolvents (A ∨ B). All resolvents are satisfied
+        # by the assignment built so far, so at most one side can still need x:
+        # set x to True exactly when some clause (x ∨ A) has A false.
+        for var, var_clauses in reversed(eliminated):
+            needs_true = False
+            for clause in var_clauses:
+                is_positive = any(
+                    lit.variable == var and not lit.negated for lit in clause.literals
+                )
+                if not is_positive:
                     continue
-                # Try flipping this variable
-                self.assignment[var] = not self.assignment[var]
-                if self.original_cnf.evaluate(self.assignment):
+                others_false = all(
+                    self.assignment[lit.variable] == lit.negated
+                    for lit in clause.literals if lit.variable != var
+                )
+                if others_false:
+                    needs_true = True
                     break
-                # Flip back if didn't help
-                self.assignment[var] = not self.assignment[var]
+            self.assignment[var] = needs_true
 
         return self.assignment
 
@@ -262,11 +285,13 @@ class DavisPutnamSolver:
         pure_positive = positive_vars - negative_vars
         pure_negative = negative_vars - positive_vars
 
+        # min() rather than set.pop() so the choice, and therefore the returned
+        # model, is the same on every run
         if pure_positive:
-            var = pure_positive.pop()
+            var = min(pure_positive)
             return Literal(var, negated=False)
         elif pure_negative:
-            var = pure_negative.pop()
+            var = min(pure_negative)
             return Literal(var, negated=True)
 
         return None
@@ -346,7 +371,8 @@ class DavisPutnamSolver:
             return None
 
         # Choose variable with minimum occurrence
-        return min(var_counts.keys(), key=lambda v: var_counts[v])
+        # Ties are broken by name so the elimination order is deterministic
+        return min(sorted(var_counts.keys()), key=lambda v: var_counts[v])
 
     def _resolve_variable(self, clauses: List[Clause], var: str) -> List[Clause]:
         """

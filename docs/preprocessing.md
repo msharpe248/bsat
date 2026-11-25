@@ -262,7 +262,7 @@ print(f"Reduction: {stats}")
 
 `components` contains only the components that still need solving (here none, so `Components: 0`).
 
-> **Caveat (current implementation)**: a component that preprocessing proves UNSAT (e.g. `a & ~a`) is dropped from the returned list without any UNSAT flag. Always check the merged result with `cnf.evaluate(solution)` as in the workflow below, or use `preprocess_cnf(cnf).is_sat`, which reports `False` in that case.
+> **UNSAT components**: if preprocessing proves a component UNSAT (e.g. `a & ~a`), that component is returned as a formula containing only the empty clause (it prints as `⊥`), which every solver reports as UNSAT. So the pattern is: solve each returned component, and if any of them is UNSAT the whole formula is UNSAT (see the workflow below).
 
 ### Selective Techniques
 
@@ -296,14 +296,15 @@ all_solutions = forced.copy()
 
 for component in components:
     solution = solve_sat(component)
-    if solution:
-        all_solutions.update(solution)
-    else:
+    if solution is None:
+        # One UNSAT component makes the whole formula UNSAT
         print("UNSAT!")
+        all_solutions = None
         break
+    all_solutions.update(solution)
 
 # 4. Verify
-if all_solutions:
+if all_solutions is not None:
     print(f"Solution: {all_solutions}")
     print(f"Valid: {cnf.evaluate(all_solutions)}")
 ```
@@ -433,10 +434,13 @@ print(f"Components: {len(components)}")
 solution = forced.copy()
 for comp in components:
     sol = solve_sat(comp)
-    if sol:
-        solution.update(sol)
+    if sol is None:
+        # One UNSAT component makes the whole formula UNSAT
+        solution = None
+        break
+    solution.update(sol)
 
-print(f"Solution: {solution}")
+print(f"Solution: {solution}")  # None means UNSAT
 ```
 
 ---

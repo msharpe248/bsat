@@ -25,7 +25,7 @@ Schöning, U. (1999). "A probabilistic algorithm for k-SAT and
 constraint satisfaction problems". FOCS 1999.
 """
 
-from typing import Dict, Optional, List, Set
+from typing import Dict, Optional, List, Set, Tuple
 from dataclasses import dataclass
 import random
 from .cnf import CNFExpression, Clause, Literal
@@ -91,7 +91,9 @@ class SchoeningSolver:
             seed: Random seed for reproducibility
         """
         self.cnf = cnf
-        self.variables = list(cnf.get_variables())
+        # Sorted so that a given seed produces the same run in every process
+        # (set iteration order of strings varies with hash randomization)
+        self.variables = sorted(cnf.get_variables())
         self.n = len(self.variables)
         self.stats = SchoeningStats()
 
@@ -224,7 +226,7 @@ def solve_schoening(cnf: CNFExpression, max_tries: int = 1000,
 
 def get_schoening_stats(cnf: CNFExpression, max_tries: int = 1000,
                         max_flips: Optional[int] = None,
-                        seed: Optional[int] = None) -> tuple[Optional[Dict[str, bool]], SchoeningStats]:
+                        seed: Optional[int] = None) -> Tuple[Optional[Dict[str, bool]], SchoeningStats]:
     """
     Solve SAT with Schöning's algorithm and return detailed statistics.
 

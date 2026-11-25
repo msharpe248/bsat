@@ -677,9 +677,12 @@ class CDCLSolver:
             for clause in self.clauses:
                 self.stats.clauses_checked += 1
 
-                # Skip empty clauses
+                # Skip deleted clauses. Clauses removed by on-the-fly
+                # subsumption or blocked clause elimination are replaced by an
+                # empty tombstone; they are not conflicts. (A genuinely empty
+                # input clause is detected at the start of solve().)
                 if len(clause.literals) == 0:
-                    return clause
+                    continue
 
                 # Evaluate clause
                 satisfied = False
@@ -1669,6 +1672,11 @@ class CDCLSolver:
         """
         eliminated = 0
 
+        # Removing a blocked clause preserves satisfiability but not models: a
+        # model of the reduced formula may falsify the removed clause. Record
+        # each removal so solve() can repair the model afterwards.
+        self._bce_stack: List[Tuple[Literal, Clause]] = []
+
         # Only eliminate from original clauses (indices < num_original_clauses)
         for i in range(self.num_original_clauses):
             clause = self.clauses[i]
@@ -1679,6 +1687,7 @@ class CDCLSolver:
             for lit in clause.literals:
                 if self._clause_is_blocked(clause, lit):
                     # Clause is blocked on this literal - eliminate it
+                    self._bce_stack.append((lit, clause))
                     self.clauses[i] = Clause([])
 
                     # Remove watches if using watched literals
@@ -1689,6 +1698,27 @@ class CDCLSolver:
                     break  # Don't need to check other literals
 
         return eliminated
+
+    def _reconstruct_bce_model(self, model: Dict[str, bool]) -> Dict[str, bool]:
+        """
+        Extend a model of the BCE-reduced formula to a model of the original.
+
+        Removed clauses are revisited in reverse order of elimination. If one
+        is falsified, its blocking literal is flipped to true. Because the
+        clause was blocked on that literal, the flip cannot falsify any clause
+        that was still present when it was removed.
+
+        Args:
+            model: Satisfying assignment of the reduced formula
+
+        Returns:
+            Satisfying assignment of the original formula
+        """
+        for blocking_lit, clause in reversed(getattr(self, '_bce_stack', [])):
+            satisfied = any(model[lit.variable] != lit.negated for lit in clause.literals)
+            if not satisfied:
+                model[blocking_lit.variable] = not blocking_lit.negated
+        return model
 
     def _failed_literal_probing(self) -> bool:
         """
@@ -1812,7 +1842,7 @@ class CDCLSolver:
 
             if branch_result is None:
                 # All variables assigned - SAT!
-                return dict(self.assignment)
+                return self._reconstruct_bce_model(dict(self.assignment))
 
             var, polarity = branch_result
 

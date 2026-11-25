@@ -194,8 +194,7 @@ print(f"Statistics: {solver.get_stats()}")
 
 **`seed`** (default: None)
 - Random seed for reproducibility (seeds Python's global `random` module)
-- Same seed → same results within one Python process
-- Across separate runs the result can still differ, because the solver's variable order comes from a `set` (string hash randomization); set `PYTHONHASHSEED` for fully reproducible runs
+- Same seed → same results, on every run
 - Useful for testing and debugging
 
 ---
@@ -339,7 +338,7 @@ cnf = CNFExpression.parse("(a | b | c) & (~a | b | ~c) & (a | ~b | c)")
 solution = solve_schoening(cnf, seed=42)
 
 print(f"Solution: {solution}")
-# Possible output: Solution: {'a': True, 'b': True, 'c': False}
+# Output: Solution: {'a': True, 'b': True, 'c': False}
 ```
 
 ### Example 2: Track Statistics
@@ -358,7 +357,7 @@ print(f"Flips per try: {stats.flips_per_try}")
 ### Example 3: Reproducibility
 
 ```python
-# Same seed → same results (within one Python process)
+# Same seed → same results
 sol1 = solve_schoening(cnf, seed=123)
 sol2 = solve_schoening(cnf, seed=123)
 assert sol1 == sol2  # ✓ Reproducible

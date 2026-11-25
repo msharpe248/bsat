@@ -11,15 +11,15 @@ cd research/benchmarks
 
 This runs the validation levels in sequence and writes logs and reports to `validation_results/`.
 
-**Prerequisite:** the validation scripts import `benchmark.py`, which needs the third-party
-`tabulate` package (`pip install tabulate`). Without it every Python step fails with
-`ModuleNotFoundError`.
+**Prerequisites:** none beyond the standard library. The validation scripts import `benchmark.py`,
+which uses the third-party `tabulate` package for tables if it is installed and a built-in
+formatter otherwise.
 
-**Known issues with `reproduce_validation.sh` (current state):**
-- Level 4 calls `run_full_benchmark.py`, which is no longer in the repository, so that step
-  cannot run (see Level 4 below for the closest current equivalent).
-- Each step is piped through `tee`, so the script's ✅/❌ banners reflect `tee`'s exit status, not
-  the Python script's. Always check the logs in `validation_results/` rather than the banners.
+**Notes on `reproduce_validation.sh`:**
+- Level 4 runs `benchmark.py --all` (the original `run_full_benchmark.py` is no longer in the
+  repository; see Level 4 below).
+- Each step is piped through `tee` with `set -o pipefail`, so the script's ✅/❌ banners reflect
+  the Python script's exit status. The full output of each step is in `validation_results/`.
 
 **Status of the headline numbers:** the large speedups quoted in `BENCHMARKS.md` (e.g. CGPM-SAT
 2710×) were measured on 2025-10-16 against a baseline CDCL solver that was later found to have
@@ -108,7 +108,8 @@ python3 profile_solvers.py --output profile_report.md
 **File:** `run_full_benchmark.py` — **no longer in the repository** (removed together with its
 output `benchmark_results_full.md`). It produced the 15-problem, 7-solver tables in `BENCHMARKS.md`.
 
-The closest current equivalent is the comprehensive mode of `benchmark.py`:
+`reproduce_validation.sh` now runs the closest current equivalent, the comprehensive mode of
+`benchmark.py` (`benchmark.py --all --output validation_results/benchmark_results_full.md`):
 - 15 generated problems (3 each: modular, backbone, chain, circuit, random 3-SAT) — not the
   identical problem list used for `BENCHMARKS.md`
 - 7 solvers by default (DPLL, CDCL, Schöning + CoBD-SAT, BB-CDCL, LA-CDCL, CGPM-SAT);
@@ -167,8 +168,8 @@ validation_results/
 ├── statistical_results.csv         # Level 2 CSV data
 ├── profiling.log                   # Level 3 console output
 ├── profile_report.md               # Level 3 markdown report
-└── full_benchmark.log              # Level 4 console output (currently just the
-                                    # "can't open file run_full_benchmark.py" error)
+├── full_benchmark.log              # Level 4 console output
+└── benchmark_results_full.md       # Level 4 markdown report
 ```
 
 ### Key Files to Review
@@ -281,9 +282,6 @@ And that the research solver packages are in the parent directory:
 ```bash
 ls ../cobd_sat/ ../cgpm_sat/  # Should exist
 ```
-
-`ModuleNotFoundError: No module named 'tabulate'` means the `tabulate` package is missing
-(`pip install tabulate`).
 
 ### Correctness validation fails
 

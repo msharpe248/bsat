@@ -196,7 +196,7 @@ See the **[complete WalkSAT documentation](walksat-solver.md)** for:
 
 ### Algorithm
 
-Horn-SAT can be solved in **linear time** O(n+m) using unit propagation (the implementation here uses a simpler fixpoint loop that is O(n·m) in the worst case - see [Horn-SAT Solver](hornsat-solver.md)):
+Horn-SAT can be solved in **linear time** O(n+m) using unit propagation (the implementation here is the counter-based algorithm of Dowling & Gallier - see [Horn-SAT Solver](hornsat-solver.md)):
 
 ```
 1. Set all variables to False initially
@@ -232,7 +232,7 @@ else:
 Unit propagation on Horn clauses always makes progress:
 - Each iteration either satisfies a clause or forces a variable
 - No backtracking needed!
-- Linear time complexity O(n+m) with the counter-based algorithm
+- Linear time complexity O(n+m): a per-clause counter means each literal is visited only once
 
 ### Applications
 
@@ -257,9 +257,9 @@ result = solve_horn_sat(cnf)
 
 ### Performance
 
-- **Time**: O(n+m) for the optimal algorithm; O(n·m) worst case for this implementation's fixpoint loop
-- **Space**: O(n) - Variable assignments
-- **Practical**: Polynomial, no search - around 0.2s for 10,000 variables / 50,000 clauses in pure Python
+- **Time**: O(n+m) - Linear in formula size
+- **Space**: O(n+m) - Variable assignments, clause counters and occurrence lists
+- **Practical**: Linear, no search - around 40ms for 10,000 variables / 50,000 clauses in pure Python
 
 ### Further Reading
 
@@ -335,7 +335,7 @@ See the **[complete XOR-SAT documentation](xorsat-solver.md)** for:
 
 ### Horn-SAT ✅
 - [x] Horn formula detection
-- [x] Unit propagation to fixpoint
+- [x] Linear-time unit propagation (per-clause counters)
 - [x] All-false initialization
 - [x] Statistics tracking
 

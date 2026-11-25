@@ -169,3 +169,6 @@ research/benchmarks/*_results.txt
 
 # Publication ideas and drafts
 publication_ideas/
+
+# Output of research/benchmarks/reproduce_validation.sh
+research/benchmarks/validation_results/

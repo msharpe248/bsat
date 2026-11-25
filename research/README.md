@@ -295,7 +295,7 @@ This suite explores 8 different approaches to SAT solving, from novel research i
 
 **Note**: Experimental approach - traditional CDCL is more reliable for production
 
-**Known limitation**: evolved clauses are added without checking that they are implied by the formula, so once evolution has run an UNSAT answer is not trustworthy (false UNSATs have been observed on satisfiable random 3-SAT with a low `evolution_frequency`); returned SAT models are always valid. See `cegp_sat/README.md`.
+**Soundness**: evolved clauses are only added if a reverse-unit-propagation check shows they are implied by the formula; candidates that fail the check are discarded (counted in `stats.rejected_clauses`), so SAT and UNSAT answers are both sound. See `cegp_sat/README.md`.
 
 **See**: `cegp_sat/README.md` for detailed algorithm description
 
@@ -474,7 +474,7 @@ This suite explores completely new paradigms for SAT solving, drawing inspiratio
 > figure compares BB-CDCL with itself before and after its early-UNSAT fix; the "after" time
 > (~0.1-0.5 ms) is reproducible with `bugs/test_bb_cdcl_unsat_fix.py`, the 6.3 s "before" time is not.
 > (The `bugs/` scripts import `benchmark.py`; run them from the repository root as
-> `PYTHONPATH=src:research:research/benchmarks python3 research/bugs/<script>.py`, with `tabulate` installed.)
+> `PYTHONPATH=src:research:research/benchmarks python3 research/bugs/<script>.py`.)
 
 **See** `ALGORITHM_SHOWCASE.md` for the original (historical) performance analysis and projected real-world applications.
 
@@ -595,7 +595,7 @@ research/
 │   ├── BENCHMARK_RESULTS.md        # Medium-suite results (October 2025)
 │   ├── VALIDATION_GUIDE.md         # Validation procedure
 │   ├── run_all_benchmarks.py       # Main runner: all solvers on DIMACS suites
-│   ├── benchmark.py                # Problem generators + benchmark tool (needs tabulate)
+│   ├── benchmark.py                # Problem generators + benchmark tool
 │   ├── statistical_benchmark.py    # Multi-run statistics
 │   ├── validate_correctness.py     # Correctness cross-checks
 │   ├── profile_solvers.py          # cProfile/tracemalloc profiling
@@ -880,7 +880,7 @@ Quick benchmark on the 9 simple instances for rapid testing.
 
 ### Generated Problems, Statistics and Validation
 
-These scripts require the third-party `tabulate` package (`pip install tabulate`):
+These scripts need only the standard library (`tabulate` is used for table formatting if installed):
 
 ```bash
 cd research/benchmarks
