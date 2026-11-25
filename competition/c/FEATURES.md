@@ -59,8 +59,10 @@ Authoritative reference of currently implemented solver features, defaults
   reluctant doubling restarts, target phases) modes.
 - **Reason-side bumping**: boosts non-learned antecedents during conflict
   analysis on larger formulas (`num_vars >= 300`).
-- **6-step target rephasing**: cycles best-trail target, inverted, original, and
-  flipped polarities every `--rephase-interval` (default `1000`) conflicts.
+- **6-step Stable-mode target rephasing**: cycles Kissat-style `B/W/I/B/W/O`
+  (best-trail, bounded ProbSAT walk, inverted, original) polarities at level 0
+  in Stable mode with growing intervals (`--rephase-interval`, default `1000`),
+  syncing separated `target_phase[]` without wiping unassigned entries.
 - **Alternative heuristics**: pure VMTF (`--vmtf`), recency-weighted LRB/CHB
   (`--lrb`), pure VSIDS (`--no-alternating --vsids`), sliding-window Glucose
   restarts (`--glucose-restart-avg`), and Luby restarts (`--luby-restart`).
@@ -119,11 +121,14 @@ disabled in append-only `BSAT_CERTIFICATES` journals, assumption calls, and
   and insertion-sort conditional-swap chains on non-mutex columns with zero
   residual auxiliary variables.
 - **GF(2) Gaussian Elimination (`src/gauss.c`)**: 2..7-var XOR extraction,
-  subsumed/strengthened XOR recovery, Tseitin XOR-chain stitching, and
+  subsumed/strengthened XOR recovery, Tseitin XOR-chain stitching,
   connected-component root Gauss-Jordan RREF (emitting linear Tseitin XOR-chain
-  addition DRAT proofs from RREF history bitmasks under `--proof`), plus live
-  in-search Bird/Han-Jiang two-watched-column matrices in non-proof mode with
-  zero-undo backtracking, BVE protection, and temporary 1-UIP reason clauses.
+  addition DRAT proofs from RREF history bitmasks under `--proof`), and live
+  in-search Bird/Han-Jiang two-watched-column matrices with zero-undo
+  backtracking, BVE protection, temporary 1-UIP reason clauses, and persistent
+  row Tseitin XOR-chain DRAT proofs on compact matrices (`<= 128` rows,
+  `<= 2,048` cumulative proof-row merges, with automatic level-0 CDCL fallback
+  above budget).
 
 ### 6. Parallel Portfolio & Operational Controls (`src/portfolio.c`, `src/main.c`, `src/bsat.c`)
 - **Multi-core portfolio (`-j N` / `--threads N`)**: runs `N` isolated worker

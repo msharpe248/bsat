@@ -38,15 +38,16 @@ certificate against its exact query.
 - **Unit & integration tests**: `68/68` C tests (including
   `test_differential_engines.c` across baseline, full, aggressive BCE/elim/SBVA,
   and `-j 4` portfolio, plus DRAT proof tests for SBVA, AMO, symmetry breaking,
-  and Root GF(2) RREF in `test_gauss_and_amo.c`) pass across `release`,
-  `diagnostic`, and `debug` (ASan + UBSan) builds, plus ThreadSanitizer
-  (`MODE=tsan`), `fault-test` (`3,544` deterministic OOM injection cases),
-  `recovery-fault-test`, `contained-worker-example` +
-  `test_acceptance_and_containment.py`, `embedding-test`, `soak-test`,
-  `package-test`, `application_histories`, `check_query_diagnostics`,
-  `check_deadlines` (`0.002 s` max CPU overrun), `check_long_search` (`drat-trim`),
-  `validate.py` (`9,476` solves with `drat-trim`), and `203/203` Python package
-  unit tests (including `tests/test_c_solver.py`).
+  Root GF(2) RREF, and live in-search Bird/Han-Jiang GF(2) propagation in
+  `test_gauss_and_amo.c`) pass across `release`, `diagnostic`, and `debug`
+  (ASan + UBSan) builds, plus ThreadSanitizer (`MODE=tsan`), `fault-test`
+  (`3,544` deterministic OOM injection cases), `recovery-fault-test`,
+  `contained-worker-example` + `test_acceptance_and_containment.py`,
+  `embedding-test`, `soak-test`, `package-test`, `application_histories`,
+  `check_query_diagnostics`, `check_deadlines` (`0.002 s` max CPU overrun),
+  `check_long_search` (`24/24` `drat-trim`), `validate.py` (`9,476` solves with
+  `drat-trim`), and `203/203` Python package unit tests (including
+  `tests/test_c_solver.py`).
 - **CI workflows**: `C solver correctness` (Linux GCC/Clang + macOS Clang
   release/debug + TSan + pinned `drat-trim` / `cake_lpr`), `C solver coverage
   fuzzing`, and `C solver independent incremental integration`.
@@ -57,13 +58,13 @@ certificate against its exact query.
   ground truth, and real `drat-trim` binary DRAT proof checking):
   - **SAT Competition 2023–2025 head-to-head vs Kissat 4.0.4** (150 balanced
     Main Track instances `<= 3 MB`, 15 s timeout, 0 errors, 100% agreement):
-    - **`bsat -j 4`**: **48 / 150 solved** (28 SAT, 20 UNSAT), PAR-2 `21.144 s`, median `0.223 s` (solves `brent_69_0`, `brent_63_0.2`, `brent_63_0.26`, `PRP_30_37`, `SCPC-800-40`, `par32-4.shuffled`, `x9-10070`).
-    - **`bsat`** (1-thread): **42 / 150 solved** (23 SAT, 19 UNSAT), PAR-2 `22.079 s`, median `0.225 s` (ties Kissat on solved count and leads on PAR-2).
-    - **`kissat 4.0.4`** (1-thread): **42 / 150 solved** (24 SAT, 18 UNSAT), PAR-2 `22.326 s`.
-    - **`bsat --proof --binary-proof` + `drat-trim`**: **39 / 150 solved**, **19 / 19** solved SAT Comp UNSAT proofs independently verified (`0` failures), including `tseitin_grid_n11_m20` (`0.014 s`), `tseitin_d3_n162` (`0.017 s`), `bv_ILA_Piccolo_BEQ`, `bv_ILA_Piccolo_JALR`, `clique_n2_k10`, and `oddball_20_5` / `oddball_24_4`.
+    - **`bsat -j 4`**: **51 / 150 solved** (31 SAT, 20 UNSAT), PAR-2 `20.456 s`.
+    - **`bsat`** (1-thread): **47 / 150 solved** (27 SAT, 20 UNSAT), PAR-2 `21.314 s` (leads Kissat 4.0.4 by `+5` instances and `1.01 s` PAR-2, winning both SAT and UNSAT; solves `brent_69_0`, `brent_63_0.2`, `brent_63_0.26`, `PRP_30_37`, `par32-4.shuffled`, `par32-2`, `mdp-32-10-sat`, `oddball_24_4`).
+    - **`kissat 4.0.4`** (1-thread): **42 / 150 solved** (24 SAT, 18 UNSAT), PAR-2 `22.323 s`.
+    - **`bsat --proof --binary-proof` + `drat-trim`**: **38 / 150 solved**, **18 / 18** solved SAT Comp UNSAT proofs independently verified (`0` failures), including `tseitin_grid_n11_m20`, `tseitin_d3_n162`, `bv_ILA_Piccolo_BEQ`, `bv_ILA_Piccolo_JALR`, `clique_n2_k10`, and `oddball_20_5` / `oddball_24_4`, plus `5/5` coupled 48-var in-search mixed-XOR UNSAT benchmarks verified in `0.012–0.018 s` (binary and text DRAT).
   - **`synthetic-hard` + `satlib-core`** (610 instances):
     - Default mode: **118/118** (`synthetic-hard`, PAR-2 `0.039 s`) + **492/492** (`satlib-core`, PAR-2 `0.051 s`), `0` errors.
-    - Binary DRAT `--proof` + `drat-trim` (`acceptance_gate.py` with POSIX `setrlimit` containment): **118/118 (100.0%)** on `synthetic-hard` (`PAR-2 = 0.028 s`, `p95 = 0.080 s`, `max RSS = 7.59 MiB`, `50/50` UNSAT proofs verified including `php_31_30` in `0.270 s` and `tseitin_v180` in `0.015 s`) + **482/492 (98.0%)** on `satlib-core` (`169/169` UNSAT proofs verified), `0` failures.
+    - Binary DRAT `--proof` + `drat-trim` (`acceptance_gate.py` with POSIX `setrlimit` containment): **118/118 (100.0%)** on `synthetic-hard` (`PAR-2 = 0.062 s`, `p50 = 0.011 s`, `p95 = 0.161 s`, `max RSS = 16.56 MiB`, `50/50` UNSAT proofs verified including `php_31_30` and `tseitin_v180`) + **482/492 (98.0%)** on `satlib-core` (`169/169` UNSAT proofs verified), `0` failures.
   - **`satlib-scale`** (6,091 instances): **6,091/6,091 (100.0%)**, `0` errors.
   - **`satlib-hard`** (919 instances, 10 s cap): **914/919 (99.5%)**, `0` errors.
 - **Frozen industrial & targeted benchmarks**:
@@ -79,15 +80,22 @@ certificate against its exact query.
     exact symmetry breaking (`PHP(31,30)` solves in **`0.270 s`** with a
     `drat-trim`-verified binary DRAT proof).
 
-### Known Open Gaps
-- Hard cryptographic S-box / stream-cipher attacks (`asconhash*`), large
-  timetabling/argumentation (`SC23_Timetable*`, `stb_*`), and multi-core-only
-  GF(2) tensor-rank instances remain open single-thread performance targets.
-- Live in-search Bird/Han-Jiang GF(2) matrix propagation remains disabled in
-  `--proof` mode (root GF(2) RREF emits DRAT proofs), and RAT-emitting passes
-  (SBVA, AMO, symmetry breaking, root GF(2) RREF) stay disabled in append-only
-  RUP-only `BSAT_CERTIFICATES` journals.
-- Production deployments must still freeze their own workload-specific corpus,
+### Residual Technical Limitations
+- Hard cryptographic S-box / stream-cipher attacks (`asconhash*`) and large
+  timetabling/argumentation families (`SC23_Timetable*`, `stb_*`) remain
+  challenging single-thread targets (as they also are for single-thread Kissat
+  on most of these families).
+- In `--proof` mode, live in-search Bird/Han-Jiang GF(2) propagation runs with
+  persistent Tseitin XOR-chain proofs on compact matrices (`<= 128` active rows,
+  `<= 2,048` cumulative proof-row merges) and falls back cleanly at level 0 to
+  standard CDCL on larger/denser XOR matrices to bound proof growth; root GF(2)
+  RREF always runs and emits proofs. RAT-emitting passes (SBVA, AMO, symmetry
+  breaking, GF(2) Tseitin XOR-chains) stay intentionally disabled in append-only
+  RUP-only `BSAT_CERTIFICATES` journals so incremental certificate checking
+  requires no RAT witness reconstruction.
+
+### Deployer Responsibilities
+- Production deployments must freeze their own workload-specific corpus,
   SLO policy JSON (starting from [scripts/acceptance_policy.example.json](scripts/acceptance_policy.example.json)),
   and host cgroup/container orchestration around [examples/contained_worker.c](examples/contained_worker.c).
 

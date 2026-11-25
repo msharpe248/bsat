@@ -66,11 +66,12 @@ Tarjan SCC substitution, Mini-Kitten SAT sweeping, global backbone extraction,
 subsumption/SSR, gate-aware and semantic Mini-CDCL definition BVE, binary
 transitive reduction, BCE, bounded factoring (`--factor`), prefix-sharing
 vivification, and **DRAT/RAT proof-producing** SBVA (`--sbva`), AMO Sinz
-sequential-counter re-encoding, exact syntactic symmetry breaking (`--sym`), and
-Root GF(2) XOR-chain RREF (`src/gauss.c`). Only live in-search Bird/Han-Jiang
-GF(2) matrix propagation stays disabled under `--proof`, and all RAT/non-RUP
-passes stay disabled in append-only `BSAT_CERTIFICATES` journals so standard
-DRAT/LRAT checkers remain strictly valid.
+sequential-counter re-encoding, exact syntactic symmetry breaking (`--sym`),
+Root GF(2) XOR-chain RREF, and bounded live in-search Bird/Han-Jiang GF(2)
+propagation (`src/gauss.c`, compact matrices `<= 128` rows / `<= 2,048`
+cumulative proof-row merges with automatic level-0 CDCL fallback above budget).
+All RAT/non-RUP passes stay disabled in append-only `BSAT_CERTIFICATES`
+journals so standard incremental RUP/DRAT/LRAT checkers remain strictly valid.
 
 ---
 
@@ -134,8 +135,10 @@ Default one-shot solving uses:
   - **GF(2) Gaussian Elimination** (`src/gauss.c`): 2..7-var XOR extraction with
     subsumed-XOR recovery, Tseitin XOR-chain stitching, connected-component root
     Gauss-Jordan RREF (emitting linear Tseitin XOR-chain addition DRAT proofs
-    from RREF history bitmasks under `--proof`), plus live in-search
-    Bird/Han-Jiang two-watched-column matrices in non-proof mode.
+    from RREF history bitmasks under `--proof`), and live in-search
+    Bird/Han-Jiang two-watched-column matrices (with persistent row Tseitin
+    XOR-chain DRAT proofs on compact matrices `<= 128` rows / `<= 2,048`
+    cumulative proof-row merges, falling back cleanly at level 0 above budget).
 - **Multi-Core Clause-Sharing Portfolio** (`-j <N>` / `--threads <N>`,
   `src/portfolio.c`, non-proof mode): Worker 0 runs full BSAT (imports only);
   Workers `1..N-1` run 8 diversified logically-equivalent profiles (including a

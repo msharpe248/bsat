@@ -32,7 +32,7 @@ Current feature comparison between the C competition solver ([`competition/c/`](
 | Model-Guided Global Backbone | ✅ (default ON) | ❌ | RUP-certified root units |
 | Forward Subsumption, SSR & Gate/Semantic BVE | ✅ (default ON) | ❌ | Cascading min-degree BVE (AND/XOR/ITE + Mini-CDCL semantic definitions) + model reconstruction |
 | Transitive Reduction & Prefix Vivification | ✅ (default ON) | ❌ | Post-BVE binary transitive reduction + O(n) prefix-sharing vivification |
-| Dynamic GF(2) XOR Gaussian Elimination | ✅ (root RREF DRAT; live in-search non-proof) | ❌ | 2..7-var XOR, subsumed recovery, Tseitin chain stitching, XOR-chain DRAT root RREF, live Bird/Han-Jiang matrices |
+| Dynamic GF(2) XOR Gaussian Elimination | ✅ (DRAT proof-producing: root RREF & bounded live in-search) | ❌ | 2..7-var XOR, subsumed recovery, Tseitin chain stitching, XOR-chain DRAT root RREF & live Bird/Han-Jiang matrices |
 | Exact Syntactic Symmetry Breaking (`--sym`) | ✅ (DRAT/RAT proof-producing) | ❌ | BreakID-style verified automorphisms + O(n) single-pair peeling / insertion-sort DRAT proofs |
 | AMO Sequential Counters & Structured BVA (`--sbva`) | ✅ (DRAT/RAT proof-producing) | ❌ | Sinz counters + 3-hop Structured BVA, both emitting RAT-valid DRAT proofs under `--proof` |
 | **Proofs, Parallelism & Embedding** | | | |
