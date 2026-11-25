@@ -239,9 +239,11 @@ SolverOpts default_opts(void) {
         .elim_max_occ = 10,       // Max occurrences to consider for elimination
         .elim_grow = 0,           // No clause growth allowed by default
 
-        // DRAT proof logging (opt-in)
-        .proof_path = NULL,       // No proof by default
+        // DRAT / LRAT proof logging (opt-in)
+        .proof_path = NULL,       // No DRAT proof by default
         .binary_proof = false,    // Text format by default
+        .lrat_path = NULL,        // No LRAT proof by default
+        .binary_lrat = false,     // Text LRAT format by default
 
         .inprocess = true,
         .inprocess_interval = 10000,
@@ -537,6 +539,25 @@ Solver* solver_new_with_opts(const SolverOpts* opts) {
         s->proof_file = fopen(opts->proof_path, opts->binary_proof ? "wb" : "w");
         if (!s->proof_file) goto error;
     }
+    s->lrat = NULL;
+    s->lrat_root_conflict = INVALID_CLAUSE;
+    if (opts->lrat_path) {
+        s->lrat = lrat_create(opts->lrat_path, opts->binary_lrat);
+        if (!s->lrat) goto error;
+        /* Keep LRAT proof logging strictly RUP-sound across CDCL + 3-state minimization + GC. */
+        s->opts.inprocess = false;
+        s->opts.sbva = false;
+        s->opts.sym = false;
+        s->opts.elim = false;
+        s->opts.bce = false;
+        s->opts.congruence = false;
+        s->opts.equiv = false;
+        s->opts.factor = false;
+        s->opts.probing = false;
+        s->opts.shrink = false;
+        s->opts.binary_minimize = false;
+        s->opts.subsumption = false;
+    }
 
     // Initialize rephasing state
     s->rephase.best_phase = NULL;  // Allocated on demand in grow_var_arrays
@@ -600,10 +621,14 @@ void solver_free(Solver* s) {
     // Free BVE state
     elim_free(s);
 
-    // Close DRAT proof file
+    // Close DRAT/LRAT proof files
     if (s->proof_file) {
         fclose(s->proof_file);
         s->proof_file = NULL;
+    }
+    if (s->lrat) {
+        lrat_free(s->lrat);
+        s->lrat = NULL;
     }
 
     free(s);
@@ -888,6 +913,7 @@ bool solver_add_clause(Solver* s, const Lit* lits, uint32_t size) {
     ASSERT(s->decision_level == 0);
     for (uint32_t i = 0; i < size; ++i)
         if (!var(lits[i]) || var(lits[i]) > s->num_vars) { s->error = true; return false; }
+    uint64_t lrat_orig_id = 0;
     if (!s->internal_add) {
         size_t needed = s->input_size + (size_t)size + 1;
         if (needed > s->input_capacity) {
@@ -899,6 +925,9 @@ bool solver_add_clause(Solver* s, const Lit* lits, uint32_t size) {
         if (size) memcpy(s->input + s->input_size, lits, size * sizeof *lits);
         s->input_size += size; s->input[s->input_size++] = 0;
         s->input_clauses++;
+        if (s->lrat) {
+            lrat_orig_id = lrat_register_original(s, INVALID_CLAUSE);
+        }
     }
     if (s->result == FALSE) return false;
     Lit small[16];
@@ -936,7 +965,15 @@ bool solver_add_clause(Solver* s, const Lit* lits, uint32_t size) {
     }
     s->clauses[s->num_clauses++] = cr;
     s->num_original = s->num_clauses;
-    if (!n) { s->base_unsat=true;s->result = FALSE; if (tmp != small) free(tmp); return false; }
+    if (s->lrat && lrat_orig_id) {
+        lrat_set_cref_id(s, cr, lrat_orig_id);
+    }
+    if (!n) {
+        s->base_unsat=true; s->result = FALSE;
+        if (s->lrat && s->lrat_root_conflict == INVALID_CLAUSE) s->lrat_root_conflict = cr;
+        if (tmp != small) free(tmp);
+        return false;
+    }
     Lit *cl = CLAUSE_LITS(s->arena, cr);
     uint32_t alive = 0;
     for (uint32_t i = 0; i < n; ++i) {
@@ -945,16 +982,22 @@ bool solver_add_clause(Solver* s, const Lit* lits, uint32_t size) {
         }
     }
     if (n == 2) {
-        watch_add(s->watches, cl[0], INVALID_CLAUSE, cl[1]);
-        watch_add(s->watches, cl[1], INVALID_CLAUSE, cl[0]);
+        CRef bwatch = s->lrat ? arena_binary_watch_ref(cr) : INVALID_CLAUSE;
+        watch_add(s->watches, cl[0], bwatch, cl[1]);
+        watch_add(s->watches, cl[1], bwatch, cl[0]);
     } else if (n > 2) {
         watch_add(s->watches, cl[0], cr, cl[1]);
         watch_add(s->watches, cl[1], cr, cl[0]);
     }
-    if (!alive) {s->base_unsat=true;s->result = FALSE;}
-    else if (alive == 1 && s->values[var(cl[0])] == UNDEF) {
+    if (!alive) {
+        s->base_unsat=true; s->result = FALSE;
+        if (s->lrat && s->lrat_root_conflict == INVALID_CLAUSE) s->lrat_root_conflict = cr;
+    } else if (alive == 1 && s->values[var(cl[0])] == UNDEF) {
         push_trail(s, cl[0]);
         s->vars[var(cl[0])].reason = cr;
+        if (s->lrat && n == 1 && lrat_orig_id) {
+            lrat_set_unit_id(s, var(cl[0]), lrat_orig_id);
+        }
     }
     if (tmp != small) free(tmp);
     return s->result != FALSE;
@@ -1750,7 +1793,7 @@ static void solver_analyze_account_impl(Solver* s, CRef conflict, Lit* learnt, u
                 /* On-the-fly self-subsumption (OTFS): if every other literal of
                  * the current resolvent is already in reason, then (reason \ {p})
                  * is strictly stronger and RUP. Strengthen learned reason after backtrack. */
-                if (size >= 3 && seen_in_R == expected_in_C &&
+                if (!s->lrat && size >= 3 && seen_in_R == expected_in_C &&
                     clause_learned(s->arena, reason) && !gauss_is_temp_clause(s, reason) &&
                     s->otfs_count < 8) {
                     s->otfs_crefs[s->otfs_count] = reason;
@@ -2164,6 +2207,7 @@ static bool clause_locked(Solver *s, CRef cr) {
 void solver_delete_clause(Solver *s, CRef cr) {
     if (cr == INVALID_CLAUSE || clause_deleted(s->arena, cr)) return;
     proof_delete_clause(s, CLAUSE_LITS(s->arena, cr), CLAUSE_SIZE(s->arena, cr));
+    if (s->lrat) lrat_buffer_delete(s, cr);
     watch_remove_clause(s->watches, s->arena, cr);
     arena_delete(s->arena, cr);
 }
@@ -2241,6 +2285,7 @@ static void solver_collect_garbage_account_impl(Solver *s) {
     }
     s->num_learnts = out;
     if (s->gauss) gauss_relocate_clauses(s, old);
+    if (s->lrat) lrat_relocate_clauses(s, old);
     fresh->peak_size = MAX(old->peak_size, fresh->peak_size);
     fresh->num_growths += old->num_growths;
     s->arena = fresh;
@@ -2969,8 +3014,19 @@ static void bump_reason_side_literals(Solver *s, const Lit *learnt, uint32_t n) 
 
 static lbool solve_internal(Solver *s, const Lit *assumps, uint32_t n_assumps);
 static lbool solve_internal_account_impl(Solver *s, const Lit *assumps, uint32_t n_assumps) {
-    if (s->result == FALSE) {s->base_unsat=true;return FALSE;}
-    if (solver_propagate(s) != INVALID_CLAUSE) {s->base_unsat=true;return FALSE;}
+    if (s->lrat) lrat_sync_level0_units(s, 0);
+    if (s->result == FALSE) {
+        if (s->lrat && s->lrat_root_conflict != INVALID_CLAUSE)
+            lrat_emit_empty_from_conflict(s, s->lrat_root_conflict);
+        s->base_unsat=true; return FALSE;
+    }
+    uint32_t root_prev = s->trail_size;
+    CRef root_confl = solver_propagate(s);
+    if (s->lrat) lrat_sync_level0_units(s, root_prev);
+    if (root_confl != INVALID_CLAUSE) {
+        if (s->lrat) lrat_emit_empty_from_conflict(s, root_confl);
+        s->base_unsat=true; return FALSE;
+    }
     if (s->error || s->interrupted) return UNDEF;
     s->work_limit = s->work + MIN(s->opts.preprocess_budget, UINT64_MAX-s->work);
     if (s->opts.preprocess_budget && s->opts.probing &&
@@ -3120,7 +3176,9 @@ static lbool solve_internal_account_impl(Solver *s, const Lit *assumps, uint32_t
     sync_lit_values(s);
     for (;;) {
         if (solver_budget_exhausted(s)) break;
+        uint32_t prop_prev = s->trail_size;
         CRef conflict=solver_propagate(s);
+        if (s->lrat) lrat_sync_level0_units(s, prop_prev);
         if (conflict == INVALID_CLAUSE && s->gauss && !s->error && !s->interrupted && s->result != FALSE) {
             while (conflict == INVALID_CLAUSE && gauss_has_work(s) &&
                    !s->error && !s->interrupted && s->result != FALSE) {
@@ -3140,6 +3198,9 @@ static lbool solve_internal_account_impl(Solver *s, const Lit *assumps, uint32_t
                 if (s->proof_file && s->gauss && conflict != BINARY_CONFLICT) {
                     gauss_ensure_clause_proved(s, conflict);
                 }
+                if (s->lrat && !solver_budget_exhausted(s)) {
+                    lrat_emit_empty_from_conflict(s, conflict);
+                }
                 if (!solver_budget_exhausted(s)) {s->base_unsat=true;result=FALSE;}
                 break;
             }
@@ -3147,6 +3208,7 @@ static lbool solve_internal_account_impl(Solver *s, const Lit *assumps, uint32_t
                 if (s->proof_file && s->gauss && conflict != BINARY_CONFLICT) {
                     gauss_ensure_clause_proved(s, conflict);
                 }
+                if (s->lrat) lrat_emit_empty_from_conflict(s, conflict);
                 s->base_unsat=true;result=FALSE;break;
             }
             uint32_t n; Level backtrack;
@@ -3158,6 +3220,9 @@ static lbool solve_internal_account_impl(Solver *s, const Lit *assumps, uint32_t
             uint32_t binary_removed = solver_minimize_binary(s,learnt,&n,lbd);
             s->stats.minimized_literals += binary_removed;
             if (binary_removed) lbd = calc_lbd(s,learnt,n);
+            uint64_t lrat_learnt_id = s->lrat ? lrat_emit_learned(s, conflict, learnt, n) : 0;
+            if (s->error) break;
+            if (s->lrat && n == 1) lrat_set_unit_id(s, var(learnt[0]), lrat_learnt_id);
             record_lbd(s,lbd);
             bump_reason_side_literals(s, learnt, n);
             /* Put the highest remaining decision level in watch position 1. */
@@ -3251,6 +3316,7 @@ static lbool solve_internal_account_impl(Solver *s, const Lit *assumps, uint32_t
                 }
                 reason=arena_alloc(s->arena,learnt,n,true);
                 if (reason==INVALID_CLAUSE) { s->error=true;break; }
+                if (s->lrat && lrat_learnt_id) lrat_set_cref_id(s, reason, lrat_learnt_id);
 #ifdef BSAT_SEARCH_DIAGNOSTICS
                 CLAUSE_HEADER(s->arena,reason)->born_lo=(uint32_t)s->accounting.diagnostic_conflicts;
                 CLAUSE_HEADER(s->arena,reason)->born_hi=(uint32_t)(s->accounting.diagnostic_conflicts>>32);

@@ -12,6 +12,7 @@
 #include "watch.h"
 #include "elim.h"
 #include "gauss.h"
+#include "lrat.h"
 #include "sbva.h"
 #include "symmetry.h"
 #include "portfolio.h"
@@ -104,9 +105,11 @@ typedef struct SolverOpts {
     uint32_t elim_max_occ;      // Max occurrences to consider for elimination (10)
     uint32_t elim_grow;         // Max clause growth allowed (0 = no growth)
 
-    // DRAT Proof Logging
-    const char* proof_path;     // Path to proof file (NULL = disabled)
+    // DRAT / LRAT Proof Logging
+    const char* proof_path;     // Path to DRAT proof file (NULL = disabled)
     bool     binary_proof;      // Use binary DRAT format (false)
+    const char* lrat_path;      // Path to native LRAT proof file (NULL = disabled)
+    bool     binary_lrat;       // Use binary LRAT format (false)
 
     // Inprocessing
     bool     inprocess;         // Enable inprocessing (false)
@@ -377,7 +380,9 @@ typedef struct Solver {
     ElimState* elim;          // Elimination state (NULL if not using BVE)
 
     // In-search Dynamic GF(2) Gaussian Elimination
-    GaussState* gauss;        // Active GF(2) XOR matrices (NULL if none)
+    GaussState* gauss;
+    LratState* lrat;
+    CRef lrat_root_conflict;        // Active GF(2) XOR matrices (NULL if none)
     uint64_t gauss_proof_merges; // Cumulative proof-mode pivot chain merges across solve
 
     // DRAT Proof Logging

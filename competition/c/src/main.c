@@ -204,8 +204,10 @@ static void print_usage(const char* program) {
     printf("\n");
     printf("Proof logging & input formats:\n");
     printf("  --proof <file>            Write DRAT proof to file\n");
-    printf("  --accounting              Report intrusive phase CPU and owned capacities\n");
     printf("  --binary-proof            Use binary DRAT format (more compact)\n");
+    printf("  --lrat <file>             Write native LRAT proof directly (linearly checkable)\n");
+    printf("  --binary-lrat             Use binary LRAT format (with --lrat)\n");
+    printf("  --accounting              Report intrusive phase CPU and owned capacities\n");
     printf("  --opb                     Parse and solve input as Pseudo-Boolean (.opb) format\n");
     printf("  --maxsat                  Parse and solve input as Weighted Partial MaxSAT (.wcnf)\n");
     printf("  --models <n|all>          Enumerate up to n (or all) distinct models (AllSAT)\n");
@@ -318,6 +320,8 @@ static struct option long_options[] = {
     {"proof",           required_argument, 0, 0},
     {"accounting",      no_argument,       0, 0},
     {"binary-proof",    no_argument,       0, 0},
+    {"lrat",            required_argument, 0, 0},
+    {"binary-lrat",     no_argument,       0, 0},
     {"opb",             no_argument,       0, 0},
     {"maxsat",          no_argument,       0, 0},
     {"models",          required_argument, 0, 0},
@@ -359,6 +363,7 @@ int main(int argc, char** argv) {
 
     while ((c = getopt_long(argc, argv, "hvqsc:d:t:j:", long_options, &option_index)) != -1) {
         if (optarg && !(c == 0 && (!strcmp(long_options[option_index].name, "proof") ||
+                                   !strcmp(long_options[option_index].name, "lrat") ||
                                    !strcmp(long_options[option_index].name, "models") ||
                                    !strcmp(long_options[option_index].name, "project")))) {
             const char *name = c == 0 ? long_options[option_index].name : "";
@@ -598,6 +603,10 @@ int main(int argc, char** argv) {
                     opts.accounting = true;
                 } else if (strcmp(long_options[option_index].name, "binary-proof") == 0) {
                     opts.binary_proof = true;
+                } else if (strcmp(long_options[option_index].name, "lrat") == 0) {
+                    opts.lrat_path = optarg;
+                } else if (strcmp(long_options[option_index].name, "binary-lrat") == 0) {
+                    opts.binary_lrat = true;
                 } else if (strcmp(long_options[option_index].name, "opb") == 0) {
                     opb_mode = true;
                 } else if (strcmp(long_options[option_index].name, "maxsat") == 0) {
@@ -719,8 +728,13 @@ int main(int argc, char** argv) {
         fprintf(stderr,"Error: input and proof must be different files\n");return 1;
     }
 
-    if (num_threads > 1 && opts.proof_path) {
-        fprintf(stderr, "Error: --proof is not supported with --threads > 1\n");
+    if (opts.lrat_path && !stat(input_file,&input_stat) && !stat(opts.lrat_path,&proof_stat) &&
+        input_stat.st_dev==proof_stat.st_dev && input_stat.st_ino==proof_stat.st_ino) {
+        fprintf(stderr,"Error: input and lrat proof must be different files\n");return 1;
+    }
+
+    if (num_threads > 1 && (opts.proof_path || opts.lrat_path)) {
+        fprintf(stderr, "Error: --proof/--lrat is not supported with --threads > 1\n");
         return 1;
     }
 
