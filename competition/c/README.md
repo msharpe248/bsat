@@ -78,11 +78,14 @@ Root GF(2) XOR-chain RREF, and bounded live in-search Bird/Han-Jiang GF(2)
 propagation (`src/gauss.c`, compact matrices `<= 128` rows / `<= 2,048`
 cumulative proof-row merges with automatic level-0 CDCL fallback above budget).
 For direct linear-time verification without `drat-trim`, `--lrat` /
-`--binary-lrat` (`src/lrat.c`) emits native text and binary LRAT proofs with
-exact 64-bit clause IDs, trail-ordered antecedent hints, buffered deletions,
-and GC ID relocation (with zero overhead when disabled). All RAT/non-RUP passes
-stay disabled in append-only `BSAT_CERTIFICATES` journals so standard
-incremental RUP/DRAT/LRAT checkers remain strictly valid.
+`--binary-lrat` (`src/lrat.c`) emits native text and binary LRAT proofs across
+CDCL search, block-level all-UIP shrinking, binary-resolution minimization,
+OTFS, and an LRAT-native RUP inprocessing pipeline (root cleanup, forward
+subsumption & 2-hint SSR, gate-aware BVE, prefix-sharing vivification, and GC)
+with exact 64-bit clause IDs, trail-ordered antecedent hints, buffered
+deletions, and zero overhead when disabled. All RAT/non-RUP passes stay
+disabled in append-only `BSAT_CERTIFICATES` journals so standard incremental
+RUP/DRAT/LRAT checkers remain strictly valid.
 
 ---
 

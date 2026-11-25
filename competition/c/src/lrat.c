@@ -65,6 +65,12 @@ struct LratState {
     uint32_t pairs_cap;
     uint64_t *hints;
     uint32_t hints_cap;
+
+    /* Pending binary-resolution minimization hints for the next lrat_emit_learned call */
+    Var *bin_min_vars;
+    uint64_t *bin_min_ids;
+    uint32_t bin_min_count;
+    uint32_t bin_min_cap;
 };
 
 static inline uint32_t hash_cref(CRef cr) {
@@ -268,7 +274,10 @@ static uint64_t write_addition(LratState *st, const Lit *lits, uint32_t n_lits,
         if (fputs(" 0\n", st->file) == EOF) { st->error = true; return 0; }
     }
     st->last_written_id = id;
-    if (n_lits == 0) st->emitted_empty = true;
+    if (n_lits == 0) {
+        st->emitted_empty = true;
+        if (fflush(st->file) != 0) st->error = true;
+    }
     return id;
 }
 
@@ -307,6 +316,8 @@ void lrat_free(LratState *st) {
     free(st->root_vars);
     free(st->pairs);
     free(st->hints);
+    free(st->bin_min_vars);
+    free(st->bin_min_ids);
     free(st);
 }
 
@@ -455,16 +466,54 @@ void lrat_sync_level0_units(Solver *s, uint32_t from_trail) {
     }
 }
 
+void lrat_clear_bin_hints(Solver *s) {
+    if (!s || !s->lrat) return;
+    s->lrat->bin_min_count = 0;
+}
+
+bool lrat_record_bin_hint(Solver *s, Var removed_var, CRef bin_cr) {
+    if (!s || !s->lrat || s->error || s->lrat->error) return false;
+    LratState *st = s->lrat;
+    uint64_t bid = map_get(st, bin_cr);
+    if (bid == 0) return false;
+    if (st->bin_min_count == st->bin_min_cap) {
+        uint32_t nc = st->bin_min_cap ? st->bin_min_cap * 2u : 32u;
+        Var *nv = realloc(st->bin_min_vars, (size_t)nc * sizeof *nv);
+        if (!nv) { st->error = true; s->error = true; return false; }
+        st->bin_min_vars = nv;
+        uint64_t *ni = realloc(st->bin_min_ids, (size_t)nc * sizeof *ni);
+        if (!ni) { st->error = true; s->error = true; return false; }
+        st->bin_min_ids = ni;
+        st->bin_min_cap = nc;
+    }
+    st->bin_min_vars[st->bin_min_count] = removed_var;
+    st->bin_min_ids[st->bin_min_count] = bid;
+    st->bin_min_count++;
+    return true;
+}
+
 uint64_t lrat_emit_learned(Solver *s, CRef conflict, const Lit *learnt, uint32_t n) {
     if (!s || !s->lrat || s->error || s->lrat->error) return 0;
     LratState *st = s->lrat;
-    if (!ensure_var_arrays(st, s->num_vars)) { s->error = true; return 0; }
+    if (!ensure_var_arrays(st, s->num_vars)) {
+        st->bin_min_count = 0;
+        s->error = true;
+        return 0;
+    }
 
     uint64_t cid = map_get(st, conflict);
-    if (cid == 0) { st->error = true; s->error = true; return 0; }
+    if (cid == 0) {
+        st->bin_min_count = 0;
+        st->error = true;
+        s->error = true;
+        return 0;
+    }
 
-    /* Mark all variables present in the final minimized learned clause. */
+    /* Mark all variables present in the final minimized learned clause AND any
+     * variables removed by binary-resolution minimization (propagated first via bin_min_ids). */
     for (uint32_t i = 0; i < n; ++i) st->in_learnt[var(learnt[i])] = 1;
+    uint32_t n_bin = st->bin_min_count;
+    for (uint32_t i = 0; i < n_bin; ++i) st->in_learnt[st->bin_min_vars[i]] = 1;
 
     uint32_t bfs_head = 0, bfs_tail = 0;
     uint32_t n_roots = 0;
@@ -519,8 +568,13 @@ uint64_t lrat_emit_learned(Solver *s, CRef conflict, const Lit *learnt, uint32_t
         /* Sort implied reason clauses in ascending trail_pos order (exact forward RUP order!). */
         if (n_pairs > 1) qsort(st->pairs, n_pairs, sizeof *st->pairs, cmp_hint_pair);
 
-        if (ensure_hints_cap(st, n_roots + n_pairs + 1u)) {
+        if (ensure_hints_cap(st, n_bin + n_roots + n_pairs + 1u)) {
             uint32_t nh = 0;
+            /* Binary-resolution minimization hints fire immediately under ~learnt[0]. */
+            for (uint32_t i = 0; i < n_bin; ++i) {
+                uint64_t bid = st->bin_min_ids[i];
+                if (bid && bid != cid) st->hints[nh++] = bid;
+            }
             for (uint32_t i = 0; i < n_roots; ++i) {
                 uint64_t uid = st->unit_id[st->root_vars[i]];
                 if (uid == 0) { ok = false; break; }
@@ -541,6 +595,8 @@ uint64_t lrat_emit_learned(Solver *s, CRef conflict, const Lit *learnt, uint32_t
 
     /* Clean all scratch marks. */
     for (uint32_t i = 0; i < n; ++i) st->in_learnt[var(learnt[i])] = 0;
+    for (uint32_t i = 0; i < n_bin; ++i) st->in_learnt[st->bin_min_vars[i]] = 0;
+    st->bin_min_count = 0;
     for (uint32_t i = 0; i < bfs_tail; ++i) st->visited[st->bfs_q[i]] = 0;
     for (uint32_t i = 0; i < n_roots; ++i) st->root_seen[st->root_vars[i]] = 0;
 
@@ -549,6 +605,129 @@ uint64_t lrat_emit_learned(Solver *s, CRef conflict, const Lit *learnt, uint32_t
         s->error = true;
         return 0;
     }
+    return new_id;
+}
+
+uint64_t lrat_emit_pair_rup(Solver *s, const Lit *lits, uint32_t n, CRef cr1, CRef cr2) {
+    if (!s || !s->lrat || s->error || s->lrat->error) return 0;
+    LratState *st = s->lrat;
+    if (!ensure_var_arrays(st, s->num_vars)) { s->error = true; return 0; }
+    uint64_t id1 = map_get(st, cr1);
+    uint64_t id2 = map_get(st, cr2);
+    if (!id1 || !id2) { st->error = true; s->error = true; return 0; }
+
+    /* Case 1: If any literal of `lits` is already TRUE at level 0, then ~lits
+     * immediately contradicts its level-0 unit clause! */
+    for (uint32_t i = 0; i < n; ++i) {
+        Lit l = lits[i];
+        Var v = var(l);
+        if (s->values[v] == (uint8_t)(2u - sign(l))) {
+            uint64_t uid = (v < st->unit_cap) ? st->unit_id[v] : 0;
+            if (!uid) { st->error = true; s->error = true; return 0; }
+            uint64_t new_id = write_addition(st, lits, n, &uid, 1);
+            if (!new_id) { s->error = true; return 0; }
+            return new_id;
+        }
+    }
+
+    uint32_t sz1 = CLAUSE_SIZE(s->arena, cr1);
+    uint32_t sz2 = CLAUSE_SIZE(s->arena, cr2);
+    if (!ensure_hints_cap(st, sz1 + sz2 + 2u)) { s->error = true; return 0; }
+
+    /* Mark exact signed literals of `lits` in st->in_learnt (1+sign(l)). */
+    for (uint32_t i = 0; i < n; ++i) st->in_learnt[var(lits[i])] = (uint8_t)(1u + sign(lits[i]));
+
+    /* Check if either single clause alone derives `lits` via level-0 units
+     * (happens when the pivot or another literal became assigned mid-BVE). */
+    bool c1_suffices = true, c2_suffices = true;
+    const Lit *ls1 = CLAUSE_LITS(s->arena, cr1);
+    const Lit *ls2 = CLAUSE_LITS(s->arena, cr2);
+    for (uint32_t i = 0; i < sz1; ++i) {
+        Lit l = ls1[i];
+        Var v = var(l);
+        if (st->in_learnt[v] == (uint8_t)(1u + sign(l))) continue;
+        if (s->values[v] == (uint8_t)(1u + sign(l))) continue;
+        c1_suffices = false; break;
+    }
+    if (!c1_suffices) {
+        for (uint32_t i = 0; i < sz2; ++i) {
+            Lit l = ls2[i];
+            Var v = var(l);
+            if (st->in_learnt[v] == (uint8_t)(1u + sign(l))) continue;
+            if (s->values[v] == (uint8_t)(1u + sign(l))) continue;
+            c2_suffices = false; break;
+        }
+    } else {
+        c2_suffices = false;
+    }
+
+    uint32_t nh = 0;
+    bool ok = true;
+    int first_side = c2_suffices ? 1 : 0;
+    int last_side = (c1_suffices || c2_suffices) ? first_side : 1;
+
+    for (int side = first_side; side <= last_side && ok; ++side) {
+        const Lit *cls = side ? ls2 : ls1;
+        uint32_t sz = side ? sz2 : sz1;
+        for (uint32_t i = 0; i < sz; ++i) {
+            Lit l = cls[i];
+            Var v = var(l);
+            if (st->in_learnt[v] == (uint8_t)(1u + sign(l))) continue;
+            if (s->values[v] == (uint8_t)(1u + sign(l))) {
+                uint64_t uid = (v < st->unit_cap) ? st->unit_id[v] : 0;
+                if (!uid) { ok = false; break; }
+                bool dup = false;
+                for (uint32_t k = 0; k < nh; ++k) {
+                    if (st->hints[k] == uid) { dup = true; break; }
+                }
+                if (!dup && uid != id1 && uid != id2) st->hints[nh++] = uid;
+            }
+        }
+    }
+    for (uint32_t i = 0; i < n; ++i) st->in_learnt[var(lits[i])] = 0;
+
+    if (!ok) { st->error = true; s->error = true; return 0; }
+    if (c1_suffices) {
+        st->hints[nh++] = id1;
+    } else if (c2_suffices) {
+        st->hints[nh++] = id2;
+    } else {
+        st->hints[nh++] = id1;
+        if (id2 != id1) st->hints[nh++] = id2;
+    }
+    uint64_t new_id = write_addition(st, lits, n, st->hints, nh);
+    if (!new_id) { s->error = true; return 0; }
+    return new_id;
+}
+
+uint64_t lrat_emit_root_strengthen(Solver *s, CRef old_cr, const Lit *new_lits, uint32_t new_n) {
+    if (!s || !s->lrat || s->error || s->lrat->error) return 0;
+    LratState *st = s->lrat;
+    if (!ensure_var_arrays(st, s->num_vars)) { s->error = true; return 0; }
+    uint64_t oid = map_get(st, old_cr);
+    if (!oid) { st->error = true; s->error = true; return 0; }
+
+    uint32_t sz = CLAUSE_SIZE(s->arena, old_cr);
+    const Lit *olits = CLAUSE_LITS(s->arena, old_cr);
+    if (!ensure_hints_cap(st, sz + 1u)) { s->error = true; return 0; }
+
+    uint32_t nh = 0;
+    for (uint32_t i = 0; i < sz; ++i) {
+        Lit l = olits[i];
+        if (s->values[var(l)] == (uint8_t)(1u + sign(l))) {
+            Var v = var(l);
+            uint64_t uid = (v < st->unit_cap) ? st->unit_id[v] : 0;
+            if (!uid) { st->error = true; s->error = true; return 0; }
+            bool dup = false;
+            for (uint32_t k = 0; k < nh; ++k) {
+                if (st->hints[k] == uid) { dup = true; break; }
+            }
+            if (!dup && uid != oid) st->hints[nh++] = uid;
+        }
+    }
+    st->hints[nh++] = oid;
+    uint64_t new_id = write_addition(st, new_lits, new_n, st->hints, nh);
+    if (!new_id) { s->error = true; return 0; }
     return new_id;
 }
 
@@ -590,11 +769,9 @@ void lrat_emit_empty_from_pair(Solver *s, uint64_t id_a, uint64_t id_b) {
     lrat_flush(s->lrat);
 }
 
-void lrat_buffer_delete(Solver *s, CRef cr) {
-    if (!s || !s->lrat || s->lrat->error || cr == INVALID_CLAUSE) return;
+void lrat_buffer_delete_id(Solver *s, uint64_t id) {
+    if (!s || !s->lrat || s->lrat->error || id == 0) return;
     LratState *st = s->lrat;
-    uint64_t id = map_erase(st, cr);
-    if (id == 0) return;
     if (st->del_size == st->del_cap) {
         uint32_t nc = st->del_cap ? st->del_cap * 2u : 128u;
         uint64_t *p = realloc(st->del_buf, (size_t)nc * sizeof *p);
@@ -603,6 +780,13 @@ void lrat_buffer_delete(Solver *s, CRef cr) {
         st->del_cap = nc;
     }
     st->del_buf[st->del_size++] = id;
+}
+
+void lrat_buffer_delete(Solver *s, CRef cr) {
+    if (!s || !s->lrat || s->lrat->error || cr == INVALID_CLAUSE) return;
+    uint64_t id = map_erase(s->lrat, cr);
+    if (id == 0) return;
+    lrat_buffer_delete_id(s, id);
 }
 
 void lrat_relocate_clauses(Solver *s, const Arena *old_arena) {

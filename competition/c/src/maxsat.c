@@ -4,6 +4,7 @@
 
 #include "../include/maxsat.h"
 #include "../include/pb_enc.h"
+#include "../include/inprocess.h"
 #include <ctype.h>
 #include <errno.h>
 #include <limits.h>
@@ -342,50 +343,140 @@ static uint64_t rc2_max_weight_below(const Rc2State *rc, uint64_t ceiling) {
     return best;
 }
 
-/* Conflict-bounded deletion-based core minimization: shrinks core in-place. */
-static void rc2_minimize_core(Solver *s, Lit *core, uint32_t *core_sz,
-                              uint32_t *solves, double deadline) {
-    if (*core_sz <= 1 || *core_sz > 64) return;
+/* Helper to evaluate a SAT model from `s` on the original MaxSAT instance and
+ * update the incumbent upper bound + model if strictly improved. */
+static bool rc2_harvest_model(const MaxSatInstance *inst, Solver *s, lbool *cur_model,
+                              uint64_t *upper_bound, MaxSatResult *res, bool quiet) {
+    for (Var v = 1; v <= inst->num_vars; ++v) {
+        lbool mv = solver_model_value(s, v);
+        cur_model[v] = (mv == TRUE) ? TRUE : FALSE;
+    }
+    uint64_t mcost = 0;
+    if (!maxsat_verify_model(inst, cur_model, &mcost)) return false;
+    if (mcost < *upper_bound) {
+        *upper_bound = mcost;
+        res->status = TRUE;
+        res->cost = mcost;
+        if (!res->model) {
+            res->model = malloc((size_t)(inst->num_vars + 1u) * sizeof(lbool));
+            if (!res->model) return false;
+        }
+        memcpy(res->model, cur_model, (size_t)(inst->num_vars + 1u) * sizeof(lbool));
+        if (!quiet) {
+            printf("o %llu\n", (unsigned long long)mcost);
+            fflush(stdout);
+        }
+    }
+    return true;
+}
+
+/* Fast core trimming + budget-capped non-quadratic deletion minimization.
+ * Shrinks `core[0..*core_sz-1]` in-place and harvests any SAT models found. */
+static bool rc2_minimize_core(const MaxSatInstance *inst, Solver *s, Lit *core, uint32_t *core_sz,
+                              lbool *cur_model, uint64_t *upper_bound, MaxSatResult *res,
+                              bool quiet, double deadline) {
+    if (*core_sz <= 1) return true;
     uint32_t saved_max_conf = s->opts.max_conflicts;
     double saved_max_time = s->opts.max_time;
-    Lit *trial = malloc((size_t)(*core_sz) * sizeof *trial);
-    if (!trial) return;
+    bool ok = true;
 
-    uint32_t i = 0;
-    while (i < *core_sz && *core_sz > 1) {
+    /* Phase 1: Fast core trimming for larger cores (re-solve core in reversed order up to 5 times).
+     * Quickly shrinks large CDCL cores without O(k) individual deletion trials. */
+    for (unsigned round = 0; round < 5u && *core_sz > 4; ++round) {
         if (deadline > 0 && solver_cpu_time() >= deadline) break;
-        uint32_t n = 0;
-        for (uint32_t j = 0; j < *core_sz; ++j) {
-            if (j != i) trial[n++] = core[j];
+        for (uint32_t a = 0, b = *core_sz - 1u; a < b; ++a, --b) {
+            Lit tmp = core[a]; core[a] = core[b]; core[b] = tmp;
         }
-        s->opts.max_conflicts = 1000;
+        /* solver_prepare_next resets s->stats.conflicts to 0 on each solve call,
+         * so max_conflicts is an exact per-call conflict budget. */
+        s->opts.max_conflicts = 1000u;
         if (deadline > 0) {
             double rem = deadline - solver_cpu_time();
             s->opts.max_time = rem > 0.01 ? rem : 0.01;
         }
-        (*solves)++;
-        lbool r = solver_solve_with_assumptions(s, trial, n);
+        res->solves++;
+        lbool r = solver_solve_with_assumptions(s, core, *core_sz);
         if (r == FALSE) {
-            /* Shrink core to the returned sub-core! */
             uint32_t csz = 0;
             const Lit *sub = solver_conflict(s, &csz);
             if (csz < *core_sz) {
                 for (uint32_t k = 0; k < csz; ++k) core[k] = neg(sub[k]);
                 *core_sz = csz;
-                i = 0; /* Restart scan on strictly smaller core */
                 continue;
             }
-            /* Otherwise drop core[i] */
-            memmove(core + i, core + i + 1, (size_t)(*core_sz - i - 1) * sizeof *core);
-            (*core_sz)--;
-            continue;
         }
-        i++;
+        break;
     }
 
-    free(trial);
+    /* Phase 2: Non-quadratic deletion minimization (each literal tested at most once). */
+    if (*core_sz > 1 && *core_sz <= 64) {
+        Lit *trial = malloc((size_t)(*core_sz) * sizeof *trial);
+        if (trial) {
+            uint32_t total_budget = 8000u;
+            uint32_t per_call = 1000u;
+            /* Partition core[0..kept-1] = already kept (necessary or unknown),
+             * core[kept..*core_sz-1] = untested candidates. */
+            uint32_t kept = 0;
+            while (kept < *core_sz && *core_sz > 1 && total_budget > 0) {
+                if (deadline > 0 && solver_cpu_time() >= deadline) break;
+                uint32_t n = 0;
+                for (uint32_t j = 0; j < *core_sz; ++j) {
+                    if (j != kept) trial[n++] = core[j];
+                }
+                uint32_t step = total_budget < per_call ? total_budget : per_call;
+                s->opts.max_conflicts = step;
+                if (deadline > 0) {
+                    double rem = deadline - solver_cpu_time();
+                    s->opts.max_time = rem > 0.01 ? rem : 0.01;
+                }
+                res->solves++;
+                lbool r = solver_solve_with_assumptions(s, trial, n);
+                uint64_t spent = s->stats.conflicts;
+                total_budget = (spent >= total_budget) ? 0u : (total_budget - (uint32_t)spent);
+                if (r == FALSE) {
+                    uint32_t csz = 0;
+                    const Lit *sub = solver_conflict(s, &csz);
+                    if (csz < *core_sz) {
+                        /* Keep intersection with already-kept prefix at front so we never re-test them. */
+                        uint32_t new_kept = 0;
+                        uint32_t new_sz = 0;
+                        for (uint32_t j = 0; j < kept; ++j) {
+                            Lit kl = core[j];
+                            for (uint32_t k = 0; k < csz; ++k) {
+                                if (neg(sub[k]) == kl) { trial[new_sz++] = kl; new_kept++; break; }
+                            }
+                        }
+                        for (uint32_t k = 0; k < csz; ++k) {
+                            Lit sl = neg(sub[k]);
+                            bool dup = false;
+                            for (uint32_t j = 0; j < new_sz; ++j) {
+                                if (trial[j] == sl) { dup = true; break; }
+                            }
+                            if (!dup) trial[new_sz++] = sl;
+                        }
+                        memcpy(core, trial, (size_t)new_sz * sizeof *core);
+                        *core_sz = new_sz;
+                        kept = new_kept;
+                        continue;
+                    }
+                    memmove(core + kept, core + kept + 1, (size_t)(*core_sz - kept - 1) * sizeof *core);
+                    (*core_sz)--;
+                    continue;
+                }
+                if (r == TRUE) {
+                    if (!rc2_harvest_model(inst, s, cur_model, upper_bound, res, quiet)) {
+                        ok = false; break;
+                    }
+                }
+                kept++;
+            }
+            free(trial);
+        }
+    }
+
     s->opts.max_conflicts = saved_max_conf;
     s->opts.max_time = saved_max_time;
+    return ok;
 }
 
 MaxSatResult maxsat_solve(const MaxSatInstance *inst, const SolverOpts *user_opts) {
@@ -423,36 +514,48 @@ MaxSatResult maxsat_solve(const MaxSatInstance *inst, const SolverOpts *user_opt
     Lit *cls_buf = NULL;
     uint32_t cls_cap = 0;
 
+    /* Pass 1: Add all hard clauses first so hard-clause AMO cliques can be compressed
+     * cleanly before soft relaxation variables are introduced. */
     for (uint32_t i = 0; i < inst->num_clauses && ok; ++i) {
         const MaxSatClause *c = &inst->clauses[i];
-        if (c->weight == 0) {
-            if (c->size == 0) {
-                hard_unsat = true;
-                break;
-            }
-            solver_add_clause(s, c->lits, c->size);
-            if (s->error) ok = false;
+        if (c->weight != 0) continue;
+        if (c->size == 0) {
+            hard_unsat = true;
+            break;
+        }
+        solver_add_clause(s, c->lits, c->size);
+        if (s->error) ok = false;
+    }
+    if (ok && !hard_unsat && inst->num_hard >= 500) {
+        if (!solver_amo_cliques(s)) ok = false;
+        /* Keep incremental learnt-clause reuse active (we never rebuild from s->input). */
+        s->factor_original_vars = 0;
+    }
+
+    /* Pass 2: Add all soft clauses (unit softs directly as selectors, non-unit with
+     * fresh relaxation variable). */
+    for (uint32_t i = 0; i < inst->num_clauses && ok && !hard_unsat; ++i) {
+        const MaxSatClause *c = &inst->clauses[i];
+        if (c->weight == 0) continue;
+        if (c->size == 0) {
+            lower_bound += c->weight;
+        } else if (c->size == 1) {
+            ok = rc2_add_or_merge_sel(&rc, c->lits[0], c->weight, -1, 0);
         } else {
-            if (c->size == 0) {
-                lower_bound += c->weight;
-            } else if (c->size == 1) {
-                ok = rc2_add_or_merge_sel(&rc, c->lits[0], c->weight, -1, 0);
-            } else {
-                Var rel = solver_new_var(s);
-                if (rel == INVALID_VAR) { ok = false; break; }
-                if (c->size + 1 > cls_cap) {
-                    uint32_t nc = c->size + 16u;
-                    Lit *nl = realloc(cls_buf, (size_t)nc * sizeof *nl);
-                    if (!nl) { ok = false; break; }
-                    cls_buf = nl;
-                    cls_cap = nc;
-                }
-                memcpy(cls_buf, c->lits, (size_t)c->size * sizeof *cls_buf);
-                cls_buf[c->size] = mkLit(rel, false);
-                solver_add_clause(s, cls_buf, c->size + 1);
-                if (s->error) { ok = false; break; }
-                ok = rc2_add_or_merge_sel(&rc, mkLit(rel, true), c->weight, -1, 0);
+            Var rel = solver_new_var(s);
+            if (rel == INVALID_VAR) { ok = false; break; }
+            if (c->size + 1 > cls_cap) {
+                uint32_t nc = c->size + 16u;
+                Lit *nl = realloc(cls_buf, (size_t)nc * sizeof *nl);
+                if (!nl) { ok = false; break; }
+                cls_buf = nl;
+                cls_cap = nc;
             }
+            memcpy(cls_buf, c->lits, (size_t)c->size * sizeof *cls_buf);
+            cls_buf[c->size] = mkLit(rel, false);
+            solver_add_clause(s, cls_buf, c->size + 1);
+            if (s->error) { ok = false; break; }
+            ok = rc2_add_or_merge_sel(&rc, mkLit(rel, true), c->weight, -1, 0);
         }
     }
     free(cls_buf);
@@ -507,27 +610,8 @@ MaxSatResult maxsat_solve(const MaxSatInstance *inst, const SolverOpts *user_opt
         lbool r = solver_solve_with_assumptions(s, assumps, n_assumps);
         if (r == TRUE) {
             /* Extract & verify model on original instance. */
-            for (Var v = 1; v <= inst->num_vars; ++v) {
-                lbool mv = solver_model_value(s, v);
-                cur_model[v] = (mv == TRUE) ? TRUE : FALSE;
-            }
-            uint64_t mcost = 0;
-            if (!maxsat_verify_model(inst, cur_model, &mcost)) {
+            if (!rc2_harvest_model(inst, s, cur_model, &upper_bound, &res, opts.quiet)) {
                 ok = false; break;
-            }
-            if (mcost < upper_bound) {
-                upper_bound = mcost;
-                res.status = TRUE;
-                res.cost = upper_bound;
-                if (!res.model) {
-                    res.model = malloc((size_t)(inst->num_vars + 1u) * sizeof(lbool));
-                    if (!res.model) { ok = false; break; }
-                }
-                memcpy(res.model, cur_model, (size_t)(inst->num_vars + 1u) * sizeof(lbool));
-                if (!opts.quiet) {
-                    printf("o %llu\n", (unsigned long long)upper_bound);
-                    fflush(stdout);
-                }
             }
             if (lower_bound >= upper_bound) {
                 res.optimum = true;
@@ -583,11 +667,18 @@ MaxSatResult maxsat_solve(const MaxSatInstance *inst, const SolverOpts *user_opt
             }
             for (uint32_t i = 0; i < csz; ++i) core_buf[i] = neg(raw_core[i]);
 
-            /* Shrink core with conflict-bounded deletion. */
-            rc2_minimize_core(s, core_buf, &csz, &res.solves, deadline);
+            /* Shrink core with fast trimming + budget-capped deletion minimization. */
+            if (!rc2_minimize_core(inst, s, core_buf, &csz, cur_model, &upper_bound,
+                                   &res, opts.quiet, deadline)) {
+                ok = false; break;
+            }
             if (csz == 0) {
                 if (res.status == TRUE) res.optimum = true;
                 else res.status = FALSE;
+                break;
+            }
+            if (upper_bound < UINT64_MAX && lower_bound >= upper_bound) {
+                res.optimum = true;
                 break;
             }
 
@@ -622,7 +713,8 @@ MaxSatResult maxsat_solve(const MaxSatInstance *inst, const SolverOpts *user_opt
             }
             if (!ok) break;
 
-            /* If core has >= 2 literals, create a new OLL Totalizer counting falsified core lits. */
+            /* If core has >= 2 literals, create a new OLL Totalizer counting falsified core lits,
+             * then exhaust its lower bound immediately (RC2 core exhaustion). */
             if (csz >= 2) {
                 Lit *viol = malloc((size_t)csz * sizeof *viol);
                 if (!viol) { ok = false; break; }
@@ -632,8 +724,50 @@ MaxSatResult maxsat_solve(const MaxSatInstance *inst, const SolverOpts *user_opt
                 if (!tot) { ok = false; break; }
                 int32_t ti = rc2_push_totalizer(&rc, tot);
                 if (ti < 0) { pb_totalizer_free(tot); ok = false; break; }
-                Lit bound1 = neg(pb_totalizer_out(tot, 1));
-                ok = rc2_add_or_merge_sel(&rc, bound1, w_min, ti, 1);
+
+                uint32_t cur_b = 1;
+                if (inst->num_hard > 0) {
+                    uint32_t saved_mc = s->opts.max_conflicts;
+                    double saved_mt = s->opts.max_time;
+                    while (cur_b < tot->num_inputs && ok) {
+                        if (upper_bound < UINT64_MAX && lower_bound >= upper_bound) break;
+                        if (deadline > 0 && solver_cpu_time() >= deadline) break;
+                        Lit bsel = neg(pb_totalizer_out(tot, cur_b));
+                        s->opts.max_conflicts = 200u;
+                        if (deadline > 0) {
+                            double rem = deadline - solver_cpu_time();
+                            s->opts.max_time = rem > 0.01 ? rem : 0.01;
+                        }
+                        res.solves++;
+                        lbool er = solver_solve_with_assumptions(s, &bsel, 1);
+                        if (er == FALSE) {
+                            /* Hard clauses alone forbid <= cur_b violations -> harden out[cur_b]! */
+                            Lit ent = pb_totalizer_out(tot, cur_b);
+                            solver_add_clause(s, &ent, 1);
+                            if (s->error) { ok = false; break; }
+                            if (lower_bound > UINT64_MAX - w_min) lower_bound = UINT64_MAX;
+                            else lower_bound += w_min;
+                            cur_b++;
+                            if (cur_b < tot->num_inputs) {
+                                if (!pb_totalizer_increase_bound(tot, s, cur_b)) { ok = false; break; }
+                            }
+                        } else {
+                            if (er == TRUE) {
+                                if (!rc2_harvest_model(inst, s, cur_model, &upper_bound, &res, opts.quiet)) {
+                                    ok = false; break;
+                                }
+                            }
+                            break;
+                        }
+                    }
+                    s->opts.max_conflicts = saved_mc;
+                    s->opts.max_time = saved_mt;
+                }
+
+                if (ok && cur_b < tot->num_inputs) {
+                    Lit bound_sel = neg(pb_totalizer_out(tot, cur_b));
+                    ok = rc2_add_or_merge_sel(&rc, bound_sel, w_min, ti, cur_b);
+                }
             }
             if (!ok) break;
 

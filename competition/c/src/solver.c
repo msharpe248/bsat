@@ -544,8 +544,8 @@ Solver* solver_new_with_opts(const SolverOpts* opts) {
     if (opts->lrat_path) {
         s->lrat = lrat_create(opts->lrat_path, opts->binary_lrat);
         if (!s->lrat) goto error;
-        /* Keep LRAT proof logging strictly RUP-sound across CDCL + 3-state minimization + GC. */
-        s->opts.inprocess = false;
+        /* Keep LRAT proof logging strictly RUP-sound: CDCL + all-UIP shrinking +
+         * binary-resolution minimization + OTFS + LRAT-native root-clean/subsume/SSR/vivify + GC. */
         s->opts.sbva = false;
         s->opts.sym = false;
         s->opts.elim = false;
@@ -554,9 +554,6 @@ Solver* solver_new_with_opts(const SolverOpts* opts) {
         s->opts.equiv = false;
         s->opts.factor = false;
         s->opts.probing = false;
-        s->opts.shrink = false;
-        s->opts.binary_minimize = false;
-        s->opts.subsumption = false;
     }
 
     // Initialize rephasing state
@@ -1793,7 +1790,7 @@ static void solver_analyze_account_impl(Solver* s, CRef conflict, Lit* learnt, u
                 /* On-the-fly self-subsumption (OTFS): if every other literal of
                  * the current resolvent is already in reason, then (reason \ {p})
                  * is strictly stronger and RUP. Strengthen learned reason after backtrack. */
-                if (!s->lrat && size >= 3 && seen_in_R == expected_in_C &&
+                if (size >= 3 && seen_in_R == expected_in_C &&
                     clause_learned(s->arena, reason) && !gauss_is_temp_clause(s, reason) &&
                     s->otfs_count < 8) {
                     s->otfs_crefs[s->otfs_count] = reason;
@@ -3012,6 +3009,68 @@ static void bump_reason_side_literals(Solver *s, const Lit *learnt, uint32_t n) 
     for (uint32_t i = 0; i < touched; ++i) s->seen[s->minimize_touched[i]] = 0;
 }
 
+/* MiniSat-style final conflict analysis for UNSAT under assumptions.
+ * Traces the implication graph backward from the falsified assumption literal
+ * to identify the exact subset of assumption literals responsible for the
+ * contradiction, preserving duplicate occurrences for caller compatibility. */
+static void solver_analyze_final(Solver *s, Lit failing, const Lit *assumps, uint32_t n_assumps) {
+    free(s->conflict_clause);
+    s->conflict_clause = NULL;
+    s->conflict_size = 0;
+    if (!n_assumps) return;
+
+    uint32_t nl = 2u * (s->num_vars + 1u);
+    uint8_t *core_mark = calloc(nl, 1);
+    if (!core_mark) { s->error = true; return; }
+
+    core_mark[failing] = 1;
+    Var fv = var(failing);
+    if (s->vars[fv].level > 0) {
+        s->seen[fv] = 1;
+        for (int64_t i = (int64_t)s->vars[fv].trail_pos; i >= 0; --i) {
+            Lit p = s->trail[i].lit;
+            Var v = var(p);
+            if (!s->seen[v]) continue;
+            s->seen[v] = 0;
+            if (s->vars[v].level == 0) continue;
+            if (s->binary_reasons[v] != LIT_UNDEF) {
+                Var qv = var(s->binary_reasons[v]);
+                if (s->vars[qv].level > 0) s->seen[qv] = 1;
+            } else if (s->vars[v].reason != INVALID_CLAUSE) {
+                CRef r = s->vars[v].reason;
+                uint32_t rsz = CLAUSE_SIZE(s->arena, r);
+                const Lit *rlits = CLAUSE_LITS(s->arena, r);
+                for (uint32_t j = 0; j < rsz; ++j) {
+                    Var qv = var(rlits[j]);
+                    if (qv != v && s->vars[qv].level > 0) s->seen[qv] = 1;
+                }
+            } else {
+                /* Decision literal at level > 0: must be an active assumption. */
+                core_mark[p] = 1;
+            }
+        }
+    }
+
+    uint32_t count = 0;
+    for (uint32_t i = 0; i < n_assumps; ++i) {
+        if (core_mark[assumps[i]]) count++;
+    }
+    if (count > 0) {
+        s->conflict_clause = malloc((size_t)count * sizeof *s->conflict_clause);
+        if (!s->conflict_clause) {
+            free(core_mark);
+            s->error = true;
+            return;
+        }
+        uint32_t out = 0;
+        for (uint32_t i = 0; i < n_assumps; ++i) {
+            if (core_mark[assumps[i]]) s->conflict_clause[out++] = neg(assumps[i]);
+        }
+        s->conflict_size = out;
+    }
+    free(core_mark);
+}
+
 static lbool solve_internal(Solver *s, const Lit *assumps, uint32_t n_assumps);
 static lbool solve_internal_account_impl(Solver *s, const Lit *assumps, uint32_t n_assumps) {
     if (s->lrat) lrat_sync_level0_units(s, 0);
@@ -3067,7 +3126,7 @@ static lbool solve_internal_account_impl(Solver *s, const Lit *assumps, uint32_t
     if (s->error || s->interrupted) return UNDEF;
     if (s->result == FALSE) {s->base_unsat=true;return FALSE;}
     /* Fast lucky-phase check before heavy preprocessing: solves Horn/monotone SAT in <1ms. */
-    if (!n_assumps && !s->proof_journal && !s->opts.reuse_learnts && s->opts.inprocess &&
+    if (!n_assumps && !s->proof_journal && !s->lrat && !s->opts.reuse_learnts && s->opts.inprocess &&
         s->opts.preprocess_budget && !s->opts.factor && !s->opts.local_search && !s->opts.max_conflicts &&
         s->num_clauses >= 64 && !solver_budget_exhausted(s)) {
         if (solver_try_lucky(s)) return TRUE;
@@ -3076,7 +3135,7 @@ static lbool solve_internal_account_impl(Solver *s, const Lit *assumps, uint32_t
     /* Bounded congruence closure before inprocessing (100% RUP-verified).
      * Scale work budget with formula size so large hardware miters (up to 800k clauses)
      * have enough ticks to index gates and close equivalences before BVE. */
-    if (!n_assumps && !s->proof_journal && !s->opts.reuse_learnts && s->opts.inprocess &&
+    if (!n_assumps && !s->proof_journal && !s->lrat && !s->opts.reuse_learnts && s->opts.inprocess &&
         s->opts.preprocess_budget && !s->opts.congruence && !s->opts.factor && !s->opts.local_search &&
         s->num_vars >= 300 && s->num_clauses >= 64 && s->num_clauses <= 800000 && !solver_budget_exhausted(s)) {
         uint64_t cong_budget = (uint64_t)s->num_clauses * 160ULL;
@@ -3093,7 +3152,7 @@ static lbool solve_internal_account_impl(Solver *s, const Lit *assumps, uint32_t
     /* Exact syntactic symmetry breaking (BreakID-style; emits RAT/RUP DRAT proofs
      * in --proof mode when trail_size==0 && num_learnts==0, disabled in journals/reuse)
      * BEFORE AMO / SBVA / BVE so row-interchange & transposition symmetries are intact. */
-    if (!n_assumps && !s->proof_journal && !s->opts.reuse_learnts &&
+    if (!n_assumps && !s->proof_journal && !s->lrat && !s->opts.reuse_learnts &&
         s->opts.inprocess && s->opts.preprocess_budget && !s->opts.factor && !s->opts.local_search &&
         s->opts.sym && !solver_budget_exhausted(s)) {
         double started = solver_account_begin(s);
@@ -3106,7 +3165,7 @@ static lbool solve_internal_account_impl(Solver *s, const Lit *assumps, uint32_t
         }
     }
     /* Explicit or adaptive bounded clause factoring (BVA) BEFORE inprocess/elim. */
-    if (!n_assumps && s->opts.factor && s->opts.factor_budget && s->opts.factor_max_variables) {
+    if (!n_assumps && !s->lrat && s->opts.factor && s->opts.factor_budget && s->opts.factor_max_variables) {
         s->work_limit = s->work + MIN(s->opts.factor_budget, UINT64_MAX - s->work);
         double started = solver_account_begin(s);
         solver_factor(s);
@@ -3118,7 +3177,7 @@ static lbool solve_internal_account_impl(Solver *s, const Lit *assumps, uint32_t
             if (!seen) { s->error = true; return UNDEF; }
             free(s->level_seen); s->level_seen = seen; s->levels_capacity = s->num_vars + 2;
         }
-    } else if (!n_assumps && !s->proof_journal && !s->opts.reuse_learnts &&
+    } else if (!n_assumps && !s->proof_journal && !s->lrat && !s->opts.reuse_learnts &&
         s->opts.inprocess && s->opts.preprocess_budget && !s->opts.factor && !s->opts.local_search &&
         s->num_clauses >= 500 && s->num_clauses <= 250000 && !solver_budget_exhausted(s)) {
         /* 1. Extract large AMO binary cliques via proof-producing Sinz sequential counters. */
@@ -3236,6 +3295,31 @@ static lbool solve_internal_account_impl(Solver *s, const Lit *assumps, uint32_t
                 backtrack=s->decision_level-1;
                 ++s->stats.chronological;
             }
+            /* Emit LRAT proofs for any OTFS-strengthened clauses BEFORE backtracking
+             * while trail reasons are still live. */
+            uint64_t otfs_lrat_ids[8] = {0};
+            if (s->lrat && s->otfs_count > 0) {
+                for (uint32_t oi = 0; oi < s->otfs_count && !s->error; ++oi) {
+                    CRef ocr = s->otfs_crefs[oi];
+                    Lit pivot = s->otfs_pivots[oi];
+                    if (ocr == INVALID_CLAUSE || clause_deleted(s->arena, ocr)) continue;
+                    uint32_t osize = CLAUSE_SIZE(s->arena, ocr);
+                    if (osize < 3) continue;
+                    Lit small_buf[64];
+                    Lit *nbuf = osize <= 64 ? small_buf : malloc((size_t)osize * sizeof *nbuf);
+                    if (!nbuf) { s->error = true; break; }
+                    const Lit *olits = CLAUSE_LITS(s->arena, ocr);
+                    uint32_t nsz = 0;
+                    for (uint32_t k = 0; k < osize; ++k) {
+                        if (olits[k] != pivot) nbuf[nsz++] = olits[k];
+                    }
+                    if (nsz == osize - 1 && nsz >= 2) {
+                        otfs_lrat_ids[oi] = lrat_emit_learned(s, conflict, nbuf, nsz);
+                    }
+                    if (nbuf != small_buf) free(nbuf);
+                }
+                if (s->error) break;
+            }
             /* The assertion keeps its logical level, including zero for units. */
             solver_backtrack(s,backtrack);
             /* Apply on-the-fly self-subsumption (OTFS) discovered during analysis.
@@ -3243,55 +3327,65 @@ static lbool solve_internal_account_impl(Solver *s, const Lit *assumps, uint32_t
             for (uint32_t oi = 0; oi < s->otfs_count && !s->error; ++oi) {
                 CRef ocr = s->otfs_crefs[oi];
                 Lit pivot = s->otfs_pivots[oi];
-                if (ocr == INVALID_CLAUSE || clause_deleted(s->arena, ocr) || clause_locked(s, ocr)) continue;
-                uint32_t osize = CLAUSE_SIZE(s->arena, ocr);
-                if (osize < 3) continue;
-                uint32_t old_lbd = clause_lbd(s->arena, ocr);
-                Lit small_buf[64];
-                Lit *nbuf = osize <= 64 ? small_buf : malloc((size_t)osize * sizeof *nbuf);
-                if (!nbuf) { s->error = true; break; }
-                const Lit *olits = CLAUSE_LITS(s->arena, ocr);
-                uint32_t nsz = 0;
-                for (uint32_t k = 0; k < osize; ++k) {
-                    if (olits[k] != pivot) nbuf[nsz++] = olits[k];
-                }
-                if (nsz == osize - 1 && nsz >= 2) {
-                    /* Ensure two non-false (or highest-level) literals are in watch slots 0, 1. */
-                    uint32_t wcount = 0;
-                    for (uint32_t k = 0; k < nsz && wcount < 2; ++k) {
-                        if (s->values[var(nbuf[k])] != (uint8_t)(1u + sign(nbuf[k]))) {
-                            Lit tmp = nbuf[wcount]; nbuf[wcount++] = nbuf[k]; nbuf[k] = tmp;
+                bool applied = false;
+                if (ocr != INVALID_CLAUSE && !clause_deleted(s->arena, ocr) && !clause_locked(s, ocr)) {
+                    uint32_t osize = CLAUSE_SIZE(s->arena, ocr);
+                    if (osize >= 3) {
+                        uint32_t old_lbd = clause_lbd(s->arena, ocr);
+                        Lit small_buf[64];
+                        Lit *nbuf = osize <= 64 ? small_buf : malloc((size_t)osize * sizeof *nbuf);
+                        if (!nbuf) { s->error = true; break; }
+                        const Lit *olits = CLAUSE_LITS(s->arena, ocr);
+                        uint32_t nsz = 0;
+                        for (uint32_t k = 0; k < osize; ++k) {
+                            if (olits[k] != pivot) nbuf[nsz++] = olits[k];
                         }
-                    }
-                    if (wcount >= 2) {
-                        proof_add_clause(s, nbuf, nsz);
-                        if (!s->error) {
-                            if (s->num_learnts == s->learnts_size) {
-                                uint32_t cap = s->learnts_size ? s->learnts_size * 2 : 64;
-                                CRef *p = realloc(s->learnts, cap * sizeof *p);
-                                if (!p) { s->error = true; }
-                                else { s->learnts = p; s->learnts_size = cap; }
+                        if (nsz == osize - 1 && nsz >= 2) {
+                            /* Ensure two non-false (or highest-level) literals are in watch slots 0, 1. */
+                            uint32_t wcount = 0;
+                            for (uint32_t k = 0; k < nsz && wcount < 2; ++k) {
+                                if (s->values[var(nbuf[k])] != (uint8_t)(1u + sign(nbuf[k]))) {
+                                    Lit tmp = nbuf[wcount]; nbuf[wcount++] = nbuf[k]; nbuf[k] = tmp;
+                                }
                             }
-                            if (!s->error && s->num_learnts < s->learnts_size) {
-                                CRef ncr = arena_alloc(s->arena, nbuf, nsz, true);
-                                if (ncr == INVALID_CLAUSE) {
-                                    s->error = true;
-                                } else {
-                                    uint32_t nlbd = old_lbd > 1 ? old_lbd - 1 : 1;
-                                    set_clause_lbd(s->arena, ncr, MIN(nlbd, nsz));
-                                    CLAUSE_HEADER(s->arena, ncr)->used = 2;
-                                    s->learnts[s->num_learnts++] = ncr;
-                                    CRef wref = (nsz == 2) ? arena_binary_watch_ref(ncr) : ncr;
-                                    watch_add_inline(s->watches, nbuf[0], wref, nbuf[1]);
-                                    watch_add_inline(s->watches, nbuf[1], wref, nbuf[0]);
-                                    solver_delete_clause(s, ocr);
-                                    s->stats.subsumed_clauses++;
+                            if (wcount >= 2) {
+                                proof_add_clause(s, nbuf, nsz);
+                                if (!s->error) {
+                                    if (s->num_learnts == s->learnts_size) {
+                                        uint32_t cap = s->learnts_size ? s->learnts_size * 2 : 64;
+                                        CRef *p = realloc(s->learnts, cap * sizeof *p);
+                                        if (!p) { s->error = true; }
+                                        else { s->learnts = p; s->learnts_size = cap; }
+                                    }
+                                    if (!s->error && s->num_learnts < s->learnts_size) {
+                                        CRef ncr = arena_alloc(s->arena, nbuf, nsz, true);
+                                        if (ncr == INVALID_CLAUSE) {
+                                            s->error = true;
+                                        } else {
+                                            if (s->lrat && otfs_lrat_ids[oi]) {
+                                                lrat_set_cref_id(s, ncr, otfs_lrat_ids[oi]);
+                                            }
+                                            uint32_t nlbd = old_lbd > 1 ? old_lbd - 1 : 1;
+                                            set_clause_lbd(s->arena, ncr, MIN(nlbd, nsz));
+                                            CLAUSE_HEADER(s->arena, ncr)->used = 2;
+                                            s->learnts[s->num_learnts++] = ncr;
+                                            CRef wref = (nsz == 2) ? arena_binary_watch_ref(ncr) : ncr;
+                                            watch_add_inline(s->watches, nbuf[0], wref, nbuf[1]);
+                                            watch_add_inline(s->watches, nbuf[1], wref, nbuf[0]);
+                                            solver_delete_clause(s, ocr);
+                                            s->stats.subsumed_clauses++;
+                                            applied = true;
+                                        }
+                                    }
                                 }
                             }
                         }
+                        if (nbuf != small_buf) free(nbuf);
                     }
                 }
-                if (nbuf != small_buf) free(nbuf);
+                if (!applied && s->lrat && otfs_lrat_ids[oi]) {
+                    lrat_buffer_delete_id(s, otfs_lrat_ids[oi]);
+                }
             }
             s->otfs_count = 0;
             if (s->error) break;
@@ -3410,7 +3504,10 @@ static lbool solve_internal_account_impl(Solver *s, const Lit *assumps, uint32_t
             while (s->decision_level<n_assumps) {
                 Lit a=assumps[s->decision_level];
                 lbool value=lxor(s->values[var(a)],sign(a));
-                if (value==FALSE) { result=FALSE;goto done; }
+                if (value==FALSE) {
+                    solver_analyze_final(s, a, assumps, n_assumps);
+                    result=FALSE; goto done;
+                }
                 s->decision_level++;s->trail_lims[s->decision_level]=s->trail_size;
                 if (value==UNDEF) { push_trail(s,a);assumption=true;break; }
             }
@@ -3459,6 +3556,9 @@ static lbool solver_solve_at(Solver *s, const Lit *assumps, uint32_t n_assumps, 
     s->work_limit=0;s->interrupted=false;s->cancelled=false;
     s->clock_initialized=false;s->clock_polls=0;
     s->random_state=s->opts.seed;
+    free(s->conflict_clause);
+    s->conflict_clause=NULL;
+    s->conflict_size=0;
     s->lbd_assumption_levels=s->opts.assumption_lbd ? n_assumps : 0;
     lbool result=solve_internal(s,assumps,n_assumps);
     s->lbd_assumption_levels=0;
@@ -3473,7 +3573,7 @@ static lbool solver_solve_at(Solver *s, const Lit *assumps, uint32_t n_assumps, 
         for (uint32_t i=0;i<n_assumps;++i)
             if (lxor(s->values[var(assumps[i])],sign(assumps[i]))!=TRUE) s->error=true;
     }
-    if (result==FALSE && n_assumps) {
+    if (result==FALSE && n_assumps && !s->base_unsat && !s->conflict_clause && !s->error) {
         s->conflict_clause=malloc(n_assumps*sizeof *s->conflict_clause);
         if (!s->conflict_clause) s->error=true;
         else {

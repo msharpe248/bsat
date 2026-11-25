@@ -286,7 +286,6 @@ int bsat_set_lrat(bsat *s, const char *path, int binary) {
     s->core->lrat = lr;
     s->core->opts.lrat_path = copy;
     s->core->opts.binary_lrat = (binary != 0);
-    s->core->opts.inprocess = false;
     s->core->opts.sbva = false;
     s->core->opts.sym = false;
     s->core->opts.elim = false;
@@ -295,9 +294,6 @@ int bsat_set_lrat(bsat *s, const char *path, int binary) {
     s->core->opts.equiv = false;
     s->core->opts.factor = false;
     s->core->opts.probing = false;
-    s->core->opts.shrink = false;
-    s->core->opts.binary_minimize = false;
-    s->core->opts.subsumption = false;
     return 1;
 }
 

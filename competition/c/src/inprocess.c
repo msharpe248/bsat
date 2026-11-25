@@ -70,13 +70,32 @@ static bool enqueue_root_unit(Solver *s, Lit unit) {
     return true;
 }
 
+static bool inproc_finish_unit_lrat(Solver *s, Lit unit, uint64_t new_id) {
+    Var v = var(unit);
+    if (lit_is_false(s, unit)) {
+        if (s->lrat) lrat_emit_empty_from_pair(s, lrat_get_unit_id(s, v), new_id);
+        s->base_unsat = true;
+        s->result = FALSE;
+        return false;
+    }
+    if (s->values[v] == UNDEF) {
+        if (s->lrat && new_id) lrat_set_unit_id(s, v, new_id);
+        return enqueue_root_unit(s, unit);
+    }
+    if (s->lrat && new_id) lrat_buffer_delete_id(s, new_id);
+    return true;
+}
+
 static bool root_propagate(Solver *s) {
     if (s->result == FALSE || s->error) return false;
     uint64_t saved_limit = s->work_limit;
     s->work_limit = 0;
+    uint32_t prev_trail = s->trail_size;
     CRef c = solver_propagate(s);
     s->work_limit = saved_limit;
+    if (s->lrat) lrat_sync_level0_units(s, prev_trail);
     if (c != INVALID_CLAUSE) {
+        if (s->lrat) lrat_emit_empty_from_conflict(s, c);
         s->base_unsat = true;
         s->result = FALSE;
         return false;
@@ -114,8 +133,9 @@ void solver_rebuild_watches(Solver *s) {
         CRef cr = s->clauses[i];
         if (CLAUSE_SIZE(s->arena, cr) == 2) {
             Lit *lits = CLAUSE_LITS(s->arena, cr);
-            watch_add(s->watches, lits[0], INVALID_CLAUSE, lits[1]);
-            watch_add(s->watches, lits[1], INVALID_CLAUSE, lits[0]);
+            CRef w = s->lrat ? arena_binary_watch_ref(cr) : INVALID_CLAUSE;
+            watch_add(s->watches, lits[0], w, lits[1]);
+            watch_add(s->watches, lits[1], w, lits[0]);
         }
     }
     for (uint32_t i = 0; i < s->num_learnts; ++i) {
@@ -165,8 +185,11 @@ static bool clean_clause_array(Solver *s, CRef *arr, uint32_t *count, bool learn
             if (lit_is_false(s, lits[j])) false_count++;
         }
         if (sat) {
-            /* Never delete unit clauses from the DRAT proof: later RUP steps depend on root units! */
-            if (size > 1) proof_delete_clause(s, lits, size);
+            /* Never delete unit clauses from the DRAT/LRAT proof: later RUP steps depend on root units! */
+            if (size > 1) {
+                proof_delete_clause(s, lits, size);
+                if (s->lrat) lrat_buffer_delete(s, cr);
+            }
             arena_delete(s->arena, cr);
             *changed = true;
             continue;
@@ -183,9 +206,11 @@ static bool clean_clause_array(Solver *s, CRef *arr, uint32_t *count, bool learn
         for (uint32_t j = 0; j < size; ++j) {
             if (!lit_is_false(s, lits[j])) buf[k++] = lits[j];
         }
+        uint64_t lrat_new_id = s->lrat ? lrat_emit_root_strengthen(s, cr, buf, k) : 0;
         proof_add_clause(s, buf, k);
         if (s->error) { if (buf != small_buf) free(buf); return false; }
         proof_delete_clause(s, lits, size);
+        if (s->lrat) lrat_buffer_delete(s, cr);
         uint32_t old_lbd = clause_lbd(s->arena, cr);
         uint32_t old_used = CLAUSE_HEADER(s->arena, cr)->used;
         arena_delete(s->arena, cr);
@@ -196,7 +221,7 @@ static bool clean_clause_array(Solver *s, CRef *arr, uint32_t *count, bool learn
             return false;
         }
         if (k == 1) {
-            bool ok = enqueue_root_unit(s, buf[0]);
+            bool ok = inproc_finish_unit_lrat(s, buf[0], lrat_new_id);
             if (buf != small_buf) free(buf);
             if (!ok) return false;
             continue;
@@ -204,6 +229,7 @@ static bool clean_clause_array(Solver *s, CRef *arr, uint32_t *count, bool learn
         CRef ncr = arena_alloc(s->arena, buf, k, learned);
         if (buf != small_buf) free(buf);
         if (ncr == INVALID_CLAUSE) { s->error = true; return false; }
+        if (s->lrat && lrat_new_id) lrat_set_cref_id(s, ncr, lrat_new_id);
         if (learned) {
             set_clause_lbd(s->arena, ncr, MIN(old_lbd, k));
             CLAUSE_HEADER(s->arena, ncr)->used = old_used;
@@ -217,6 +243,8 @@ static bool clean_clause_array(Solver *s, CRef *arr, uint32_t *count, bool learn
 static bool inproc_root_clean(Solver *s) {
     for (;;) {
         if (!root_propagate(s)) return false;
+        if (s->lrat) lrat_sync_level0_units(s, 0);
+        if (s->error) return false;
         /* Emit all newly propagated level-0 units to the DRAT proof BEFORE deleting
          * any satisfied clauses that may have implied them! */
         while (s->proof_root_units < s->trail_size) {
@@ -634,6 +662,7 @@ static bool inproc_subsume(Solver *s, uint64_t tick_budget) {
                     cands[ci].slot = s->num_clauses - 1;
                 }
                 proof_delete_clause(s, dlits, dsize);
+                if (s->lrat) lrat_buffer_delete(s, dr);
                 arena_delete(s->arena, dr);
                 cands[di].cref = INVALID_CLAUSE;
                 s->stats.subsumed_clauses++;
@@ -683,9 +712,11 @@ static bool inproc_subsume(Solver *s, uint64_t tick_budget) {
                         for (uint32_t j = 0; j < dsize; ++j) {
                             if (dlits[j] != neg_piv) nbuf[k++] = dlits[j];
                         }
+                        uint64_t lrat_new_id = s->lrat ? lrat_emit_pair_rup(s, nbuf, k, cr, dr) : 0;
                         proof_add_clause(s, nbuf, k);
                         if (s->error) { if (nbuf != small_buf) free(nbuf); break; }
                         proof_delete_clause(s, dlits, dsize);
+                        if (s->lrat) lrat_buffer_delete(s, dr);
                         uint32_t old_lbd = clause_lbd(s->arena, dr);
                         uint32_t old_used = CLAUSE_HEADER(s->arena, dr)->used;
                         bool d_learned = cands[di].learned;
@@ -703,7 +734,7 @@ static bool inproc_subsume(Solver *s, uint64_t tick_budget) {
                             Lit unit = nbuf[0];
                             if (nbuf != small_buf) free(nbuf);
                             cands[di].cref = INVALID_CLAUSE;
-                            if (!enqueue_root_unit(s, unit)) { unsat = true; break; }
+                            if (!inproc_finish_unit_lrat(s, unit, lrat_new_id)) { unsat = true; break; }
                             continue;
                         }
                         CRef ncr = arena_alloc(s->arena, nbuf, k, d_learned);
@@ -713,6 +744,7 @@ static bool inproc_subsume(Solver *s, uint64_t tick_budget) {
                             if (nbuf != small_buf) free(nbuf);
                             s->error = true; break;
                         }
+                        if (s->lrat && lrat_new_id) lrat_set_cref_id(s, ncr, lrat_new_id);
                         if (d_learned) {
                             set_clause_lbd(s->arena, ncr, MIN(old_lbd, k));
                             CLAUSE_HEADER(s->arena, ncr)->used = old_used;
@@ -1334,11 +1366,15 @@ static bool inproc_elim(Solver *s, uint64_t tick_budget, uint32_t grow_bound) {
     Lit *stage_lits = malloc(4096 * sizeof(Lit));
     uint32_t stage_cap = 4096;
     uint32_t *stage_off = malloc(256 * sizeof(uint32_t));
+    CRef *stage_ca = malloc(256 * sizeof(CRef));
+    CRef *stage_cb = malloc(256 * sizeof(CRef));
     uint32_t stage_off_cap = 256;
 
-    if (!occs || !live_occ || !q.vars || !q.pos || !q.score || !lit_seen || !gate_pos || !gate_neg || !stage_lits || !stage_off) {
+    if (!occs || !live_occ || !q.vars || !q.pos || !q.score || !lit_seen || !gate_pos || !gate_neg ||
+        !stage_lits || !stage_off || !stage_ca || !stage_cb) {
         free(occs); free(live_occ); free(q.vars); free(q.pos); free(q.score);
-        free(lit_seen); free(gate_pos); free(gate_neg); free(stage_lits); free(stage_off);
+        free(lit_seen); free(gate_pos); free(gate_neg); free(stage_lits);
+        free(stage_off); free(stage_ca); free(stage_cb);
         s->error = true; return false;
     }
     for (Var v = 0; v <= s->num_vars; ++v) q.pos[v] = UINT32_MAX;
@@ -1402,6 +1438,7 @@ static bool inproc_elim(Solver *s, uint64_t tick_budget, uint32_t grow_bound) {
                     uint32_t sz = CLAUSE_SIZE(s->arena, cr);
                     const Lit *ls = CLAUSE_LITS(s->arena, cr);
                     proof_delete_clause(s, ls, sz);
+                    if (s->lrat) lrat_buffer_delete(s, cr);
                     for (uint32_t k = 0; k < sz; ++k) {
                         Lit kl = ls[k];
                         if (live_occ[kl] > 0) live_occ[kl]--;
@@ -1465,9 +1502,20 @@ static bool inproc_elim(Solver *s, uint64_t tick_budget, uint32_t grow_bound) {
                 if (nr + 2 > stage_off_cap) {
                     stage_off_cap *= 2;
                     uint32_t *p = realloc(stage_off, (size_t)stage_off_cap * sizeof *p);
-                    if (!p) { s->error = true; too_many = true; break; }
+                    CRef *pa = realloc(stage_ca, (size_t)stage_off_cap * sizeof *pa);
+                    CRef *pb = realloc(stage_cb, (size_t)stage_off_cap * sizeof *pb);
+                    if (!p || !pa || !pb) {
+                        if (p) stage_off = p;
+                        if (pa) stage_ca = pa;
+                        if (pb) stage_cb = pb;
+                        s->error = true; too_many = true; break;
+                    }
                     stage_off = p;
+                    stage_ca = pa;
+                    stage_cb = pb;
                 }
+                stage_ca[nr] = ca;
+                stage_cb[nr] = cb;
                 stage_off[nr++] = stage_used;
                 stage_used += (uint32_t)rlen;
                 stage_off[nr] = stage_used;
@@ -1517,6 +1565,7 @@ static bool inproc_elim(Solver *s, uint64_t tick_budget, uint32_t grow_bound) {
         for (uint32_t r = 0; r < nr && !unsat && !s->error; ++r) {
             Lit *rlits = stage_lits + stage_off[r];
             uint32_t rsz = stage_off[r + 1] - stage_off[r];
+            uint64_t lrat_new_id = s->lrat ? lrat_emit_pair_rup(s, rlits, rsz, stage_ca[r], stage_cb[r]) : 0;
             proof_add_clause(s, rlits, rsz);
             if (s->error) break;
             if (rsz == 0) {
@@ -1524,12 +1573,13 @@ static bool inproc_elim(Solver *s, uint64_t tick_budget, uint32_t grow_bound) {
                 unsat = true; break;
             }
             if (rsz == 1) {
-                if (!enqueue_root_unit(s, rlits[0])) { unsat = true; break; }
+                if (!inproc_finish_unit_lrat(s, rlits[0], lrat_new_id)) { unsat = true; break; }
                 s->elim->resolvents_added++;
                 continue;
             }
             CRef ncr = arena_alloc(s->arena, rlits, rsz, false);
             if (ncr == INVALID_CLAUSE) { s->error = true; break; }
+            if (s->lrat && lrat_new_id) lrat_set_cref_id(s, ncr, lrat_new_id);
             if (!push_original_clause_ref(s, ncr)) break;
             for (uint32_t k = 0; k < rsz; ++k) {
                 if (!occ_push(&occs[rlits[k]], ncr)) { s->error = true; break; }
@@ -1548,6 +1598,7 @@ static bool inproc_elim(Solver *s, uint64_t tick_budget, uint32_t grow_bound) {
                 uint32_t sz = CLAUSE_SIZE(s->arena, cr);
                 const Lit *ls = CLAUSE_LITS(s->arena, cr);
                 proof_delete_clause(s, ls, sz);
+                if (s->lrat) lrat_buffer_delete(s, cr);
                 for (uint32_t k = 0; k < sz; ++k) {
                     if (live_occ[ls[k]] > 0) live_occ[ls[k]]--;
                 }
@@ -1586,6 +1637,7 @@ static bool inproc_elim(Solver *s, uint64_t tick_budget, uint32_t grow_bound) {
             }
             if (has_elim) {
                 proof_delete_clause(s, ls, sz);
+                if (s->lrat) lrat_buffer_delete(s, cr);
                 arena_delete(s->arena, cr);
                 s->learnts[i] = INVALID_CLAUSE;
             }
@@ -1598,7 +1650,7 @@ done:
     free(live_occ);
     free(q.vars); free(q.pos); free(q.score);
     free(lit_seen); free(gate_pos); free(gate_neg);
-    free(stage_lits); free(stage_off);
+    free(stage_lits); free(stage_off); free(stage_ca); free(stage_cb);
 
     if (unsat || s->error) return false;
     if (any_elim) {
@@ -1798,6 +1850,7 @@ static bool inproc_vivify(Solver *s, uint64_t tick_budget) {
         bool subsumed_sat = false;
         uint32_t new_n = 0;
         uint32_t dropped_false = 0;
+        CRef lrat_trigger = INVALID_CLAUSE;
 
         for (uint32_t i = shared; i < sz; ++i) {
             Lit l = lbuf[i];
@@ -1810,8 +1863,12 @@ static bool inproc_vivify(Solver *s, uint64_t tick_budget) {
                 if (s->vars[var(l)].level == 0) {
                     subsumed_sat = true;
                 } else {
-                    new_n = vivify_analyze(s, INVALID_CLAUSE, l, out_buf);
-                    shortened = (new_n < sz);
+                    CRef r = s->vars[var(l)].reason;
+                    if (!s->lrat || (r != INVALID_CLAUSE && r != BINARY_CONFLICT)) {
+                        new_n = vivify_analyze(s, INVALID_CLAUSE, l, out_buf);
+                        shortened = (new_n < sz);
+                        if (shortened) lrat_trigger = r;
+                    }
                 }
                 break;
             }
@@ -1832,6 +1889,7 @@ static bool inproc_vivify(Solver *s, uint64_t tick_budget) {
             if (confl != INVALID_CLAUSE) {
                 new_n = vivify_analyze(s, confl, LIT_UNDEF, out_buf);
                 shortened = (new_n < sz);
+                if (shortened) lrat_trigger = confl;
                 break;
             }
         }
@@ -1848,21 +1906,24 @@ static bool inproc_vivify(Solver *s, uint64_t tick_budget) {
                     if (assumed[a] == lbuf[i]) { out_buf[new_n++] = lbuf[i]; break; }
                 }
             }
-            if (new_n < sz) shortened = true;
+            if (new_n < sz) {
+                shortened = true;
+                lrat_trigger = cr;
+            }
         }
 
         if (subsumed_sat) {
             solver_backtrack(s, 0);
             assumed_n = 0;
             proof_delete_clause(s, CLAUSE_LITS(s->arena, cr), sz);
+            if (s->lrat) lrat_buffer_delete(s, cr);
+            watch_remove_clause(s->watches, s->arena, cr);
             arena_delete(s->arena, cr);
             if (cands[ci].learned) s->learnts[cands[ci].slot] = INVALID_CLAUSE;
             else s->clauses[cands[ci].slot] = INVALID_CLAUSE;
             any_change = true;
         } else if (shortened) {
-            solver_backtrack(s, 0);
-            assumed_n = 0;
-            /* Deduplicate out_buf cleanly. */
+            /* Deduplicate out_buf cleanly BEFORE backtracking so LRAT can trace live trail reasons! */
             if (new_n > 1) {
                 sort_lits_small(out_buf, new_n);
                 uint32_t u = 0;
@@ -1872,12 +1933,21 @@ static bool inproc_vivify(Solver *s, uint64_t tick_budget) {
                 }
                 new_n = u;
             }
+            uint64_t lrat_new_id = 0;
+            if (new_n < sz && s->lrat) {
+                lrat_new_id = lrat_emit_learned(s, lrat_trigger, out_buf, new_n);
+                if (s->error) { solver_backtrack(s, 0); break; }
+            }
+            solver_backtrack(s, 0);
+            assumed_n = 0;
             if (new_n < sz) {
                 proof_add_clause(s, out_buf, new_n);
                 if (s->error) break;
                 proof_delete_clause(s, CLAUSE_LITS(s->arena, cr), sz);
+                if (s->lrat) lrat_buffer_delete(s, cr);
                 uint32_t old_lbd = clause_lbd(s->arena, cr);
                 uint32_t old_used = CLAUSE_HEADER(s->arena, cr)->used;
+                watch_remove_clause(s->watches, s->arena, cr);
                 arena_delete(s->arena, cr);
                 s->stats.minimized_literals += sz - new_n;
                 any_change = true;
@@ -1887,10 +1957,13 @@ static bool inproc_vivify(Solver *s, uint64_t tick_budget) {
                 } else if (new_n == 1) {
                     if (cands[ci].learned) s->learnts[cands[ci].slot] = INVALID_CLAUSE;
                     else s->clauses[cands[ci].slot] = INVALID_CLAUSE;
-                    if (!enqueue_root_unit(s, out_buf[0]) || !root_propagate(s)) { unsat = true; break; }
+                    if (!inproc_finish_unit_lrat(s, out_buf[0], lrat_new_id) || !root_propagate(s)) {
+                        unsat = true; break;
+                    }
                 } else {
                     CRef ncr = arena_alloc(s->arena, out_buf, new_n, cands[ci].learned);
                     if (ncr == INVALID_CLAUSE) { s->error = true; break; }
+                    if (s->lrat && lrat_new_id) lrat_set_cref_id(s, ncr, lrat_new_id);
                     CLAUSE_HEADER(s->arena, ncr)->vivified = 1;
                     if (cands[ci].learned) {
                         set_clause_lbd(s->arena, ncr, MIN(old_lbd, new_n));
@@ -1901,7 +1974,7 @@ static bool inproc_vivify(Solver *s, uint64_t tick_budget) {
                         watch_add(s->watches, out_buf[1], w, out_buf[0]);
                     } else {
                         s->clauses[cands[ci].slot] = ncr;
-                        CRef w = (new_n == 2) ? INVALID_CLAUSE : ncr;
+                        CRef w = (new_n == 2) ? (s->lrat ? arena_binary_watch_ref(ncr) : INVALID_CLAUSE) : ncr;
                         watch_add(s->watches, out_buf[0], w, out_buf[1]);
                         watch_add(s->watches, out_buf[1], w, out_buf[0]);
                     }
@@ -4335,6 +4408,27 @@ bool solver_inprocess(Solver *s, bool preprocessing) {
     uint32_t grow_bound = (s->inprocess_rounds <= 1) ? 0u :
                           (s->inprocess_rounds == 2) ? 2u :
                           (s->inprocess_rounds == 3) ? 4u : 8u;
+
+    /* Dedicated 100% LRAT-native RUP inprocessing pipeline:
+     * root cleanup -> forward subsumption + 2-hint SSR -> gate-aware BVE -> SSR -> vivification -> GC. */
+    if (s->lrat) {
+        if (!inproc_root_clean(s)) goto finish;
+        if (s->opts.subsumption && !solver_budget_exhausted_now(s)) {
+            if (!inproc_subsume(s, base_budget / 2)) goto finish;
+        }
+        if (s->opts.var_elim && !solver_budget_exhausted_now(s)) {
+            if (!inproc_elim(s, base_budget, grow_bound)) goto finish;
+            if (s->opts.subsumption && !solver_budget_exhausted_now(s)) {
+                if (!inproc_subsume(s, base_budget / 3)) goto finish;
+            }
+        }
+        if (!solver_budget_exhausted_now(s)) {
+            if (!inproc_vivify(s, base_budget / 2)) goto finish;
+        }
+        s->work_limit = 0;
+        solver_collect_garbage(s);
+        goto finish;
+    }
 
     /* 1. Root cleanup */
     if (!inproc_root_clean(s)) goto finish;

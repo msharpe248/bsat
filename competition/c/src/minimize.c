@@ -549,6 +549,7 @@ uint32_t solver_minimize_clause(Solver *s, Lit *learnt, uint32_t *size) {
    Exact signed marks make this independent of the current assignment values.
    Eager/lazy watch invariants: skip deleted clauses if present. */
 uint32_t solver_minimize_binary(Solver *s, Lit *learnt, uint32_t *size, uint32_t lbd) {
+    if (s->lrat) lrat_clear_bin_hints(s);
     if (!s->opts.binary_minimize || !s->opts.minimize || !s->opts.minimize_budget ||
         *size < 2 || *size > 30 || lbd > 6 || solver_budget_exhausted(s)) return 0;
     uint32_t n = *size;
@@ -564,7 +565,14 @@ uint32_t solver_minimize_binary(Solver *s, Lit *learnt, uint32_t *size, uint32_t
         Watch w = wl->watches[i];
         if (!is_binary_watch(w) && !is_arena_binary_watch(w)) continue;
         Lit removed = neg(w.blocker);
-        if (s->seen[var(removed)] == 1 + sign(removed)) s->seen[var(removed)] = 3;
+        if (s->seen[var(removed)] == 1 + sign(removed)) {
+            if (s->lrat) {
+                CRef bcr = watch_clause(w);
+                if (bcr == INVALID_CLAUSE || clause_deleted(s->arena, bcr)) continue;
+                if (!lrat_record_bin_hint(s, var(removed), bcr)) continue;
+            }
+            s->seen[var(removed)] = 3;
+        }
     }
     uint32_t out = 1;
     for (uint32_t i = 1; i < n; ++i) {
