@@ -87,7 +87,7 @@ typedef struct SolverOpts {
     uint32_t reduce_interval;   // Conflicts between reductions (2000)
     uint32_t reduce_increment;  // Add to interval after each reduction (0: fixed)
     bool     binary_minimize; // Bounded binary-resolution pass on short low-LBD clauses
-    bool     iterative_minimize; // Experimental binary-aware traversal (false)
+    bool     iterative_minimize; // Set by --iterative-minimize; not read by the solver (no effect)
     bool     shrink;            // Block-level all-UIP learned-clause shrinking
     bool     protect_used;      // Tier-2 retention for recently used LBD <= 6 clauses
     bool     dynamic_lbd;       // Re-evaluate learned-clause quality during analysis

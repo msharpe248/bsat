@@ -2,8 +2,11 @@
 
 # Test all medium instances with improved solver
 
-DATASET_DIR="/Users/msharpe/python/bsat/dataset/medium_tests/medium_suite"
-SOLVER="./bin/bsat"
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+C_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
+REPO_DIR="$(cd "$C_DIR/../.." && pwd)"
+DATASET_DIR="${DATASET_DIR:-$REPO_DIR/dataset/medium_tests/medium_suite}"
+SOLVER="$C_DIR/bin/bsat"
 TIMEOUT=10
 
 passed=0

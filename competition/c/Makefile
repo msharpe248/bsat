@@ -3,6 +3,8 @@
 # Compiler and flags
 CC = cc
 CFLAGS = -std=c11 -D_POSIX_C_SOURCE=200809L -pthread -Wall -Wextra -pedantic
+# Version string printed in the CLI banner, taken from the VERSION file
+CFLAGS += -DBSAT_VERSION_STRING='"$(shell cat VERSION)"'
 # Optimization flags for SAT solver performance
 OPTFLAGS = -O3 -march=native -flto -DNDEBUG
 DEBUGFLAGS = -g -O0 -DDEBUG -fsanitize=address -fsanitize=undefined

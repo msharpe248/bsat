@@ -3,7 +3,7 @@
  *
  * Spawns N diversified, completely isolated Solver workers via POSIX
  * pthreads. Logically-equivalent workers (var_elim=false, bce=false,
- * sbva=false) export short learned clauses (size <= 4) into a mutex-
+ * sbva=false) export short learned clauses (size <= 8, LBD <= 3) into a mutex-
  * guarded ring buffer; all workers import batches at decision level 0.
  * An atomic cancellation flag stops all sibling workers immediately
  * once any worker proves SAT or UNSAT.

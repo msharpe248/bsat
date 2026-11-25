@@ -18,6 +18,11 @@
 #include <sys/stat.h>
 #include <signal.h>
 
+// Set by the Makefile from the VERSION file; fallback for other build setups.
+#ifndef BSAT_VERSION_STRING
+#define BSAT_VERSION_STRING "unknown"
+#endif
+
 /*********************************************************************
  * Signal Handling for Progress Monitoring
  *********************************************************************/
@@ -151,7 +156,7 @@ static void print_usage(const char* program) {
     printf("  --reduce-increment <n>    Grow interval after each reduction (default: 100)\n");
     printf("  --binary-minimize         Binary-resolution minimization (default: on)\n");
     printf("  --no-binary-minimize      Disable binary-resolution minimization\n");
-    printf("  --iterative-minimize      Binary-aware DFS minimization (always active when minimizing)\n");
+    printf("  --iterative-minimize      Accepted for compatibility; currently has no effect\n");
     printf("  --protect-used            Temporarily retain used learned clauses (default: on)\n");
     printf("  --no-protect-used         Disable used-clause retention\n");
     printf("  --dynamic-lbd             Refresh learned-clause LBD during analysis (default: on)\n");
@@ -184,9 +189,9 @@ static void print_usage(const char* program) {
     printf("  --factor-budget <n>       Factoring work budget (100000000)\n");
     printf("  --factor-max-variables <n> Fresh-variable limit (1024)\n");
     printf("  --factor-min-gain <n>      Minimum net clause saving per rectangle (1)\n");
-    printf("  --sbva                    Structured Bounded Variable Addition (default: on, non-proof)\n");
+    printf("  --sbva                    Structured Bounded Variable Addition (default: on; skipped with --lrat)\n");
     printf("  --no-sbva                 Disable Structured Bounded Variable Addition\n");
-    printf("  --sym                     Exact syntactic symmetry breaking (default: on, non-proof)\n");
+    printf("  --sym                     Exact syntactic symmetry breaking (default: on; skipped with --lrat)\n");
     printf("  --no-sym                  Disable syntactic symmetry breaking\n");
     printf("  --no-probing              Disable failed literal probing\n");
     printf("\n");
@@ -740,7 +745,7 @@ int main(int argc, char** argv) {
 
     // Print header
     if (!opts.quiet) {
-        printf("c BSAT Competition Solver v1.0\n");
+        printf("c BSAT Competition Solver v%s\n", BSAT_VERSION_STRING);
         printf("c PID: %d (send SIGUSR1 for progress: kill -USR1 %d)\n", getpid(), getpid());
         printf("c Reading from %s\n", input_file);
     }

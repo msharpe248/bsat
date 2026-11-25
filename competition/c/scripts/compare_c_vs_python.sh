@@ -3,8 +3,11 @@
 # Compare C vs Python CDCL solvers on medium test instances
 # Shows conflicts/decisions to identify algorithmic differences
 
-DATASET_DIR="/Users/msharpe/python/bsat/dataset/medium_tests/medium_suite"
-C_SOLVER="./bin/bsat"
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+C_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
+REPO_DIR="$(cd "$C_DIR/../.." && pwd)"
+DATASET_DIR="${DATASET_DIR:-$REPO_DIR/dataset/medium_tests/medium_suite}"
+C_SOLVER="$C_DIR/bin/bsat"
 PYTHON_SOLVER="python"
 TIMEOUT=5
 
@@ -34,7 +37,7 @@ for cnf_file in "$DATASET_DIR"/easy_3sat_*.cnf "$DATASET_DIR"/medium_3sat_v040*.
     # Test Python solver
     py_output=$(timeout $TIMEOUT python -c "
 import sys
-sys.path.insert(0, '../../src')
+sys.path.insert(0, '$REPO_DIR/src')
 from bsat.dimacs import read_dimacs_file
 from bsat import get_cdcl_stats
 
