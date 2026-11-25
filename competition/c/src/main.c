@@ -5,6 +5,7 @@
 #include "../include/solver.h"
 #include "../include/dimacs.h"
 #include "../include/pb_enc.h"
+#include "../include/maxsat.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -192,6 +193,7 @@ static void print_usage(const char* program) {
     printf("  --accounting              Report intrusive phase CPU and owned capacities\n");
     printf("  --binary-proof            Use binary DRAT format (more compact)\n");
     printf("  --opb                     Parse and solve input as Pseudo-Boolean (.opb) format\n");
+    printf("  --maxsat                  Parse and solve input as Weighted Partial MaxSAT (.wcnf)\n");
     printf("\n");
     printf("Output format:\n");
     printf("  Standard DIMACS output format\n");
@@ -299,6 +301,7 @@ static struct option long_options[] = {
     {"accounting",      no_argument,       0, 0},
     {"binary-proof",    no_argument,       0, 0},
     {"opb",             no_argument,       0, 0},
+    {"maxsat",          no_argument,       0, 0},
     {0, 0, 0, 0}
 };
 
@@ -321,6 +324,7 @@ int main(int argc, char** argv) {
     double portfolio_seconds = 0;
     uint32_t num_threads = 1;
     bool opb_mode = false;
+    bool maxsat_mode = false;
 
     // Parse command line options
     int c;
@@ -567,6 +571,8 @@ int main(int argc, char** argv) {
                     opts.binary_proof = true;
                 } else if (strcmp(long_options[option_index].name, "opb") == 0) {
                     opb_mode = true;
+                } else if (strcmp(long_options[option_index].name, "maxsat") == 0) {
+                    maxsat_mode = true;
                 }
                 break;
 
@@ -584,11 +590,48 @@ int main(int argc, char** argv) {
     }
 
     const char* input_file = argv[optind];
-    if (!opb_mode) {
+    if (!opb_mode && !maxsat_mode) {
         size_t flen = strlen(input_file);
         if (flen >= 4 && strcmp(input_file + flen - 4, ".opb") == 0) {
             opb_mode = true;
+        } else if (flen >= 5 && strcmp(input_file + flen - 5, ".wcnf") == 0) {
+            maxsat_mode = true;
         }
+    }
+
+    if (maxsat_mode) {
+        MaxSatInstance inst;
+        if (!maxsat_parse_file(&inst, input_file)) {
+            fprintf(stderr, "Error parsing WCNF file: %s\n", input_file);
+            return 1;
+        }
+        MaxSatResult res = maxsat_solve(&inst, &opts);
+        int exit_code = 0;
+        if (res.status == TRUE) {
+            printf("%s\n", res.optimum ? "s OPTIMUM FOUND" : "s SATISFIABLE");
+            if (res.model) {
+                printf("v ");
+                for (Var v = 1; v <= inst.num_vars; ++v) {
+                    putchar(res.model[v] == TRUE ? '1' : '0');
+                }
+                putchar('\n');
+            }
+            if (opts.stats && !opts.quiet) {
+                printf("c MaxSAT cost=%llu lower_bound=%llu cores=%u solves=%u\n",
+                       (unsigned long long)res.cost, (unsigned long long)res.lower_bound,
+                       res.cores, res.solves);
+            }
+            exit_code = res.optimum ? 30 : 10;
+        } else if (res.status == FALSE) {
+            printf("s UNSATISFIABLE\n");
+            exit_code = 20;
+        } else {
+            printf("s UNKNOWN\n");
+            exit_code = 0;
+        }
+        maxsat_result_free(&res);
+        maxsat_instance_free(&inst);
+        return exit_code;
     }
 
     if (opb_mode) {
