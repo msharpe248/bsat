@@ -4,6 +4,7 @@
 
 #include "../include/dimacs.h"
 #include "../include/arena.h"
+#include "../include/pb_enc.h"
 #include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
@@ -55,7 +56,8 @@ static bool integer(const char *buf, long long *v) {
     return !errno && end != buf && !*end;
 }
 
-static DimacsError dimacs_parse_stream_account_impl(Solver *s, FILE *file) {
+static DimacsError dimacs_parse_stream_impl(Solver *s, FILE *file, bool allow_xor,
+                                            uint32_t *out_header_vars) {
     if (!s || !file) return DIMACS_ERROR_FILE;
     struct InputReader reader;
     reader.file = file;reader.at = reader.size = 0;
@@ -63,6 +65,7 @@ static DimacsError dimacs_parse_stream_account_impl(Solver *s, FILE *file) {
     Lit *clause = NULL;
     uint32_t size = 0, capacity = 0, count = 0;
     long long nvars = 0, nclauses = 0;
+    bool is_xor = false;
     DimacsError result = DIMACS_ERROR_FORMAT;
     if (token(&reader, buf, sizeof buf, true) != 1 || strcmp(buf, "p")) goto done;
     /* Read cnf without comment skipping: it is the format token. */
@@ -71,18 +74,31 @@ static DimacsError dimacs_parse_stream_account_impl(Solver *s, FILE *file) {
         nvars < 0 || nvars > MAX_VARS) goto done;
     if (token(&reader, buf, sizeof buf, true) != 1 || !integer(buf, &nclauses) ||
         nclauses < 0 || nclauses > MAX_CLAUSES) goto done;
+    if (out_header_vars) *out_header_vars = (uint32_t)nvars;
     while (s->num_vars < (uint32_t)nvars) {
         if (!solver_new_var(s)) { result = DIMACS_ERROR_MEMORY; goto done; }
     }
     for (;;) {
         int status = token(&reader, buf, sizeof buf, true);
         if (!status) break;
+        if (status < 0) goto done;
+        if (allow_xor && !is_xor && size == 0 && strcmp(buf, "x") == 0) {
+            is_xor = true;
+            continue;
+        }
         long long value;
-        if (status < 0 || !integer(buf, &value)) goto done;
+        if (!integer(buf, &value)) goto done;
         if (!value) {
             if (++count > (uint32_t)nclauses) goto done;
-            solver_add_clause(s, clause, size);
-            if (s->error) { result = DIMACS_ERROR_MEMORY; goto done; }
+            if (is_xor) {
+                if (!pb_add_xor_clause(s, clause, size, true)) {
+                    result = DIMACS_ERROR_MEMORY; goto done;
+                }
+                is_xor = false;
+            } else {
+                solver_add_clause(s, clause, size);
+                if (s->error) { result = DIMACS_ERROR_MEMORY; goto done; }
+            }
             size = 0;
         } else {
             if (value < -nvars || value > nvars) goto done;
@@ -97,10 +113,38 @@ static DimacsError dimacs_parse_stream_account_impl(Solver *s, FILE *file) {
         }
     }
     if (ferror(file)) result = DIMACS_ERROR_FILE;
-    else if (!size && count == (uint32_t)nclauses) result = DIMACS_OK;
+    else if (!size && !is_xor && count == (uint32_t)nclauses) result = DIMACS_OK;
 done:
     if (ferror(file)) result = DIMACS_ERROR_FILE;
     free(clause);
+    return result;
+}
+
+static DimacsError dimacs_parse_stream_account_impl(Solver *s, FILE *file) {
+    return dimacs_parse_stream_impl(s, file, false, NULL);
+}
+
+DimacsError dimacs_parse_stream_xor(Solver *s, FILE *file, uint32_t *out_header_vars) {
+    double started = solver_account_begin(s);
+    DimacsError result = dimacs_parse_stream_impl(s, file, true, out_header_vars);
+    solver_account_end(s, ACCOUNT_PARSE, started);
+    return result;
+}
+
+DimacsError dimacs_parse_file_xor(Solver *s, const char *filename, uint32_t *out_header_vars) {
+    FILE *file = fopen(filename, "r");
+    if (!file) return DIMACS_ERROR_FILE;
+    DimacsError result = dimacs_parse_stream_xor(s, file, out_header_vars);
+    fclose(file);
+    return result;
+}
+
+DimacsError dimacs_parse_string_xor(Solver *s, const char *str, uint32_t *out_header_vars) {
+    if (!s || !str) return DIMACS_ERROR_FILE;
+    FILE *stream = fmemopen((void *)str, strlen(str), "r");
+    if (!stream) return DIMACS_ERROR_MEMORY;
+    DimacsError result = dimacs_parse_stream_xor(s, stream, out_header_vars);
+    fclose(stream);
     return result;
 }
 

@@ -36,6 +36,12 @@ DimacsError dimacs_parse_stream(Solver* s, FILE* file);
 // Parse DIMACS from string buffer
 DimacsError dimacs_parse_string(Solver* s, const char* str);
 
+// Parse DIMACS CNF with optional CryptoMiniSat-style XOR lines ("x l1 l2 ... 0").
+// If out_header_vars != NULL, stores the original variable count from "p cnf".
+DimacsError dimacs_parse_stream_xor(Solver* s, FILE* file, uint32_t* out_header_vars);
+DimacsError dimacs_parse_file_xor(Solver* s, const char* filename, uint32_t* out_header_vars);
+DimacsError dimacs_parse_string_xor(Solver* s, const char* str, uint32_t* out_header_vars);
+
 // Get error description
 const char* dimacs_error_string(DimacsError err);
 

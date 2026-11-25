@@ -4,6 +4,7 @@
 
 #include "../include/solver.h"
 #include "../include/dimacs.h"
+#include "../include/pb_enc.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -186,10 +187,11 @@ static void print_usage(const char* program) {
     printf("  --ls-save-phases          Save improved walk phases (requires phase saving)\n");
     printf("  --ls-noise <f>            WalkSAT noise parameter 0.0-1.0 (default: 0.5)\n");
     printf("\n");
-    printf("Proof logging:\n");
+    printf("Proof logging & input formats:\n");
     printf("  --proof <file>            Write DRAT proof to file\n");
     printf("  --accounting              Report intrusive phase CPU and owned capacities\n");
     printf("  --binary-proof            Use binary DRAT format (more compact)\n");
+    printf("  --opb                     Parse and solve input as Pseudo-Boolean (.opb) format\n");
     printf("\n");
     printf("Output format:\n");
     printf("  Standard DIMACS output format\n");
@@ -296,6 +298,7 @@ static struct option long_options[] = {
     {"proof",           required_argument, 0, 0},
     {"accounting",      no_argument,       0, 0},
     {"binary-proof",    no_argument,       0, 0},
+    {"opb",             no_argument,       0, 0},
     {0, 0, 0, 0}
 };
 
@@ -317,6 +320,7 @@ int main(int argc, char** argv) {
 
     double portfolio_seconds = 0;
     uint32_t num_threads = 1;
+    bool opb_mode = false;
 
     // Parse command line options
     int c;
@@ -561,6 +565,8 @@ int main(int argc, char** argv) {
                     opts.accounting = true;
                 } else if (strcmp(long_options[option_index].name, "binary-proof") == 0) {
                     opts.binary_proof = true;
+                } else if (strcmp(long_options[option_index].name, "opb") == 0) {
+                    opb_mode = true;
                 }
                 break;
 
@@ -578,6 +584,43 @@ int main(int argc, char** argv) {
     }
 
     const char* input_file = argv[optind];
+    if (!opb_mode) {
+        size_t flen = strlen(input_file);
+        if (flen >= 4 && strcmp(input_file + flen - 4, ".opb") == 0) {
+            opb_mode = true;
+        }
+    }
+
+    if (opb_mode) {
+        PbInstance inst;
+        if (!pb_parse_opb_file(&inst, input_file)) {
+            fprintf(stderr, "Error parsing OPB file: %s\n", input_file);
+            return 1;
+        }
+        PbSolveResult res = pb_solve_opb(&inst, &opts);
+        int exit_code = 0;
+        if (res.status == TRUE) {
+            printf("%s\n", (inst.has_objective && res.optimum) ? "s OPTIMUM FOUND" : "s SATISFIABLE");
+            if (res.best_model) {
+                printf("v ");
+                for (Var v = 1; v <= inst.num_vars; ++v) {
+                    printf("%sx%u ", res.best_model[v] == TRUE ? "" : "-", v);
+                    if (v % 20 == 0 && v < inst.num_vars) printf("\nv ");
+                }
+                printf("\n");
+            }
+            exit_code = (inst.has_objective && res.optimum) ? 30 : 10;
+        } else if (res.status == FALSE) {
+            printf("s UNSATISFIABLE\n");
+            exit_code = 20;
+        } else {
+            printf("s UNKNOWN\n");
+            exit_code = 0;
+        }
+        pb_solve_result_free(&res);
+        pb_instance_free(&inst);
+        return exit_code;
+    }
 
     struct stat input_stat, proof_stat;
     if (opts.proof_path && !stat(input_file,&input_stat) && !stat(opts.proof_path,&proof_stat) &&
@@ -604,8 +647,9 @@ int main(int argc, char** argv) {
         return 1;
     }
 
-    // Parse input file
-    DimacsError err = dimacs_parse_file(solver, input_file);
+    // Parse input file (supports standard DIMACS CNF and CryptoMiniSat XOR-CNF "x ... 0")
+    uint32_t header_vars = 0;
+    DimacsError err = dimacs_parse_file_xor(solver, input_file, &header_vars);
     if (err != DIMACS_OK) {
         fprintf(stderr, "Error parsing DIMACS file: %s\n", dimacs_error_string(err));
         solver_free(solver);
@@ -641,7 +685,8 @@ int main(int argc, char** argv) {
         // Print model
         printf("v ");
         int vars_per_line = 0;
-        Var model_vars=solver->factor_original_vars?solver->factor_original_vars:solver->num_vars;
+        Var model_vars = solver->factor_original_vars ? solver->factor_original_vars : solver->num_vars;
+        if (header_vars && header_vars < model_vars) model_vars = header_vars;
         for (Var v = 1; v <= model_vars; v++) {
             lbool val = solver_model_value(solver, v);
             if (val == TRUE) {
