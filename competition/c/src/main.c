@@ -6,6 +6,7 @@
 #include "../include/dimacs.h"
 #include "../include/pb_enc.h"
 #include "../include/maxsat.h"
+#include "../include/queries.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -59,6 +60,19 @@ static void print_progress_stats(const Solver* s) {
     fprintf(stderr, "c ======================================\n");
     fprintf(stderr, "\n");
     fflush(stderr);
+}
+
+static bool cli_print_model_cb(void *ctx, const lbool *model, uint32_t num_vars, uint64_t idx) {
+    bool quiet = *(const bool *)ctx;
+    if (!quiet) {
+        printf("c Model #%llu\n", (unsigned long long)idx);
+    }
+    printf("v ");
+    for (Var v = 1; v <= num_vars; ++v) {
+        printf("%s%u ", model[v] == TRUE ? "" : "-", v);
+    }
+    printf("0\n");
+    return true;
 }
 
 static int cli_progress(void *state) {
@@ -194,6 +208,10 @@ static void print_usage(const char* program) {
     printf("  --binary-proof            Use binary DRAT format (more compact)\n");
     printf("  --opb                     Parse and solve input as Pseudo-Boolean (.opb) format\n");
     printf("  --maxsat                  Parse and solve input as Weighted Partial MaxSAT (.wcnf)\n");
+    printf("  --models <n|all>          Enumerate up to n (or all) distinct models (AllSAT)\n");
+    printf("  --project <v1,v2,...>     Project --models enumeration onto listed variables\n");
+    printf("  --backbone                Compute exact global backbone literals (SAT formulas)\n");
+    printf("  --mus                     Extract minimal unsatisfiable subset of clause IDs (UNSAT)\n");
     printf("\n");
     printf("Output format:\n");
     printf("  Standard DIMACS output format\n");
@@ -302,6 +320,10 @@ static struct option long_options[] = {
     {"binary-proof",    no_argument,       0, 0},
     {"opb",             no_argument,       0, 0},
     {"maxsat",          no_argument,       0, 0},
+    {"models",          required_argument, 0, 0},
+    {"project",         required_argument, 0, 0},
+    {"backbone",        no_argument,       0, 0},
+    {"mus",             no_argument,       0, 0},
     {0, 0, 0, 0}
 };
 
@@ -325,13 +347,20 @@ int main(int argc, char** argv) {
     uint32_t num_threads = 1;
     bool opb_mode = false;
     bool maxsat_mode = false;
+    bool models_mode = false;
+    uint64_t models_limit = 0;
+    const char *project_spec = NULL;
+    bool backbone_mode = false;
+    bool mus_mode = false;
 
     // Parse command line options
     int c;
     int option_index = 0;
 
     while ((c = getopt_long(argc, argv, "hvqsc:d:t:j:", long_options, &option_index)) != -1) {
-        if (optarg && !(c == 0 && !strcmp(long_options[option_index].name, "proof"))) {
+        if (optarg && !(c == 0 && (!strcmp(long_options[option_index].name, "proof") ||
+                                   !strcmp(long_options[option_index].name, "models") ||
+                                   !strcmp(long_options[option_index].name, "project")))) {
             const char *name = c == 0 ? long_options[option_index].name : "";
             bool floating = c == 't' || strstr(name, "decay") || strstr(name, "alpha") ||
                 !strcmp(name,"var-inc") || !strcmp(name,"restart-inc") || !strcmp(name,"glucose-k") ||
@@ -573,6 +602,25 @@ int main(int argc, char** argv) {
                     opb_mode = true;
                 } else if (strcmp(long_options[option_index].name, "maxsat") == 0) {
                     maxsat_mode = true;
+                } else if (strcmp(long_options[option_index].name, "models") == 0) {
+                    models_mode = true;
+                    if (strcmp(optarg, "all") == 0) {
+                        models_limit = 0;
+                    } else {
+                        char *end = NULL; errno = 0;
+                        unsigned long long v = strtoull(optarg, &end, 10);
+                        if (errno || end == optarg || *end != '\0') {
+                            fprintf(stderr, "Error: invalid --models value: %s\n", optarg);
+                            return 1;
+                        }
+                        models_limit = (uint64_t)v;
+                    }
+                } else if (strcmp(long_options[option_index].name, "project") == 0) {
+                    project_spec = optarg;
+                } else if (strcmp(long_options[option_index].name, "backbone") == 0) {
+                    backbone_mode = true;
+                } else if (strcmp(long_options[option_index].name, "mus") == 0) {
+                    mus_mode = true;
                 }
                 break;
 
@@ -708,6 +756,99 @@ int main(int argc, char** argv) {
     if (opts.accounting && !opts.quiet) {
         puts("c Accounting checkpoint: parsed");
         solver_print_accounting(solver);
+    }
+
+    if (models_mode) {
+        Var *pvars = NULL;
+        uint32_t npvars = 0, pcap = 0;
+        if (project_spec) {
+            const char *p = project_spec;
+            while (*p) {
+                while (*p == ',' || *p == ' ') p++;
+                if (!*p) break;
+                char *end = NULL; errno = 0;
+                unsigned long v = strtoul(p, &end, 10);
+                if (errno || end == p || v == 0 || v > solver->num_vars || (*end && *end != ',' && *end != ' ')) {
+                    fprintf(stderr, "Error: invalid variable in --project: %s\n", project_spec);
+                    free(pvars); solver_free(solver); return 1;
+                }
+                if (npvars == pcap) {
+                    uint32_t nc = pcap ? pcap * 2u : 16u;
+                    Var *nv = realloc(pvars, (size_t)nc * sizeof *nv);
+                    if (!nv) { free(pvars); solver_free(solver); return 1; }
+                    pvars = nv; pcap = nc;
+                }
+                pvars[npvars++] = (Var)v;
+                p = end;
+            }
+        }
+        bool qflag = opts.quiet;
+        AllSatResult ar = bsat_enumerate_models(solver, header_vars ? header_vars : solver->num_vars,
+                                                pvars, npvars, models_limit, &opts,
+                                                cli_print_model_cb, &qflag);
+        free(pvars);
+        if (ar.status == TRUE) {
+            printf("s SATISFIABLE\n");
+            printf("c Models enumerated: %llu (%s, solves=%u)\n",
+                   (unsigned long long)ar.count, ar.complete ? "complete" : "partial", ar.solves);
+            solver_free(solver);
+            return 10;
+        } else if (ar.status == FALSE) {
+            printf("s UNSATISFIABLE\n");
+            solver_free(solver);
+            return 20;
+        }
+        printf("s UNKNOWN\n");
+        solver_free(solver);
+        return 0;
+    }
+
+    if (backbone_mode) {
+        BackboneResult br = bsat_compute_backbone(solver, header_vars ? header_vars : solver->num_vars, &opts);
+        int rc = 0;
+        if (br.status == TRUE) {
+            printf("s SATISFIABLE\n");
+            printf("b ");
+            for (uint32_t i = 0; i < br.size; ++i) printf("%d ", toDimacs(br.lits[i]));
+            printf("0\n");
+            if (!opts.quiet) {
+                printf("c Backbone size: %u (%s, solves=%u, flip_dropped=%u)\n",
+                       br.size, br.complete ? "exact" : "partial", br.solves, br.flip_dropped);
+            }
+            rc = 10;
+        } else if (br.status == FALSE) {
+            printf("s UNSATISFIABLE\n");
+            rc = 20;
+        } else {
+            printf("s UNKNOWN\n");
+        }
+        bsat_backbone_result_free(&br);
+        solver_free(solver);
+        return rc;
+    }
+
+    if (mus_mode) {
+        MusResult mr = bsat_compute_mus(solver, header_vars ? header_vars : solver->num_vars, &opts);
+        int rc = 0;
+        if (mr.status == FALSE) {
+            printf("s UNSATISFIABLE\n");
+            printf("m ");
+            for (uint32_t i = 0; i < mr.size; ++i) printf("%u ", mr.clause_ids[i] + 1u); /* 1-based clause IDs */
+            printf("0\n");
+            if (!opts.quiet) {
+                printf("c MUS size: %u / %u clauses (%s, solves=%u, rotated=%u)\n",
+                       mr.size, mr.orig_clauses, mr.minimal ? "minimal" : "partial", mr.solves, mr.rotated);
+            }
+            rc = 20;
+        } else if (mr.status == TRUE) {
+            printf("s SATISFIABLE\n");
+            rc = 10;
+        } else {
+            printf("s UNKNOWN\n");
+        }
+        bsat_mus_result_free(&mr);
+        solver_free(solver);
+        return rc;
     }
 
     // The executable owns its progress signal; the library never installs it.
