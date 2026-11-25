@@ -1,8 +1,10 @@
 # VSIDS: Variable State Independent Decaying Sum
 
+> **Note:** Educational explanation written in October 2025. Code blocks are simplified illustrations, not excerpts of the current sources; for the current C solver's implementation and defaults see [competition/c/README.md](../c/README.md) and [FEATURES.md](../c/FEATURES.md).
+
 **Technique**: Dynamic variable ordering heuristic
 **Impact**: Critical for CDCL performance - guides search toward conflict areas
-**Status**: ✅ Implemented in both Python and C solvers
+**Status**: ✅ Implemented in both Python and C solvers (the C solver uses VSIDS in its stable mode and alternates it with a VMTF queue by default)
 
 ---
 
@@ -270,6 +272,8 @@ void heap_decrease(Var v) {
 
 ### Python Implementation
 
+Illustrative sketch. The actual prototype (`competition/python/cdcl_optimized.py`) keeps scores in `vsids_scores`, bumps them in `_analyze_conflict`, decays via `_decay_vsids_scores`, and selects the unassigned variable with the maximum score by a linear scan in `_pick_branching_variable` (no heap).
+
 ```python
 class CDCLSolver:
     def __init__(self, cnf):
@@ -299,12 +303,14 @@ class CDCLSolver:
 
 ### C Implementation
 
-See `competition/c/src/solver.c:716-805` for complete implementation.
+See the `heap_*` functions and `solver_decide` in `competition/c/src/solver.c` for the complete implementation.
 
-**Key differences**:
-- Manual heap management (no stdlib heap in C)
-- Heap operations: `heap_insert`, `heap_extract_max`, `heap_decrease`
-- Position tracking via `heap_pos` array for O(1) lookup
+**Key differences from the sketches above**:
+- Manual 4-ary max-heap (children of `i` are `4i+1 .. 4i+4`), not a binary heap
+- Heap operations: `heap_insert`, `heap_remove`, `heap_extract_max`, `heap_percolate_up`, `heap_percolate_down`
+- Position tracking so a variable's heap slot is found in O(1)
+- Dynamic decay that starts at 0.80 and ramps up to `--var-decay` (default 0.95)
+- By default (`--alternating`) VSIDS drives only stable mode; focused mode uses a VMTF queue (`competition/c/src/vmtf.c`). `--vsids` with `--no-alternating` gives pure VSIDS
 
 ---
 

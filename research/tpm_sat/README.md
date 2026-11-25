@@ -83,7 +83,7 @@ Iteration 4: About to choose c=T after [a=T, b=F]...
             → Try c=F instead or choose different variable
 ```
 
-**Result**: 15-30% fewer repeated conflicts (estimated based on preliminary analysis)
+**Result**: 15-30% fewer repeated conflicts (an estimate only; not measured by any checked-in benchmark)
 
 ---
 
@@ -145,6 +145,14 @@ if len(pattern_db) > max_patterns:
 if conflicts % 1000 == 0:
     remove_patterns_not_seen_in_last_N_conflicts()
 ```
+
+> **Implementation status**: `TemporalPatternMiner.clear_stale_patterns()` exists, but the solver
+> never calls it, so only size-based eviction is active. Likewise `record_pattern_seen()` (the
+> non-conflict observation) is never called by the solver: patterns are only recorded at conflicts,
+> so every stored pattern currently has `conflict_rate == 1.0`, and a pattern counts as "bad" once
+> it has been seen at least 3 times (`min_pattern_occurrences=3`, fixed in the solver). The
+> `conflict_threshold` parameter therefore has no practical effect at present. The miner's rolling
+> decision window is also not rewound on backtracking/restarts.
 
 ---
 
@@ -216,6 +224,7 @@ O(n + m + P × window_size) where:
 ## Completeness and Soundness
 
 **✅ Complete**: Always terminates with correct answer
+- Exception: `solve(max_conflicts=1000000)` returns `None` if the conflict limit is hit, which is indistinguishable from UNSAT
 - Pattern mining is purely heuristic
 - Falls back to VSIDS when no patterns match
 - CDCL guarantees completeness
@@ -373,7 +382,7 @@ class PatternStats:
 
     @property
     def conflict_rate(self) -> float:
-        return conflict_count / times_seen
+        return conflict_count / times_seen  # 0.0 if times_seen == 0
 ```
 
 ### Pattern Database
@@ -387,9 +396,11 @@ class PatternStats:
 
 TPM-SAT extends `CDCLSolver`:
 1. Overrides `_assign()` to track decisions
-2. Overrides `_analyze_conflict()` to mine patterns
-3. Overrides `_pick_branching_variable()` to avoid bad patterns
-4. Adds `_pick_branching_phase()` for pattern-aware phase selection
+2. Overrides `_unassign_to_level()` to keep the solver's decision trail in sync on backtrack
+3. Overrides `_analyze_conflict()` to mine patterns
+4. Overrides `_pick_branching_variable()` to avoid bad patterns
+5. Adds `_pick_branching_phase()` for pattern-aware phase selection (default phase is `True`; no phase saving)
+6. Overrides `solve()` with its own CDCL loop that calls the two pickers above
 
 ---
 
@@ -467,11 +478,11 @@ TPM-SAT extends `CDCLSolver`:
 
 ## Conclusion
 
-TPM-SAT demonstrates that **temporal pattern mining**, well-established in other domains, can be successfully applied to SAT solving. The approach:
+TPM-SAT demonstrates that **temporal pattern mining**, well-established in other domains, can be applied to SAT solving. The approach:
 
 **✅ Likely Novel**: No prior work found mining decision sequences in SAT
 **✅ Theoretically Sound**: Extends CDCL without sacrificing completeness
-**✅ Practically Feasible**: Low overhead (5-10%) with projected benefits
+**✅ Practically Feasible**: Projected low overhead (5-10%) and projected benefits (neither measured yet)
 **✅ Educationally Valuable**: Connects SAT to temporal data mining
 
 **Best suited for**:

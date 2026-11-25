@@ -1,5 +1,7 @@
 # Experimental gate congruence
 
+> Historical snapshot (2026-09-07). Defaults, options and code locations described here have since changed; current behavior is in [README.md](../README.md), [FEATURES.md](../FEATURES.md) and [PRODUCTION_READINESS.md](../PRODUCTION_READINESS.md).
+
 Hardware-model-checking input `7bdf3e5401cc263951003b569bcd689c.cnf`
 contains 160,903 variables and 399,948 clauses. The default solver timed out
 after 60 solving CPU seconds. A bounded gate-congruence pass followed by

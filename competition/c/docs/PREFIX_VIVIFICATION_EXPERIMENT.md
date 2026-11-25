@@ -1,5 +1,7 @@
 # Incremental prefix vivification experiment
 
+> Historical snapshot (2026-09-07). Defaults, options and code locations described here have since changed; current behavior is in [README.md](../README.md), [FEATURES.md](../FEATURES.md) and [PRODUCTION_READINESS.md](../PRODUCTION_READINESS.md).
+
 **Rejected.** The replacement adds no verified solves and repeatedly slows
 battleship by about nine times in process CPU. Production sources are restored
 to `d5bd74a`. The independent correctness tests, diagnostic tools and measurements

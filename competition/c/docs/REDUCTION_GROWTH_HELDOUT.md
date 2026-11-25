@@ -1,5 +1,7 @@
 # Fresh large-instance evaluation of growing reduction intervals
 
+> Historical snapshot (2026-09-07). Defaults, options and code locations described here have since changed; current behavior is in [README.md](../README.md), [FEATURES.md](../FEATURES.md) and [PRODUCTION_READINESS.md](../PRODUCTION_READINESS.md).
+
 Fixed BSAT, growing BSAT and Kissat each have **one independently verified
 solve out of six**. Growing intervals add no solves, slow the one completed
 BSAT case, and increase peak RSS on every input. The earlier hardware

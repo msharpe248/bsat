@@ -1,5 +1,7 @@
 # C solver hardening — September 2026
 
+> Historical snapshot (September 2026). Defaults, options and code locations described here have since changed; current behavior is in [README.md](../README.md), [FEATURES.md](../FEATURES.md) and [PRODUCTION_READINESS.md](../PRODUCTION_READINESS.md).
+
 September 8 update: embedding, conservative learned reuse, conditional-certificate
 bundles and broader assurance now have implementations and validation recorded in
 [PRODUCTION_GAPS.md](PRODUCTION_GAPS.md). Capability limits below describe this

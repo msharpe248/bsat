@@ -1,11 +1,20 @@
 # BSAT Competition Solver Testing Guide
 
-Comprehensive testing infrastructure for both C and Python BSAT competition solvers.
+How to run the tests shared by the C and Python BSAT competition solvers: the
+common fixtures, the Python fixture tests, and the C-vs-Python cross-validation.
+
+This guide covers the shared-fixture layer only. The C solver has a much larger
+test and verification suite of its own (unit tests, `validate.py`, sanitizer,
+fault-injection, fuzzing, and proof-checking targets); see
+[c/README.md](c/README.md#build-and-verify) and
+[c/tests/FEATURE_COVERAGE.md](c/tests/FEATURE_COVERAGE.md). The Python
+prototype's own scripts are described in
+[python/tests/README.md](python/tests/README.md).
 
 ## Quick Start
 
 ```bash
-# C Unit Tests (22 tests)
+# C unit tests (every tests/test_*.c program; includes the fixture tests)
 cd competition/c
 make test
 
@@ -41,10 +50,11 @@ competition/
 │
 ├── c/
 │   ├── tests/
-│   │   ├── test_dimacs.c          # DIMACS I/O tests (11 tests)
-│   │   ├── test_solver.c          # Core solver tests (11 tests)
+│   │   ├── test_dimacs.c          # DIMACS I/O + shared fixture tests (12 tests)
+│   │   ├── test_solver.c          # Core solver API tests (11 tests)
+│   │   ├── test_*.c               # ~75 further C test programs (see c/tests/FEATURE_COVERAGE.md)
 │   │   ├── test_cross_validation.py  # C vs Python validation
-│   │   └── run_all.sh             # Test runner script
+│   │   └── run_all.sh             # Wrapper that runs `make test`
 │   └── Makefile                    # Build system with test targets
 │
 └── python/
@@ -61,7 +71,7 @@ Language-independent test cases used by both C and Python solvers.
 
 **Philosophy**:
 - **Minimal**: Each fixture tests exactly one concept
-- **Fast**: All unit tests complete in <1ms (total suite <10ms)
+- **Fast**: Each fixture solves in well under a millisecond
 - **Documented**: Comments explain expected behavior
 - **Verifiable**: Solutions can be validated by CNF evaluation
 
@@ -76,26 +86,31 @@ Language-independent test cases used by both C and Python solvers.
 
 **Expected Results**: All fixtures have expected SAT/UNSAT results in `tests/expected_results.json`
 
-### 2. C Unit Tests (22 tests)
+### 2. C Unit Tests
 
 **Location**: `competition/c/tests/`
 
-Tests for C solver implementation.
+`make test` builds and runs every `tests/test_*.c` program (77 at the time of
+writing; about 5 seconds for a release build). Two of them exercise the shared
+fixtures and the basic solver API and are described here; the rest cover
+individual C solver features and are indexed in
+[c/tests/FEATURE_COVERAGE.md](c/tests/FEATURE_COVERAGE.md).
 
-#### 2.1 DIMACS I/O Tests (`test_dimacs.c` - 11 tests)
+#### 2.1 DIMACS I/O Tests (`test_dimacs.c` - 12 tests)
 
-Tests DIMACS parsing, writing, and file I/O:
-- Parse all common fixtures
+Tests DIMACS parsing and file I/O:
+- Parse and solve the common unit fixtures (all except `pure_literal.cnf`)
 - Handle comments and empty lines
 - Parse unit clauses correctly
+- Reject malformed input
 - Validate SAT/UNSAT results
 
-**Run**:
+**Run** (the fixture paths are relative to `competition/c`, so run from there):
 ```bash
 cd competition/c
 make test
-# OR
-bin/test_test_dimacs
+# OR, after `make tests`
+bin/tests/release/test_dimacs
 ```
 
 #### 2.2 Core Solver Tests (`test_solver.c` - 11 tests)
@@ -116,8 +131,8 @@ Tests core solver functionality:
 ```bash
 cd competition/c
 make test
-# OR
-bin/test_test_solver
+# OR, after `make tests`
+bin/tests/release/test_solver
 ```
 
 ### 3. Python Tests (10 tests)
@@ -135,7 +150,7 @@ cd competition/python
 python test_common_fixtures.py
 ```
 
-**Output**:
+**Output** (abridged):
 ```
 test_trivial_sat ... ok
 test_trivial_unsat ... ok
@@ -199,10 +214,9 @@ make test
 ```
 
 The Makefile automatically:
-- Compiles test sources with all dependencies
-- Links against solver core (arena, dimacs, solver, watch)
-- Runs each test binary sequentially
-- Reports pass/fail for each test
+- Compiles each `tests/test_*.c` into `bin/tests/<MODE>/` (`MODE=release` by default; `MODE=debug` adds ASan/UBSan)
+- Links each test against every solver object except `main.o`
+- Runs each test binary sequentially and stops at the first failure
 
 ## Test Development
 
@@ -226,7 +240,9 @@ The Makefile automatically:
    }
    ```
 
-3. **Tests automatically pick it up** - no code changes needed!
+3. **Cross-validation picks it up automatically** (it iterates over
+   `expected_results.json`). The Python fixture tests and `test_dimacs.c` name
+   each fixture explicitly, so add a test method/function there as shown below.
 
 ### Adding C Unit Tests
 
@@ -280,9 +296,10 @@ Run: `python test_common_fixtures.py`
 - Unit tests: 9 cases
 - Regression tests: 1 case
 
-**C Tests**: 22 unit tests
-- DIMACS I/O: 11 tests
-- Core solver: 11 tests
+**C Tests on the shared layer**: 23 tests
+- DIMACS I/O and fixtures (`test_dimacs.c`): 12 tests
+- Core solver API (`test_solver.c`): 11 tests
+- (`make test` runs these plus all other C test programs)
 
 **Python Tests**: 10 tests
 - All common fixtures
@@ -290,25 +307,16 @@ Run: `python test_common_fixtures.py`
 **Cross-Validation**: 10 test cases
 - Validates C-Python agreement
 
-**Total**: 42 distinct test cases
-
 ### Performance
 
-**C Unit Tests**: ~100ms total
-- Individual tests: <10ms each
-- Suitable for rapid iteration
+**C Unit Tests** (`make test`, all programs, release build): about 5 seconds
+- `test_dimacs` and `test_solver` themselves finish in a few milliseconds
 
-**Python Tests**: ~1-10ms total
-- Individual tests: <1ms each
-- Very fast feedback
+**Python Tests**: ~1-10ms total (plus interpreter start-up)
 
-**Cross-Validation**: ~50-100ms
+**Cross-Validation**: well under a second
 - Runs both solvers on 10 fixtures
 - Includes solution validation
-
-**Total Test Suite**: <500ms
-- Fast enough for pre-commit hooks
-- Suitable for CI/CD integration
 
 ## Continuous Integration
 
@@ -342,9 +350,11 @@ make tests
 
 ### Python Import Errors
 
-Ensure `bsat` package is installed:
+`test_common_fixtures.py` and `test_cross_validation.py` add the repository's
+`src/` directory to `sys.path` themselves, so no installation is required as
+long as the repository layout is intact. If you run solver code from elsewhere,
+install the package from the repository root:
 ```bash
-cd ../..  # bsat root
 pip install -e .
 ```
 
@@ -352,30 +362,33 @@ pip install -e .
 
 1. Ensure C solver is built: `cd competition/c && make`
 2. Check Python solver works: `cd ../python && python test_common_fixtures.py`
-3. Run cross-validation with verbose output
+3. Re-run cross-validation; each fixture line reports which solver disagreed or returned an invalid model
 
 ### Tests Pass But Solver Fails on Real Instances
 
 - Common fixtures are minimal test cases
-- Use `dataset/simple_tests/` for more comprehensive testing
-- Run benchmarks for performance validation
+- Use `dataset/simple_tests/` and `dataset/medium_tests/` (repository root) for more comprehensive testing
+- For the C solver, run `python3 tests/validate.py --solver bin/bsat` and the
+  wide-corpus targets described in [c/README.md](c/README.md)
 
 ## Design Principles
 
 1. **Language Independence**: Common fixtures work with any SAT solver
-2. **Fast Execution**: All tests complete in <500ms
-3. **Comprehensive Coverage**: Tests all major solver features
+2. **Fast Execution**: The fixture tests complete in well under a second
+3. **Basic Coverage**: SAT/UNSAT, propagation, and edge cases; feature-level coverage lives in the C test suite
 4. **Automatic Validation**: Solutions are verified, not just accepted
 5. **Easy to Extend**: Adding new tests is straightforward
 6. **Build Integration**: Tests run via `make test`
-7. **Cross-Platform**: Pure C11 and Python 3, no platform-specific code
+7. **Cross-Platform**: C11/POSIX and Python 3
 
 ## Related Documentation
 
-- `tests/README.md` - Common fixture documentation
-- `c/README.md` - C solver documentation
-- `python/README.md` - Python solver documentation (if exists)
-- `../docs/` - Algorithm documentation
+- [tests/README.md](tests/README.md) - Common fixture documentation
+- [c/README.md](c/README.md) - C solver documentation
+- [c/tests/FEATURE_COVERAGE.md](c/tests/FEATURE_COVERAGE.md) - C test coverage index
+- [python/README.md](python/README.md) - Python solver documentation
+- [FEATURE_TESTING.md](FEATURE_TESTING.md) - Choosing instances that exercise specific features
+- [docs/](docs/README.md) - Algorithm documentation
 
 ## Maintenance
 
@@ -395,4 +408,4 @@ pip install -e .
 - Need more coverage in specific area
 - Regression test for production bug
 
-Last updated: 2025-10-21
+Last updated: 2026-11-25

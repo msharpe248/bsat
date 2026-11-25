@@ -1,5 +1,7 @@
 # Ordered-trail chronological backtracking: rejected prototype
 
+> Historical snapshot (2026-09-07). Defaults, options and code locations described here have since changed; current behavior is in [README.md](../README.md), [FEATURES.md](../FEATURES.md) and [PRODUCTION_READINESS.md](../PRODUCTION_READINESS.md).
+
 
 The prototype is **not retained**. Both profiles solved all four development
 runs with verified UNSAT proofs, but the candidate slowed belpyramid by about

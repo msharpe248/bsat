@@ -25,13 +25,13 @@ A beautiful probabilistic algorithm discovered by Uwe Schöning in 1999 that ach
 - **Completeness**: ❌ Incomplete (may not find solution even if exists)
 - **Soundness**: ✅ Always returns valid solutions
 - **Expected Runtime**:
-  - **2SAT**: O(n) polynomial time
+  - **2SAT**: polynomial time (O(n²) expected flips for the plain random walk without restarts - Papadimitriou, 1991)
   - **3SAT**: O(1.334^n) - significantly better than O(2^n)!
   - **k-SAT**: O((2(k-1)/k)^n)
 
 ### Why It's Important
 
-1. **Theoretical Breakthrough**: First algorithm to provably beat O(2^n) for 3SAT
+1. **Theoretical Breakthrough**: A strikingly simple algorithm that provably beats O(2^n) for 3SAT (and the best known bound when it was published)
 2. **Elegant Simplicity**: Remarkably simple yet theoretically profound
 3. **Randomization Power**: Demonstrates the power of randomization in algorithm design
 4. **Educational Value**: Perfect example of probabilistic analysis of algorithms
@@ -105,7 +105,7 @@ For k=3: 2(3-1)/3 = 4/3 = 1.333... → **O(1.334^n)**
 ### Mathematical Details
 
 **Success Probability per Try**:
-- For 3SAT with 3n flips: p ≥ (1/2)^n × c (for some constant c)
+- For 3SAT with 3n flips: p ≥ (3/4)^n / poly(n)
 - After t tries: P(success) ≥ 1 - (1-p)^t
 - With t = O((4/3)^n) tries: High probability of success
 
@@ -173,6 +173,7 @@ print(f"Average flips per try: {sum(stats.flips_per_try) / len(stats.flips_per_t
 from bsat import SchoeningSolver
 
 solver = SchoeningSolver(cnf, seed=42)
+n = len(cnf.get_variables())
 solution = solver.solve(max_tries=1000, max_flips=3*n)
 
 print(f"Solution: {solution}")
@@ -192,8 +193,9 @@ print(f"Statistics: {solver.get_stats()}")
 - For k-SAT, consider using k*n
 
 **`seed`** (default: None)
-- Random seed for reproducibility
-- Same seed → same results
+- Random seed for reproducibility (seeds Python's global `random` module)
+- Same seed → same results within one Python process
+- Across separate runs the result can still differ, because the solver's variable order comes from a `set` (string hash randomization); set `PYTHONHASHSEED` for fully reproducible runs
 - Useful for testing and debugging
 
 ---
@@ -204,8 +206,8 @@ print(f"Statistics: {solver.get_stats()}")
 
 | Problem | Expected Runtime | Notes |
 |---------|-----------------|-------|
-| 2SAT | O(n) | Polynomial! But use solve_2sat() instead |
-| 3SAT | **O(1.334^n)** | **Best known for general 3SAT** |
+| 2SAT | Polynomial | O(n²) expected flips for an unrestarted walk. But use solve_2sat() instead |
+| 3SAT | **O(1.334^n)** | Best known bound in 1999; since improved (see [Related Work](#related-work)) |
 | 4SAT | O(1.5^n) | 2(4-1)/4 = 1.5 |
 | k-SAT | O((2(k-1)/k)^n) | Approaches O(2^n) as k→∞ |
 
@@ -215,7 +217,7 @@ print(f"Statistics: {solver.get_stats()}")
 - n = number of variables
 - m = number of clauses
 
-Much better than DPLL's O(n) stack depth.
+The formula itself dominates; the algorithm only keeps one assignment (O(n)) - no search stack and no learned clauses.
 
 ### Practical Performance
 
@@ -310,17 +312,18 @@ Typical performance (satisfiable 3SAT):
 ```python
 from bsat import solve_schoening, solve_cdcl, is_2sat, solve_2sat
 
-# Try specialized solvers first
-if is_2sat(cnf):
-    return solve_2sat(cnf)  # O(n) guaranteed
+def solve(cnf):
+    # Try specialized solvers first
+    if is_2sat(cnf):
+        return solve_2sat(cnf)  # O(n+m) guaranteed
 
-# Try Schöning for quick answer
-solution = solve_schoening(cnf, max_tries=1000, seed=42)
-if solution:
-    return solution  # Found quickly!
+    # Try Schöning for quick answer
+    solution = solve_schoening(cnf, max_tries=1000, seed=42)
+    if solution:
+        return solution  # Found quickly!
 
-# Fall back to complete solver
-return solve_cdcl(cnf)  # Will prove SAT or UNSAT
+    # Fall back to complete solver
+    return solve_cdcl(cnf)  # Will prove SAT or UNSAT
 ```
 
 ---
@@ -336,7 +339,7 @@ cnf = CNFExpression.parse("(a | b | c) & (~a | b | ~c) & (a | ~b | c)")
 solution = solve_schoening(cnf, seed=42)
 
 print(f"Solution: {solution}")
-# Output: Solution: {'a': True, 'b': True, 'c': True}
+# Possible output: Solution: {'a': True, 'b': True, 'c': False}
 ```
 
 ### Example 2: Track Statistics
@@ -355,7 +358,7 @@ print(f"Flips per try: {stats.flips_per_try}")
 ### Example 3: Reproducibility
 
 ```python
-# Same seed → same results
+# Same seed → same results (within one Python process)
 sol1 = solve_schoening(cnf, seed=123)
 sol2 = solve_schoening(cnf, seed=123)
 assert sol1 == sol2  # ✓ Reproducible
@@ -415,7 +418,7 @@ Schöning, U. (1999). "A probabilistic algorithm for k-SAT and constraint satisf
 
 1. **Paturi, Pudlák, Saks, Zane (1998)** - PPSZ algorithm, another randomized approach achieving O(1.308^n) for unique k-SAT
 2. **Iwama & Tamaki (2003)** - Improved analysis showing O(1.324^n) for 3SAT
-3. **Moser & Scheder (2011)** - Lovász Local Lemma algorithmic version
+3. **Moser & Scheder (2011)** - Full derandomization of Schöning's algorithm
 
 ### Textbook References
 

@@ -46,7 +46,7 @@ The solver finds **Walrasian equilibrium** where:
 ```
 1. Initialize:
    - Create bidder agent for each clause
-   - Assign budgets (unit clauses get infinite budget)
+   - Assign budgets (unit clauses: infinite; binary: 100; k literals: 100/k)
    - Set initial prices (all start at 1.0)
 
 2. Auction Round:
@@ -67,9 +67,22 @@ The solver finds **Walrasian equilibrium** where:
 
 5. Repeat until:
    - Equilibrium + all satisfied → SAT
-   - Equilibrium + some unsatisfied → UNSAT
-   - Max rounds exceeded → Unknown
+   - Equilibrium + some unsatisfied → reported as UNSAT (returns None)
+   - Max rounds exceeded → if every clause holds a bid, the demanded
+     assignment is extracted and verified; if it does not satisfy the
+     formula, the solver falls back to bsat's CDCLSolver. Otherwise
+     returns None.
 ```
+
+> **Current behaviour (important)**: "equilibrium" is implemented as *every variable being
+> demanded by exactly one clause, for exactly one polarity* (`PriceManager.is_equilibrium()`).
+> Any formula whose clauses do not pair off one-to-one with its variables can never reach it, so
+> in practice the auction runs all `max_auction_rounds` (default 1000) without converging, the
+> extracted assignment usually fails verification, and the answer (SAT or UNSAT) comes from the
+> CDCL fallback. In spot checks on random 3-SAT (20 variables) and on `example.py`, every
+> non-trivial instance went this way; only all-unit-clause formulas reached equilibrium.
+> A `None` result returned without the fallback (equilibrium with an unsatisfied clause, or a
+> clause that cannot afford any literal at the round limit) is not a proof of UNSAT.
 
 ## Implementation
 
@@ -107,9 +120,11 @@ class AuctionEngine:
 
 ### Basic Usage
 
+Run from the repository root with `PYTHONPATH=src:.` (or add `research/` to `sys.path` and import `market_sat` directly, as `example.py` does).
+
 ```python
 from bsat import CNFExpression
-from market_sat import MARKETSATSolver
+from research.market_sat import MARKETSATSolver
 
 # Create CNF formula
 cnf = CNFExpression.parse("(a | b) & (~a | c)")
@@ -137,15 +152,18 @@ print(f"Equilibrium: {stats['equilibrium']}")
 print(f"Total spent: ${stats['total_spent']:.2f}")
 ```
 
+`get_market_statistics()` returns the keys `enabled`, `auction_rounds`, `clauses_satisfied`, `satisfaction_rate`, `total_spent`, `equilibrium`, `prices` (or just `{'enabled': False}` when `use_market=False`). `solver.get_stats()` returns a `MarketStats` object. A convenience function `solve_market_sat(cnf, use_market=True, max_auction_rounds=1000, max_conflicts=1000000)` is also exported.
+
 ### Advanced Usage
 
 ```python
 # Custom parameters
 solver = MARKETSATSolver(
     cnf,
-    max_auction_rounds=2000,  # More rounds for hard problems
-    use_market=True           # Enable market mechanism
+    max_auction_rounds=2000,  # More rounds for hard problems (default 1000)
+    use_market=True           # Enable market mechanism (False = plain CDCL)
 )
+result = solver.solve()
 
 # Get detailed state
 state = solver.get_detailed_market_state()
@@ -158,7 +176,7 @@ print(state['bidders'])  # Status of each clause bidder
 See `example.py` for comprehensive examples:
 
 ```bash
-python3 example.py
+python3 research/market_sat/example.py   # from the repository root (also works from this directory)
 ```
 
 Examples include:
@@ -174,12 +192,12 @@ Examples include:
 2. **Natural Priorities**: Unit clauses automatically get highest priority
 3. **Distributed**: Each clause acts independently (natural parallelism)
 4. **Interpretable**: Prices reveal variable importance
-5. **Incentive Compatible**: Truthful bidding is optimal strategy
+5. **Incentive Compatible** (design intent; not established for this mechanism, see VCG under Future Extensions): Truthful bidding is optimal strategy
 
 ## Limitations
 
 1. **Convergence**: Tatonnement not guaranteed to converge for all instances
-2. **UNSAT Detection**: Hard to distinguish no-equilibrium from slow convergence
+2. **UNSAT Detection**: Hard to distinguish no-equilibrium from slow convergence; reliable SAT/UNSAT answers currently come from the CDCL fallback
 3. **Overhead**: Auction simulation adds computational overhead
 4. **Parameter Tuning**: Budget allocation affects performance
 
@@ -221,14 +239,14 @@ MARKET-SAT demonstrates:
 | Decisions | Bidding/pricing | Variable assignment | Flipping variables |
 | Guidance | Consumer surplus | VSIDS heuristic | Clause breaks |
 | Learning | Price/budget adjustment | Clause learning | None (greedy) |
-| Guarantee | No (may not converge) | Yes (complete) | No (incomplete) |
+| Guarantee | No (auction may not converge; relies on CDCL fallback) | Yes (complete) | No (incomplete) |
 
 ## Performance Notes
 
 - **Best for**: Small to medium problems with clear structure
 - **Struggles with**: Very large problems, highly irregular instances
 - **Interesting behavior**: Prices reveal problem structure
-- **Typical rounds**: 10-100 for simple problems, 100-1000 for harder ones
+- **Typical rounds**: In practice the auction currently uses the full `max_auction_rounds` (1000 by default) on almost every instance, because the equilibrium test is rarely satisfiable (see Algorithm); the original expectation was 10-100 for simple problems, 100-1000 for harder ones
 
 ## Why It Might Work
 

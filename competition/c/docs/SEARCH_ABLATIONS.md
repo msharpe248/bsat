@@ -1,5 +1,7 @@
 # Frozen search-policy ablation
 
+> Historical snapshot (2026-09-08). Defaults, options and code locations described here have since changed; current behavior is in [README.md](../README.md), [FEATURES.md](../FEATURES.md) and [PRODUCTION_READINESS.md](../PRODUCTION_READINESS.md).
+
 This development experiment disables one feature at a time from the existing
 `--chrono --congruence --equiv --equiv-budget 100000000 --alternating --vmtf`
 profile. It compares the full profile with five omissions: chronological

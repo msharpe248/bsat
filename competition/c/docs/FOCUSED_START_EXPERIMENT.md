@@ -1,5 +1,7 @@
 # Initial focused interval experiment
 
+> Historical snapshot (2026-09-07). Defaults, options and code locations described here have since changed; current behavior is in [README.md](../README.md), [FEATURES.md](../FEATURES.md) and [PRODUCTION_READINESS.md](../PRODUCTION_READINESS.md).
+
 The larger fresh-input screen found two Kissat-only successes: `ktf` and
 hardware verification. A subsequent unchanged-binary diagnostic compared default
 and alternating BSAT with a 15-second solving CPU limit and a 20-second wall

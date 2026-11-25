@@ -1,5 +1,7 @@
 # Core CDCL Algorithms
 
+> Historical snapshot (written 2025-10-22). Defaults, options and code locations described here have since changed; current behavior is in [README.md](../README.md), [FEATURES.md](../FEATURES.md) and [PRODUCTION_READINESS.md](../PRODUCTION_READINESS.md).
+
 Detailed documentation of the main algorithms in the C solver (src/solver.c).
 
 ## Main Search Loop

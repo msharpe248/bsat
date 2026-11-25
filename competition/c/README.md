@@ -5,6 +5,12 @@ dynamic GF(2) Gaussian elimination, exact syntactic symmetry breaking,
 multi-core clause-sharing portfolio solving, DRAT proof logging, and an opaque
 ABI-v1 C/C++ embedding library (plus IPASIR 1.0).
 
+It is built to be competitive and to be learned from. The Python package in
+[`src/bsat/`](../../src/bsat/) teaches the algorithms in their simplest form;
+this solver shows what they become when engineered for performance, and
+[`docs/`](docs/) records the experiments behind each design decision, including
+the ones that were rejected.
+
 Start with [PRODUCTION_READINESS.md](PRODUCTION_READINESS.md) for the
 capability matrix and release gates, [FEATURES.md](FEATURES.md) for the full
 option and default reference, and [API_CONTRACT.md](API_CONTRACT.md) for
@@ -19,11 +25,11 @@ benchmarking.
 
 ```sh
 cd competition/c
-make all test                                            # Release build + 73 unit tests
+make all test                                            # Release build + 77 unit tests
 make all test MODE=debug                                 # Debug build (ASan + UBSan)
 make all test MODE=diagnostic                            # Build with opt-in detailed search counters
 make shared                                              # Build libbsat shared library (also used by Python bsat.solve_c)
-make pgo                                                 # Profile-guided optimization (Clang/LLVM)
+make pgo                                                 # Profile-guided optimization (macOS/Clang; runs `clean` first)
 python3 tests/validate.py --solver bin/bsat --cases 200  # Independent oracle, model & RUP check
 ```
 
@@ -31,7 +37,8 @@ Build artifacts are separated by mode (`release`, `debug`, `diagnostic`, `tsan`,
 `profile`). Additional verification targets:
 - `make fault-test` / `make recovery-fault-test`: deterministic OOM allocation-failure testing
 - `make embedding-test soak-test package-test`: ABI v1 shared library, soak, and staged install checks
-- `make MODE=tsan bin/tests/tsan/test_gauss_and_amo && ./bin/tests/tsan/test_gauss_and_amo`: ThreadSanitizer check for concurrent handles and `-j N` portfolio solving
+- `make MODE=tsan embedding-test soak-test`: ThreadSanitizer check for concurrent library handles
+- `make MODE=tsan bin/tests/tsan/test_gauss_and_amo && ./bin/tests/tsan/test_gauss_and_amo`: ThreadSanitizer check for `-j N` portfolio solving
 
 See [tests/FEATURE_COVERAGE.md](tests/FEATURE_COVERAGE.md) for the test
 coverage index.
@@ -55,8 +62,9 @@ coverage index.
 /path/to/drat-trim input.cnf proof.drat
 ```
 
-**Exit codes**: `10` SAT, `20` UNSAT, `0` UNKNOWN / resource limit, `1` input,
-I/O, or internal error. Every returned SAT model is verified against the
+**Exit codes**: `10` SAT, `20` UNSAT, `30` optimum found (`.wcnf`, or `.opb`
+with an objective), `0` UNKNOWN / resource limit, `1` input, I/O, or internal
+error. Every returned SAT model is verified against the
 retained original input before returning.
 
 **DIMACS input**: Uses a 64 KiB buffered reader (`src/dimacs.c`) enforcing
@@ -65,6 +73,9 @@ exact clause count, zero-terminated clauses (which may span or share lines),
 and rejection of embedded NULs or integer overflow. Duplicate literals and
 tautologies are normalized automatically. Empty formulas are SAT; empty clauses
 are UNSAT.
+
+**XOR-CNF input**: XOR constraints are written `x 1 2 3 0`, with `x` as its own
+token. The CryptoMiniSat spelling `x1 2 3 0` (no space) is rejected.
 
 **DRAT & Native LRAT proofs**: Text (chunked decimal) and binary DRAT are supported across
 search, minimization, block shrinking, OTFS, probing/HBR, probing intersection,
@@ -83,7 +94,12 @@ CDCL search, block-level all-UIP shrinking, binary-resolution minimization,
 OTFS, and an LRAT-native RUP inprocessing pipeline (root cleanup, forward
 subsumption & 2-hint SSR, gate-aware BVE, prefix-sharing vivification, and GC)
 with exact 64-bit clause IDs, trail-ordered antecedent hints, buffered
-deletions, and zero overhead when disabled. All RAT/non-RUP passes stay
+deletions, and zero overhead when disabled. `--lrat` does not run symmetry
+breaking, SBVA, AMO re-encoding, GF(2) Gaussian elimination, or gate
+congruence, so instances that depend on them (pigeonhole, Tseitin/parity) can be
+far slower and produce much larger proofs than in default or DRAT mode. The
+bundled `lrat_verify_file` checker is part of the solver (`src/lrat.c`), not an
+independent tool. All RAT/non-RUP passes stay
 disabled in append-only `BSAT_CERTIFICATES` journals so standard incremental
 RUP/DRAT/LRAT checkers remain strictly valid.
 
@@ -112,7 +128,10 @@ Default one-shot solving uses:
   compact 16-byte `ClauseHeader`, binary-first watch partitioning, single-branch
   tagged/implicit binary dispatch, 1-ahead long-clause prefetching, and two-pass
   circular watch scanning (`--no-circular` to disable).
-- **Tick-Budgeted Inprocessing** (`--inprocess`, `--inprocess-interval 10000`):
+- **Tick-Budgeted Inprocessing** (`--inprocess`; scheduled by work ticks.
+  `--inprocess-interval 10000` governs only the lighter simplification path used
+  with assumptions, certificate journals, learnt reuse, `--factor`, or
+  `--local-search`):
   1. Root cleanup and unit propagation
   2. Failed-literal probing, Hyper-Binary Resolution (HBR), and RUP-certified
      double-lookahead probing intersection
@@ -132,10 +151,13 @@ Default one-shot solving uses:
 - **Proof-Producing Structural Engines** (all emit standard DRAT/RAT under
   `--proof`, using monotonic proof-only auxiliary variable IDs where temporary
   variables are needed; skipped in append-only `BSAT_CERTIFICATES` journals,
-  assumption calls, and `BSAT_REUSE_LEARNTS`):
+  assumption calls, `BSAT_REUSE_LEARNTS`, and under `--lrat`, `--local-search`,
+  or `--factor`):
   - **SBVA** (`--sbva`, `src/sbva.c`): Arbitrary-length Structured Bounded
     Variable Addition with 3-hop structural tie-breaking and RAT-valid DRAT
-    emission.
+    emission. Attempted only on formulas with 500 to 250k clauses that are at
+    least half binary or dense (`<= 5,000` variables and `>= 8` clauses per
+    variable).
   - **AMO Cliques** (`src/inprocess.c`): Linear Sinz sequential-counter
     re-encoding for `>=80%`-binary formulas with temporary backward RAT
     definitions + 1-step RUP blocking binaries.
@@ -155,7 +177,8 @@ Default one-shot solving uses:
     cumulative proof-row merges, falling back cleanly at level 0 above budget).
 - **Multi-Core Clause-Sharing Portfolio** (`-j <N>` / `--threads <N>`,
   `src/portfolio.c`, non-proof mode): Worker 0 runs full BSAT (imports only);
-  Workers `1..N-1` run 8 diversified logically-equivalent profiles (including a
+  Workers `1..N-1` cycle through 7 named diversified logically-equivalent
+  profiles, with a parametric fallback beyond that (including a
   zero-preprocessing fast-start profile on Worker 2, with no destructive
   BVE/BCE/SBVA/symmetry) sharing LBD-filtered learned clauses
   (`size <= 8, LBD <= 3`, plus all units/binaries) through a dedicated unit
@@ -176,9 +199,10 @@ Default one-shot solving uses:
     worker containment, SIGKILL recovery, and certified query export.
 - **Incremental Protection**: Destructive inprocessing and non-RUP passes are
   automatically skipped under assumption queries, `BSAT_CERTIFICATES`, and
-  `BSAT_REUSE_LEARNTS`. Internal callers can also pin variables against
-  elimination/substitution/BCE/symmetry via `solver_freeze` / `solver_melt` /
-  `solver_is_frozen`.
+  `BSAT_REUSE_LEARNTS`. Variables can also be pinned against
+  elimination/substitution/BCE/symmetry via the public `bsat_freeze` /
+  `bsat_melt` / `bsat_is_frozen` (internally `solver_freeze` / `solver_melt` /
+  `solver_is_frozen`).
 
 Run `./bin/bsat --help` or see [FEATURES.md](FEATURES.md) for all flags and
 defaults.
@@ -216,6 +240,67 @@ checking, see [tests/benchmark.py](tests/benchmark.py).
 
 ---
 
+## Performance & Benchmarks
+
+All measurements below were collected on an **Apple M4 Pro (12-core, macOS)** using the checked-in [`suite_runner.py`](scripts/suite_runner.py) harness with full independent SAT model verification, ground-truth label checking, and 0 SAT/UNSAT disagreements against **Kissat 4.0.4** (built from source on the same machine).
+
+> **Evidence status.** These are single recorded runs; the raw result files are not checked into `benchmark_results/`. A re-run of the current build reproduced the 1-thread `bsat` rows (48/150, SATLIB Core 492/492, Synthetic Hard 118/118) and the proof sizes. The Kissat and `drat-trim` figures have not been independently re-run, and the `-j 4` portfolio result varies between runs ([PRODUCTION_READINESS.md](PRODUCTION_READINESS.md) records 47/150 and 51/150 for an earlier run of the same pack). Treat the comparisons as indicative.
+
+### SAT Competition 2023–2025 (150 Balanced Main-Track Instances, 15 s Timeout)
+
+Balanced size-filtered pack (`<= 3 MB` compressed) across SAT Competition 2023 (60), 2024 (30), and 2025 (60) — 75 SAT and 75 UNSAT instances:
+
+| Solver | Threads | Solved / 150 | Rate | SAT | UNSAT | SC'23 (60) | SC'24 (30) | SC'25 (60) | Mean PAR-2 | Median Solved |
+|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|
+| **`bsat -j 4`** *(portfolio)* | 4 | **57 / 150** | **38.0%** | **37** | **20** | 28 | 13 | 16 | **19.485 s** | 0.370 s |
+| **`bsat`** *(1-thread)* | 1 | **48 / 150** | **32.0%** | **28** | **20** | 21 | 12 | 15 | **21.098 s** | **0.278 s** |
+| **Kissat 4.0.4** *(1-thread)* | 1 | 42 / 150 | 28.0% | 24 | 18 | 21 | 8 | 13 | 22.331 s | 0.952 s |
+
+- Single-thread complementarity: both solvers solve **37** common instances; **`bsat`** solves **11** instances that Kissat 4.0.4 times out on, while **Kissat 4.0.4** solves **5** instances that 1-thread `bsat` times out on (virtual best: 53/150).
+- Adding 4-thread clause-sharing portfolio search (`-j 4`, including the WalkSAT-hybridized SAT-hunter worker) lifts SAT solves from 28 to **37** (+9 instances, PAR-2 `21.098 s` → `19.485 s`).
+
+### SATLIB Core & Structured Hard Benchmarks (10 s Timeout, 1 Thread)
+
+| Suite | Instances | Solver | Solved | Rate | SAT | UNSAT | Mean PAR-2 | Median | Total Time |
+|---|---:|---|---:|---:|---:|---:|---:|---:|---:|
+| **SATLIB Core** *(16 classic families)* | 492 | **`bsat`** | **492 / 492** | **100.0%** | 323 | 169 | **0.043 s** | **0.007 s** | **21.40 s** |
+| | 492 | **Kissat 4.0.4** | 482 / 492 | 98.0% | 313 | 169 | 0.451 s | 0.023 s | 122.03 s |
+| **Synthetic Hard** *(PHP, Tseitin XOR, miters, coloring, Latin sq., planted 3-SAT)* | 118 | **`bsat`** | **118 / 118** | **100.0%** | 68 | 50 | **0.018 s** | **0.006 s** | **2.13 s** |
+| | 118 | **Kissat 4.0.4** | 104 / 118 | 88.1% | 68 | 36 | 2.416 s | 0.010 s | 145.12 s |
+
+- On **SATLIB Core**, `bsat` solves all 10 `par32-*` parity learning benchmarks (`<= 0.45 s` each) via GF(2) RREF and is faster on random 3-SAT (`uf150-645` PAR-2 `0.011 s` vs `0.033 s`, `uuf150-645` `0.039 s` vs `0.059 s`) and `dubois`; Kissat 4.0.4 is faster on `bmc` (`0.232 s` vs `0.402 s`) and `flat100` (`0.004 s` vs `0.007 s`).
+- On **Synthetic Hard**, `bsat`'s BreakID-style symmetry breaking (`php_31_30` in `0.072 s`) and GF(2) Gaussian elimination (`tseitin_v100` in `0.010 s`) account for the 14 timeouts on pure-CDCL Kissat 4.0.4.
+
+### Proof Generation & Verification (`cal3-query.cnf`, Industrial UNSAT)
+
+| Solver & Proof Mode | Solve Time | Check Time | End-to-End | Proof Size | Checker |
+|---|---:|---:|---:|---:|---|
+| **`bsat`** *(no proof)* | **0.368 s** | — | **0.368 s** | — | — |
+| **Kissat 4.0.4** *(no proof)* | 0.719 s | — | 0.719 s | — | — |
+| **`bsat` native binary LRAT** (`--lrat --binary-lrat`) | 0.833 s | 0.217 s | 1.050 s | 9,281 KiB | In-tree `lrat_verify_file` |
+| **`bsat` binary DRAT** (`--proof --binary-proof`) | 0.628 s | 0.441 s | 1.069 s | 3,842 KiB | `drat-trim` |
+| **Kissat 4.0.4 binary DRAT** | 0.725 s | **0.124 s** | **0.849 s** | **2,986 KiB** | `drat-trim` |
+
+### Native C (`solve_c`) vs. Pure-Python (`solve_cdcl`)
+
+Measured through the Python bindings described under [Python Bindings](#python-bindings):
+
+| Benchmark (SATLIB 3-SAT) | Pure-Python `solve_cdcl` | Native C `solve_c` (`libbsat`) | Speedup |
+|---|---:|---:|---:|
+| **100-var 3-SAT** (20 instances: 12 SAT, 8 UNSAT) | 0.304 s *(15.2 ms/inst)* | 0.023 s *(1.13 ms/inst)* | **13×** |
+| **150-var 3-SAT** (10 instances) | 46.262 s *(4,626 ms/inst)* | 0.021 s *(2.08 ms/inst)* | **2,221×** |
+
+To reproduce these comparisons locally:
+
+```sh
+cd competition/c && make all
+make wide-fetch PACK="synthetic-hard satlib-core"
+python3 scripts/suite_runner.py --corpus satlib-core --timeout 10 --workers 4 \
+    --solver bsat=bin/bsat --solver kissat=/path/to/kissat
+```
+
+---
+
 ## C & IPASIR Embedding API
 
 Include [include/bsat.h](include/bsat.h) and build with `make shared` (or
@@ -232,11 +317,40 @@ library provides:
 - Opt-in `BSAT_CERTIFICATES` (and optional `BSAT_CERTIFIED_PROBING`) with
   `bsat_export_query` for exporting exact query CNFs and proof journals without
   re-solving
+- Additive ABI-v1 extensions: `bsat_freeze` / `bsat_melt` / `bsat_is_frozen`,
+  thread count, DRAT/LRAT output, XOR / at-most / pseudo-Boolean constraints,
+  backbone, and MUS (see [API_CONTRACT.md](API_CONTRACT.md) for preconditions)
 - Standard IPASIR 1.0 adapter via [include/ipasir.h](include/ipasir.h)
 
 See [API_CONTRACT.md](API_CONTRACT.md) for full ownership, error-poisoning, and
 concurrency rules. `include/solver.h` is an internal development interface with
 no stable ABI.
+
+---
+
+## Python Bindings
+
+The `bsat` Python package ships zero-dependency `ctypes` bindings to `libbsat`
+in [`src/bsat/c_solver.py`](../../src/bsat/c_solver.py). Build the shared
+library once with `make shared`, then:
+
+```python
+from bsat import CNFExpression, CSATSolver, solve_c, is_c_solver_available
+
+cnf = CNFExpression.parse("(x | y) & (~x | z) & (~y | ~z)")
+
+if is_c_solver_available():
+    model = solve_c(cnf)              # One-shot: Dict[str, bool] or None (UNSAT)
+
+    with CSATSolver() as solver:      # Incremental handle
+        solver.add_cnf(cnf)
+        model = solver.solve()
+```
+
+`solve_c` mirrors the other `bsat.solve_*` helpers; `CSATSolver` exposes
+assumptions and failed cores, query limits, statistics, freeze/melt, threads,
+DRAT/LRAT output, XOR/at-most/PB constraints, backbone, MUS, and certified query
+export. Tests live in [`tests/test_c_solver.py`](../../tests/test_c_solver.py).
 
 ---
 

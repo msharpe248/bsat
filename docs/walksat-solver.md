@@ -132,12 +132,14 @@ else:
 ```python
 result = solve_walksat(
     cnf,
-    noise=0.5,        # Noise parameter (0.0-1.0)
-    max_flips=10000,  # Max flips per try
-    max_tries=10,     # Max random restarts
-    seed=42           # For reproducibility
+    noise=0.5,        # Noise parameter (0.0-1.0, default 0.5)
+    max_flips=10000,  # Max flips per try (default 100000)
+    max_tries=10,     # Max random restarts (default 10)
+    seed=42           # For reproducibility (default None)
 )
 ```
+
+Note: passing `seed` seeds Python's global `random` module.
 
 ### Using the Solver Class
 
@@ -174,7 +176,7 @@ print(f"Total tries: {stats['stats']['total_tries']}")
 ### Example 1: Simple 3-SAT
 
 ```python
-from bsat import CNFExpression, solve_walksat
+from bsat import CNFExpression, Clause, Literal, solve_walksat
 
 # (x ∨ y ∨ z) ∧ (¬x ∨ y ∨ ¬z) ∧ (x ∨ ¬y ∨ z)
 cnf = CNFExpression([
@@ -317,6 +319,8 @@ Try WalkSAT if:
 | 5000 vars, SAT | < 1 s | Minutes-hours | WalkSAT |
 | 50 vars, UNSAT | Never proves it | < 10 ms | DPLL |
 
+These are indicative orders of magnitude for local search in general (optimized implementations), not measurements of this package. This pure-Python implementation rescans every clause on each flip, so it is slower: on random 3-SAT at ratio 3.5 expect roughly 10 ms at 50 variables, ~0.1 s at 200 and a few seconds at 500.
+
 ### Phase Transitions
 
 For random 3-SAT, the hardest instances occur at the **phase transition** around clause/variable ratio ≈ 4.26:
@@ -333,7 +337,7 @@ WalkSAT excels on underconstrained instances with many solutions.
 
 The original Selman-Kautz-Cohen version:
 - Fixed noise parameter
-- Our implementation follows this
+- Our implementation follows this (without the "freebie" step that always takes a zero-break flip when one exists)
 
 ### Novelty
 

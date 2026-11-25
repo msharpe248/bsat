@@ -1,5 +1,7 @@
 # Chronological backtracking with logical assignment levels
 
+> Historical snapshot (2026-09-07). Defaults, options and code locations described here have since changed; current behavior is in [README.md](../README.md), [FEATURES.md](../FEATURES.md) and [PRODUCTION_READINESS.md](../PRODUCTION_READINESS.md).
+
 This experiment replaces the rejected
 [ordered-trail replay design](CHRONOLOGICAL_BACKTRACKING.md). It assigns a
 propagated literal the maximum assignment level of the antecedents in its

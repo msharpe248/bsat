@@ -1,5 +1,7 @@
 # Default minimizer: bounded work and subtree caching
 
+> Historical snapshot (2026-09-06). Defaults, options and code locations described here have since changed; current behavior is in [README.md](../README.md), [FEATURES.md](../FEATURES.md) and [PRODUCTION_READINESS.md](../PRODUCTION_READINESS.md).
+
 The default minimizer now enforces the existing `--minimize-budget` option,
 checks solver deadlines during reason traversal, and caches completely proved
 subtrees within one literal's redundancy check. This fixes the observed failure

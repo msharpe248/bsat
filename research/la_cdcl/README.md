@@ -92,12 +92,14 @@ LA-CDCL enhances CDCL with shallow lookahead - a technique where, before committ
 
 ## Algorithm
 
+> **Implementation status**: The current code (`la_cdcl_solver.py`) is a simplified integration. With `use_lookahead=True` (the default) the search loop is DPLL-style: unit propagation plus chronological backtracking with value flipping, with lookahead choosing the decision variable/value. It does **not** perform clause learning, conflict analysis, backjumping, restarts or VSIDS scoring. `bsat.cdcl.CDCLSolver` is only used when `use_lookahead=False`. The steps below describe the intended design; deviations are marked.
+
 ### Phase 1: Variable Selection with Lookahead (Standard Technique)
 
 ```
-1. Get top-k candidates from VSIDS (typically k=5-10)
-   - VSIDS tracks which variables appear in recent conflicts
-   - Top candidates are likely important
+1. Get k candidates (`num_candidates`, default 5)
+   - Design: top-k by VSIDS
+   - Current code: the first k unassigned variables (no VSIDS scores are maintained)
 
 2. For each candidate variable v and each value b ∈ {True, False}:
    a. Create temporary assignment: assignment' = assignment ∪ {v → b}
@@ -119,11 +121,10 @@ LA-CDCL enhances CDCL with shallow lookahead - a technique where, before committ
 ```
 5. Make decision with lookahead-selected variable/value
 
-6. Run standard CDCL:
+6. Run the search (design: standard CDCL; current code: DPLL-style):
    - Unit propagation
-   - Conflict analysis
-   - Clause learning
-   - Backjumping
+   - On conflict: chronological backtracking, flipping the last untried decision
+   - Conflict analysis, clause learning and backjumping are not implemented
 
 7. Repeat until SAT or UNSAT
 ```
@@ -137,7 +138,8 @@ LA-CDCL enhances CDCL with shallow lookahead - a technique where, before committ
 
 9. On cache hit: Reuse results (30-60% hit rate typical)
 
-10. Clear cache on significant backtracking
+10. Design: clear cache on significant backtracking
+    (current code never calls `LookaheadEngine.clear_cache()`; the cache grows for the whole solve)
 ```
 
 ## Complexity Analysis
@@ -209,13 +211,15 @@ O(n + m + cache_size) where:
 
 **✅ Complete**: Always terminates with correct answer
 - Lookahead is just a heuristic for selection
-- CDCL guarantees completeness
+- The underlying exhaustive backtracking search guarantees completeness
 
 **✅ Sound**: If returns SAT, solution is correct
 - Lookahead doesn't affect correctness
 - Only affects efficiency
 
 ## Usage
+
+Run these snippets from the repository root with `bsat` importable, e.g. `PYTHONPATH=src:. python3 your_script.py` (or `pip install -e .` and run from the repo root).
 
 ### Basic Usage
 
@@ -247,10 +251,13 @@ solver = LACDCLSolver(
     cnf,
     lookahead_depth=3,          # Look 3 steps ahead
     num_candidates=10,          # Evaluate top 10 VSIDS variables
-    use_lookahead=True,         # Enable lookahead
-    adaptive_lookahead=True     # Adjust frequency based on conflicts
+    use_lookahead=True,         # Enable lookahead (False = plain bsat CDCLSolver)
+    lookahead_frequency=None,   # Fixed: lookahead every N decisions (None = adaptive; setting it disables adaptive mode)
+    adaptive_lookahead=True     # Adjust frequency (every 1/3/8 decisions) based on recent conflict rate
 )
 ```
+
+A convenience function `solve_la_cdcl(cnf, ...)` is also exported. A runnable demo is in `research/examples/example_la_cdcl.py` (`python3 research/examples/example_la_cdcl.py`; the script sets up its own import path).
 
 ## References
 
@@ -307,13 +314,15 @@ solver = LACDCLSolver(
 | **CDCL** | VSIDS | None | ✅ Clause learning | ✅ Complete | Standard (2001+) |
 | **march_sat** | Full lookahead | ✅ Deep (d=10+) | None | ✅ Complete | **Famous (2001)** |
 | **march_dl** | Hybrid | ✅ Adaptive depth | ✅ Clause learning | ✅ Complete | **Famous (2011)** |
-| **LA-CDCL** | VSIDS + Lookahead | ✅ Shallow (d=2-3) | ✅ Clause learning | ✅ Complete | Reimplementation |
+| **LA-CDCL** | Lookahead (VSIDS planned) | ✅ Shallow (d=2-3) | ❌ Not yet (planned) | ✅ Complete | Reimplementation |
 
-LA-CDCL is essentially a simplified version of march_dl.
+LA-CDCL is intended as a simplified version of march_dl; the current code is a lookahead-guided DPLL (see implementation status above).
 
 ## Experimental Comparison
 
 ### Expected Performance vs CDCL (from literature)
+
+These tables are literature expectations for lookahead+CDCL hybrids, not measurements of this implementation. The only checked-in measurement is the October 2025 medium suite (`dataset/results/medium_suite_results_oct_2025/`): LA-CDCL took 6 of 53 first places with 6 timeouts (30s limit).
 
 | Problem Type | Lookahead Speedup | Overhead | Conflicts Reduced | When to Use |
 |--------------|-------------------|----------|-------------------|-------------|

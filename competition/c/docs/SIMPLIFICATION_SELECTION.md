@@ -1,5 +1,7 @@
 # Bounded vivification ordering experiment
 
+> Historical snapshot (2026-09-07). Defaults, options and code locations described here have since changed; current behavior is in [README.md](../README.md), [FEATURES.md](../FEATURES.md) and [PRODUCTION_READINESS.md](../PRODUCTION_READINESS.md).
+
 Rejected the runtime change. Ordering the existing 100-clause window by shorter
 size, then lower LBD, retained the same six verified answers out of ten runs but
 worsened mean wall PAR-2 from 17.0671 to 17.4374 seconds. Production keeps its

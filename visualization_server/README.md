@@ -5,7 +5,7 @@ An interactive web-based visualization server for Boolean Satisfiability (SAT) a
 ## Features
 
 - **Real-time Visualization**: Watch algorithms solve step-by-step via WebSocket
-- **7 SAT Algorithms**:
+- **7 Algorithms** (6 solvers + 1 reduction):
   - **DPLL** - Classic backtracking with decision tree visualization
   - **2SAT** - Polynomial-time SCC algorithm with implication graph
   - **Davis-Putnam** - Original 1960 resolution algorithm showing clause growth
@@ -42,7 +42,8 @@ The visualization server is located in the `visualization_server/` directory and
 From the `bsat` root directory:
 
 ```bash
-# Make sure you're in the bsat venv
+# Create (first time only) and activate a venv in the bsat root
+python3 -m venv venv
 source venv/bin/activate
 
 # Install visualization server dependencies
@@ -55,6 +56,8 @@ Dependencies include:
 - WebSockets (real-time communication)
 - Pydantic (data validation)
 
+The `bsat` package itself does not need to be installed: the backend adds `../src` to `sys.path`.
+
 ### 2. Run the Server
 
 ```bash
@@ -64,9 +67,14 @@ cd visualization_server
 # Run with Python
 python -m uvicorn backend.main:app --reload --port 8000
 
-# Or run the backend directly
-python backend/main.py
+# Or run the backend as a module (no auto-reload)
+python -m backend.main
+
+# Or use the helper script (requires the venv at ../venv; binds 0.0.0.0:8000)
+./start_server.sh
 ```
+
+Note: `python backend/main.py` does not work, because the backend uses package-relative imports.
 
 ### 3. Open in Browser
 
@@ -76,7 +84,7 @@ Navigate to: **http://localhost:8000**
 
 ### Quick Start
 
-1. **Select an Example**: Choose from the dropdown menu (e.g., "Simple 2SAT")
+1. **Select an Example**: Choose from the dropdown menu (e.g., "Simple 2SAT"), or generate a random formula (2-SAT, 3-SAT, 4-SAT, 5-SAT, Horn-SAT, or XOR-SAT)
 2. **Choose Algorithm**: Select the appropriate algorithm for your formula
 3. **Click "Solve"**: Watch the visualization in real-time!
 
@@ -127,7 +135,7 @@ Graph-based visualization with:
 - **Color-coded SCCs**: Each strongly connected component in unique color
 - **Conflict detection** (red): When x and ¬x in same SCC
 - **Interactive layout**: Drag nodes, force-directed positioning
-- **Step-by-step SCC construction**: Shows Tarjan's algorithm in action
+- **SCC stages**: Implication graph, then the computed SCCs, then conflict check and solution (SCCs are computed in one step by the BSAT solver, which uses Kosaraju's algorithm; the UI status text says "Tarjan's")
 
 ### Davis-Putnam - Resolution Visualization
 Resolution-based algorithm showing:
@@ -164,7 +172,7 @@ Randomized incomplete algorithm:
 - **Incomplete nature**: May not find solution even if one exists
 
 ### 3SAT Reduction - Polynomial Transform
-Visualization of Cook-Levin transformation:
+Visualization of the standard k-SAT to 3-SAT reduction:
 - **Original clauses**: Shows input k-SAT formula
 - **Auxiliary variables**: Introduces _aux variables for large clauses
 - **Splitting process**: Animates transformation of k-clauses into 3-clauses
@@ -176,10 +184,11 @@ Visualization of Cook-Levin transformation:
 ```
 visualization_server/
 ├── backend/
-│   ├── main.py              # FastAPI application & API endpoints
+│   ├── __init__.py
+│   ├── main.py              # FastAPI application, API endpoints & example formulas
 │   ├── solver_wrappers.py   # Instrumented solver wrappers (DPLL, 2SAT, etc.)
 │   ├── models.py            # Pydantic request/response models
-│   └── session_manager.py   # WebSocket session state management
+│   └── session_manager.py   # In-memory session state management
 ├── frontend/
 │   ├── index.html           # Main UI with controls
 │   └── static/
@@ -198,7 +207,8 @@ visualization_server/
 │           └── components/              # Reusable UI components
 │               ├── formula_input.js     # Formula editor
 │               └── controls.js          # Playback controls
-└── requirements.txt         # Python dependencies (FastAPI, uvicorn, etc.)
+├── requirements.txt         # Python dependencies (FastAPI, uvicorn, etc.)
+└── start_server.sh          # Helper script: activates ../venv and runs uvicorn
 ```
 
 ## How It Works
@@ -222,13 +232,19 @@ visualization_server/
 
 ### REST API
 
+- `GET /` - Serve the web UI
 - `POST /api/formula/validate` - Validate CNF formula
-- `POST /api/solve` - Create new solving session
+- `POST /api/formula/generate` - Generate a random formula (`sat_type`: `2sat`, `3sat`, `4sat`, `5sat`, `hornsat`, `xorsat`)
+- `POST /api/solve` - Create new solving session (`algorithm`: `dpll`, `cdcl`, `2sat`, `davis_putnam`, `walksat`, `hornsat`, `3sat_reduction`)
 - `GET /api/examples` - Get example formulas
+
+Only the `text` formula format is accepted; `dimacs` and `json` are declared in the request models but rejected.
 
 ### WebSocket
 
 - `WS /ws/solve/{session_id}` - Real-time solver updates
+
+Messages are server-to-client JSON with a `type` field: `state_update` (one per step, with `step`, `action`, `data`, `timestamp`), `complete` (`result`, `solution`, `stats`, `total_steps`), and `error` (`message`).
 
 ## Example Formulas
 
@@ -237,8 +253,10 @@ The visualizer includes 20+ pre-loaded examples organized by algorithm:
 ### DPLL Examples
 - **Simple 3SAT**: Basic satisfiable formula
 - **3SAT with Unit Propagation**: Shows forced assignments
+- **3SAT Medium** / **3SAT Hard**: Larger formulas
 - **3SAT with Backtracking**: Requires exploring multiple paths
 - **3SAT UNSAT**: All assignments blocked
+- **UNSAT Example**: Forces both y and ¬y
 - **Implication Chain**: Cascading unit propagations
 
 ### 2SAT Examples
@@ -247,7 +265,7 @@ The visualizer includes 20+ pre-loaded examples organized by algorithm:
 
 ### Davis-Putnam Examples
 - **Davis-Putnam Demo**: Moderate clause growth
-- **Exponential Growth**: 3×3=9 clause explosion
+- **Davis-Putnam Exponential Growth**: 3×3=9 clause explosion
 
 ### HornSAT Examples
 - **Horn-SAT Simple**: Implication chain a→b→c→d
@@ -273,20 +291,22 @@ All examples can be loaded from the dropdown menu and modified in the formula ed
 1. Create visualizer class in `frontend/static/js/visualizers/`
 2. Implement `update(state)` method
 3. Add to `createVisualizer()` in `app.js`
-4. Create corresponding solver wrapper in `backend/solver_wrappers.py`
+4. Add a `<script>` tag and an algorithm dropdown `<option>` in `frontend/index.html`
+5. Create corresponding solver wrapper in `backend/solver_wrappers.py`
 
 ### Extending the Backend
 
 1. Add new solver wrapper in `solver_wrappers.py`
 2. Emit state updates with `await self.emit_state(action, data)`
 3. Register in `create_solver_wrapper()` factory function
+4. Add the algorithm name to the `SolveRequest.algorithm` literal in `backend/models.py`
 
 ## Troubleshooting
 
 **Server won't start:**
-- Ensure dependencies are installed: `pip install -r requirements.txt`
+- Ensure dependencies are installed: `pip install -r requirements.txt` (from `visualization_server/`)
 - Check port 8000 is not in use
-- Activate the venv: `source venv/bin/activate`
+- Activate the venv: `source venv/bin/activate` (from the bsat root)
 
 **Visualizations not showing:**
 - Check browser console for JavaScript errors
@@ -302,7 +322,7 @@ All examples can be loaded from the dropdown menu and modified in the formula ed
 
 - Server handles multiple concurrent sessions
 - Each session has independent WebSocket connection
-- State history stored in memory (cleared after 1 hour)
+- Sessions are stored in memory and expire after 1 hour
 - Recommended: < 100 steps per visualization for smooth performance
 
 ## Future Enhancements
@@ -312,7 +332,7 @@ All examples can be loaded from the dropdown menu and modified in the formula ed
 - [ ] Comparison mode (run multiple algorithms side-by-side)
 - [ ] Interactive explanations (hover tooltips explaining each step)
 - [ ] Jupyter notebook integration
-- [ ] Formula generator with difficulty levels
+- [ ] Difficulty levels for the random formula generator
 - [ ] Benchmark suite with performance comparison
 - [ ] DIMACS CNF format import/export
 

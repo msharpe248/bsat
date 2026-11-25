@@ -313,15 +313,15 @@ In CDCL, when a conflict occurs, the solver analyzes the implication graph to de
 
 **Example**:
 ```
-Original clauses: (x ∨ y) ∧ (¬x ∨ z) ∧ (¬y ∨ ¬z)
+Original clauses: (¬x ∨ y) ∧ (¬x ∨ z) ∧ (¬y ∨ ¬z)
 
 Decision: x = true
+Propagate: y = true (from ¬x ∨ y)
 Propagate: z = true (from ¬x ∨ z)
-Decision: y = true
-Propagate: Conflict from (¬y ∨ ¬z)
+Conflict: (¬y ∨ ¬z) is false
 
-Conflict analysis: "When x is true, we can't have both y and z true"
-Learned clause: (¬x ∨ ¬y)  ← Prevents this path in future
+Conflict analysis: "x = true forces both y and z, but they can't both be true"
+Learned clause: (¬x)  ← Prevents this path in future
 ```
 
 **Why powerful**: The solver "learns" from mistakes and doesn't repeat them!
@@ -398,8 +398,8 @@ SAT problems where **every clause has exactly 3 literals**.
 **Example**: `(x ∨ y ∨ z) ∧ (¬x ∨ y ∨ ¬z) ∧ (x ∨ ¬y ∨ z)`
 
 **Special properties**:
-- **NP-complete** (hardest SAT variant to approximate)
-- First problem proven NP-complete (Cook-Levin theorem, 1971)
+- **NP-complete** (the smallest k for which k-SAT is NP-complete)
+- General SAT was the first problem proven NP-complete (Cook-Levin theorem, 1971); 3-SAT is the standard restricted form used in reductions
 - Used in theoretical complexity analysis
 - Random 3-SAT exhibits **phase transition** behavior
 
@@ -513,7 +513,7 @@ An algorithm runs in exponential time if its complexity is O(c^n) where c > 1.
 **Examples**:
 - O(2^n): Brute force (try all assignments)
 - O(1.334^n): Schöning's algorithm for 3-SAT
-- O(1.5^n): PPSZ algorithm for k-SAT
+- O(1.308^n): PPSZ algorithm for 3-SAT
 
 **Reality**: Most general SAT solvers are exponential in worst case, but often much better in practice due to:
 - Problem structure

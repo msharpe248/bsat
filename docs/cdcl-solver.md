@@ -57,13 +57,10 @@
       - Check for restart
       - Continue
 
-   c. If all clauses satisfied:
+   c. If every variable is assigned (and propagation found no conflict):
       - Return SAT with current assignment
 
-   d. If all variables assigned but not all clauses satisfied:
-      - Return UNSAT
-
-   e. Decision:
+   d. Decision:
       - Pick unassigned variable (using VSIDS)
       - Increment decision level
       - Assign variable
@@ -226,6 +223,8 @@ CDCL periodically restarts the search from decision level 0, keeping all learned
 
 **BSAT uses Luby sequence**: 1, 1, 2, 1, 1, 2, 4, 1, 1, 2, 1, 1, 2, 4, 8, ...
 
+The first restart happens after `restart_base` conflicts. After the k-th restart the next threshold is `luby(k) × restart_base`; note that the current implementation compares this threshold against the *total* conflict count (not conflicts since the last restart), so restarts do not follow exact Luby intervals.
+
 ---
 
 ## Parameters
@@ -234,8 +233,8 @@ CDCL periodically restarts the search from decision level 0, keeping all learned
 
 Controls how quickly VSIDS scores decay.
 
-- **Higher (0.99)**: Longer memory, focuses on recent conflicts
-- **Lower (0.90)**: Shorter memory, more exploratory
+- **Higher (0.99)**: Longer memory - older conflicts keep their influence
+- **Lower (0.90)**: Shorter memory - focuses more strongly on the most recent conflicts
 - **Typical**: 0.95
 
 ```python
@@ -244,7 +243,7 @@ result = solve_cdcl(cnf, vsids_decay=0.95)
 
 ### `max_conflicts` (int, default=1000000)
 
-Maximum number of conflicts before giving up.
+Maximum number of conflicts before giving up. This is an argument of `solve_cdcl()`, `get_cdcl_stats()` and `CDCLSolver.solve()`. When the limit is hit the solver returns `None`, the same value as for UNSAT - compare `stats.conflicts` with the limit if you need to tell the two apart.
 
 ```python
 result = solve_cdcl(cnf, max_conflicts=10000)
@@ -252,7 +251,7 @@ result = solve_cdcl(cnf, max_conflicts=10000)
 
 ### `restart_base` (int, default=100)
 
-Base interval for Luby restart sequence.
+Base interval for Luby restart sequence. Only available on the `CDCLSolver` constructor (not on `solve_cdcl()` / `get_cdcl_stats()`).
 
 ```python
 solver = CDCLSolver(cnf, restart_base=100)
@@ -260,7 +259,7 @@ solver = CDCLSolver(cnf, restart_base=100)
 
 ### `learned_clause_limit` (int, default=10000)
 
-Maximum number of learned clauses to keep. When exceeded, half are deleted.
+Maximum number of learned clauses to keep. When exceeded, only the most recent `learned_clause_limit // 2` learned clauses are kept. Only available on the `CDCLSolver` constructor.
 
 ```python
 solver = CDCLSolver(cnf, learned_clause_limit=5000)
@@ -309,6 +308,7 @@ print(stats.conflicts)        # Conflicts encountered
 print(stats.learned_clauses)  # Clauses learned
 print(stats.restarts)         # Restarts performed
 print(stats.backjumps)        # Non-chronological backjumps
+print(stats.max_decision_level)  # Deepest decision level reached
 ```
 
 ---

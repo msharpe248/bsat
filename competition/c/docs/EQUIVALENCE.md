@@ -1,5 +1,7 @@
 # Binary equivalence substitution experiment
 
+> Historical snapshot (2026-09-06). Defaults, options and code locations described here have since changed; current behavior is in [README.md](../README.md), [FEATURES.md](../FEATURES.md) and [PRODUCTION_READINESS.md](../PRODUCTION_READINESS.md).
+
 `--equiv` enables bounded binary implication SCC substitution after failed-literal
 probing and before BCE/BVE. It remains disabled by default: the measured development
 instances showed no solved-count improvement and several substantial regressions.

@@ -30,9 +30,12 @@ This implementation demonstrates abstraction-refinement applied to SAT solving.
 SAT solving typically treats all variables equally. **HAS-SAT** introduces hierarchy:
 
 1. **Build abstraction**: Cluster related variables into "super-variables"
-2. **Solve abstract**: Solve high-level problem with clusters
-3. **Refine**: If SAT, refine to concrete level
+2. **Solve abstract**: Solve high-level problem with clusters (every variable in a cluster is forced to take the same value)
+3. **Refine**: If the most concrete abstract level is SAT, expand the cluster assignment to the individual variables
 4. **Verify**: Check if concrete solution satisfies original formula
+5. **Fallback**: If the abstract levels yield no solution, solve the original formula with plain CDCL
+
+Because a cluster forces its variables to be equal, the abstract formula is a *restriction* of the original: abstract SAT gives a real solution, but abstract UNSAT is **inconclusive** (the solver then falls back to the original formula).
 
 ### Key Insight
 
@@ -49,16 +52,20 @@ Clauses:
   (~c | d)   ← c, d co-occur
   (e | f)    ← e, f co-occur
 
-Clustering based on co-occurrence:
-  Cluster C0: {a, b}  ← appear together often
-  Cluster C1: {c, d}  ← appear together often
-  Cluster C2: {e, f}  ← appear together often
+Clustering based on co-occurrence (top-level cluster size = max(2, V/2) = 3;
+the exact grouping depends on the arbitrary seed variable, e.g.):
+  Cluster C0: {a, b, c}
+  Cluster C1: {d, e, f}
 
 Abstract formula (cluster level):
-  C0 & C0 & C1 & C1 & C2
-  → Simplified to: C0 & C1 & C2
+  (a | b)  → C0
+  (~a | b) → (~C0 | C0), tautology, dropped
+  (c | d)  → (C0 | C1)
+  (~c | d) → (~C0 | C1)
+  (e | f)  → C1
+  → C0 & (C0 | C1) & (~C0 | C1) & C1
 
-Solve abstract: C0=T, C1=T, C2=T
+Solve abstract: C0=T, C1=T
 Refine to concrete: a=T, b=T, c=T, d=T, e=T, f=T
 Verify: Check if satisfies original
 ```
@@ -140,31 +147,32 @@ def solve_with_refinement(cnf, hierarchy):
     Solve using abstraction-refinement.
 
     1. Solve most abstract level
-    2. If UNSAT → original is UNSAT (over-approximation)
-    3. If SAT → refine to next level
-    4. Repeat until concrete solution found
+    2. If UNSAT → inconclusive (clusters force variables to be equal,
+       which may be too restrictive); move on to the next level
+    3. If SAT at a non-final level → move on to the next level
+    4. If SAT at the final abstract level → expand to a concrete assignment
+    5. If no abstract level produced a solution → solve the original formula
     """
     for level in hierarchy.levels:
         # Get abstract CNF at this level
-        abstract_cnf = hierarchy.abstract(cnf, level)
+        abstract_cnf = hierarchy.get_abstract_cnf(level)
 
         # Solve abstract problem
         result = solve(abstract_cnf)
 
         if result is None:
-            return None  # UNSAT at abstract level → UNSAT
+            continue  # UNSAT at abstract level is inconclusive
 
-        if is_concrete_level(level):
-            # Verify solution satisfies original
-            if verify(cnf, result):
-                return result
-            else:
-                # Abstraction lost information - fall back to concrete
-                return solve(cnf)
+        if is_last_abstract_level(level):
+            # Expand cluster values to variables; HASSATSolver.solve()
+            # verifies it and falls back to concrete CDCL if it fails
+            return hierarchy.refine_assignment(level, result)
 
-    # Solved all levels - return concrete solution
+    # No abstract solution - solve the original formula with CDCL
     return solve(cnf)
 ```
+
+**Note**: An earlier version returned UNSAT as soon as an abstract level was UNSAT; that was a soundness bug and has been fixed. In the current code an abstract solution found at a non-final level is not passed down as a constraint to the next level - each level is solved independently.
 
 ---
 
@@ -183,7 +191,7 @@ cnf = CNFExpression.parse("(a | b) & (~a | c) & (~b | ~c)")
 solver = HASSATSolver(
     cnf,
     use_abstraction=True,
-    num_levels=2  # 2 abstraction levels
+    num_levels=2  # 1 abstract level + the concrete level (default)
 )
 
 # Solve
@@ -204,10 +212,12 @@ if result:
 solver = HASSATSolver(
     cnf,
     use_abstraction=True,        # Enable abstraction
-    num_levels=2,                 # Number of abstraction levels
-    max_conflicts_per_level=10000 # Max conflicts per level
+    num_levels=2,                 # Levels incl. the concrete one (default: 2)
+    max_conflicts_per_level=10000 # Max conflicts per level (default: 100000)
 )
 ```
+
+`num_levels` counts the implicit concrete level: `num_levels=2` builds one abstract level, `num_levels=3` builds two, and so on (`num_levels=1` also builds one). `stats['abstraction_levels']` and `hierarchy['total_levels']` report the number of abstract levels actually built. When abstraction is enabled, the `max_conflicts` argument of `solve()` only applies to the verification fallback; each level (and the concrete solve) is limited by `max_conflicts_per_level`.
 
 ### Analyzing Abstraction Hierarchy
 
@@ -253,7 +263,7 @@ if abs_stats['enabled']:
 
 **Time**:
 - Abstraction building: O(V² + C) where V = variables, C = clauses
-- Clustering: O(V² log V) greedy clustering
+- Clustering: greedy, up to O(V³) per level in the current implementation (each growth step scores every unclustered variable against every cluster member)
 - Solving per level: O(CDCL complexity) on smaller abstract formula
 - Overall: Can be faster if abstraction reduces search space significantly
 
@@ -306,8 +316,8 @@ if abs_stats['enabled']:
 - `abstraction_levels`: Number of levels in hierarchy
 - `levels_solved`: How many levels were solved
 - `refinements`: Number of refinement steps
-- `abstract_conflicts`: Total conflicts across all abstract levels
-- `clusters_per_level`: Number of clusters at each level
+- `abstract_conflicts`: Total conflicts across all levels solved (including the concrete fallback solve)
+- Clusters per level: available as `get_abstraction_statistics()['hierarchy']['levels'][i]['clusters']`
 
 ---
 

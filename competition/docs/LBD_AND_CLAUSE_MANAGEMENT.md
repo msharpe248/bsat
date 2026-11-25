@@ -1,5 +1,7 @@
 # LBD and Clause Database Management
 
+> **Note:** Educational explanation written in October 2025. Code blocks are simplified illustrations, not excerpts of the current sources; for the current C solver's implementation and defaults see [competition/c/README.md](../c/README.md) and [FEATURES.md](../c/FEATURES.md).
+
 **Technique**: Literal Block Distance (LBD) for clause quality assessment
 **Impact**: Prevents memory explosion, keeps high-quality clauses
 **Status**: ✅ Implemented in both Python and C solvers
@@ -119,7 +121,7 @@ uint32_t compute_lbd(Clause* clause, VarInfo* vars) {
 
 ### When to Reduce
 
-**Trigger**: Every N conflicts (default: N = 2000)
+**Trigger**: Every N conflicts (illustrative; the current C solver starts at N = 1000 and grows the interval by 100 after each reduction, `--reduce-interval` / `--reduce-increment`; the Python prototype instead reduces when more than `learned_clause_limit` = 10,000 learned clauses exist)
 
 ```c
 if (stats.conflicts % opts.reduce_interval == 0) {
@@ -278,7 +280,7 @@ if (clause_lbd(cr) <= opts.glue_lbd) {  // Default: glue_lbd = 2
 
 ### 1. Reduce Interval (`reduce_interval`)
 
-**Default**: 2000 conflicts
+**Default**: 1000 conflicts in the current C solver, growing by `reduce_increment` (100) after each reduction
 
 **Effect**:
 - **Smaller interval** (e.g., 1000): More frequent reduction
@@ -289,7 +291,7 @@ if (clause_lbd(cr) <= opts.glue_lbd) {  // Default: glue_lbd = 2
   - Pros: More clauses available for search
   - Cons: Higher memory, slower propagation
 
-**Recommendation**: 2000-3000 for most problems
+**Recommendation**: 1000-3000 for most problems
 
 ### 2. Reduce Fraction (`reduce_fraction`)
 
@@ -516,6 +518,8 @@ if (num_learnts > reduce_base * reduce_multiplier) {
 
 **Effect**: More nuanced deletion policy
 
+The current C solver uses this scheme: Tier 1 `LBD <= 2` (kept), Tier 2 `LBD <= 6` (kept while recently used, `--protect-used`), Tier 3 ranked by LBD/activity.
+
 ### 3. Dynamic LBD Update
 
 **Idea**: Recompute LBD when clause is used
@@ -530,6 +534,8 @@ if (clause_used_in_conflict(cr)) {
 ```
 
 **Effect**: Clauses that improve over time are protected
+
+The current C solver does this by default (`--dynamic-lbd`).
 
 ---
 

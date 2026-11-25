@@ -118,15 +118,17 @@ else:
 ### Checking if Formula is 2SAT
 
 ```python
-from bsat import is_2sat_satisfiable, CNFExpression
+from bsat import is_2sat, is_2sat_satisfiable, CNFExpression
 
 # Valid 2SAT
 cnf1 = CNFExpression.parse("(x | y) & (~x | z)")
-print(is_2sat_satisfiable(cnf1))  # True or False
+print(is_2sat(cnf1))               # True  (every clause has exactly 2 literals)
+print(is_2sat_satisfiable(cnf1))   # True  (satisfiable or not, without building a solution)
 
 # Not 2SAT (has 3-literal clause)
 cnf2 = CNFExpression.parse("(x | y | z) & (~x | y)")
-# Will check anyway but might not be a true 2SAT formula
+print(is_2sat(cnf2))               # False
+# solve_2sat(cnf2), is_2sat_satisfiable(cnf2) and TwoSATSolver(cnf2) raise ValueError
 ```
 
 ## Examples
@@ -304,7 +306,7 @@ This ensures all implications are satisfied!
 - ✅ Binary constraints (if-then, equivalence, XOR)
 - ✅ Graph problems (2-coloring, matching)
 - ✅ Planning with binary choices
-- ✅ Large instances (millions of clauses)
+- ✅ Large instances (the algorithm is linear; note this implementation's DFS is recursive, so very long implication chains can hit Python's recursion limit)
 
 ### Not Good For:
 - ❌ Problems requiring 3+ literals per constraint
@@ -321,10 +323,10 @@ Often: Try to encode as 2SAT first, fall back to 3SAT if needed.
 # This has a 3-literal clause!
 cnf = CNFExpression.parse("(x | y) & (a | b | c)")
 
-# The solver may still try to solve it, but it's not a true 2SAT
+# solve_2sat(cnf) raises ValueError: every clause must have exactly 2 literals
 ```
 
-**Solution**: Check your formula has only 2-literal clauses.
+**Solution**: Check your formula with `is_2sat(cnf)` first; use `solve_sat` (DPLL) or `solve_cdcl` otherwise.
 
 ### 2. Unit Clauses
 
@@ -332,8 +334,10 @@ cnf = CNFExpression.parse("(x | y) & (a | b | c)")
 # (x) is a 1-literal clause
 cnf = CNFExpression.parse("x & (y | z)")
 
-# This is fine! Unit clauses are even easier than 2SAT
-# The solver handles them correctly
+# Unit clauses are even easier than 2SAT in theory, but this solver requires
+# exactly 2 literals per clause, so solve_2sat(cnf) raises ValueError.
+# Write the unit clause as a 2-literal clause instead:
+cnf = CNFExpression.parse("(x | x) & (y | z)")
 ```
 
 ### 3. Expecting a Specific Solution
@@ -341,6 +345,7 @@ cnf = CNFExpression.parse("x & (y | z)")
 ```python
 result = solve_2sat(cnf)
 # result might be any of multiple valid solutions!
+# (and which one you get can differ between runs)
 ```
 
 **Note**: 2SAT solver returns *one* solution, but there may be many.
@@ -361,7 +366,7 @@ Counting all solutions is #P-complete (still hard!).
 
 ### All Solutions
 
-To find all solutions, use:
+To find all solutions, use `TwoSATSolver(cnf).get_all_solutions()`, or enumerate the truth table directly:
 ```python
 # Exponential time! Only for small formulas
 all_solutions = []

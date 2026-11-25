@@ -1,5 +1,7 @@
 # Competition Solver Development Progress
 
+> **Historical record (October 2025, Python prototype).** Status lines, line numbers, results, and "next steps" below describe `competition/python/` at that date and are not kept up to date. For the current solver see [competition/c/README.md](../c/README.md).
+
 **Goal**: Build a SAT solver capable of competing with Kissat/CaDiCaL
 **Strategy**: Python optimization → Novel algorithms (CGPM + CoBD)
 **Timeline**: 16-18 months to competition entry
@@ -16,7 +18,7 @@
 
 1. **Created Competition Directory Structure**
    - `competition/python/` - Optimized Python prototypes
-   - `competition/benchmarks/` - Test instances
+   - `competition/benchmarks/` - Test instances (planned; test instances ended up in the repository's `dataset/` directory)
    - `competition/docs/` - Documentation
 
 2. **Copied and Enhanced CDCL Solver**
@@ -30,7 +32,7 @@
    - Backward compatible: can disable to run in naive mode for comparison
 
 4. **Created Test Suite**
-   - `competition/python/test_correctness.py`
+   - `competition/python/test_correctness.py` (now `competition/python/tests/test_correctness.py`)
    - Tests both solvers on 14 test cases (SAT and UNSAT)
    - Validates:
      - Both solvers agree on SAT/UNSAT

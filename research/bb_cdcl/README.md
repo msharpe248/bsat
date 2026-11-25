@@ -86,7 +86,7 @@ BB-CDCL recognizes that many SAT instances have a **backbone** - variables that 
 
 **Example**: For n=100 variables with 50% backbone:
 - Traditional: 2^100 ≈ 10^30 operations
-- BB-CDCL: 2^50 ≈ 10^15 operations (billion-fold speedup!)
+- BB-CDCL: 2^50 ≈ 10^15 operations (a ~10^15-fold reduction in the worst-case search space)
 
 ## Algorithm
 
@@ -94,6 +94,7 @@ BB-CDCL recognizes that many SAT instances have a **backbone** - variables that 
 
 ```
 0. Before expensive sampling, try quick DPLL with 10ms timeout
+   (implemented with signal.setitimer/SIGALRM: Unix, main thread only)
    - If UNSAT proven quickly → skip sampling, return UNSAT
    - If timeout or SAT → proceed with sampling
 
@@ -166,10 +167,10 @@ BB-CDCL recognizes that many SAT instances have a **backbone** - variables that 
 
 **Total**: O(k × WalkSAT + 2^((1-β)n)) where β = backbone fraction
 
-**Speedup Examples** (from Zhang 2004):
-- β = 0.3: 2^n → 2^(0.7n) = ~7× speedup at n=100
-- β = 0.5: 2^n → 2^(0.5n) = ~1000× speedup at n=100
-- β = 0.7: 2^n → 2^(0.3n) = ~100,000× speedup at n=100
+**Worst-case search-space reduction** (theoretical bound 2^(βn), not a measured speedup; assumes the backbone is detected correctly):
+- β = 0.3: 2^n → 2^(0.7n) = 2^30 ≈ 10^9× smaller at n=100
+- β = 0.5: 2^n → 2^(0.5n) = 2^50 ≈ 10^15× smaller at n=100
+- β = 0.7: 2^n → 2^(0.3n) = 2^70 ≈ 10^21× smaller at n=100
 
 ### Space Complexity
 
@@ -178,7 +179,7 @@ O(n + m + k×n) where:
 - m = clauses
 - k = samples (each stores n variable assignments)
 
-Typically k=100, so space is ~100× formula size (acceptable).
+With k ≤ 120 samples (adaptive default; 100 if `adaptive_sampling=False`), space is at most ~100× the variable count (acceptable).
 
 ## When BB-CDCL Works Well
 
@@ -231,6 +232,8 @@ Typically k=100, so space is ~100× formula size (acceptable).
 - Conflict-driven unfixing handles mistakes
 
 ## Usage
+
+Run these snippets from the repository root with `bsat` importable, e.g. `PYTHONPATH=src:. python3 your_script.py` (or `pip install -e .` and run from the repo root).
 
 ### Basic Usage
 
@@ -348,6 +351,8 @@ BB-CDCL combines:
 ## Experimental Results
 
 ### Expected Performance (from literature)
+
+This table is a literature-based expectation, not a measurement of this implementation. The only checked-in measurement is the October 2025 medium suite of random/generated instances (`dataset/results/medium_suite_results_oct_2025/`), where BB-CDCL took 0 of 53 first places with 14 timeouts (30s limit) - consistent with the "Random 3-SAT: overhead" row.
 
 | Problem Type | Backbone % | Sampling Time | Search Reduction | Speedup vs CDCL |
 |--------------|------------|---------------|------------------|-----------------|

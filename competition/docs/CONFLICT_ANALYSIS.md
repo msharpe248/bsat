@@ -1,5 +1,7 @@
 # Conflict Analysis and Clause Learning
 
+> **Note:** Educational explanation written in October 2025. Code blocks are simplified illustrations, not excerpts of the current sources; for the current C solver's implementation and defaults see [competition/c/README.md](../c/README.md) and [FEATURES.md](../c/FEATURES.md).
+
 **Technique**: 1-UIP (First Unique Implication Point) learning scheme
 **Impact**: Core of CDCL - transforms exponential search to practical solving
 **Status**: ✅ Implemented in both Python and C solvers
@@ -505,7 +507,7 @@ void solver_analyze(Solver* s, CRef conflict,
 
 **Benefit**: More clauses learned, more pruning
 **Cost**: More memory, more overhead
-**Status**: Rarely used (1-UIP is best in practice)
+**Status**: Rarely used as the learning scheme (1-UIP is best in practice). Note that the current C solver does apply block-level all-UIP *shrinking* to the 1-UIP clause after learning (`--shrink`, default on)
 
 ### 2. Decision-Only Learning
 

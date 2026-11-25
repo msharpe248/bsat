@@ -1,4 +1,4 @@
-> Historical snapshot. See [C solver hardening](HARDENING.md) for current correctness fixes and validation. The older production-readiness claims below are not current.
+> Historical snapshot (2025). Current behavior is in [README.md](../README.md), [FEATURES.md](../FEATURES.md) and [PRODUCTION_READINESS.md](../PRODUCTION_READINESS.md); [C solver hardening](HARDENING.md) records the later September 2026 correctness fixes. The older production-readiness claims below are not current.
 
 # C CDCL Solver - Implementation Summary
 

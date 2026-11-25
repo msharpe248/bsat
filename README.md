@@ -1,158 +1,50 @@
-# BSAT - Boolean Satisfiability Package & C Competition Solver
+# BSAT - Boolean Satisfiability in Python
 
-BSAT combines a high-performance **C11 CDCL competition SAT solver** (`competition/c/`) with a **Python SAT library and research suite** (`src/bsat/`, `research/`) for learning, encoding, and experimenting with Boolean satisfiability (SAT).
+BSAT is a Python package for **learning** Boolean satisfiability (SAT). It pairs small, readable implementations of the classic SAT algorithms with documentation that explains the theory behind them: why 2SAT is easy and 3SAT is hard, how DPLL became CDCL, what Schaefer's dichotomy says, and how real problems are encoded as CNF.
 
-## C Competition Solver (`competition/c/`)
+The core package is pure Python with zero dependencies. Every solver is written to be read, stepped through, and modified, not to win benchmarks.
 
-The actively developed [C solver](competition/c/README.md) (`bsat`) is a standalone C11/POSIX CDCL solver, DRAT proof producer, and embeddable library (opaque ABI v1 `bsat.h` + IPASIR 1.0):
+## What's Inside
 
-- **Core CDCL & BCP**: Tick-based Focused (VMTF + Biere–Fröhlich LBD EMA restarts + trail reuse) / Stable (4-ary heap VSIDS + reluctant doubling + separated `target_phase[]`) alternation, level-0 Kissat-style `B/W/I/B/W/O` rephasing, chronological backtracking, literal-indexed `lit_values[]` BCP with binary-first watch lists and 1-ahead prefetching, iterative 3-state minimization, block-level all-UIP shrinking, OTFS, dynamic LBD updates, and a 3-tier learned clause database.
-- **Inprocessing & Proof-Producing Reasoning**: Self-throttling tick-budgeted inprocessing with root cleanup, failed-literal probing + HBR + RUP-certified double-lookahead probing intersection, iterative fixpoint gate congruence (2-input AND/XOR/ITE + N-ary AND + 3-input `MAJ3`/`XOR3` full-adder gates up to `800k` clauses), in-place Tarjan SCC, global 64-bit gate-DAG simulation + dual-cone Mini-Kitten CDCL SAT sweeping, model-guided global backbone extraction, forward subsumption/SSR, gate-aware + semantic Mini-CDCL definition BVE with model reconstruction, binary transitive reduction, prefix-sharing vivification, low-energy-gated ProbSAT `(1+break)^(-2.3)` phase seeding, and **DRAT/RAT proof-producing** Structured BVA (`--sbva`), AMO Sinz sequential-counter re-encoding, BreakID-style exact syntactic symmetry breaking (`--sym`), Root GF(2) XOR-chain RREF, and bounded live in-search Bird/Han-Jiang GF(2) Gaussian elimination.
-- **Multi-Core, Optimization, Higher-Level Queries & Native LRAT**: Parallel clause-sharing portfolio (`-j <N>` / `--threads <N>`, LBD-filtered sharing `size <= 8, LBD <= 3`, dedicated unit ring, canonical hash deduplication, 8 diversified profiles including zero-preprocessing fast-start and WalkSAT-hybridized SAT-hunter workers), **native text & binary LRAT** proof emission (`--lrat` / `--binary-lrat`), **core-guided RC2/OLL Weighted Partial MaxSAT** (`--maxsat` / `.wcnf`), **AllSAT/projected model enumeration** (`--models` / `--project`), **exact global backbone** (`--backbone`), **minimal unsatisfiable subset extraction** (`--mus`), **native XOR-CNF** (`x <lits> 0`), and **Pseudo-Boolean** (`.opb` / `--opb`) with Sinz, incremental Totalizer, Generalized Totalizer (GTE), and binary-adder encoders.
-- **Incremental Embedding, Python Bindings & Deployment Kit**: Opaque ABI-v1 C library (`bsat.h` + IPASIR 1.0) with `bsat_freeze`/`bsat_melt`, multi-threaded one-shot solving, DRAT/LRAT output, XOR/PB constraints, backbone/MUS, opt-in `BSAT_REUSE_LEARNTS`, retained-session `BSAT_CERTIFICATES` query export, zero-dependency Python `ctypes` bindings (`solve_c`, `CSATSolver` in `src/bsat/c_solver.py`), turnkey acceptance-gate runner (`competition/c/scripts/acceptance_gate.py`), and POSIX durable WAL/`setrlimit` worker example (`competition/c/examples/contained_worker.c`).
-- **Wide On-Demand Testing**: Fetch and verify hundreds to thousands of SATLIB, SAT Competition 2023–2025, and synthetic structured instances on demand via `make -C competition/c wide-fetch` / `wide-test`.
+### Solvers
 
-```bash
-cd competition/c
-make all shared test                   # Build CLI + libbsat shared lib and run 73 unit tests
-./bin/bsat input.cnf                   # Solve DIMACS CNF or CryptoMiniSat XOR-CNF
-./bin/bsat -j 4 input.cnf              # 4-thread clause-sharing portfolio
-./bin/bsat --proof out.drat input.cnf  # Emit DRAT proof for UNSAT verification
-./bin/bsat --lrat out.lrat input.cnf   # Emit linearly checkable native LRAT proof
-./bin/bsat problem.wcnf                # Weighted Partial MaxSAT (RC2/OLL)
-./bin/bsat problem.opb                 # Pseudo-Boolean decision or optimization (.opb)
-./bin/bsat --mus unsat.cnf             # Extract Minimal Unsatisfiable Subset (MUS)
-./bin/bsat --backbone sat.cnf          # Compute exact global backbone literals
-./bin/bsat --models all sat.cnf        # Enumerate all satisfying models (AllSAT)
-```
+| Solver | Function | Complete? | What it teaches |
+|--------|----------|-----------|-----------------|
+| **Davis-Putnam** (1960) | `solve_davis_putnam()` | ✅ | The original resolution-based procedure, and why it runs out of memory |
+| **DPLL** (1962) | `solve_sat()` | ✅ | Backtracking search, unit propagation, pure literal elimination |
+| **CDCL** | `solve_cdcl()` | ✅ | Conflict-driven clause learning, VSIDS, non-chronological backtracking, restarts |
+| **2SAT** | `solve_2sat()` | ✅ | Implication graphs and strongly connected components |
+| **Horn-SAT** | `solve_horn_sat()` | ✅ | Forward chaining / unit propagation as a decision procedure |
+| **XOR-SAT** | `solve_xorsat()` | ✅ | Gaussian elimination over GF(2) |
+| **WalkSAT** | `solve_walksat()` | ❌ | Randomized local search |
+| **Schöning** | `solve_schoening()` | ❌ | A random walk with a provable O(1.334ⁿ) bound for 3SAT |
+| **P-bit** | `solve_pbit()` | ❌ | Gibbs sampling / simulated annealing, modeled on probabilistic-bit hardware |
 
-Or call the native C engine directly from Python once `make -C competition/c shared` is built:
+"Complete" means the solver can prove unsatisfiability. The incomplete solvers return `None` when they give up, which does not mean the formula is UNSAT.
 
-```python
-from bsat import CNFExpression, CSATSolver, solve_c
+### Tools
 
-cnf = CNFExpression.parse("(x | y) & (~x | z) & (~y | ~z)")
-model = solve_c(cnf)  # Runs libbsat at native C speed
-```
-
-See [competition/c/README.md](competition/c/README.md), [competition/c/FEATURES.md](competition/c/FEATURES.md), [competition/c/API_CONTRACT.md](competition/c/API_CONTRACT.md), and [competition/c/PRODUCTION_READINESS.md](competition/c/PRODUCTION_READINESS.md) for complete documentation (`1.0.0-dev` does not claim deployment-specific certification).
-
----
-
-## Performance & Benchmarks
-
-All measurements below were collected on an **Apple M4 Pro (12-core, macOS)** using the checked-in [`suite_runner.py`](competition/c/scripts/suite_runner.py) harness with full independent SAT model verification, ground-truth label checking, and 0 SAT/UNSAT disagreements against **Kissat 4.0.4** (built from source on the same machine).
-
-### SAT Competition 2023–2025 (150 Balanced Main-Track Instances, 15 s Timeout)
-
-Balanced size-filtered pack (`<= 2 MiB` compressed) across SAT Competition 2023 (60), 2024 (30), and 2025 (60) — 75 SAT and 75 UNSAT instances:
-
-| Solver | Threads | Solved / 150 | Rate | SAT | UNSAT | SC'23 (60) | SC'24 (30) | SC'25 (60) | Mean PAR-2 | Median Solved |
-|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|
-| **`bsat -j 4`** *(portfolio)* | 4 | **57 / 150** | **38.0%** | **37** | **20** | 28 | 13 | 16 | **19.485 s** | 0.370 s |
-| **`bsat`** *(1-thread)* | 1 | **48 / 150** | **32.0%** | **28** | **20** | 21 | 12 | 15 | **21.098 s** | **0.278 s** |
-| **Kissat 4.0.4** *(1-thread)* | 1 | 42 / 150 | 28.0% | 24 | 18 | 21 | 8 | 13 | 22.331 s | 0.952 s |
-
-- Single-thread complementarity: both solvers solve **37** common instances; **`bsat`** solves **11** instances that Kissat 4.0.4 times out on, while **Kissat 4.0.4** solves **5** instances that 1-thread `bsat` times out on (virtual best: 53/150).
-- Adding 4-thread clause-sharing portfolio search (`-j 4`, including the WalkSAT-hybridized SAT-hunter worker) lifts SAT solves from 28 to **37** (+9 instances, PAR-2 `21.098 s` → `19.485 s`).
-
-### SATLIB Core & Structured Hard Benchmarks (10 s Timeout, 1 Thread)
-
-| Suite | Instances | Solver | Solved | Rate | SAT | UNSAT | Mean PAR-2 | Median | Total Time |
-|---|---:|---|---:|---:|---:|---:|---:|---:|---:|
-| **SATLIB Core** *(16 classic families)* | 492 | **`bsat`** | **492 / 492** | **100.0%** | 323 | 169 | **0.043 s** | **0.007 s** | **21.40 s** |
-| | 492 | **Kissat 4.0.4** | 482 / 492 | 98.0% | 313 | 169 | 0.451 s | 0.023 s | 122.03 s |
-| **Synthetic Hard** *(PHP, Tseitin XOR, miters, coloring, Latin sq., planted 3-SAT)* | 118 | **`bsat`** | **118 / 118** | **100.0%** | 68 | 50 | **0.018 s** | **0.006 s** | **2.13 s** |
-| | 118 | **Kissat 4.0.4** | 104 / 118 | 88.1% | 68 | 36 | 2.416 s | 0.010 s | 145.12 s |
-
-- On **SATLIB Core**, `bsat` solves all 10 `par32-*` parity learning benchmarks (`<= 0.45 s` each) via GF(2) RREF and is faster on random 3-SAT (`uf150-645` PAR-2 `0.011 s` vs `0.033 s`, `uuf150-645` `0.039 s` vs `0.059 s`) and `dubois`; Kissat 4.0.4 is faster on `bmc` (`0.232 s` vs `0.402 s`) and `flat100` (`0.004 s` vs `0.007 s`).
-- On **Synthetic Hard**, `bsat`'s BreakID-style symmetry breaking (`php_31_30` in `0.072 s`) and GF(2) Gaussian elimination (`tseitin_v100` in `0.010 s`) account for the 14 timeouts on pure-CDCL Kissat 4.0.4.
-
-### Proof Generation & Verification (`cal3-query.cnf`, Industrial UNSAT)
-
-| Solver & Proof Mode | Solve Time | Check Time | End-to-End | Proof Size | Checker |
-|---|---:|---:|---:|---:|---|
-| **`bsat`** *(no proof)* | **0.368 s** | — | **0.368 s** | — | — |
-| **Kissat 4.0.4** *(no proof)* | 0.719 s | — | 0.719 s | — | — |
-| **`bsat` native binary LRAT** (`--lrat --binary-lrat`) | 0.833 s | 0.217 s | 1.050 s | 9,281 KiB | Linear `lrat_verify_file` |
-| **`bsat` binary DRAT** (`--proof --binary-proof`) | 0.628 s | 0.441 s | 1.069 s | 3,842 KiB | `drat-trim` |
-| **Kissat 4.0.4 binary DRAT** | 0.725 s | **0.124 s** | **0.849 s** | **2,986 KiB** | `drat-trim` |
-
-### Native C (`solve_c`) vs. Pure-Python (`solve_cdcl`)
-
-| Benchmark (SATLIB 3-SAT) | Pure-Python `solve_cdcl` | Native C `solve_c` (`libbsat`) | Speedup |
-|---|---:|---:|---:|
-| **100-var 3-SAT** (20 instances: 12 SAT, 8 UNSAT) | 0.304 s *(15.2 ms/inst)* | 0.023 s *(1.13 ms/inst)* | **13×** |
-| **150-var 3-SAT** (10 instances) | 46.262 s *(4,626 ms/inst)* | 0.021 s *(2.08 ms/inst)* | **2,221×** |
-
-To reproduce these comparisons locally:
-
-```bash
-cd competition/c && make all
-make wide-fetch PACK="synthetic-hard satlib-core"
-python3 scripts/suite_runner.py --corpus satlib-core --timeout 10 --workers 4 \
-    --solver bsat=bin/bsat --solver kissat=/path/to/kissat
-```
-
----
-
-## Python Package Features
-
-### Production Solvers
-✅ **CNF Data Structures**: Clean, Pythonic representation (Literal, Clause, CNFExpression)
-✅ **Davis-Putnam Solver**: The original 1960 resolution-based algorithm (educational)
-✅ **2SAT Solver**: O(n+m) polynomial-time algorithm using strongly connected components
-✅ **DPLL Solver**: Backtracking with unit propagation and pure literal elimination
-✅ **CDCL Solver**: Conflict-Driven Clause Learning with VSIDS heuristic and restarts
-✅ **Horn-SAT Solver**: O(n+m) polynomial-time solver for Horn formulas
-✅ **XOR-SAT Solver**: O(n³) polynomial-time solver using Gaussian elimination over GF(2)
-✅ **WalkSAT Solver**: Randomized local search (incomplete but often very fast)
-✅ **Schöning's Algorithm**: Randomized k-SAT solver with O(1.334^n) expected runtime for 3SAT
-✅ **P-Bit Solver**: Probabilistic-bit Gibbs sampling with simulated annealing (physics-inspired, incomplete)
-
-### Research Solvers 🔬
-✅ **15 Advanced Research Solvers** - Novel algorithms achieving **100-2710× speedups**
-- **Original Suite** (4): CGPM-SAT, CoBD-SAT, LA-CDCL, BB-CDCL
-- **New Research Suite** (8): TPM-SAT, SSTA-SAT, VPL-SAT, CQP-SAT, MAB-SAT, CCG-SAT, HAS-SAT, CEGP-SAT
-- **Bio-Inspired Suite** (3): MARKET-SAT, PHYSARUM-SAT, FOLD-SAT
-📚 **[See research/README.md for complete documentation](research/README.md)**
-
-### Advanced Features
-✅ **SAT Preprocessing**: Simplification techniques (decomposition, unit propagation, subsumption)
-✅ **Solution Enumeration**: Find all satisfying assignments, not just one
-✅ **k-SAT to 3-SAT Reduction**: Convert any CNF to 3-SAT form using auxiliary variables
-✅ **Pretty Printing**: Unicode symbols (∧, ∨, ¬) for readable output
-✅ **Multiple Input Formats**: Parse from text, JSON, or build programmatically
-✅ **DIMACS Format**: Full support for reading/writing industry-standard DIMACS CNF files
-✅ **Truth Tables**: Generate and compare truth tables
-
-### Validation & Benchmarking
-✅ **Comprehensive Benchmarks**: 15 problems, 7 solvers, rigorous performance testing
-✅ **Validation Framework**: 4-level validation (correctness, statistical, profiling, timing)
-✅ **Performance Comparison**: Tools for comparing solver performance and analyzing results
-✅ **Statistical Validation**: 95% confidence intervals, reproducibility testing
-✅ **Interactive Visualization**: Web-based 3-SAT reduction visualizer
+- **CNF data structures**: `Literal`, `Clause`, `CNFExpression`, with Unicode pretty printing (∧, ∨, ¬)
+- **Parsing and I/O**: text formulas, JSON, and the industry-standard DIMACS format
+- **Truth tables**: generate and compare
+- **Preprocessing**: unit propagation, subsumption, and decomposition into independent components
+- **Solution enumeration and counting**
+- **k-SAT to 3-SAT reduction** with auxiliary variables
+- **Problem encodings**: graph coloring, Sudoku, N-Queens
+- **Benchmark instances** and a solver comparison script
+- **Interactive visualizer**: watch the algorithms run step by step in a browser
 
 ## Installation
 
-### From Source
-
 ```bash
-# Clone or navigate to the repository
-cd bsat
-
-# Install in development mode
+# From the repository root
 pip install -e .
 
-# Or install normally
-pip install .
-```
-
-### With Development Dependencies
-
-```bash
+# With development dependencies (pytest, black, flake8, mypy)
 pip install -e ".[dev]"
 ```
+
+Requires Python 3.7+. No third-party runtime dependencies.
 
 ## Quick Start
 
@@ -175,15 +67,14 @@ else:
     print("UNSAT")
 ```
 
-### 2SAT (Polynomial-time)
+### 2SAT (Polynomial Time)
 
 ```python
 from bsat import solve_2sat, CNFExpression
 
-# 2SAT is solved in O(n+m) time using SCC
-formula_2sat = "(x | y) & (~x | z) & (y | ~z)"
-cnf_2sat = CNFExpression.parse(formula_2sat)
-result = solve_2sat(cnf_2sat)  # O(n+m) time!
+# Every clause has exactly 2 literals: solved via strongly connected components
+cnf = CNFExpression.parse("(x | y) & (~x | z) & (y | ~z)")
+result = solve_2sat(cnf)
 ```
 
 ### Horn-SAT (Logic Programming)
@@ -192,11 +83,10 @@ result = solve_2sat(cnf_2sat)  # O(n+m) time!
 from bsat import solve_horn_sat, is_horn_formula, CNFExpression
 
 # Horn clauses have at most one positive literal
-formula = "x & (~x | y) & (~y | z)"
-cnf = CNFExpression.parse(formula)
+cnf = CNFExpression.parse("x & (~x | y) & (~y | z)")
 
 if is_horn_formula(cnf):
-    result = solve_horn_sat(cnf)  # O(n+m) time!
+    result = solve_horn_sat(cnf)
     print(f"Solution: {result}")
 ```
 
@@ -205,30 +95,14 @@ if is_horn_formula(cnf):
 ```python
 from bsat import solve_xorsat, CNFExpression, Clause, Literal
 
-# XOR clauses: odd number of literals must be true
+# Each clause is read as an XOR constraint: an odd number of its literals must be true
 # x ⊕ y = 1 (they must differ)
 cnf = CNFExpression([
     Clause([Literal('x', False), Literal('y', False)])
 ])
 
-result = solve_xorsat(cnf)  # O(n³) using Gaussian elimination
+result = solve_xorsat(cnf)  # Gaussian elimination over GF(2)
 print(f"Solution: {result}")
-```
-
-### WalkSAT (Fast Randomized Search)
-
-```python
-from bsat import solve_walksat, CNFExpression
-
-# Randomized local search - incomplete but often very fast
-formula = "(x | y | z) & (~x | y | ~z) & (x | ~y | z)"
-cnf = CNFExpression.parse(formula)
-
-result = solve_walksat(cnf, noise=0.5, max_flips=10000, seed=42)
-if result:
-    print(f"Solution found: {result}")
-else:
-    print("No solution found (but may still be SAT)")
 ```
 
 ### CDCL (Modern SAT Solving)
@@ -236,9 +110,7 @@ else:
 ```python
 from bsat import solve_cdcl, get_cdcl_stats, CNFExpression
 
-# CDCL uses conflict-driven clause learning
-formula = "(x | y | z) & (~x | y | ~z) & (x | ~y | z)"
-cnf = CNFExpression.parse(formula)
+cnf = CNFExpression.parse("(x | y | z) & (~x | y | ~z) & (x | ~y | z)")
 
 result = solve_cdcl(cnf)
 if result:
@@ -251,14 +123,26 @@ print(f"Conflicts: {stats.conflicts}")
 print(f"Learned clauses: {stats.learned_clauses}")
 ```
 
+### WalkSAT (Randomized Local Search)
+
+```python
+from bsat import solve_walksat, CNFExpression
+
+cnf = CNFExpression.parse("(x | y | z) & (~x | y | ~z) & (x | ~y | z)")
+
+result = solve_walksat(cnf, noise=0.5, max_flips=10000, seed=42)
+if result:
+    print(f"Solution found: {result}")
+else:
+    print("No solution found (but may still be SAT)")
+```
+
 ### Schöning's Algorithm (Provably Fast 3SAT)
 
 ```python
 from bsat import solve_schoening, get_schoening_stats, CNFExpression
 
-# Schöning's randomized algorithm - O(1.334^n) for 3SAT!
-formula = "(a | b | c) & (~a | b | ~c) & (a | ~b | c)"
-cnf = CNFExpression.parse(formula)
+cnf = CNFExpression.parse("(a | b | c) & (~a | b | ~c) & (a | ~b | c)")
 
 result = solve_schoening(cnf, seed=42)
 if result:
@@ -266,7 +150,6 @@ if result:
 else:
     print("No solution found (algorithm is incomplete)")
 
-# Get detailed statistics
 result, stats = get_schoening_stats(cnf, seed=42)
 print(f"Tries: {stats.tries}")
 print(f"Total flips: {stats.total_flips}")
@@ -277,9 +160,8 @@ print(f"Total flips: {stats.total_flips}")
 ```python
 from bsat import solve_pbit, get_pbit_stats, CNFExpression
 
-# Gibbs sampling with simulated annealing, modeled on p-bit hardware
-formula = "(a | b | c) & (~a | b | ~c) & (a | ~b | c)"
-cnf = CNFExpression.parse(formula)
+# Gibbs sampling with simulated annealing; energy = number of unsatisfied clauses
+cnf = CNFExpression.parse("(a | b | c) & (~a | b | ~c) & (a | ~b | c)")
 
 result = solve_pbit(cnf, seed=42)
 if result:
@@ -287,29 +169,26 @@ if result:
 else:
     print("No solution found (algorithm is incomplete)")
 
-# Get detailed statistics (energy = number of unsatisfied clauses)
 result, stats = get_pbit_stats(cnf, seed=42)
 print(f"Sweeps: {stats.sweeps}")
 print(f"Best energy: {stats.best_energy}")  # 0 means solved
 ```
 
-### SAT Preprocessing (Simplification)
+### Preprocessing
 
 ```python
 from bsat import decompose_and_preprocess, CNFExpression, solve_sat
 
-# Complex formula with structure
-formula = "a & (a | b) & (~a | c) & (d | e) & (f | g) & f"
-cnf = CNFExpression.parse(formula)
+cnf = CNFExpression.parse("a & (a | b) & (~a | c) & (d | e) & (f | g) & f")
 
-# Decompose into components and preprocess
+# Simplify, then split into independent components
 components, forced, stats = decompose_and_preprocess(cnf)
 
 print(f"Reduced: {stats.original_clauses} → {stats.final_clauses} clauses")
 print(f"Forced assignments: {forced}")
 print(f"Independent components: {len(components)}")
 
-# Solve remaining components
+# Solve whatever is left
 solution = forced.copy()
 for comp in components:
     sol = solve_sat(comp)
@@ -320,32 +199,32 @@ for comp in components:
 ### Solution Enumeration
 
 ```python
-from bsat import find_all_sat_solutions, count_sat_solutions, CNFExpression
+from bsat import DPLLSolver, CNFExpression
 
-# Find ALL satisfying assignments (not just one)
-formula = "(x | y)"
-cnf = CNFExpression.parse(formula)
+cnf = CNFExpression.parse("(x | y)")
 
-# Find all solutions
-all_solutions = find_all_sat_solutions(cnf)
-print(f"Found {len(all_solutions)} solutions:")
+# Disable pure literal elimination to enumerate every distinct assignment
+solver = DPLLSolver(cnf, use_pure_literal=False)
+
+all_solutions = solver.find_all_solutions()
+print(f"Found {len(all_solutions)} solutions:")  # 3
 for sol in all_solutions:
     print(f"  {sol}")
 
-# Or just count them
-count = count_sat_solutions(cnf)
-print(f"Total solutions: {count}")
+print(f"Total solutions: {solver.count_solutions()}")
 
-# Limit search for formulas with many solutions
-solutions = find_all_sat_solutions(cnf, max_solutions=100)
+# Limit the search for formulas with many solutions
+some = solver.find_all_solutions(max_solutions=100)
 ```
+
+The convenience functions `find_all_sat_solutions()` and `count_sat_solutions()` run with pure literal elimination enabled, which fixes pure variables to one value and can therefore skip solutions (they report 2 for `(x | y)`). Use the `DPLLSolver` form above when you need an exact count.
 
 ### k-SAT to 3-SAT Reduction
 
 ```python
 from bsat import reduce_to_3sat, solve_with_reduction, CNFExpression, Clause, Literal
 
-# 5-SAT formula
+# One 5-literal clause
 cnf = CNFExpression([
     Clause([Literal('a'), Literal('b'), Literal('c'), Literal('d'), Literal('e')])
 ])
@@ -359,345 +238,176 @@ solution, stats = solve_with_reduction(cnf)
 print(f"Solution: {solution}")  # Only original variables
 ```
 
-## Research Solvers 🔬
+## Choosing a Solver
 
-The `research/` directory contains **15 advanced SAT solvers** exploring novel algorithmic approaches beyond traditional techniques. These implementations demonstrate cutting-edge research in SAT solving with significant performance improvements on specific problem classes.
+| Problem Type | Solver | Complexity | Complete | Use When |
+|-------------|---------|-----------|----------|----------|
+| **2SAT** | `solve_2sat()` | Polynomial (linear-time algorithm) | ✅ | Every clause has exactly 2 literals |
+| **Horn-SAT** | `solve_horn_sat()` | Polynomial | ✅ | At most 1 positive literal per clause |
+| **XOR-SAT** | `solve_xorsat()` | O(n³) | ✅ | Parity constraints |
+| **General SAT** | `solve_sat()` | O(2ⁿ)* | ✅ | Small formulas; reading how DPLL works |
+| **General SAT** | `solve_cdcl()` | O(2ⁿ)* | ✅ | Larger or structured formulas |
+| **3SAT** | `solve_schoening()` | O(1.334ⁿ)† | ❌ | Studying randomized algorithms |
+| **General SAT** | `solve_walksat()` | No guarantee | ❌ | Satisfiable instances where a quick answer is enough |
+| **General SAT** | `solve_pbit()` | No guarantee | ❌ | Exploring annealing / Boltzmann sampling |
 
-### Three Research Suites
+*Exponential in the worst case; CDCL is usually far faster in practice because it learns from conflicts.
+†Expected time for 3SAT.
 
-**Original Research Suite** (4 solvers) - **100-2710× speedups**
-- **CGPM-SAT**: Conflict graph pattern mining using PageRank and betweenness centrality
-- **CoBD-SAT**: Community-based decomposition with Louvain algorithm
-- **LA-CDCL**: Lookahead-enhanced CDCL with adaptive frequency
-- **BB-CDCL**: Backbone detection using statistical sampling
+Rules of thumb:
 
-**New Research Suite** (8 solvers) - Novel and educational algorithms
-- **TPM-SAT**: Temporal pattern mining from conflict history (⭐⭐ Novel)
-- **SSTA-SAT**: Solution space topology analysis and clustering (⭐⭐ Novel)
-- **VPL-SAT**: Variable phase learning from conflicts (⭐ Partially Novel)
-- **CQP-SAT**: Glucose LBD clause quality prediction (📚 Educational)
-- **MAB-SAT**: Multi-armed bandit variable selection (📚 Educational)
-- **CCG-SAT**: Conflict causality graph for restarts (⭐ Partially Novel)
-- **HAS-SAT**: Hierarchical abstraction-refinement (📚 Educational)
-- **CEGP-SAT**: Clause evolution with genetic programming (🧪 Experimental)
+- All clauses have exactly 2 literals → `solve_2sat()`
+- Every clause has at most one positive literal → `solve_horn_sat()`
+- The problem is a system of parity constraints → `solve_xorsat()`
+- Anything else → `solve_cdcl()`, or `solve_sat()` if you want the simpler algorithm
 
-**Bio-Inspired Suite** (3 solvers) - Groundbreaking paradigms
-- **MARKET-SAT**: Economic auction theory and Walrasian equilibrium (🌟🌟 Groundbreaking)
-- **PHYSARUM-SAT**: Slime mold network flow optimization (🌟🌟 Groundbreaking)
-- **FOLD-SAT**: Protein folding energy minimization (🌟🌟 Groundbreaking)
+These are pure-Python teaching implementations. They are comfortable on formulas with tens to a few hundred variables; for anything larger, see [Beyond the Core Package](#beyond-the-core-package).
 
-### Quick Example
+## Documentation
 
-```python
-# Original research suite
-from research.cgpm_sat import CGPMSolver
-from research.cobd_sat import CoBDSATSolver
+The [`docs/`](docs/README.md) directory is the heart of the project. A suggested reading order:
 
-# New research suite
-from research.tpm_sat import TPMSATSolver
-from research.ssta_sat import SSTASATSolver
+### Start Here
+- [Introduction to SAT](docs/introduction.md) - What SAT is and why it matters
+- [Terminology Reference](docs/terminology.md) - Glossary of SAT concepts
+- [History of SAT Solving](docs/history.md) - From Davis-Putnam to modern solvers
+- [CNF Data Structures](docs/cnf.md) - The package API
 
-# Bio-inspired suite
-from research.market_sat import MARKETSATSolver
-from research.physarum_sat import PHYSARUMSATSolver
-from research.fold_sat import FOLDSATSolver
+### Theory
+- [Schaefer's Dichotomy Theorem](docs/schaefer-dichotomy.md) - Which SAT variants are in P and which are NP-complete
+- [Constraint Types](docs/constraint-types.md) - A taxonomy of Boolean constraints
+- [3SAT Variants](docs/3sat-variants.md) - NAE-3SAT, 1-in-3-SAT, random and structured instances
+- [k-SAT to 3-SAT Reduction](docs/introduction.md#reducing-k-sat-to-3-sat)
+- [Theory & References](docs/theory.md) and the [Reading List](docs/reading-list.md)
 
-cnf = CNFExpression.parse("(a | b | c) & (~a | b | ~c) & ...")
+### Algorithms
+- [Solver Overview](docs/solvers.md)
+- [Davis-Putnam](docs/davis-putnam-solver.md) · [DPLL](docs/dpll-solver.md) · [CDCL](docs/cdcl-solver.md)
+- [2SAT](docs/2sat-solver.md) · [Horn-SAT](docs/hornsat-solver.md) · [XOR-SAT](docs/xorsat-solver.md)
+- [WalkSAT](docs/walksat-solver.md) · [Schöning](docs/schoening-solver.md) · [P-bit](docs/pbit-solver.md)
+- [Preprocessing](docs/preprocessing.md)
 
-# Use any research solver
-solver = CGPMSolver(cnf, graph_weight=0.5)
-result = solver.solve()
-stats = solver.get_statistics()
-```
+### Practice
+- [Examples & Tutorials](docs/examples.md)
+- [Problem Encodings](docs/problem-encodings.md) - Graph coloring, Sudoku, N-Queens, and more
+- [DIMACS Format](docs/dimacs.md)
+- [Benchmarking](docs/benchmarking.md)
 
-### Documentation & Benchmarks
+### Going Further
+- [Modern Competition Solvers](docs/competition_solvers.md) - How state-of-the-art solvers work
+- [What a Competition Solver Requires](docs/competition_requirements.md) - The gap between a teaching solver and a competitive one
 
-📚 **[Complete Research Documentation](research/README.md)** - Detailed algorithm descriptions, usage examples, and theoretical foundations
-
-📊 **[Benchmark Results](research/BENCHMARKS.md)** - Comprehensive performance analysis across all 16 benchmarked solvers (15 research + P-BIT)
-
-🔬 **[Algorithm Showcase](research/ALGORITHM_SHOWCASE.md)** - In-depth algorithm descriptions and design motivation
-
-✅ **[Validation Guide](research/benchmarks/VALIDATION_GUIDE.md)** - How to reproduce and validate performance claims
-
-## Validation Framework
-
-All performance claims are validated using a **4-level validation framework**:
-
-### 1. Correctness Verification ✅
-
-Verifies that all SAT solutions actually satisfy the formula:
+## Examples
 
 ```bash
-cd research/benchmarks
-python validate_correctness.py
+# Solvers
+python examples/example.py                      # CNF basics
+python examples/example_davis_putnam.py
+python examples/example_dpll.py
+python examples/example_cdcl.py
+python examples/example_2sat.py
+python examples/example_hornsat.py
+python examples/example_xorsat.py
+python examples/example_walksat.py
+python examples/example_schoening.py
+python examples/example_pbit.py
+
+# Tools
+python examples/example_preprocessing.py
+python examples/example_enumerate_solutions.py
+python examples/example_reductions.py
+python examples/example_dimacs.py
+
+# Problem encodings
+python examples/encodings/graph_coloring.py
+python examples/encodings/sudoku.py
+python examples/encodings/n_queens.py
+
+# Solver comparison
+python examples/benchmark_comparison.py
 ```
 
-- Every SAT solution verified against all clauses
-- UNSAT results cross-checked with independent solvers
-- Catches bugs and incorrect implementations
+## Interactive Visualization
 
-### 2. Statistical Validation ✅
-
-Proves speedups are reproducible with statistical rigor:
+A browser-based visualizer animates the algorithms step by step: DPLL, CDCL, Davis-Putnam, 2SAT, Horn-SAT, WalkSAT, and the k-SAT to 3-SAT reduction.
 
 ```bash
-python statistical_benchmark.py --runs 10 --output results.csv
-```
-
-- **10 runs per solver** (configurable)
-- **Mean, median, standard deviation**
-- **95% confidence intervals**
-- **Coefficient of variation** (stability metric)
-
-### 3. Profiling Analysis ✅
-
-Validates algorithmic improvements (not measurement artifacts):
-
-```bash
-python profile_solvers.py --output profile_report.md
-```
-
-- Function-level time breakdown
-- Memory usage tracking
-- Hotspot identification
-- Proves genuine algorithmic differences
-
-### 4. One-Command Validation ✅
-
-Run all validations with a single script:
-
-```bash
-cd research/benchmarks
-./reproduce_validation.sh        # Full validation
-./reproduce_validation.sh --quick  # Quick mode (5 runs)
-```
-
-Generates comprehensive validation report in `validation_results/`.
-
-**See:** `research/benchmarks/VALIDATION_GUIDE.md` for complete documentation.
-
-## Interactive Visualization 🎨
-
-Web-based visualizer for understanding k-SAT to 3-SAT reduction:
-
-```bash
+pip install -r visualization_server/requirements.txt
 cd visualization_server
 python -m uvicorn backend.main:app --reload --port 8000
 ```
 
-Then open: `http://localhost:8000`
-
-**Features:**
-- Interactive formula editor
-- Step-by-step reduction visualization
-- Variable mapping and clause transformation
-- Real-time validation
-
-## Solver Comparison
-
-Choose the right solver for your problem:
-
-### Production Solvers
-
-| Problem Type | Solver | Complexity | Complete | Use When |
-|-------------|---------|-----------|----------|----------|
-| **2SAT** | `solve_2sat()` | O(n+m) | ✅ Yes | Every clause has exactly 2 literals |
-| **Horn-SAT** | `solve_horn_sat()` | O(n+m) | ✅ Yes | At most 1 positive literal per clause (logic programming) |
-| **XOR-SAT** | `solve_xorsat()` | O(n³) | ✅ Yes | XOR constraints (cryptography, coding theory) |
-| **General SAT** | `solve_sat()` | O(2ⁿ)* | ✅ Yes | Any CNF formula (uses DPLL) |
-| **Modern SAT** | `solve_cdcl()` | O(2ⁿ)* | ✅ Yes | Structured problems, industrial instances |
-| **Random 3SAT** | `solve_schoening()` | O(1.334ⁿ)† | ❌ No | Random 3SAT, theoretical analysis |
-| **Fast SAT** | `solve_walksat()` | Varies | ❌ No | Large SAT instances where speed > completeness |
-| **Physics-based SAT** | `solve_pbit()` | Varies‡ | ❌ No | Boltzmann sampling / annealing demos, any k-SAT |
-
-*Exponential worst-case, but CDCL much faster in practice due to learning
-†Expected time for 3SAT - provably better than O(2ⁿ)!
-‡Gibbs-sampling heuristic — no runtime guarantee (exponential mixing in the worst case)
-
-### Research Solvers
-
-📚 **See [research/README.md](research/README.md) for complete documentation of all 15 research solvers**
-
-**Original Research Suite** - Proven speedups on large problems (25+ vars):
-
-| Solver | Best Speedup | Complete | Best For |
-|--------|--------------|----------|----------|
-| **CGPM-SAT** 🏆 | **2710×** | ✅ Yes | Large random SAT, structured problems (graph-based heuristics) |
-| **CoBD-SAT** | **1612×** | ✅ Yes | Modular/decomposable problems (high modularity Q > 0.3) |
-| **LA-CDCL** | **529×** | ✅ Yes | Hard random SAT near phase transition (lookahead prevents bad decisions) |
-| **BB-CDCL** | 93% backbone | ✅ Yes | Problems with backbone variables (>30% forced assignments) |
-
-**New Research Suite** - 8 novel/educational algorithms exploring pattern mining, topology analysis, phase learning, and more
-
-**Bio-Inspired Suite** - 3 groundbreaking solvers using economic auction theory, slime mold networks, and protein folding
-
-**Quick decision guide:**
-
-**For small problems (< 15 vars):**
-- All clauses have 2 literals? → Use `solve_2sat()`
-- Clauses are implications (≤1 positive literal)? → Use `solve_horn_sat()`
-- XOR/parity constraints? → Use `solve_xorsat()`
-- Simple/small problem? → Use `solve_sat()` (DPLL) or `solve_cdcl()`
-
-**For large problems (25+ vars):**
-- Random 3SAT or structured SAT? → Use `CGPMSolver` 🏆 (2710× speedup!)
-- Modular/decomposable structure? → Use `CoBDSATSolver` (1612× speedup)
-- Hard instances near phase transition? → Use `LACDCLSolver` (529× speedup)
-- Known backbone variables? → Use `BBCDCLSolver` (93% detection)
-- Exploring novel algorithms? → See [research/README.md](research/README.md) for 11 more solvers
-- Not sure? → Try `CGPMSolver` first (best overall performance)
-
-**For educational/theoretical:**
-- Random 3SAT analysis? → Try `solve_schoening()` (provably O(1.334^n))
-- Want fast incomplete solver? → Try `solve_walksat()`
-- Curious about probabilistic/Ising hardware? → Try `solve_pbit()` (Gibbs sampling + annealing)
-- Explore novel paradigms? → Try bio-inspired solvers (MARKET-SAT, PHYSARUM-SAT, FOLD-SAT)
-
-## Examples
-
-Run the example scripts:
-
-```bash
-# Solver examples
-python examples/example.py                  # General CNF examples
-python examples/example_davis_putnam.py     # Davis-Putnam (1960) historical solver
-python examples/example_2sat.py             # 2SAT solver examples
-python examples/example_dpll.py             # DPLL solver examples
-python examples/example_cdcl.py             # CDCL solver examples
-python examples/example_hornsat.py    # Horn-SAT solver examples
-python examples/example_xorsat.py     # XOR-SAT solver examples
-python examples/example_walksat.py    # WalkSAT solver examples
-python examples/example_schoening.py       # Schöning's algorithm examples
-python examples/example_pbit.py            # P-bit solver examples
-python examples/example_preprocessing.py   # SAT preprocessing examples
-python examples/example_enumerate_solutions.py # Solution enumeration examples
-python examples/example_reductions.py      # k-SAT to 3-SAT reduction examples
-python examples/example_dimacs.py       # DIMACS format examples
-
-# Real-world problem encodings
-python examples/encodings/graph_coloring.py  # Graph coloring problems
-python examples/encodings/sudoku.py          # Sudoku solver
-python examples/encodings/n_queens.py        # N-Queens problem
-
-# Performance benchmarking
-python examples/benchmark_comparison.py      # Compare solver performance
-```
-
-## Research & Advanced Usage
-
-The `research/` directory contains **15 advanced SAT solvers** organized into three suites, plus comprehensive benchmarking and validation tools:
-
-### Explore Research Solvers
-
-```bash
-# View all 15 research solvers
-cat research/README.md
-
-# Interactive demo and algorithm showcase
-python research/ALGORITHM_SHOWCASE.py
-
-# Run examples for each solver
-python research/cgpm_sat/example.py        # Original research suite
-python research/tpm_sat/example.py         # New research suite
-python research/market_sat/example.py      # Bio-inspired suite
-```
-
-### Run Benchmarks
-
-```bash
-cd research/benchmarks
-
-# Full benchmark suite (all 15 research solvers)
-python run_full_benchmark.py
-cat benchmark_results_full.md
-
-# Focused benchmarks
-python run_simple_benchmark.py
-python run_focused_benchmark.py
-```
-
-### Validate Performance Claims
-
-```bash
-cd research/benchmarks
-
-# One-command validation (all 4 validation levels)
-./reproduce_validation.sh                   # Full validation
-./reproduce_validation.sh --quick           # Quick mode (5 runs)
-
-# Individual validation levels
-python validate_correctness.py              # Level 1: Correctness
-python statistical_benchmark.py --runs 10   # Level 2: Statistical
-python profile_solvers.py                   # Level 3: Profiling
-```
-
-**Key Research Documentation:**
-- 📚 **[research/README.md](research/README.md)** - Complete documentation of all 15 research solvers
-- 🔬 **[research/ALGORITHM_SHOWCASE.md](research/ALGORITHM_SHOWCASE.md)** - Algorithm descriptions and design motivation
-- 📊 **[research/BENCHMARKS.md](research/BENCHMARKS.md)** - Comprehensive benchmark results and rankings
-- ✅ **[research/benchmarks/VALIDATION_GUIDE.md](research/benchmarks/VALIDATION_GUIDE.md)** - How to reproduce and validate performance claims
+Then open `http://localhost:8000`. See [visualization_server/README.md](visualization_server/README.md).
 
 ## Testing
 
-Run the test suite:
-
 ```bash
-python tests/test_davis_putnam.py  # Davis-Putnam tests
-python tests/test_2sat.py          # 2SAT tests
-python tests/test_dpll.py          # DPLL tests
-python tests/test_cdcl.py          # CDCL tests
-python tests/test_hornsat.py       # Horn-SAT tests
-python tests/test_xorsat.py      # XOR-SAT tests
-python tests/test_walksat.py     # WalkSAT tests
-python tests/test_schoening.py     # Schöning's algorithm tests
-python tests/test_pbit.py          # P-bit solver tests
-python tests/test_preprocessing.py # Preprocessing tests
-python tests/test_reductions.py    # k-SAT reduction tests
-python tests/test_dimacs.py        # DIMACS format tests
-python tests/test_benchmarks.py  # Benchmark suite tests
+python tests/test_davis_putnam.py
+python tests/test_dpll.py
+python tests/test_cdcl.py
+python tests/test_2sat.py
+python tests/test_hornsat.py
+python tests/test_xorsat.py
+python tests/test_walksat.py
+python tests/test_schoening.py
+python tests/test_pbit.py
+python tests/test_preprocessing.py
+python tests/test_reductions.py
+python tests/test_dimacs.py
+python tests/test_benchmarks.py
+python tests/test_c_solver.py      # optional; skipped unless the C library is built
 ```
 
-Or with pytest (if installed):
+Or with pytest:
 
 ```bash
 pytest tests/
 ```
 
-## Documentation
+## Beyond the Core Package
 
-📚 **[Complete Documentation](docs/README.md)**
+Two side projects live in this repository. Each has its own documentation and is independent of the core package.
 
-### Core Documentation
-- [Introduction to SAT](docs/introduction.md) - Start here if you're new!
-- [Terminology Reference](docs/terminology.md) - Comprehensive glossary of SAT concepts
-- [CNF Data Structures](docs/cnf.md) - Understanding the API
-- **[Schaefer's Dichotomy Theorem](docs/schaefer-dichotomy.md)** - Complete classification of P vs NP-complete SAT variants
-- **[Constraint Types](docs/constraint-types.md)** - Comprehensive taxonomy of Boolean constraints
-- **[3SAT Variants](docs/3sat-variants.md)** - NAE-3SAT, 1-in-3-SAT, random & structured instances
-- [2SAT Solver](docs/2sat-solver.md) - Polynomial-time algorithm
-- [DPLL Solver](docs/dpll-solver.md) - General SAT solving with backtracking
-- [CDCL Solver](docs/cdcl-solver.md) - Modern SAT solving with conflict-driven learning
-- [Horn-SAT Solver](docs/advanced-solvers.md#horn-sat) - Polynomial-time Horn formula solver
-- [XOR-SAT Solver](docs/xorsat-solver.md) - Polynomial-time XOR solver via Gaussian elimination
-- [WalkSAT Solver](docs/walksat-solver.md) - Randomized local search (incomplete but fast)
-- [Schöning's Algorithm](docs/schoening-solver.md) - Provably O(1.334^n) randomized 3SAT solver
-- [P-Bit Solver](docs/pbit-solver.md) - Probabilistic-bit Gibbs sampling / simulated annealing
-- [SAT Preprocessing](docs/preprocessing.md) - Simplification and decomposition techniques
-- [k-SAT to 3-SAT Reduction](docs/introduction.md#reducing-k-sat-to-3-sat) - Theory and implementation
-- [DIMACS Format](docs/dimacs.md) - Industry-standard file format for SAT solvers
-- [Problem Encodings](docs/problem-encodings.md) - Graph coloring, Sudoku, N-Queens, and more
-- [Benchmarking & Performance](docs/benchmarking.md) - Testing and comparing solvers
-- [Examples & Tutorials](docs/examples.md) - Practical usage
-- [Theory & References](docs/theory.md) - Papers and further reading
-- [Reading List](docs/reading-list.md) - Comprehensive bibliography of books, papers, and resources
+### Research Solvers (`research/`)
 
-### Research Documentation (15 Advanced Solvers)
-- [Research Overview](research/README.md) - **Complete documentation of all 15 research solvers** 🔬
-- [Algorithm Showcase](research/ALGORITHM_SHOWCASE.md) - Detailed algorithm descriptions and design motivation
-- [Benchmark Results](research/BENCHMARKS.md) - **100-2710× speedup results** across all solvers 🏆
-- [Validation Guide](research/benchmarks/VALIDATION_GUIDE.md) - How to reproduce and validate performance claims
+Fifteen experimental solvers that explore ideas beyond the textbook algorithms: conflict-graph pattern mining, community-based decomposition, lookahead, backbone detection, bandit-based branching, and bio-inspired approaches such as auctions, slime-mold networks, and protein folding. They are exploratory Python prototypes for studying an idea, not general-purpose solvers: on current code the package's own `solve_cdcl()` is faster than them on nearly every benchmark instance, and several fall back to CDCL internally.
+
+```bash
+python research/examples/example_cgpm.py     # also example_cobd.py, example_la_cdcl.py, example_bb_cdcl.py
+python research/tpm_sat/example.py           # each remaining solver has its own example.py
+```
+
+See [research/README.md](research/README.md) for the solvers. [research/BENCHMARKS.md](research/BENCHMARKS.md) records the original benchmark runs; note its status section, since the large speedups reported there were measured against an early CDCL baseline that had bugs and do not reproduce today.
+
+### Competition Solver (`competition/`)
+
+`competition/c/` contains a separate, standalone CDCL solver written in C11. It is meant to be competitive and educational at once: it implements what the [competition-solver documents](docs/competition_solvers.md) describe, such as inprocessing, proof logging, and cache-conscious data structures, and its design decisions and experiments are written up alongside the code. It is also where to turn when a formula is too large for the Python solvers.
+
+If its shared library is built (`make -C competition/c shared`), the Python package can call it directly:
+
+```python
+from bsat import CNFExpression, solve_c, is_c_solver_available
+
+cnf = CNFExpression.parse("(x | y) & (~x | z) & (~y | ~z)")
+if is_c_solver_available():
+    print(solve_c(cnf))
+```
+
+Everything else about it, including features, usage, benchmarks, and the embedding API, is documented in [competition/c/README.md](competition/c/README.md). [competition/README.md](competition/README.md) gives an overview of the directory, including the earlier Python prototypes.
+
+## Repository Layout
+
+```
+src/bsat/              The Python package
+docs/                  Theory, algorithm, and API documentation
+examples/              Runnable examples and problem encodings
+tests/                 Unit tests
+visualization_server/  Browser-based algorithm visualizer
+research/              Experimental research solvers
+competition/           Standalone C competition solver and Python prototypes
+dataset/               Benchmark instances
+```
 
 ## License
 
-MIT License - see LICENSE file for details.
+MIT License - see [LICENSE](LICENSE) for details.

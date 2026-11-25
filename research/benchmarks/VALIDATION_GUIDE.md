@@ -9,7 +9,22 @@ cd research/benchmarks
 ./reproduce_validation.sh
 ```
 
-This runs all validation levels and generates a complete validation report.
+This runs the validation levels in sequence and writes logs and reports to `validation_results/`.
+
+**Prerequisite:** the validation scripts import `benchmark.py`, which needs the third-party
+`tabulate` package (`pip install tabulate`). Without it every Python step fails with
+`ModuleNotFoundError`.
+
+**Known issues with `reproduce_validation.sh` (current state):**
+- Level 4 calls `run_full_benchmark.py`, which is no longer in the repository, so that step
+  cannot run (see Level 4 below for the closest current equivalent).
+- Each step is piped through `tee`, so the script's ✅/❌ banners reflect `tee`'s exit status, not
+  the Python script's. Always check the logs in `validation_results/` rather than the banners.
+
+**Status of the headline numbers:** the large speedups quoted in `BENCHMARKS.md` (e.g. CGPM-SAT
+2710×) were measured on 2025-10-16 against a baseline CDCL solver that was later found to have
+soundness bugs (fixed 2025-10-20). Running Levels 1-3 against the current code does **not**
+reproduce them; see "Reproducing Specific Claims" below.
 
 ## What Gets Validated
 
@@ -19,7 +34,8 @@ Our validation framework has **4 levels** that comprehensively prove the perform
 
 **File:** `validate_correctness.py`
 
-Verifies that all benchmark results are **actually correct**:
+Runs 14 solvers (DPLL, CDCL, the 4 original and 8 new-suite research solvers) on 8 generated
+problems and verifies that all results are **actually correct**:
 - **SAT results**: Checks that every solution truly satisfies all clauses
 - **UNSAT results**: Confirms with independent solvers (DPLL, CDCL)
 - **Inconsistencies**: Documents when different solvers return different results
@@ -46,6 +62,8 @@ Proves speedups are **reproducible and statistically significant**:
 - Calculates **95% confidence intervals**
 - Measures **coefficient of variation** (stability metric)
 - Reports **speedup with confidence bounds**
+- Problems: Random 3-SAT with 10, 15 and 25 variables (seed 42); solvers: CDCL (baseline), DPLL,
+  CoBD-SAT, LA-CDCL, CGPM-SAT and the 8 new-suite solvers
 
 **Why this matters:** A single lucky run proves nothing. This shows speedups are **stable and reproducible**.
 
@@ -87,21 +105,26 @@ python3 profile_solvers.py --output profile_report.md
 
 ### Level 4: Full Benchmark Suite ✅ COMPREHENSIVE
 
-**File:** `run_full_benchmark.py`
+**File:** `run_full_benchmark.py` — **no longer in the repository** (removed together with its
+output `benchmark_results_full.md`). It produced the 15-problem, 7-solver tables in `BENCHMARKS.md`.
 
-Runs the complete benchmark across **all problem types**:
-- 15 different problems
-- 7 different solvers
-- Multiple problem generators (modular, backbone, chain, circuit, random)
+The closest current equivalent is the comprehensive mode of `benchmark.py`:
+- 15 generated problems (3 each: modular, backbone, chain, circuit, random 3-SAT) — not the
+  identical problem list used for `BENCHMARKS.md`
+- 7 solvers by default (DPLL, CDCL, Schöning + CoBD-SAT, BB-CDCL, LA-CDCL, CGPM-SAT);
+  add `--all-solvers` for the 8 new-suite solvers as well
 
-**Why this matters:** Shows solvers excel on **different problem types** (not just cherry-picked examples).
+**Why this matters:** Shows how solvers behave on **different problem types** (not just cherry-picked examples).
 
 **Run separately:**
 ```bash
-python3 run_full_benchmark.py
+python3 benchmark.py --all --output benchmark_results.md
 ```
 
-**Output:** `benchmark_results_full.md` with complete results table
+**Output:** `benchmark_results.md` with complete results table
+
+For file-based suites (and all 18 registered solvers) use `run_all_benchmarks.py`; see
+`BENCHMARK_RUNNER_GUIDE.md`.
 
 ---
 
@@ -116,7 +139,7 @@ Complete validation with maximum confidence:
 ```
 
 **Runtime:** ~5-10 minutes
-**Output:** `validation_results/` directory with all reports
+**Output:** `validation_results/` directory with the Level 1-3 reports (Level 4 fails, see above)
 
 ### Quick Validation
 
@@ -144,8 +167,8 @@ validation_results/
 ├── statistical_results.csv         # Level 2 CSV data
 ├── profiling.log                   # Level 3 console output
 ├── profile_report.md               # Level 3 markdown report
-├── full_benchmark.log              # Level 4 console output
-└── benchmark_results_full.md       # Level 4 results table
+└── full_benchmark.log              # Level 4 console output (currently just the
+                                    # "can't open file run_full_benchmark.py" error)
 ```
 
 ### Key Files to Review
@@ -153,7 +176,6 @@ validation_results/
 1. **correctness_validation.log** - MUST show ✅ for all solvers
 2. **statistical_results.csv** - Import into spreadsheet for analysis
 3. **profile_report.md** - Review function-level breakdowns
-4. **benchmark_results_full.md** - Complete benchmark results
 
 ---
 
@@ -175,24 +197,29 @@ validation_results/
 
 ### Statistical Validation
 
-**Example output:**
+**Example output** (Random 3-SAT, 25 vars; actual output of `--runs 3` on the current code,
+2026-11-25, macOS, Python 3.12):
 ```
 CGPM-SAT:
-  Mean:   0.0023s ± 0.0002s
-  Median: 0.0022s
-  95% CI: [0.0021s, 0.0025s]
-  CV:     8.7% ✅ (very stable)
+  Mean:   0.0033s ± 0.0001s
+  Median: 0.0033s
+  Range:  [0.0032s, 0.0034s]
+  95% CI: [0.0032s, 0.0034s]
+  Runs:   3
+  CV:     2.3% ✅ (very stable)
 
   Speedup vs CDCL:
-    Mean:   2710.34×
-    95% CI: [2450.21×, 3012.67×]
+    Mean:   0.89×
+    95% CI: [0.86×, 0.92×]
+    Range:  [0.86×, 0.91×]
 ```
 
-**What this proves:**
-- Mean time is 0.0023s (averaged over 10 runs)
-- 95% confidence the true mean is between 0.0021s and 0.0025s
-- CV of 8.7% means very consistent performance
-- **Speedup is real and reproducible with high confidence**
+**How to read this:**
+- Mean time is 0.0033s (averaged over the runs)
+- 95% confidence the true mean is between 0.0032s and 0.0034s
+- CV of 2.3% means very consistent performance
+- A speedup below 1.0× means the solver is **slower** than the CDCL baseline (here CDCL took
+  0.0029s); a speedup claim is only supported when the whole confidence interval is above 1.0×
 
 ### Profiling Analysis
 
@@ -212,7 +239,7 @@ CGPM-SAT:
 
 ### Claim: "CGPM-SAT achieves 2710× speedup on Random 3-SAT (25 vars)"
 
-**Validate with:**
+**Check with:**
 ```bash
 python3 statistical_benchmark.py --runs 10
 ```
@@ -221,6 +248,12 @@ python3 statistical_benchmark.py --runs 10
 - Problem: "Random 3-SAT (25 vars) 🏆"
 - Solver: CGPM-SAT
 - Speedup vs CDCL with 95% CI
+
+**Current result: not reproduced.** The 2710× figure divides CGPM-SAT's time by a 9.9s CDCL run
+that (incorrectly) reported UNSAT on this satisfiable instance — a symptom of the CDCL soundness
+bugs fixed on 2025-10-20. With the current CDCL the same instance takes about 3ms for both
+solvers (CGPM-SAT ≈ 0.9× CDCL in the run shown above). The other historical speedups measured
+against that baseline (CoBD-SAT 1612×, LA-CDCL 529×, DPLL 2160×) do not reproduce either.
 
 ### Claim: "All SAT solutions are correct"
 
@@ -244,10 +277,13 @@ Make sure you're in the right directory:
 cd research/benchmarks
 ```
 
-And that research solvers are in the parent directory:
+And that the research solver packages are in the parent directory:
 ```bash
-ls ../cobd_sat.py ../cgpm_sat.py  # Should exist
+ls ../cobd_sat/ ../cgpm_sat/  # Should exist
 ```
+
+`ModuleNotFoundError: No module named 'tabulate'` means the `tabulate` package is missing
+(`pip install tabulate`).
 
 ### Correctness validation fails
 
@@ -273,7 +309,7 @@ ls ../cobd_sat.py ../cgpm_sat.py  # Should exist
 ### Profiling crashes with memory errors
 
 Profiling adds overhead. Try:
-- Using smaller problems (`--quick` mode)
+- Using smaller problems (edit the problem list in `profile_solvers.py`; it has no size option)
 - Increasing available memory
 - Profiling one solver at a time
 
@@ -294,7 +330,7 @@ Edit `profile_solvers.py` to profile specific problems.
 ### Export Data for Analysis
 
 Statistical results are in CSV format for easy import:
-```bash
+```python
 # Import into pandas
 import pandas as pd
 df = pd.read_csv('validation_results/statistical_results.csv')
@@ -306,12 +342,12 @@ df = pd.read_csv('validation_results/statistical_results.csv')
 
 Before claiming performance results publicly, verify:
 
-- [ ] `./reproduce_validation.sh` completes successfully
+- [ ] `./reproduce_validation.sh` completes and the logs in `validation_results/` show no errors (Level 4 excepted, see above)
 - [ ] Correctness validation shows ✅ for all solvers
 - [ ] Statistical CV < 20% for key benchmarks
 - [ ] Speedup confidence intervals don't include 1.0× (no speedup)
 - [ ] Profiling shows reasonable memory usage
-- [ ] Full benchmark matches results in `BENCHMARKS.md`
+- [ ] Benchmark results match what is claimed (the historical tables in `BENCHMARKS.md` currently do **not** match a re-run)
 
 ---
 
@@ -324,7 +360,7 @@ Performance claims validated with:
 - Correctness verification (all solutions verified)
 - Statistical analysis (10 runs, 95% CI)
 - Profiling analysis (algorithmic validation)
-- Comprehensive benchmarking (15 problems, 7 solvers)
+- Comprehensive benchmarking (15 problems, 7 solvers; historical run of 2025-10-16)
 
 Validation scripts: research/benchmarks/reproduce_validation.sh
 ```

@@ -1,5 +1,7 @@
 # Compact BVE reconstruction records
 
+> Historical snapshot (2026-09-07). Defaults, options and code locations described here have since changed; current behavior is in [README.md](../README.md), [FEATURES.md](../FEATURES.md) and [PRODUCTION_READINESS.md](../PRODUCTION_READINESS.md).
+
 BVE previously retained every removed parent clause for model reconstruction.
 It now stores a default pivot value followed by only one polarity's parents,
 choosing the polarity with the smaller total serialized word count. The record

@@ -1,5 +1,7 @@
 # Bounded reconstruction staging and ownership transfer
 
+> Historical snapshot (2026-09-07). Defaults, options and code locations described here have since changed; current behavior is in [README.md](../README.md), [FEATURES.md](../FEATURES.md) and [PRODUCTION_READINESS.md](../PRODUCTION_READINESS.md).
+
 BVE stages zero-delimited copies of removed clauses for reverse model
 reconstruction. Previously, staging used an uncharged whole-clause `memcpy`, then
 `elim_save` allocated another equally sized buffer and copied the record again.

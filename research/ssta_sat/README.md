@@ -75,7 +75,7 @@ CDCL Decision Making:
 - Guide search toward dense clusters
 ```
 
-**Result**: 2-3× speedup on instances with clustered solutions (projected)
+**Result**: 2-3× speedup on instances with clustered solutions was *projected* at design time; it has not been measured and no SSTA-SAT benchmark results are checked in. A spot check on `dataset/medium_tests/medium_suite` shows the opposite on small instances: the baseline `CDCLSolver` solves the 30-60 variable instances in ≤0.01s, while SSTA-SAT takes 0.07-1.5s (almost all of it WalkSAT sampling), and on a 70-variable instance (`medium_3sat_v070_c0298.cnf`, 0.1s for `CDCLSolver`) the run was aborted after more than 5 minutes, still in the sampling phase.
 
 ---
 
@@ -90,7 +90,11 @@ for seed in range(num_samples):
     sol = walksat(cnf, seed, max_flips=10000)
     if sol and sol not in solutions:
         solutions.append(sol)
+        if len(solutions) >= min_unique_solutions:
+            break  # enough unique solutions
 ```
+
+If fewer than 2 solutions are found (e.g. UNSAT or hard instances), topology analysis is skipped and the solver runs as plain VSIDS CDCL - after paying for up to `num_samples` WalkSAT attempts of 10,000 flips each.
 
 ### Phase 2: Topology Analysis
 
@@ -118,25 +122,30 @@ bridges = find_variables_differing_between_clusters(clusters)
 ```python
 # Variable selection with topology preference
 def pick_variable():
-    # Get VSIDS top candidates
-    candidates = vsids_top_k(unassigned)
+    # All unassigned variables are candidates
+    candidates = unassigned
 
     # Boost scores for topology-preferred variables
     for var in candidates:
         topo_score = 0.0
 
-        # Boost if appears in central solutions
-        if var in central_solution_variables:
-            topo_score += centrality_weight
+        # Boost from the (up to 5) most central solutions (weight 0.5)
+        topo_score += 0.5 * central_solution_consistency(var)
 
-        # Boost if bridge variable
+        # Boost if bridge variable (weight 0.3, normalized bridge score)
         if var in bridge_variables:
-            topo_score += bridge_weight
+            topo_score += 0.3 * bridge_score[var] / max_bridge_score
 
         combined_score = 0.7 * vsids[var] + 0.3 * topo_score
 
     return max(candidates, key=combined_score)
+
+def pick_phase(var):
+    # Majority value of var among the central solutions (True on ties)
+    return majority_value(var, central_solutions)
 ```
+
+**Implementation note**: the central-solution term currently sums the consistency of *both* values of a variable, so it evaluates to the same constant (0.5) for every variable. In practice only the bridge-variable term (present when more than one cluster is found) changes the variable order relative to VSIDS; the main effect of the topology analysis is on phase selection.
 
 ---
 
@@ -174,7 +183,7 @@ solver = SSTASATSolver(
     num_samples=100,              # More samples = better topology understanding
     distance_threshold=5,         # Hamming distance for edges (3-7 typical)
     use_topology_guidance=True,   # Enable topology-guided decisions
-    min_unique_solutions=20,      # Stop sampling after N unique solutions
+    min_unique_solutions=20,      # Stop sampling after N unique solutions (default: 10)
     vsids_decay=0.95,            # Standard CDCL parameters
 )
 ```
@@ -200,7 +209,7 @@ solver = SSTASATSolver(
 ## Complexity
 
 **Time**:
-- Sampling: O(num_samples × WalkSAT_time) ≈ 1-5 seconds
+- Sampling: O(num_samples × WalkSAT_time). Sub-second to a few seconds when WalkSAT finds solutions quickly; when it does not (hard or UNSAT instances) all `num_samples` × 10,000 flips are spent, which takes minutes in pure Python even at 30-70 variables
 - Topology: O(n² × m) where n=solutions, m=metrics ≈ 0.1-1 second
 - CDCL: Same as baseline with small topology lookup overhead
 
@@ -240,6 +249,17 @@ SSTA-SAT extends `CDCLSolver`:
 3. Phase selection: Use values from central solutions
 4. Otherwise: Standard CDCL (completeness preserved)
 
+### Statistics
+
+`solver.get_stats()` returns an `SSTAStats` object (CDCL stats plus `solutions_sampled`, `clusters_detected`, `topology_guided_decisions`, `central_solution_hits`; the last is never updated and stays 0). `solver.get_topology_statistics()` returns a dict with three sections: `sampling` (`num_samples_requested`, `num_solutions_found`, `min_unique_target`, plus sampler statistics), `topology` (`num_solutions`, `num_edges`, `avg_clustering`, `num_clusters`, `avg_cluster_size`, `largest_cluster_size`; empty if fewer than 2 solutions were sampled) and `guidance` (`topology_guided_decisions`, `central_solution_hits`).
+
+### Examples
+
+```bash
+# from the repository root
+python3 research/ssta_sat/example.py
+```
+
 ---
 
 ## References
@@ -266,7 +286,7 @@ SSTA-SAT demonstrates that **topological analysis of the solution space**, recen
 
 **✅ Likely Novel**: No prior work using topology to guide CDCL
 **✅ Theoretically Grounded**: Builds on 2024 topology theory
-**✅ Practically Feasible**: Sampling overhead 1-5s, small lookup cost
+**⚠️ Practical cost**: Sampling overhead ranges from sub-second to minutes (see Complexity); no measured speedup yet
 **✅ Educationally Valuable**: Connects SAT to graph theory and topology
 
 **Best suited for**:

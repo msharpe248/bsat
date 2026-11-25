@@ -1,5 +1,7 @@
 # Preserve queue order across conflict bumps
 
+> Historical snapshot (2026-09-06). Defaults, options and code locations described here have since changed; current behavior is in [README.md](../README.md), [FEATURES.md](../FEATURES.md) and [PRODUCTION_READINESS.md](../PRODUCTION_READINESS.md).
+
 The initial `--vmtf` policy moved variables immediately as conflict analysis
 visited them. That made graph traversal order determine the relative order of
 all variables involved in one conflict. The updated policy collects those

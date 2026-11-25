@@ -1,6 +1,6 @@
-# Competition SAT Solver
+# Competition SAT Solver — Python Prototype
 
-Optimized CDCL solver for SAT Competition, implementing two-watched literals, LBD clause management, and targeting performance competitive with industrial solvers like Kissat/CaDiCaL.
+Python CDCL prototype implementing two-watched literals, LBD clause management, adaptive restarts, and phase saving. It was the algorithm test bed (October–December 2025) for the competition effort; the solver that actually targets Kissat/CaDiCaL-class performance is the C implementation in [`../c/`](../c/README.md). See [`../FEATURE_COMPARISON.md`](../FEATURE_COMPARISON.md) for a side-by-side feature matrix.
 
 ## Directory Structure
 
@@ -8,15 +8,23 @@ Optimized CDCL solver for SAT Competition, implementing two-watched literals, LB
 competition/python/
 ├── cdcl_optimized.py          # Main CDCL solver with two-watched literals
 ├── inprocessing.py            # Inprocessing algorithms (subsumption, BVE)
+├── competition_solver.py      # DIMACS command-line wrapper (competition output format)
 ├── benchmark_speedup.py       # Main performance benchmark script
-├── tests/                     # Test suite and debugging scripts
+├── benchmark_restarts.py      # Luby vs Glucose (see ../docs/restart_comparison_results.md)
+├── benchmark_phase_saving.py  # Phase saving (see ../docs/phase_saving_results.md)
+├── benchmark_random_phase.py  # Random phase (see ../docs/random_phase_results.md)
+├── benchmark_adaptive.py      # Adaptive random phase (see ../docs/adaptive_random_phase.md)
+├── test_common_fixtures.py    # Shared fixture tests (../tests/fixtures), see ../TESTING.md
+├── tests/                     # Test suite and debugging scripts (see tests/README.md)
 │   ├── test_simple.py
 │   ├── test_correctness.py
 │   ├── test_comprehensive.py
+│   ├── test_competition_solver.py
+│   ├── test_soundness.py
 │   ├── test_inprocessing.py
 │   ├── test_inprocessing_soundness.py
 │   ├── benchmark_inprocessing.py
-│   └── debug_*.py, trace_*.py (historical debugging)
+│   └── debug_simple.py, trace_bug.py, test_watch_key_bug.py (historical debugging)
 └── README.md                  # This file
 ```
 
@@ -24,15 +32,24 @@ competition/python/
 
 ### cdcl_optimized.py
 Main competition solver implementation with:
-- **Two-watched literals**: O(1) amortized unit propagation (100-600× speedup)
+- **Two-watched literals** with blocking literals: O(1) amortized unit propagation (100-600× speedup)
 - **LBD clause management**: Glucose-style learned clause quality heuristic
-- **Glucose adaptive restarts**: Dynamic restarts based on LBD trends
+- **Restarts**: Glucose sliding-window AVG (default), Glucose EMA, or Luby (`restart_strategy`), with restart postponing
 - **Phase saving**: Remember variable polarities across restarts (50-134× speedup on structured problems)
+- **Random phase selection**: off by default; adaptive mode (default on) enables 5% random phases when the search looks stuck
 - **VSIDS heuristic**: Dynamic variable ordering
-- **1UIP clause learning**: First Unique Implication Point learning scheme
+- **1UIP clause learning** with MiniSat-style recursive clause minimization and on-the-fly subsumption
+- **Opt-in (default off)**: failed literal probing (`enable_probing`), blocked clause elimination (`enable_bce`), chronological backtracking (`enable_chrono_bt`), vivification (`enable_vivification`)
 - **Initial unit clause propagation**: Fixed soundness bug (October 20, 2025)
 
-**Status**: Production-ready, 114-188× average speedup on medium/competition instances
+**Status**: Prototype. The default configuration (`use_watched_literals=True`) passes the shared fixtures and agrees with the C solver on them; 114-188× average speedup over the original `src/bsat/cdcl.py` was measured in October 2025 on medium/competition instances. The legacy naive propagation mode (`use_watched_literals=False`) is **not reliable**: `tests/test_soundness.py` currently shows it reporting UNSAT on satisfiable instances (see [tests/README.md](tests/README.md)).
+
+### competition_solver.py
+Command-line wrapper that reads a DIMACS file and prints competition-format output (`s SATISFIABLE` / `s UNSATISFIABLE` / `s UNKNOWN`, `v ... 0`):
+
+```bash
+python competition_solver.py instance.cnf [--verbose] [--max-conflicts N] [--output FILE]
+```
 
 ### inprocessing.py
 Preprocessing techniques applied during search:
@@ -53,17 +70,23 @@ Main benchmark script comparing:
 ## Quick Start
 
 ```bash
-# Run core tests
+# Solve a DIMACS file
+python competition_solver.py ../../dataset/simple_tests/simple_suite/sat_v10.cnf
+
+# Run the shared fixture tests (10 tests)
+python test_common_fixtures.py
+
+# Run prototype tests
 cd tests/
-python test_comprehensive.py
+python test_correctness.py
 
 # Run main benchmark (takes ~8 minutes)
 python ../benchmark_speedup.py
+cd ..
 
-# Import and use solver
+# Import and use solver (from competition/python)
 python
->>> from cdcl_optimized import CDCLSolver
->>> import sys; sys.path.insert(0, '../../src')
+>>> from cdcl_optimized import CDCLSolver   # also puts ../../src on sys.path
 >>> from bsat import CNFExpression
 >>> cnf = CNFExpression.parse("(a | b) & (~a | c)")
 >>> solver = CDCLSolver(cnf, use_watched_literals=True)
@@ -76,7 +99,7 @@ python
 **Week 1 Results** (Post-Bug-Fix Validation, October 20, 2025):
 - Simple Tests (9 instances): 0.6× (overhead on trivial instances)
 - Medium Tests (10 instances): **113.9× average speedup**
-- Competition Tests (3 instances): **187.8× average speedup**
+- Competition Tests (3 instances): **187.8× average speedup** (the `dataset/sat_competition2025_small` set used here is not in the repository, so `benchmark_speedup.py` finds no instances for this suite)
 - Best speedup: **150,696× on easy_3sat_v018_c0075**
 
 See `../docs/benchmark_results.md` for detailed analysis.
@@ -117,15 +140,12 @@ See `../docs/benchmark_results.md` for detailed analysis.
 - BEST OF BOTH WORLDS: No overhead on easy, automatic help on hard
 - 22.70× faster than static on simple suite, 50.20× faster than baseline on medium
 
-**Week 8+** (Planned): ⏳
-- Scale testing on larger instances (1000-5000 variables)
-- Python profiling
-- Competition instance benchmarking
+**December 2025** (Complete): ✅
+- MiniSat-style clause minimization and blocking literals
+- Opt-in failed literal probing, blocked clause elimination, chronological backtracking, and vivification (added for parity with the C solver of the time)
 
-**Month 4-9** (Planned):
-- C implementation (10-100× faster than Python)
-- Novel algorithms (CGPM + CoBD)
-- SAT Competition 2026 submission
+**Afterwards**:
+- Development moved to the C implementation in [`../c/`](../c/README.md), which has since gone far beyond this prototype. The earlier plans for this prototype (scale testing on 1000-5000 variable instances, Python profiling, competition instance benchmarking) were not carried out in Python.
 
 ## References
 
@@ -144,11 +164,12 @@ See `../docs/` for comprehensive documentation:
 
 ## Contributing
 
-Tests are in `tests/`. All core tests should pass before committing changes.
+Tests are in `tests/` (see [tests/README.md](tests/README.md) for what each script does and its current result) plus `test_common_fixtures.py` in this directory.
 
-Run test suite:
+Run before committing changes:
 ```bash
+python test_common_fixtures.py     # 10 shared fixtures, all pass
 cd tests/
-python test_comprehensive.py
-python test_correctness.py
+python test_correctness.py         # 13 formulas vs the original solver, all pass
+python test_comprehensive.py       # 31 formulas; 28 pass (3 have wrong expected values, see tests/README.md)
 ```

@@ -1,5 +1,7 @@
 # Binary-resolution learned-clause minimization experiment
 
+> Historical snapshot (2026-09-07). Defaults, options and code locations described here have since changed; current behavior is in [README.md](../README.md), [FEATURES.md](../FEATURES.md) and [PRODUCTION_READINESS.md](../PRODUCTION_READINESS.md).
+
 The prototype adds an opt-in `--binary-minimize` pass after conventional
 minimization and before final LBD recording and backjump selection. For learned
 clause `(a | b | rest)` and live binary `(a | ~b)`, resolution proves

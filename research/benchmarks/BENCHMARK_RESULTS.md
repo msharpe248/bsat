@@ -7,6 +7,21 @@ Comprehensive benchmarking results for all SAT solvers on medium-difficulty test
 **Dataset**: `medium_tests` - 53 generated instances
 **Date**: October 17, 2025
 **Timeout**: 30 seconds per solver
+**Solvers**: the six solvers that existed at the time (DPLL, CDCL, CoBD-SAT, BB-CDCL, LA-CDCL, CGPM-SAT)
+**Raw data**: `../../dataset/results/medium_suite_results_oct_2025/`
+
+> **Historical results - read before quoting.** This run predates the soundness fixes made to the
+> baseline `bsat` CDCL solver on October 20, 2025 (false-UNSAT answers and learned clauses that were
+> never used). In this data set CDCL returns UNSAT on the satisfiable `easy_3sat_v020_c0084.cnf`
+> and times out on 27/53 instances; neither reflects the current CDCL solver. The CDCL row, and
+> every conclusion below about research solvers beating "traditional CDCL", therefore describe the
+> October 17, 2025 code only. The suite has not been re-run with all current solvers; use the
+> commands at the end of this file to regenerate current numbers.
+>
+> For orientation only, a partial re-run on the current code (2026-11-25; DPLL, CDCL, LA-CDCL and
+> CGPM-SAT only, 10 s timeout instead of 30 s) gave: CDCL 50 first places and 0 timeouts; CGPM-SAT 2
+> first places and 2 timeouts; LA-CDCL 1 first place and 8 timeouts; DPLL 0 first places and 9
+> timeouts, with no SAT/UNSAT disagreements. The ranking below is therefore reversed for CDCL.
 **Instance Range**: 10-120 variables, varying difficulty
 
 ### Instance Distribution
@@ -33,7 +48,7 @@ Comprehensive benchmarking results for all SAT solvers on medium-difficulty test
 ### CGPM-SAT: Clear Winner
 - **Dominant performance**: 25 first-place finishes (47% win rate)
 - **Perfect completion**: 0 timeouts across all 53 instances
-- **Consistent speed**: Solved instances ranging from 0.0012s to 4.3s
+- **Consistent speed**: Solve times ranged from 0.0004s to 11.4s
 - **Versatile**: Excelled on both SAT and UNSAT instances
 
 ### DPLL: Strong Baseline
@@ -54,7 +69,7 @@ Comprehensive benchmarking results for all SAT solvers on medium-difficulty test
 
 ### Research Solvers
 
-**CoBD-SAT** (Constraint-Based):
+**CoBD-SAT** (Community-Based Decomposition):
 - Consistent third-place finisher (23 instances)
 - No first-place finishes
 - 6 timeouts
@@ -70,25 +85,25 @@ Comprehensive benchmarking results for all SAT solvers on medium-difficulty test
 
 Fast SAT instances:
 ```
-medium_3sat_v040_c0170.cnf: 0.0012s (RANK=1)
-medium_3sat_v042_c0178.cnf: 0.0016s (RANK=1)
+easy_3sat_v018_c0075.cnf: 0.0012s (RANK=1)
+easy_3sat_v020_c0084.cnf: 0.0016s (RANK=1)
 ```
 
 Challenging instances:
 ```
-medium_3sat_v015_c0064.cnf: 0.8225s (RANK=1, UNSAT)
-medium_3sat_v070_c0298.cnf: 1.4183s (RANK=1, SAT)
-medium_3sat_v074_c0315.cnf: 3.9783s (RANK=1, UNSAT)
-medium_3sat_v078_c0332.cnf: 4.3292s (RANK=1, UNSAT)
+hard_3sat_v090_c0384.cnf: 0.8225s (RANK=1, SAT)
+hard_3sat_v099_c0422.cnf: 1.4183s (RANK=1, SAT)
+hard_3sat_v096_c0409.cnf: 3.9783s (RANK=1, UNSAT)
+hard_3sat_v102_c0435.cnf: 4.3292s (RANK=1, UNSAT)
 ```
 
 ### DPLL Wins
 
 DPLL excelled on easier instances with simple structure:
 ```
-easy_3sat_v010_c0042.cnf: 0.0001s
-easy_3sat_v020_c0084.cnf: 0.0008s
-sat_known_v040.cnf: 0.0003s
+easy_3sat_v012_c0050.cnf: 0.0003s (UNSAT)
+easy_3sat_v024_c0100.cnf: 0.0007s (SAT)
+sat_known_v040.cnf: 0.0008s (SAT)
 ```
 
 ## Conclusions
@@ -103,7 +118,7 @@ sat_known_v040.cnf: 0.0003s
 
 - **Graph-based heuristics** (CGPM) show significant advantage over traditional approaches
 - **Backbone analysis** (BB-CDCL) adds overhead that doesn't pay off on these instances
-- **Pure CDCL** needs optimizations (restarts, VSIDS, watched literals) to compete
+- **Pure CDCL** performed poorly in this run; the solver already had VSIDS and restarts, and its poor showing was later traced to the soundness bugs noted at the top of this file
 
 ### Future Work
 
@@ -114,7 +129,8 @@ sat_known_v040.cnf: 0.0003s
 
 ## Running the Benchmarks
 
-Generate test suite:
+The test suite is checked in under `../../dataset/medium_tests/medium_suite/`. To regenerate it
+(optional; deletes and recreates `../../dataset/medium_tests`), from `research/benchmarks`:
 ```bash
 ./generate_medium_tests.py
 ```

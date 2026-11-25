@@ -1,5 +1,7 @@
 # Restart trail reuse experiment
 
+> Historical snapshot (2026-09-07). Defaults, options and code locations described here have since changed; current behavior is in [README.md](../README.md), [FEATURES.md](../FEATURES.md) and [PRODUCTION_READINESS.md](../PRODUCTION_READINESS.md).
+
 ## Hypothesis and reference
 
 The preceding minimum-interval experiment found that more frequent root

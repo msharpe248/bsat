@@ -1,5 +1,7 @@
 # Fresh-input VMTF/congruence confirmation
 
+> Historical snapshot (2026-09-08). Defaults, options and code locations described here have since changed; current behavior is in [README.md](../README.md), [FEATURES.md](../FEATURES.md) and [PRODUCTION_READINESS.md](../PRODUCTION_READINESS.md).
+
 This experiment freezes a two-by-two comparison of VMTF and congruence. All four
 profiles retain chronology, equivalence processing with a 100-million-work
 budget, and alternating search. Each run has a 12-second solving-thread CPU

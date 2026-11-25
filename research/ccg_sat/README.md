@@ -29,6 +29,14 @@ This implementation builds on causality analysis concepts but applies them in a 
 | **Scope** | Single conflict analysis | Multi-conflict chains |
 | **Application** | Understanding solutions | Improving search efficiency |
 
+### Implementation Status
+
+The current code is a simplified version of the design described below:
+
+- In `CCGSATSolver._analyze_conflict()` the list of learned clauses that participated in a conflict is left empty (`participating = []`), so **no `clause → conflict` edges are ever recorded**. The graph only contains `conflict → learned clause` edges: every conflict node has out-degree 1 and every learned-clause node out-degree 0 (avg out-degree 0.5, max 1). Multi-conflict causal chains are therefore not yet tracked.
+- As a consequence, the "root causes" are simply the earliest conflict nodes, the `avg_out_degree > 3.0` rule can never fire, and a causality restart is triggered only at the periodic check (every 1000 conflicts) once those earliest conflicts are more than `old_age_threshold` conflicts old. On short solves (fewer than ~`old_age_threshold` conflicts) CCG-SAT behaves like the base `bsat` `CDCLSolver` with Luby restarts.
+- When the graph reaches `max_causality_nodes`, new nodes are no longer added (old nodes are not evicted).
+
 ---
 
 ## Overview
@@ -142,8 +150,9 @@ def should_restart(solver):
         return True  # Causality-guided restart
 
     # Check average out-degree (cascading conflicts)
+    # (code: score = min(1.0, avg_out_degree / 5.0) when avg > 3.0; restart if score >= 0.7)
     stats = solver.causality_graph.analyze_causality_chains()
-    if stats['avg_out_degree'] > 3.0:
+    if stats['avg_out_degree'] >= 3.5:
         return True  # Many causal chains → restart
 
     # Fall back to standard heuristic
@@ -153,6 +162,8 @@ def should_restart(solver):
 ---
 
 ## Usage
+
+Run these snippets from the repository root with `bsat` importable, e.g. `PYTHONPATH=src:. python3 your_script.py` (or `pip install -e .` and run from the repo root).
 
 ### Basic Usage
 
@@ -171,7 +182,7 @@ solver = CCGSATSolver(
     max_causality_nodes=10000  # Memory limit
 )
 
-# Solve
+# Solve (returns None for UNSAT, and also if max_conflicts, default 1,000,000, is exceeded)
 result = solver.solve()
 
 if result:
@@ -241,7 +252,7 @@ if ccg_stats['enabled']:
 **Time**:
 - Causality graph update: O(1) per conflict (add node + edges)
 - Root cause analysis: O(n) where n = graph nodes (done every 1000 conflicts)
-- Overall overhead: <3% runtime increase
+- Overall overhead: expected to be small (<3% design estimate; not benchmarked)
 
 **Space**:
 - Per-conflict node: ~100 bytes (node + edges)
@@ -250,7 +261,7 @@ if ccg_stats['enabled']:
 
 **Memory Management**:
 - Graph capped at `max_causality_nodes` to prevent unbounded growth
-- Oldest nodes dropped when limit reached (FIFO)
+- Once the limit is reached, new nodes are not added (existing nodes are kept; there is no eviction)
 
 ---
 
@@ -258,11 +269,11 @@ if ccg_stats['enabled']:
 
 | Metric | Standard CDCL | CCG-SAT |
 |--------|--------------|---------|
-| **Restart Heuristic** | Static (Luby, geometric) | Causality-guided |
+| **Restart Heuristic** | Static (Luby, geometric) | Causality-guided, falling back to Luby |
 | **Conflict Analysis** | Single-conflict (implication graph) | Multi-conflict chains |
 | **Adaptivity** | Fixed strategy | Learns from causal structure |
 | **Root Cause Detection** | None | Identifies high-impact clauses |
-| **Overhead** | Minimal | Small (~3%) |
+| **Overhead** | Minimal | Small (~3% estimate, not benchmarked) |
 
 ---
 
@@ -286,13 +297,17 @@ if ccg_stats['enabled']:
    - Extends CDCLSolver with causality tracking
    - Overrides `_analyze_conflict()` to update graph
    - Overrides `_should_restart()` for causality-guided restarts
+   - Overrides `solve(max_conflicts=1000000)` with its own CDCL loop
    - Extended statistics (causality_restarts, root_causes_detected)
 
 ### Metrics Tracked
 
+On `solver.stats` (`CCGStats`) and in `get_causality_statistics()`:
 - `causality_restarts`: Restarts triggered by causality analysis
-- `root_causes_detected`: Number of root causes identified
+- `root_causes_detected`: Number of root causes identified at the last causality restart
 - `causality_nodes`: Current graph size (conflicts + learned clauses)
+
+Under `get_causality_statistics()['graph']`:
 - `avg_out_degree`: Average causal impact per node
 - `max_out_degree`: Maximum causal impact (strongest root cause)
 
@@ -372,7 +387,7 @@ See `example.py` for working demonstrations:
 - Detailed causality graph analysis
 - Root cause detection and restart decisions
 
-Run examples:
+Run examples (from the repository root; the script sets up its own import path):
 ```bash
 python3 research/ccg_sat/example.py
 ```

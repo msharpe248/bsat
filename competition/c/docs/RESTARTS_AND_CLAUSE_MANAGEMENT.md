@@ -1,5 +1,7 @@
 # Restart strategies and clause management
 
+> Historical snapshot (reviewed September 2026). Defaults, options and code locations described here have since changed; current behavior is in [README.md](../README.md), [FEATURES.md](../FEATURES.md) and [PRODUCTION_READINESS.md](../PRODUCTION_READINESS.md).
+
 This describes the C implementation in `src/solver.c`, reviewed September 2026.
 Performance depends on the input; selecting a restart strategy does not guarantee
 that an instance finishes within a resource limit.

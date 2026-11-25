@@ -42,12 +42,12 @@ After some decisions:
   d: never selected
 
 UCB1 scores:
-  a: 2.5 + 1.4*sqrt(ln(16)/10) = 3.17  (exploitation)
-  b: 3.0 + 1.4*sqrt(ln(16)/5) = 4.07   (high avg + some exploration)
-  c: 1.0 + 1.4*sqrt(ln(16)/1) = 3.36   (low avg but exploration bonus)
+  a: 2.5 + 1.4*sqrt(ln(16)/10) = 3.24  (exploitation)
+  b: 3.0 + 1.4*sqrt(ln(16)/5) = 4.04   (high avg + some exploration)
+  c: 1.0 + 1.4*sqrt(ln(16)/1) = 3.33   (low avg but exploration bonus)
   d: ∞ (never tried → explore first)
 
-Decision: Select d (never tried) or b (best UCB score)
+Decision: Select d (never tried → infinite score); among tried variables b has the best UCB score
 ```
 
 ---
@@ -75,13 +75,13 @@ def ucb1_score(variable):
 
 ```python
 def compute_reward(outcome):
-    """Assign rewards based on decision outcome."""
+    """Assign rewards based on decision outcome (HybridReward defaults)."""
     if outcome == 'solution_found':
         return 100.0  # Huge reward!
 
     if outcome == 'conflict':
-        backtrack_penalty = backtrack_distance * 0.5
-        return -(5.0 + backtrack_penalty)  # Penalty
+        backtrack_penalty = backtrack_distance * 0.8
+        return -(4.0 + backtrack_penalty)  # Penalty
 
     if outcome == 'propagations':
         return num_propagations * 0.4  # Reward progress
@@ -157,9 +157,9 @@ solver = MABSATSolver(
 ## Complexity
 
 **Time**:
-- UCB1 computation: O(1) per variable selection
+- UCB1 computation: O(1) per variable, O(unassigned variables) per decision (scores are recomputed for every candidate)
 - Reward computation: O(1) per decision
-- Overall overhead: <2% runtime increase
+- Overall overhead: not benchmarked. In a spot check on `dataset/medium_tests/medium_suite` (70- and 80-variable random 3-SAT), MAB-SAT needed ~4× the conflicts and ~7× the time of the baseline `CDCLSolver` (VSIDS); on the easier instances the two were equal.
 
 **Space**:
 - Per-variable statistics: O(variables)
@@ -174,7 +174,7 @@ solver = MABSATSolver(
 | **Exploration** | None (always exploit) | Adaptive via UCB1 |
 | **Exploitation** | Activity-based | Reward-based |
 | **Adaptivity** | Fixed strategy | Learns from outcomes |
-| **Overhead** | Minimal | Small (<2%) |
+| **Overhead** | Minimal | Per-decision scan of all unassigned variables; can be several times slower than VSIDS (see Complexity) |
 
 ---
 
@@ -203,6 +203,15 @@ solver = MABSATSolver(
 - `exploration_decisions`: Never-tried variables selected
 - `exploitation_decisions`: Known-good variables selected
 - `avg_reward`: Average reward across all decisions
+
+These are attributes of `solver.stats` (`MABStats`). `solver.get_mab_statistics()` returns `enabled`, `exploration_constant` and, when enabled, nested `bandit` (`total_selections`, `total_variables`, `variables_selected`, `avg_reward`, `exploration_decisions`, `exploitation_decisions`, `exploration_rate`) and `rewards` (`total_computed`, `positive_rewards`, `negative_rewards`, `total_reward`, `avg_reward`) dicts.
+
+### Examples
+
+```bash
+# from the repository root
+python3 research/mab_sat/example.py
+```
 
 ---
 
@@ -235,7 +244,7 @@ MAB-SAT is an **educational reimplementation** demonstrating how multi-armed ban
 **❌ NOT Novel**: This is established work from MapleSAT/Kissat
 **✅ Educational**: Clean code showing UCB1 for SAT
 **✅ Well-Documented**: Explains exploration/exploitation tradeoff
-**✅ Fully Functional**: Correctly implements UCB1 approach
+**✅ Functional**: Implements plain UCB1 variable selection (it replaces VSIDS; it is not MapleSAT's LRB or Kissat's heuristic switching)
 
 **Key Takeaway**: UCB1 provides a principled way to balance exploration (trying new variables) with exploitation (choosing historically good variables), adapting based on observed rewards.
 

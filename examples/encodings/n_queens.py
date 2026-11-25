@@ -11,7 +11,7 @@ This is a classic constraint satisfaction problem demonstrating:
 """
 
 from bsat import CNFExpression, Clause, Literal, solve_sat, solve_cdcl
-from typing import List, Dict
+from typing import List, Dict, Tuple
 
 
 def encode_n_queens(n: int) -> CNFExpression:

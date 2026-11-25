@@ -1,5 +1,7 @@
 # C Solver Data Structures
 
+> Historical snapshot (written 2025-10-22, partly revised 2026-09-07). Defaults, options and code locations described here have since changed; current behavior is in [README.md](../README.md), [FEATURES.md](../FEATURES.md) and [PRODUCTION_READINESS.md](../PRODUCTION_READINESS.md).
+
 Complete reference for all data structures and types in the BSAT C solver.
 
 ## Core Types (include/types.h)

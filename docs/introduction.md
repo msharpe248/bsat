@@ -211,9 +211,9 @@ Every clause has exactly 3 literals.
 **Example**: `(x ∨ y ∨ z) ∧ (¬x ∨ y ∨ ¬z) ∧ (x ∨ ¬y ∨ ¬z)`
 
 **Special property**: 3-SAT is **NP-complete**!
-- This was the first NP-complete problem ever proven (Cook-Levin theorem, 1971)
+- SAT was the first problem ever proven NP-complete (Cook-Levin theorem, 1971), and it stays NP-complete when restricted to 3-SAT
 - No known polynomial-time algorithm
-- Worst-case requires exponential time (2ⁿ)
+- All known algorithms take exponential time in the worst case
 - BUT: Modern solvers are very practical for real-world instances
 
 ### General SAT
@@ -403,11 +403,11 @@ Consider `(x ∨ y ∨ z)` — all three variables must not be simultaneously fa
 
 They are **NOT** the same! The 2-SAT conjunction is more restrictive — it requires at least **two** of the three variables to be true, while the original 3-SAT clause only requires at least **one**.
 
-### The Real Problem: Exponential Blowup
+### The Real Problem: 2-SAT Cannot Express It
 
-To correctly encode a 3-SAT formula in 2-SAT (if possible), you'd need to enumerate all possible ways variables could satisfy the clause, leading to **exponentially many** 2-SAT clauses.
+No set of 2-literal clauses — of any size, even with auxiliary variables — has exactly the satisfying assignments of `(a ∨ b ∨ c)`.
 
-For example, `(a ∨ b ∨ c)` is satisfied by 7 out of 8 possible assignments. To express "at least one of these 7 assignments" using only 2-SAT constraints would require encoding the entire truth table — exponential in the number of variables.
+The reason: the solutions of any 2-SAT formula are closed under bitwise **majority** (the majority of three solutions is again a solution), and this stays true after hiding auxiliary variables. But `(a ∨ b ∨ c)` is satisfied by (T,F,F), (F,T,F) and (F,F,T), whose majority is (F,F,F) — which falsifies it.
 
 ### Structural Difference
 
@@ -469,13 +469,13 @@ The problem is that truth tables grow **exponentially**:
 
 | Variables | Rows | Time at 1 billion/sec | Storage (1 bit/row) |
 |-----------|------|----------------------|---------------------|
-| 10 | 1,024 | < 1 microsecond | 128 bytes |
+| 10 | 1,024 | 1 microsecond | 128 bytes |
 | 20 | 1,048,576 | 1 millisecond | 128 KB |
 | 30 | 1,073,741,824 | 1 second | 128 MB |
 | 40 | 1,099,511,627,776 | 18 minutes | 128 GB |
 | 50 | 1,125,899,906,842,624 | 13 days | 128 TB |
 | 60 | 1,152,921,504,606,846,976 | 36 years | 128 PB |
-| 100 | 2¹⁰⁰ | **40 billion years** | 128 million TB |
+| 100 | 2¹⁰⁰ | **40 trillion years** | ~10¹⁷ TB |
 
 **Real-world SAT problems often have hundreds or thousands of variables!**
 
@@ -503,7 +503,7 @@ Modern SAT solvers can solve problems with **millions of variables** that would 
 
 **Brute force (truth table)**:
 - Rows to check: 2¹⁰⁰⁰ ≈ 10³⁰¹
-- Time: Longer than age of universe × 10²⁸⁰
+- Time: Longer than age of universe × 10²⁷⁰
 
 **Modern SAT solver (CDCL)**:
 - Time: Often < 1 second

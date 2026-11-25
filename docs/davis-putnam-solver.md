@@ -247,6 +247,11 @@ else:
     print("UNSAT")
 ```
 
+> **Caveat (current implementation)**: the SAT/UNSAT verdict is reliable, but when the resolution
+> rule was needed, the returned assignment is not fully reconstructed for the eliminated variables
+> and may not satisfy the formula. Check it with `cnf.evaluate(result)`, or use `solve_sat()` /
+> `solve_cdcl()` when you need a guaranteed model.
+
 ### With Statistics
 
 ```python
@@ -292,7 +297,8 @@ from bsat import solve_davis_putnam, CNFExpression
 cnf = CNFExpression.parse("(x | y) & (~x | z)")
 result = solve_davis_putnam(cnf)
 
-# Result: {'x': True, 'y': True, 'z': True}
+# Possible result: {'x': False, 'y': True, 'z': True}
+# (solved by pure literal elimination alone; the exact assignment can vary between runs)
 ```
 
 ### Example 2: Simple UNSAT
@@ -315,8 +321,8 @@ result = solve_davis_putnam(cnf)
 ```python
 from bsat import get_davis_putnam_stats, CNFExpression
 
-# Formula that causes clause growth
-formula = "(a | b) & (a | c) & (~a | d) & (~a | e)"
+# Formula with no unit clauses and no pure literals, so resolution is required
+formula = "(a | b | c) & (a | ~b | ~c) & (~a | b | ~c) & (~a | ~b | c)"
 cnf = CNFExpression.parse(formula)
 
 result, stats = get_davis_putnam_stats(cnf)

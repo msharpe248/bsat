@@ -94,14 +94,17 @@ assert cnf.evaluate(solution)  # Always True for positive formulas
 - **Positive monotone logic:** "More is better" scenarios
 - **Optimization:** Finding minimal satisfying assignments
 
-#### Warning: Not Always Tractable!
+#### Warning: Related Problems Are Hard!
 
 ```python
-# Positive 3SAT is NP-complete despite all literals being positive!
+# A formula with only positive clauses is always SAT (set everything True)...
 positive_3sat = "(x | y | z) & (x | w | v) & (y | z | w)"
 
-# Why? Width = 3, not covered by Schaefer's 1-valid case
-# 1-valid guarantees SAT but doesn't solve minimum assignment problem
+# ...but two closely related problems are NP-hard:
+# 1. Monotone 3SAT: every clause is all-positive OR all-negative
+monotone_3sat = "(x | y | z) & (~x | ~w | ~v) & (y | z | w)"
+# 2. Finding a satisfying assignment with the fewest True variables
+#    (this is the hitting set / vertex cover problem)
 ```
 
 ---
@@ -334,7 +337,10 @@ def solve_dual_horn(cnf):
     3. Negate solution back
     """
     # Step 1: Negate formula
-    negated_cnf = negate_all_literals(cnf)
+    negated_cnf = CNFExpression([
+        Clause([Literal(lit.variable, not lit.negated) for lit in clause.literals])
+        for clause in cnf.clauses
+    ])
 
     # Step 2: Solve as Horn
     horn_solution = solve_horn_sat(negated_cnf)
@@ -364,10 +370,13 @@ def solve_dual_horn(cnf):
 ```python
 # Dual-Horn: backward chaining from goal
 goal_rules = """
-(~goal_achieved) &              # Goal must be achieved
-(task_a | ~goal_achieved) &     # Need task_a for goal
-(task_b | task_c | ~task_a) &   # Need task_b OR task_c for task_a
+(goal_achieved) &
+(task_a | ~goal_achieved) &
+(task_b | task_c | ~task_a)
 """
+# Clause 1: goal must be achieved
+# Clause 2: need task_a for goal
+# Clause 3: need task_b OR task_c for task_a
 
 # Reasoning backwards:
 #   goal_achieved needed → task_a needed
@@ -387,8 +396,8 @@ goal_rules = """
 ```
 (x ∨ ¬y)               # One positive, one negative (2SAT)
 (x ∨ y ∨ ¬z)           # Two positive, one negative (3SAT)
-(¬x ∨ y ∨ z)           # Two positive, one negative (Horn!)
-(x ∨ ¬y ∨ ¬z)          # One positive, two negative (dual-Horn!)
+(¬x ∨ y ∨ z)           # Two positive, one negative (dual-Horn!)
+(x ∨ ¬y ∨ ¬z)          # One positive, two negative (Horn!)
 (x ∨ y ∨ z ∨ ¬w)       # Mixed 4SAT
 ```
 
@@ -399,7 +408,7 @@ Mixed polarity formulas can still fall into tractable cases:
 - **(x ∨ ¬y)** - Mixed but width 2 → 2SAT (tractable) ✅
 - **(¬x ∨ ¬y ∨ z)** - Mixed but Horn → tractable ✅
 - **(x ∨ y ∨ ¬z)** - Mixed but dual-Horn → tractable ✅
-- **(x ∨ y ∨ z)** - Mixed 3SAT → NP-complete ❌
+- **(x ∨ y ∨ ¬z) ∧ (¬x ∨ ¬y ∨ z)** - Width 3, neither all-Horn nor all-dual-Horn → general 3SAT, NP-complete ❌
 
 **Key insight:** Polarity alone doesn't determine complexity—must consider width and structure!
 
@@ -464,7 +473,7 @@ Result: (w)  → w must be True
 
 #### BSAT Usage
 
-All BSAT solvers use unit propagation as preprocessing:
+BSAT's DPLL and CDCL solvers apply unit propagation:
 
 ```python
 from bsat import solve_sat, CNFExpression
@@ -529,7 +538,7 @@ print(f"Is 2SAT? {is_2sat(cnf)}")  # True
 
 result = solve_2sat(cnf)
 print(f"Solution: {result}")
-# Possible output: {'x': False, 'y': False, 'z': False}
+# Possible output: {'x': True, 'y': False, 'z': True}
 ```
 
 **Complexity:** O(n + m) using SCC algorithm (Kosaraju or Tarjan)
@@ -666,9 +675,9 @@ cnf_5sat = CNFExpression([clause_5sat])
 # Reduce to 3SAT (introduces auxiliary variables)
 cnf_3sat, aux_map, stats = reduce_to_3sat(cnf_5sat)
 
-print(f"Original clauses: {stats['original_clauses']}")
-print(f"Reduced clauses: {stats['reduced_clauses']}")
-print(f"Auxiliary variables: {stats['auxiliary_vars_added']}")
+print(f"Original clauses: {stats.original_clauses}")
+print(f"Reduced clauses: {stats.reduced_clauses}")
+print(f"Auxiliary variables: {stats.auxiliary_variables}")
 
 # Original: 1 clause with 5 literals
 # Reduced: 3 clauses with ≤ 3 literals each
@@ -742,9 +751,9 @@ k variables  →  2^(k-1) CNF clauses
 ✅ **Implemented:** `src/bsat/xorsat.py`
 
 ```python
-from bsat import solve_xorsat
+from bsat import solve_xorsat, CNFExpression, Clause, Literal
 
-# Note: BSAT expects CNF encoding of XOR
+# Note: solve_xorsat expects CNF encoding of XOR
 # x ⊕ y = 1 encoded as (x ∨ y) ∧ (¬x ∨ ¬y)
 
 cnf_xor = CNFExpression([
@@ -844,7 +853,7 @@ Number of clauses: C(4, 3) = 4
 
 #### BSAT Status
 
-❌ **No native cardinality support**
+❌ **No native cardinality support in the pure-Python solvers** (the optional C-backed `CSATSolver` has `add_atmost()`, `add_pb_le()` and `add_xor()`)
 
 Workaround: Encode as CNF manually
 
@@ -1061,8 +1070,8 @@ one_in_three = encode_1_in_k(['x', 'y', 'z'])
 
 | Constraint Type | Width | Polarity | Semantics | Complexity | BSAT Status |
 |----------------|-------|----------|-----------|------------|-------------|
-| **0-Valid** | Any | All negative | All-false works | O(1) | ❌ Not implemented |
-| **1-Valid** | Any | All positive | All-true works | O(1) | ❌ Not implemented |
+| **0-Valid** | Any | ≥1 negative per clause | All-false works | O(1) | ❌ Not implemented |
+| **1-Valid** | Any | ≥1 positive per clause | All-true works | O(1) | ❌ Not implemented |
 | **2SAT** | ≤2 | Any | OR clauses | O(n+m) | ✅ `twosatsolver.py` |
 | **Horn** | Any | ≤1 positive | Implications | O(n+m) | ✅ `hornsat.py` |
 | **Dual-Horn** | Any | ≤1 negative | Reverse impl. | O(n+m) | ❌ Not implemented |
@@ -1092,6 +1101,8 @@ one_in_three = encode_1_in_k(['x', 'y', 'z'])
 ### Example 1: Automatic Classification
 
 ```python
+from bsat import CNFExpression, is_2sat, is_horn_formula
+
 def classify_and_recommend(cnf):
     """
     Classify CNF and recommend solver
@@ -1099,27 +1110,24 @@ def classify_and_recommend(cnf):
     Returns:
         (constraint_type, solver, complexity)
     """
-    # Check width
-    max_width = max(len(clause.literals) for clause in cnf.clauses)
-
-    # Check polarity
-    all_positive = all(
-        all(not lit.negated for lit in clause.literals)
+    # Check polarity: does every clause have a positive / a negative literal?
+    one_valid = all(
+        any(not lit.negated for lit in clause.literals)
         for clause in cnf.clauses
     )
-    all_negative = all(
-        all(lit.negated for lit in clause.literals)
+    zero_valid = all(
+        any(lit.negated for lit in clause.literals)
         for clause in cnf.clauses
     )
 
     # Classification
-    if all_negative:
+    if zero_valid:
         return ("0-valid", "trivial_false", "O(1)")
 
-    if all_positive:
+    if one_valid:
         return ("1-valid", "trivial_true", "O(1)")
 
-    if max_width <= 2:
+    if is_2sat(cnf):
         return ("2SAT", "solve_2sat", "O(n+m)")
 
     if is_horn_formula(cnf):
@@ -1133,13 +1141,16 @@ def classify_and_recommend(cnf):
 
 
 # Usage
-formula = "(~x | ~y | z) & (~z | w)"
+formula = "x & (~x | ~y | z) & (~z | ~w)"
 cnf = CNFExpression.parse(formula)
 
 constraint_type, solver, complexity = classify_and_recommend(cnf)
 print(f"Type: {constraint_type}")
 print(f"Recommended solver: {solver}")
 print(f"Complexity: {complexity}")
+# Type: Horn-SAT
+# Recommended solver: solve_horn_sat
+# Complexity: O(n+m)
 ```
 
 ### Example 2: Encoding Sudoku Constraints
@@ -1219,7 +1230,7 @@ def encode_graph_3coloring_as_nae(edges):
 - **[Schaefer's Dichotomy](schaefer-dichotomy.md)** - Complete theory of Schaefer's 6 tractable cases
 - **[3SAT Variants](3sat-variants.md)** - Deep dive into NAE-3SAT, 1-in-3-SAT, etc.
 - **[2SAT Solver](2sat-solver.md)** - 2SAT implementation details
-- **[Horn-SAT Solver](advanced-solvers.md#horn-sat)** - Horn-SAT algorithm
+- **[Horn-SAT Solver](hornsat-solver.md)** - Horn-SAT algorithm
 - **[XOR-SAT Solver](xorsat-solver.md)** - XOR-SAT Gaussian elimination
 - **[CDCL Solver](cdcl-solver.md)** - Modern solver for general SAT
 

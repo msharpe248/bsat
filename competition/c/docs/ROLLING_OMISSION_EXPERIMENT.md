@@ -1,5 +1,7 @@
 # Rolling omissions in vivification trials
 
+> Historical snapshot (2026-09-07). Defaults, options and code locations described here have since changed; current behavior is in [README.md](../README.md), [FEATURES.md](../FEATURES.md) and [PRODUCTION_READINESS.md](../PRODUCTION_READINESS.md).
+
 **Rejected.** The candidate preserves measured search behavior but shows no
 convincing end-to-end speed benefit and slows the larger irreducible kernels.
 Production sources are restored to `677aca0`. Partial-progress cutoff tests and

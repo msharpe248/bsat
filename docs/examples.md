@@ -15,7 +15,8 @@ Practical examples for learning SAT solving with BSAT.
 ### Installation
 
 ```bash
-pip install bsat
+# From the repository root (install from source)
+pip install -e .
 ```
 
 ### Your First SAT Problem
@@ -90,14 +91,14 @@ print("Truth table:")
 cnf.print_truth_table()
 
 # Output:
-# ------------------
+# --------------
 # x | y | Result
-# ------------------
+# --------------
 # 0 | 0 | 0
 # 0 | 1 | 1
 # 1 | 0 | 0
 # 1 | 1 | 1
-# ------------------
+# --------------
 ```
 
 ### Example 4: 2SAT vs 3SAT
@@ -400,9 +401,8 @@ def scheduling_to_sat(tasks, num_time_slots, constraints):
         tasks: List of task names
         num_time_slots: Number of available time slots
         constraints: List of (task1, task2, relation) where relation is:
-                     'before': task1 must be before task2
                      'different': task1 and task2 must be in different slots
-                     'same': task1 and task2 must be in the same slot
+                     (other relations such as 'before' or 'same' are left as an exercise)
     """
     clauses = []
 
@@ -461,8 +461,9 @@ else:
 ### Tip 1: Start Small
 
 ```python
+# (generate_huge_formula / generate_formula stand for your own generator)
 # Bad: Jump straight to large problem
-cnf = generate_huge_formula(1000_variables)
+cnf = generate_huge_formula(1000)
 solve_sat(cnf)  # Might never finish
 
 # Good: Start small, scale up
@@ -503,11 +504,17 @@ unique_clauses = list(set(cnf.clauses))
 cnf_simplified = CNFExpression(unique_clauses)
 
 # Remove tautology clauses (e.g., x ∨ ¬x)
+def is_tautology(clause):
+    lits = {(lit.variable, lit.negated) for lit in clause.literals}
+    return any((var, not neg) in lits for var, neg in lits)
+
 non_tautology = [
     clause for clause in cnf.clauses
     if not is_tautology(clause)
 ]
 ```
+
+For unit propagation, pure literal elimination and subsumption, use the built-in `preprocess_cnf()` - see [Preprocessing](preprocessing.md).
 
 ### Tip 5: Save and Load Formulas
 
@@ -524,7 +531,7 @@ with open('formula.json', 'r') as f:
 
 ## Running the Examples
 
-All examples from this documentation are available in the `examples/` directory:
+Runnable example scripts (one per solver/feature, plus problem encodings) are in the `examples/` directory:
 
 ```bash
 # Run DPLL examples
@@ -535,6 +542,9 @@ python examples/example_2sat.py
 
 # Run basic CNF examples
 python examples/example.py
+
+# Problem encodings (see problem-encodings.md)
+python examples/encodings/sudoku.py
 ```
 
 ## Next Steps

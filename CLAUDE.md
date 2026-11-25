@@ -4,7 +4,14 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-BSAT is a Python package for learning and solving Boolean satisfiability (SAT) problems using Conjunctive Normal Form (CNF). It implements multiple SAT solvers ranging from educational (Davis-Putnam 1960) to modern industrial-strength algorithms (CDCL), along with specialized polynomial-time solvers for restricted SAT variants.
+BSAT is a Python package for learning and solving Boolean satisfiability (SAT) problems using Conjunctive Normal Form (CNF). It implements multiple SAT solvers ranging from educational (Davis-Putnam 1960) to modern algorithms (CDCL), along with specialized polynomial-time solvers for restricted SAT variants. The focus of the package and of the top-level `README.md` and `docs/` is theory and education.
+
+The repository also contains two side projects with their own documentation:
+
+- `research/` - experimental Python research solvers (see `research/README.md`)
+- `competition/` - a standalone C11 competition CDCL solver in `competition/c/` plus older Python prototypes in `competition/python/` (see `competition/README.md` and `competition/c/README.md`). The competition solver is meant to be both competitive and educational.
+
+**Documentation boundary**: details of the C competition solver (features, flags, benchmarks, proofs, embedding API) belong in `competition/c/README.md` and its sibling docs, not in the top-level `README.md` or `docs/`. The top-level README may mention and link to the competition solver, but must stay focused on the Python package.
 
 ## Development Commands
 
@@ -33,6 +40,7 @@ python tests/test_reductions.py
 python tests/test_dimacs.py
 python tests/test_benchmarks.py
 python tests/test_davis_putnam.py
+python tests/test_c_solver.py   # optional C bindings; skips if libbsat is not built
 
 # Run all tests with pytest (if installed)
 pytest tests/
@@ -79,6 +87,17 @@ python -m uvicorn backend.main:app --reload --port 8000
 
 # Open browser to http://localhost:8000
 ```
+
+### C Competition Solver (optional)
+```bash
+# Build the CLI and run its unit tests
+make -C competition/c all test
+
+# Build libbsat, which enables the optional Python bindings (bsat.solve_c / bsat.CSATSolver)
+make -C competition/c shared
+```
+
+See `competition/c/README.md` for everything else about the C solver.
 
 ### Code Quality
 ```bash
@@ -141,6 +160,7 @@ Each solver is implemented as both a class (for advanced usage) and convenience 
    - Davis-Putnam-Logemann-Loveland (1962) backtracking algorithm
    - Class: `DPLLSolver`
    - Functions: `solve_sat(cnf)`, `find_all_sat_solutions(cnf)`, `count_sat_solutions(cnf)`
+   - Note: the enumeration/counting helpers run with pure literal elimination on and can skip solutions; use `DPLLSolver(cnf, use_pure_literal=False)` for exact enumeration
    - Optimizations: Unit propagation, pure literal elimination
    - Use as default for simple/educational SAT solving
 
@@ -152,7 +172,7 @@ Each solver is implemented as both a class (for advanced usage) and convenience 
    - Best for structured/industrial problems with patterns
 
 5. **Horn-SAT** (`hornsat.py`) - *Logic Programming*
-   - O(n+m) polynomial-time solver
+   - Polynomial-time solver (Horn-SAT is solvable in O(n+m); this implementation is a simpler rescan-to-fixpoint loop, O(n·m) worst case)
    - Class: `HornSATSolver`
    - Functions: `solve_horn_sat(cnf)`, `is_horn_formula(cnf)`
    - Only works if each clause has ≤1 positive literal
@@ -167,14 +187,14 @@ Each solver is implemented as both a class (for advanced usage) and convenience 
 7. **WalkSAT** (`walksat.py`) - *Fast Randomized*
    - Randomized local search (incomplete but often very fast)
    - Class: `WalkSATSolver`
-   - Functions: `solve_walksat(cnf, noise=0.5, max_flips=10000, seed=None)`, `get_walksat_stats(cnf)`
-   - Parameters: `noise` (randomness), `max_flips` (iteration limit), `seed` (reproducibility)
+   - Functions: `solve_walksat(cnf, noise=0.5, max_flips=100000, max_tries=10, seed=None)`, `get_walksat_stats(cnf)`
+   - Parameters: `noise` (randomness), `max_flips` (flips per try), `max_tries` (restarts), `seed` (reproducibility)
    - May fail to find solution even if one exists
 
 8. **Schöning's Algorithm** (`schoening.py`) - *Provably Fast 3SAT*
    - Randomized k-SAT solver with O(1.334^n) expected runtime for 3SAT
    - Class: `SchoeningSolver`
-   - Functions: `solve_schoening(cnf, seed=None)`, `get_schoening_stats(cnf)`
+   - Functions: `solve_schoening(cnf, max_tries=1000, max_flips=None, seed=None)`, `get_schoening_stats(cnf)`
    - Incomplete but provably better than O(2^n) for 3SAT
 
 9. **P-Bit Solver** (`pbit.py`) - *Probabilistic Computing*
@@ -212,6 +232,12 @@ Each solver is implemented as both a class (for advanced usage) and convenience 
       - `parse_dimacs_solution(text)` / `solution_to_dimacs(solution)` - Solution I/O
     - Format: Variables are integers (1-indexed), negation is `-`, lines: `p cnf <vars> <clauses>`, `<lit1> <lit2> ... 0`
 
+13. **Native C Bindings** (`c_solver.py`) - *Optional*
+    - Zero-dependency `ctypes` bindings to `libbsat`, the C solver in `competition/c/`
+    - Class: `CSATSolver` (incremental, context-managed)
+    - Functions: `solve_c(cnf)`, `get_c_solver_stats(cnf)`, `is_c_solver_available()`
+    - Requires `make -C competition/c shared`; the rest of the package works without it
+
 ### Module Organization
 
 ```
@@ -229,7 +255,8 @@ src/bsat/
 ├── pbit.py              # P-bit Gibbs-sampling/annealing solver
 ├── preprocessing.py     # SAT preprocessing and decomposition
 ├── reductions.py        # k-SAT to 3-SAT reduction
-└── dimacs.py            # DIMACS format I/O
+├── dimacs.py            # DIMACS format I/O
+└── c_solver.py          # Optional ctypes bindings to the C solver (libbsat)
 
 tests/
 ├── test_davis_putnam.py
@@ -244,7 +271,9 @@ tests/
 ├── test_preprocessing.py
 ├── test_reductions.py
 ├── test_dimacs.py
-└── test_benchmarks.py
+├── test_benchmarks.py
+├── test_c_solver.py              # Optional C bindings
+└── benchmarks.py                 # Benchmark utilities used by test_benchmarks.py
 
 examples/
 ├── example*.py                   # One example file per solver/feature
@@ -339,7 +368,7 @@ print(f"Decisions: {stats.decisions}, Conflicts: {stats.conflicts}")
 - **Dev Dependencies**: pytest, black, flake8, mypy (optional, in `[dev]` extra)
 - **Visualization Server**: Separate dependencies (FastAPI, uvicorn, websockets) in `visualization_server/requirements.txt`
 - **Performance**: CDCL is fastest for structured problems; specialized solvers (2SAT, Horn-SAT, XOR-SAT) are polynomial when applicable
-- **Solver Choice**: Always use specialized solver if formula matches (2SAT → O(n+m), Horn → O(n+m), XOR → O(n³)); otherwise use CDCL for large/structured or DPLL for simple cases
+- **Solver Choice**: Always use specialized solver if formula matches (2SAT, Horn-SAT, XOR-SAT are all polynomial); otherwise use CDCL for large/structured or DPLL for simple cases
 - **Variable Names**: Must be valid Python identifiers matching `[a-zA-Z_][a-zA-Z0-9_]*`
 - **DIMACS Integration**: Use for importing benchmark instances or interfacing with other SAT solvers
 

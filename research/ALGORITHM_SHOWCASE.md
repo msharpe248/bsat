@@ -4,6 +4,16 @@ This document showcases four novel SAT solving algorithms developed as research 
 
 > 📊 **See [BENCHMARKS.md](BENCHMARKS.md) for detailed benchmark results with rankings for all 7 solvers.**
 
+> ⚠️ **Status of the numbers in this document (historical).** The speedups quoted here (186×, 127×,
+> 122×, ...) come from an early 8-problem benchmark run on 2025-10-16. They are ratios against the
+> `bsat` CDCL solver as it was then, which had soundness bugs (false UNSAT answers, learned clauses
+> never used) that were fixed on 2025-10-20. The script and result file behind that run are no longer
+> in the repository, and the "Random 3-SAT (12 vars, 40 clauses)" problem is not part of the tables in
+> BENCHMARKS.md. A spot check on the current code (generated random 3-SAT, 12 vars / 40 clauses,
+> seeds 0, 1 and 42) has CoBD-SAT, LA-CDCL and CGPM-SAT all **slower** than CDCL (0.05×-0.64×).
+> Treat the "demonstrated" speedups as historical measurements, not current performance; the
+> "expected performance" figures under Real-World Applications are projections that were never measured.
+
 ## Executive Summary
 
 We implemented and benchmarked four novel SAT solving approaches that exploit different problem structures:
@@ -16,9 +26,9 @@ We implemented and benchmarked four novel SAT solving approaches that exploit di
 ### Key Results
 
 - **CGPM-SAT**: **186× speedup** on Random 3-SAT (12 vars, 40 clauses)
-- **CoBD-SAT**: **127× speedup** on Random 3-SAT, exploits modularity even with Q=0.00
+- **CoBD-SAT**: **127× speedup** on Random 3-SAT (with Q=0.00 the solver does not decompose; it falls back to plain DPLL, so this is DPLL's speedup over the then-buggy CDCL)
 - **LA-CDCL**: **122× speedup** on Random 3-SAT, lookahead prevents bad decisions
-- **BB-CDCL**: **93% backbone detection** accuracy on appropriate instances
+- **BB-CDCL**: **93% backbone detection** (14 of 15 variables flagged as backbone on the 15-variable backbone problem)
 
 ## Algorithm Details
 
@@ -52,7 +62,7 @@ We implemented and benchmarked four novel SAT solving approaches that exploit di
 #### Benchmark Insights
 - **127× speedup** on Random 3-SAT (12 vars, 40 clauses)
 - **11× speedup** on Random 3-SAT (10 vars, 35 clauses)
-- Works even with Q=0.00 (finds implicit structure)
+- With Q=0.00 (below the 0.2 threshold) no decomposition happens: the result comes from the DPLL fallback
 - Potential for **exponential speedups** with better modularity detection
 
 #### Limitations
@@ -65,8 +75,8 @@ We implemented and benchmarked four novel SAT solving approaches that exploit di
   - Previous: Always Q=0.00 (broken on bipartite graphs)
   - Now: Q=0.586 on modular problems (4 modules × 4 vars)
   - Uses projected variable-variable graph for correct Louvain optimization
-- ✅ **CDCL Fallback**: Changed fallback solver from DPLL to CDCL
-  - Faster fallback when decomposition not beneficial
+- ✅ **Optional CDCL Fallback**: `CoBDSATSolver(cnf, use_cdcl=True)` uses CDCL instead of DPLL for the fallback
+  - The default (`use_cdcl=False`, also used by the benchmark scripts) remains DPLL; community sub-problems are always solved with DPLL
 
 ---
 
@@ -76,7 +86,7 @@ We implemented and benchmarked four novel SAT solving approaches that exploit di
 
 #### Algorithm
 ```
-1. Run WalkSAT 100 times with different seeds
+1. Run WalkSAT N times with different seeds (N adaptive: 10-120 by problem size; fixed via `num_samples`)
 2. Track variable assignments across solutions
 3. If var=True in 95%+ of solutions → backbone=True
 4. Fix backbone variables, simplify formula
@@ -101,10 +111,10 @@ We implemented and benchmarked four novel SAT solving approaches that exploit di
 - **93% backbone detected** on backbone problem (15 vars, 50% backbone)
 - Successfully handles both SAT and UNSAT
 - Shows **18-100% backbone** detection across various SAT problems
-- UNSAT instances show overhead (6.3s vs 0.00001s for CDCL)
+- UNSAT instances showed overhead (6.3s vs 0.00001s for CDCL) before the early-UNSAT check described below
 
 #### Limitations
-- ❌ **UNSAT instances**: Sampling overhead without benefit (0% backbone detected)
+- ❌ **UNSAT instances**: No benefit (0% backbone detected); sampling overhead only when the 10ms quick UNSAT check does not succeed
 - ❌ **Weak backbone** (< 10%): Overhead > benefit
 - ⚠️ **False positives**: 95% confidence means 5% error rate (handled via unfixing)
 
@@ -126,14 +136,14 @@ We implemented and benchmarked four novel SAT solving approaches that exploit di
 
 #### Algorithm
 ```
-1. Get top-k VSIDS candidates (k=5 typical)
+1. Get k candidate variables (k=5 typical; the implementation takes the first k unassigned variables, not a VSIDS ranking)
 2. For each candidate v and value b ∈ {True, False}:
    a. Temporarily assign v=b
    b. Run unit propagation for d=2-3 steps
    c. Count propagations and conflicts
    d. Score = 2×prop - 10×conflicts + 1×reduced_clauses
 3. Choose highest-scoring (v, b) pair
-4. Continue with standard CDCL
+4. Continue the search (implemented as DPLL-style unit propagation + chronological backtracking; no clause learning)
 ```
 
 #### When It Wins
@@ -204,7 +214,7 @@ We implemented and benchmarked four novel SAT solving approaches that exploit di
 - GI=0% on UNSAT (graph metrics not helpful for proving unsatisfiability)
 - Captures meta-level conflict patterns
 - PageRank identifies "hub" variables
-- Combines structural (graph) + reactive (VSIDS) heuristics
+- Graph-score variable ordering inside a DPLL-style search (the planned VSIDS combination via `graph_weight` is not implemented)
 
 #### Recent Improvements (October 2025) ✨
 - ✅ **Graph Metrics Caching**: Precompute and cache combined scores
@@ -293,9 +303,9 @@ We implemented and benchmarked four novel SAT solving approaches that exploit di
 
 1. **Structure Matters**: Problems with inherent structure (modularity, backbone, conflicts) can be exploited for exponential speedups.
 
-2. **CoBD-SAT Shows Promise**: Even with Q=0.00, achieving **127× speedup** suggests the approach finds implicit structure. With better modularity detection, could achieve theoretical 10^22× speedups.
+2. **CoBD-SAT Shows Promise**: The **127× speedup** was achieved with Q=0.00, i.e. by the DPLL fallback rather than by decomposition, so it says nothing yet about the decomposition itself. With better modularity detection, could achieve theoretical 10^22× speedups.
 
-3. **BB-CDCL Backbone Detection Works**: **93% accuracy** demonstrates the sampling approach is valid. The main limitation is UNSAT overhead.
+3. **BB-CDCL Backbone Detection Works**: **93% of variables detected as backbone** (15-variable backbone problem) demonstrates the sampling approach is valid. The main limitation is UNSAT overhead.
 
 4. **CGPM-SAT Excels on Random SAT**: **186× speedup** shows that graph-based variable selection can dramatically outperform traditional heuristics on certain problem types.
 
@@ -307,7 +317,7 @@ We implemented and benchmarked four novel SAT solving approaches that exploit di
 
 #### CoBD-SAT
 - [x] ✅ **Fixed community detection** (Q=0.00 → Q=0.586 on modular problems)
-- [x] ✅ **CDCL fallback** (faster when decomposition not beneficial)
+- [x] ✅ **CDCL fallback** (optional, `use_cdcl=True`)
 - [ ] Adaptive interface enumeration (smart ordering)
 - [ ] Parallel community solving
 - [ ] **Potential impact**: 100-1000× on modular problems
@@ -346,7 +356,7 @@ We implemented and benchmarked four novel SAT solving approaches that exploit di
 1. Run larger benchmarks (100-1000 vars) where exponential gains appear
 2. Test on real industrial instances (SATLIB, SAT Competition)
 3. Implement hybrid approaches (e.g., BB-CDCL + LA-CDCL)
-4. Improve CoBD-SAT modularity detection (currently Q=0.00)
+4. Improve CoBD-SAT modularity detection (Q=0.00 in these benchmark runs; the modularity computation has since been fixed)
 
 ---
 
@@ -385,4 +395,4 @@ Based on fastest time per problem:
 
 *Generated from benchmark run on macOS using Python implementation*
 *Date: 2025-10-16*
-*All solvers working correctly*
+*All solvers working correctly (the baseline CDCL solver was later found to have soundness bugs, fixed 2025-10-20; see note at top)*

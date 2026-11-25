@@ -13,6 +13,9 @@ and introduces invalid headers, missing terminators and embedded NULs. It checks
 valid formulas against a separate truth table. Both targets can fail one of the
 first 256 core allocations. This bounded grammar does not replace the existing
 large-header, malformed-token, process-failure or exhaustive allocation tests.
+`make fuzzers` also builds a third target, `fuzz_public` (`tests/fuzz_public.c`,
+the opaque `bsat.h` and IPASIR interfaces), which the fuzzing workflow runs alongside the
+two targets above; the commands and execution counts below predate it.
 
 ```sh
 make -C competition/c -j2 fuzzers

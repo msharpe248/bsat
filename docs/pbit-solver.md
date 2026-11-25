@@ -114,7 +114,7 @@ E_clause = (1−x)(1−y) · a-terms …  →  quadratic in {x, y, z, a}
 concretely, one standard OR-gadget penalty is
 
 ```
-E_OR(x, y, a) = x·y − 2a·(x + y) + 3a      (a = x ∨ y at minimum, E = 0)
+E_OR(x, y, a) = x·y + (x + y)·(1 − 2a) + a      (a = x ∨ y at minimum, E = 0)
 ```
 
 chained pairwise to cover longer clauses. A 3-clause formula over variables

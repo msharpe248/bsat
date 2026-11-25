@@ -4,6 +4,41 @@ Comprehensive benchmark comparing all 7 SAT solvers on 15 problems of varying si
 
 **Test Date**: 2025-10-16 (After October 2025 improvements)
 
+> ## ⚠️ Status: historical results that do not reproduce on the current code
+>
+> Everything below is the unmodified record of a single benchmark run on 2025-10-16. Read it with
+> these caveats:
+>
+> - **The CDCL baseline was buggy.** Four days later (2025-10-20) three soundness bugs were fixed in
+>   `src/bsat/cdcl.py` (false UNSAT answers, learned clauses never being used). In this run CDCL
+>   reports **UNSAT on satisfiable instances** (problems 5, 8 and 9), and
+>   every large "speedup" (2710×, 2160×, 1612×, 1059×, 529×, 327×, 295×, 225×, ...) is a ratio
+>   against one of those faulty CDCL runs.
+> - **The speedups are not reproduced by the current code.** Re-running the checked-in
+>   `benchmarks/statistical_benchmark.py` (2026-11-25, macOS, Python 3.12, 3 runs) on the same
+>   "Random 3-SAT (25 vars, 105 clauses)" instance gives CDCL 0.0029s, CGPM-SAT 0.0033s (0.89×),
+>   DPLL 0.0058s (0.51×), LA-CDCL 0.0061s (0.48×) and CoBD-SAT 0.0086s (0.34×); all solvers return
+>   SAT. On the 10- and 15-variable instances CoBD-SAT, LA-CDCL and CGPM-SAT are likewise slower than CDCL.
+> - **The script that produced these tables (`benchmarks/run_full_benchmark.py`) and its output
+>   (`benchmark_results_full.md`) are no longer in the repository** (the script is still in git
+>   history: `git show 5813e2e^:research/benchmarks/run_full_benchmark.py`). Running that recovered
+>   script unchanged against the current code (2026-11-25) gives a very different picture: CDCL is
+>   fastest on 14 of the 15 problems (DPLL on the trivial "Easy Problem"), all solvers agree on
+>   SAT/UNSAT, and no research solver beats CDCL on any problem (best case: CGPM-SAT at 0.87× of
+>   CDCL's speed on "Random 3-SAT (25 vars)"; LA-CDCL 0.16×; BB-CDCL below 0.01× there).
+>   `python3 benchmarks/benchmark.py --all` is the closest checked-in equivalent.
+> - Statements below such as "research solvers are production-ready", "2710× speedup is real and
+>   repeatable" and "all speedup CIs exclude 1.0×" describe the 2025-10-16 run only and should not
+>   be quoted as current performance.
+> - CoBD-SAT's default fallback solver is DPLL (`use_cdcl=False`); the CDCL fallback mentioned below
+>   is opt-in via `CoBDSATSolver(cnf, use_cdcl=True)` and is not what the benchmark scripts use.
+>   With Q=0.00 on every problem here, CoBD-SAT never decomposed and its times are DPLL plus overhead.
+>
+> What still holds on the current code: all solvers agree and all SAT assignments verify
+> (`benchmarks/validate_correctness.py`: 112/112 verified); BB-CDCL's early UNSAT detection, adaptive
+> sampling (10-110 samples) and the CGPM-SAT cache hit rate (~89%) are exercised by the scripts in
+> `bugs/`; BB-CDCL flags 14 of 15 variables (93%) as backbone on "Backbone Problem (15 vars)".
+
 **Improvements Tested**:
 - ✅ CoBD-SAT: Bipartite modularity fix + CDCL fallback
 - ✅ BB-CDCL: Early UNSAT detection + adaptive sampling
@@ -14,7 +49,7 @@ Comprehensive benchmark comparing all 7 SAT solvers on 15 problems of varying si
 
 ## Validation Methodology
 
-All performance claims in this document are validated using a **4-level validation framework**:
+The run was accompanied by a **4-level validation framework** (the tools still exist and are described here; see the status note above for what they show today):
 
 ### Level 1: Correctness Verification ✅ CRITICAL
 
@@ -65,16 +100,18 @@ cd research/benchmarks
 ./reproduce_validation.sh
 ```
 
-This runs all 4 validation levels and generates a complete validation report in `validation_results/`.
+This runs the validation levels and writes logs and reports to `validation_results/`. The scripts need the
+`tabulate` package (`pip install tabulate`), and the script's final step (`run_full_benchmark.py`) no longer
+exists and fails; see `benchmarks/VALIDATION_GUIDE.md`.
 
 **Quick validation:**
 ```bash
 ./reproduce_validation.sh --quick  # Faster, fewer iterations
 ```
 
-For detailed instructions, see `VALIDATION_GUIDE.md`.
+For detailed instructions, see `benchmarks/VALIDATION_GUIDE.md`.
 
-### Key Validation Results
+### Key Validation Results (as recorded on 2025-10-16)
 
 **Correctness:** ✅ All SAT solutions verified, all UNSAT results confirmed
 **Statistical Stability:** ✅ CV < 15% on major benchmarks (very stable)
@@ -428,11 +465,11 @@ On several problems, CDCL finds UNSAT while other solvers find SAT:
 - Random 3-SAT (25 vars): CDCL=UNSAT, others=SAT
 - Random 3-SAT (30 vars): CDCL=UNSAT, others=SAT
 
-**Both are valid**:
-- SAT solvers: Found a satisfying assignment
-- CDCL: Proved no solution exists in its explored subspace
-
-This demonstrates that different heuristics explore different parts of the search space!
+**Correction:** these cannot both be valid. A formula is either satisfiable or not, and the other
+solvers' satisfying assignments prove these instances are SAT, so CDCL's UNSAT answers were
+**wrong**. They were caused by soundness bugs in the CDCL implementation that were fixed on
+2025-10-20; the current CDCL returns SAT on these instances in milliseconds. The speedups
+measured against those runs are therefore artifacts of the bug, not of the research heuristics.
 
 ---
 
@@ -477,7 +514,7 @@ This demonstrates that different heuristics explore different parts of the searc
 - **Best Result**: 1612× speedup on Random 3-SAT (25 vars) - 3rd place
 - **Strength**: Exploits modularity and implicit structure, CDCL fallback
 - **Weakness**: Overhead on small problems, Q=0.00 on random (expected)
-- **Notes**: Needs high modularity (Q > 0.3) for decomposition
+- **Notes**: Needs modularity Q > 0.2 (and < 50% interface variables) for decomposition
 - **Use when**: Large modular problems (circuits, planning), structured SAT
 
 ---
@@ -668,6 +705,8 @@ Research solvers beat CDCL by 500-2710× on large problems!
 
 ### Research Solvers Are Production-Ready! ✅
 
+*(Conclusion as written on 2025-10-16; not supported by the current code — see the status note at the top.)*
+
 The benchmark demonstrates that **research solvers can outperform production solvers by 500-2710×** on large problems (25+ vars). All 4 research algorithms are working correctly after improvements:
 
 1. 🏆 **CGPM-SAT**: **2710× speedup** (champion!)
@@ -686,7 +725,7 @@ The benchmark demonstrates that **research solvers can outperform production sol
 ### Key Takeaways
 
 1. **Problem size matters**: Research solvers excel on 25+ vars
-2. **CGPM-SAT is champion**: 2710× speedup is real and repeatable
+2. **CGPM-SAT is champion**: 2710× speedup (2025-10-16 run only; not reproduced against the fixed CDCL)
 3. **All research solvers work**: 500-2710× speedups demonstrated
 4. **BB-CDCL fix is critical**: 63,000× UNSAT improvement makes it viable
 5. **Choose based on problem**: Each algorithm has its niche
@@ -705,5 +744,6 @@ The benchmark demonstrates that **research solvers can outperform production sol
 *Platform: macOS, Python*
 *Total problems: 15 (3 small, 4 medium, 4 large, 4 special)*
 *Total solvers: 7 (3 production + 4 research)*
+*Produced by `benchmarks/run_full_benchmark.py` (since removed from the repository)*
 *Benchmark timeout: 60 seconds per solver per problem*
 *Best overall speedup: CGPM-SAT 2710× 🏆*

@@ -28,15 +28,15 @@ The research directory serves as a sandbox for:
 **Key Features**:
 - Graph-based problem decomposition using Louvain modularity optimization
 - Modularity-based community detection (Q > 0.2 for decomposition)
-- Independent community solving with CDCL
+- Independent community solving with DPLL
 - Interface variable coordination through enumeration
 - Potential for exponential speedups on modular problems
 
 **Recent Improvements (October 2025)**:
 - ✅ **Fixed bipartite modularity bug**: Q=0.00 → Q=0.586 on modular problems
-- ✅ **CDCL fallback**: Faster fallback when decomposition not beneficial
+- ✅ **Optional CDCL fallback** (`use_cdcl=True`; the default fallback is DPLL)
 
-**Performance**: 127× speedup on Random 3-SAT (12 vars, 40 clauses)
+**Performance**: 127× speedup on Random 3-SAT (12 vars, 40 clauses) (historical 2025-10-16 measurement against a CDCL baseline that was later found buggy; not reproduced on current code — see note under [Algorithm Comparison](#algorithm-comparison))
 
 **See**: `cobd_sat/README.md` for detailed algorithm description
 
@@ -61,7 +61,7 @@ The research directory serves as a sandbox for:
 - ✅ **Early UNSAT detection**: 6.3s → 0.0005s (12,600× speedup!)
 - ✅ **Adaptive sampling**: 10-110 samples based on difficulty (6× speedup on easy)
 
-**Performance**: 93% backbone detection accuracy, 12,600× speedup on UNSAT
+**Performance**: 93% of variables detected as backbone on the 15-variable backbone benchmark; 12,600× speedup on UNSAT relative to BB-CDCL before its own early-UNSAT fix
 
 **See**: `bb_cdcl/README.md` for detailed algorithm description
 
@@ -76,17 +76,17 @@ The research directory serves as a sandbox for:
 **Description**: Enhances CDCL with shallow lookahead (2-3 steps) to predict which variable assignments lead to more unit propagations and fewer conflicts, resulting in better initial decisions.
 
 **Key Features**:
-- Shallow lookahead on top VSIDS candidates
+- Shallow lookahead on the first few unassigned candidate variables
+- **Implementation note**: the current solver is a lookahead-guided DPLL-style search (unit propagation + chronological backtracking); it does not perform clause learning, backjumping or VSIDS despite the name
 - Adaptive lookahead frequency based on conflict rate
-- Minimal overhead (5-10% on average)
-- 20-50% conflict reduction on hard instances
+- Design targets (not measured): 5-10% overhead, 20-50% conflict reduction on hard instances
 - Compatible with all standard CDCL improvements
 
 **Recent Improvements (October 2025)**:
 - ✅ **Adaptive lookahead frequency**: freq 1-8 based on conflict rate
 - Reduces overhead on easy problems while maintaining effectiveness
 
-**Performance**: 122× speedup on Random 3-SAT (12 vars, 40 clauses)
+**Performance**: 122× speedup on Random 3-SAT (12 vars, 40 clauses) (historical 2025-10-16 measurement against a CDCL baseline that was later found buggy; not reproduced on current code — see note under [Algorithm Comparison](#algorithm-comparison))
 
 **See**: `la_cdcl/README.md` for detailed algorithm description
 
@@ -103,14 +103,14 @@ The research directory serves as a sandbox for:
 **Key Features**:
 - Conflict graph with incremental updates
 - PageRank-based variable importance scoring
-- Combines structural (graph) and reactive (VSIDS) heuristics
+- **Implementation note**: variables are ordered by graph score inside a DPLL-style search (no clause learning, restarts or VSIDS on the default path; the `graph_weight` parameter is accepted but currently unused)
 - Cached metric computation for efficiency
 - Effective on structured and industrial benchmarks
 
 **Recent Improvements (October 2025)**:
 - ✅ **Graph metrics caching**: 89% cache hit rate, overhead < 1%
 
-**Performance**: 186× speedup on Random 3-SAT (12 vars, 40 clauses) - best research solver!
+**Performance**: 186× speedup on Random 3-SAT (12 vars, 40 clauses) - best research solver! (historical 2025-10-16 measurement against a CDCL baseline that was later found buggy; not reproduced on current code — see note under [Algorithm Comparison](#algorithm-comparison))
 
 **See**: `cgpm_sat/README.md` for detailed algorithm description
 
@@ -134,7 +134,7 @@ This suite explores 8 different approaches to SAT solving, from novel research i
 - Conflict sequence extraction and pattern mining
 - Anti-pattern database for avoiding bad decisions
 - Pattern-aware variable selection with VSIDS integration
-- Supports sequences of length 2-5
+- Configurable decision-window length (`window_size`, default 5)
 - Adaptive pattern matching with similarity thresholds
 
 **See**: `tpm_sat/README.md` for detailed algorithm description
@@ -170,11 +170,11 @@ This suite explores 8 different approaches to SAT solving, from novel research i
 
 **Novelty**: **Partially Novel** - Dynamic phase learning from conflict patterns
 
-**Description**: Learns optimal phase (polarity) for each variable by tracking conflict/success history. Implements multiple learning strategies (conflict-based, success-based, hybrid).
+**Description**: Learns optimal phase (polarity) for each variable by tracking conflict/success history. Implements multiple selection strategies (adaptive, conflict-rate, hybrid).
 
 **Key Features**:
 - Per-variable phase statistics tracking
-- Three learning strategies (conflict, success, hybrid)
+- Three selection strategies (`'adaptive'` (default), `'conflict_rate'`, `'hybrid'`)
 - Dynamic phase selection based on history
 - Integration with CDCL decision making
 - Adaptive to problem structure
@@ -245,6 +245,7 @@ This suite explores 8 different approaches to SAT solving, from novel research i
 - Age-based restart heuristic (old root causes = stuck)
 - Online analysis during solving (not post-hoc)
 - Adaptive restart decisions
+- **Implementation note**: clause→conflict edges are currently not recorded (the participating-clause list is stubbed out), so multi-conflict chains are not actually tracked; only the age-based restart rule can fire. See `ccg_sat/README.md`
 
 **Distinction**: CausalSAT (Yang 2023) uses causality for post-hoc explanation; CCG-SAT uses it online for restart guidance
 
@@ -294,6 +295,8 @@ This suite explores 8 different approaches to SAT solving, from novel research i
 
 **Note**: Experimental approach - traditional CDCL is more reliable for production
 
+**Known limitation**: evolved clauses are added without checking that they are implied by the formula, so once evolution has run an UNSAT answer is not trustworthy (false UNSATs have been observed on satisfiable random 3-SAT with a low `evolution_frequency`); returned SAT models are always valid. See `cegp_sat/README.md`.
+
 **See**: `cegp_sat/README.md` for detailed algorithm description
 
 ---
@@ -326,7 +329,7 @@ This suite explores completely new paradigms for SAT solving, drawing inspiratio
 - Nash equilibrium as solution concept
 - Tatonnement price adjustment process
 
-**Performance**: 9/9 correct on simple_tests (100% agreement with CDCL)
+**Performance**: 9/9 correct on simple_tests (100% agreement with CDCL). Note that the solver falls back to CDCL when its own search does not produce a satisfying assignment, so correctness on a benchmark does not by itself show the novel mechanism found the answer.
 
 **See**: `market_sat/README.md` for comprehensive economic theory and examples
 
@@ -356,7 +359,7 @@ This suite explores completely new paradigms for SAT solving, drawing inspiratio
 - Hydraulic flow networks (Kirchhoff's laws)
 - Bio-inspired distributed optimization
 
-**Performance**: 9/9 correct on simple_tests (100% agreement with CDCL)
+**Performance**: 9/9 correct on simple_tests (100% agreement with CDCL). Note that the solver falls back to CDCL when its own search does not produce a satisfying assignment, so correctness on a benchmark does not by itself show the novel mechanism found the answer.
 
 **See**: `physarum_sat/README.md` for biological foundations and flow dynamics
 
@@ -387,7 +390,7 @@ This suite explores completely new paradigms for SAT solving, drawing inspiratio
 - Statistical mechanics and Boltzmann distribution
 - Replica exchange molecular dynamics (Swendsen & Wang 1986)
 
-**Performance**: 9/9 correct on simple_tests (100% agreement with CDCL)
+**Performance**: 9/9 correct on simple_tests (100% agreement with CDCL). Note that the solver falls back to CDCL when its own search does not produce a satisfying assignment, so correctness on a benchmark does not by itself show the novel mechanism found the answer.
 
 **See**: `fold_sat/README.md` for energy theory and annealing algorithms
 
@@ -397,7 +400,7 @@ This suite explores completely new paradigms for SAT solving, drawing inspiratio
 
 **Status**: ✅ Working (core production solver)
 
-**Location**: `src/bsat/pbit.py` *(core solver, registered here for benchmark comparison)*
+**Location**: `../src/bsat/pbit.py` *(core solver, registered in `benchmarks/run_all_benchmarks.py` for benchmark comparison)*
 
 **Novelty**: Faithful software model of probabilistic-bit (p-bit) hardware — the building block of Ising machines and p-computers built from stochastic magnetic tunnel junctions.
 
@@ -417,7 +420,7 @@ This suite explores completely new paradigms for SAT solving, drawing inspiratio
 
 **Performance**: Incomplete solver (like WalkSAT/Schöning); the benchmark registration wraps it with a CDCL fallback so None never masquerades as UNSAT. The core solver itself has no fallback.
 
-**See**: `docs/pbit-solver.md` for full theory (including the Ising/QUBO hardware embedding)
+**See**: `../docs/pbit-solver.md` for full theory (including the Ising/QUBO hardware embedding)
 
 ---
 
@@ -459,11 +462,23 @@ This suite explores completely new paradigms for SAT solving, drawing inspiratio
 |-----------|------|---------|--------|
 | **P-BIT** | Probabilistic-Bit Gibbs Sampling | ⚛️ Physics-Inspired | ✅ Working |
 
-**Total**: 16 solvers in the benchmark suite (15 research solvers + 1 physics-inspired core solver)
+**Total**: 16 solvers in the benchmark suite (15 research solvers + 1 physics-inspired core solver), plus the DPLL and CDCL baselines (18 solver names in `benchmarks/run_all_benchmarks.py`)
 
-**See** `ALGORITHM_SHOWCASE.md` for comprehensive performance analysis and real-world applications.
+> **Note on the speedup figures.** The 127×/122×/186× figures (and the 2710×/1612×/529× figures in
+> `BENCHMARKS.md`) were measured on 2025-10-16 against the `bsat` CDCL solver as it was then. That
+> solver had soundness bugs (it returned UNSAT on satisfiable instances and did not use its learned
+> clauses), fixed on 2025-10-20, and the scripts that produced the figures are no longer in the
+> repository. Against the current CDCL, the checked-in `benchmarks/statistical_benchmark.py` shows
+> CoBD-SAT, LA-CDCL and CGPM-SAT at or below CDCL speed on the same small random 3-SAT instances
+> (e.g. CGPM-SAT ≈ 0.9× on the 25-variable instance that produced "2710×"). The BB-CDCL 12,600×
+> figure compares BB-CDCL with itself before and after its early-UNSAT fix; the "after" time
+> (~0.1-0.5 ms) is reproducible with `bugs/test_bb_cdcl_unsat_fix.py`, the 6.3 s "before" time is not.
+> (The `bugs/` scripts import `benchmark.py`; run them from the repository root as
+> `PYTHONPATH=src:research:research/benchmarks python3 research/bugs/<script>.py`, with `tabulate` installed.)
 
-**See** `BENCHMARKS.md` for detailed benchmark results with rankings across all solvers.
+**See** `ALGORITHM_SHOWCASE.md` for the original (historical) performance analysis and projected real-world applications.
+
+**See** `BENCHMARKS.md` for the detailed historical benchmark results (7 solvers: DPLL, CDCL, Schöning and the original research suite).
 
 ---
 
@@ -478,7 +493,8 @@ research/
 ├── cobd_sat/                    # Community-Based Decomposition SAT
 │   ├── README.md
 │   ├── cobd_solver.py
-│   └── community_detector.py
+│   ├── community_detector.py
+│   └── message_passing.py
 │
 ├── bb_cdcl/                     # Backbone-Based CDCL
 │   ├── README.md
@@ -574,24 +590,41 @@ research/
 │   └── example.py
 │
 ├── benchmarks/                  # Benchmark scripts and results
-│   ├── benchmark.py            # Core benchmark utilities
-│   ├── run_full_benchmark.py   # Run all solvers
-│   ├── run_simple_benchmark.py
-│   ├── run_focused_benchmark.py
-│   └── benchmark_results_full.md
+│   ├── README.md                   # Overview of the benchmark tools
+│   ├── BENCHMARK_RUNNER_GUIDE.md   # Guide for run_all_benchmarks.py
+│   ├── BENCHMARK_RESULTS.md        # Medium-suite results (October 2025)
+│   ├── VALIDATION_GUIDE.md         # Validation procedure
+│   ├── run_all_benchmarks.py       # Main runner: all solvers on DIMACS suites
+│   ├── benchmark.py                # Problem generators + benchmark tool (needs tabulate)
+│   ├── statistical_benchmark.py    # Multi-run statistics
+│   ├── validate_correctness.py     # Correctness cross-checks
+│   ├── profile_solvers.py          # cProfile/tracemalloc profiling
+│   ├── reproduce_validation.sh     # Runs the validation scripts
+│   ├── competition_benchmark.py    # Generated competition-style instances
+│   ├── run_competition_instances.py # Selected SAT Competition 2025 files
+│   ├── generate_simple_tests.py    # Test-suite generators
+│   ├── generate_medium_tests.py
+│   └── create_small_test_set.py
 │
 ├── bugs/                        # Test files for bug fixes
 │   ├── test_cobd_modularity_fix.py
 │   ├── test_bb_cdcl_unsat_fix.py
 │   ├── test_bb_cdcl_adaptive_sampling.py
 │   ├── test_la_cdcl_adaptive_lookahead.py
-│   └── test_cgpm_caching.py
+│   ├── test_cgpm_caching.py
+│   ├── test_cgpm_debug.py
+│   ├── test_la_cdcl_debug.py
+│   └── test_la_cdcl_hang.py
 │
-├── examples/                    # Usage examples
-│   └── research_solver_demo.py
+├── examples/                    # Usage examples (original research suite)
+│   ├── example_cobd.py
+│   ├── example_bb_cdcl.py
+│   ├── example_la_cdcl.py
+│   └── example_cgpm.py
 │
 └── analysis/                    # Research documents
     ├── novel_sat_approaches.md
+    ├── new_solver_ideas_oct2025.md  # Design notes for the new research suite
     ├── market_sat_design.md     # Economic auction theory design
     ├── physarum_sat_design.md   # Slime mold network design
     └── fold_sat_design.md       # Protein folding energy design
@@ -600,6 +633,13 @@ research/
 ---
 
 ## Usage Examples
+
+The snippets below assume the repository root and `src/` are on the Python path, e.g. from the
+repository root: `PYTHONPATH=src:. python3 my_script.py` (`research` has no `__init__.py`; it is
+imported as a namespace package from the repository root).
+Runnable example scripts: `python research/examples/example_cobd.py` (also `example_bb_cdcl.py`,
+`example_la_cdcl.py`, `example_cgpm.py`) and `python research/<solver_dir>/example.py` for the
+other solvers.
 
 ### Original Research Suite
 
@@ -659,16 +699,16 @@ cnf = CNFExpression.parse("(a | b) & (~a | c) & (~b | ~c)")
 # Solve with pattern mining
 solver = TPMSATSolver(
     cnf,
-    use_patterns=True,
-    max_pattern_length=3,
-    min_pattern_support=2
+    use_pattern_guidance=True,
+    window_size=3,            # Length of decision sequences to mine
+    conflict_threshold=0.8    # Conflict rate above which a pattern is "bad"
 )
 result = solver.solve()
 
 # Get pattern statistics
 stats = solver.get_pattern_statistics()
-print(f"Patterns found: {stats['patterns_found']}")
-print(f"Anti-patterns found: {stats['anti_patterns_found']}")
+print(f"Patterns found: {stats['miner_stats']['num_patterns']}")
+print(f"Anti-patterns found: {stats['matcher_stats']['bad_patterns']}")
 ```
 
 #### SSTA-SAT (Solution Space Topology)
@@ -682,16 +722,16 @@ cnf = CNFExpression.parse("(a | b) & (~a | c) & (~b | ~c)")
 # Solve with topology analysis
 solver = SSTASATSolver(
     cnf,
-    use_topology=True,
+    use_topology_guidance=True,
     num_samples=10,
-    cluster_threshold=0.3
+    distance_threshold=5      # Max Hamming distance for an edge in the solution graph
 )
 result = solver.solve()
 
 # Get topology statistics
 stats = solver.get_topology_statistics()
-print(f"Solutions sampled: {stats['solutions_sampled']}")
-print(f"Clusters found: {stats['clusters_found']}")
+print(f"Solutions sampled: {stats['sampling']['num_solutions_found']}")
+print(f"Clusters found: {stats['topology']['num_clusters']}")
 ```
 
 #### VPL-SAT (Variable Phase Learning)
@@ -706,14 +746,14 @@ cnf = CNFExpression.parse("(a | b) & (~a | c) & (~b | ~c)")
 solver = VPLSATSolver(
     cnf,
     use_phase_learning=True,
-    learning_strategy='hybrid'  # 'conflict', 'success', or 'hybrid'
+    strategy='hybrid'  # 'adaptive' (default), 'conflict_rate', or 'hybrid'
 )
 result = solver.solve()
 
 # Get phase statistics
 stats = solver.get_phase_statistics()
 print(f"Phase learning enabled: {stats['enabled']}")
-print(f"Learned phases used: {stats['learned_phases_used']}")
+print(f"Learned phases used: {stats['selector']['learned_decisions']}")
 ```
 
 #### CCG-SAT (Conflict Causality Graph)
@@ -822,19 +862,35 @@ print(f"Acceptance rate: {stats['acceptance_rate']:.2%}")
 
 ```bash
 cd research/benchmarks
-python run_full_benchmark.py
+./run_all_benchmarks.py ../../dataset/medium_tests -t 30
 ```
 
-Benchmarks all solvers on multiple problem types.
+Runs all 18 registered solvers (DPLL, CDCL, the 15 research solvers and P-BIT) on the 53-instance
+medium suite; restrict with `-s`, e.g. `-s DPLL CDCL CGPM-SAT`. Results are written to
+`dataset/results/results-<timestamp>/`.
 
 ### Simple Benchmark
 
 ```bash
 cd research/benchmarks
-python run_simple_benchmark.py
+./run_all_benchmarks.py ../../dataset/simple_tests -t 10
 ```
 
-Quick benchmark on a subset of problems for rapid testing.
+Quick benchmark on the 9 simple instances for rapid testing.
+
+### Generated Problems, Statistics and Validation
+
+These scripts require the third-party `tabulate` package (`pip install tabulate`):
+
+```bash
+cd research/benchmarks
+python3 benchmark.py --all                      # 15 generated problems, 7 solvers (--all-solvers for 15)
+python3 statistical_benchmark.py --runs 10      # mean / CI / speedup vs CDCL
+python3 validate_correctness.py                 # cross-check results of 14 solvers
+python3 profile_solvers.py                      # cProfile + tracemalloc report
+```
+
+See `benchmarks/README.md` and `benchmarks/VALIDATION_GUIDE.md` for details.
 
 ---
 

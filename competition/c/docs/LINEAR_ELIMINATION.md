@@ -1,5 +1,7 @@
 # Linear resolution pairs in bounded variable elimination
 
+> Historical snapshot (2026-09-07). Defaults, options and code locations described here have since changed; current behavior is in [README.md](../README.md), [FEATURES.md](../FEATURES.md) and [PRODUCTION_READINESS.md](../PRODUCTION_READINESS.md).
+
 BVE previously used nested literal comparisons to test whether a resolvent was
 tautological, repeated that test while staging resolvents, and used another
 nested scan to remove duplicate literals. Long overlapping parents therefore

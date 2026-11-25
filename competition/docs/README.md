@@ -1,6 +1,8 @@
 # SAT Solver Documentation Index
 
-This directory contains comprehensive documentation for all major techniques used in the BSAT competition solvers (both Python and C implementations).
+This directory explains the core CDCL techniques used in the BSAT competition solvers and keeps the benchmark reports, bug write-ups, and progress logs from the Python prototype.
+
+**Scope and age.** Almost everything here was written in October 2025 for the Python prototype (`competition/python/`) and the first C prototype. The technique explanations remain valid as introductions, but their code blocks are simplified illustrations and the reports are historical records. The current C solver (`competition/c/`) has many features not covered here (VMTF/VSIDS mode alternation, inprocessing, GF(2) Gauss, symmetry breaking, proofs, portfolio, ...); its authoritative documentation is [`../c/README.md`](../c/README.md) and [`../c/FEATURES.md`](../c/FEATURES.md), with design notes and experiment reports in [`../c/docs/`](../c/docs/).
 
 ---
 
@@ -16,7 +18,7 @@ This directory contains comprehensive documentation for all major techniques use
 - Only check clauses when a watch becomes false
 - Avoids scanning all clauses on every assignment
 
-**Implementation**: `competition/python/cdcl_optimized.py`, `competition/c/src/solver.c:588-714`
+**Implementation**: `competition/python/cdcl_optimized.py` (`WatchedLiteralManager`); C: `solver_propagate` in `competition/c/src/solver.c` and `competition/c/src/watch.c`
 
 ---
 
@@ -30,7 +32,7 @@ This directory contains comprehensive documentation for all major techniques use
 - Minimize learned clause to remove redundant literals (10-30% reduction)
 - Non-chronological backtracking to second-highest decision level
 
-**Implementation**: `competition/c/src/solver.c:1731-1961`
+**Implementation**: Python: `_analyze_conflict`, `_minimize_clause`; C: `solver_analyze` in `competition/c/src/solver.c` and `competition/c/src/minimize.c`
 
 ---
 
@@ -42,9 +44,9 @@ This directory contains comprehensive documentation for all major techniques use
 - Maintain activity scores for each variable
 - Bump activity when variable involved in conflict
 - Exponential decay favors recent conflicts (decay factor: 0.95)
-- Binary max-heap for O(log n) variable selection
+- Max-heap for O(log n) variable selection (the C solver uses a 4-ary heap and, by default, alternates VSIDS with a VMTF queue; the Python prototype scans for the maximum)
 
-**Implementation**: `competition/c/src/solver.c:716-805`, `competition/c/include/solver.h:239-252`
+**Implementation**: Python: `_pick_branching_variable`; C: `heap_*` functions and `solver_decide` in `competition/c/src/solver.c`, VMTF in `competition/c/src/vmtf.c`
 
 ---
 
@@ -58,7 +60,7 @@ This directory contains comprehensive documentation for all major techniques use
 - Periodic reduction: Keep best 50% of learned clauses
 - On-the-fly subsumption during conflict analysis
 
-**Implementation**: `competition/c/src/solver.c:898-1002`, `competition/c/src/solver.c:1963-1985`
+**Implementation**: Python: `_compute_lbd`, `_reduce_learned_clauses`; C: `calc_lbd` and `solver_reduce_db` in `competition/c/src/solver.c`, `competition/c/src/reduction_sort.c`
 
 ---
 
@@ -77,7 +79,7 @@ This directory contains comprehensive documentation for all major techniques use
   - Restart when short-term LBD > long-term LBD × threshold
   - More restarts when stuck, fewer when progressing
 
-**Implementation**: `competition/c/src/solver.c:827-856` (Luby), `competition/c/src/solver.c:1057-1109` (Glucose)
+**Implementation**: Python: `_luby`, `_should_restart`; C: `luby_sequence` and `solver_should_restart` in `competition/c/src/solver.c`. Glucose-style restarts are the default in both solvers (the C solver uses LBD-EMA restarts in focused mode and reluctant doubling in stable mode); Luby is optional
 
 ---
 
@@ -93,7 +95,7 @@ This directory contains comprehensive documentation for all major techniques use
 - Preserves good partial assignments
 - Reduces thrashing between similar states
 
-**Implementation**: `competition/c/src/solver.c:1399-1410`, `competition/c/src/solver.c:1502-1525`
+**Implementation**: Python: `saved_phase` in `_pick_branching_variable`; C: `solver_decide` in `competition/c/src/solver.c` (plus target phases and rephasing in `solver_rephase`)
 
 ---
 
@@ -106,7 +108,7 @@ This directory contains comprehensive documentation for all major techniques use
 - Changes search trajectories and can help or hurt time to solution
 - A performance heuristic, not a requirement for checking SAT models or UNSAT proofs
 
-**Implementation**: `competition/c/src/solver.c:1143-1160`
+**Implementation**: Python: `random_phase_freq` in `_pick_branching_variable`; C: `--random-phase` / `--random-prob`, applied in `solver_decide` in `competition/c/src/solver.c`
 
 ---
 
@@ -115,11 +117,11 @@ This directory contains comprehensive documentation for all major techniques use
 **Impact**: Escapes local minima during search
 
 **Key concepts**:
-- Detect stuck state (many conflicts at low decision levels)
-- Increase random phase probability to 20% when stuck
-- Reset when reaching higher decision levels
+- Detect stuck state (after 1000 conflicts, restarts/conflicts ratio ≥ 20%)
+- Enable 5% random phase selection for the rest of the search
+- Python prototype only (on by default there); the C solver has no automatic stuck-state adaptation
 
-**Implementation**: `competition/c/src/solver.c:1143-1160`
+**Implementation**: `competition/python/cdcl_optimized.py` (`adaptive_random_phase`, in `solve`)
 
 ---
 
@@ -135,11 +137,13 @@ This directory contains comprehensive documentation for all major techniques use
 - **Blocked Clause Elimination (BCE)**: Remove irrelevant clauses
 - Iterate to fixpoint (changes propagate through formula)
 
-**Implementation**: `competition/c/src/solver.c` (preprocessing phase)
+**Implementation**: Python: opt-in `enable_bce`, `enable_probing`, `enable_inprocessing`; C: the preprocessing/inprocessing pipeline in `competition/c/src/inprocess.c` and `competition/c/src/elim.c`, which goes well beyond this document (probing, subsumption, BVE, vivification, ...; BCE is opt-in via `--bce`; there is no separate pure-literal pass)
 
 ---
 
 ## C-Specific Implementation Details
+
+These three design notes live in `competition/c/docs/` and describe the C solver's basic structures; for current defaults and the full feature set use [`../c/FEATURES.md`](../c/FEATURES.md).
 
 ### 10. [Data Structures](../c/docs/DATA_STRUCTURES.md)
 **Topic**: Complete reference for C solver data structures
@@ -172,9 +176,7 @@ This directory contains comprehensive documentation for all major techniques use
 **Topic**: C implementation of restart strategies and clause database management
 **Content**:
 - Luby sequence implementation
-- Glucose EMA mode (conservative, α_fast=0.8, α_slow=0.9999)
-- Glucose AVG mode (aggressive, window=50, K=0.8)
-- Restart postponing technique (Glucose 2.1+)
+- Glucose EMA mode (default) and sliding-window AVG mode
 - Clause database reduction algorithm
 - On-the-fly subsumption
 - VSIDS activity management
@@ -183,6 +185,8 @@ This directory contains comprehensive documentation for all major techniques use
 ---
 
 ## Results and Analysis
+
+Historical records of the Python prototype (October 2025). Numbers and "next steps" in these files reflect that date.
 
 ### Benchmark Results
 - [benchmark_results.md](benchmark_results.md) - Performance on test suites
@@ -210,11 +214,11 @@ This directory contains comprehensive documentation for all major techniques use
 | **1-UIP learning** | Exponential → polynomial | O(graph size) | Always |
 | **VSIDS** | 10-1000× vs static | O(log n) per decision | Always |
 | **LBD management** | Prevents memory explosion | O(m log m) per reduction | Always |
-| **Luby restarts** | Good for random | O(1) per check | Default for random |
-| **Glucose restarts** | Good for structured | O(1) per check | Default for industrial |
+| **Luby restarts** | Good for random | O(1) per check | Optional in both solvers |
+| **Glucose restarts** | Good for structured | O(1) per check | Default in both solvers |
 | **Phase saving** | Huge boost on structured | O(1) | Always |
-| **Random phase** | Prevents stuck states | O(1) | Always (1% default) |
-| **Adaptive random** | Escapes local minima | O(1) | When stuck detection needed |
+| **Random phase** | Can prevent stuck states | O(1) | Opt-in (C: `--random-phase`, 1% when enabled) |
+| **Adaptive random** | Escapes local minima | O(1) | Python prototype only (default on) |
 | **Preprocessing** | 10-50% reduction | O(m²) worst case | Structured instances |
 
 ---
@@ -225,14 +229,17 @@ This directory contains comprehensive documentation for all major techniques use
 
 | Feature | Python Location | C Location | Notes |
 |---------|----------------|------------|-------|
-| Two-watched literals | `competition/python/cdcl_optimized.py` | `src/solver.c:588-714` | C is 10-100× faster |
-| Conflict analysis | `competition/python/cdcl_optimized.py` | `src/solver.c:1731-1961` | Same algorithm |
-| VSIDS | `competition/python/cdcl_optimized.py` | `src/solver.c:716-805` | C uses manual heap |
-| LBD computation | `competition/python/cdcl_optimized.py` | `src/solver.c:1963-1985` | Same algorithm |
-| Glucose restarts | `competition/python/cdcl_optimized.py` | `src/solver.c:1057-1109` | Dual mode in C |
-| Phase saving | `competition/python/cdcl_optimized.py` | `src/solver.c:1399-1410` | Same approach |
+| Two-watched literals | `WatchedLiteralManager` | `solver_propagate` (`src/solver.c`), `src/watch.c` | C adds binary-first watches, prefetching, circular scan |
+| Conflict analysis | `_analyze_conflict`, `_minimize_clause` | `solver_analyze` (`src/solver.c`), `src/minimize.c` | C adds all-UIP shrinking, binary minimization, OTFS |
+| VSIDS | `_pick_branching_variable` | `heap_*`, `solver_decide` (`src/solver.c`), `src/vmtf.c` | C: 4-ary heap, alternating with VMTF |
+| LBD computation | `_compute_lbd` | `calc_lbd` (`src/solver.c`) | Same idea; C also updates LBD dynamically |
+| Clause reduction | `_reduce_learned_clauses` | `solver_reduce_db` (`src/solver.c`), `src/reduction_sort.c` | C: 3-tier database |
+| Glucose restarts | `_should_restart` | `solver_should_restart` (`src/solver.c`) | AVG default in Python; EMA default in C |
+| Phase saving | `_pick_branching_variable` | `solver_decide` (`src/solver.c`) | C adds target phases and rephasing |
 
-**Performance**: C solver is 10-400× faster than Python on most instances
+Python names are methods in `competition/python/cdcl_optimized.py`; C paths are relative to `competition/c/`.
+
+**Performance**: The C solver is orders of magnitude faster than the Python prototype (see [`../README.md`](../README.md#performance))
 
 ---
 
@@ -285,10 +292,10 @@ This directory contains comprehensive documentation for all major techniques use
 A: Two-watched literals. Without it, competition-level solving is impossible.
 
 **Q: What restart strategy should I use?**
-A: Luby (default) for universal good performance. Glucose for structured instances. Both are implemented.
+A: Glucose-style adaptive restarts are the default in both solvers and work well on structured instances; Luby is available as an option (`restart_strategy='luby'` in Python, `--luby-restart` in C).
 
 **Q: How often should I reduce the clause database?**
-A: Every 2000 conflicts (default). Adjust based on memory constraints.
+A: The C solver first reduces after 1000 conflicts and then at intervals growing by 100 (`--reduce-interval`, `--reduce-increment`); the Python prototype reduces when more than 10,000 learned clauses exist (`learned_clause_limit`). Adjust based on memory constraints.
 
 **Q: What's a good LBD threshold for glue clauses?**
 A: 2 (standard in Glucose). Never delete clauses with LBD ≤ 2.
@@ -297,7 +304,7 @@ A: 2 (standard in Glucose). Never delete clauses with LBD ≤ 2.
 A: Yes, always do unit propagation and pure literals (cheap). BCE is good for structured instances but expensive.
 
 **Q: What's the difference between Python and C solvers?**
-A: Same algorithms, but C is 10-400× faster due to memory layout and compiled code.
+A: The Python solver is a prototype of the core techniques documented here. The C solver implements the same core far more efficiently and adds a large set of further techniques; see [`../FEATURE_COMPARISON.md`](../FEATURE_COMPARISON.md).
 
 ---
 
@@ -314,15 +321,10 @@ When adding new techniques, please:
 
 ## Status
 
-**Last Updated**: October 2025
+**Last Updated**: November 2026 (index and code references; the linked write-ups date from October 2025)
 
-**Documentation Completeness**: ✅ All major techniques documented
+**Coverage**: Core CDCL techniques shared by both solvers. Techniques added to the C solver since October 2025 (variable elimination, probing, vivification, portfolio solving, proofs, and more) are documented under [`../c/`](../c/README.md), not here.
 
-**C Solver Status**: ✅ Production ready (100% test success rate)
+**C Solver Status**: Actively developed, `1.0.0-dev`; see [`../c/PRODUCTION_READINESS.md`](../c/PRODUCTION_READINESS.md)
 
-**Python Solver Status**: ✅ Reference implementation complete
-
-**Next Steps**:
-- Performance tuning for SAT competition instances
-- Additional preprocessing techniques (variable elimination, failed literal probing)
-- Parallel solving (portfolio approach)
+**Python Solver Status**: Prototype, no longer actively developed; see [`../python/README.md`](../python/README.md)

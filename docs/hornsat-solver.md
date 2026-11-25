@@ -8,9 +8,9 @@ A polynomial-time solver for Horn formulas using unit propagation.
 
 **Implemented**: Complete Horn-SAT solver with unit propagation ✅
 
-**Time Complexity**: O(n+m) where n = variables, m = clauses (polynomial!)
+**Time Complexity**: O(n+m) where n = variables, m = clauses (polynomial!) with the classic counter-based algorithm; this educational implementation uses a simpler fixpoint loop that is O(n·m) in the worst case (see [Why Linear Time?](#why-linear-time))
 **Space Complexity**: O(n) for variable assignments
-**Practical Performance**: Very fast, even for millions of variables/clauses
+**Practical Performance**: Fast - no search or backtracking, always polynomial
 
 ## What is Horn-SAT?
 
@@ -145,6 +145,8 @@ Each variable is set at most once (False → True), and each clause is checked a
 - **Total**: O(n + m) where n = variables, m = clauses
 
 No backtracking needed!
+
+**Implementation note**: the O(n+m) bound requires per-clause counters and a work queue (Dowling & Gallier). `HornSATSolver` instead implements the simple loop shown above, which rescans every clause until nothing changes. Each pass sets at least one variable to True, so there are at most n+1 passes and the worst case is O(n·m) - still polynomial, and usually only a few passes are needed.
 
 ## Usage
 
@@ -399,11 +401,11 @@ print(solution)
 
 ### Time Complexity
 
-**O(n + m)** where:
+**O(n + m)** for the optimal algorithm, where:
 - n = number of variables
 - m = number of clauses
 
-This is **linear time** - incredibly fast!
+This is **linear time** - incredibly fast! (The fixpoint loop in this package is O(n·m) worst case, as noted above.)
 
 ### Space Complexity
 
@@ -411,25 +413,26 @@ This is **linear time** - incredibly fast!
 
 ### Practical Performance
 
-Horn-SAT scales to very large instances:
+Horn-SAT scales to large instances. Approximate timings for `solve_horn_sat` on random Horn formulas (pure Python, one laptop - your numbers will differ):
 
 | Variables | Clauses | Time |
 |-----------|---------|------|
-| 100       | 500     | < 1ms |
-| 1,000     | 5,000   | < 10ms |
-| 10,000    | 50,000  | < 100ms |
-| 100,000   | 500,000 | < 1s |
-| 1,000,000 | 5,000,000 | < 10s |
+| 100       | 500     | ~1ms |
+| 1,000     | 5,000   | ~30ms |
+| 10,000    | 50,000  | ~0.2s |
+| 100,000   | 500,000 | ~4s |
+
+Adversarial clause orderings (e.g. a long implication chain listed in reverse) trigger the O(n·m) worst case of the fixpoint loop.
 
 Compare to DPLL (exponential worst case)!
 
 ### Best Case: O(n+m)
-- All cases are linear time
+- A single pass over the clauses suffices
 - No backtracking ever needed
 
-### Worst Case: O(n+m)
-- Still linear time!
-- Horn-SAT is polynomial-time complete
+### Worst Case: polynomial
+- O(n+m) for the optimal algorithm, O(n·m) for this implementation
+- Horn-SAT is P-complete
 
 ### Why So Fast?
 
@@ -554,7 +557,7 @@ has_feature_B → requires_component_Y
 | **Branching** | No | Yes |
 | **Speed** | Always fast | Varies |
 | **Applicability** | Horn only | Any CNF |
-| **Guarantees** | Always linear | Exponential worst case |
+| **Guarantees** | Always polynomial | Exponential worst case |
 
 **When to use each**:
 - Use Horn-SAT if formula is Horn (guaranteed fast)
@@ -724,7 +727,7 @@ stats = solver.get_statistics()
 ## Implementation Notes
 
 **Current Implementation** (BSAT v0.1+):
-- ✅ O(n+m) unit propagation algorithm
+- ✅ Unit propagation to fixpoint (O(n·m) worst case; not the counter-based O(n+m) variant)
 - ✅ All-false initialization
 - ✅ Horn formula validation
 - ✅ Statistics tracking
@@ -736,4 +739,4 @@ stats = solver.get_statistics()
 - ⏳ Explanation generation (why is variable True?)
 - ⏳ Integration with Prolog/Datalog syntax
 
-The current implementation is complete and production-ready for Horn-SAT solving!
+The current implementation is a complete (sound and terminating) Horn-SAT solver intended for learning and small-to-medium formulas.

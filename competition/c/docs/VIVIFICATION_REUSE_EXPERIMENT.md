@@ -1,5 +1,7 @@
 # Reusing assumptions during full deletion vivification
 
+> Historical snapshot (2026-09-07). Defaults, options and code locations described here have since changed; current behavior is in [README.md](../README.md), [FEATURES.md](../FEATURES.md) and [PRODUCTION_READINESS.md](../PRODUCTION_READINESS.md).
+
 **Rejected.** The candidate improves the generated kernel but loses both
 battleship solves in the repeated competition screen. Production sources are
 restored to `cc77803`; the stronger oracles and rollback tests are retained.

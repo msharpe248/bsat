@@ -1,5 +1,7 @@
 # Watched Literals Soundness Bug - Fix Summary
 
+> **Historical record (October 2025, Python prototype).** Status lines, line numbers, results, and "next steps" below describe `competition/python/` at that date and are not kept up to date. For the current solver see [competition/c/README.md](../c/README.md).
+
 **Date**: 2025-10-20
 **Status**: ✅ FIXED
 **Result**: Soundness test improved from 0/10 to 9/10 passing (10/10 if we account for non-watched bug)

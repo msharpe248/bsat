@@ -59,7 +59,7 @@ A SAT solver that builds a meta-level conflict graph from learned clauses and us
    - **But**: Jamali & Mitchell (2018) also combined centrality with VSIDS
 
 4. **Strong Empirical Results**:
-   - **47% win rate, 0 timeouts** on 53-instance benchmark
+   - **47% win rate, 0 timeouts** on 53-instance benchmark (historical October 2025 run against a since-fixed CDCL baseline - see caveats under [Empirical Results](#empirical-results))
    - **This is valuable regardless of algorithmic novelty**
    - Validates that centrality-based approaches work well
 
@@ -134,11 +134,13 @@ CGPM-SAT builds a meta-level conflict graph where nodes are variables and edges 
 - **PageRank**: x has much higher PageRank (more connections)
 - **Decision**: Branch on x first (more likely to resolve conflicts)
 
-**CGPM-SAT Empirical Result**: **47% win rate, 0 timeouts on 53-instance benchmark suite**
+**CGPM-SAT Empirical Result**: **47% win rate, 0 timeouts on 53-instance benchmark suite** (historical run; see caveats under [Empirical Results](#empirical-results))
 
 This validates that centrality-based approaches (Sonobe 2019, Katsirelos & Simon 2012) work well in practice.
 
 ## Algorithm
+
+> **Implementation status**: The current code (`cgpm_solver.py`) is a simplified integration. With `use_graph_heuristic=True` (the default) the search loop is DPLL-style: unit propagation plus chronological backtracking with value flipping, with the graph score choosing the decision variable (always tried `True` first). It does **not** perform clause learning, conflict analysis, backjumping, restarts or VSIDS scoring, and the `graph_weight` parameter is stored but not used. The "conflict clauses" added to the graph are the original clauses falsified at each conflict (every `update_frequency`-th one), not learned clauses. `bsat.cdcl.CDCLSolver` is only used when `use_graph_heuristic=False`. The steps below describe the intended design; deviations are marked.
 
 ### Phase 1: Conflict Graph Construction
 
@@ -148,8 +150,8 @@ This validates that centrality-based approaches (Sonobe 2019, Katsirelos & Simon
    - Edges: (v1, v2) if v1 and v2 appear in same clause
    - Edge weight: Number of clauses containing both
 
-2. As CDCL learns clauses:
-   - Add learned clauses to graph
+2. As conflicts occur (design: as CDCL learns clauses):
+   - Add the conflicting clause to the graph (current code: the falsified original clause)
    - Update edges and weights
    - Recompute graph metrics periodically
 ```
@@ -178,20 +180,20 @@ This validates that centrality-based approaches (Sonobe 2019, Katsirelos & Simon
 
 7. Choose variable with highest score
 
-8. Optionally combine with VSIDS:
+8. Optionally combine with VSIDS (design only - not implemented; `graph_weight` is currently unused):
    final_score = α × graph_score + (1-α) × VSIDS_score
-   where α=0.5 (balanced, empirically determined)
+   where α=0.5 (balanced)
 ```
 
 ### Phase 4: Incremental Updates
 
 ```
-9. After every N learned clauses (N=10 empirically optimal):
-   - Add to conflict graph
+9. After every N conflicts (N = `update_frequency`, default 10):
+   - Add that conflict's clause to the conflict graph (the other N-1 are skipped)
    - Invalidate cached metrics
    - Recompute on next decision
 
-10. Adaptive update frequency:
+10. Adaptive update frequency (design only - not implemented; the frequency is fixed):
     - More updates early (learning structure)
     - Fewer updates late (structure stable)
 ```
@@ -217,7 +219,7 @@ This validates that centrality-based approaches (Sonobe 2019, Katsirelos & Simon
 - Metrics cached between updates
 
 **Total**: O(m × k² + learning_clauses × k² + decisions × n)
-- Overhead: 5-15% typical (measured empirically)
+- Overhead: 5-15% typical (design estimate; `get_statistics()['graph_overhead_percentage']` reports only graph-update time, not metric computation)
 
 ### Space Complexity
 
@@ -267,6 +269,13 @@ O(n² + m) where:
 
 ### Benchmark Suite Performance (October 2025)
 
+> **Read this first - historical measurement.** The rankings below are checked in at `dataset/results/medium_suite_results_oct_2025/` (produced by `research/benchmarks/run_all_benchmarks.py`) and the 1st/2nd/3rd/timeout counts match that file. However:
+> - They predate the soundness/termination fixes to the `bsat` CDCL baseline. In that run CDCL timed out on 27/53 instances (including a 12-variable one) and returned a wrong UNSAT on `easy_3sat_v020_c0084.cnf`. The "47% win rate" is therefore relative to DPLL and a then-broken CDCL.
+> - A re-run of the same 53 instances with the current code (single machine, 2s timeout, DPLL / CDCL / CGPM-SAT / LA-CDCL / CoBD-SAT) gave: fastest solver CDCL 50, CGPM-SAT 2, LA-CDCL 1; timeouts CGPM-SAT 5, DPLL 14, LA-CDCL 15, CoBD-SAT 15, CDCL 0. All solvers agreed on SAT/UNSAT. CGPM-SAT is still clearly faster than plain DPLL on the harder instances, but it no longer beats CDCL.
+> - The per-instance times quoted below ("0.0012s to 4.3s", and the "Example Wins" lists) do not match the checked-in result files, where CGPM-SAT ranges from 0.0004s to 11.37s and e.g. `medium_3sat_v040_c0170.cnf` is 0.0156s (rank 2) and `medium_3sat_v070_c0298.cnf` is UNSAT in 0.7726s. They appear to come from an earlier, un-archived run.
+>
+> Treat every "47% win rate" / "0 timeouts" statement in this document as referring to that historical run.
+
 **Dataset**: 53 medium-difficulty instances (10-120 variables)
 **Timeout**: 30 seconds per solver
 **Solvers tested**: DPLL, CDCL, CoBD-SAT, BB-CDCL, LA-CDCL, CGPM-SAT
@@ -301,6 +310,8 @@ medium_3sat_v078_c0332.cnf: 4.3292s (RANK=1, UNSAT)
 
 ## Usage
 
+Run these snippets from the repository root with `bsat` importable, e.g. `PYTHONPATH=src:. python3 your_script.py` (or `pip install -e .` and run from the repo root).
+
 ### Basic Usage
 
 ```python
@@ -330,8 +341,8 @@ else:
 solver = CGPMSolver(
     cnf,
     use_graph_heuristic=True,    # Enable graph-guided decisions
-    graph_weight=0.5,             # 50% graph, 50% VSIDS
-    update_frequency=10           # Update graph every 10 learned clauses
+    graph_weight=0.5,             # Intended graph/VSIDS mix (accepted but currently unused)
+    update_frequency=10           # Update graph on every 10th conflict
 )
 ```
 
@@ -432,7 +443,7 @@ print(f"Top 5 by PageRank: {top_vars}")
 | **Katsirelos & Simon** | VSIDS | ✅ **Eigenvector centrality** | ✅ CDCL analysis | 2012 | **Published** |
 | **Jamali & Mitchell** | VSIDS + Centrality | ✅ **Betweenness centrality** | ✅ Clause learning | 2018 | **Published** |
 | **Sonobe** | VSIDS + PageRank | ✅ **PageRank on VIG** | ✅ Improves VSIDS | 2019 | **Published** |
-| **CGPM-SAT** | Graph + VSIDS | ✅ PageRank on conflict graph | ✅ Clause learning | 2025 | **Incremental** |
+| **CGPM-SAT** | Graph score (VSIDS mix planned) | ✅ PageRank on conflict graph | ❌ Not yet (planned) | 2025 | **Incremental** |
 
 **CGPM-SAT is a variant of Sonobe (2019)** - uses conflict graphs instead of Variable Incidence Graphs, with dynamic updates. The core PageRank approach for SAT was published in 2019 (and eigenvector centrality in 2012).
 
@@ -440,11 +451,11 @@ print(f"Top 5 by PageRank: {top_vars}")
 
 ### Strengths
 
-1. **Impressive empirical results**: 47% win rate, 0 timeouts
+1. **Impressive empirical results**: 47% win rate, 0 timeouts (historical October 2025 run; not reproduced against the current CDCL baseline)
 2. **Consistent performance**: Works across easy and hard instances
 3. **Structural insight**: Identifies important variables via graph analysis
-4. **Low overhead**: 5-15% computational overhead (measured)
-5. **Graceful degradation**: Falls back to VSIDS when graph is sparse
+4. **Low overhead**: 5-15% computational overhead (design estimate)
+5. **Graceful degradation**: `use_graph_heuristic=False` falls back to the standard `bsat` CDCL solver
 
 ### Limitations
 

@@ -9,7 +9,7 @@ The classic [Davis-Putnam-Logemann-Loveland algorithm](terminology.md#dpll-davis
 **DPLL** is a complete backtracking-based search algorithm for SAT. It works for any CNF formula (including 3SAT and beyond).
 
 **Implemented**: DPLL with backtracking, unit propagation, pure literal elimination ✅
-**Coming Soon**: CDCL (conflict-driven clause learning)
+**See also**: [CDCL](cdcl-solver.md) (conflict-driven clause learning) is implemented as a separate solver, `CDCLSolver`
 
 **Time Complexity**: O(2ⁿ) worst case (NP-complete problem)
 **Space Complexity**: O(n) for recursion stack
@@ -120,7 +120,7 @@ Simplification:
 Result: (y)
 ```
 
-**2. Early Conflict Detection**
+**4. Early Conflict Detection**
 
 If simplification produces an empty clause, we have a conflict:
 ```
@@ -131,7 +131,7 @@ After x = True: (y) ∧ (¬y)
 After y = True: () ∧ () → empty clause! → UNSAT this branch
 ```
 
-**3. Backtracking**
+**5. Backtracking**
 
 When a branch fails, undo the assignment and try the opposite value:
 ```
@@ -208,29 +208,30 @@ solver_both = DPLLSolver(cnf)
 
 ### Solution Enumeration
 
-The DPLL solver can find **all satisfying assignments**, not just one:
+The DPLL solver can enumerate satisfying assignments, not just find one. To get **every** distinct
+solution, pure literal elimination must be disabled (see the note below):
 
 ```python
-from bsat import find_all_sat_solutions, count_sat_solutions, CNFExpression
+from bsat import DPLLSolver, find_all_sat_solutions, count_sat_solutions, CNFExpression
 
-# Find ALL solutions
 formula = "(x | y)"
 cnf = CNFExpression.parse(formula)
 
-# Method 1: Using convenience functions
-all_solutions = find_all_sat_solutions(cnf)
-print(f"Found {len(all_solutions)} solutions")
+# Method 1: Solver class with pure literal elimination disabled - ALL solutions
+solver = DPLLSolver(cnf, use_pure_literal=False)
+all_solutions = solver.find_all_solutions()
+print(f"Found {len(all_solutions)} solutions")   # Found 3 solutions
 for sol in all_solutions:
     print(f"  {sol}")
+print(f"Total solutions: {solver.count_solutions()}")   # Total solutions: 3
 
-# Method 2: Using solver class
-from bsat import DPLLSolver
-solver = DPLLSolver(cnf)
-solutions = solver.find_all_solutions()
+# Method 2: Convenience functions (default optimizations, may return fewer)
+some_solutions = find_all_sat_solutions(cnf)
+print(f"Found {len(some_solutions)} solutions")   # Found 2 solutions
 
-# Method 3: Just count solutions (more efficient)
+# Method 3: Just count (same caveat; equivalent to len(find_all_sat_solutions(cnf)))
 count = count_sat_solutions(cnf)
-print(f"Total solutions: {count}")
+print(f"Total solutions: {count}")                # Total solutions: 2
 ```
 
 **Limiting the Search**:
@@ -248,20 +249,24 @@ solutions = solver.find_all_solutions(max_solutions=100)
 
 **Important Note on Optimizations**:
 
-When optimizations are enabled (default), pure literal elimination may group some solutions together:
+When optimizations are enabled (default), pure literal elimination fixes each pure variable to a single
+value, so solutions with the other value are skipped. This also applies to the convenience functions
+`find_all_sat_solutions()` and `count_sat_solutions()`, which always use the default settings - they
+return a subset of the solutions (a lower bound on the count), not necessarily all of them. Unit
+propagation never loses solutions.
 
 ```python
 # With optimizations (default)
 solver1 = DPLLSolver(cnf)
 solutions1 = solver1.find_all_solutions()
-# May find fewer distinct solutions (some grouped)
+# May find fewer distinct solutions (2 of 3 for "(x | y)")
 
-# Without optimizations
+# Without pure literal elimination
 solver2 = DPLLSolver(cnf,
                      use_unit_propagation=False,
                      use_pure_literal=False)
 solutions2 = solver2.find_all_solutions()
-# Finds ALL distinct solutions
+# Finds ALL distinct solutions (3 for "(x | y)")
 ```
 
 **Why enumerate solutions?**
@@ -282,7 +287,7 @@ Always use `max_solutions` for large formulas!
 
 ### Statistics
 
-The solver tracks how many decision points were explored:
+The solver tracks how many decision points, unit propagations and pure literal eliminations were performed:
 
 ```python
 solver = DPLLSolver(cnf)
@@ -290,10 +295,13 @@ result = solver.solve()
 
 stats = solver.get_statistics()
 print(stats)
+# e.g. for a formula with 5 variables and 8 clauses:
 # {
 #   'num_variables': 5,
 #   'num_clauses': 8,
-#   'num_decisions': 12
+#   'num_decisions': 12,
+#   'num_unit_propagations': 7,
+#   'num_pure_literals': 1
 # }
 ```
 
@@ -418,29 +426,29 @@ for i, sol in enumerate(solutions, 1):
 
 # Output:
 # Found 3 valid schedules:
-#   Option 1: skip A, skip B
+#   Option 1: schedule A, schedule B
 #   Option 2: skip A, schedule B
-#   Option 3: schedule A, schedule B
+#   Option 3: skip A, skip B
 ```
 
 **Model Counting Example**:
 
 ```python
-from bsat import count_sat_solutions, CNFExpression
+from bsat import DPLLSolver, CNFExpression
 
 formula = "(x | y) & (~x | z)"
 cnf = CNFExpression.parse(formula)
 
-# Count satisfying assignments
-count = count_sat_solutions(cnf)
+# Count satisfying assignments (pure literal elimination off for an exact count)
+count = DPLLSolver(cnf, use_pure_literal=False).count_solutions()
 total_possible = 2 ** len(cnf.get_variables())
 
 print(f"Satisfying assignments: {count}/{total_possible}")
 print(f"Probability formula is satisfied: {count/total_possible:.2%}")
 
 # Output:
-# Satisfying assignments: 6/8
-# Probability formula is satisfied: 75.00%
+# Satisfying assignments: 4/8
+# Probability formula is satisfied: 50.00%
 ```
 
 ### Example 6: Graph 3-Coloring
@@ -548,7 +556,7 @@ DPLL has evolved over 60+ years:
 - Learn from conflicts
 - Non-chronological backtracking
 - Modern solvers (MiniSAT, CryptoMiniSat, etc.)
-- **Planned for BSAT**
+- **Implemented in BSAT as a separate solver** - see [CDCL Solver](cdcl-solver.md)
 
 ## Current Implementation
 
@@ -562,11 +570,9 @@ DPLL in BSAT includes:
 ✅ **Solution enumeration** - Find all satisfying assignments, not just one
 ✅ **Statistics tracking** - Decisions, unit props, pure literals
 
-Coming soon:
-- ⏳ Conflict-driven clause learning (CDCL)
-- ⏳ VSIDS variable ordering
-- ⏳ Watched literals
-- ⏳ Non-chronological backtracking
+Not part of the DPLL solver (branching simply picks the first unassigned variable in sorted order):
+- Conflict-driven clause learning, VSIDS variable ordering, non-chronological backtracking and restarts - available in the separate [CDCL solver](cdcl-solver.md)
+- Watched literals - not implemented in the Python package
 
 The optimizations provide significant performance improvements on many instances!
 
@@ -600,9 +606,10 @@ The optimizations provide significant performance improvements on many instances
 
 ```python
 # This might take a very long time!
+# (generate_hard_random_3sat is a placeholder for your own generator, not part of bsat)
 n = 100
-clauses = generate_hard_random_3sat(n, 4.26 * n)
-result = solve_sat(clauses)  # Could run for hours
+cnf = generate_hard_random_3sat(n, 4.26 * n)
+result = solve_sat(cnf)  # Could run for hours
 ```
 
 **Solution**: Start with small formulas, add timeouts for large ones.
@@ -693,26 +700,22 @@ for clause in cnf.clauses:
 
 - Learn about [2SAT solving](2sat-solver.md) for polynomial-time special case
 - Understand [CNF expressions](cnf.md)
-- Explore [advanced solvers](advanced-solvers.md) (CDCL, WalkSAT - coming soon)
+- Explore [advanced solvers](advanced-solvers.md) (CDCL, WalkSAT)
 - Read about [theory and complexity](theory.md)
 - Try the [examples and tutorials](examples.md)
 
-## Implementation Roadmap
+## Implementation Status
 
-**Current** (v0.1):
+**DPLL solver** (v0.1):
 - ✅ Basic DPLL with backtracking
 - ✅ Unit propagation
 - ✅ Pure literal elimination
 - ✅ Solution enumeration
 - ✅ Model counting
 
-**Next Release** (v0.2):
-- ⏳ Better variable ordering (VSIDS)
-- ⏳ Watched literals
+**Implemented elsewhere in the package**:
+- ✅ CDCL with clause learning, VSIDS, non-chronological backtracking and restarts - [CDCL Solver](cdcl-solver.md)
 
-**Future** (v0.3+):
-- ⏳ CDCL (conflict-driven clause learning)
-- ⏳ Non-chronological backtracking
-- ⏳ Incremental solving
-
-Stay tuned!
+**Not implemented in the Python package**:
+- Watched literals
+- Incremental solving

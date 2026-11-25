@@ -365,7 +365,7 @@ Solution 1: {x: T, y: T, z: F}  ✅
 Solution 2: {x: F, y: F, z: T}  ✅  (complement of Solution 1)
 ```
 
-**More solutions than 3SAT:**
+**Fewer solutions per clause than 3SAT:**
 - NAE has 6 valid assignments per clause (out of 8 total)
 - Standard 3SAT clause has 7 valid assignments (out of 8)
 - But NAE is stricter overall (requires both clauses in encoding)
@@ -493,7 +493,7 @@ Total: 4 clauses per 1-in-3 constraint
 - Shows that width + monotonicity together don't guarantee tractability
 
 **Historical significance:**
-- Part of Karp's 21 NP-complete problems (1972)
+- Proven NP-complete by Schaefer (1978); closely related to Exact Cover from Karp's 21 NP-complete problems (1972)
 - Used in many reductions
 
 **Comparison to NAE:**
@@ -839,6 +839,7 @@ High modularity → strong community structure
 
 **BSAT research solvers:**
 ```python
+# Run from the repository root (research/ is not part of the installed bsat package)
 from research.cobd_sat import CoBDSATSolver
 
 # CoBD-SAT exploits community structure
@@ -850,7 +851,9 @@ print(f"Modularity Q: {stats['modularity']}")
 print(f"Communities found: {stats['num_communities']}")
 print(f"Used decomposition: {stats['used_decomposition']}")
 
-# Performance: 1612× speedup on high-modularity instances!
+# Experimental: see research/BENCHMARKS.md for measured performance. The large
+# speedups once reported there were against a buggy CDCL baseline and are not
+# reproduced by the current code.
 ```
 
 #### Generation
@@ -917,27 +920,24 @@ Where:
 ```python
 from bsat import decompose_into_components, solve_sat
 
-components, forced, stats = decompose_into_components(cnf)
+def solve_by_components(cnf):
+    components = decompose_into_components(cnf)
+    print(f"Found {len(components)} independent components")
 
-print(f"Found {len(components)} independent components")
-print(f"Forced assignments: {forced}")
-
-# Solve each component separately
-solution = forced.copy()
-for comp in components:
-    sol = solve_sat(comp)
-    if sol:
+    # Solve each component separately
+    solution = {}
+    for comp in components:
+        sol = solve_sat(comp)
+        if sol is None:
+            return None  # UNSAT
         solution.update(sol)
-    else:
-        return None  # UNSAT
 
-return solution
+    return solution
 ```
 
 **Performance advantage:**
 - Exponential speedup if modules truly independent
-- Solve n/k variables k times: O((2^(n/k))^k) = O(2^n)
-- But constants much better!
+- Solve k modules of n/k variables each: O(k · 2^(n/k)) instead of O(2^n)
 
 ---
 
@@ -959,7 +959,7 @@ I have a 3SAT instance. Which solver?
 │
 ├─ Does it have structure (community, modular)?
 │  └─ YES → Use solve_cdcl() (learns structure)
-│     └─ Consider research.cobd_sat for high modularity
+│     └─ research.cobd_sat is an experimental alternative for high modularity
 │
 ├─ Is it NAE-3SAT or 1-in-3-SAT?
 │  └─ Encode as CNF, then use solve_cdcl()
@@ -976,7 +976,7 @@ I have a 3SAT instance. Which solver?
 | Random (easy) | 20-100 | CDCL | < 10 seconds |
 | Random (hard) | 20-100 | Schöning's | Minutes |
 | Structured | 100-1000 | CDCL | Seconds to minutes |
-| Community | 100-1000 | CoBD-SAT | Faster than CDCL |
+| Community | 100-1000 | CDCL (CoBD-SAT is experimental) | See `research/BENCHMARKS.md` |
 
 ### BSAT Examples
 
@@ -998,7 +998,7 @@ from bsat import read_dimacs_file
 structured_cnf = read_dimacs_file("industrial_benchmark.cnf")
 result = solve_cdcl(structured_cnf)  # CDCL excels on structure
 
-# Example 4: Community structure
+# Example 4: Community structure (experimental; run from the repository root)
 from research.cobd_sat import CoBDSATSolver
 solver = CoBDSATSolver(structured_cnf)
 result = solver.solve()

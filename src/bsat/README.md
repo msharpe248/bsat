@@ -11,14 +11,39 @@ A Python package for working with Boolean satisfiability (SAT) problems using Co
 5. **Truth Tables**: Generate and display complete truth tables
 6. **Logical Equivalence**: Compare expressions using truth table comparison
 7. **2SAT Solver**: Optimal O(n+m) algorithm using strongly connected components
+8. **More Solvers and Tools**: DPLL, CDCL, Davis-Putnam, Horn-SAT, XOR-SAT, WalkSAT, Schöning, p-bit, preprocessing, k-SAT→3-SAT reduction, and DIMACS I/O (see [Modules](#modules))
+
+This README covers the core CNF data structures and the 2SAT solver in detail. For the other solvers see the [top-level README](../../README.md) and [`docs/`](../../docs/).
+
+## Modules
+
+Everything listed here is re-exported from the package root (`from bsat import ...`).
+
+| Module | Exports |
+|--------|---------|
+| `cnf.py` | `Literal`, `Clause`, `CNFExpression` |
+| `twosatsolver.py` | `TwoSATSolver`, `solve_2sat`, `is_2sat_satisfiable`, `is_2sat` |
+| `dpll.py` | `DPLLSolver`, `solve_sat`, `find_all_sat_solutions`, `count_sat_solutions` |
+| `cdcl.py` | `CDCLSolver`, `solve_cdcl`, `get_cdcl_stats` |
+| `davis_putnam.py` | `DavisPutnamSolver`, `solve_davis_putnam`, `get_davis_putnam_stats`, `DavisPutnamStats` |
+| `hornsat.py` | `HornSATSolver`, `solve_horn_sat`, `is_horn_formula` |
+| `xorsat.py` | `XORSATSolver`, `solve_xorsat`, `get_xorsat_stats` |
+| `walksat.py` | `WalkSATSolver`, `solve_walksat`, `get_walksat_stats` |
+| `schoening.py` | `SchoeningSolver`, `solve_schoening`, `get_schoening_stats` |
+| `pbit.py` | `PBitSolver`, `solve_pbit`, `get_pbit_stats`, `PBitStats` |
+| `preprocessing.py` | `SATPreprocessor`, `preprocess_cnf`, `decompose_into_components`, `decompose_and_preprocess`, `PreprocessingResult`, `PreprocessingStats` |
+| `reductions.py` | `reduce_to_3sat`, `extract_original_solution`, `solve_with_reduction`, `is_3sat`, `get_max_clause_size`, `ReductionStats` |
+| `dimacs.py` | `parse_dimacs`, `to_dimacs`, `read_dimacs_file`, `write_dimacs_file`, `parse_dimacs_solution`, `solution_to_dimacs`, `DIMACSParseError` |
+| `c_solver.py` | `solve_c`, `get_c_solver_stats`, `CSATSolver`, `CSolverStats`, `is_c_solver_available`, `BSAT_SAT`, `BSAT_UNSAT`, `BSAT_UNKNOWN` |
+
+`c_solver.py` is an optional `ctypes` binding to the native C solver (`libbsat`). It is the only module that needs anything beyond the standard library: build the shared library with `make -C competition/c shared` and check `is_c_solver_available()` before calling `solve_c`. See [`competition/c/README.md`](../../competition/c/README.md).
 
 ## Installation
 
-```bash
-# Activate the virtual environment
-source venv/bin/activate
+From the repository root:
 
-# The package is ready to use locally
+```bash
+pip install -e .
 ```
 
 ## Usage
@@ -26,7 +51,7 @@ source venv/bin/activate
 ### Creating Expressions Programmatically
 
 ```python
-from cnf import CNFExpression, Clause, Literal
+from bsat import CNFExpression, Clause, Literal
 
 # Create (x ∨ y) ∧ (¬x ∨ z)
 clause1 = Clause([Literal("x"), Literal("y")])
@@ -58,14 +83,14 @@ expr.print_truth_table()
 
 Output:
 ```
-----------------
+--------------
 x | y | Result
-----------------
+--------------
 0 | 0 | 0
 0 | 1 | 1
 1 | 0 | 0
 1 | 1 | 0
-----------------
+--------------
 ```
 
 ### Checking Logical Equivalence
@@ -93,8 +118,7 @@ restored = CNFExpression.from_json(json_str)
 ### Solving 2SAT Problems
 
 ```python
-from cnf import CNFExpression
-from twosatsolver import solve_2sat, is_2sat_satisfiable, TwoSATSolver
+from bsat import CNFExpression, solve_2sat, is_2sat_satisfiable, TwoSATSolver
 
 # Create a 2SAT instance (all clauses must have exactly 2 literals)
 expr = CNFExpression.parse("(x | y) & (~x | z) & (~y | z)")
@@ -115,11 +139,12 @@ solution = solver.solve()
 
 ## Running Examples
 
+From the repository root (after `pip install -e .`):
+
 ```bash
-source venv/bin/activate
-python example.py       # General CNF examples
-python example_2sat.py  # 2SAT solver examples
-python test_2sat.py     # Run 2SAT solver tests
+python examples/example.py       # General CNF examples
+python examples/example_2sat.py  # 2SAT solver examples
+python tests/test_2sat.py        # Run 2SAT solver tests
 ```
 
 ## API Reference
@@ -155,16 +180,17 @@ Represents a CNF expression (conjunction of clauses).
 - `generate_truth_table()`: Generate complete truth table
 - `print_truth_table()`: Print formatted truth table
 - `is_equivalent(other: CNFExpression)`: Check logical equivalence
-- `to_json()` / `from_json()`: JSON serialization
+- `to_json(indent: int = 2)` / `from_json(json_str: str)`: JSON serialization
 - `to_dict()` / `from_dict()`: Dictionary conversion
 
 ### TwoSATSolver
 
 Solves 2SAT problems using strongly connected components (Kosaraju's algorithm).
 
-- `__init__(cnf: CNFExpression)`: Initialize with a 2SAT instance
+- `__init__(cnf: CNFExpression)`: Initialize with a 2SAT instance (raises `ValueError` if any clause does not have exactly 2 literals)
 - `is_satisfiable()`: Check if the formula is satisfiable
 - `solve()`: Return a satisfying assignment or None
+- `get_all_solutions()`: Return all satisfying assignments
 - Time complexity: O(n + m) where n = variables, m = clauses
 - Space complexity: O(n + m)
 
@@ -172,6 +198,7 @@ Solves 2SAT problems using strongly connected components (Kosaraju's algorithm).
 
 - `solve_2sat(cnf: CNFExpression)`: Solve a 2SAT problem, returns assignment or None
 - `is_2sat_satisfiable(cnf: CNFExpression)`: Check if a 2SAT problem is satisfiable
+- `is_2sat(cnf: CNFExpression)`: Check whether every clause has exactly 2 literals
 
 ## Supported Notations
 

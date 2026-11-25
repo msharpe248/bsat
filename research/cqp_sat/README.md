@@ -77,16 +77,18 @@ def predict_quality(features):
     if features['lbd'] <= 2:
         return 1.0  # Glue clause - maximum quality
 
-    # Normalize LBD (lower is better)
-    lbd_score = 1.0 - (features['lbd'] / 30.0)
+    # Normalize LBD (lower is better); 30 = lbd_threshold
+    lbd_score = max(0.0, 1.0 - (features['lbd'] / 30.0))
 
     # Activity bonus
     activity_score = min(1.0, features['activity'] * 0.1)
 
-    # Combined score
-    quality = lbd_score * 0.7 + activity_score * 0.3
+    # Combined score (simplified)
+    quality = lbd_score * 0.7 + activity_score * 0.2
     return quality
 ```
+
+The actual `QualityPredictor.predict_quality()` also gives glue clauses `lbd_score = 1.0` (rather than returning 1.0 outright), adds a usage bonus (up to 0.2) and multiplies by an age factor (`max(0.5, 1 - 0.01 * age)`). In the current solver the usage counters are never updated (the bonus is always 0) and `age` is incremented once per database reduction.
 
 ### Phase 3: Database Management
 
@@ -167,7 +169,7 @@ solver = CQPSATSolver(
 **Time**:
 - LBD computation: O(clause_size) per learned clause
 - Database reduction: O(n log n) where n = learned clauses
-- Overall overhead: <5% runtime increase
+- Overall overhead: expected to be small (not benchmarked in this repo)
 
 **Space**:
 - Feature storage: O(learned_clauses)
@@ -182,8 +184,10 @@ solver = CQPSATSolver(
 | **Clause deletion** | Simple limit | Quality-based |
 | **Glue clauses** | Not recognized | Protected (never deleted) |
 | **Database size** | Grows large | Kept small |
-| **Memory usage** | High | Lower (50% reduction typical) |
-| **Performance** | Baseline | 10-30% faster on large instances |
+| **Memory usage** | High | Lower (each reduction keeps ~50% of learned clauses) |
+| **Performance** | Baseline | Expected benefit on large instances (see note) |
+
+**Note**: The memory/performance rows describe the expected behaviour of Glucose-style clause management; they have not been measured for this implementation and no CQP-SAT results are checked in. With the default `reduction_interval=2000`, instances that finish in fewer than 2000 conflicts (e.g. everything in `dataset/medium_tests/medium_suite` spot-checked) never trigger a reduction, so CQP-SAT behaves like the baseline `CDCLSolver` plus LBD bookkeeping.
 
 ---
 
@@ -203,8 +207,8 @@ solver = CQPSATSolver(
 
 1. **ClauseFeatureExtractor** (`clause_features.py`):
    - Computes LBD (Literal Block Distance)
-   - Tracks clause activity and usage
-   - Monitors LBD stability over time
+   - Computes clause activity (sum of VSIDS scores) when the clause is learned
+   - Provides `update_lbd()` / `compute_lbd_stability()` and usage counters, but the solver does not call/update them (LBD is computed once, at learning time)
 
 2. **QualityPredictor** (`quality_predictor.py`):
    - Predicts clause quality from features
@@ -223,6 +227,15 @@ solver = CQPSATSolver(
 - `glue_clauses`: Clauses with LBD ≤ 2
 - `avg_lbd`: Average LBD across all learned clauses
 - `database_reductions`: Number of reduction operations
+
+These are attributes of `solver.stats` (`CQPStats`). `solver.get_quality_statistics()` returns a dict with `enabled`, `lbd_threshold`, `glue_threshold` and, once clauses have been learned, `total_clauses`, `glue_clauses`, `high_quality`, `medium_quality`, `low_quality`, `avg_lbd`, `avg_quality`.
+
+### Examples
+
+```bash
+# from the repository root
+python3 research/cqp_sat/example.py
+```
 
 ---
 
@@ -261,7 +274,7 @@ CQP-SAT is an **educational reimplementation** demonstrating Glucose's breakthro
 **❌ NOT Novel**: This is established work by Audemard & Simon (2009)
 **✅ Educational**: Clean code showing how Glucose works
 **✅ Well-Documented**: Explains LBD and quality prediction
-**✅ Fully Functional**: Correctly implements Glucose approach
+**✅ Functional**: Implements a simplified version of Glucose's LBD-based clause management (no dynamic LBD updates, no LBD-based restarts)
 
 **Key Takeaway**: Literal Block Distance (LBD) revolutionized SAT solving by providing a simple, effective metric for predicting clause usefulness. Clauses with low LBD ("glue" clauses) should be kept; high LBD clauses can be safely deleted.
 

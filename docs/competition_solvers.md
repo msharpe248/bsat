@@ -88,7 +88,7 @@ The pigeon hole problem, graph coloring, and circuit verification instances from
 
 **SAT 2002**
 The first official SAT Competition, held in conjunction with the SAT conference. Winners included:
-- Industrial category: Siege
+- Industrial category: zChaff
 - Random category: OKsolver
 - Handmade category: Various specialized solvers
 
@@ -161,7 +161,7 @@ Asks whether n+1 pigeons can fit in n holes without sharing. The CNF encoding ha
 A perfect matching problem that challenges solvers' ability to recognize global constraints.
 
 **Tseitin Formulas**
-Encoding of graph colorability that creates long resolution proofs, stress-testing clause learning.
+Parity (XOR) constraints attached to the vertices of a graph, which require long resolution proofs and stress-test clause learning.
 
 **Characteristics:**
 - Designed to expose algorithmic weaknesses
@@ -220,7 +220,7 @@ Here are the leading SAT solvers as of 2025, with details on obtaining them.
 
 ### Kissat
 
-**Author:** Armin Biere (JKU Linz)
+**Author:** Armin Biere (University of Freiburg; formerly JKU Linz)
 **Description:** "Keep it simple and clean" bare-metal SAT solver in C. Port of CaDiCaL to C with improved data structures and optimized inprocessing.
 
 **Competition Record:**
@@ -248,7 +248,7 @@ Here are the leading SAT solvers as of 2025, with details on obtaining them.
 
 ### CaDiCaL
 
-**Author:** Armin Biere (JKU Linz)
+**Author:** Armin Biere (University of Freiburg; formerly JKU Linz)
 **Description:** Clean and understandable CDCL solver, designed as a teaching tool that remains competitive.
 
 **Competition Record:**
@@ -416,7 +416,7 @@ Used by: MapleSAT variants
 How it works:
 1. Track how often each variable appears in learned clauses
 2. Assign rewards based on "learning rate" (recent vs. historical learning)
-3. Use multi-armed bandit algorithms (EXP3, UCB) to balance exploration/exploitation
+3. Use a multi-armed bandit algorithm (exponential recency weighted average, ERWA) to balance exploration/exploitation
 4. Branch on variables predicted to maximize future learning
 
 Why it works:
@@ -800,7 +800,7 @@ Why CDCL fails:
 - Exhaustive search is required
 
 **Tseitin Formulas:**
-Graph colorability encodings with exponential resolution lower bounds.
+Graph-based parity (XOR) constraint encodings with exponential resolution lower bounds (on expander graphs).
 
 **Implication:** Problems with inherently long proofs cannot be solved efficiently by CDCL, regardless of optimizations.
 
@@ -962,17 +962,18 @@ The future of SAT solving is bright, with applications expanding from hardware v
 
 **Influential Papers:**
 - "Chaff: Engineering an Efficient SAT Solver" (Moskewicz et al., 2001)
-- "Understanding VSIDS Branching Heuristics" (Biere & Fröhlich, 2015)
+- "Understanding VSIDS Branching Heuristics in Conflict-Driven Clause-Learning SAT Solvers" (Liang et al., 2015)
 - "Learning Rate Based Branching Heuristic" (Liang et al., 2016)
-- "The Science of Brute Force" (Knuth, 2015)
+- "The Science of Brute Force" (Heule & Kullmann, 2017)
 
 **Solver Documentation:**
 - Kissat: https://github.com/arminbiere/kissat/blob/master/README.md
 - CaDiCaL: https://github.com/arminbiere/cadical/blob/master/README.md
 - MapleSAT: https://maplesat.github.io/
+- This repository's own C11 CDCL solver (`competition/c/`): [competition/c/README.md](../competition/c/README.md)
 
 **Research Groups:**
-- Johannes Kepler University (Armin Biere)
+- University of Freiburg (Armin Biere; previously Johannes Kepler University Linz)
 - University of Waterloo (Vijay Ganesh)
 - Carnegie Mellon University (Marijn Heule)
 - University of Bordeaux (Laurent Simon)

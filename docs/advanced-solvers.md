@@ -6,19 +6,28 @@ Specialized SAT solvers: Horn-SAT, XOR-SAT, WalkSAT, and CDCL.
 
 ### Horn-SAT ✅
 
-**Status**: Implemented in v0.2
+**Status**: ✅ Implemented
 
 ### XOR-SAT ✅
 
-**Status**: Implemented in v0.3
+**Status**: ✅ Implemented
 
 ### WalkSAT ✅
 
-**Status**: Implemented in v0.4
+**Status**: ✅ Implemented
 
 ### CDCL ✅
 
-**Status**: Implemented in v0.5
+**Status**: ✅ Implemented
+
+### Also in the package
+
+These solvers have their own pages and are not covered further here:
+
+- **[Schöning's algorithm](schoening-solver.md)** (`solve_schoening`) - randomized k-SAT with a provable O(1.334ⁿ) bound for 3SAT
+- **[P-bit solver](pbit-solver.md)** (`solve_pbit`) - annealed Gibbs sampling modeled on probabilistic-bit hardware
+- **[Davis-Putnam](davis-putnam-solver.md)** (`solve_davis_putnam`) - the historical 1960 resolution algorithm
+- **Native C solver** (`solve_c`, `CSATSolver` in `bsat.c_solver`) - optional `ctypes` bindings to the C competition solver. Requires building the shared library first (`make -C competition/c shared`); check with `is_c_solver_available()`. See [competition/c/README.md](../competition/c/README.md).
 
 ---
 
@@ -33,7 +42,7 @@ Specialized SAT solvers: Horn-SAT, XOR-SAT, WalkSAT, and CDCL.
 4. **Intelligent restarts**: Periodically restart search with learned clauses
 5. **VSIDS heuristic**: Conflict-driven variable selection
 
-**Status**: ✅ Implemented in v0.5
+**Status**: ✅ Implemented
 
 **[📖 Full CDCL Documentation](cdcl-solver.md)**
 
@@ -115,7 +124,7 @@ New formula: ... ∧ (x ∨ ¬z)
 
 **WalkSAT** is a randomized local search algorithm that's incomplete but often very fast for SAT instances.
 
-**Status**: ✅ Implemented in v0.4
+**Status**: ✅ Implemented
 
 **[📖 Full WalkSAT Documentation](walksat-solver.md)**
 
@@ -156,7 +165,7 @@ else:
 - Generating multiple different solutions
 
 ❌ **Not good for**:
-- Proving unsatisfiability (use DPLL instead)
+- Proving unsatisfiability (use DPLL or CDCL instead)
 - When you need guaranteed solutions
 - Small instances (DPLL is fast enough)
 
@@ -183,11 +192,11 @@ See the **[complete WalkSAT documentation](walksat-solver.md)** for:
 (x ∨ y ∨ ¬z)   ✗ Not Horn (two positive)
 ```
 
-**Status**: ✅ Implemented in v0.2
+**Status**: ✅ Implemented
 
 ### Algorithm
 
-Horn-SAT can be solved in **linear time** O(n+m) using unit propagation:
+Horn-SAT can be solved in **linear time** O(n+m) using unit propagation (the implementation here uses a simpler fixpoint loop that is O(n·m) in the worst case - see [Horn-SAT Solver](hornsat-solver.md)):
 
 ```
 1. Set all variables to False initially
@@ -223,7 +232,7 @@ else:
 Unit propagation on Horn clauses always makes progress:
 - Each iteration either satisfies a clause or forces a variable
 - No backtracking needed!
-- Linear time complexity O(n+m)
+- Linear time complexity O(n+m) with the counter-based algorithm
 
 ### Applications
 
@@ -248,9 +257,9 @@ result = solve_horn_sat(cnf)
 
 ### Performance
 
-- **Time**: O(n+m) - Linear in formula size
+- **Time**: O(n+m) for the optimal algorithm; O(n·m) worst case for this implementation's fixpoint loop
 - **Space**: O(n) - Variable assignments
-- **Practical**: Can handle millions of clauses efficiently
+- **Practical**: Polynomial, no search - around 0.2s for 10,000 variables / 50,000 clauses in pure Python
 
 ### Further Reading
 
@@ -265,7 +274,7 @@ result = solve_horn_sat(cnf)
 
 **XOR-SAT** deals with XOR (exclusive-or) constraints where clauses are satisfied when an odd number of literals are true.
 
-**Status**: ✅ Implemented in v0.3
+**Status**: ✅ Implemented
 
 **[📖 Full XOR-SAT Documentation](xorsat-solver.md)**
 
@@ -322,29 +331,29 @@ See the **[complete XOR-SAT documentation](xorsat-solver.md)** for:
 
 ---
 
-## Implementation Roadmap
+## Implementation Checklist
 
-### Version 0.2: Horn-SAT ✅
+### Horn-SAT ✅
 - [x] Horn formula detection
-- [x] Linear-time unit propagation
+- [x] Unit propagation to fixpoint
 - [x] All-false initialization
 - [x] Statistics tracking
 
-### Version 0.3: XOR-SAT ✅
+### XOR-SAT ✅
 - [x] Gaussian elimination over GF(2)
 - [x] Augmented matrix construction
 - [x] Contradiction detection
 - [x] Back substitution
 - [x] Statistics tracking
 
-### Version 0.4: WalkSAT ✅
+### WalkSAT ✅
 - [x] Basic WalkSAT algorithm
 - [x] Configurable noise parameter
 - [x] Multi-restart support
 - [x] Break count calculation
 - [x] Statistics tracking
 
-### Version 0.5: CDCL ✅
+### CDCL ✅
 - [x] Unit propagation (BCP)
 - [x] Conflict analysis with 1UIP
 - [x] Clause learning
@@ -361,5 +370,3 @@ See the **[complete XOR-SAT documentation](xorsat-solver.md)** for:
 - Read about [DPLL](dpll-solver.md) and [2SAT](2sat-solver.md)
 - Learn from [examples](examples.md)
 - Explore [theory and references](theory.md)
-
-Stay tuned for these advanced features! 🚀

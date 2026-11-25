@@ -1,15 +1,18 @@
-# Competition SAT Solver
+# Competition SAT Solvers
 
-Modern CDCL SAT solvers with both C and Python implementations, featuring state-of-the-art conflict-driven clause learning algorithms.
+CDCL SAT solvers aimed at SAT Competition-style workloads: an actively developed
+C solver and the older Python prototype it grew out of.
 
-## Status: Production Ready
+The competition solver has two goals: to be genuinely competitive, and to stay
+educational. The techniques it uses, and the experiments that shaped it
+(including the ones that were rejected), are written up alongside the code.
 
-Both implementations are feature-complete with competition-level optimizations:
+## Status
 
-| Implementation | Performance | Use Case |
-|----------------|-------------|----------|
-| **C Solver** | 100-700× faster than Python | Production, competitions |
-| **Python Solver** | Reference implementation | Prototyping, education |
+| Implementation | Status | Use Case |
+|----------------|--------|----------|
+| **C solver** ([`c/`](c/README.md)) | Actively developed, version `1.0.0-dev`. See [c/PRODUCTION_READINESS.md](c/PRODUCTION_READINESS.md) for the capability matrix, verification evidence, and release gates. | Real solving, proofs, embedding |
+| **Python prototype** ([`python/`](python/README.md)) | Algorithm prototype from October–December 2025; no longer the focus of development. Orders of magnitude slower than the C solver. | Prototyping, education |
 
 ---
 
@@ -23,9 +26,11 @@ make
 ./bin/bsat instance.cnf
 ```
 
-See **[C Solver Documentation](c/README.md)** for full CLI reference and options.
+See **[C Solver Documentation](c/README.md)** for build modes, the CLI, proofs,
+the portfolio mode, and the embedding API, and **[c/FEATURES.md](c/FEATURES.md)**
+for every flag and default (`./bin/bsat --help`).
 
-### Python Solver
+### Python Prototype
 
 ```bash
 cd python
@@ -36,124 +41,96 @@ See **[Python Solver Documentation](python/README.md)** for usage details.
 
 ---
 
-## Project Structure
+## Directory Layout
 
 ```
 competition/
-├── c/                          # C Implementation
-│   ├── src/                    # Source files
-│   ├── include/                # Header files
-│   ├── tests/                  # Unit tests
-│   ├── scripts/                # Test and benchmark scripts
-│   ├── docs/                   # Historical experiment & milestone reports
-│   ├── README.md               # C solver documentation
-│   ├── FEATURES.md             # Detailed feature list
+├── c/                          # C11 solver (current work)
+│   ├── src/, include/          # Solver sources and headers
+│   ├── tests/                  # C unit tests, validation and benchmark scripts
+│   ├── scripts/                # Corpus fetch/suite runner, acceptance gate
+│   ├── examples/               # Embedding / service examples
+│   ├── docs/                   # C design notes, experiment and milestone reports
+│   ├── README.md               # Build, run, architecture overview
+│   ├── FEATURES.md             # Feature list and full CLI reference
 │   ├── PRODUCTION_READINESS.md # Capability matrix & release gates
 │   ├── API_CONTRACT.md         # Public C/C++ ABI v1 contract
-│   └── INSTALLING.md           # Build & packaging guide
+│   └── INSTALLING.md           # Install & packaging guide
 │
-├── python/                     # Python Implementation
-│   ├── cdcl_optimized.py       # Optimized CDCL solver
-│   ├── competition_solver.py   # Competition-format wrapper
+├── python/                     # Python prototype
+│   ├── cdcl_optimized.py       # CDCL solver (watched literals, LBD, restarts, phases)
+│   ├── inprocessing.py         # Subsumption / BVE (opt-in, slow in Python)
+│   ├── competition_solver.py   # DIMACS command-line wrapper
+│   ├── benchmark_*.py          # Benchmark scripts behind the reports in docs/
+│   ├── test_common_fixtures.py # Runs the shared fixtures in tests/
+│   ├── tests/                  # Prototype test and debugging scripts
 │   └── README.md               # Python solver documentation
 │
+├── docs/                       # Technique explanations and historical reports,
+│                               #   mostly from the Python prototype (Oct 2025)
+├── tests/                      # Shared DIMACS fixtures + expected results
+│                               #   used by both solvers
+├── FEATURE_COMPARISON.md       # C vs Python feature matrix
+├── TESTING.md                  # How to run the C, Python, and cross-validation tests
+├── FEATURE_TESTING.md          # Guide: choosing instances that exercise a feature
 └── README.md                   # This file
 ```
 
 ---
 
-## Features Implemented
+## Features
 
-### Core CDCL Algorithm
+The C solver is a full modern CDCL solver (alternating VMTF/VSIDS search,
+tick-budgeted inprocessing, GF(2) Gaussian elimination, symmetry breaking,
+DRAT/LRAT proofs, a multi-core portfolio, MaxSAT/PB/XOR input, and an embedding
+API). Its feature list changes often and is maintained in one place:
 
-| Feature | C | Python | Notes |
-|---------|---|--------|-------|
-| Two-Watched Literals | ✅ | ✅ | Literal-indexed `lit_values[]` fast path, binary-first watches, blocking literals, 1-ahead prefetch, circular scan |
-| First UIP Conflict Analysis | ✅ | ✅ | Standard 1-UIP scheme with On-the-Fly Self-Subsumption (OTFS) |
-| Clause Minimization & Shrinking | ✅ | ✅ | 3-state binary-aware DFS + block-level all-UIP shrinking + binary resolution |
-| LBD & 3-Tier Clause DB | ✅ | ✅ | Dynamic LBD updates, adaptive Tier-1/Tier-2 retention, lazy watch sweep |
-| On-the-Fly Subsumption | ✅ | ✅ | Remove subsumed clauses |
+- [c/README.md](c/README.md) — architecture and current defaults
+- [c/FEATURES.md](c/FEATURES.md) — feature summary and complete CLI reference
+- [FEATURE_COMPARISON.md](FEATURE_COMPARISON.md) — side-by-side C vs Python matrix
 
-### Variable Ordering
-
-| Feature | C | Python | Notes |
-|---------|---|--------|-------|
-| 4-ary Heap VSIDS + VMTF Alternation | ✅ | ✅ (VSIDS) | Tick-based Focused (VMTF) / Stable (4-ary VSIDS) alternation + reason bumping |
-| LRB/CHB | ✅ | ❌ | Learning Rate Branching (`--lrb`) |
-
-### Phase Management
-
-| Feature | C | Python | Notes |
-|---------|---|--------|-------|
-| Phase Saving | ✅ | ✅ | Remember variable polarities |
-| 6-Step Target Rephasing | ✅ | ❌ | Kissat-style cycling target/original/inverted/flipped rephasing |
-| Random Phase Selection | ✅ | ✅ | Opt-in diversification (`--random-phase`) |
-
-### Restart Strategies
-
-| Feature | C | Python | Notes |
-|---------|---|--------|-------|
-| Glucose EMA + Reluctant Doubling | ✅ | ✅ (EMA) | Fast/slow Biere-Fröhlich LBD EMA (Focused) + reluctant doubling (Stable) |
-| Luby Sequence | ✅ | ✅ | Optional (`--luby-restart`) |
-| Glucose AVG | ✅ | ✅ | Optional sliding window (`--glucose-restart-avg`) |
-
-### Preprocessing & Inprocessing
-
-| Feature | C | Python | Notes |
-|---------|---|--------|-------|
-| Failed Literal Probing, HBR & Intersection | ✅ | ✅ (probing) | Root-prioritized probing, HBR, and RUP-certified double-lookahead backbone units |
-| Tarjan SCC & Congruence Closure | ✅ | ❌ | In-place SCC + 2-input AND/XOR/ITE & 3..8-input N-ary AND congruence (RUP-verified) |
-| Mini-Kitten CDCL SAT Sweeping & Backbone | ✅ | ❌ | Global 64-bit gate-DAG simulation + cross-cone Kitten sweeping + model-guided backbone (RUP) |
-| Gate-Aware BVE & SSR/Subsumption | ✅ | ❌ | Min-degree cascading BVE (AND/XOR/ITE) + 64-bit bloom SSR |
-| Prefix-Sharing Vivification & Transitive Reduction | ✅ | ❌ | O(n) prefix vivification + post-BVE binary transitive reduction |
-| Dynamic GF(2) XOR Gaussian Elimination | ✅ | ❌ | 2..7-var XOR + subsumed recovery + Tseitin chain stitching + Bird/Han-Jiang live matrices (non-proof) |
-| AMO Cliques, SBVA, Symmetry & BCE | ✅ | ❌ | Sinz sequential counters, Structured BVA (`--sbva`), exact BreakID symmetry breaking (`--sym`), BCE (`--bce`) |
-| Frozen-Variable Simplification | ✅ | ❌ | `solver_freeze` / `solver_melt` / `solver_is_frozen` protect incremental interface vars |
-
-### Advanced Features
-
-| Feature | C | Python | Notes |
-|---------|---|--------|-------|
-| Local Search / ProbSAT Hybrid | ✅ | ❌ | Kissat-style ProbSAT `(1+break)^(-2.3)` phase seeding + standalone WalkSAT (`--local-search`) |
-| DRAT Proof Logging | ✅ | ❌ | Independently verifiable text & binary DRAT proofs |
-| Chronological Backtracking | ✅ | ✅ | Enabled by default (`--chrono` / `--no-chrono`) |
-| Multi-Core Portfolio (`-j N`) | ✅ | ❌ | Diversified pthread workers with short clause sharing (`size <= 4`) & atomic stop |
-| Profile-Guided Optimization (PGO) | ✅ | ❌ | `make -C competition/c pgo` (Clang/LLVM) |
+The Python prototype implements the core CDCL techniques only (two-watched
+literals, 1-UIP learning with clause minimization, VSIDS, LBD clause management,
+Luby/Glucose restarts, phase saving, plus several opt-in simplifications); see
+[python/README.md](python/README.md).
 
 ---
 
 ## Performance
 
-### C vs Python Comparison
+For current C solver measurements (SAT Competition subsets, SATLIB corpora,
+proof-checked runs) see
+[c/PRODUCTION_READINESS.md](c/PRODUCTION_READINESS.md#current-verification--benchmark-evidence).
+
+### C vs Python (historical)
+
+Measured in December 2025 on the repository's `dataset/medium_tests/medium_suite`
+3-SAT instances; not re-measured since.
 
 | Test Set | C Solver | Python Solver | Speedup |
 |----------|----------|---------------|---------|
 | 5 hard instances | 0.010s | 2.258s | **226×** |
 | 53 all instances | 0.082s | ~60s | **700×+** |
 
-### Test Results
-
-- **C Solver**: 53/53 medium test instances pass
-- **Python Solver**: All correctness tests pass
-- Both produce identical SAT/UNSAT results
+The C solver still solves all 53 medium-suite instances.
 
 ---
 
-## Building
-
-### C Solver
+## Building and Testing
 
 ```bash
 cd c
 make              # Optimized build
 make MODE=debug   # Debug build with sanitizers
-make pgo          # Profile-Guided Optimization
-make test         # Run unit tests
+make pgo          # Profile-Guided Optimization (Clang/LLVM)
+make test         # Build and run the C unit tests
 ```
 
-### Python Solver
+The Python prototype needs no build: Python 3 with no external dependencies
+(it imports the `bsat` package from the repository's `src/`).
 
-No build required. Uses Python 3.7+ with no external dependencies.
+See [TESTING.md](TESTING.md) for the shared-fixture, Python, and C-vs-Python
+cross-validation tests.
 
 ---
 
@@ -161,9 +138,15 @@ No build required. Uses Python 3.7+ with no external dependencies.
 
 | Document | Description |
 |----------|-------------|
-| [C Solver README](c/README.md) | Complete CLI reference, build options |
-| [C Solver Features](c/FEATURES.md) | Detailed feature documentation |
-| [Python Solver README](python/README.md) | Usage, benchmarks, development timeline |
+| [C Solver README](c/README.md) | Build, run, architecture, embedding |
+| [C Solver Features](c/FEATURES.md) | Feature summary and CLI reference |
+| [C Production Readiness](c/PRODUCTION_READINESS.md) | Capability matrix, evidence, release gates |
+| [Python Solver README](python/README.md) | Prototype usage and development timeline |
+| [Feature Comparison](FEATURE_COMPARISON.md) | C vs Python feature matrix |
+| [Testing Guide](TESTING.md) | Running the test suites |
+| [Feature Testing Guide](FEATURE_TESTING.md) | Picking instances that trigger specific features |
+| [docs/](docs/README.md) | Technique explanations and historical Python-prototype reports |
+| [tests/](tests/README.md) | Shared fixture documentation |
 
 ---
 

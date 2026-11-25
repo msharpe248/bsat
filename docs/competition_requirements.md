@@ -2,6 +2,8 @@
 
 What it takes to build a solver that competes in the annual [SAT Competition](https://satcompetition.github.io/).
 
+> **Scope note:** In this document "BSAT" means the educational pure-Python package in `src/bsat/` (in particular `src/bsat/cdcl.py`), and the gap analysis, effort estimates and recommendations below were written about that package. The repository now also contains a separate C11 CDCL solver in `competition/c/` (callable from Python as `bsat.solve_c` once its shared library is built) that implements the techniques described here — two-watched literals, VSIDS/VMTF branching, LBD-tiered clause deletion, inprocessing, modern restart policies, clause minimization, a flat clause arena, a multi-threaded clause-sharing portfolio and DRAT/LRAT proof output — plus earlier Python prototypes in `competition/python/`. That solver has two goals: to be genuinely competitive, and to remain educational, with its techniques and the experiments behind them documented. It has not been entered in a SAT Competition. See [competition/c/README.md](../competition/c/README.md) for its current features and measured results.
+
 ## Table of Contents
 
 1. [Current State: BSAT vs Competition](#current-state-bsat-vs-competition)
@@ -83,9 +85,9 @@ Key differences:
 ### Historical Context
 
 **Evolution of Winners**:
-- **1999**: Chaff (introduced VSIDS, two-watched literals)
+- **2001**: Chaff (introduced VSIDS, two-watched literals)
 - **2003**: MiniSat (minimal, elegant design - ~2,000 lines)
-- **2007**: Glucose (LBD clause management)
+- **2009**: Glucose (LBD clause management)
 - **2011**: Lingeling (aggressive inprocessing)
 - **2019-2024**: Kissat (current state-of-the-art)
 
@@ -128,7 +130,7 @@ for clause in watched[literal]:  # Only affected clauses!
    - No valid watches → conflict
 4. **No work on backtracking** (watches stay valid!)
 
-**First introduced**: Chaff solver (1999) - still used in ALL modern solvers
+**First introduced**: Chaff solver (2001) - still used in ALL modern solvers
 
 **Lines of code**: ~200-300 lines
 **Complexity**: Moderate (pointer management tricky)
@@ -144,18 +146,18 @@ for clause in watched[literal]:  # Only affected clauses!
 
 **Impact**: 2-5× speedup through better branching decisions
 
-**What BSAT has**: Basic heap-based VSIDS ✅
+**What BSAT has**: Basic VSIDS (linear scan for the highest-scoring unassigned variable) ✅
 **What competition adds**: Highly tuned variant
 
 **Key refinements**:
 
 1. **Exponential moving average** (not linear decay)
 ```python
-# BSAT: Simple decay
+# Naive: Simple decay
 for var in variables:
     activity[var] *= 0.95
 
-# Competition: Bump + decay
+# Competition (and BSAT's cdcl.py): Bump + decay
 activity[var] += vsids_inc
 vsids_inc *= 1/vsids_decay  # Increase bump amount
 # Equivalent to EMA favoring recent conflicts
@@ -205,7 +207,7 @@ vsids_decay = 0.95  # Typical: 0.90-0.99
 
 **Impact**: 2-5× speedup on large instances through memory/cache optimization
 
-**What BSAT has**: Stores all learned clauses
+**What BSAT has**: A size cap only — once more than `learned_clause_limit` (default 10,000) learned clauses accumulate, it keeps the most recent half, with no quality metric
 **What competition does**: Aggressive deletion based on quality
 
 **The LBD (Literal Block Distance) metric** from Glucose solver:
@@ -254,7 +256,7 @@ else:
 
 **Lines of code**: ~200-300 lines
 **Necessity**: **VERY IMPORTANT**
-**First introduced**: Glucose solver (2007)
+**First introduced**: Glucose solver (2009)
 
 **References**:
 - [Glucose paper (2009)](https://www.ijcai.org/Proceedings/09/Papers/074.pdf)
@@ -326,11 +328,11 @@ def bounded_variable_addition():
     """
     Add auxiliary variable to simplify formula
 
-    Given: (a ∨ b ∨ c) ∧ (a ∨ b ∨ d)
-    Add: x ↔ (a ∨ b)  [new variable!]
-    Result: (x ∨ c) ∧ (x ∨ d) ∧ (¬x ∨ a ∨ b) ∧ (x ∨ ¬a) ∧ (x ∨ ¬b)
+    Given: (a ∨ c) ∧ (a ∨ d) ∧ (a ∨ e) ∧ (b ∨ c) ∧ (b ∨ d) ∧ (b ∨ e)   [6 clauses]
+    Add new variable x:
+    Result: (x ∨ c) ∧ (x ∨ d) ∧ (x ∨ e) ∧ (¬x ∨ a) ∧ (¬x ∨ b)        [5 clauses]
 
-    Often simpler for solver to handle
+    Resolving on x gives back the original clauses; fewer clauses for the solver
     """
 ```
 
@@ -345,7 +347,7 @@ def bounded_variable_addition():
 
 **References**:
 - [Inprocessing survey (Handbook of Satisfiability, 2021)](https://www.iospress.com/catalog/books/handbook-of-satisfiability-2)
-- [BVA paper](https://fmv.jku.at/papers/EenMishchenkoSorensson-SAT05.pdf)
+- [BVA paper (Manthey, Heule & Biere, 2012)](https://fmv.jku.at/papers/MantheyHeuleBiere-HVC12.pdf)
 
 ---
 
@@ -382,12 +384,15 @@ def should_restart():
 ```python
 def reluctant_doubling_restart():
     """
-    Increase restart interval when making progress
+    Knuth's "reluctant doubling" way of generating the Luby sequence
+    (1, 1, 2, 1, 1, 2, 4, 1, 1, 2, 1, 1, 2, 4, 8, ...)
 
-    Start: restart every 100 conflicts
-    If made progress: restart every 200 conflicts
-    If made progress: restart every 400 conflicts
-    If stuck: reset to 100
+    Keep a pair (u, v), starting at (1, 1); restart after v * base conflicts, then:
+      if u & -u == v:  (u, v) = (u + 1, 1)
+      else:            (u, v) = (u, 2 * v)
+
+    Used by Kissat/CaDiCaL in "stable" mode: mostly short intervals,
+    with occasional long runs
     """
 ```
 
@@ -397,10 +402,10 @@ def should_block_restart():
     """
     Don't restart if trail is "good"
 
-    Good trail = many recent assignments at low decision level
-    Indicates formula is being simplified
+    Good trail = current trail is much longer than its recent average
+    Indicates the solver may be close to a satisfying assignment
     """
-    return len(trail_at_level_0) > threshold
+    return len(trail) > 1.4 * avg_trail_size
 ```
 
 **BSAT's Luby sequence is fine for educational purposes**
@@ -409,7 +414,7 @@ def should_block_restart():
 **Lines of code**: ~100-200 lines
 
 **References**:
-- [Luby sequence paper (1993)](https://epubs.siam.org/doi/10.1137/0222043)
+- [Luby sequence paper (1993)](https://doi.org/10.1016/0020-0190%2893%2990029-9)
 - [Glucose restart strategy](https://www.ijcai.org/Proceedings/09/Papers/074.pdf)
 
 ---
@@ -567,7 +572,7 @@ __m256i literals = _mm256_load_si256(clause);
 
 **Impact**: 2-3× speedup with 8-16 cores, more with 100+ cores
 
-**What BSAT has**: Single-threaded
+**What BSAT has**: Single-threaded (the Python package; the C solver in `competition/c/` has a `-j N` clause-sharing portfolio)
 **What cloud track winners use**: 100-1,000 cores
 
 #### 8.1 Portfolio Approach
@@ -639,9 +644,9 @@ def share_learned_clauses():
 **Necessity**: **NOT REQUIRED** for main track, essential for cloud track
 
 **References**:
-- [Cube-and-Conquer paper (2014)](https://arxiv.org/abs/1410.5158)
+- [Cube-and-Conquer paper (Heule, Kullmann, Wieringa & Biere, 2011)](https://fmv.jku.at/papers/HeuleKullmannWieringaBiere-HVC11.pdf)
 - [MallobSat (2024 cloud winner)](https://github.com/domschrei/mallob)
-- [ManySAT (portfolio solver)](https://www.labri.fr/perso/lsimon/downloads/publications/ManySAT.pdf)
+- ManySAT (portfolio solver; Hamadi, Jabbour & Sais, JSAT 2009)
 
 ---
 
@@ -693,7 +698,7 @@ static inline int propagate(solver* s, lit l) {
 | **Lingeling** | C | ~10,000 | Aggressive inprocessing |
 | **CaDiCaL** | C++ | ~15,000 | Modern techniques |
 | **Kissat** | C | ~20,000 | State-of-the-art 2024 |
-| **BSAT** | Python | ~1,000 | Educational, not competitive |
+| **BSAT** (`src/bsat/cdcl.py`) | Python | ~500 | Educational, not competitive |
 
 #### 9.3 Real-World Comparison
 
@@ -993,6 +998,8 @@ Competition tuning uses:
 
 **This is the recommended path for BSAT!**
 
+**Status**: `src/bsat/cdcl.py` has deliberately been kept simple and has none of items 2-5. Two-watched literals, LBD clause management and phase saving are instead implemented in the Python prototype `competition/python/cdcl_optimized.py` and in the C solver (`competition/c/`).
+
 ---
 
 ### Path 2: Research Contribution
@@ -1055,6 +1062,8 @@ Use existing world-class solvers:
 - You have 2-4 years to invest
 - You want to become a SAT researcher
 
+**Status**: This repository has since taken this path alongside Path 1. The C solver in `competition/c/` aims to be competitive while staying educational: the pure-Python package remains the readable introduction, and the C solver shows what the ten pillars above look like when actually built, with each technique and experiment written up. See [competition/c/README.md](../competition/c/README.md).
+
 ---
 
 ## Python SAT Resources
@@ -1105,11 +1114,10 @@ s.check()  # sat/unsat
 - **What**: Educational SAT solver package
 - **Features**: 2SAT, DPLL, CDCL, Horn-SAT, XOR-SAT, etc.
 - **Use case**: Learning SAT solving
-- **GitHub**: [Your repo]
+- **GitHub**: [msharpe248/bsat](https://github.com/msharpe248/bsat)
 
 #### 2. **SATPy** - Simple SAT in Python
 - **What**: Minimal DPLL implementation
-- **GitHub**: [eliben/sat.py](https://github.com/eliben/sat)
 - **Lines**: ~200 lines
 - **Use case**: Understanding DPLL basics
 
@@ -1217,7 +1225,7 @@ s.check()  # sat/unsat
 #### 3. **Tutorials**
 
 - **Modern SAT Solvers: Fast, Neat and Underused**
-  - [codingnest.com series](https://codingnest.com/modern-sat-solvers-fast-neat-and-underused-part-1-of-n/)
+  - [codingnest.com series](https://codingnest.com/modern-sat-solvers-fast-neat-underused-part-1-of-n/)
   - Practical guide
 
 - **SAT Solver Etudes**
@@ -1310,34 +1318,36 @@ if solver.check() == sat:
 
 **Competition winners**:
 - Kissat (2024): Armin Biere (20+ years SAT research)
-- CaDiCaL (2023): Same team, building on MiniSat/Lingeling
-- Glucose (2007-2013): PhD researchers at CRIL, France
+- SBVA-CaDiCaL (2023): Haberlandt, Green & Heule (CMU), building on Biere's CaDiCaL
+- Glucose (2009-2013): Gilles Audemard (CRIL) and Laurent Simon, France
 - MiniSat (2003+): Niklas Eén (15+ years SAT research)
 
 **These aren't "better programmers" - they're researchers with decades of experience, novel techniques, and continuous refinement.**
 
 ---
 
-### BSAT's Mission: Education ✅
+### The Python Package's Mission: Education ✅
 
-**What BSAT is**:
+**What the pure-Python `bsat` package is**:
 - ✅ Excellent educational tool
 - ✅ Clear, readable implementation
 - ✅ Teaches core SAT concepts
-- ✅ Multiple solver types (2SAT, DPLL, CDCL, Horn, XOR, WalkSAT)
+- ✅ Multiple solver types (Davis-Putnam, 2SAT, DPLL, CDCL, Horn, XOR, WalkSAT, Schöning, p-bit)
 - ✅ Comprehensive documentation
 - ✅ Perfect for learning
 
-**What BSAT is NOT**:
+**What it is NOT**:
 - ❌ Competition-level solver
 - ❌ Production-ready for large instances
 - ❌ Aiming for maximum performance
 
 **This is by design and is the correct choice!**
 
+The competitive side of the project is the separate C solver under `competition/c/`, which is meant to be both competitive and educational — see [competition/c/README.md](../competition/c/README.md).
+
 ---
 
-### Recommended Actions for BSAT
+### Recommended Actions for the Python Package
 
 #### Option A: Stay Educational (Recommended) ✅
 Keep Python, keep clarity, add:
@@ -1380,7 +1390,7 @@ Keep Python, keep clarity, add:
 - Brutal C-level optimization
 - Thousands of hours of tuning
 
-**BSAT's value is in education, not competition.**
+**The pure-Python package's value is in education, not competition.** The C solver in `competition/c/` is this project's attempt at both: competitive performance, built and documented so it can be learned from.
 
 Teaching the next generation of SAT researchers is arguably MORE valuable than one more competition entry. MiniSat (2003) never won competitions after 2005, but it influenced 100+ derivative solvers and taught thousands of students.
 
@@ -1414,7 +1424,7 @@ Teaching the next generation of SAT researchers is arguably MORE valuable than o
 ### Educational
 - **Handbook of Satisfiability**: [IOS Press](https://www.iospress.com/catalog/books/handbook-of-satisfiability-2)
 - **Aalto Course**: [users.aalto.fi/~tjunttil](https://users.aalto.fi/~tjunttil/2020-DP-AUT/)
-- **Modern SAT Solvers Blog**: [codingnest.com](https://codingnest.com/modern-sat-solvers-fast-neat-and-underused-part-1-of-n/)
+- **Modern SAT Solvers Blog**: [codingnest.com](https://codingnest.com/modern-sat-solvers-fast-neat-underused-part-1-of-n/)
 
 ---
 

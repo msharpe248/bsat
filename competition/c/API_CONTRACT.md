@@ -13,18 +13,26 @@ unknown versions/flags fail construction. Signed DIMACS arrays are copied during
 calls, variables grow automatically, and zero is invalid inside a literal array.
 Empty clauses are accepted input. Assumptions must reference existing variables.
 Use `bsat_set_limits` before input, or `bsat_set_query_limits` between queries.
-`bsat_get_stats` returns a stable latest-query snapshot; see `IPASIR.md`. Only the
+`bsat_get_stats` returns a stable latest-query snapshot; see [IPASIR.md](docs/IPASIR.md). Only the
 latest SAT result permits model reads; additions, checkpoints and new solves
 invalidate that lifetime. Changing query/service limits preserves the latest answer.
 Errors poison a handle. Destroy it exactly once; destroying NULL is valid.
 `BSAT_CERTIFICATES` enables query-scoped exports over retained learning; see
-`RETAINED_CERTIFICATES.md`. Other internal options remain private.
+[RETAINED_CERTIFICATES.md](docs/RETAINED_CERTIFICATES.md). Other internal options remain private.
 
 `BSAT_CERTIFIED_PROBING` enables bounded RUP failed-literal probing and requires
 `BSAT_CERTIFICATES`; passing it alone or with only `BSAT_REUSE_LEARNTS` fails
 construction. Valid combinations are 0, 1, 2, 3, 6 and 7. Existing flags retain
 their defaults. This additive ABI-v1 option preserves original variables and
 future assumptions; it can increase work or journal growth on some workloads.
+
+Additive ABI-v1 functions declared at the end of `bsat.h`: `bsat_freeze` /
+`bsat_melt` / `bsat_is_frozen`; `bsat_set_threads` (1..64, before the first
+input or solve; the portfolio is used only for calls without assumptions on
+handles without a certificate journal or proof); `bsat_set_proof` /
+`bsat_set_lrat` (before the first input or solve; rejected on
+`BSAT_CERTIFICATES` handles and with more than one thread); `bsat_add_xor`,
+`bsat_add_atmost`, `bsat_add_pb_le`; `bsat_backbone` and `bsat_mus`.
 
 The following details additionally describe the internal C interface.
 
@@ -84,7 +92,7 @@ assumptions are removed and root assignments replayed; permanent root
 inconsistency is tracked separately. Congruence's entailed additions are
 compatible. Proofs, reconstruction state, destructive preprocessing, local
 search, inprocessing and interrupted propagation use the rebuild path. See
-`INCREMENTAL_REUSE.md` for the exact boundary and evidence.
+[INCREMENTAL_REUSE.md](docs/INCREMENTAL_REUSE.md) for the exact boundary and evidence.
 Repeated-solve preparation is charged to the new call's CPU limit. Do not mutate
 options or internal storage after construction.
 
@@ -109,7 +117,7 @@ pointer and callback. Polls run synchronously at existing bounded-work checks an
 before accepting a result. Nonzero produces UNKNOWN without poisoning the handle.
 The callback survives rebuilding/equivalence replacement. Explicit cancellation
 never authorizes a second portfolio attempt, and final callback CPU is charged
-to the deadline. See `CANCELLATION_BOUNDARIES.md` for regressions. Disable/reset the
+to the deadline. See [CANCELLATION_BOUNDARIES.md](docs/CANCELLATION_BOUNDARIES.md) for regressions. Disable/reset the
 request before retrying. It may inspect an application-owned atomic flag updated
 by another thread; never reenter/mutate the handle from a callback, other thread
 or signal handler. Polling is cooperative: allocation, I/O, model reconstruction
@@ -118,7 +126,7 @@ and other operations between polls are not hard real-time cancellation points.
 The CLI retains normal POSIX SIGINT/SIGTERM termination. A killed process may
 leave a partial proof and no status line; consumers must never treat that as a
 certificate. Use exit codes 10/20 plus independent model/proof validation for
-accepted results. Exit 0 means UNKNOWN, exit 1 an error, and signal termination
+accepted results (`.wcnf`/`.opb` optimization exits 30 on `s OPTIMUM FOUND`). Exit 0 means UNKNOWN, exit 1 an error, and signal termination
 means interrupted execution. External supervision can enforce memory/wall limits.
 
 ## Executable coverage and remaining scope
@@ -140,4 +148,4 @@ an explicitly augmented input.
 
 `tests/certify_query.py` now supplies an independently checked augmented-input
 workflow for conditional certificates, with exact base/query/assumption bindings;
-see `CONDITIONAL_CERTIFICATES.md`.
+see [CONDITIONAL_CERTIFICATES.md](docs/CONDITIONAL_CERTIFICATES.md).

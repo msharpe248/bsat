@@ -1,5 +1,7 @@
 # Temporary retention of used learned clauses
 
+> Historical snapshot (2026-09-06). Defaults, options and code locations described here have since changed; current behavior is in [README.md](../README.md), [FEATURES.md](../FEATURES.md) and [PRODUCTION_READINESS.md](../PRODUCTION_READINESS.md).
+
 `--protect-used` gives a learned clause with LBD at most six a reprieve at the
 next database reduction after it participates as the conflict clause or an
 expanded reason during conflict analysis. It is opt-in and disabled by default.

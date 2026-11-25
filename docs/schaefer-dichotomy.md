@@ -23,7 +23,7 @@ In 1978, Thomas J. Schaefer published one of the most elegant and important resu
 Before Schaefer's work:
 - We knew SAT was NP-complete (Cook-Levin theorem, 1971)
 - We knew 2SAT was in P (polynomial time)
-- We suspected 3SAT was NP-complete
+- We knew 3SAT was NP-complete (Cook 1971, Karp 1972)
 - But we had no unified theory explaining **which** constraint types were tractable
 
 After Schaefer's work:
@@ -98,7 +98,7 @@ A constraint language is **0-valid** if every constraint is satisfied when all v
 
 #### Characterization
 
-- **CNF Form:** All clauses contain only negative literals (no positive literals)
+- **CNF Form:** Every clause contains at least one negative literal
 - **Property:** The all-false assignment `{x₁=False, x₂=False, ...}` satisfies the entire formula
 
 #### Examples
@@ -106,30 +106,30 @@ A constraint language is **0-valid** if every constraint is satisfied when all v
 ✅ **0-Valid formulas:**
 ```
 (¬x ∨ ¬y)                       # Both can be false
-(¬x ∨ ¬y ∨ ¬z)                  # All can be false
-(¬a ∨ ¬b) ∧ (¬b ∨ ¬c) ∧ (¬a ∨ ¬c)  # Complete 0-valid CNF
+(x ∨ ¬y)                        # Satisfied by y = False
+(¬a ∨ b) ∧ (¬b ∨ ¬c) ∧ (a ∨ ¬c)   # Complete 0-valid CNF
 ```
 
 ❌ **Not 0-valid:**
 ```
-(x ∨ ¬y)        # Has positive literal x
-(¬x ∨ y)        # Has positive literal y
+(x)             # Unit positive clause
+(x ∨ y)         # All positive: false when x = y = False
 (x ∨ y ∨ z)     # All positive
 ```
 
 #### Why It's Tractable
 
-**Complexity:** O(1) - constant time!
+**Complexity:** O(1) once the property is known (O(n+m) to check it and write out the assignment)
 
 **Algorithm:**
 ```python
 def solve_0_valid(cnf):
     """
-    Solve 0-valid SAT in constant time
+    Solve 0-valid SAT (no search needed)
     """
-    # Check that all clauses are 0-valid (only negative literals)
+    # Check that all clauses are 0-valid (at least one negative literal)
     for clause in cnf.clauses:
-        if any(not lit.negated for lit in clause.literals):
+        if not any(lit.negated for lit in clause.literals):
             return None  # Not 0-valid
 
     # Solution: set all variables to False
@@ -161,7 +161,7 @@ A constraint language is **1-valid** if every constraint is satisfied when all v
 
 #### Characterization
 
-- **CNF Form:** All clauses contain only positive literals (no negative literals)
+- **CNF Form:** Every clause contains at least one positive literal
 - **Property:** The all-true assignment `{x₁=True, x₂=True, ...}` satisfies the entire formula
 
 #### Examples
@@ -169,30 +169,30 @@ A constraint language is **1-valid** if every constraint is satisfied when all v
 ✅ **1-valid formulas:**
 ```
 (x ∨ y)                    # Both can be true
-(x ∨ y ∨ z)                # All can be true
-(a ∨ b) ∧ (b ∨ c) ∧ (a ∨ c)  # Complete 1-valid CNF
+(¬x ∨ y)                   # Satisfied by y = True
+(a ∨ ¬b) ∧ (b ∨ c) ∧ (¬a ∨ c)  # Complete 1-valid CNF
 ```
 
 ❌ **Not 1-valid:**
 ```
-(¬x ∨ y)        # Has negative literal ¬x
-(x ∨ ¬y)        # Has negative literal ¬y
+(¬x)            # Unit negative clause
+(¬x ∨ ¬y)       # All negative: false when x = y = True
 (¬x ∨ ¬y ∨ ¬z)  # All negative
 ```
 
 #### Why It's Tractable
 
-**Complexity:** O(1) - constant time!
+**Complexity:** O(1) once the property is known (O(n+m) to check it and write out the assignment)
 
 **Algorithm:**
 ```python
 def solve_1_valid(cnf):
     """
-    Solve 1-valid SAT in constant time
+    Solve 1-valid SAT (no search needed)
     """
-    # Check that all clauses are 1-valid (only positive literals)
+    # Check that all clauses are 1-valid (at least one positive literal)
     for clause in cnf.clauses:
-        if any(lit.negated for lit in clause.literals):
+        if not any(not lit.negated for lit in clause.literals):
             return None  # Not 1-valid
 
     # Solution: set all variables to True
@@ -240,7 +240,8 @@ A constraint language is **bijunctive** if every constraint is a disjunction of 
 ```
 (x ∨ y)                           # Binary clause
 (¬x ∨ z)                          # Binary clause
-(x)                               # Unit clause (width 1, allowed)
+(x)                               # Unit clause (width 1, allowed in theory;
+                                  #  BSAT's is_2sat/solve_2sat need exactly 2 literals)
 (x ∨ y) ∧ (¬x ∨ z) ∧ (¬y ∨ ¬z)     # Complete 2SAT formula
 ```
 
@@ -297,8 +298,10 @@ else:
 **Output:**
 ```
 This is 2SAT - solvable in polynomial time!
-SAT: {'x': False, 'y': False, 'z': False}
+SAT: {'x': True, 'y': False, 'z': True}
 ```
+
+(The solver may instead return `{'x': False, 'y': True, 'z': False}` — both assignments are valid and which one you get can vary between runs.)
 
 #### Implication Graph Example
 
@@ -465,11 +468,8 @@ Result: {x: True, y: True, z: True}
 **Example - Expert System:**
 ```python
 # Rules for medical diagnosis
-rules = """
-(fever) &                              # Patient has fever (fact)
-(~fever | infection) &                 # Fever → infection
-(~infection | needs_antibiotic) &     # Infection → needs antibiotic
-"""
+# fever (fact); fever → infection; infection → needs_antibiotic
+rules = "(fever) & (~fever | infection) & (~infection | needs_antibiotic)"
 
 cnf = CNFExpression.parse(rules)
 diagnosis = solve_horn_sat(cnf)
@@ -582,7 +582,10 @@ def solve_dual_horn_sat(cnf):
             return None  # Not dual-Horn
 
     # Step 1: Negate all literals
-    negated_cnf = negate_formula(cnf)
+    negated_cnf = CNFExpression([
+        Clause([Literal(lit.variable, not lit.negated) for lit in clause.literals])
+        for clause in cnf.clauses
+    ])
 
     # Step 2: Solve as Horn-SAT
     horn_solution = solve_horn_sat(negated_cnf)
@@ -775,7 +778,7 @@ equations = """
 
 1. **Algebraic structure:** Only constraint type with field structure
 2. **Efficient:** O(n³) is practical even for thousands of variables
-3. **Unique solutions:** Often has exactly one solution or no solution (unlike SAT which can have exponentially many)
+3. **Structured solution sets:** Either no solution or exactly 2^(n − rank) solutions (an affine subspace of GF(2)ⁿ)
 4. **Applications:** Critical in cryptography and coding theory
 
 ---
@@ -792,15 +795,15 @@ Schaefer proved that if a Boolean constraint language does **NOT** satisfy any o
 
 ```python
 # 3SAT formula
-(x ∨ y ∨ z) ∧ (¬x ∨ y ∨ ¬z) ∧ (x ∨ ¬y ∨ z)
+(x ∨ y ∨ z) ∧ (¬x ∨ ¬y ∨ ¬z) ∧ (x ∨ ¬y ∨ z)
 ```
 
 **Why NP-complete:**
 - ❌ Not 0-valid: clause `(x ∨ y ∨ z)` fails with all-false
-- ❌ Not 1-valid: clause `(¬x ∨ y ∨ ¬z)` can fail with all-true
+- ❌ Not 1-valid: clause `(¬x ∨ ¬y ∨ ¬z)` fails with all-true
 - ❌ Not bijunctive: clauses have 3 literals (not ≤2)
 - ❌ Not Horn: clause `(x ∨ y ∨ z)` has 3 positive literals
-- ❌ Not dual-Horn: clause `(¬x ∨ y ∨ ¬z)` has 2 negative literals
+- ❌ Not dual-Horn: clause `(¬x ∨ ¬y ∨ ¬z)` has 3 negative literals
 - ❌ Not affine: OR clauses, not XOR
 
 **Fails all 6 properties → NP-complete** (Cook-Levin theorem)
@@ -829,18 +832,18 @@ NAE(x, y, z) ∧ NAE(a, b, c)
 - Even **positive 1-in-3-SAT** (no negations!) is NP-complete
 - Shows that monotonicity alone doesn't guarantee tractability
 
-#### 4. Positive 3SAT (Monotone 3SAT)
+#### 4. Monotone 3SAT
 
 ```python
-# All positive literals (no negations)
-(x ∨ y ∨ z) ∧ (x ∨ w ∨ v) ∧ (y ∨ z ∨ w)
+# Every clause is all-positive or all-negative
+(x ∨ y ∨ z) ∧ (¬x ∨ ¬w ∨ ¬v) ∧ (y ∨ z ∨ w)
 ```
 
 **Why NP-complete:**
-- ✅ Is 1-valid (all-true works)
-- ❌ But NOT all clauses are positive 2-literal (not bijunctive)
-- The width (3 literals) makes it hard despite monotonicity
-- This is surprising: even "positive" formulas are hard!
+- ❌ Not 0-valid (all-positive clauses fail) and not 1-valid (all-negative clauses fail)
+- ❌ Not bijunctive, Horn, dual-Horn or affine
+- Note: a formula with *only* all-positive clauses is 1-valid and trivially satisfiable (set everything True); it is the mix of all-positive and all-negative clauses that is hard
+- This is surprising: no clause mixes polarities, yet the problem is NP-complete!
 
 ### The Proof Intuition
 
@@ -871,13 +874,13 @@ Thus: NAE-3SAT is at least as hard as 3SAT → NP-complete
 ```
 Start: I have a CNF formula. Which solver should I use?
 │
-├─ All clauses only negative literals? (e.g., ¬x ∨ ¬y)
+├─ Every clause has at least one negative literal? (e.g., x ∨ ¬y)
 │  └─ YES → 0-valid: Solution = all False (O(1))
 │
-├─ All clauses only positive literals? (e.g., x ∨ y)
+├─ Every clause has at least one positive literal? (e.g., ¬x ∨ y)
 │  └─ YES → 1-valid: Solution = all True (O(1))
 │
-├─ All clauses have ≤ 2 literals? (e.g., x ∨ y, ¬x ∨ z)
+├─ All clauses have 2 literals? (e.g., x ∨ y, ¬x ∨ z)
 │  └─ YES → 2SAT: Use solve_2sat() (O(n+m))
 │
 ├─ All clauses have ≤ 1 positive literal? (e.g., ¬x ∨ ¬y ∨ z)
@@ -899,23 +902,26 @@ Start: I have a CNF formula. Which solver should I use?
 ### Python Implementation: Automatic Solver Selection
 
 ```python
+from bsat import (CNFExpression, Clause, Literal, is_2sat, solve_2sat,
+                  is_horn_formula, solve_horn_sat, solve_cdcl)
+
 def classify_and_solve(cnf):
     """
     Automatically classify formula and use best solver
     """
-    # Check 0-valid (all negative)
-    if all(all(lit.negated for lit in clause.literals)
+    # Check 0-valid (every clause has a negative literal)
+    if all(any(lit.negated for lit in clause.literals)
            for clause in cnf.clauses):
         print("0-valid detected → O(1) solution")
         return {var: False for var in cnf.get_variables()}
 
-    # Check 1-valid (all positive)
-    if all(all(not lit.negated for lit in clause.literals)
+    # Check 1-valid (every clause has a positive literal)
+    if all(any(not lit.negated for lit in clause.literals)
            for clause in cnf.clauses):
         print("1-valid detected → O(1) solution")
         return {var: True for var in cnf.get_variables()}
 
-    # Check 2SAT (width ≤ 2)
+    # Check 2SAT (width 2)
     if is_2sat(cnf):
         print("2SAT detected → O(n+m) algorithm")
         return solve_2sat(cnf)
@@ -926,9 +932,15 @@ def classify_and_solve(cnf):
         return solve_horn_sat(cnf)
 
     # Check Dual-Horn (≤1 negative per clause)
-    if is_dual_horn_formula(cnf):
+    if all(sum(lit.negated for lit in clause.literals) <= 1
+           for clause in cnf.clauses):
         print("Dual-Horn detected → O(n+m) via transformation")
-        return solve_dual_horn_sat(cnf)
+        flipped = CNFExpression([
+            Clause([Literal(lit.variable, not lit.negated) for lit in clause.literals])
+            for clause in cnf.clauses
+        ])
+        result = solve_horn_sat(flipped)
+        return None if result is None else {var: not val for var, val in result.items()}
 
     # Check XOR-SAT (harder to detect from CNF encoding)
     # (Requires checking if CNF encodes XOR constraints)
@@ -944,11 +956,11 @@ def classify_and_solve(cnf):
 from bsat import CNFExpression
 
 # Example 1: Horn formula
-horn_formula = "x & (~x | y) & (~y | z)"
+horn_formula = "x & (~x | ~y | z) & (~z | ~w)"
 cnf1 = CNFExpression.parse(horn_formula)
 result1 = classify_and_solve(cnf1)
 # Output: "Horn-SAT detected → O(n+m) algorithm"
-# Result: {'x': True, 'y': True, 'z': True}
+# Result: {'w': False, 'x': True, 'y': False, 'z': False}
 
 # Example 2: 2SAT formula
 two_sat_formula = "(x | y) & (~x | z) & (~y | ~z)"
@@ -957,7 +969,7 @@ result2 = classify_and_solve(cnf2)
 # Output: "2SAT detected → O(n+m) algorithm"
 
 # Example 3: General 3SAT (NP-complete)
-three_sat_formula = "(x | y | z) & (~x | y | ~z)"
+three_sat_formula = "(x | y | z) & (~x | ~y | ~z)"
 cnf3 = CNFExpression.parse(three_sat_formula)
 result3 = classify_and_solve(cnf3)
 # Output: "General SAT → Using CDCL solver (NP-complete)"
@@ -1023,7 +1035,7 @@ result3 = classify_and_solve(cnf3)
 
 10. **BSAT Documentation:** See `docs/` directory
     - [2SAT Solver](2sat-solver.md) - 2SAT (bijunctive case)
-    - [Horn-SAT Solver](advanced-solvers.md#horn-sat) - Horn-SAT implementation
+    - [Horn-SAT Solver](hornsat-solver.md) - Horn-SAT implementation
     - [XOR-SAT Solver](xorsat-solver.md) - XOR-SAT (affine case)
     - [Constraint Types](constraint-types.md) - Comprehensive constraint taxonomy
     - [3SAT Variants](3sat-variants.md) - NP-complete variants
@@ -1036,8 +1048,8 @@ result3 = classify_and_solve(cnf3)
 
 **"Two Zeros, Two Valids, Two Classes"**
 
-1. **0-Valid:** All negative → set all False
-2. **1-Valid:** All positive → set all True
+1. **0-Valid:** Every clause has a negative literal → set all False
+2. **1-Valid:** Every clause has a positive literal → set all True
 3. **Bijunctive (2SAT):** Width ≤ 2 → SCC algorithm
 4. **Horn:** ≤1 positive → forward chaining
 5. **Dual-Horn:** ≤1 negative → backward chaining

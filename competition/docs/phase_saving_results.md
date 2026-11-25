@@ -1,5 +1,7 @@
 # Phase Saving Benchmark Results
 
+> **Historical record (October 2025, Python prototype).** Status lines, line numbers, results, and "next steps" below describe `competition/python/` at that date and are not kept up to date. For the current solver see [competition/c/README.md](../c/README.md).
+
 **Date**: October 20, 2025
 **Benchmark**: benchmark_phase_saving.py
 **Comparison**: With Phase Saving vs Without Phase Saving

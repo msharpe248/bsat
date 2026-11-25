@@ -1,5 +1,7 @@
 # Keep heap branching as the default
 
+> Historical snapshot (2026-09-07). Defaults, options and code locations described here have since changed; current behavior is in [README.md](../README.md), [FEATURES.md](../FEATURES.md) and [PRODUCTION_READINESS.md](../PRODUCTION_READINESS.md).
+
 The additional-instance screen does not support promoting VMTF to the default.
 At ten solving CPU seconds, default heap branching verifies 3/16 inputs and
 VMTF verifies 2/16, losing battleship and gaining none. Pinned Kissat verifies

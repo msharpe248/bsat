@@ -2,8 +2,8 @@
 
 This matrix describes checked behavior, not a percentage of solver correctness.
 The former “100% of directly testable features” claim and 2025 test counts were
-outdated. The Makefile discovers `test_*.c` automatically (69 C executables as of
-2026-09-10). Release and ASan/UBSan use separate object directories. The authoritative
+outdated. The Makefile discovers `test_*.c` automatically (77 C executables as of
+2026-11-25). Release and ASan/UBSan use separate object directories. The authoritative
 capability and release-gate summary is [Production readiness](../PRODUCTION_READINESS.md).
 
 | Area | Executable evidence | Boundary |
@@ -16,7 +16,7 @@ capability and release-gate summary is [Production readiness](../PRODUCTION_READ
 | Search policies | `test_heap`, `test_vmtf`, `test_phases`, `test_rephase`, `test_portfolio`, `test_restart_reuse` | Policy/state invariants, certified assumption-prefix restarts and query-aware LBD scoring with 300 duplicates, boundary reset and future query/addition checks; not a general performance guarantee |
 | Local search | `test_local_search_*`, `test_walk_phase_feedback`, `validate_local_search.py` | Model checks, initialization, counters, root assignments and budgets |
 | API | `test_api_contract`, `test_options`, `test_regressions` | Supported synchronous contract, invalid arguments, repeated calls and truth-table comparisons |
-| Allocation failures | `make fault-test recovery-fault-test` | Deterministic ENOMEM sweeps, including 131 recovery cutoffs; not every possible allocation sequence |
+| Allocation failures | `make fault-test recovery-fault-test` | Deterministic ENOMEM sweeps, including 138 recovery cutoffs; not every possible allocation sequence |
 | Proof I/O | `test_proof_encoding`, `check_process_failures.py` | Text/binary bytes, short writes, deferred flush failures, file-size limits and signals |
 | Independent answers | `validate.py` with pinned drat-trim | Small truth tables, original models, RUP checks and external UNSAT certificates across option combinations |
 | Long search | `check_long_search.py` | 24 assignment-exclusion/pigeonhole cases with renamed variables and reordered literals/clauses; counter gates require real restarts, reductions, GC and SCC substitution |
@@ -32,6 +32,11 @@ capability and release-gate summary is [Production readiness](../PRODUCTION_READ
 | Complete Linux acceptance | `linux_acceptance.py`, manual `c-linux-acceptance.yml` | Cgroup/private-tmpfs worker and checker containment, five failures and checked replay; provisional hosted limits, supervisor outside |
 | Service limits | `test_service_limits`, `test_query_controls`, `test_resource_limits.py` | Cooperative API limits and isolated OS process limits; owned capacity is not RSS |
 | IPASIR/ABI/concurrency | `test_ipasir`, `make embedding-test package-test soak-test` | Installed/frozen consumers, independent instances and callbacks; same-handle calls serialized |
+| Structural engines and `-j` portfolio | `test_gauss_and_amo`, `test_differential_engines`, `test_inprocess_and_shrink` | GF(2) Gauss, AMO, SBVA, symmetry breaking (including DRAT output), N-ary/MAJ3/XOR3 congruence, frozen variables and 4-thread portfolio on constructed formulas; 160 differential and 256 exhaustive small cases |
+| Native LRAT | `test_lrat` | Text/binary emission checked by the in-tree `lrat_verify_file` (same module as the emitter); no external LRAT checker in CI |
+| XOR-CNF, PB and MaxSAT | `test_xor_and_pb`, `test_maxsat` | Sinz, totalizer, GTE/adder encoders, OPB optimization and RC2/OLL against brute force on 60 small randomized instances |
+| Enumeration, backbone and MUS | `test_queries` | AllSAT/projection, backbone and MUS minimality on small oracle-checked formulas |
+| Additive public ABI | `test_public_extensions` | freeze/melt, threads, XOR/PB, backbone, MUS and native LRAT through `bsat.h` |
 
 ## Reproduce
 
@@ -66,8 +71,8 @@ The larger frozen application screen complements these constructed stress cases.
 
 The supported API, concurrency, cancellation and reuse boundaries are explicit
 in [API_CONTRACT.md](../API_CONTRACT.md). Conditional certificates use a separate
-augmented-input workflow. [PRODUCTION_GAPS.md](../docs/PRODUCTION_GAPS.md) tracks the
-latest milestones and evidence.
+augmented-input workflow. [PRODUCTION_GAPS.md](../docs/PRODUCTION_GAPS.md) archives the
+September 2026 milestones and evidence.
 Older experiment records are historical snapshots; their counts and performance
 claims apply only to their pinned binaries and workloads.
 

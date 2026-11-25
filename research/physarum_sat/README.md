@@ -179,9 +179,11 @@ class PHYSARUMSATSolver:
 
 ### Basic Usage
 
+Run from the repository root with `PYTHONPATH=src:.` (or add `research/` to `sys.path` and import `physarum_sat` directly, as `example.py` does).
+
 ```python
 from bsat import CNFExpression
-from physarum_sat import PHYSARUMSATSolver
+from research.physarum_sat import PHYSARUMSATSolver
 
 # Create CNF formula
 cnf = CNFExpression.parse("(a | b) & (~a | c)")
@@ -193,8 +195,10 @@ result = solver.solve()
 if result:
     print(f"SAT: {result}")
 else:
-    print("UNSAT")
+    print("UNSAT")  # always decided by the CDCL fallback
 ```
+
+`max_iterations` defaults to 10000. A convenience function `solve_physarum_sat(cnf, max_iterations=10000, max_conflicts=1000000)` is also exported.
 
 ### With Statistics
 
@@ -209,6 +213,8 @@ print(f"Edges: {stats['edges']}")
 print(f"Flow iterations: {stats['flow_iterations']}")
 print(f"Satisfied clauses: {stats['satisfied_clauses']}")
 ```
+
+These four keys are everything `get_network_statistics()` returns. `satisfied_clauses` counts clauses receiving enough flow at the last iteration (not clauses satisfied by the returned assignment). When the CDCL fallback is used, `solver.stats.decisions/conflicts/propagations` hold the fallback's counters.
 
 ### Advanced Usage
 
@@ -234,7 +240,7 @@ for var in cnf.get_variables():
 See `example.py` for comprehensive examples:
 
 ```bash
-python3 example.py
+python3 research/physarum_sat/example.py   # from the repository root (also works from this directory)
 ```
 
 Examples include:
@@ -258,7 +264,7 @@ Examples include:
 
 1. **Convergence Time**: May require many iterations
 2. **Parameters**: Performance sensitive to μ, γ, dt
-3. **UNSAT Detection**: Hard to distinguish from slow convergence
+3. **UNSAT Detection**: The flow dynamics cannot prove UNSAT; every UNSAT answer comes from the CDCL fallback after all `max_iterations` are spent
 4. **Computational Overhead**: Flow simulation adds cost
 5. **No Guarantees**: May not converge (uses CDCL fallback)
 
@@ -310,7 +316,7 @@ PHYSARUM-SAT demonstrates:
 - **Best for**: Problems with clear flow paths
 - **Struggles with**: Highly conflicting constraints
 - **Interesting behavior**: Tube diameters reveal variable importance
-- **Typical iterations**: 100-1000 for simple, 1000-10000 for complex
+- **Typical iterations**: 100-1000 for simple, 1000-10000 for complex (expectation, not measured; in spot checks tiny formulas converged in 1 iteration, while random 3-SAT with 20 variables and the larger `example.py` formula used the whole iteration budget and were answered by the CDCL fallback)
 
 ## Why It Might Work
 

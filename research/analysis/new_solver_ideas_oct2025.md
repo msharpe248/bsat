@@ -2,6 +2,17 @@
 
 **Date**: October 17, 2025
 **Status**: Planning Phase → Ready for Implementation
+
+> **Note (historical planning document).** All 8 solvers described here were subsequently implemented
+> under `research/<name>_sat/`. The file names, timelines and success criteria below are the original
+> plan, not a description of the code. Where the implementation differs from the planned file lists:
+> `cqp_sat/` has no `clause_database.py` (clause management lives in `cqp_solver.py`);
+> `ccg_sat/` uses `root_cause_analyzer.py` (not `root_cause_analysis.py`);
+> `has_sat/` uses `refinement_solver.py` (no `hierarchical_solver.py` / `refinement.py`);
+> `ssta_sat/` has no `cluster_detector.py` (clustering is in `topology_analyzer.py`);
+> `cegp_sat/` uses `genetic_operators.py` and `fitness_evaluator.py` (not `clause_evolution.py` /
+> `fitness_functions.py`). `research/common/solver_utils.py` and `research/RESULTS_SUMMARY.md` were
+> never created. See each solver's `README.md` for the current behaviour.
 **Context**: After discovering all 4 existing research solvers (CoBD-SAT, BB-CDCL, LA-CDCL, CGPM-SAT) have clear prior art, we're developing genuinely new approaches.
 
 ## Executive Summary

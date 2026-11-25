@@ -66,8 +66,9 @@ Methods used to simulate protein folding:
 | Assignment | Protein conformation | Complete 3D structure |
 | Clause | Contact energy | Interaction between residues |
 | Satisfied clause | Favorable contact | -1 kcal/mol (stabilizing) |
-| Unsatisfied clause | Unfavorable clash | +10 kcal/mol (destabilizing) |
-| Unit clause | Critical contact | +100 kcal/mol penalty |
+| Unsatisfied clause (3+ literals) | Unfavorable clash | +10 kcal/mol (destabilizing) |
+| Unsatisfied binary clause | Stronger clash | +20 kcal/mol penalty |
+| Unsatisfied unit clause | Critical contact | +100 kcal/mol penalty |
 | SAT solution | Native fold | Global energy minimum |
 | UNSAT | Unfoldable sequence | No low-energy state |
 
@@ -79,17 +80,25 @@ H(x₁, x₂, ..., xₙ) = Σ E_clause + Σ E_pair
 E_clause(C) = {
     -1   if C satisfied (favorable contact)
     +10  if C unsatisfied (steric clash)
+    +20  if C is binary clause unsatisfied
     +100 if C is unit clause unsatisfied
 }
 
-E_pair(xᵢ, xⱼ) = {
-    -ε  if xᵢ, xⱼ co-occur and aligned
+E_pair(xᵢ, xⱼ) = {      (ε = 0.1 per clause the pair shares)
+    -ε  if xᵢ, xⱼ co-occur and aligned (same truth value)
     +ε  if xᵢ, xⱼ co-occur and misaligned
 }
 
 Goal: Minimize H(x₁, ..., xₙ)
-Optimal: H = -|clauses| (all satisfied)
+Target: H = -|clauses| (all satisfied)
 ```
+
+> **Implementation caveat**: `EnergyLandscape.is_ground_state()` tests `H == -|clauses|`
+> on the *total* energy, including the pair terms. An assignment that satisfies every clause is
+> therefore only recognised as the ground state when its pair terms happen to cancel exactly
+> (as many aligned as misaligned co-occurring pairs). Otherwise annealing keeps running and the
+> solver ends up in the CDCL fallback described below; e.g. `(a | b)` can never be recognised by
+> annealing (energy is -1.1 or -0.9, never -1.0) and is always answered by the fallback.
 
 ### Why This Mapping Works
 
@@ -139,8 +148,12 @@ Optimal: H = -|clauses| (all satisfied)
 
 3. Result:
    If ground state reached: SAT
-   Else: Likely UNSAT or need more time
+   Else (iterations exhausted or T dropped below T_final):
+      fall back to bsat's CDCLSolver, which returns SAT/UNSAT
 ```
+
+Note: the loop also stops as soon as T < `T_final`. With the defaults (100 → 0.01 at 0.9995)
+that is after about 18,400 iterations, regardless of a larger `max_iterations`.
 
 ### Parallel Tempering (Advanced Mode)
 
@@ -167,8 +180,12 @@ Optimal: H = -|clauses| (all satisfied)
          If any replica at ground state: SAT!
 
 3. Result:
-   Return best replica or UNSAT
+   Return a ground-state replica, otherwise fall back to CDCLSolver
 ```
+
+The solver uses 8 replicas, T from 0.1 to 100 (geometric ladder), swap attempts every 100
+iterations; these are fixed in `fold_solver.py` (`T_initial`/`T_final`/`cooling_rate` are
+ignored in this mode).
 
 ### Move Operators (Conformational Changes)
 
@@ -201,7 +218,7 @@ new_assignment[var] = not old_assignment[var]
 
 **5. Random Mutation**:
 ```python
-# Randomize multiple variables (thermal noise)
+# Randomize multiple variables (thermal noise); num_mutations = max(1, 10% of variables)
 for _ in range(num_mutations):
     var = random.choice(variables)
     new_assignment[var] = random.choice([True, False])
@@ -215,7 +232,7 @@ for _ in range(num_mutations):
 ```python
 class EnergyLandscape:
     - compute_energy(assignment): Total energy
-    - compute_delta_energy(var, new_value): Efficient incremental update
+    - compute_delta_energy(assignment, var, new_value): Incremental update (available, but the solver currently recomputes the full energy each step)
     - is_ground_state(assignment): Check if all satisfied
     - get_num_unsatisfied(assignment): Count violations
 ```
@@ -227,6 +244,7 @@ class MolecularMove:
 
 class MoveSelector:
     - select_move(temperature): Choose move type
+    - propose(assignment, temperature): Select a move and apply it
     - Temperature-adaptive: exploration (high T) vs refinement (low T)
 ```
 
@@ -235,21 +253,22 @@ class MoveSelector:
 class AnnealingSchedule:
     - get_temperature(): Current temperature
     - step(): Advance schedule (cool down)
-    - Types: geometric, linear, logarithmic, adaptive
+    - Types: geometric (the only one the solver uses), linear, logarithmic, adaptive (placeholder: step() leaves T unchanged)
 ```
 
 **ParallelTempering**:
 ```python
 class ParallelTempering:
     - replicas: List of simulations at different T
-    - attempt_swap(i, j): Exchange configurations
+    - attempt_swap(replica_i, replica_j): Exchange configurations
+    - attempt_all_swaps(): Try swaps between adjacent replicas
     - get_best_replica(): Lowest energy
 ```
 
 **FOLDSATSolver**:
 ```python
 class FOLDSATSolver:
-    - solve(): Main algorithm
+    - solve(max_conflicts=1000000): Main algorithm (max_conflicts only limits the CDCL fallback)
     - _solve_simulated_annealing(): Standard mode
     - _solve_parallel_tempering(): Advanced mode
     - get_energy_statistics(): Performance metrics
@@ -259,9 +278,11 @@ class FOLDSATSolver:
 
 ### Basic Usage
 
+Run from the repository root with `PYTHONPATH=src:.` (or add `research/` to `sys.path` and import `fold_sat` directly, as `example.py` does).
+
 ```python
 from bsat import CNFExpression
-from fold_sat import FOLDSATSolver
+from research.fold_sat import FOLDSATSolver
 
 # Create CNF formula
 cnf = CNFExpression.parse("(a | b) & (~a | c)")
@@ -273,8 +294,10 @@ result = solver.solve()
 if result:
     print(f"SAT: {result}")
 else:
-    print("UNSAT")
+    print("UNSAT")  # answered by the CDCL fallback (or its conflict limit was hit)
 ```
+
+A convenience function `solve_fold_sat(cnf, max_iterations=100000, mode='annealing', max_conflicts=1000000)` is also exported.
 
 ### With Statistics
 
@@ -290,6 +313,8 @@ print(f"Final energy: {stats['final_energy']:.2f}")
 print(f"Ground state: {stats['ground_state_energy']:.2f}")
 print(f"Reached ground state: {stats['reached_ground_state']}")
 ```
+
+`get_energy_statistics()` returns the keys `annealing_iterations`, `accepted_moves`, `rejected_moves`, `acceptance_rate`, `final_temperature`, `final_energy`, `ground_state_energy`, `reached_ground_state`. `reached_ground_state` is `False` whenever the answer came from the CDCL fallback (then `solver.stats.decisions/conflicts/propagations` hold the fallback's counters).
 
 ### Advanced Usage
 
@@ -316,7 +341,7 @@ result = solver.solve()
 ### Energy Landscape Analysis
 
 ```python
-from fold_sat import EnergyLandscape
+from research.fold_sat import EnergyLandscape
 
 landscape = EnergyLandscape(cnf)
 
@@ -340,7 +365,7 @@ for energy_level, count in distribution.items():
 See `example.py` for comprehensive examples:
 
 ```bash
-python3 example.py
+python3 research/fold_sat/example.py   # from the repository root (also works from this directory)
 ```
 
 Examples include:
@@ -366,8 +391,8 @@ Examples include:
 
 1. **Slow Convergence**: Annealing requires many iterations
 2. **Parameter Sensitivity**: Performance depends on temperature schedule
-3. **No Completeness Guarantee**: May not find solution in finite time
-4. **UNSAT Detection**: Hard to distinguish no-solution from need-more-time
+3. **No Completeness Guarantee for the annealing itself**: May not find solution in finite time; the solver is only complete because it falls back to `CDCLSolver` when annealing fails
+4. **UNSAT Detection**: Annealing cannot prove UNSAT; every UNSAT answer (after the full annealing budget is spent) comes from the CDCL fallback
 5. **Local Minima**: Can get trapped (like protein misfolding)
 
 ## Educational Value
@@ -435,7 +460,7 @@ Energy landscape shape determines difficulty:
 | Paradigm | Energy minimization | Tree search | Hill climbing | Network flow | Economic equilibrium |
 | Decisions | Metropolis | VSIDS | Greedy | Flow dominance | Bidding |
 | Learning | Temperature schedule | Clause learning | None | Tube reinforcement | Price adjustment |
-| Guarantee | No (incomplete) | Yes (complete) | No | No | No |
+| Guarantee | Annealing: no; complete only via CDCL fallback | Yes (complete) | No | No (CDCL fallback) | No (CDCL fallback) |
 | Parallelism | High (replica exchange) | Low | Medium | High | High |
 | Inspiration | Protein folding | Logic | Heuristics | Slime mold | Markets |
 

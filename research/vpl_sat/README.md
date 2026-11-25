@@ -115,8 +115,8 @@ def get_preferred_phase(var, threshold=0.15):
     stats = phase_stats[var]
 
     # Compute conflict rates
-    true_rate = stats['true_conflicts'] / (stats['true_conflicts'] + stats['true_success'] + 1)
-    false_rate = stats['false_conflicts'] / (stats['false_conflicts'] + stats['false_success'] + 1)
+    true_rate = stats['true_conflicts'] / max(stats['true_conflicts'] + stats['true_success'], 1)
+    false_rate = stats['false_conflicts'] / max(stats['false_conflicts'] + stats['false_success'], 1)
 
     # Prefer phase with significantly lower conflict rate
     if abs(true_rate - false_rate) >= threshold:
@@ -147,6 +147,16 @@ def pick_branching_phase(var):
     return True
 ```
 
+> **Implementation notes** (current behaviour of `vpl_solver.py` / `phase_tracker.py`):
+> - Successes are recorded only once, when a full satisfying assignment is found (just before
+>   `solve()` returns). During search the success counters are all zero, so a phase's conflict rate
+>   is effectively 1.0 if it has any recorded conflict and 0.0 otherwise.
+> - On a conflict, the recorded phase for each variable in the conflicting clause is the literal's
+>   polarity in that clause (`not lit.negated`), not the value the variable was assigned (which is
+>   the opposite, since every literal in a conflicting clause is false).
+> - "Decisions" recorded by the tracker include every assignment (branching decisions and
+>   propagations), and phase saving stores the last value from either.
+
 ### Multiple Strategies
 
 **Conflict Rate Strategy**:
@@ -155,13 +165,13 @@ def pick_branching_phase(var):
 
 **Adaptive Strategy**:
 - Detects recent conflict patterns
-- Flips phase if conflict streak detected (3+ consecutive conflicts with same phase)
+- Flips the saved phase if a conflict streak is detected (3+ consecutive conflicts with same phase) or >70% of the variable's last 20 events for its last phase were conflicts
 - More responsive to recent changes
 
 **Hybrid Strategy**:
 - Combines learned preferences with phase saving
 - Uses confidence based on sample size
-- Trusts phase saving until enough data collected
+- Trusts phase saving until enough data collected (10 samples; learned preference overrides a disagreeing saved phase only at 30+ samples)
 
 ---
 
@@ -209,7 +219,7 @@ for strategy in strategies:
 solver = VPLSATSolver(
     cnf,
     use_phase_learning=True,        # Enable phase learning
-    strategy='adaptive',             # Phase selection strategy
+    strategy='adaptive',             # 'adaptive' (default), 'conflict_rate' or 'hybrid'
     window_size=100,                 # Recent history window size
     threshold=0.15,                  # Conflict rate difference threshold
     vsids_decay=0.95,               # Standard CDCL parameters
@@ -244,7 +254,7 @@ solver = VPLSATSolver(
 - O(V × W) where V=variables, W=window_size
 - Typical: 1000 variables × 100 window → ~100KB
 
-**Overhead**: Negligible (<1% runtime increase)
+**Overhead**: Expected to be small (not measured by any checked-in benchmark)
 
 ---
 
@@ -293,17 +303,21 @@ VPL-SAT extends standard CDCL:
 
 ### Statistics Tracked
 
+On the stats object returned by `solver.get_stats()` (a `VPLStats`, extending `CDCLStats`):
 - `learned_phase_decisions`: Decisions guided by learned preferences
 - `saved_phase_decisions`: Decisions using VSIDS phase saving
 - `phase_flips`: Times we flipped from saved phase
-- `conflict_rate`: Per-phase conflict rates
-- `variables_with_preference`: Variables with strong learned preferences
+- `phase_learning_hits`: Declared but never incremented (always 0)
+
+In the dict returned by `solver.get_phase_statistics()` (keys `enabled`, `strategy`, `window_size`, `threshold`, `tracker`, `selector`):
+- `tracker`: `total_conflicts`, `total_decisions`, `true_conflicts`, `false_conflicts`, `true_success`, `false_success`, `variables_with_preference`, `total_variables`, `phase_flips_recommended`
+- `selector`: `learned_decisions`, `saved_decisions`, `default_decisions`, `total_decisions`, `learned_percentage`
 
 ---
 
 ## Expected Performance
 
-**Projected Improvements**:
+**Projected Improvements** (projections only; no checked-in benchmark results cover VPL-SAT, and a quick spot check on random 3-SAT showed conflict counts both above and below baseline CDCL depending on instance and strategy):
 - 10-25% fewer conflicts on phase-sensitive instances
 - 15-35% speedup on planning/scheduling problems
 - Negligible overhead on phase-symmetric problems
@@ -347,11 +361,11 @@ VPL-SAT extends standard CDCL:
 
 ## Conclusion
 
-VPL-SAT demonstrates that **dynamic phase learning from conflict history** can improve SAT solving beyond simple phase saving. The approach:
+VPL-SAT demonstrates that **dynamic phase learning from conflict history** may improve SAT solving beyond simple phase saving. The approach:
 
 **⚠️ Partially Novel**: Phase saving exists, but dynamic learning from conflict/success ratios is not well-covered
 **✅ Theoretically Sound**: Learns from historical patterns
-**✅ Practically Feasible**: Negligible overhead (<1%)
+**✅ Practically Feasible**: Small expected overhead (not measured)
 **✅ Educationally Valuable**: Shows how to learn from search history
 
 **Best suited for**:

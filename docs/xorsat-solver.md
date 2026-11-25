@@ -238,13 +238,14 @@ result = solve_xorsat(cnf)
 # p ⊕ d₁ ⊕ d₂ ⊕ d₃ = 0 (even parity)
 # Given: d₁=1, d₂=0, d₃=0, find p
 
-# p ⊕ d₁ ⊕ d₂ ⊕ d₃ = 0 is encoded as ¬p ⊕ ¬d₁ ⊕ ¬d₂ ⊕ ¬d₃ = 1
+# p ⊕ d₁ ⊕ d₂ ⊕ d₃ = 0 is encoded as ¬p ⊕ d₁ ⊕ d₂ ⊕ d₃ = 1
+# (negating an odd number of literals flips the required parity)
 cnf = CNFExpression([
     Clause([
         Literal('p', True),
-        Literal('d1', True),
-        Literal('d2', True),
-        Literal('d3', True)
+        Literal('d1', False),
+        Literal('d2', False),
+        Literal('d3', False)
     ]),
     Clause([Literal('d1', False)]),  # d₁ = 1
     Clause([Literal('d2', True)]),   # d₂ = 0
@@ -262,12 +263,12 @@ result = solve_xorsat(cnf)
 # Given: s₁=1, s₂=1, s₃=0, reconstruct s
 
 cnf = CNFExpression([
-    # s ⊕ s₁ ⊕ s₂ ⊕ s₃ = 0
+    # s ⊕ s₁ ⊕ s₂ ⊕ s₃ = 0, encoded as ¬s ⊕ s₁ ⊕ s₂ ⊕ s₃ = 1
     Clause([
         Literal('s', True),
-        Literal('s1', True),
-        Literal('s2', True),
-        Literal('s3', True)
+        Literal('s1', False),
+        Literal('s2', False),
+        Literal('s3', False)
     ]),
     Clause([Literal('s1', False)]),  # s₁ = 1
     Clause([Literal('s2', False)]),  # s₂ = 1
@@ -308,12 +309,15 @@ For n variables:
 
 ### Practical Performance
 
+Approximate timings for this pure-Python implementation on dense random systems with n equations (one laptop - your numbers will differ):
+
 | Variables | Typical Time |
 |-----------|--------------|
-| n < 100   | < 1 ms       |
-| n < 1000  | < 100 ms     |
-| n < 10000 | < 10 s       |
-| n > 10000 | May be slow  |
+| n = 50    | ~2 ms        |
+| n = 100   | ~10 ms       |
+| n = 300   | ~0.3 s       |
+| n = 1000  | ~10+ s       |
+| n > 1000  | Slow (cubic growth) |
 
 ### Comparison with Other Solvers
 
@@ -395,8 +399,9 @@ When the system is underconstrained, some variables are "free":
 # x ⊕ y = 1
 # Solution: x can be anything, y = 1 ⊕ x
 
-# Our implementation assigns free variables to False
-# Result: {x: False, y: True}
+# Our implementation assigns free variables to False.
+# Here x gets the pivot and y is the free variable:
+# Result: {x: True, y: False}
 ```
 
 ### Matrix Rank
@@ -447,4 +452,4 @@ For very large systems:
 
 ---
 
-**Remember**: XOR-SAT is polynomial-time but still O(n³). For small problems it's very fast, but for very large systems (n > 10,000), consider optimized linear algebra libraries or sparse matrix techniques.
+**Remember**: XOR-SAT is polynomial-time but still O(n³). For small problems it's very fast, but for large systems (beyond roughly a thousand variables in this pure-Python implementation), consider optimized linear algebra libraries or sparse matrix techniques.

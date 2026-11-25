@@ -11,6 +11,26 @@
 1. **Right DIMACS files** - Instances that actually trigger the feature
 2. **Instrumentation** - Statistics/logs to verify feature activated
 
+> **Applying this guide to the current C solver.** The principles below are
+> solver-independent, and the statistic names match the C solver's
+> `s->stats.*` fields and `c ...` output lines. However, with default settings
+> the C solver's preprocessing, probing, and inprocessing solve most of the
+> small instances under `dataset/` with **zero conflicts**, so core-CDCL
+> counters stay at 0. To exercise the core search loop on small instances,
+> disable simplification:
+>
+> ```bash
+> cd competition/c
+> ./bin/bsat --no-inprocess --no-probing --preprocess-budget 0 --no-sym --no-sbva \
+>     ../../dataset/medium_tests/medium_suite/hard_3sat_v120_c0512.cnf
+> # conflicts, learned clauses, restarts, deleted clauses, max LBD are all > 0
+> ```
+>
+> The C solver's own per-feature tests are `c/tests/test_features.c` and the
+> other programs indexed in [c/tests/FEATURE_COVERAGE.md](c/tests/FEATURE_COVERAGE.md).
+> In the DIMACS snippets below, trailing `# ...` annotations and `...` lines are
+> explanatory only; they are not valid DIMACS and must be removed before use.
+
 ## Why the Right Instance Matters
 
 ### Example: Testing Clause Learning
@@ -51,7 +71,7 @@ p cnf 10 30
 | **Unit Propagation** | Unit clauses | Contains many unit clauses or binary clauses | `unit_propagation.cnf` | `propagations > 0` |
 | **Clause Learning** | Conflicts during search | No unit clauses, requires backtracking | 3-SAT random instances | `conflicts > 0`<br>`learned_clauses > 0` |
 | **VSIDS** | Multiple search decisions | No unit propagation chain | Loosely constrained SAT | `decisions > 0` |
-| **Restarts** | Long search | Hard SAT/UNSAT instances | `random3sat_v*.cnf` | `restarts > 0` |
+| **Restarts** | Long search | Hard SAT/UNSAT instances | `hard_3sat_v*.cnf` | `restarts > 0` |
 | **LBD Calculation** | Clause learning | Conflicts with varied decision levels | Structured instances | `max_lbd > 0` |
 | **Database Reduction** | Many learned clauses | Long-running instances | Large 3-SAT | `deleted_clauses > 0` |
 | **BCE Preprocessing** | Blocked clauses | Clauses where literal blocks resolution | Specific structure | `blocked_clauses > 0` |
@@ -131,7 +151,9 @@ p cnf 20 40
 - Medium-size UNSAT instances (100+ variables)
 - Cryptographic instances
 
-**Example**: `dataset/medium_tests/medium_suite/easy_3sat_v012_c0050.cnf`
+**Example**: `dataset/medium_tests/medium_suite/hard_3sat_v120_c0512.cnf` with
+simplification disabled (see the note at the top). The `easy_3sat_*` instances
+finish in about ten conflicts and never restart.
 
 **Check**: `restarts > 0`
 
@@ -159,7 +181,7 @@ p cnf 20 40
 
 **Check**: `deleted_clauses > 0`, `learned_clauses` decreases over time
 
-**Why**: Database fills up (default: >10000 clauses) and triggers LBD-based reduction.
+**Why**: The reduction schedule fires (C solver: first after `--reduce-interval` = 1000 conflicts, then at growing intervals; Python prototype: when more than `learned_clause_limit` = 10000 learned clauses exist) and triggers LBD-based reduction.
 
 **Note**: Needs long enough search to reach threshold.
 
@@ -178,9 +200,9 @@ p cnf 4 5
 
 **Check**: `blocked_clauses > 0`
 
-**Why**: Clause `(2 3 4)` is blocked on literal 2 by `(1 2)`.
+**Why**: No clause contains `-2`, so every clause containing `2` (including `(2 3 4)`) is trivially blocked on literal 2: there is nothing to resolve against.
 
-**Note**: BCE runs during preprocessing; check before search starts.
+**Note**: BCE runs during preprocessing; check before search starts. It is opt-in in both solvers (C: `--bce`; Python: `enable_bce=True`).
 
 ### 8. On-the-Fly Subsumption
 **Test Strategy**: Learned clauses that subsume original clauses
@@ -294,18 +316,23 @@ def graph_coloring(n_vertices, edges, n_colors):
 
 ## Using Existing Benchmarks
 
-### SAT Competition Instances
+### Repository Datasets
 ```
-dataset/
+dataset/                          # at the repository root
 ├── simple_tests/simple_suite/
-│   └── random3sat_v*.cnf        # Good for: learning, VSIDS, restarts
-├── medium_tests/medium_suite/
-│   └── easy_3sat_v*.cnf         # Good for: all features
-└── sat_competition2025/
-    ├── random/                   # Good for: learning, restarts
-    ├── crafted/                  # Good for: specific features
-    └── industrial/               # Good for: all advanced features
+│   └── random3sat_v*.cnf, sat_v*.cnf   # 9 tiny instances: correctness, unit prop, decisions
+├── medium_tests/medium_suite/    # 53 instances
+│   ├── easy_3sat_v*.cnf          # A few conflicts: basic learning
+│   ├── medium_3sat_v*.cnf, hard_3sat_v*.cnf   # Learning, restarts, LBD, reduction
+│   └── mixed_*sat_v*.cnf, sat_known_v*.cnf
+├── sat_competition2025/          # README with download instructions only
+└── corpora/                      # Gitignored cache filled by competition/c/scripts/fetch_corpora.py
+                                  #   (SATLIB, synthetic-hard, SAT Competition 2023-2025 packs)
 ```
+
+Competition-scale random, crafted, and industrial instances (good for all
+advanced features) are not checked in; fetch them with
+`make wide-fetch PACK=...` in `competition/c` (see [c/README.md](c/README.md)).
 
 ### Recommendations by Feature
 
@@ -317,7 +344,7 @@ dataset/
 - Any pigeonhole instance
 
 **For Restarts/LBD/Database Reduction**:
-- `medium_tests/easy_3sat_v014_c0058.cnf` and harder
+- `medium_tests/medium_suite/hard_3sat_v*.cnf` (with C solver simplification disabled)
 - Industrial instances
 
 **For BCE/Subsumption**:
@@ -385,4 +412,4 @@ void test_clause_learning() {
 - Random k-SAT generators: SAT competitions provide standard generators
 - Structured encodings: Graph problems, planning, verification instances
 
-Last updated: 2025-10-21
+Last updated: 2026-11-25

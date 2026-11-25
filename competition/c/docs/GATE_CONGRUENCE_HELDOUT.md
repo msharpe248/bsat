@@ -1,5 +1,7 @@
 # Gate congruence: larger held-out screen
 
+> Historical snapshot (2026-09-07). Defaults, options and code locations described here have since changed; current behavior is in [README.md](../README.md), [FEATURES.md](../FEATURES.md) and [PRODUCTION_READINESS.md](../PRODUCTION_READINESS.md).
+
 Congruence increased verified solves from **1/6 to 2/6**; pinned Kissat solved
 **3/6**. All completed answers were independently checked UNSAT results. No
 wrong answers or execution errors were reported. This reproduces the hardware

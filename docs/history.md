@@ -106,7 +106,7 @@ Paper: *"The Complexity of Theorem-Proving Procedures"*
 1. SAT is in NP (solutions can be verified in polynomial time)
 2. SAT is NP-hard (any NP problem can be reduced to SAT)
 3. If SAT has a polynomial-time algorithm, then P = NP
-4. Conversely, if P ≠ NP, then SAT requires exponential time
+4. Conversely, if P ≠ NP, then SAT has no polynomial-time algorithm
 
 **Revolutionary Impact**:
 - SAT becomes the **canonical NP-complete problem**
@@ -133,20 +133,20 @@ Includes:
 - Graph coloring
 - Clique
 - Vertex cover
-- Traveling salesman
+- Hamiltonian circuit
 - Knapsack
 
 **Impact**: Explosion of NP-completeness theory
 
-### 1973: 2SAT is Polynomial-Time
-**Krom** and others show 2SAT (2 literals per clause) is in P
-- Can be solved in O(n) time
+### 1967-1979: 2SAT is Polynomial-Time
+**Krom** (1967) shows 2SAT (2 literals per clause) is in P; **Aspvall, Plass and Tarjan** (1979) give the linear-time algorithm
+- Can be solved in O(n+m) time
 - Uses implication graph
 - Strongly connected components
 
 **Key Insight**: There's a phase transition from P (2SAT) to NP-complete (3SAT)
 
-### 1974: Schaefer's Dichotomy Theorem
+### 1978: Schaefer's Dichotomy Theorem
 **Thomas Schaefer** characterizes which SAT variants are polynomial
 
 Paper: *"The Complexity of Satisfiability Problems"*
@@ -158,15 +158,6 @@ Shows exactly which constraint types give P vs NP-complete:
 - 3SAT and beyond: NP-complete
 
 **Impact**: Complete understanding of "easy" vs "hard" SAT variants
-
-### 1978: Random 3SAT Phase Transition
-Early observations that random 3SAT has a satisfiability phase transition
-- Ratio m/n (clauses/variables)
-- m/n < 4.26: Usually SAT
-- m/n ≈ 4.26: **Hardest instances** (50% SAT)
-- m/n > 4.26: Usually UNSAT
-
-**Mystery**: Why is the phase transition the hardest region?
 
 ---
 
@@ -187,33 +178,34 @@ Small improvements to DPLL:
 - Improved data structures
 - Still fundamentally exponential behavior
 
-### 1985: Horn-SAT Solver
-Efficient algorithms for Horn clauses (≤1 positive literal):
+### 1984: Horn-SAT Solver
+**Dowling** and **Gallier** give linear-time algorithms for Horn clauses (≤1 positive literal):
 - O(n+m) time complexity
 - Used in logic programming (Prolog)
 - Shows specialized solvers can be very efficient
 
-### 1988: Local Search - GSAT
+### 1992: Local Search - GSAT
 **Bart Selman**, **Hector Levesque**, **David Mitchell** introduce GSAT
 
 Paper: *"A New Method for Solving Hard Satisfiability Problems"*
 
-**Algorithm**: Random walk local search
+**Algorithm**: Greedy local search
 - Start with random assignment
 - Flip variables to satisfy more clauses
-- Can escape local minima
+- Restart from a new random assignment when stuck
 
 **Innovation**: First practical solver for large instances!
 - Incomplete (may not find solution)
 - But fast when solution exists
 
-### 1992: Watched Literals
-**João Marques-Silva** proposes watched literals data structure
-- Track only 2 literals per clause
-- Efficient unit propagation
-- O(1) for most operations
+### 1991-1992: Random 3SAT Phase Transition
+**Cheeseman, Kanefsky and Taylor** (1991) and **Mitchell, Selman and Levesque** (1992) observe that random 3SAT has a satisfiability phase transition
+- Ratio m/n (clauses/variables)
+- m/n < 4.26: Usually SAT
+- m/n ≈ 4.26: **Hardest instances** (50% SAT)
+- m/n > 4.26: Usually UNSAT
 
-**Impact**: Critical for modern solver performance
+**Mystery**: Why is the phase transition the hardest region?
 
 ### 1994: WalkSAT
 **Bart Selman**, **Henry Kautz**, **Bram Cohen** improve GSAT
@@ -255,7 +247,7 @@ Paper: *"GRASP: A Search Algorithm for Propositional Satisfiability"*
 - Suddenly, large industrial problems become solvable
 - The **"SAT revolution"** begins
 
-### 1999: Chaff Solver
+### 2001: Chaff Solver
 **Matthew Moskewicz** et al. at Princeton introduce Chaff
 
 Paper: *"Chaff: Engineering an Efficient SAT Solver"*
@@ -274,8 +266,8 @@ Paper: *"Chaff: Engineering an Efficient SAT Solver"*
 
 **Impact**: Sets new standard for solver engineering
 
-### 2001: zChaff
-Improved version of Chaff
+### 2001-2004: zChaff
+Improved implementation of Chaff
 - Even faster
 - Widely used in industry
 - Standard baseline for comparisons
@@ -321,7 +313,7 @@ Paper: *"An Extensible SAT-solver"*
 
 **Result**: SAT solvers prevent hardware bugs worth millions/billions
 
-### 2007: Glucose Solver
+### 2009: Glucose Solver
 
 **Gilles Audemard** and **Laurent Simon** introduce Glucose
 
@@ -386,9 +378,9 @@ Multi-core solvers emerge:
 
 **Theoretical impact**: Shows randomization helps even for worst-case
 
-### 2014: Cube-and-Conquer
+### 2011: Cube-and-Conquer
 
-**Armin Biere** et al. introduce parallel SAT solving strategy
+**Marijn Heule**, **Oliver Kullmann**, **Siert Wieringa** and **Armin Biere** introduce parallel SAT solving strategy
 
 Paper: *"Cube and Conquer: Guiding CDCL SAT Solvers by Lookaheads"*
 
@@ -435,11 +427,11 @@ Focus shifts to **MaxSAT** (optimization):
 
 **Examples**: NeuroSAT, DeepSAT
 
-### 2019: Kissat
+### 2020: Kissat
 
 **Armin Biere** releases Kissat
-- Won SAT Competition 2019-2020
-- "Keep It Simple SAT"
+- Won the SAT Competition 2020 main track
+- "Keep it simple and clean"
 - Builds on decades of incremental improvements
 - Clean, maintainable code
 
@@ -513,7 +505,7 @@ SAT solving moves to cloud infrastructure:
 ### SAT Revolution Era (1990s-2000s)
 
 **Bart Selman** (1954-)
-- GSAT (1988)
+- GSAT (1992)
 - WalkSAT (1994)
 - Local search pioneer
 
@@ -523,7 +515,7 @@ SAT solving moves to cloud infrastructure:
 - Professor at IRIT, France
 
 **Sharad Malik** (1960-)
-- GRASP (1996)
+- Chaff (2001)
 - Hardware verification applications
 
 **Niklas Eén** (1976-)
@@ -567,17 +559,17 @@ SAT solving moves to cloud infrastructure:
 ### Algorithmic Breakthroughs
 
 1. **DPLL (1962)** - Backtracking search, O(n) space
-2. **2SAT in P (1973)** - Strongly connected components
+2. **2SAT in P (1967; linear time 1979)** - Strongly connected components
 3. **CDCL (1996)** - Learn from conflicts
-4. **VSIDS (1999)** - Adaptive variable ordering
-5. **Watched Literals (1999)** - Efficient propagation
-6. **Clause Learning Management (2007)** - LBD/Glucose heuristics
-7. **Cube-and-Conquer (2014)** - Massive parallelism
+4. **VSIDS (2001)** - Adaptive variable ordering
+5. **Watched Literals (2001)** - Efficient propagation
+6. **Clause Learning Management (2009)** - LBD/Glucose heuristics
+7. **Cube-and-Conquer (2011)** - Massive parallelism
 
 ### Theoretical Breakthroughs
 
 1. **Cook-Levin Theorem (1971)** - SAT is NP-complete
-2. **Schaefer's Dichotomy (1974)** - P vs NP-complete variants
+2. **Schaefer's Dichotomy (1978)** - P vs NP-complete variants
 3. **Phase Transition (1992-1996)** - Understanding hardness
 4. **Resolution Complexity (2000s)** - Lower bounds on proof size
 5. **CDCL Analysis (2010s)** - Why learning works so well
@@ -606,28 +598,28 @@ SAT solving moves to cloud infrastructure:
 
 ### 1971-1979: Theory Golden Age
 - 1972: 21 NP-complete problems (Karp)
-- 1973: 2SAT in polynomial time
-- 1974: Schaefer's dichotomy
+- 1978: Schaefer's dichotomy
+- 1979: 2SAT in linear time (Aspvall-Plass-Tarjan)
 
 ### 1980-1995: Dark Ages
-- 1988: GSAT (local search)
-- 1992: Watched literals idea
+- 1984: Linear-time Horn-SAT (Dowling-Gallier)
+- 1991-1992: Random 3SAT phase transition observed
+- 1992: GSAT (local search)
 - 1994: WalkSAT
 - General pessimism about practical SAT solving
 
 ### 1996-2009: SAT Revolution
 - 1996: **GRASP - CDCL invented**
-- 1999: **Chaff - VSIDS heuristic**
+- 2001: **Chaff - VSIDS heuristic, watched literals**
 - 2002: First SAT Competition
 - 2003: **MiniSAT released**
 - 2005: Bounded model checking adoption
-- 2007: Glucose solver
+- 2009: Glucose solver
 
 ### 2010-Present: Industrial Era
-- 2011: Lingeling dominates
-- 2014: Cube-and-Conquer
+- 2011: Lingeling, Cube-and-Conquer
 - 2016: **Pythagorean triples solved** (200 TB proof)
-- 2019: Kissat
+- 2020: Kissat
 - 2021: Handbook of Satisfiability 2nd ed
 - 2023: ML+SAT integration, cloud solving
 
@@ -701,7 +693,7 @@ From 1971 to 2023:
 ### The Unsolved Mystery: P vs NP
 
 If P ≠ NP (likely):
-- SAT requires exponential time in worst case
+- SAT requires super-polynomial time in worst case
 - But practical instances remain solvable
 - We continue improving heuristics
 
@@ -739,7 +731,7 @@ But we still don't have a proof either way!
 - [SAT Competition](http://www.satcompetition.org/) - Annual competition
 - [SATLIB](https://www.cs.ubc.ca/~hoos/SATLIB/) - Benchmark library
 - [MiniSAT](http://minisat.se/) - Reference implementation
-- [SAT Heritage](http://www.satlive.org/) - Community resources
+- [SAT Live!](http://www.satlive.org/) - Community resources
 
 ---
 

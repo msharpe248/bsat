@@ -107,9 +107,9 @@ def mutate(clause, available_vars):
 
     # Occasionally add/remove
     if random() < mutation_rate:
-        if len(mutated) > 1:
+        if len(mutated) > 1 and random() < 0.5:
             mutated.pop(random_index)
-        else:
+        elif len(mutated) < max_clause_length:
             mutated.append(random_literal(available_vars))
 
     return make_clause(mutated)
@@ -139,6 +139,8 @@ def compute_fitness(clause):
 
     return fitness
 ```
+
+**Implementation note**: `FitnessEvaluator.record_propagation()` and `record_conflict_participation()` exist but the solver never calls them, so `propagation_count` and `conflict_participation` stay at 0. In the current code fitness is therefore determined by clause size alone (shorter = fitter).
 
 ### Evolution Loop
 
@@ -193,8 +195,8 @@ cnf = CNFExpression.parse("(a | b) & (~a | c) & (~b | ~c)")
 solver = CEGPSATSolver(
     cnf,
     use_evolution=True,
-    evolution_frequency=100,  # Evolve every 100 conflicts
-    population_size=20,       # Max 20 evolved clauses
+    evolution_frequency=100,  # Evolve every 100 conflicts (default: 500)
+    population_size=20,       # Use the 20 fittest tracked clauses as parents
     crossover_rate=0.7,       # 70% crossover probability
     mutation_rate=0.1         # 10% mutation per literal
 )
@@ -236,11 +238,11 @@ if result:
 - Crossover: O(clause length) per operation
 - Mutation: O(clause length) per operation
 - Fitness evaluation: O(1) per clause (tracked incrementally)
-- Evolution overhead: ~5-10% per evolution round
+- Evolution overhead: small per evolution round (at most 5 crossovers + 5 mutations; not benchmarked)
 
 **Space**:
 - Fitness tracking: O(learned clauses)
-- Population: Limited to population_size
+- Parent population: Limited to population_size (evolved clauses are added to the clause database up to `learned_clause_limit`)
 
 ---
 
@@ -270,8 +272,10 @@ if result:
 - `evolved_clauses`: Total evolved clauses added
 - `crossovers`: Crossover operations performed
 - `mutations`: Mutation operations performed
-- `propagation_count`: Per-clause propagation tracking
-- `conflict_participation`: Per-clause conflict tracking
+- `propagation_count`: Per-clause propagation counter (currently never incremented by the solver)
+- `conflict_participation`: Per-clause conflict counter (currently never incremented by the solver)
+
+`get_evolution_statistics()` returns `enabled`, `evolutions`, `evolved_clauses`, `crossovers`, `mutations`, and (when enabled) `fitness` = `{total_clauses, avg_propagations, avg_conflicts}`.
 
 ---
 
@@ -280,7 +284,8 @@ if result:
 1. **Randomness**: Evolution is stochastic, results vary
 2. **Quality**: No guarantee evolved clauses help
 3. **Overhead**: Genetic operations add computational cost
-4. **Theory**: Lacks formal SAT solving guarantees
+4. **Unsound UNSAT answers**: Evolved clauses (crossover/mutation results) are added to the clause database without checking that they are implied by the formula. A returned model always satisfies the original formula, but `None` (UNSAT) is **not trustworthy** once evolution has run: with `evolution_frequency=5` on random 30-variable 3-SAT at ratio 4.2, 7 of 22 satisfiable instances were reported UNSAT. With `use_evolution=False` the solver behaves as plain CDCL.
+5. **Small instances never evolve**: Evolution only triggers every `evolution_frequency` conflicts (default 500); the bundled `example.py` formulas finish with 0 conflicts, so they show 0 evolutions.
 
 **Recommendation**: Use standard CDCL for production. Use CEGP-SAT for education/research/experimentation.
 

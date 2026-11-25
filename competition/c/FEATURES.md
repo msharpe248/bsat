@@ -11,7 +11,7 @@ Authoritative reference of currently implemented solver features, defaults
 | Feature | Default | Enable | Disable |
 |---|---:|---|---|
 | Alternating Focused (VMTF) / Stable (4-ary VSIDS) | ON | `--alternating` | `--no-alternating` |
-| VMTF in all modes | OFF | `--vmtf` | `--vsids` |
+| VMTF in all modes | OFF | `--vmtf` | — (`--vsids` only clears `--lrb`) |
 | LRB/CHB branching | OFF | `--lrb` | `--vsids` |
 | Chronological backtracking (`--chrono-levels 100`) | ON | `--chrono` | `--no-chrono` |
 | Restart trail reuse | ON | `--reuse-trail` | `--no-reuse-trail` |
@@ -27,9 +27,9 @@ Authoritative reference of currently implemented solver features, defaults
 | 3-tier used-clause retention | ON | `--protect-used` | `--no-protect-used` |
 | On-the-fly subsumption & OTFS | ON | — | `--no-subsumption` |
 | Failed-literal probing, HBR & probing intersection | ON | — | `--no-probing` |
-| Tick-budgeted inprocessing pipeline (SCC, congruence, Kitten sweep, global backbone, SSR, gate BVE, transitive reduction, vivify, ProbSAT seeding, dynamic GF(2) Gauss, AMO sequential counters) | ON | `--inprocess` | `--no-inprocess` |
-| Exact syntactic symmetry breaking (proof-producing DRAT/RAT) | ON | `--sym` | `--no-sym` |
-| Structured Bounded Variable Addition (proof-producing DRAT/RAT) | ON | `--sbva` | `--no-sbva` |
+| Tick-budgeted inprocessing pipeline (SCC, congruence, Kitten sweep, global backbone, SSR, gate BVE, transitive reduction, vivify, ProbSAT seeding, dynamic GF(2) Gauss, AMO sequential counters) | ON | `--inprocess` | `--no-inprocess` (also skipped with `--local-search` or `--factor`) |
+| Exact syntactic symmetry breaking (proof-producing DRAT/RAT; not run under `--lrat`) | ON | `--sym` | `--no-sym` |
+| Structured Bounded Variable Addition (proof-producing DRAT/RAT; not run under `--lrat`) | ON | `--sbva` | `--no-sbva` |
 | Standalone blocked clause elimination (BCE) | OFF | `--bce` | `--no-bce` |
 | Standalone legacy BVE / SCC / Congruence / Factoring | OFF | `--elim` / `--equiv` / `--congruence` / `--factor` | `--no-elim` |
 | Standalone WalkSAT local search hybridization | OFF | `--local-search` | — |
@@ -38,7 +38,7 @@ Authoritative reference of currently implemented solver features, defaults
 | DRAT proof logging (text / binary) | OFF | `--proof <file>` / `--binary-proof` | — |
 | Native LRAT proof logging (text / binary) | OFF | `--lrat <file>` / `--binary-lrat` | — |
 | Core-guided Weighted Partial MaxSAT (RC2/OLL) | OFF | `--maxsat` / `.wcnf` | — |
-| Native XOR-CNF (`x ... 0`) & Pseudo-Boolean (`.opb`) | auto / OFF | `x` lines / `--opb` / `.opb` | — |
+| Native XOR-CNF (`x <lits> 0`, `x` as its own token) & Pseudo-Boolean (`.opb`) | auto / OFF | `x` lines / `--opb` / `.opb` | — |
 | AllSAT / projected enumeration, Backbone & MUS | OFF | `--models` / `--project` / `--backbone` / `--mus` | — |
 | Frozen-variable protection (C/Python API) | API | `bsat_freeze` / `solver_freeze` | `bsat_melt` / `solver_melt` |
 
@@ -78,7 +78,9 @@ Authoritative reference of currently implemented solver features, defaults
   block-level all-UIP shrinking (`--shrink`), and binary-resolution minimization
   (`--binary-minimize`).
 - **3-tier dynamic clause database**: permanent Tier-1 glue clauses
-  (`LBD <= 2`), used-protected Tier-2 clauses (`LBD <= 6`, `--protect-used`),
+  (`LBD <= 2`), used-protected Tier-2 clauses (`LBD <= 6`, `--protect-used`;
+  both thresholds are re-derived from LBD usage at each reduction within
+  `2..3` / `5..8` on formulas with `>= 300` variables),
   and LBD/activity-ranked Tier-3 reduction with deterministic portable sorting
   (`--reduce-interval 1000`, `--reduce-increment 100`, `--reduce-fraction 0.5`).
 
@@ -86,8 +88,9 @@ Authoritative reference of currently implemented solver features, defaults
 - **Probing, HBR & Probing Intersection**: root-prioritized failed-literal
   probing, hyper-binary resolution, and RUP-certified double-lookahead backbone
   unit extraction.
-- **Gate Congruence & Tarjan SCC**: preprocessing (scaled up to `800k` clauses)
-  and periodic iterative fixpoint congruence across 2-input AND/XOR/ITE, N-ary
+- **Gate Congruence & Tarjan SCC**: preprocessing (`>= 300` variables, scaled
+  up to `800k` clauses) and periodic (`<= 600k` clauses) iterative fixpoint
+  congruence across 2-input AND/XOR/ITE, N-ary
   AND (`k = 2..8`), and 3-input `MAJ3`/`XOR3` full-adder gates (1-split/2-split
   RUP), paired with in-place Tarjan SCC equivalence substitution.
 - **Global Gate-DAG Simulation & Mini-Kitten Sweeping**: 64-bit bit-parallel
@@ -109,10 +112,12 @@ Authoritative reference of currently implemented solver features, defaults
 
 ### 5. Proof-Producing Structural Engines (`src/sbva.c`, `src/gauss.c`, `src/symmetry.c`, `src/inprocess.c`)
 All four engines emit standard DRAT/RAT proofs in `--proof` mode (and stay
-disabled in append-only `BSAT_CERTIFICATES` journals, assumption calls, and
-`BSAT_REUSE_LEARNTS`):
+disabled in append-only `BSAT_CERTIFICATES` journals, assumption calls,
+`BSAT_REUSE_LEARNTS`, and with `--lrat`, `--local-search`, or `--factor`):
 - **SBVA (`--sbva`, `src/sbva.c`)**: arbitrary-length Structured BVA with 3-hop
-  structural tie-breaking and RAT-valid DRAT clause emission.
+  structural tie-breaking and RAT-valid DRAT clause emission; attempted only on
+  formulas with `500..250k` clauses that are at least half binary or dense
+  (`<= 5,000` variables with `>= 8` clauses per variable).
 - **AMO Cliques (`src/inprocess.c`)**: linear Sinz sequential-counter
   re-encoding for `>=80%`-binary formulas (`<= 250k` clauses), emitting
   temporary backward RAT definitions + forward RAT/1-step RUP blocking binaries
@@ -137,7 +142,8 @@ disabled in append-only `BSAT_CERTIFICATES` journals, assumption calls, and
 ### 6. Parallel Portfolio & Operational Controls (`src/portfolio.c`, `src/main.c`, `src/bsat.c`)
 - **Multi-core portfolio (`-j N` / `--threads N`)**: runs `N` isolated worker
   threads (`1..64`, 8 MiB stacks); Worker 0 runs full BSAT (imports only) while
-  Workers `1..N-1` run 8 diversified logically-equivalent profiles (including a
+  Workers `1..N-1` cycle through 7 named diversified logically-equivalent
+  profiles plus a parametric fallback for worker ids `8, 16, ...` (including a
   zero-preprocessing fast-start profile on Worker 2) exporting units, binaries,
   and LBD-filtered learned clauses (`size <= 8, LBD <= 3`) through a TSan-clean
   dedicated unit ring + clause ring with 64-bit canonical hash deduplication and
@@ -167,7 +173,9 @@ disabled in append-only `BSAT_CERTIFICATES` journals, assumption calls, and
 -c, --conflicts <n>           Maximum conflicts (default: unlimited)
 -d, --decisions <n>           Maximum decisions (default: unlimited)
 -t, --time <sec>              CPU time limit (wall time under -j N; default: unlimited)
--j, --threads <n>             Parallel portfolio threads, 1..64 (default: 1)
+-j, --threads <n>             Parallel portfolio threads, 1..64 (default: 1; plain CNF/XOR-CNF
+                              solving only: rejected with --proof/--lrat, ignored by
+                              .wcnf/.opb/--models/--backbone/--mus)
     --portfolio <sec>         Sequential focused slice then fresh alternating search
     --seed <n>                Deterministic per-solver random seed (default: 1)
 ```
@@ -175,12 +183,13 @@ disabled in append-only `BSAT_CERTIFICATES` journals, assumption calls, and
 ### Branching, Restarts & Phases
 ```sh
 --alternating / --no-alternating       Focused (VMTF) / Stable (VSIDS) alternation (default: ON)
---vmtf / --lrb / --vsids               Force VMTF, LRB/CHB, or VSIDS
+--vmtf / --lrb / --vsids               Force VMTF or LRB/CHB; --vsids only clears --lrb
 --var-decay <f>                        VSIDS decay factor (default: 0.95)
 --var-inc <f>                          VSIDS initial increment (default: 1.0)
 --chrono / --no-chrono                 Chronological backtracking (default: ON)
 --chrono-levels <n>                    Backjump gap threshold (default: 100)
 --reuse-trail / --no-reuse-trail       Restart trail prefix reuse (default: ON)
+--glucose-restart                      Enable Glucose LBD restarts, keeping the EMA/AVG choice (default: ON)
 --glucose-restart-ema                  LBD EMA restarts (default: ON)
 --glucose-restart-avg                  Sliding-window LBD restarts (default: OFF)
 --glucose-fast-alpha <f>               Fast EMA decay (default: 32/33 ≈ 0.970)
@@ -211,7 +220,7 @@ disabled in append-only `BSAT_CERTIFICATES` journals, assumption calls, and
 --dynamic-lbd / --no-dynamic-lbd       Refresh LBD during analysis (default: ON)
 --shrink / --no-shrink                 Block-level all-UIP shrinking (default: ON)
 --binary-minimize / --no-binary-minimize  Binary-resolution minimization (default: ON)
---iterative-minimize                   Binary-aware DFS minimization flag
+--iterative-minimize                   Accepted no-op (binary-aware DFS minimization is always active)
 --minimize-budget <n>                  Work cap per minimization (default: 10000)
 --no-minimize                          Disable clause minimization
 --no-subsumption                       Disable on-the-fly subsumption
@@ -222,7 +231,10 @@ disabled in append-only `BSAT_CERTIFICATES` journals, assumption calls, and
 ### Preprocessing, Inprocessing, Local Search & Proofs
 ```sh
 --inprocess / --no-inprocess           Full tick-budgeted inprocessing (default: ON)
---inprocess-interval <n>               Conflicts between rounds (default: 10000)
+--inprocess-interval <n>               Conflicts between light simplification rounds on the
+                                       assumption/journal/reuse/--factor/--local-search path
+                                       (default: 10000); the default one-shot pipeline is
+                                       scheduled by work ticks instead
 --preprocess-budget <n>                Literal-work budget; 0 disables (default: 1000000)
 --sbva / --no-sbva                     Structured BVA, proof-producing DRAT/RAT (default: ON)
 --sym / --no-sym                       Exact syntactic symmetry breaking (default: ON)
@@ -249,3 +261,8 @@ disabled in append-only `BSAT_CERTIFICATES` journals, assumption calls, and
 --backbone                             Compute exact global backbone literals
 --mus                                  Extract Minimal Unsatisfiable Subset (MUS)
 ```
+
+### Exit Codes
+`10` SAT (also `--models` / `--backbone` on satisfiable input), `20` UNSAT
+(also `--mus`), `30` `s OPTIMUM FOUND` (`.wcnf`, and `.opb` with an objective),
+`0` UNKNOWN / resource limit, `1` usage, input, I/O, or internal error.

@@ -1,5 +1,7 @@
 # Dynamic learned-clause quality
 
+> Historical snapshot (2026-09-06). Defaults, options and code locations described here have since changed; current behavior is in [README.md](../README.md), [FEATURES.md](../FEATURES.md) and [PRODUCTION_READINESS.md](../PRODUCTION_READINESS.md).
+
 `--dynamic-lbd` re-evaluates the LBD of learned clauses encountered as conflicts
 or expanded reasons during first-UIP analysis. LBD counts distinct non-root
 decision levels represented in a clause. When a later conflict uses the clause

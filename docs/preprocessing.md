@@ -260,6 +260,10 @@ print(f"Forced: {assignments}")
 print(f"Reduction: {stats}")
 ```
 
+`components` contains only the components that still need solving (here none, so `Components: 0`).
+
+> **Caveat (current implementation)**: a component that preprocessing proves UNSAT (e.g. `a & ~a`) is dropped from the returned list without any UNSAT flag. Always check the merged result with `cnf.evaluate(solution)` as in the workflow below, or use `preprocess_cnf(cnf).is_sat`, which reports `False` in that case.
+
 ### Selective Techniques
 
 ```python
@@ -325,18 +329,20 @@ Where:
 
 ### Typical Impact
 
+The reduction and speedup figures below are indicative of well-structured instances (unit clauses, implications, independent parts); they are not measurements of this package. Uniform random 3-SAT typically sees little or no reduction. The preprocessing times are approximate measurements of this pure-Python implementation with all techniques enabled - subsumption and self-subsumption compare clause pairs, so time grows quadratically with the number of clauses.
+
 **Small formulas (< 100 clauses)**:
-- Preprocessing time: < 1ms
+- Preprocessing time: a few milliseconds
 - Reduction: 20-50%
 - Net speedup: 2-5x
 
-**Medium formulas (100-10,000 clauses)**:
-- Preprocessing time: 1-100ms
+**Medium formulas (100-1,000 clauses)**:
+- Preprocessing time: milliseconds to ~0.5s
 - Reduction: 50-80%
 - Net speedup: 10-100x
 
-**Large formulas (> 10,000 clauses)**:
-- Preprocessing time: 100ms - 1s
+**Large formulas (> 1,000 clauses)**:
+- Preprocessing time: seconds and up (~9s at 3,000 clauses); consider `subsumption=False, self_subsumption=False`
 - Reduction: 70-95%
 - Net speedup: 100-10,000x
 
@@ -495,6 +501,8 @@ else:
 
 **Why**: Preprocessing finds partial solutions.
 
+**Note**: variables that drop out during simplification (e.g. `b` in `a & (a | b)`) are unconstrained and do not appear in `result.assignments` or in the solution of the simplified formula. The merged dictionary still satisfies the original formula (`cnf.evaluate` treats missing variables as False), but add them yourself if you need a total assignment.
+
 ### 5. Use Statistics
 
 ```python
@@ -529,8 +537,9 @@ def decompose_into_components(cnf: CNFExpression) -> List[CNFExpression]
 def preprocess_cnf(cnf: CNFExpression, **options) -> PreprocessingResult
     """Apply all preprocessing techniques."""
 
-def decompose_and_preprocess(cnf: CNFExpression) -> Tuple[List, Dict, Stats]
-    """Decompose then preprocess each component (recommended)."""
+def decompose_and_preprocess(cnf: CNFExpression, **options) -> Tuple[List, Dict, Stats]
+    """Decompose then preprocess each component (recommended).
+    Returns only the components that still need solving, the forced assignments, and combined stats."""
 ```
 
 ### Classes
@@ -546,7 +555,7 @@ class PreprocessingResult:
     assignments: Dict[str, bool]    # Forced assignments
     stats: PreprocessingStats       # Statistics
     is_sat: Optional[bool]          # Trivial SAT/UNSAT?
-    components: Optional[List]      # Independent components
+    components: Optional[List]      # Reserved; currently always None (use decompose_into_components)
 
 class PreprocessingStats:
     original_vars: int

@@ -16,9 +16,9 @@ certificate against its exact query.
 
 | Capability | Current support | Evidence and boundary |
 |---|---|---|
-| One-shot DIMACS, XOR-CNF & PB solving | CLI (`bin/bsat`), SAT/UNSAT/UNKNOWN, text/binary DRAT & native text/binary LRAT (`--lrat`), CryptoMiniSat XOR-CNF (`x ... 0`), `.opb` Pseudo-Boolean decision & optimization | Strict DIMACS parser, model self-check, `validate.py`, `drat-trim` CI, independent linear LRAT verifier (`test_lrat`), `test_xor_and_pb` |
+| One-shot DIMACS, XOR-CNF & PB solving | CLI (`bin/bsat`), SAT/UNSAT/UNKNOWN, text/binary DRAT & native text/binary LRAT (`--lrat`), XOR-CNF lines (`x <lits> 0`, with `x` as a separate token; the attached CryptoMiniSat spelling `x1 2 3 0` is rejected), `.opb` Pseudo-Boolean decision & optimization | Strict DIMACS parser, model self-check, `validate.py`, `drat-trim` CI, in-tree linear LRAT verifier (`lrat_verify_file` in `src/lrat.c`, exercised by `test_lrat`; no external LRAT checker in CI), `test_xor_and_pb` |
 | MaxSAT & higher-level SAT queries | RC2/OLL Weighted Partial MaxSAT (`--maxsat` / `.wcnf`), AllSAT/projected model enumeration (`--models` / `--project`), exact global backbone (`--backbone`), minimal MUS (`--mus`) | Verified against brute-force truth-table oracles and minimality checkers in `test_maxsat` & `test_queries` (release + ASan/UBSan) |
-| Multi-core portfolio solving | `-j <N>` / `--threads <N>` (`1..64`), LBD-filtered sharing (`size <= 8, LBD <= 3`), dedicated unit ring, canonical hash dedup, 8 profiles (incl. fast-start & WalkSAT-hybridized SAT-hunter), atomic stop | Non-proof one-shot mode; TSan-clean ring buffers (`MODE=tsan`), 8 MiB worker stacks, only logically-equivalent workers export clauses |
+| Multi-core portfolio solving | `-j <N>` / `--threads <N>` (`1..64`), LBD-filtered sharing (`size <= 8, LBD <= 3`), dedicated unit ring, canonical hash dedup, full-default Worker 0 plus 7 named worker profiles (incl. fast-start & WalkSAT-hybridized SAT-hunter), atomic stop | Non-proof one-shot mode; TSan-clean ring buffers (`MODE=tsan`), 8 MiB worker stacks, only logically-equivalent workers export clauses |
 | Public C/C++ & Python embedding | Opaque ABI v1 (`bsat.h`, with additive `bsat_freeze`/`melt`, `set_threads`, `set_proof`/`lrat`, `add_xor`/`atmost`/`pb_le`, `backbone`, `mus`), Linux/macOS C11/POSIX, plus zero-dependency Python `ctypes` wrapper (`src/bsat/c_solver.py`) | [API_CONTRACT.md](API_CONTRACT.md), [INSTALLING.md](INSTALLING.md), `test_public_extensions`, `embedding-test`, `package-test`, `tests/test_c_solver.py`; internal `solver.h` layouts are not stable ABI |
 | Incremental additions & assumptions | Copied permanent clauses, temporary assumptions, model and sufficient failed core, `solver_freeze`/`solver_melt` | [API_CONTRACT.md](API_CONTRACT.md); destructive inprocessing and non-RUP passes stay disabled on assumption calls |
 | Retained learning | Opt-in `BSAT_REUSE_LEARNTS`, including compatible conditional UNSAT and budget slices | [INCREMENTAL_REUSE.md](docs/INCREMENTAL_REUSE.md); cancellation or incompatible state rebuilds from permanent input |
@@ -36,12 +36,12 @@ certificate against its exact query.
 ## Current Verification & Benchmark Evidence
 
 ### Automated Verification
-- **Unit & integration tests**: `73/73` C tests (including
+- **Unit & integration tests**: `77/77` C tests (including
   `test_differential_engines.c`, `test_gauss_and_amo.c`, `test_xor_and_pb.c`,
   `test_maxsat.c`, `test_queries.c`, `test_lrat.c`, and
   `test_public_extensions.c`) pass across `release`, `diagnostic`, and `debug`
   (ASan + UBSan) builds, plus ThreadSanitizer (`MODE=tsan`), `fault-test`
-  (`3,544` deterministic OOM injection cases), `recovery-fault-test`,
+  (`3,564` deterministic OOM injection cases), `recovery-fault-test`,
   `contained-worker-example` + `test_acceptance_and_containment.py`,
   `embedding-test`, `soak-test`, `package-test`, `application_histories`,
   `check_query_diagnostics`, `check_deadlines` (`0.002 s` max CPU overrun),
@@ -53,6 +53,14 @@ certificate against its exact query.
   fuzzing`, and `C solver independent incremental integration`.
 
 ### Measured Performance (Release, Non-PGO, Apple Silicon)
+- **Evidence status (2026-11-25)**: no figure in this section has a checked-in
+  artifact under `benchmark_results/` (its newest files are dated 2026-09-10),
+  and the Kissat and `drat-trim` rows were not rerun. A rerun of the current
+  release build on the cached corpora reproduced the default-mode `bsat` rows:
+  `synthetic-hard` 118/118, `satlib-core` 492/492, `satlib-scale` 6,091/6,091,
+  `satlib-hard` 914/919 (all `0` errors), and 1-thread SAT Competition 48/150
+  (28 SAT, 20 UNSAT, PAR-2 `21.146 s`), one more than recorded below. `-j 4`
+  counts vary between runs (26/60 on the 2023 subset in that rerun).
 - **Wide-corpus & head-to-head verification** (`scripts/suite_runner.py` &
   `scripts/acceptance_gate.py`, independent full-clause SAT model checks, known
   ground truth, and real `drat-trim` binary DRAT proof checking):
@@ -69,7 +77,8 @@ certificate against its exact query.
   - **`satlib-hard`** (919 instances, 10 s cap): **914/919 (99.5%)**, `0` errors.
 - **Frozen industrial & targeted benchmarks**:
   - `cal3-query.cnf` (UNSAT, including verified DRAT proof): **`0.447 s`**
-    (`20,294` conflicts, vs. Kissat `1.045 s`).
+    (`20,294` conflicts when recorded; the current build takes `19,708`
+    conflicts without a proof and `31,599` with `--proof`; vs. Kissat `1.045 s`).
   - `16c999d0` (planning, 50k vars / 284k clauses, UNSAT): **`25.68 s`** wall
     with `-j 4` (vs. Kissat `47.33 s`), `54.14 s` single-threaded (`26.1M` props/s).
   - `09cd83e2` (belpyramid, UNSAT): **`0.342 s`** (`8.81M` props/s).
@@ -78,7 +87,8 @@ certificate against its exact query.
     dynamic in-search Bird/Han-Jiang GF(2) Gauss.
   - `PHP(12,11)` / `PHP(20,19)` / `PHP(31,30)` (UNSAT): **`0` conflicts** via
     exact symmetry breaking (`PHP(31,30)` solves in **`0.270 s`** with a
-    `drat-trim`-verified binary DRAT proof).
+    `drat-trim`-verified binary DRAT proof; without `--proof` the current build
+    needs `170` conflicts on `PHP(31,30)` and `0` up to `PHP(26,25)`).
 
 ### Residual Technical Limitations
 - Hard cryptographic S-box / stream-cipher attacks (`asconhash*`) and large
@@ -93,6 +103,12 @@ certificate against its exact query.
   breaking, GF(2) Tseitin XOR-chains) stay intentionally disabled in append-only
   RUP-only `BSAT_CERTIFICATES` journals so incremental certificate checking
   requires no RAT witness reconstruction.
+- `--lrat` runs CDCL plus the RUP-only inprocessing subset: symmetry breaking,
+  SBVA, AMO re-encoding, GF(2) Gauss and gate congruence are not run, so
+  instances that depend on them can be far slower or produce very large proofs
+  (`PHP(31,30)` does not finish within 120 s under `--lrat`, and a 100-variable
+  Tseitin instance from `synthetic-hard` reaches a 60 s limit with a 1.8 GB
+  proof, versus well under a second by default or with `--proof`).
 
 ### Deployer Responsibilities
 - Production deployments must freeze their own workload-specific corpus,

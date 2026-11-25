@@ -1,5 +1,7 @@
 # Benchmark Results: Two-Watched Literals + LBD
 
+> **Historical record (October 2025, Python prototype).** Status lines, line numbers, results, and "next steps" below describe `competition/python/` at that date and are not kept up to date. For the current solver see [competition/c/README.md](../c/README.md).
+
 **Date**: October 19, 2025 (Updated: October 20, 2025 - Post-Bug-Fix)
 **Solver Versions**:
 - **Original**: Naive CDCL from `src/bsat/cdcl.py`
@@ -335,7 +337,7 @@ See `benchmark_speedup.py` for the complete benchmark script.
 **Benchmark Suites**:
 1. Simple Tests: `dataset/simple_tests/simple_suite/*.cnf` (9 instances)
 2. Medium Tests: `dataset/medium_tests/medium_suite/*.cnf` (10 instances)
-3. Competition 2025 Small: `dataset/sat_competition2025_small/*.cnf` (3 instances)
+3. Competition 2025 Small: `dataset/sat_competition2025_small/*.cnf` (3 instances; this directory is not in the repository, so this part cannot be re-run from a checkout)
 
 **Total Runtime**: ~8 minutes (435 seconds total across all solvers)
 

@@ -1,5 +1,7 @@
 # Chronological backtracking: larger held-out screen
 
+> Historical snapshot (2026-09-07). Defaults, options and code locations described here have since changed; current behavior is in [README.md](../README.md), [FEATURES.md](../FEATURES.md) and [PRODUCTION_READINESS.md](../PRODUCTION_READINESS.md).
+
 Both BSAT profiles solved **0/6**; Kissat solved **3/6**, with independently
 verified answers. BSAT returned UNKNOWN on every case. The earlier development
 improvements therefore do not generalize to a solve-count gain on this sample.

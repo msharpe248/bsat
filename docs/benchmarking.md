@@ -38,18 +38,20 @@ For rigorous benchmarking and comparison with other solvers, consider using esta
   - Real-world industrial instances
   - Includes known SAT/UNSAT status for validation
 
-SATLIB instances are in DIMACS format and can be loaded directly:
+SATLIB instances are in DIMACS format and can be loaded with `read_dimacs_file`:
 ```python
-from bsat import read_dimacs_file
+from bsat import read_dimacs_file, solve_sat
 
 # Download from SATLIB and load
 cnf = read_dimacs_file("uf50-218.cnf")  # Uniform random 3-SAT, 50 vars, 218 clauses
 result = solve_sat(cnf)
 ```
 
+Note: many SATLIB files (including the `uf*` series) end with a `%` line followed by `0`. BSAT's parser rejects that trailer, so delete those last lines before loading (see [DIMACS Format](dimacs.md)).
+
 ### Pre-defined Benchmarks
 
-The `tests/benchmarks.py` module provides a collection of benchmark instances:
+The `tests/benchmarks.py` module provides a collection of benchmark instances. The `tests.benchmarks` and `examples.benchmark_comparison` imports used in this guide work when Python is run from the repository root with `bsat` installed (`pip install -e .`):
 
 ```python
 from tests.benchmarks import get_benchmark, list_benchmarks
@@ -79,12 +81,14 @@ cnf = get_benchmark("phase_transition_20")
 | **Graph Coloring** | `graph_coloring_sat` | SAT | 8 vertices, 4 colors |
 | | `graph_coloring_unsat` | UNSAT | 8 vertices, 2 colors |
 | **XOR Chains** | `xor_chain_sat` | SAT | XOR chain = True |
-| | `xor_chain_unsat` | UNSAT | XOR chain = False |
+| | `xor_chain_unsat` | SAT | XOR chain = False (despite its name, a single parity constraint is always satisfiable) |
+
+`phase_transition_20` is SAT and `phase_transition_30` is UNSAT with the fixed seeds used in the suite.
 
 ### Benchmark Statistics
 
 ```python
-from tests.benchmarks import benchmark_stats
+from tests.benchmarks import benchmark_stats, get_benchmark
 
 cnf = get_benchmark("phase_transition_20")
 stats = benchmark_stats(cnf)
@@ -111,29 +115,29 @@ results = compare_solvers("phase_transition_20", solvers=["DPLL", "CDCL"])
 print_comparison(results)
 ```
 
-Output:
+Output (times will vary by machine):
 ```
 ======================================================================
 Benchmark: phase_transition_20
 ======================================================================
 Variables: 20
 Clauses: 85
-Ratio: 4.26
+Ratio: 4.25
 
 Results:
 ----------------------------------------------------------------------
 
 DPLL:
   Result: SAT
-  Time: 0.0234s
+  Time: 0.0035s
 
 CDCL:
   Result: SAT
-  Time: 0.0087s
-  Decisions: 12
-  Conflicts: 5
-  Propagations: 156
-  Learned clauses: 5
+  Time: 0.0012s
+  Decisions: 14
+  Conflicts: 13
+  Propagations: 153
+  Learned clauses: 13
 ```
 
 ### Running Multiple Benchmarks
@@ -256,14 +260,16 @@ cnf = graph_coloring_hard(
 
 ### XOR Chains
 
-Easy for XOR-SAT solver, hard for DPLL/CDCL:
+A parity chain encoded as ordinary CNF using auxiliary variables (`t1`, `t2`, ...):
 
 ```python
 from tests.benchmarks import xor_chain
 
-# x1 ⊕ x2 ⊕ ... ⊕ x20 = True
+# x1 ⊕ x2 ⊕ ... ⊕ x20 = value
 cnf = xor_chain(length=20, value=True)
 ```
+
+The result is plain CNF, so solve it with DPLL/CDCL (not `solve_xorsat`, which interprets each clause as an XOR). A single chain is satisfiable for either `value` and is easy for all solvers; parity constraints only become hard for DPLL/CDCL when many of them are combined into an inconsistent system.
 
 ---
 
@@ -276,7 +282,7 @@ Different solvers have different theoretical complexities:
 | Solver | Worst Case | Typical Performance |
 |--------|-----------|-------------------|
 | **2SAT** | O(n+m) | Linear - very fast |
-| **Horn-SAT** | O(n+m) | Linear - very fast |
+| **Horn-SAT** | O(n+m) (O(n·m) for this implementation) | Polynomial - very fast |
 | **XOR-SAT** | O(n³) | Cubic - fast for XOR |
 | **DPLL** | O(2ⁿ) | Exponential - slow on hard instances |
 | **CDCL** | O(2ⁿ) | Much faster than DPLL in practice |
@@ -305,24 +311,25 @@ Understanding CDCL statistics:
 
 ```
 CDCL on pigeon_hole_6:
-  Time: 0.0234s
-  Decisions: 15
-  Conflicts: 8
-  Propagations: 203
-  Learned clauses: 8
+  Time: 0.0355s
+  Decisions: 189
+  Conflicts: 185
+  Propagations: 2485
+  Learned clauses: 185
 ```
 
 **Interpretation**:
-- Only 15 decisions needed (efficient search)
-- 8 conflicts led to 8 learned clauses
-- High propagations (203) show effective BCP
-- Fast UNSAT proof despite exponential worst-case
+- 189 decisions and 185 conflicts - almost every decision ran into a conflict, typical for pigeon-hole instances (hard for resolution-based solvers)
+- Each conflict produced one learned clause (185)
+- High propagations (2485, about 13 per decision) show effective BCP
+- Still a fast UNSAT proof at this size, but the effort grows exponentially with the number of pigeons
 
 ### Scaling Behavior
 
 Test how solvers scale:
 
 ```python
+from bsat import solve_cdcl
 from tests.benchmarks import random_3sat
 import time
 
@@ -351,9 +358,9 @@ for n in sizes:
 1. **Check structure first**:
    ```python
    if is_2sat(cnf):
-       use solve_2sat()  # O(n+m)
+       result = solve_2sat(cnf)  # O(n+m)
    elif is_horn_formula(cnf):
-       use solve_horn_sat()  # O(n+m)
+       result = solve_horn_sat(cnf)  # polynomial
    ```
 
 2. **For general SAT**:
@@ -379,6 +386,7 @@ for n in sizes:
 Complete benchmarking workflow:
 
 ```python
+from bsat import solve_sat, solve_cdcl
 from tests.benchmarks import (
     get_benchmark, random_3sat, phase_transition_3sat
 )
@@ -433,8 +441,8 @@ cnf = random_3sat(30, 120, seed=42)
 # Get stats
 stats = benchmark_stats(cnf)
 
-# Compare solvers
-results = compare_solvers("benchmark_name", ["DPLL", "CDCL"])
+# Compare solvers (use any name from list_benchmarks())
+results = compare_solvers("phase_transition_20", ["DPLL", "CDCL"])
 print_comparison(results)
 
 # Run full suite

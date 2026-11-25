@@ -1,5 +1,7 @@
 # Experimental conflict-recency branching
 
+> Historical snapshot (2026-09-06). Defaults, options and code locations described here have since changed; current behavior is in [README.md](../README.md), [FEATURES.md](../FEATURES.md) and [PRODUCTION_READINESS.md](../PRODUCTION_READINESS.md).
+
 `--vmtf` enables a variable-move-to-front queue. Conflict analysis moves its
 bumped variables to the front in their previous relative order; selection scans from the most recent available
 variable, skipping assigned and eliminated variables. Backtracking restores the

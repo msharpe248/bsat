@@ -31,8 +31,8 @@ Fast, minimal test cases covering core functionality:
 | `trivial_unsat.cnf` | Contradiction: (x) ∧ (¬x) | UNSAT |
 | `empty.cnf` | Empty CNF (vacuously true) | SAT |
 | `unit_propagation.cnf` | Unit propagation chain | UNSAT |
-| `simple_sat_3.cnf` | 3-variable SAT instance | SAT |
-| `simple_unsat_3.cnf` | 3-variable UNSAT (pigeonhole) | UNSAT |
+| `simple_sat_3.cnf` | 3-variable, 3-clause SAT instance | SAT |
+| `simple_unsat_3.cnf` | 2-variable, 3-clause UNSAT (pigeonhole: 2 pigeons, 1 hole) | UNSAT |
 | `pure_literal.cnf` | Contains pure literal | SAT |
 | `horn_sat.cnf` | Horn formula, satisfiable | SAT |
 | `horn_unsat.cnf` | Horn formula, unsatisfiable | UNSAT |
@@ -87,9 +87,9 @@ The `expected_results.json` file maps each fixture to its expected outcome:
 ### C Solver
 
 ```c
-// tests/test_dimacs.c
+// competition/c/tests/test_dimacs.c (run from competition/c, e.g. via `make test`)
 Solver* s = solver_new();
-DimacsError err = dimacs_parse_file(s, "../../tests/fixtures/unit/trivial_sat.cnf");
+DimacsError err = dimacs_parse_file(s, "../tests/fixtures/unit/trivial_sat.cnf");
 assert(err == DIMACS_OK);
 lbool result = solver_solve(s);
 assert(result == TRUE);  // SAT
@@ -98,18 +98,19 @@ assert(result == TRUE);  // SAT
 ### Python Solver
 
 ```python
-# tests/test_common_fixtures.py
+# competition/python/test_common_fixtures.py (run from competition/python)
 from bsat.dimacs import read_dimacs_file
-from competition.python.competition_solver import solve_dimacs
+import cdcl_optimized
 
 cnf = read_dimacs_file("../tests/fixtures/unit/trivial_sat.cnf")
-result = solve_dimacs(cnf)
-assert result is not None  # SAT
+solution = cdcl_optimized.solve_cdcl(cnf)
+assert solution is not None  # SAT
+assert cnf.evaluate(solution)
 ```
 
 ## Cross-Validation
 
-The integration test suite (`competition/c/tests/integration_test.py`) automatically:
+The cross-validation suite (`competition/c/tests/test_cross_validation.py`) automatically:
 1. Runs both C and Python solvers on all fixtures
 2. Verifies SAT/UNSAT matches expected results
 3. For SAT results: validates solutions actually satisfy the CNF
@@ -130,4 +131,4 @@ The integration test suite (`competition/c/tests/integration_test.py`) automatic
 - **Total**: 10 fixtures
 - **Coverage**: SAT/UNSAT, unit propagation, pure literals, Horn formulas, edge cases
 
-Last updated: 2025-10-21
+Last updated: 2026-11-25

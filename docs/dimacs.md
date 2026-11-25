@@ -28,7 +28,7 @@ DIMACS CNF is the **standard file format** for SAT solvers, used in SAT competit
 - Write CNF formulas to DIMACS format
 - Parse solution output
 - Export solutions in DIMACS format
-- Full error checking and validation
+- Error checking with line numbers (`DIMACSParseError`)
 
 ---
 
@@ -145,6 +145,13 @@ except DIMACSParseError as e:
 - Variable numbers exceeding declared count
 - Invalid literals
 
+**Parser behaviour and limitations:**
+- DIMACS variable `N` becomes the BSAT variable named `xN` (`1` → `x1`, `-2` → `¬x2`)
+- Each clause must be on a single line ending with `0` (clauses spanning several lines are rejected)
+- The `%` / `0` trailer found in some SATLIB files (e.g. `uf20-*.cnf`) is rejected as an invalid literal - strip it first
+- A mismatch between the declared and actual number of clauses is ignored
+- An empty clause (a line containing only `0`) is currently skipped rather than kept, so a formula that is UNSAT only because of an explicit empty clause will not be reported as UNSAT
+
 ---
 
 ## Writing DIMACS Files
@@ -190,6 +197,8 @@ cnf = read_dimacs_file('input.cnf')
 
 write_dimacs_file(cnf, 'output.cnf')
 ```
+
+**Note on variable numbering**: `to_dimacs` numbers the variables that actually occur as 1, 2, 3, ... in *sorted name order*. Sorting is alphabetical, so with 10 or more variables `x10` comes before `x2`, and unused variables are dropped - a read → write roundtrip therefore produces an equivalent formula but not necessarily the same variable numbers as the input file.
 
 ---
 
@@ -237,6 +246,8 @@ Output:
 s SATISFIABLE
 v 1 -2 3 -4 0
 ```
+
+`solution_to_dimacs` takes the variable number from the name (`x5` → `5`), so it expects `xN`-style names such as those produced by `parse_dimacs` / `read_dimacs_file`.
 
 ### Complete Solve & Export
 

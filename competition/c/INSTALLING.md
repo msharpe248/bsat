@@ -6,11 +6,14 @@ Installation support is separate from production acceptance; see the current
 Build and stage a release with `make CC=clang` followed by
 `make install PREFIX=/opt/bsat DESTDIR=/path/to/staging`. Omit `DESTDIR` to
 install directly into a writable prefix. Installation provides `bin/bsat`,
-`include/bsat.h`, the ABI-v1 shared library and `lib/pkgconfig/bsat.pc`.
+`include/bsat.h`, `include/ipasir.h`, the ABI-v1 shared library and
+`lib/pkgconfig/bsat.pc`.
 `VERSION` identifies the package; the current package is a development release.
 The default optimization flags target the build machine. For binaries distributed
 to other machines, build with an explicit portable target, for example
-`make CC=clang OPTFLAGS='-O3 -flto'`, and use the same flags for installation.
+`make CC=clang OPTFLAGS='-O3 -flto -DNDEBUG'` (the default `OPTFLAGS` is
+`-O3 -march=native -flto -DNDEBUG`; omitting `-DNDEBUG` compiles in the
+internal `ASSERT` checks), and use the same flags for installation.
 
 Set `PKG_CONFIG_PATH` to the prefix's `lib/pkgconfig` directory. Compile clients
 with `pkg-config --cflags --libs bsat`, and arrange the platform's runtime

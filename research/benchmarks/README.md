@@ -6,7 +6,10 @@ Comprehensive benchmarking tools and test generators for evaluating SAT solver p
 
 ### Run Benchmarks on Medium Test Suite
 ```bash
-# Generate medium-difficulty test instances (recommended)
+cd research/benchmarks   # the generators use paths relative to this directory
+
+# The medium suite is already checked in at ../../dataset/medium_tests/medium_suite/.
+# Optional: regenerate it (deletes and recreates ../../dataset/medium_tests; seeds are fixed)
 ./generate_medium_tests.py
 
 # Run all solvers
@@ -18,19 +21,35 @@ Comprehensive benchmarking tools and test generators for evaluating SAT solver p
 
 Results are saved in `../../dataset/results/results-YYYY-MM-DD-HH-MM-SS/`
 
+`run_all_benchmarks.py` treats each subdirectory of the dataset directory as a "family" and
+runs every `*.cnf` file in it; CNF files placed directly in the dataset directory are ignored.
+
+Solver names accepted by `-s`: `DPLL`, `CDCL`, `CoBD-SAT`, `BB-CDCL`, `LA-CDCL`, `CGPM-SAT`,
+`TPM-SAT`, `SSTA-SAT`, `VPL-SAT`, `CQP-SAT`, `MAB-SAT`, `CCG-SAT`, `HAS-SAT`, `CEGP-SAT`,
+`MARKET-SAT`, `PHYSARUM-SAT`, `FOLD-SAT`, `P-BIT` (18 in total; all are run when `-s` is omitted).
+
+**Dependencies**: `run_all_benchmarks.py` and the generators need only the standard library.
+`benchmark.py` and the scripts that import it (`validate_correctness.py`,
+`statistical_benchmark.py`, `profile_solvers.py`, `competition_benchmark.py`) additionally
+require the third-party `tabulate` package (`pip install tabulate`).
+
 ## Test Suites
 
 ### Medium Tests (Recommended)
 **53 instances** ranging from easy to moderately challenging
 
-- **Generate**: `./generate_medium_tests.py`
+- **Location**: `../../dataset/medium_tests/medium_suite/` (checked in)
+- **Regenerate** (optional): `./generate_medium_tests.py`
 - **Run**: `./run_all_benchmarks.py ../../dataset/medium_tests -t 30`
 - **Difficulty**: 10-120 variables, solve times 0.001s to ~10s
 
 ### Simple Tests
 **9 very easy instances** for quick validation
 
-- **Generate**: `./generate_simple_tests.py`
+- **Location**: `../../dataset/simple_tests/simple_suite/` (checked in)
+- **Regenerate** (optional): `./generate_simple_tests.py` - note that this deletes
+  `../../dataset/simple_tests` and writes the CNF files directly into it, so afterwards move
+  them into a family directory: `mkdir ../../dataset/simple_tests/simple_suite && mv ../../dataset/simple_tests/*.cnf ../../dataset/simple_tests/simple_suite/`
 - **Run**: `./run_all_benchmarks.py ../../dataset/simple_tests -t 10`
 - **Difficulty**: 5-30 variables, all solve in < 0.1s
 
@@ -38,13 +57,16 @@ Results are saved in `../../dataset/results/results-YYYY-MM-DD-HH-MM-SS/`
 **399 real competition instances** - extremely challenging
 
 - **Warning**: These are world-class hard problems designed for industrial solvers
+- **Not checked in**: `../../dataset/sat_competition2025/` contains only a README; the instances
+  must be downloaded into per-family subdirectories first (see that README)
 - **Run**: `./run_all_benchmarks.py ../../dataset/sat_competition2025 -t 120`
 - **Expected**: Many timeouts on basic implementations
 
 ### SAT Competition 2025 Small Subset
 **8 smallest competition instances** - still very hard
 
-- **Generate**: `./create_small_test_set.py`
+- **Generate**: `./create_small_test_set.py` (requires the full competition download above;
+  creates `../../dataset/sat_competition2025_small/`)
 - **Run**: `./run_all_benchmarks.py ../../dataset/sat_competition2025_small -t 60`
 - **Difficulty**: 149-500 variables, most will timeout
 
@@ -52,9 +74,9 @@ Results are saved in `../../dataset/results/results-YYYY-MM-DD-HH-MM-SS/`
 
 ### Benchmarking
 - `run_all_benchmarks.py` - **Main benchmark runner** with timeout support
-- `benchmark.py` - Original comprehensive benchmarking tool
-- `statistical_benchmark.py` - Statistical analysis with multiple runs
-- `profile_solvers.py` - Performance profiling and bottleneck analysis
+- `benchmark.py` - Original comprehensive benchmarking tool on generated problems (`--formula`, `--file`, `--random`, `--all`; solver sets via `--original-suite`, `--new-suite`, `--all-solvers`)
+- `statistical_benchmark.py` - Statistical analysis with multiple runs (`--runs`, `--output`)
+- `profile_solvers.py` - Performance profiling and bottleneck analysis (`--output`)
 
 ### Test Generation
 - `generate_medium_tests.py` - Generate 53 medium-difficulty instances
@@ -62,18 +84,24 @@ Results are saved in `../../dataset/results/results-YYYY-MM-DD-HH-MM-SS/`
 - `create_small_test_set.py` - Extract small subset from competition benchmarks
 
 ### Validation
-- `validate_correctness.py` - Verify solver correctness on test suite
+- `validate_correctness.py` - Verify solver correctness on 8 generated problems (no arguments)
+- `reproduce_validation.sh` - Runs the validation scripts in sequence (`--quick`, `--help`); its
+  final step calls `run_full_benchmark.py`, which no longer exists, so that step fails
 - See `VALIDATION_GUIDE.md` for details
 
 ### Competition Benchmarks
-- `competition_benchmark.py` - Run against real SAT competition instances
-- `run_competition_instances.py` - Test specific competition files
+- `competition_benchmark.py` - Run against generated competition-style instances (random 3-SAT, graph coloring, pigeonhole)
+- `run_competition_instances.py` - Test a hard-coded list of real SAT Competition 2025 files (requires the downloaded dataset)
 
 ## Latest Benchmark Results
 
 See `BENCHMARK_RESULTS.md` for comprehensive results from the medium test suite.
 
-### Highlights (Medium Test Suite, 53 instances)
+### Highlights (Medium Test Suite, 53 instances; historical run of October 17, 2025)
+
+> These figures predate the October 20, 2025 soundness fixes to the baseline CDCL solver, whose
+> 27 timeouts (and one false UNSAT) in this run were symptoms of those bugs. A partial re-run on the
+> current code has CDCL fastest on 50 of 53 instances with no timeouts; see `BENCHMARK_RESULTS.md`.
 
 | Solver | Win Rate | Timeouts | Best For |
 |--------|----------|----------|----------|
@@ -82,7 +110,7 @@ See `BENCHMARK_RESULTS.md` for comprehensive results from the medium test suite.
 | LA-CDCL | 11% (6/53) | 6 | Structured instances |
 | CDCL | 8% (4/53) | 27 | Very small instances only |
 
-**Winner**: CGPM-SAT with graph-based heuristics shows dominant performance
+**Winner (in that run)**: CGPM-SAT with graph-based heuristics
 
 ## Documentation
 
@@ -95,7 +123,7 @@ See `BENCHMARK_RESULTS.md` for comprehensive results from the medium test suite.
 
 ### Generate and Run Custom Tests
 ```bash
-# Create 53 medium-difficulty instances
+# (Optional) regenerate the 53 medium-difficulty instances
 ./generate_medium_tests.py
 
 # Benchmark all solvers with 30s timeout
@@ -107,17 +135,16 @@ cat ../../dataset/results/results-*/overall_rankings.txt
 
 ### Quick Validation
 ```bash
-# Generate simple tests
-./generate_simple_tests.py
+# Simple tests are checked in at ../../dataset/simple_tests/simple_suite/
 
 # Validate all solvers complete successfully
 ./run_all_benchmarks.py ../../dataset/simple_tests -t 10 -s DPLL CDCL CGPM-SAT
 ```
 
-### Profile Specific Solver
+### Profile Solvers
 ```bash
-# Profile CGPM-SAT on medium instances
-python3 profile_solvers.py
+# Profile all available solvers on two small random 3-SAT problems (10 and 15 vars)
+python3 profile_solvers.py --output profile_report.md
 ```
 
 ## Result Files

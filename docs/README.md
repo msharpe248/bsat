@@ -17,6 +17,7 @@ Welcome to the BSAT (Boolean Satisfiability) package documentation! This guide w
    - [WalkSAT Solver](walksat-solver.md) - Randomized local search (incomplete but fast)
    - [Schöning's Algorithm](schoening-solver.md) - Provably O(1.334^n) randomized algorithm for k-SAT
    - [P-Bit Solver](pbit-solver.md) - Probabilistic-bit Gibbs sampling / simulated annealing (incomplete)
+   - [Advanced Solvers](advanced-solvers.md) - Summary of the specialized solvers (Horn-SAT, XOR-SAT, WalkSAT, CDCL)
 5. [SAT Preprocessing](preprocessing.md) - Simplification and decomposition techniques
    - Connected component decomposition
    - Unit propagation
@@ -41,7 +42,11 @@ Welcome to the BSAT (Boolean Satisfiability) package documentation! This guide w
 10. [Examples & Tutorials](examples.md) - Practical usage examples
 11. [History of SAT Solving](history.md) - From 1960 to present: algorithms, people, and breakthroughs
 12. [Competition-Level Requirements](competition_requirements.md) - What it takes to build a winning SAT solver
+    - [Competition Solvers](competition_solvers.md) - Evolution and current state of competitive SAT solving
 13. [Theory & References](theory.md) - Academic papers and further reading
+    - [Schaefer's Dichotomy Theorem](schaefer-dichotomy.md) - Which SAT variants are polynomial
+    - [Constraint Types](constraint-types.md) - Taxonomy of SAT constraint types
+    - [3SAT Variants](3sat-variants.md) - Restricted and related forms of 3SAT
 14. [Reading List](reading-list.md) - Comprehensive bibliography of books, papers, and resources
 
 ## Quick Start
@@ -49,7 +54,8 @@ Welcome to the BSAT (Boolean Satisfiability) package documentation! This guide w
 ### Installation
 
 ```bash
-pip install bsat
+# From the repository root (install from source)
+pip install -e .
 ```
 
 ### Basic Usage
@@ -97,7 +103,8 @@ For example:
 - ✅ **2SAT Solver**: O(n+m) polynomial-time solver using strongly connected components
 - ✅ **DPLL Solver**: Classic backtracking algorithm for general SAT/3SAT
 - ✅ **CDCL Solver**: Conflict-Driven Clause Learning with VSIDS and restarts (modern SAT solving)
-- ✅ **Horn-SAT Solver**: O(n+m) polynomial-time solver for Horn formulas (logic programming)
+- ✅ **Davis-Putnam Solver**: The original 1960 resolution-based algorithm (educational)
+- ✅ **Horn-SAT Solver**: Polynomial-time solver for Horn formulas using unit propagation (logic programming)
 - ✅ **XOR-SAT Solver**: O(n³) polynomial-time solver using Gaussian elimination over GF(2)
 - ✅ **WalkSAT Solver**: Randomized local search (incomplete but often very fast)
 - ✅ **Schöning's Algorithm**: Randomized k-SAT solver with provably O(1.334^n) expected runtime for 3SAT
@@ -105,6 +112,8 @@ For example:
 - ✅ **SAT Preprocessing**: Simplification techniques (decomposition, unit propagation, pure literals, subsumption)
 - ✅ **Solution Enumeration**: Find all satisfying assignments, not just one
 - ✅ **k-SAT to 3-SAT Reduction**: Convert any CNF to 3-SAT form using auxiliary variables
+- ✅ **DIMACS I/O**: Read and write the standard DIMACS CNF and solution formats
+- ✅ **Optional Native C Solver**: `solve_c` / `CSATSolver` (`bsat.c_solver`) are `ctypes` bindings to the separate C competition solver; build it with `make -C competition/c shared` - see [competition/c/README.md](../competition/c/README.md)
 - ✅ **Pretty Printing**: Unicode symbols (∧, ∨, ¬) for readable output
 - ✅ **Multiple Input Formats**: Parse from text, JSON, or programmatic construction
 - ✅ **Truth Tables**: Generate and compare truth tables

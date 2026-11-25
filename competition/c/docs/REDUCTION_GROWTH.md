@@ -1,5 +1,7 @@
 # Growing learned-clause reduction intervals
 
+> Historical snapshot (2026-09-07). Defaults, options and code locations described here have since changed; current behavior is in [README.md](../README.md), [FEATURES.md](../FEATURES.md) and [PRODUCTION_READINESS.md](../PRODUCTION_READINESS.md).
+
 The preceding [policy investigation](EQUIV_LBD_POLICY_INVESTIGATION.md) found
 that fixed, less frequent deletion did not recover the random-circuit solve
 after repairing LBD state. This experiment tests a different policy: let the

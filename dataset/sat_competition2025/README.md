@@ -1,6 +1,8 @@
 # SAT Competition 2025 Benchmarks
 
-This directory contains benchmark instances from the **SAT Competition 2025**.
+This directory is the expected location for benchmark instances from the **SAT Competition 2025**.
+
+**The instances are not included in the repository and there is no download script for them here** — a fresh checkout contains only this README. See [Downloading Benchmarks](#downloading-benchmarks). The dataset figures below describe the full set as originally downloaded and cannot be checked against a fresh checkout.
 
 ## Source
 
@@ -76,21 +78,31 @@ These benchmarks are useful for:
 
 The CNF files are **not checked into git** due to their size (54 GB total).
 
-### Download All Benchmarks
+### Full Set (manual)
+There is no script in this repository that downloads the full set (the
+`download_all_benchmarks.py` previously referenced here does not exist).
+Obtain the instances from https://satcompetition.github.io/2025/ and place the
+uncompressed files as `<family>/<instance>.cnf` in this directory; that is the
+layout `research/benchmarks/run_all_benchmarks.py` and
+`research/benchmarks/create_small_test_set.py` expect.
+
+### Size-Filtered Sample (scripted)
+For a small, labelled sample of the 2025 main track, use the on-demand corpus
+fetcher from the repository root:
+
 ```bash
-cd dataset
-./download_all_benchmarks.py
+python3 competition/c/scripts/fetch_corpora.py fetch satcomp-2025 --limit 60 --max-mb 2
+python3 competition/c/scripts/suite_runner.py --corpus satcomp-2025 --timeout 30 --workers 2
 ```
 
-This will:
-1. Download all 399 instances from the SAT Competition website
-2. Organize them into family subdirectories
-3. Take several hours depending on connection speed
-
-### Download Specific Family
-Visit https://satcompetition.github.io/2025/ and download individual family archives.
+This downloads compressed `.cnf.xz` files into the gitignored
+`dataset/corpora/satcomp-2025/` (not into this directory) for use with
+`suite_runner.py` and the C solver; the Python benchmark scripts below do not
+read that location.
 
 ## Running Benchmarks
+
+Requires the instances to be downloaded into this directory first. From the repository root:
 
 ```bash
 cd research/benchmarks
@@ -101,7 +113,7 @@ cd research/benchmarks
 # Run only on specific solvers
 ./run_all_benchmarks.py ../../dataset/sat_competition2025 -t 120 -s CDCL CGPM-SAT
 
-# Test on smallest instances only
+# Test on smallest instances only (create the subset first with ./create_small_test_set.py)
 ./run_all_benchmarks.py ../../dataset/sat_competition2025_small -t 60
 ```
 
@@ -138,6 +150,8 @@ For meaningful benchmarking of basic solvers, use the generated test suites:
 These benchmarks are provided by the SAT Competition organizers. Please refer to the official website for licensing and usage terms.
 
 ## Directory Structure
+
+Layout once the full set has been downloaded (only `README.md` is present in a fresh checkout):
 
 ```
 sat_competition2025/

@@ -23,11 +23,10 @@ A comprehensive collection of books, papers, websites, and resources for learnin
 Edited by Armin Biere, Marijn Heule, Hans van Maaren, Toby Walsh
 *The definitive reference for SAT solving. 1500+ pages covering theory, algorithms, and applications.*
 
-- **Chapter 1**: Introduction and Historical Perspective
-- **Chapter 4**: Conflict-Driven Clause Learning (CDCL)
-- **Chapter 6**: Look-Ahead SAT Solvers
-- **Chapter 12**: Applications in Hardware Verification
-- **Chapter 13**: Applications in Software Verification
+- **Chapter 1**: A History of Satisfiability
+- **Chapter 4**: Conflict-Driven Clause Learning (CDCL) SAT Solvers
+- **Chapter 5**: Look-Ahead Based SAT Solvers
+- **Application chapters**: Bounded Model Checking (hardware verification), Planning and SAT, Software Verification
 
 **[The Art of Computer Programming, Volume 4, Fascicle 6: Satisfiability](https://www.amazon.com/Art-Computer-Programming-Fascicle-Satisfiability/dp/0134397606)**
 Donald E. Knuth (2015)
@@ -48,7 +47,7 @@ Daniel Kroening and Ofer Strichman
 
 ### Textbooks
 
-**[Logic for Computer Science: Foundations of Automatic Theorem Proving](https://www.amazon.com/Logic-Computer-Science-Foundations-Automatic/dp/0486780821)** (2nd Edition, 2001)
+**[Logic for Computer Science: Foundations of Automatic Theorem Proving](https://www.amazon.com/Logic-Computer-Science-Foundations-Automatic/dp/0486780821)** (1986; 2nd Edition, Dover, 2015)
 Jean H. Gallier
 *Strong theoretical foundations including resolution and SAT.*
 
@@ -84,7 +83,7 @@ Richard M. Karp
 
 ### Classic Algorithms
 
-**[A Computing Procedure for Quantification Theory](https://dl.acm.org/doi/10.1145/368273.368557)** (1960)
+**[A Computing Procedure for Quantification Theory](https://dl.acm.org/doi/10.1145/321033.321034)** (1960)
 Martin Davis and Hilary Putnam
 *The original DP (Davis-Putnam) algorithm.*
 
@@ -102,7 +101,7 @@ Bengt Aspvall, Michael F. Plass, and Robert E. Tarjan
 
 ### Modern SAT Solvers
 
-**[GRASP: A Search Algorithm for Propositional Satisfiability](https://ieeexplore.ieee.org/document/569607)** (1996)
+**[GRASP—A New Search Algorithm for Satisfiability](https://ieeexplore.ieee.org/document/569607)** (1996)
 João P. Marques-Silva and Karem A. Sakallah
 *First CDCL solver - introduced conflict analysis and clause learning.*
 
@@ -114,27 +113,27 @@ Matthew W. Moskewicz, Conor F. Madigan, Ying Zhao, Lintao Zhang, Sharad Malik
 Niklas Eén and Niklas Sörensson
 *MiniSat - clean, minimal implementation that became the basis for many modern solvers.*
 
-**[Towards a Better Understanding of the Functionality of a Conflict-Driven SAT Solver](https://link.springer.com/chapter/10.1007/978-3-540-45199-7_4)** (2005)
-Niklas Eén and Niklas Sörensson
+**[Towards a Better Understanding of the Functionality of a Conflict-Driven SAT Solver](https://doi.org/10.1007/978-3-540-72788-0_27)** (2007)
+Nachum Dershowitz, Ziyad Hanna, and Alexander Nadel
 *Detailed explanation of modern CDCL architecture.*
 
 ---
 
 ## Survey Papers & Tutorials
 
-**[SAT Solvers: A Tutorial](https://link.springer.com/chapter/10.1007/978-3-319-10575-8_5)** (2014)
-Joao Marques-Silva
+**[SAT Solvers](https://doi.org/10.1017/CBO9781139177801.013)** (2014)
+Joao Marques-Silva and Ines Lynce (chapter in *Tractability: Practical Approaches to Hard Problems*)
 *Excellent modern tutorial covering DPLL, CDCL, and applications.*
 
 **[Conflict-Driven Clause Learning SAT Solvers](https://www.cs.princeton.edu/~zkincaid/courses/fall18/readings/SATHandbook-CDCL.pdf)** (2009)
 Joao Marques-Silva, Ines Lynce, Sharad Malik
 *Comprehensive CDCL tutorial from the Handbook of Satisfiability.*
 
-**[The Quest for Efficient Boolean Satisfiability Solvers](https://link.springer.com/chapter/10.1007/3-540-45620-1_23)** (2002)
-Sharad Malik and Lintao Zhang
+**[The Quest for Efficient Boolean Satisfiability Solvers](https://doi.org/10.1007/3-540-45657-0_2)** (2002)
+Lintao Zhang and Sharad Malik
 *Historical perspective on SAT solver evolution.*
 
-**[SAT-Based Methods and Applications in Electronic Design Automation](https://ieeexplore.ieee.org/document/1453456)** (2005)
+**[A Survey of Recent Advances in SAT-Based Formal Verification](https://doi.org/10.1007/s10009-004-0183-4)** (2005)
 Mukul R. Prasad, Armin Biere, Aarti Gupta
 *Applications of SAT in hardware verification.*
 
@@ -144,36 +143,32 @@ Mukul R. Prasad, Armin Biere, Aarti Gupta
 
 ### CDCL Components
 
-**[Using CSP Look-Back Techniques to Solve Real-World SAT Instances](https://www.aaai.org/Papers/AAAI/1997/AAAI97-046.pdf)** (1997)
+**[Using CSP Look-Back Techniques to Solve Real-World SAT Instances](https://www.aaai.org/Papers/AAAI/1997/AAAI97-032.pdf)** (1997)
 Roberto J. Bayardo Jr. and Robert C. Schrag
 *Non-chronological backtracking and intelligent backtracking.*
 
-**[Understanding VSIDS Branching Heuristics in Conflict-Driven Clause-Learning SAT Solvers](https://link.springer.com/chapter/10.1007/978-3-319-24318-4_4)** (2015)
+**[Understanding VSIDS Branching Heuristics in Conflict-Driven Clause-Learning SAT Solvers](https://doi.org/10.1007/978-3-319-26287-1_14)** (2015)
 Jia Hui Liang, Vijay Ganesh, Ed Zulkoski, Atulan Zaman, Krzysztof Czarnecki
 *Deep analysis of the VSIDS heuristic.*
 
-**[Clause Learning in SAT](https://link.springer.com/chapter/10.1007/978-3-642-02777-2_5)** (2009)
-Armin Biere
-*Comprehensive coverage of clause learning techniques.*
-
 ### Preprocessing & Simplification
 
-**[Effective Preprocessing in SAT Through Variable and Clause Elimination](https://link.springer.com/chapter/10.1007/11527695_4)** (2005)
+**[Effective Preprocessing in SAT Through Variable and Clause Elimination](https://doi.org/10.1007/11499107_5)** (2005)
 Niklas Eén and Armin Biere
 *SatELite preprocessor - variable elimination and subsumption.*
 
-**[Inprocessing Rules](https://link.springer.com/chapter/10.1007/978-3-642-39071-5_14)** (2013)
+**[Inprocessing Rules](https://doi.org/10.1007/978-3-642-31365-3_28)** (2012)
 Matti Järvisalo, Marijn J.H. Heule, Armin Biere
 *Simplification techniques during search.*
 
 ### Local Search
 
-**[GSAT: A New Method for Solving Hard Satisfiability Problems](https://www.ijcai.org/Proceedings/93-1/Papers/051.pdf)** (1993)
+**[A New Method for Solving Hard Satisfiability Problems](https://www.aaai.org/Papers/AAAI/1992/AAAI92-068.pdf)** (1992)
 Bart Selman, Hector Levesque, David Mitchell
-*Greedy local search for SAT.*
+*GSAT: greedy local search for SAT.*
 
-**[Evidence for Invariants in Local Search](https://www.aaai.org/Papers/AAAI/1997/AAAI97-071.pdf)** (1997)
-Ian P. Gent and Toby Walsh
+**[Evidence for Invariants in Local Search](https://www.aaai.org/Papers/AAAI/1997/AAAI97-050.pdf)** (1997)
+David McAllester, Bart Selman, and Henry Kautz
 *WalkSAT and randomized local search.*
 
 **[Noise Strategies for Improving Local Search](https://www.aaai.org/Papers/AAAI/1994/AAAI94-109.pdf)** (1994)
@@ -183,20 +178,20 @@ Bart Selman, Henry A. Kautz, Bram Cohen
 ### Random SAT & Phase Transitions
 
 **[Random k-SAT: Two Moments Suffice to Cross a Sharp Threshold](https://epubs.siam.org/doi/10.1137/S0097539703434231)** (2006)
-Dimitris Achlioptas, Assaf Naor, Yuval Peres
+Dimitris Achlioptas and Cristopher Moore
 *Analysis of the phase transition in random k-SAT.*
 
 **[Critical Behavior in the Satisfiability of Random Boolean Expressions](https://www.science.org/doi/10.1126/science.264.5163.1297)** (1994)
-David Mitchell, Bart Selman, Hector Levesque
-*Discovery of the phase transition phenomenon.*
+Scott Kirkpatrick and Bart Selman
+*Finite-size scaling analysis of the phase transition phenomenon.*
 
-**[The Satisfiability Threshold Conjecture: Techniques Behind Upper Bound Improvements](https://link.springer.com/chapter/10.1007/978-3-319-24318-4_2)** (2015)
+**[Proof of the Satisfiability Conjecture for Large k](https://doi.org/10.1145/2746539.2746619)** (2015)
 Jian Ding, Allan Sly, Nike Sun
 *Recent progress on understanding the SAT/UNSAT threshold.*
 
 ### Parallel & Portfolio Solvers
 
-**[PaInleSS: A Framework for Parallel SAT Solving](https://link.springer.com/chapter/10.1007/978-3-319-66158-2_42)** (2017)
+**[PaInleSS: A Framework for Parallel SAT Solving](https://doi.org/10.1007/978-3-319-66263-3_15)** (2017)
 Ludovic Le Frioux, Souheib Baarir, Julien Sopena, Fabrice Kordon
 *Framework for parallel SAT solving.*
 
@@ -225,7 +220,7 @@ Youssef Hamadi, Saïd Jabbour, Lakhdar Saïs
 *Community website with solver downloads, benchmarks, and news.*
 
 **[Practical SAT Solving (Lecture Notes)](https://baldur.iti.kit.edu/sat/)**
-*Armin Biere and Marijn Heule's lecture materials.*
+*Lecture materials of the KIT "Practical SAT Solving" course.*
 
 **[Modern SAT Solvers: Fast, Neat and Underused (Part 1 of N)](https://codingnest.com/modern-sat-solvers-fast-neat-underused-part-1-of-n/)**
 *Practical blog series on using SAT solvers.*
@@ -267,8 +262,8 @@ Youssef Hamadi, Saïd Jabbour, Lakhdar Saïs
 
 ### Visualization Tools
 
-**[SAT Heritage](http://www.satlive.org/)**
-*Interactive visualization of SAT solver timeline.*
+**[SAT Heritage](https://github.com/sat-heritage/docker-images)**
+*Archive of historical SAT solvers packaged as Docker images.*
 
 **[Boolean Satisfiability Visualizer](https://github.com/tuzz/satisfiability)**
 *Interactive SAT formula visualizations.*
@@ -330,14 +325,15 @@ Leonardo de Moura and Nikolaj Bjørner
 
 ### #SAT (Model Counting)
 
-**[A Sharp-SAT Solver](https://dl.acm.org/doi/10.1007/11527695_8)** (2005)
+**[sharpSAT – Counting Models with Advanced Component Caching and Implicit BCP](https://doi.org/10.1007/11814948_38)** (2006)
 Marc Thurley
 *Counting models of SAT formulas.*
 
-**[ApproxMC: Approximate Model Counter](https://link.springer.com/chapter/10.1007/978-3-642-54862-8_24)** (2014)
+**[A Scalable Approximate Model Counter (ApproxMC)](https://doi.org/10.1007/978-3-642-40627-0_18)** (2013)
+Supratik Chakraborty, Kuldeep S. Meel, Moshe Y. Vardi
 *Approximate counting for large formulas.*
 
-### QBF (Quantified Boolean Formulas)
+### SAT for Mathematics
 
 **[Solving and Verifying the Boolean Pythagorean Triples Problem via Cube-and-Conquer](https://link.springer.com/chapter/10.1007/978-3-319-40970-2_15)** (2016)
 Marijn J.H. Heule, Oliver Kullmann, Victor W. Marek
@@ -353,7 +349,8 @@ Marijn J.H. Heule, Oliver Kullmann, Victor W. Marek
 
 ### Applications
 
-**[Applications of SAT Solvers to Cryptanalysis of Hash Functions](https://link.springer.com/chapter/10.1007/11716723_18)** (2006)
+**[Applications of SAT Solvers to Cryptanalysis of Hash Functions](https://doi.org/10.1007/11814948_13)** (2006)
+Ilya Mironov and Lintao Zhang
 *Using SAT for cryptography.*
 
 **[Pairwise Testing in Software Product Lines](https://link.springer.com/chapter/10.1007/978-3-642-02652-2_19)** (2009)
@@ -368,16 +365,16 @@ Marijn J.H. Heule, Oliver Kullmann, Victor W. Marek
 
 ### Leading SAT Research Labs
 
-**[Formal Methods Group - JKU Linz](http://fmv.jku.at/)** (Armin Biere)
+**[Formal Methods Group - JKU Linz](http://fmv.jku.at/)** (founded by Armin Biere, now at University of Freiburg)
 *CaDiCaL, Lingeling, and more.*
 
 **[Constraints & Verification Group - University of Lisbon](http://sat.inesc-id.pt/)** (João Marques-Silva)
 *SAT applications and theory.*
 
-**[Automated Reasoning Group - UCSD](https://scg.ucsd.edu/)** (Vijay Ganesh)
+**[MapleSAT Group - University of Waterloo / Georgia Tech](https://maplesat.github.io/)** (Vijay Ganesh)
 *Understanding SAT heuristics.*
 
-**[Reliable and Intelligent Systems Lab - Helsinki](https://www.cs.helsinki.fi/group/coreo/)** (Matti Järvisalo)
+**[Constraint Reasoning and Optimization Group - Helsinki](https://www.cs.helsinki.fi/group/coreo/)** (Matti Järvisalo)
 *MaxSAT and preprocessing.*
 
 **[Formal Verification Group - Princeton](https://www.princeton.edu/~chaff/)** (Sharad Malik)

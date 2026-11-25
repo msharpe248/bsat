@@ -143,9 +143,10 @@ if solution:
 
 ### Performance Notes
 
-- Easy Sudoku: ~1000 clauses, solves instantly
-- Hard Sudoku: Same encoding, CDCL handles efficiently
-- Minimal (17 clues): Still solvable in < 1 second
+- A 9×9 Sudoku encodes to 729 variables and about 12,000 clauses (11,988 plus one unit clause per clue); a 4×4 Sudoku to 64 variables and 448 clauses
+- Easy 9×9 puzzle: solved by the pure-Python CDCL solver in a couple of seconds (mostly unit propagation)
+- Harder puzzles use the same encoding; fewer clues means more search
+- The 17-clue example in `examples/encodings/sudoku.py` solves in well under a second
 
 **See**: [examples/encodings/sudoku.py](../examples/encodings/sudoku.py)
 
@@ -167,7 +168,7 @@ if solution:
 **Constraints**:
 ```
 1. Exactly one queen per row:
-   - At least one: (q_r_0 ∨ q_r_1 ∨ ... ∨ q_r_N)
+   - At least one: (q_r_0 ∨ q_r_1 ∨ ... ∨ q_r_{N-1})
    - At most one: (¬q_r_i ∨ ¬q_r_j) for i ≠ j
 
 2. At most one queen per column:
@@ -305,7 +306,7 @@ def find_chromatic_number(edges, num_vertices):
 
 ### 2. Incremental SAT
 
-Add clues incrementally:
+Add clues incrementally (the Python solvers have no incremental interface, so this reuses the encoding but each `solve_*` call starts from scratch):
 
 ```python
 # Start with base Sudoku encoding
@@ -321,13 +322,13 @@ solution = solve_cdcl(cnf)
 
 ### 3. UNSAT Cores
 
-If no solution, find minimal unsatisfiable core (which constraints conflict).
+If no solution, find minimal unsatisfiable core (which constraints conflict). The pure-Python solvers do not compute cores; the optional native solver bindings (`CSATSolver.get_failed_assumptions()` / `CSATSolver.mus()`, see [competition/c/README.md](../competition/c/README.md)) do.
 
 ---
 
 ## Examples
 
-Run the complete examples:
+Run the complete examples (from the repository root, with `bsat` installed via `pip install -e .`):
 
 ```bash
 # Graph coloring

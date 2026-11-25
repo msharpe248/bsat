@@ -212,14 +212,14 @@ cnf.print_truth_table()
 
 Output:
 ```
-------------------
+--------------
 x | y | Result
-------------------
+--------------
 0 | 0 | 0
 0 | 1 | 1
 1 | 0 | 0
 1 | 1 | 1
-------------------
+--------------
 ```
 
 ### Programmatic Truth Table Access
@@ -243,7 +243,7 @@ Two formulas are **logically equivalent** if they have the same truth table:
 
 ```python
 cnf1 = CNFExpression.parse("(x | y) & (~x | y)")
-cnf2 = CNFExpression.parse("y | (~y & x & ~x)")  # Different structure, same logic?
+cnf2 = CNFExpression.parse("y")  # Different structure, same logic? (must itself be valid CNF)
 
 if cnf1.is_equivalent(cnf2):
     print("Formulas are equivalent!")
@@ -334,7 +334,7 @@ result = solve_sat(cnf)  # Much faster for large formulas
 
 ```python
 # Fast: Structural equality (O(n×m))
-cnf1 == cnf2  # Are they the same object?
+cnf1 == cnf2  # Same set of clauses? (order of clauses/literals is ignored)
 
 # Slow: Logical equivalence (O(2^n × m))
 cnf1.is_equivalent(cnf2)  # Do they have the same truth table?

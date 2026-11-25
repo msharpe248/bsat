@@ -1,5 +1,7 @@
 # Two-Watched Literals: Design and Implementation
 
+> **Historical record (October 2025, Python prototype).** Status lines, line numbers, results, and "next steps" below describe `competition/python/` at that date and are not kept up to date. For the current solver see [competition/c/README.md](../c/README.md).
+
 **Optimization**: Two-Watched Literal Scheme for Unit Propagation
 **Impact**: 50-100× speedup on unit propagation (70-80% of solver time)
 **Status**: ✅ Implemented in `competition/python/cdcl_optimized.py`
@@ -292,7 +294,7 @@ def _reduce_learned_clauses(self):
 
 ## Testing
 
-See `competition/python/test_correctness.py` for comprehensive tests.
+See `competition/python/tests/test_correctness.py` for comprehensive tests.
 
 **Test Strategy**:
 1. **Correctness**: Compare results with naive implementation
@@ -302,8 +304,8 @@ See `competition/python/test_correctness.py` for comprehensive tests.
 **Run Tests**:
 ```bash
 cd competition/python
-python test_correctness.py      # Verify correctness
-python benchmark_speedup.py     # Measure speedup (TODO)
+python tests/test_correctness.py   # Verify correctness
+python benchmark_speedup.py        # Measure speedup (results: benchmark_results.md)
 ```
 
 ---

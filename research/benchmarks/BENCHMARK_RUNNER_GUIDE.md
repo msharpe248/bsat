@@ -2,13 +2,13 @@
 
 ## Overview
 
-`run_all_benchmarks.py` systematically runs all solvers on all SAT competition benchmarks with comprehensive result tracking and timeout handling.
+`run_all_benchmarks.py` systematically runs all solvers on every CNF file of a dataset directory (one subdirectory per problem "family"; originally written for the SAT competition benchmarks) with comprehensive result tracking and timeout handling.
 
 ## Features
 
 - ✅ **Timeout per solver** - Configurable timeout (default 120s)
 - ✅ **Continue on timeout** - If one solver times out, others still run
-- ✅ **All solvers** - DPLL, CDCL, CoBD-SAT, BB-CDCL, LA-CDCL, CGPM-SAT
+- ✅ **All solvers** - DPLL, CDCL, CoBD-SAT, BB-CDCL, LA-CDCL, CGPM-SAT, TPM-SAT, SSTA-SAT, VPL-SAT, CQP-SAT, MAB-SAT, CCG-SAT, HAS-SAT, CEGP-SAT, MARKET-SAT, PHYSARUM-SAT, FOLD-SAT, P-BIT (18 total; P-BIT is wrapped with a CDCL fallback)
 - ✅ **Configurable solver list** - Run only specific solvers
 - ✅ **Progress tracking** - Shows current family/file/solver
 - ✅ **Per-family results** - One result file per family
@@ -22,6 +22,15 @@
 ```bash
 cd research/benchmarks
 ./run_all_benchmarks.py
+```
+
+With no dataset argument the runner uses `../../dataset/sat_competition2025`. Those instances are
+not checked in (the directory contains only a README), so until they are downloaded this finds
+0 families. To use the checked-in suites pass the dataset directory explicitly:
+
+```bash
+./run_all_benchmarks.py ../../dataset/simple_tests -t 10
+./run_all_benchmarks.py ../../dataset/medium_tests -t 30
 ```
 
 ### Run with 2-minute timeout
@@ -41,7 +50,7 @@ cd research/benchmarks
 
 ## Output Structure
 
-Results are saved in `dataset/results/results-YYYY-MM-DD-HH-MM-SS/`:
+Results are saved in a `results/results-YYYY-MM-DD-HH-MM-SS/` directory next to the dataset directory (i.e. `dataset/results/...` for the datasets in this repo):
 
 ```
 dataset/
@@ -58,6 +67,8 @@ dataset/
 ```
 
 ## File Formats
+
+The samples below are illustrative (from an early six-solver run on the competition `scheduling` family); current runs list one line per selected solver (18 by default).
 
 ### Family Results File (e.g., `scheduling.results.txt`)
 
@@ -123,6 +134,8 @@ DPLL           : 1st= 234  2nd=  89  3rd=  23  Timeout=   5  Error=   0  Total= 
 
 ## Easy Grepping Examples
 
+The `grep -oP` examples need GNU grep (on macOS the stock BSD `grep` has no `-P`; use `ggrep` from Homebrew).
+
 ### Count 1st place finishes for DPLL
 ```bash
 grep "DPLL" ../../dataset/results/results-*/overall_rankings.txt | grep -oP '1st=\s*\K\d+'
@@ -184,7 +197,7 @@ During execution, you'll see:
 
 ```bash
 # Quick test on 2 solvers with 30s timeout
-./run_all_benchmarks.py -s DPLL CDCL -t 30
+./run_all_benchmarks.py ../../dataset/medium_tests -s DPLL CDCL -t 30
 
 # Check results
 ls ../../dataset/results/results-*/
@@ -204,6 +217,7 @@ grep "1st=" ../../dataset/results/results-*/overall_rankings.txt
 Assuming average solve time of 1s per solver:
 - **One family (23 files):** ~2 minutes (with 6 solvers)
 - **All families (399 files):** ~40 minutes (with 6 solvers, no timeouts)
+- All 18 solvers run by default, so expect roughly 3× these figures unless you restrict with `-s`
 - **With timeouts:** Can take much longer (hours)
 
 Set timeout appropriately:

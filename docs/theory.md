@@ -74,7 +74,7 @@ Academic foundations, important papers, and further reading for SAT solving.
 **"Determining Computational Complexity from Characteristic 'Phase Transitions'"**
 - Physics approach to SAT
 - Statistical mechanics analysis
-- [Nature paper](https://www.nature.com/articles/20506)
+- [Nature paper](https://www.nature.com/articles/22055)
 
 **Key Contribution**: Connection between SAT and statistical physics
 
@@ -103,7 +103,7 @@ The **Millennium Prize Problem** (Clay Mathematics Institute, $1 million):
 - If P ≠ NP: Some problems are fundamentally hard
 
 **Further Reading**:
-- [Clay Mathematics Institute](https://www.claymath.org/millennium-problems/p-vs-np-problem)
+- [Clay Mathematics Institute](https://www.claymath.org/millennium/p-vs-np/)
 - [Scott Aaronson: P vs NP](https://www.scottaaronson.com/blog/?p=122)
 - [Fortnow: The Status of P vs NP (2009)](https://dl.acm.org/doi/10.1145/1562164.1562186)
 
@@ -176,9 +176,9 @@ Meaning: If we can solve SAT efficiently, we can solve X efficiently
 **"Effective Preprocessing in SAT Through Variable and Clause Elimination"**
 - SatELite preprocessor
 - Variable elimination, subsumption
-- [Link](https://link.springer.com/chapter/10.1007/11527695_4)
+- [Link](https://doi.org/10.1007/11499107_5)
 
-### Portfolio and Parallel Solvers (2010s)
+### Clause Management and Local Search (2009-2012)
 
 #### Audemard & Simon (2009)
 **"Predicting Learnt Clauses Quality in Modern SAT Solvers" (Glucose)**
@@ -214,13 +214,13 @@ Meaning: If we can solve SAT efficiently, we can solve X efficiently
 - [IOS Press](https://www.iospress.com/catalog/books/handbook-of-satisfiability-2)
 
 **Chapters of Interest**:
-- Ch 4: DPLL and CDCL
-- Ch 5: Conflict-Driven Clause Learning
-- Ch 6: Look-Ahead Based SAT Solvers
+- Ch 3: Complete Algorithms (DPLL)
+- Ch 4: Conflict-Driven Clause Learning SAT Solvers
+- Ch 5: Look-Ahead Based SAT Solvers
 
 ### Algorithm Textbooks
 
-#### The Art of Computer Programming, Vol 4B (Knuth, 2015)
+#### The Art of Computer Programming, Vol 4B (Knuth, 2022; SAT section first published as Fascicle 6, 2015)
 - Section 7.2.2.2: Satisfiability
 - Knuth's perspective on SAT algorithms
 - Exercises are famously challenging
@@ -341,9 +341,9 @@ p cnf 3 2
 **"Boolean Satisfiability: From Theoretical Hardness to Practical Success"**
 - Excellent overview of SAT solving
 - Evolution from DPLL to CDCL
-- [Link](https://www.cs.princeton.edu/~sharad/p394-malik.pdf)
+- [Link](https://dl.acm.org/doi/10.1145/1536616.1536637)
 
-#### Biere et al. (2009)
+#### Marques-Silva, Lynce & Malik (2009)
 **"Conflict-Driven Clause Learning SAT Solvers"**
 - Comprehensive CDCL tutorial
 - Chapter in Handbook of Satisfiability
@@ -407,7 +407,7 @@ p cnf 3 2
 2001  Chaff (VSIDS, watched literals)
 2003  MiniSat
 2009  Glucose
-2013  Lingeling
+2010  Lingeling
 2020+ ML-guided SAT solving
 ```
 

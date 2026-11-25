@@ -80,13 +80,19 @@ where:
 
 ### Phase 1: Community Detection (Louvain Method)
 
-1. **Build Bipartite Graph**
+1. **Build Graphs**
    ```
-   G = (V ∪ C, E) where:
+   Bipartite graph G = (V ∪ C, E) where:
    - V = set of variables
    - C = set of clauses
    - (v, c) ∈ E if variable v appears in clause c
+
+   Projected variable graph G' = (V, E') where:
+   - (u, v) ∈ E' if u and v appear together in some clause
    ```
+
+   Community detection runs on the projected variable graph G'; the bipartite
+   graph is only used to assign clauses to communities and find interface variables.
 
 2. **Detect Communities via Modularity Optimization** (Blondel et al., 2008)
 
@@ -102,10 +108,12 @@ where:
    - comm_i = community assignment of node i
    - δ(x,y) = 1 if x==y else 0
 
-   Uses greedy Louvain-style algorithm:
-   - Start with each node in its own community
-   - Iteratively move nodes to maximize modularity
-   - Compact and refine until convergence
+   Uses greedy Louvain-style algorithm (local-moving phase only; there is no
+   graph-aggregation phase as in full Louvain):
+   - Start with each variable in its own community
+   - Iteratively move variables to a neighbouring community when that increases modularity
+   - Then merge the smallest communities / split the largest to respect
+     `max_communities` / `min_communities`
 
 3. **Identify Interface Variables**
 
@@ -118,7 +126,7 @@ where:
 1. **Build Community Sub-Formulas**
 
    For each community k, extract sub-formula containing:
-   - All clauses primarily in that community
+   - All clauses primarily in that community (a clause goes to the community holding most of its variables)
    - Variables appearing in those clauses
    - Interface variables treated as parameters
 
@@ -128,9 +136,9 @@ where:
    - ✅ Modularity Q > 0.2 (some structure exists)
    - ✅ Interface variables < 50% (overhead not too high)
    - ✅ At least 2 communities detected
-   - ✅ Interface assignment space ≤ 1000 (2^i ≤ 1000)
+   - ✅ Interface assignment space ≤ 1000 (2^i ≤ `max_interface_assignments`, i.e. at most 9 interface variables by default)
 
-   If heuristics fail, fall back to standard DPLL.
+   If heuristics fail, fall back to standard DPLL (or CDCL if `use_cdcl=True`).
 
 ### Phase 3: Coordinated Solving
 
@@ -152,8 +160,9 @@ return UNSAT  # no interface assignment worked
 Combine partial solutions from each community:
 1. Start with interface variable assignment
 2. Add community-specific variable assignments
-3. Verify complete assignment satisfies original formula
-4. Return combined solution
+3. Return combined solution
+
+The solver does not re-check the combined assignment against the original formula; callers can do so with `cnf.evaluate(result)`.
 
 ## Complexity Analysis
 
@@ -227,6 +236,8 @@ Typically s ≪ m, so space overhead is modest.
 
 ## Usage
 
+Run these snippets from the repository root with `bsat` importable, e.g. `PYTHONPATH=src:. python3 your_script.py` (or `pip install -e .` and run from the repo root).
+
 ### Basic Usage
 
 ```python
@@ -258,7 +269,7 @@ solver = CoBDSATSolver(
     min_communities=2,           # Minimum communities to detect
     max_communities=8,            # Maximum communities to detect
     max_interface_assignments=1000,  # Max interface enumeration
-    use_cdcl=False                # Use CDCL instead of DPLL for sub-problems
+    use_cdcl=False                # Use CDCL instead of DPLL for the fallback solve (community sub-problems always use DPLL)
 )
 ```
 

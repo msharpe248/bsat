@@ -1,8 +1,10 @@
 # SAT Preprocessing Techniques
 
+> **Note:** Educational explanation written in October 2025. Code blocks are simplified illustrations, not excerpts of the current sources; for the current C solver's implementation and defaults see [competition/c/README.md](../c/README.md) and [FEATURES.md](../c/FEATURES.md).
+
 **Purpose**: Simplify CNF formula before main CDCL search
 **Impact**: Can reduce problem size by 50-90% on some instances
-**Status**: ✅ Implemented in C solver (BCE, unit propagation, pure literals)
+**Status**: This document explains three basic techniques (level-0 unit propagation, pure literals, BCE). In the current C solver, level-0 unit propagation always runs, BCE is opt-in (`--bce`), and there is no separate pure-literal pass; its default pipeline instead runs probing, subsumption/SSR, bounded variable elimination, vivification and more (see [competition/c/README.md](../c/README.md)). The Python prototype offers opt-in BCE, probing, and subsumption/BVE
 
 ---
 
@@ -21,8 +23,8 @@
 1. Unit propagation at level 0
 2. Pure literal elimination
 3. Blocked Clause Elimination (BCE)
-4. Variable elimination (not yet implemented)
-5. Subsumption and self-subsumption (not yet implemented)
+4. Variable elimination (not covered in detail here; implemented in the C solver)
+5. Subsumption and self-subsumption (not covered in detail here; implemented in the C solver)
 
 ---
 
@@ -325,7 +327,7 @@ void preprocess_bce(Solver* s) {
 
 ---
 
-## Variable Elimination (Not Yet Implemented)
+## Variable Elimination
 
 ### What It Does
 
@@ -373,11 +375,11 @@ Resolve: `(a ∨ b)`
 **Typical reduction**: 10-50% of variables on structured instances
 **Cost**: Very expensive (O(2^n) in worst case)
 
-**Status**: Not implemented (complex, high overhead)
+**Status**: Implemented in the current C solver as bounded, gate-aware variable elimination in the default inprocessing pipeline (`competition/c/src/inprocess.c`; legacy standalone pass via `--elim`). The Python prototype has an opt-in BVE in `inprocessing.py`
 
 ---
 
-## Subsumption (Not Yet Implemented)
+## Subsumption
 
 ### What It Does
 
@@ -417,7 +419,7 @@ void preprocess_subsumption(Solver* s) {
 **Typical reduction**: 5-20% of clauses
 **Cost**: O(m² × n)
 
-**Status**: On-the-fly subsumption is implemented during conflict analysis
+**Status**: On-the-fly subsumption is implemented during conflict analysis in both solvers; the current C solver additionally runs signature-filtered forward subsumption and self-subsuming resolution during inprocessing (not the quadratic loop above)
 
 ---
 
@@ -562,14 +564,14 @@ struct {
 
 ---
 
-## Advanced Techniques (Future Work)
+## Advanced Techniques
 
 ### 1. Bounded Variable Elimination (BVE)
 
 **Idea**: Only eliminate variables if resolvent size is bounded
 
 **Benefit**: Prevents exponential blowup
-**Status**: Not implemented
+**Status**: Implemented in the current C solver (default inprocessing)
 
 ### 2. Failed Literal Probing
 
@@ -577,21 +579,21 @@ struct {
 
 **Benefit**: Finds hidden unit clauses
 **Cost**: Expensive (O(n) unit propagations)
-**Status**: Not implemented
+**Status**: Implemented in the current C solver (default on, `--no-probing` to disable); opt-in in the Python prototype (`enable_probing`)
 
 ### 3. Hyper-Binary Resolution (HBR)
 
 **Idea**: Derive binary clauses from longer clauses
 
 **Benefit**: Binary clauses propagate faster
-**Status**: Not implemented
+**Status**: Implemented in the current C solver as part of probing
 
 ### 4. Preprocessing Portfolios
 
 **Idea**: Different preprocessing for different instance types
 
 **Example**: Aggressive for structured, light for random
-**Status**: Not implemented
+**Status**: Not implemented as such; the C solver's `-j N` portfolio includes a worker profile that skips preprocessing
 
 ---
 
@@ -641,4 +643,4 @@ struct {
 
 **Best practice**: Light preprocessing (unit prop + pure literals) for all instances, aggressive preprocessing (BCE) for structured instances.
 
-This completes the major optimizations needed for competitive SAT solving. Combined with CDCL core (two-watched literals, 1-UIP learning, VSIDS, restarts, clause management), preprocessing enables solving of industrial-scale problems.
+These are the basic preprocessing ideas; competitive solvers (including the current C solver) add variable elimination, probing, vivification, and related inprocessing. Combined with CDCL core (two-watched literals, 1-UIP learning, VSIDS, restarts, clause management), preprocessing enables solving of industrial-scale problems.

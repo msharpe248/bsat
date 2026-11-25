@@ -21,7 +21,7 @@ result = solve_2sat(cnf)
 
 **Pros**:
 - ✅ Guaranteed polynomial time
-- ✅ Very fast even for large instances
+- ✅ Very fast even for large instances (the DFS is recursive, so very large dense instances can hit Python's recursion limit)
 - ✅ Always finds solution if one exists
 
 **Cons**:
@@ -141,9 +141,9 @@ result = solve_walksat(cnf, noise=0.5, max_flips=10000, seed=42)
 ```python
 from bsat import solve_xorsat, CNFExpression
 
-# XOR constraints (even parity)
-cnf = CNFExpression.parse("(x | y) & (~x | ~y)")  # x ⊕ y = 0
-result = solve_xorsat(cnf)
+# Each clause is read as an XOR constraint: an odd number of its literals must be true
+cnf = CNFExpression.parse("(x | y) & (~x | ~y)")  # x ⊕ y = 1 and ¬x ⊕ ¬y = 1 (the same constraint)
+result = solve_xorsat(cnf)  # {'x': True, 'y': False}
 ```
 
 **Pros**:
@@ -161,7 +161,7 @@ result = solve_xorsat(cnf)
 ### Horn-SAT Solver ✅
 **Status**: Implemented
 **Algorithm**: Unit propagation with all-false initialization
-**Complexity**: O(n+m) - Polynomial time
+**Complexity**: Polynomial time - O(n+m) for the optimal algorithm; this implementation's fixpoint loop is O(n·m) worst case
 **Use Case**: Horn clauses (at most 1 positive literal per clause)
 
 [Read more →](hornsat-solver.md)
@@ -176,7 +176,7 @@ if is_horn_formula(cnf):
 ```
 
 **Pros**:
-- ✅ Polynomial time O(n+m)
+- ✅ Polynomial time, no search or backtracking
 - ✅ Always fast
 - ✅ Used in logic programming (Prolog, Datalog)
 - ✅ Common in expert systems and rule-based reasoning
@@ -208,11 +208,11 @@ print(f"Total flips: {stats.total_flips}")
 ```
 
 **Pros**:
-- ✅ Provably O(1.334^n) for 3SAT - best known!
+- ✅ Provably O(1.334^n) for 3SAT - beats O(2^n)
 - ✅ Extremely simple algorithm
 - ✅ Low memory usage
 - ✅ Great for educational purposes
-- ✅ Reproducible with seed parameter
+- ✅ Reproducible with seed parameter (within one Python process)
 - ✅ Statistics tracking
 
 **Cons**:
@@ -220,6 +220,62 @@ print(f"Total flips: {stats.total_flips}")
 - ❌ Can't prove unsatisfiability
 - ❌ Randomized (non-deterministic)
 - ❌ Not as fast as CDCL on structured problems
+
+---
+
+### P-Bit Solver ✅
+**Status**: Implemented
+**Algorithm**: Annealed Gibbs sampling (heat-bath updates) modeled on probabilistic-bit hardware
+**Complexity**: Incomplete (may not find solution even if exists)
+**Use Case**: Learning about Boltzmann sampling / simulated annealing; any clause length
+
+[Read more →](pbit-solver.md)
+
+```python
+from bsat import solve_pbit, get_pbit_stats, CNFExpression
+
+cnf = CNFExpression.parse("(x | y | z) & (~x | y) & (x | ~z)")
+result = solve_pbit(cnf, sweeps=1000, restarts=10, seed=42)
+
+solution, stats = get_pbit_stats(cnf, seed=42)
+print(f"Sweeps: {stats.sweeps}, flips: {stats.flips}")
+```
+
+**Cons**:
+- ❌ Incomplete, can't prove unsatisfiability
+
+---
+
+### Davis-Putnam Solver ✅
+**Status**: Implemented (educational/historical)
+**Algorithm**: The original 1960 resolution-based variable elimination
+**Complexity**: Exponential time *and space*
+**Use Case**: Understanding why DPLL replaced it; tiny formulas only
+
+[Read more →](davis-putnam-solver.md)
+
+```python
+from bsat import solve_davis_putnam, get_davis_putnam_stats, CNFExpression
+
+cnf = CNFExpression.parse("(x | y | z) & (~x | y) & (x | ~z)")
+result = solve_davis_putnam(cnf)
+```
+
+---
+
+### Native C Solver (optional)
+**Status**: Optional `ctypes` bindings (`solve_c`, `get_c_solver_stats`, `CSATSolver`) to the C competition solver in `competition/c/`
+**Requires**: Building the shared library first with `make -C competition/c shared` (or setting `BSAT_LIB_PATH`)
+
+```python
+from bsat import solve_c, is_c_solver_available, CNFExpression
+
+cnf = CNFExpression.parse("(x | y | z) & (~x | y) & (x | ~z)")
+if is_c_solver_available():
+    result = solve_c(cnf)   # same Dict[str, bool] | None convention
+```
+
+The C solver is a separate project and is not covered by these docs - see [competition/c/README.md](../competition/c/README.md).
 
 ---
 
@@ -244,7 +300,7 @@ Is your formula 2SAT (all clauses have exactly 2 literals)?
       ├─ Medium instance (50-500 variables)
       │  └─ Use solve_cdcl() ✅ (modern, faster than DPLL)
       └─ Large instance (> 500 variables)
-         └─ Use solve_cdcl() ✅ (industrial-strength)
+         └─ Use solve_cdcl() ✅ (or the optional native solve_c() if built)
 ```
 
 ### Comparison Table
@@ -258,6 +314,8 @@ Is your formula 2SAT (all clauses have exactly 2 literals)?
 | **CDCL** | O(2ⁿ)* | ✅ Yes | Large, structured | ✅ Implemented |
 | **Schöning** | O(1.334ⁿ)† | ❌ No | Random 3SAT | ✅ Implemented |
 | **WalkSAT** | Varies | ❌ No | Quick SAT answers | ✅ Implemented |
+| **P-bit** | Varies | ❌ No | Learning annealing / Gibbs sampling | ✅ Implemented |
+| **Davis-Putnam** | O(2ⁿ) time and space | ✅ Yes | Historical interest, tiny formulas | ✅ Implemented |
 
 *Much faster in practice due to clause learning and intelligent backtracking
 †Expected time for 3SAT - provably better than O(2ⁿ)!
@@ -309,16 +367,19 @@ if not result:
 
 ## Performance Guidelines
 
+These are rough guidelines for the pure-Python implementations in this package (the algorithms themselves scale much further in optimized solvers).
+
 ### 2SAT
-- **Variables**: Up to millions
-- **Clauses**: Up to millions
-- **Time**: Milliseconds to seconds
+- **Variables**: Up to ~100,000 on sparse instances
+- **Clauses**: Up to ~100,000
+- **Time**: Milliseconds to about a second
+- **Note**: Linear time, but the recursive DFS can raise `RecursionError` on large instances with long implication chains
 
 ### Horn-SAT
-- **Variables**: Up to millions
-- **Clauses**: Up to millions
+- **Variables**: Up to ~100,000
+- **Clauses**: Up to ~500,000
 - **Time**: Milliseconds to seconds
-- **Note**: Linear time O(n+m), very efficient
+- **Note**: Polynomial; the fixpoint loop is O(n·m) in the worst case
 
 ### DPLL with Optimizations
 - **Variables**: Up to ~100-200
@@ -327,16 +388,16 @@ if not result:
 - **Note**: Unit propagation and pure literal elimination provide significant speedup
 
 ### XOR-SAT
-- **Variables**: Up to thousands
-- **Clauses**: Up to thousands
-- **Time**: Milliseconds to seconds
+- **Variables**: Up to ~1,000
+- **Clauses**: Up to ~1,000
+- **Time**: Milliseconds to seconds (around 10+ seconds for a dense 1,000-variable system)
 - **Note**: Cubic complexity O(n³), but still polynomial
 
 ### CDCL
-- **Variables**: Up to thousands
-- **Clauses**: Up to millions
-- **Time**: Seconds to hours (instance-dependent)
-- **Note**: Clause learning makes it much faster than DPLL in practice
+- **Variables**: Hundreds to a few thousand (instance-dependent)
+- **Clauses**: Thousands
+- **Time**: Milliseconds to minutes or more (instance-dependent)
+- **Note**: Clause learning makes it much faster than DPLL in practice, but propagation scans every clause (no watched literals)
 
 ### Schöning's Algorithm
 - **Variables**: Up to ~50-100 (3SAT)
@@ -345,10 +406,10 @@ if not result:
 - **Note**: Incomplete, but provably O(1.334^n) for 3SAT
 
 ### WalkSAT
-- **Variables**: Up to millions
-- **Clauses**: Up to millions
-- **Time**: Seconds (when it finds solutions)
-- **Note**: Incomplete - may not find solution even if exists
+- **Variables**: Hundreds to a few thousand
+- **Clauses**: Thousands
+- **Time**: Milliseconds to seconds (when it finds solutions)
+- **Note**: Incomplete - may not find solution even if exists. Each flip rescans all clauses
 
 ## Benchmarking
 
@@ -371,5 +432,7 @@ python -m pytest tests/test_benchmarks.py -v
 - Learn [XOR-SAT solver](xorsat-solver.md)
 - Discover [Schöning's algorithm](schoening-solver.md)
 - Understand [WalkSAT solver](walksat-solver.md)
+- Try the [P-bit solver](pbit-solver.md)
+- Revisit history with the [Davis-Putnam solver](davis-putnam-solver.md)
 - Compare solvers with [benchmarking](benchmarking.md)
 - Try [examples and tutorials](examples.md)
