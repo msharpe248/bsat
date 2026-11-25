@@ -145,6 +145,46 @@ def _configure_lib(lib: ctypes.CDLL) -> ctypes.CDLL:
     lib.bsat_export_query.argtypes = [ctypes.c_void_p, ctypes.c_char_p, ctypes.c_char_p]
     lib.bsat_export_query.restype = ctypes.c_int
 
+    if hasattr(lib, "bsat_freeze"):
+        lib.bsat_freeze.argtypes = [ctypes.c_void_p, ctypes.c_int]
+        lib.bsat_freeze.restype = ctypes.c_int
+        lib.bsat_melt.argtypes = [ctypes.c_void_p, ctypes.c_int]
+        lib.bsat_melt.restype = ctypes.c_int
+        lib.bsat_is_frozen.argtypes = [ctypes.c_void_p, ctypes.c_int]
+        lib.bsat_is_frozen.restype = ctypes.c_int
+        lib.bsat_set_threads.argtypes = [ctypes.c_void_p, ctypes.c_uint32]
+        lib.bsat_set_threads.restype = ctypes.c_int
+        lib.bsat_set_proof.argtypes = [ctypes.c_void_p, ctypes.c_char_p, ctypes.c_int]
+        lib.bsat_set_proof.restype = ctypes.c_int
+        lib.bsat_set_lrat.argtypes = [ctypes.c_void_p, ctypes.c_char_p, ctypes.c_int]
+        lib.bsat_set_lrat.restype = ctypes.c_int
+        lib.bsat_add_xor.argtypes = [ctypes.c_void_p, ctypes.POINTER(ctypes.c_int), ctypes.c_size_t, ctypes.c_int]
+        lib.bsat_add_xor.restype = ctypes.c_int
+        lib.bsat_add_atmost.argtypes = [ctypes.c_void_p, ctypes.POINTER(ctypes.c_int), ctypes.c_size_t, ctypes.c_uint32]
+        lib.bsat_add_atmost.restype = ctypes.c_int
+        lib.bsat_add_pb_le.argtypes = [
+            ctypes.c_void_p,
+            ctypes.POINTER(ctypes.c_int),
+            ctypes.POINTER(ctypes.c_uint64),
+            ctypes.c_size_t,
+            ctypes.c_uint64,
+        ]
+        lib.bsat_add_pb_le.restype = ctypes.c_int
+        lib.bsat_backbone.argtypes = [
+            ctypes.c_void_p,
+            ctypes.POINTER(ctypes.c_int),
+            ctypes.c_size_t,
+            ctypes.POINTER(ctypes.c_size_t),
+        ]
+        lib.bsat_backbone.restype = ctypes.c_int
+        lib.bsat_mus.argtypes = [
+            ctypes.c_void_p,
+            ctypes.POINTER(ctypes.c_uint32),
+            ctypes.c_size_t,
+            ctypes.POINTER(ctypes.c_size_t),
+        ]
+        lib.bsat_mus.restype = ctypes.c_int
+
     abi = lib.bsat_abi_version()
     if abi != BSAT_ABI_VERSION:
         raise RuntimeError(f"Unsupported libbsat ABI version {abi} (expected {BSAT_ABI_VERSION})")
@@ -423,6 +463,117 @@ class CSATSolver:
                 os.fsencode(str(proof_path)),
             )
         )
+
+    def freeze(self, var: Union[str, Literal, int]) -> None:
+        """Protect a variable from destructive simplification (BVE, SCC, BCE, sym)."""
+        self._require_open()
+        lit = self._intern_var(var) if isinstance(var, str) else self._encode_lit(var, allow_new=True)
+        if not self._lib.bsat_freeze(self._handle, lit):
+            raise RuntimeError("bsat_freeze failed")
+
+    def melt(self, var: Union[str, Literal, int]) -> None:
+        """Remove simplification protection from a variable."""
+        self._require_open()
+        lit = self._var_to_id.get(var, 0) if isinstance(var, str) else self._encode_lit(var, allow_new=False)
+        if not lit or not self._lib.bsat_melt(self._handle, lit):
+            raise RuntimeError("bsat_melt failed")
+
+    def is_frozen(self, var: Union[str, Literal, int]) -> bool:
+        """Return True if a variable is currently frozen."""
+        self._require_open()
+        lit = self._var_to_id.get(var, 0) if isinstance(var, str) else self._encode_lit(var, allow_new=False)
+        return bool(lit and self._lib.bsat_is_frozen(self._handle, lit))
+
+    def set_threads(self, threads: int) -> None:
+        """Configure parallel portfolio thread count (1..64) for one-shot solving."""
+        self._require_open()
+        if not self._lib.bsat_set_threads(self._handle, int(threads)):
+            raise RuntimeError(f"bsat_set_threads({threads}) failed")
+
+    def set_proof(self, path: Union[str, Path], *, binary: bool = False) -> None:
+        """Enable DRAT proof logging to `path` (before first input/solve)."""
+        self._require_open()
+        if not self._lib.bsat_set_proof(self._handle, os.fsencode(str(path)), int(bool(binary))):
+            raise RuntimeError(f"bsat_set_proof({path}) failed")
+
+    def set_lrat(self, path: Union[str, Path], *, binary: bool = False) -> None:
+        """Enable native LRAT proof logging to `path` (before first input/solve)."""
+        self._require_open()
+        if not self._lib.bsat_set_lrat(self._handle, os.fsencode(str(path)), int(bool(binary))):
+            raise RuntimeError(f"bsat_set_lrat({path}) failed")
+
+    def add_xor(self, lits: Iterable[Union[Literal, int]], rhs: bool = True) -> None:
+        """Add an exact XOR constraint (l1 XOR l2 XOR ... == rhs)."""
+        self._require_open()
+        encoded = [self._encode_lit(l, allow_new=True) for l in lits]
+        arr = (ctypes.c_int * len(encoded))(*encoded) if encoded else None
+        if not self._lib.bsat_add_xor(self._handle, arr, len(encoded), int(bool(rhs))):
+            raise RuntimeError("bsat_add_xor failed")
+
+    def add_atmost(self, lits: Iterable[Union[Literal, int]], k: int) -> None:
+        """Add an unweighted cardinality constraint sum(lits) <= k."""
+        self._require_open()
+        encoded = [self._encode_lit(l, allow_new=True) for l in lits]
+        arr = (ctypes.c_int * len(encoded))(*encoded) if encoded else None
+        if not self._lib.bsat_add_atmost(self._handle, arr, len(encoded), int(k)):
+            raise RuntimeError("bsat_add_atmost failed")
+
+    def add_pb_le(
+        self, lits: Sequence[Union[Literal, int]], weights: Sequence[int], rhs: int
+    ) -> None:
+        """Add a weighted Pseudo-Boolean constraint sum(weights[i] * lits[i]) <= rhs."""
+        self._require_open()
+        if len(lits) != len(weights):
+            raise ValueError("lits and weights must have the same length")
+        encoded = [self._encode_lit(l, allow_new=True) for l in lits]
+        larr = (ctypes.c_int * len(encoded))(*encoded) if encoded else None
+        warr = (ctypes.c_uint64 * len(weights))(*[int(w) for w in weights]) if weights else None
+        if not self._lib.bsat_add_pb_le(self._handle, larr, warr, len(encoded), int(rhs)):
+            raise RuntimeError("bsat_add_pb_le failed")
+
+    def backbone(self) -> Optional[Dict[str, bool]]:
+        """Compute the exact global backbone `{var_name: forced_value}`, or None if UNSAT."""
+        self._require_open()
+        cap = max(1, self._next_id)
+        buf = (ctypes.c_int * cap)()
+        cnt = ctypes.c_size_t(0)
+        rc = int(self._lib.bsat_backbone(self._handle, buf, cap, ctypes.byref(cnt)))
+        if rc == BSAT_UNSAT:
+            return None
+        if rc != BSAT_SAT:
+            raise RuntimeError(f"bsat_backbone returned status {rc}")
+        n = int(cnt.value)
+        if n > cap:
+            buf = (ctypes.c_int * n)()
+            rc = int(self._lib.bsat_backbone(self._handle, buf, n, ctypes.byref(cnt)))
+            if rc != BSAT_SAT:
+                raise RuntimeError(f"bsat_backbone returned status {rc}")
+        result: Dict[str, bool] = {}
+        for i in range(n):
+            lit = int(buf[i])
+            vid = abs(lit)
+            if vid in self._id_to_var:
+                result[self._id_to_var[vid]] = (lit > 0)
+        return result
+
+    def mus(self) -> Optional[List[int]]:
+        """Extract a Minimal Unsatisfiable Subset of 0-based clause indices, or None if SAT."""
+        self._require_open()
+        cap = 64
+        buf = (ctypes.c_uint32 * cap)()
+        cnt = ctypes.c_size_t(0)
+        rc = int(self._lib.bsat_mus(self._handle, buf, cap, ctypes.byref(cnt)))
+        if rc == BSAT_SAT:
+            return None
+        if rc != BSAT_UNSAT:
+            raise RuntimeError(f"bsat_mus returned status {rc}")
+        n = int(cnt.value)
+        if n > cap:
+            buf = (ctypes.c_uint32 * n)()
+            rc = int(self._lib.bsat_mus(self._handle, buf, n, ctypes.byref(cnt)))
+            if rc != BSAT_UNSAT:
+                raise RuntimeError(f"bsat_mus returned status {rc}")
+        return [int(buf[i]) for i in range(n)]
 
 
 def solve_c(

@@ -16,9 +16,10 @@ certificate against its exact query.
 
 | Capability | Current support | Evidence and boundary |
 |---|---|---|
-| One-shot DIMACS solving | CLI (`bin/bsat`), SAT/UNSAT/UNKNOWN, text or binary DRAT | Strict DIMACS parser, model self-check, `validate.py` oracle/RUP suite, independent `drat-trim` CI |
-| Multi-core portfolio solving | `-j <N>` / `--threads <N>` (`1..64`), LBD-filtered sharing (`size <= 8, LBD <= 3`), dedicated unit ring, canonical hash dedup, 8 profiles, atomic stop | Non-proof one-shot mode; TSan-clean ring buffers (`MODE=tsan`), 8 MiB worker stacks, only logically-equivalent workers export clauses |
-| Public C/C++ & Python embedding | Opaque ABI v1 (`bsat.h`), Linux and macOS C11/POSIX, plus zero-dependency Python `ctypes` wrapper (`src/bsat/c_solver.py`) | [API_CONTRACT.md](API_CONTRACT.md), [INSTALLING.md](INSTALLING.md), `tests/test_c_solver.py`; internal `solver.h` layouts are not stable ABI |
+| One-shot DIMACS, XOR-CNF & PB solving | CLI (`bin/bsat`), SAT/UNSAT/UNKNOWN, text/binary DRAT & native text/binary LRAT (`--lrat`), CryptoMiniSat XOR-CNF (`x ... 0`), `.opb` Pseudo-Boolean decision & optimization | Strict DIMACS parser, model self-check, `validate.py`, `drat-trim` CI, independent linear LRAT verifier (`test_lrat`), `test_xor_and_pb` |
+| MaxSAT & higher-level SAT queries | RC2/OLL Weighted Partial MaxSAT (`--maxsat` / `.wcnf`), AllSAT/projected model enumeration (`--models` / `--project`), exact global backbone (`--backbone`), minimal MUS (`--mus`) | Verified against brute-force truth-table oracles and minimality checkers in `test_maxsat` & `test_queries` (release + ASan/UBSan) |
+| Multi-core portfolio solving | `-j <N>` / `--threads <N>` (`1..64`), LBD-filtered sharing (`size <= 8, LBD <= 3`), dedicated unit ring, canonical hash dedup, 8 profiles (incl. fast-start & WalkSAT-hybridized SAT-hunter), atomic stop | Non-proof one-shot mode; TSan-clean ring buffers (`MODE=tsan`), 8 MiB worker stacks, only logically-equivalent workers export clauses |
+| Public C/C++ & Python embedding | Opaque ABI v1 (`bsat.h`, with additive `bsat_freeze`/`melt`, `set_threads`, `set_proof`/`lrat`, `add_xor`/`atmost`/`pb_le`, `backbone`, `mus`), Linux/macOS C11/POSIX, plus zero-dependency Python `ctypes` wrapper (`src/bsat/c_solver.py`) | [API_CONTRACT.md](API_CONTRACT.md), [INSTALLING.md](INSTALLING.md), `test_public_extensions`, `embedding-test`, `package-test`, `tests/test_c_solver.py`; internal `solver.h` layouts are not stable ABI |
 | Incremental additions & assumptions | Copied permanent clauses, temporary assumptions, model and sufficient failed core, `solver_freeze`/`solver_melt` | [API_CONTRACT.md](API_CONTRACT.md); destructive inprocessing and non-RUP passes stay disabled on assumption calls |
 | Retained learning | Opt-in `BSAT_REUSE_LEARNTS`, including compatible conditional UNSAT and budget slices | [INCREMENTAL_REUSE.md](docs/INCREMENTAL_REUSE.md); cancellation or incompatible state rebuilds from permanent input |
 | Certified incremental queries | `BSAT_CERTIFICATES`, alone or with reuse; exact CNF and binary proof export | [RETAINED_CERTIFICATES.md](docs/RETAINED_CERTIFICATES.md); conservative non-destructive options, synchronous export |
@@ -35,18 +36,17 @@ certificate against its exact query.
 ## Current Verification & Benchmark Evidence
 
 ### Automated Verification
-- **Unit & integration tests**: `68/68` C tests (including
-  `test_differential_engines.c` across baseline, full, aggressive BCE/elim/SBVA,
-  and `-j 4` portfolio, plus DRAT proof tests for SBVA, AMO, symmetry breaking,
-  Root GF(2) RREF, and live in-search Bird/Han-Jiang GF(2) propagation in
-  `test_gauss_and_amo.c`) pass across `release`, `diagnostic`, and `debug`
+- **Unit & integration tests**: `73/73` C tests (including
+  `test_differential_engines.c`, `test_gauss_and_amo.c`, `test_xor_and_pb.c`,
+  `test_maxsat.c`, `test_queries.c`, `test_lrat.c`, and
+  `test_public_extensions.c`) pass across `release`, `diagnostic`, and `debug`
   (ASan + UBSan) builds, plus ThreadSanitizer (`MODE=tsan`), `fault-test`
   (`3,544` deterministic OOM injection cases), `recovery-fault-test`,
   `contained-worker-example` + `test_acceptance_and_containment.py`,
   `embedding-test`, `soak-test`, `package-test`, `application_histories`,
   `check_query_diagnostics`, `check_deadlines` (`0.002 s` max CPU overrun),
   `check_long_search` (`24/24` `drat-trim`), `validate.py` (`9,476` solves with
-  `drat-trim`), and `203/203` Python package unit tests (including
+  `drat-trim`), and `204/204` Python package unit tests (including
   `tests/test_c_solver.py`).
 - **CI workflows**: `C solver correctness` (Linux GCC/Clang + macOS Clang
   release/debug + TSan + pinned `drat-trim` / `cake_lpr`), `C solver coverage

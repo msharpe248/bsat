@@ -8,15 +8,22 @@ The actively developed [C solver](competition/c/README.md) (`bsat`) is a standal
 
 - **Core CDCL & BCP**: Tick-based Focused (VMTF + Biere–Fröhlich LBD EMA restarts + trail reuse) / Stable (4-ary heap VSIDS + reluctant doubling + separated `target_phase[]`) alternation, level-0 Kissat-style `B/W/I/B/W/O` rephasing, chronological backtracking, literal-indexed `lit_values[]` BCP with binary-first watch lists and 1-ahead prefetching, iterative 3-state minimization, block-level all-UIP shrinking, OTFS, dynamic LBD updates, and a 3-tier learned clause database.
 - **Inprocessing & Proof-Producing Reasoning**: Self-throttling tick-budgeted inprocessing with root cleanup, failed-literal probing + HBR + RUP-certified double-lookahead probing intersection, iterative fixpoint gate congruence (2-input AND/XOR/ITE + N-ary AND + 3-input `MAJ3`/`XOR3` full-adder gates up to `800k` clauses), in-place Tarjan SCC, global 64-bit gate-DAG simulation + dual-cone Mini-Kitten CDCL SAT sweeping, model-guided global backbone extraction, forward subsumption/SSR, gate-aware + semantic Mini-CDCL definition BVE with model reconstruction, binary transitive reduction, prefix-sharing vivification, low-energy-gated ProbSAT `(1+break)^(-2.3)` phase seeding, and **DRAT/RAT proof-producing** Structured BVA (`--sbva`), AMO Sinz sequential-counter re-encoding, BreakID-style exact syntactic symmetry breaking (`--sym`), Root GF(2) XOR-chain RREF, and bounded live in-search Bird/Han-Jiang GF(2) Gaussian elimination.
-- **Multi-Core, Incremental, Python & Deployment Kit**: Parallel clause-sharing portfolio (`-j <N>` / `--threads <N>`, LBD-filtered sharing `size <= 8, LBD <= 3`, dedicated unit ring, canonical hash deduplication, 8 diversified profiles including fast-start zero-preprocessing search), frozen-variable protection (`solver_freeze`/`solver_melt`), opt-in `BSAT_REUSE_LEARNTS`, retained-session `BSAT_CERTIFICATES` query export, zero-dependency Python `ctypes` bindings (`solve_c`, `CSATSolver` in `src/bsat/c_solver.py`), turnkey acceptance-gate runner (`competition/c/scripts/acceptance_gate.py`), and POSIX durable WAL/`setrlimit` worker example (`competition/c/examples/contained_worker.c`).
+- **Multi-Core, Optimization, Higher-Level Queries & Native LRAT**: Parallel clause-sharing portfolio (`-j <N>` / `--threads <N>`, LBD-filtered sharing `size <= 8, LBD <= 3`, dedicated unit ring, canonical hash deduplication, 8 diversified profiles including zero-preprocessing fast-start and WalkSAT-hybridized SAT-hunter workers), **native text & binary LRAT** proof emission (`--lrat` / `--binary-lrat`), **core-guided RC2/OLL Weighted Partial MaxSAT** (`--maxsat` / `.wcnf`), **AllSAT/projected model enumeration** (`--models` / `--project`), **exact global backbone** (`--backbone`), **minimal unsatisfiable subset extraction** (`--mus`), **native XOR-CNF** (`x <lits> 0`), and **Pseudo-Boolean** (`.opb` / `--opb`) with Sinz, incremental Totalizer, Generalized Totalizer (GTE), and binary-adder encoders.
+- **Incremental Embedding, Python Bindings & Deployment Kit**: Opaque ABI-v1 C library (`bsat.h` + IPASIR 1.0) with `bsat_freeze`/`bsat_melt`, multi-threaded one-shot solving, DRAT/LRAT output, XOR/PB constraints, backbone/MUS, opt-in `BSAT_REUSE_LEARNTS`, retained-session `BSAT_CERTIFICATES` query export, zero-dependency Python `ctypes` bindings (`solve_c`, `CSATSolver` in `src/bsat/c_solver.py`), turnkey acceptance-gate runner (`competition/c/scripts/acceptance_gate.py`), and POSIX durable WAL/`setrlimit` worker example (`competition/c/examples/contained_worker.c`).
 - **Wide On-Demand Testing**: Fetch and verify hundreds to thousands of SATLIB, SAT Competition 2023–2025, and synthetic structured instances on demand via `make -C competition/c wide-fetch` / `wide-test`.
 
 ```bash
 cd competition/c
-make all shared test                   # Build CLI + libbsat shared lib and run 68 unit tests
-./bin/bsat input.cnf                   # Solve a DIMACS CNF file
+make all shared test                   # Build CLI + libbsat shared lib and run 73 unit tests
+./bin/bsat input.cnf                   # Solve DIMACS CNF or CryptoMiniSat XOR-CNF
 ./bin/bsat -j 4 input.cnf              # 4-thread clause-sharing portfolio
 ./bin/bsat --proof out.drat input.cnf  # Emit DRAT proof for UNSAT verification
+./bin/bsat --lrat out.lrat input.cnf   # Emit linearly checkable native LRAT proof
+./bin/bsat problem.wcnf                # Weighted Partial MaxSAT (RC2/OLL)
+./bin/bsat problem.opb                 # Pseudo-Boolean decision or optimization (.opb)
+./bin/bsat --mus unsat.cnf             # Extract Minimal Unsatisfiable Subset (MUS)
+./bin/bsat --backbone sat.cnf          # Compute exact global backbone literals
+./bin/bsat --models all sat.cnf        # Enumerate all satisfying models (AllSAT)
 ```
 
 Or call the native C engine directly from Python once `make -C competition/c shared` is built:

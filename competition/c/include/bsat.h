@@ -80,6 +80,43 @@ BSAT_API int bsat_error(const bsat *s);
    Never reenter this handle; an external thread may update its own atomic flag.
    Calls on one handle must be serialized; distinct handles are independent. */
 BSAT_API void bsat_set_terminate(bsat *s, void *state, int (*callback)(void *));
+
+/* --- Extended ABI v1.1 additive capabilities (100% ABI-v1 compatible) --- */
+
+/* Protect/unprotect a variable from destructive simplification (BVE, SCC, BCE, sym).
+ * Accepts signed DIMACS literal (nonzero). Returns 1 on success, 0 on error. */
+BSAT_API int bsat_freeze(bsat *s, int lit);
+BSAT_API int bsat_melt(bsat *s, int lit);
+BSAT_API int bsat_is_frozen(const bsat *s, int lit);
+
+/* Configure multi-threaded one-shot portfolio solving (1..64 threads) for
+ * non-assumption, non-certified calls. Must be called before first solve. */
+BSAT_API int bsat_set_threads(bsat *s, uint32_t threads);
+
+/* Enable one-shot DRAT or native LRAT proof logging to `path` before first input/solve.
+ * Incompatible with BSAT_CERTIFICATES journals and threads > 1. Returns 1 on success. */
+BSAT_API int bsat_set_proof(bsat *s, const char *path, int binary);
+BSAT_API int bsat_set_lrat(bsat *s, const char *path, int binary);
+
+/* Add native XOR clause (lits[0] XOR ... XOR lits[count-1] == (rhs != 0)),
+ * unweighted cardinality constraint (sum lits <= k), or weighted PB constraint
+ * (sum weights[i] * lits[i] <= rhs). Returns 1 on success. */
+BSAT_API int bsat_add_xor(bsat *s, const int *lits, size_t count, int rhs);
+BSAT_API int bsat_add_atmost(bsat *s, const int *lits, size_t count, uint32_t k);
+BSAT_API int bsat_add_pb_le(bsat *s, const int *lits, const uint64_t *weights,
+                            size_t count, uint64_t rhs);
+
+/* Compute exact global backbone of the loaded formula. Returns BSAT_SAT (10)
+ * when backbone is computed, BSAT_UNSAT (20) if formula is UNSAT, or BSAT_UNKNOWN (0).
+ * Writes up to `cap` signed DIMACS literals into `out_lits` and sets `*out_count`
+ * to the total backbone size. */
+BSAT_API int bsat_backbone(bsat *s, int *out_lits, size_t cap, size_t *out_count);
+
+/* Extract a Minimal Unsatisfiable Subset (MUS) of 0-based input clause indices.
+ * Returns BSAT_UNSAT (20) when MUS is found, BSAT_SAT (10) if formula is SAT,
+ * or BSAT_UNKNOWN (0). Writes up to `cap` clause indices into `out_clause_ids`
+ * and sets `*out_count` to the total MUS size. */
+BSAT_API int bsat_mus(bsat *s, uint32_t *out_clause_ids, size_t cap, size_t *out_count);
 #ifdef __cplusplus
 }
 #endif

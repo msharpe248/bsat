@@ -36,8 +36,10 @@ Current feature comparison between the C competition solver ([`competition/c/`](
 | Exact Syntactic Symmetry Breaking (`--sym`) | ✅ (DRAT/RAT proof-producing) | ❌ | BreakID-style verified automorphisms + O(n) single-pair peeling / insertion-sort DRAT proofs |
 | AMO Sequential Counters & Structured BVA (`--sbva`) | ✅ (DRAT/RAT proof-producing) | ❌ | Sinz counters + 3-hop Structured BVA, both emitting RAT-valid DRAT proofs under `--proof` |
 | **Proofs, Parallelism & Embedding** | | | |
-| Text & Binary DRAT Proof Logging | ✅ | ❌ | Independently verified with `drat-trim` and `cake_lpr` |
-| Multi-Core Clause-Sharing Portfolio (`-j N`) | ✅ | ❌ | 8 diversified pthread profiles, LBD-filtered sharing (`size <= 8, LBD <= 3`), unit ring, hash dedup |
-| Opaque ABI v1, IPASIR 1.0, Python `ctypes` & Frozen Vars | ✅ | ❌ | `bsat.h`, `ipasir.h`, `bsat.solve_c`/`CSATSolver`, `BSAT_REUSE_LEARNTS`, `BSAT_CERTIFICATES`, `solver_freeze` |
+| Text & Binary DRAT + Native LRAT Proofs | ✅ (`--proof`, `--lrat`) | ❌ | DRAT verified with `drat-trim`/`cake_lpr`; native text & binary LRAT linearly checkable directly |
+| Core-Guided MaxSAT (RC2/OLL), `.opb`, XOR-CNF | ✅ (`--maxsat`, `--opb`, `x` lines) | ❌ | Sinz, incremental Totalizer, Generalized Totalizer (GTE), binary-adder PB, WCNF classic & MSE 2022+ |
+| AllSAT / Projected Enumeration, Backbone & MUS | ✅ (`--models`, `--backbone`, `--mus`) | ❌ | Flip-filtered exact backbone, core-trimmed RMR minimal MUS, projected blocking AllSAT |
+| Multi-Core Clause-Sharing Portfolio (`-j N`) | ✅ | ❌ | 8 diversified pthread profiles (incl. fast-start & WalkSAT-hybridized SAT-hunter), LBD-filtered sharing, unit ring, hash dedup |
+| Opaque ABI v1, IPASIR 1.0, Python `ctypes` & Frozen Vars | ✅ | ❌ | `bsat.h` (incl. `freeze`/`melt`, `set_threads`, `set_proof`/`lrat`, `add_xor`/`atmost`/`pb_le`, `backbone`, `mus`), `ipasir.h`, `bsat.solve_c`/`CSATSolver`, `BSAT_REUSE_LEARNTS`, `BSAT_CERTIFICATES` |
 
 See [`competition/c/FEATURES.md`](c/FEATURES.md) for the complete C CLI reference and [`competition/c/README.md`](c/README.md) for build and benchmarking instructions.

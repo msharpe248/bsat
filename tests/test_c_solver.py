@@ -117,6 +117,56 @@ class TestCSolver(unittest.TestCase):
                 self.assertTrue(cnf_out.is_file() and cnf_out.stat().st_size > 0)
                 self.assertTrue(proof_out.is_file() and proof_out.stat().st_size > 0)
 
+    def test_extended_c_api_features(self):
+        # Freeze/melt + parallel threads
+        with CSATSolver(reuse_learnts=False) as solver:
+            solver.set_threads(2)
+            solver.freeze("a")
+            self.assertTrue(solver.is_frozen("a"))
+            solver.melt("a")
+            self.assertFalse(solver.is_frozen("a"))
+            solver.add_cnf(CNFExpression.parse("(a | b) & (~a | c) & (~b | c)"))
+            sol = solver.solve()
+            self.assertIsNotNone(sol)
+            self.assertTrue(sol["c"])
+
+        # XOR, AtMost-k, and Weighted PB
+        with CSATSolver() as solver:
+            solver.add_xor([Literal("x"), Literal("y")], rhs=True)
+            solver.add_atmost([Literal("x"), Literal("y"), Literal("z")], 1)
+            solver.add_pb_le([Literal("x"), Literal("y"), Literal("z")], [3, 5, 2], 4)
+            sol = solver.solve()
+            self.assertIsNotNone(sol)
+            self.assertTrue(sol["x"])
+            self.assertFalse(sol["y"])
+            self.assertFalse(sol["z"])
+
+        # Exact global backbone
+        with CSATSolver() as solver:
+            solver.add_cnf(CNFExpression.parse("x & (~x | y) & (z | w)"))
+            bb = solver.backbone()
+            self.assertEqual(bb, {"x": True, "y": True})
+
+        # Minimal unsatisfiable subset (MUS)
+        with CSATSolver() as solver:
+            solver.add_clause([1])
+            solver.add_clause([-1, 2])
+            solver.add_clause([-2])
+            solver.add_clause([3, 4])
+            self.assertEqual(solver.mus(), [0, 1, 2])
+
+        # Native binary LRAT proof emission via CSATSolver
+        with tempfile.TemporaryDirectory(prefix="bsat-py-lrat-") as td:
+            lrat_out = Path(td) / "proof.blrat"
+            with CSATSolver(reuse_learnts=False) as solver:
+                solver.set_lrat(lrat_out, binary=True)
+                solver.add_clause([1, 2])
+                solver.add_clause([-1, 2])
+                solver.add_clause([1, -2])
+                solver.add_clause([-1, -2])
+                self.assertEqual(solver.solve_status(), BSAT_UNSAT)
+            self.assertTrue(lrat_out.is_file() and lrat_out.stat().st_size > 0)
+
 
 if __name__ == "__main__":
     unittest.main()

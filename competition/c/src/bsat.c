@@ -1,12 +1,19 @@
 #include "bsat.h"
 #include "solver.h"
+#include "pb_enc.h"
+#include "queries.h"
+#include "lrat.h"
 #include <math.h>
+#include <string.h>
 #include <sys/types.h>
 struct bsat {
     Solver *core; int result; bool started; bsat_stats_v1 stats;
     FILE *journal; Lit *query; size_t query_count; off_t journal_end;
     double wall_limit, wall_start; uint64_t capacity_limit;
     unsigned resource_polls; int service_hit; bool active;
+    uint32_t threads;
+    char *proof_path_copy;
+    char *lrat_path_copy;
     void *user_state; int (*user_terminate)(void *);
 };
 static double wall_time(bsat *s) {
@@ -58,7 +65,16 @@ bsat *bsat_create(uint32_t abi,uint32_t flags) {
     if(!s->core){if(s->journal)fclose(s->journal);free(s);return NULL;}
     s->core->proof_journal=s->journal;return s;
 }
-void bsat_destroy(bsat *s) {if(s){solver_free(s->core);if(s->journal)fclose(s->journal);free(s->query);free(s);}}
+void bsat_destroy(bsat *s) {
+    if(s){
+        solver_free(s->core);
+        if(s->journal)fclose(s->journal);
+        free(s->query);
+        free(s->proof_path_copy);
+        free(s->lrat_path_copy);
+        free(s);
+    }
+}
 int bsat_error(const bsat *s) {return !s || s->core->error || s->core->watches->failed;}
 int bsat_set_limits(bsat *s,double cpu,uint32_t conflicts,uint32_t decisions) {
     if(bsat_error(s))return 0;
@@ -116,7 +132,9 @@ int bsat_solve(bsat *s,const int *assumptions,size_t count) {
     s->started=true;s->result=BSAT_UNKNOWN;free(s->query);s->query=NULL;s->query_count=0;
     Lit *a=translate(s,assumptions,count,false);if(bsat_error(s)){free(a);s->active=false;return BSAT_UNKNOWN;}
     double start=solver_cpu_time();
-    lbool r=solver_solve_with_assumptions(s->core,a,(uint32_t)count);
+    lbool r=(s->threads>1 && !count && !s->journal && !s->core->proof_file && !s->core->lrat)
+        ? solver_solve_parallel(s->core,s->threads)
+        : solver_solve_with_assumptions(s->core,a,(uint32_t)count);
     if(s->journal) {
         s->query=a;s->query_count=count;s->journal_end=ftello(s->journal);
         if(s->journal_end<0){s->core->error=true;r=UNDEF;}
@@ -204,4 +222,141 @@ int bsat_export_query(bsat *s,const char *cnf_path,const char *proof_path) {
     if(ok && s->result==20 && fwrite("a\0",1,2,proof)!=2)ok=false;
     if(fclose(proof))ok=false;
     return ok;
+}
+
+int bsat_freeze(bsat *s, int lit) {
+    if (bsat_error(s) || !lit) return 0;
+    int64_t x = lit; uint64_t v = x < 0 ? (uint64_t)-x : (uint64_t)x;
+    if (!v || v > MAX_VARS) { s->core->error = true; return 0; }
+    while (s->core->num_vars < (Var)v) {
+        if (!solver_new_var(s->core)) return 0;
+    }
+    solver_freeze(s->core, (Var)v);
+    return !bsat_error(s);
+}
+
+int bsat_melt(bsat *s, int lit) {
+    if (bsat_error(s) || !lit) return 0;
+    int64_t x = lit; uint64_t v = x < 0 ? (uint64_t)-x : (uint64_t)x;
+    if (!v || v > s->core->num_vars) return 0;
+    solver_melt(s->core, (Var)v);
+    return !bsat_error(s);
+}
+
+int bsat_is_frozen(const bsat *s, int lit) {
+    if (bsat_error(s) || !lit) return 0;
+    int64_t x = lit; uint64_t v = x < 0 ? (uint64_t)-x : (uint64_t)x;
+    if (!v || v > s->core->num_vars) return 0;
+    return solver_is_frozen(s->core, (Var)v) ? 1 : 0;
+}
+
+int bsat_set_threads(bsat *s, uint32_t threads) {
+    if (bsat_error(s) || s->started || threads == 0 || threads > 64) return 0;
+    if (threads > 1 && (s->journal || s->core->proof_file || s->core->lrat)) return 0;
+    s->threads = threads;
+    return 1;
+}
+
+int bsat_set_proof(bsat *s, const char *path, int binary) {
+    if (bsat_error(s) || s->started || !path || s->journal || s->threads > 1 ||
+        s->core->proof_file || s->core->lrat) return 0;
+    size_t len = strlen(path) + 1;
+    char *copy = malloc(len);
+    if (!copy) { s->core->error = true; return 0; }
+    memcpy(copy, path, len);
+    FILE *fp = fopen(copy, binary ? "wb" : "w");
+    if (!fp) { free(copy); return 0; }
+    s->proof_path_copy = copy;
+    s->core->proof_file = fp;
+    s->core->opts.proof_path = copy;
+    s->core->opts.binary_proof = (binary != 0);
+    return 1;
+}
+
+int bsat_set_lrat(bsat *s, const char *path, int binary) {
+    if (bsat_error(s) || s->started || !path || s->journal || s->threads > 1 ||
+        s->core->proof_file || s->core->lrat) return 0;
+    size_t len = strlen(path) + 1;
+    char *copy = malloc(len);
+    if (!copy) { s->core->error = true; return 0; }
+    memcpy(copy, path, len);
+    LratState *lr = lrat_create(copy, binary != 0);
+    if (!lr) { free(copy); return 0; }
+    s->lrat_path_copy = copy;
+    s->core->lrat = lr;
+    s->core->opts.lrat_path = copy;
+    s->core->opts.binary_lrat = (binary != 0);
+    s->core->opts.inprocess = false;
+    s->core->opts.sbva = false;
+    s->core->opts.sym = false;
+    s->core->opts.elim = false;
+    s->core->opts.bce = false;
+    s->core->opts.congruence = false;
+    s->core->opts.equiv = false;
+    s->core->opts.factor = false;
+    s->core->opts.probing = false;
+    s->core->opts.shrink = false;
+    s->core->opts.binary_minimize = false;
+    s->core->opts.subsumption = false;
+    return 1;
+}
+
+int bsat_add_xor(bsat *s, const int *lits, size_t count, int rhs) {
+    if (bsat_error(s)) return 0;
+    s->service_hit = 0;
+    s->started = true; s->result = BSAT_UNKNOWN;
+    Lit *a = translate(s, lits, count, true);
+    if (bsat_error(s)) { free(a); return 0; }
+    bool ok = pb_add_xor_clause(s->core, a, (uint32_t)count, rhs != 0);
+    free(a);
+    return ok && !bsat_error(s);
+}
+
+int bsat_add_atmost(bsat *s, const int *lits, size_t count, uint32_t k) {
+    if (bsat_error(s)) return 0;
+    s->service_hit = 0;
+    s->started = true; s->result = BSAT_UNKNOWN;
+    Lit *a = translate(s, lits, count, true);
+    if (bsat_error(s)) { free(a); return 0; }
+    bool ok = pb_add_atmost_sinz(s->core, a, (uint32_t)count, k);
+    free(a);
+    return ok && !bsat_error(s);
+}
+
+int bsat_add_pb_le(bsat *s, const int *lits, const uint64_t *weights,
+                   size_t count, uint64_t rhs) {
+    if (bsat_error(s) || (count && !weights)) return 0;
+    s->service_hit = 0;
+    s->started = true; s->result = BSAT_UNKNOWN;
+    Lit *a = translate(s, lits, count, true);
+    if (bsat_error(s)) { free(a); return 0; }
+    bool ok = pb_add_pb_le(s->core, a, weights, (uint32_t)count, rhs);
+    free(a);
+    return ok && !bsat_error(s);
+}
+
+int bsat_backbone(bsat *s, int *out_lits, size_t cap, size_t *out_count) {
+    if (bsat_error(s)) return BSAT_UNKNOWN;
+    BackboneResult br = bsat_compute_backbone(s->core, s->core->num_vars, &s->core->opts);
+    if (out_count) *out_count = br.size;
+    if (out_lits && cap > 0 && br.lits) {
+        size_t n = br.size < cap ? br.size : cap;
+        for (size_t i = 0; i < n; ++i) out_lits[i] = toDimacs(br.lits[i]);
+    }
+    int rc = br.status == TRUE ? BSAT_SAT : (br.status == FALSE ? BSAT_UNSAT : BSAT_UNKNOWN);
+    bsat_backbone_result_free(&br);
+    return rc;
+}
+
+int bsat_mus(bsat *s, uint32_t *out_clause_ids, size_t cap, size_t *out_count) {
+    if (bsat_error(s)) return BSAT_UNKNOWN;
+    MusResult mr = bsat_compute_mus(s->core, s->core->num_vars, &s->core->opts);
+    if (out_count) *out_count = mr.size;
+    if (out_clause_ids && cap > 0 && mr.clause_ids) {
+        size_t n = mr.size < cap ? mr.size : cap;
+        memcpy(out_clause_ids, mr.clause_ids, n * sizeof(uint32_t));
+    }
+    int rc = mr.status == FALSE ? BSAT_UNSAT : (mr.status == TRUE ? BSAT_SAT : BSAT_UNKNOWN);
+    bsat_mus_result_free(&mr);
+    return rc;
 }

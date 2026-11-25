@@ -19,7 +19,7 @@ benchmarking.
 
 ```sh
 cd competition/c
-make all test                                            # Release build + 68 unit tests
+make all test                                            # Release build + 73 unit tests
 make all test MODE=debug                                 # Debug build (ASan + UBSan)
 make all test MODE=diagnostic                            # Build with opt-in detailed search counters
 make shared                                              # Build libbsat shared library (also used by Python bsat.solve_c)
@@ -41,10 +41,17 @@ coverage index.
 ## Run
 
 ```sh
-./bin/bsat input.cnf                          # Default one-shot solve
+./bin/bsat input.cnf                          # Default one-shot solve (DIMACS CNF or XOR-CNF)
 ./bin/bsat -j 4 input.cnf                     # 4-thread clause-sharing portfolio
 ./bin/bsat --proof proof.drat input.cnf       # Text DRAT proof
 ./bin/bsat --binary-proof --proof p.drat in.cnf
+./bin/bsat --lrat proof.lrat input.cnf        # Native linearly checkable text LRAT proof
+./bin/bsat --lrat p.blrat --binary-lrat in.cnf # Native binary LRAT proof
+./bin/bsat problem.wcnf                       # Core-guided Weighted Partial MaxSAT (RC2/OLL)
+./bin/bsat problem.opb                        # Pseudo-Boolean decision or optimization (.opb)
+./bin/bsat --models all --project 1,2,3 in.cnf # AllSAT / projected model enumeration
+./bin/bsat --backbone in.cnf                  # Exact global backbone literals
+./bin/bsat --mus in.cnf                       # Minimal Unsatisfiable Subset (MUS)
 /path/to/drat-trim input.cnf proof.drat
 ```
 
@@ -59,7 +66,7 @@ and rejection of embedded NULs or integer overflow. Duplicate literals and
 tautologies are normalized automatically. Empty formulas are SAT; empty clauses
 are UNSAT.
 
-**DRAT proofs**: Text (chunked decimal) and binary DRAT are supported across
+**DRAT & Native LRAT proofs**: Text (chunked decimal) and binary DRAT are supported across
 search, minimization, block shrinking, OTFS, probing/HBR, probing intersection,
 multi-gate congruence (2-input AND/XOR/ITE + N-ary AND + `MAJ3` + `XOR3`),
 Tarjan SCC substitution, Mini-Kitten SAT sweeping, global backbone extraction,
@@ -70,8 +77,12 @@ sequential-counter re-encoding, exact syntactic symmetry breaking (`--sym`),
 Root GF(2) XOR-chain RREF, and bounded live in-search Bird/Han-Jiang GF(2)
 propagation (`src/gauss.c`, compact matrices `<= 128` rows / `<= 2,048`
 cumulative proof-row merges with automatic level-0 CDCL fallback above budget).
-All RAT/non-RUP passes stay disabled in append-only `BSAT_CERTIFICATES`
-journals so standard incremental RUP/DRAT/LRAT checkers remain strictly valid.
+For direct linear-time verification without `drat-trim`, `--lrat` /
+`--binary-lrat` (`src/lrat.c`) emits native text and binary LRAT proofs with
+exact 64-bit clause IDs, trail-ordered antecedent hints, buffered deletions,
+and GC ID relocation (with zero overhead when disabled). All RAT/non-RUP passes
+stay disabled in append-only `BSAT_CERTIFICATES` journals so standard
+incremental RUP/DRAT/LRAT checkers remain strictly valid.
 
 ---
 

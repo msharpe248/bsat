@@ -202,6 +202,7 @@ static void worker_import_clauses(Solver *s, void *state) {
 static SolverOpts make_worker_opts(const SolverOpts *base, uint32_t id, bool *can_export) {
     SolverOpts o = *base;
     o.proof_path = NULL;
+    o.lrat_path = NULL;
     o.quiet = true;
     o.stats = false;
     /* Wall-clock deadline is enforced centrally by worker_terminate; keep per-thread
@@ -243,12 +244,16 @@ static SolverOpts make_worker_opts(const SolverOpts *base, uint32_t id, bool *ca
             o.var_decay = 0.95;
             break;
         case 3:
-            /* LRB/CHB branching + mild random phase diversification */
+            /* LRB/CHB + WalkSAT local-search hybrid SAT-hunter with phase feedback */
             o.lrb = true;
             o.alternating = false;
             o.random_phase = true;
             o.random_phase_prob = 0.02;
             o.rephase_interval = 500;
+            o.local_search = true;
+            o.ls_interval = 4000;
+            o.ls_max_flips = 50000;
+            o.ls_save_phases = true;
             break;
         case 4:
             /* Alternating VMTF/VSIDS with tighter chrono + slower decay */

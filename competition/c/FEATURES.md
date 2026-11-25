@@ -36,7 +36,11 @@ Authoritative reference of currently implemented solver features, defaults
 | Multi-core clause-sharing portfolio | 1 thread | `-j <n>` / `--threads <n>` | `-j 1` |
 | Focused-then-alternating sequential portfolio | OFF | `--portfolio <sec>` | — |
 | DRAT proof logging (text / binary) | OFF | `--proof <file>` / `--binary-proof` | — |
-| Frozen-variable protection (C API) | API | `solver_freeze(s, v)` | `solver_melt(s, v)` |
+| Native LRAT proof logging (text / binary) | OFF | `--lrat <file>` / `--binary-lrat` | — |
+| Core-guided Weighted Partial MaxSAT (RC2/OLL) | OFF | `--maxsat` / `.wcnf` | — |
+| Native XOR-CNF (`x ... 0`) & Pseudo-Boolean (`.opb`) | auto / OFF | `x` lines / `--opb` / `.opb` | — |
+| AllSAT / projected enumeration, Backbone & MUS | OFF | `--models` / `--project` / `--backbone` / `--mus` | — |
+| Frozen-variable protection (C/Python API) | API | `bsat_freeze` / `solver_freeze` | `bsat_melt` / `solver_melt` |
 
 ---
 
@@ -236,4 +240,12 @@ disabled in append-only `BSAT_CERTIFICATES` journals, assumption calls, and
 --ls-noise <f> / --ls-save-phases      WalkSAT noise (0.5) & phase feedback
 --proof <file>                         Write DRAT proof to file
 --binary-proof                         Use binary DRAT format
+--lrat <file>                          Write native linearly checkable LRAT proof
+--binary-lrat                          Use binary LRAT format (with --lrat)
+--opb                                  Parse & solve Pseudo-Boolean (.opb) input
+--maxsat                               Parse & solve Weighted Partial MaxSAT (.wcnf)
+--models <n|all>                       Enumerate up to n (or all) models (AllSAT)
+--project <v1,v2,...>                  Project --models enumeration onto listed variables
+--backbone                             Compute exact global backbone literals
+--mus                                  Extract Minimal Unsatisfiable Subset (MUS)
 ```
