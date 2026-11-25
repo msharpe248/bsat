@@ -39,6 +39,63 @@ See [competition/c/README.md](competition/c/README.md), [competition/c/FEATURES.
 
 ---
 
+## Performance & Benchmarks
+
+All measurements below were collected on an **Apple M4 Pro (12-core, macOS)** using the checked-in [`suite_runner.py`](competition/c/scripts/suite_runner.py) harness with full independent SAT model verification, ground-truth label checking, and 0 SAT/UNSAT disagreements against **Kissat 4.0.4** (built from source on the same machine).
+
+### SAT Competition 2023–2025 (150 Balanced Main-Track Instances, 15 s Timeout)
+
+Balanced size-filtered pack (`<= 2 MiB` compressed) across SAT Competition 2023 (60), 2024 (30), and 2025 (60) — 75 SAT and 75 UNSAT instances:
+
+| Solver | Threads | Solved / 150 | Rate | SAT | UNSAT | SC'23 (60) | SC'24 (30) | SC'25 (60) | Mean PAR-2 | Median Solved |
+|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|
+| **`bsat -j 4`** *(portfolio)* | 4 | **57 / 150** | **38.0%** | **37** | **20** | 28 | 13 | 16 | **19.485 s** | 0.370 s |
+| **`bsat`** *(1-thread)* | 1 | **48 / 150** | **32.0%** | **28** | **20** | 21 | 12 | 15 | **21.098 s** | **0.278 s** |
+| **Kissat 4.0.4** *(1-thread)* | 1 | 42 / 150 | 28.0% | 24 | 18 | 21 | 8 | 13 | 22.331 s | 0.952 s |
+
+- Single-thread complementarity: both solvers solve **37** common instances; **`bsat`** solves **11** instances that Kissat 4.0.4 times out on, while **Kissat 4.0.4** solves **5** instances that 1-thread `bsat` times out on (virtual best: 53/150).
+- Adding 4-thread clause-sharing portfolio search (`-j 4`, including the WalkSAT-hybridized SAT-hunter worker) lifts SAT solves from 28 to **37** (+9 instances, PAR-2 `21.098 s` → `19.485 s`).
+
+### SATLIB Core & Structured Hard Benchmarks (10 s Timeout, 1 Thread)
+
+| Suite | Instances | Solver | Solved | Rate | SAT | UNSAT | Mean PAR-2 | Median | Total Time |
+|---|---:|---|---:|---:|---:|---:|---:|---:|---:|
+| **SATLIB Core** *(16 classic families)* | 492 | **`bsat`** | **492 / 492** | **100.0%** | 323 | 169 | **0.043 s** | **0.007 s** | **21.40 s** |
+| | 492 | **Kissat 4.0.4** | 482 / 492 | 98.0% | 313 | 169 | 0.451 s | 0.023 s | 122.03 s |
+| **Synthetic Hard** *(PHP, Tseitin XOR, miters, coloring, Latin sq., planted 3-SAT)* | 118 | **`bsat`** | **118 / 118** | **100.0%** | 68 | 50 | **0.018 s** | **0.006 s** | **2.13 s** |
+| | 118 | **Kissat 4.0.4** | 104 / 118 | 88.1% | 68 | 36 | 2.416 s | 0.010 s | 145.12 s |
+
+- On **SATLIB Core**, `bsat` solves all 10 `par32-*` parity learning benchmarks (`<= 0.45 s` each) via GF(2) RREF and is faster on random 3-SAT (`uf150-645` PAR-2 `0.011 s` vs `0.033 s`, `uuf150-645` `0.039 s` vs `0.059 s`) and `dubois`; Kissat 4.0.4 is faster on `bmc` (`0.232 s` vs `0.402 s`) and `flat100` (`0.004 s` vs `0.007 s`).
+- On **Synthetic Hard**, `bsat`'s BreakID-style symmetry breaking (`php_31_30` in `0.072 s`) and GF(2) Gaussian elimination (`tseitin_v100` in `0.010 s`) account for the 14 timeouts on pure-CDCL Kissat 4.0.4.
+
+### Proof Generation & Verification (`cal3-query.cnf`, Industrial UNSAT)
+
+| Solver & Proof Mode | Solve Time | Check Time | End-to-End | Proof Size | Checker |
+|---|---:|---:|---:|---:|---|
+| **`bsat`** *(no proof)* | **0.368 s** | — | **0.368 s** | — | — |
+| **Kissat 4.0.4** *(no proof)* | 0.719 s | — | 0.719 s | — | — |
+| **`bsat` native binary LRAT** (`--lrat --binary-lrat`) | 0.833 s | 0.217 s | 1.050 s | 9,281 KiB | Linear `lrat_verify_file` |
+| **`bsat` binary DRAT** (`--proof --binary-proof`) | 0.628 s | 0.441 s | 1.069 s | 3,842 KiB | `drat-trim` |
+| **Kissat 4.0.4 binary DRAT** | 0.725 s | **0.124 s** | **0.849 s** | **2,986 KiB** | `drat-trim` |
+
+### Native C (`solve_c`) vs. Pure-Python (`solve_cdcl`)
+
+| Benchmark (SATLIB 3-SAT) | Pure-Python `solve_cdcl` | Native C `solve_c` (`libbsat`) | Speedup |
+|---|---:|---:|---:|
+| **100-var 3-SAT** (20 instances: 12 SAT, 8 UNSAT) | 0.304 s *(15.2 ms/inst)* | 0.023 s *(1.13 ms/inst)* | **13×** |
+| **150-var 3-SAT** (10 instances) | 46.262 s *(4,626 ms/inst)* | 0.021 s *(2.08 ms/inst)* | **2,221×** |
+
+To reproduce these comparisons locally:
+
+```bash
+cd competition/c && make all
+make wide-fetch PACK="synthetic-hard satlib-core"
+python3 scripts/suite_runner.py --corpus satlib-core --timeout 10 --workers 4 \
+    --solver bsat=bin/bsat --solver kissat=/path/to/kissat
+```
+
+---
+
 ## Python Package Features
 
 ### Production Solvers
