@@ -282,33 +282,38 @@ class SATPreprocessor:
                 if i == j:
                     continue
 
-                clause1 = new_clauses[i]
-                clause2 = new_clauses[j]
-
-                # Find complementary literals
-                for lit1 in clause1.literals:
-                    for lit2 in clause2.literals:
-                        if lit1.variable == lit2.variable and lit1.negated != lit2.negated:
-                            # Found complementary pair
-                            # Check if clause1 - {lit1} ⊆ clause2 - {lit2}
-                            rest1 = {(l.variable, l.negated) for l in clause1.literals if l != lit1}
-                            rest2 = {(l.variable, l.negated) for l in clause2.literals if l != lit2}
-
-                            if rest1.issubset(rest2) and rest1 != rest2:
-                                # Self-subsumption: clause2 can be simplified
-                                new_lits = [l for l in clause2.literals
-                                           if (l.variable, l.negated) in rest1 or l == lit2]
-                                new_lits = [l for l in new_lits if l != lit2]
-
-                                if new_lits and new_lits != clause2.literals:
-                                    new_clauses[j] = Clause(new_lits)
-                                    self.stats.self_subsumptions += 1
-                                    changed = True
+                strengthened = self._strengthen(new_clauses[i], new_clauses[j])
+                if strengthened is not None:
+                    new_clauses[j] = strengthened
+                    self.stats.self_subsumptions += 1
+                    changed = True
 
         if changed:
             self.cnf = CNFExpression(new_clauses)
 
         return changed
+
+    @staticmethod
+    def _strengthen(clause1: Clause, clause2: Clause) -> Optional[Clause]:
+        """
+        If clause1 = (a ∨ C) and clause2 = (¬a ∨ D) with C ⊆ D, return D.
+
+        D is the resolvent of the two clauses and it subsumes clause2, so
+        clause2 can be replaced by it. Returns None if no literal qualifies.
+        """
+        lits1 = {(l.variable, l.negated) for l in clause1.literals}
+        lits2 = {(l.variable, l.negated) for l in clause2.literals}
+        for variable, negated in sorted(lits1):
+            if (variable, not negated) not in lits2:
+                continue
+            rest1 = lits1 - {(variable, negated)}
+            rest2 = lits2 - {(variable, not negated)}
+            # An empty D would be the empty clause; that case is left to unit
+            # propagation, which reports the conflict
+            if rest2 and rest1.issubset(rest2):
+                return Clause([l for l in clause2.literals
+                               if (l.variable, l.negated) != (variable, not negated)])
+        return None
 
 
 def decompose_into_components(cnf: CNFExpression) -> List[CNFExpression]:

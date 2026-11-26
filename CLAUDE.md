@@ -9,7 +9,7 @@ BSAT is a Python package for learning and solving Boolean satisfiability (SAT) p
 The repository also contains two side projects with their own documentation:
 
 - `research/` - experimental Python research solvers (see `research/README.md`)
-- `competition/` - a standalone C11 competition CDCL solver in `competition/c/` plus older Python prototypes in `competition/python/` (see `competition/README.md` and `competition/c/README.md`). The competition solver is meant to be both competitive and educational.
+- `competition/` - a standalone C11 competition CDCL solver in `competition/c/` (see `competition/README.md` and `competition/c/README.md`). The competition solver is meant to be both competitive and educational. The Python prototype it grew out of has been removed; its core algorithms live in the package as `cdcl_modern.py` and `simplification.py`.
 
 **Documentation boundary**: details of the C competition solver (features, flags, benchmarks, proofs, embedding API) belong in `competition/c/README.md` and its sibling docs, not in the top-level `README.md` or `docs/`. The top-level README may mention and link to the competition solver, but must stay focused on the Python package.
 
@@ -30,12 +30,14 @@ pip install -e ".[dev]"
 python tests/test_2sat.py
 python tests/test_dpll.py
 python tests/test_cdcl.py
+python tests/test_cdcl_modern.py
 python tests/test_hornsat.py
 python tests/test_xorsat.py
 python tests/test_walksat.py
 python tests/test_schoening.py
 python tests/test_pbit.py
 python tests/test_preprocessing.py
+python tests/test_simplification.py
 python tests/test_reductions.py
 python tests/test_dimacs.py
 python tests/test_benchmarks.py
@@ -57,12 +59,14 @@ python examples/example.py
 python examples/example_2sat.py
 python examples/example_dpll.py
 python examples/example_cdcl.py
+python examples/example_cdcl_modern.py
 python examples/example_hornsat.py
 python examples/example_xorsat.py
 python examples/example_walksat.py
 python examples/example_schoening.py
 python examples/example_pbit.py
 python examples/example_preprocessing.py
+python examples/example_simplification.py
 python examples/example_enumerate_solutions.py
 python examples/example_reductions.py
 python examples/example_dimacs.py
@@ -165,40 +169,47 @@ Each solver is implemented as both a class (for advanced usage) and convenience 
    - Optimizations: Unit propagation, pure literal elimination
    - Use as default for simple/educational SAT solving
 
-4. **CDCL** (`cdcl.py`) - *Modern Industrial-Strength*
+4. **CDCL** (`cdcl.py`) - *Clause Learning, Teaching Version*
    - Conflict-Driven Clause Learning with VSIDS heuristic
    - Class: `CDCLSolver`
    - Functions: `solve_cdcl(cnf)`, `get_cdcl_stats(cnf)`
    - Returns detailed statistics (decisions, conflicts, learned clauses, restarts)
-   - Best for structured/industrial problems with patterns
+   - Deliberately minimal (propagation rescans all clauses); kept simple for teaching
 
-5. **Horn-SAT** (`hornsat.py`) - *Logic Programming*
+5. **Modern CDCL** (`cdcl_modern.py`) - *The techniques that make CDCL fast*
+   - Two-watched literals with blocking literals, first-UIP learning with recursive clause minimization, VSIDS with a heap, phase saving, LBD scoring with periodic clause-database reduction, Luby or Glucose-style restarts
+   - Class: `ModernCDCLSolver` (options: `restart_strategy='glucose'|'luby'|'none'`, `phase_saving`, `minimize_learned`, `reduce_db`, ...); minimization, phase saving, clause deletion and restarts can be switched off for comparison
+   - Functions: `solve_modern_cdcl(cnf, **options)`, `get_modern_cdcl_stats(cnf, **options)`
+   - Uses integer literals internally; `stats.status` is `"SAT"`, `"UNSAT"` or `"UNKNOWN"` (conflict limit)
+   - Fastest pure-Python solver in the package; documented in `docs/modern-cdcl.md` and one page per technique
+
+6. **Horn-SAT** (`hornsat.py`) - *Logic Programming*
    - O(n+m) linear-time solver
    - Class: `HornSATSolver`
    - Functions: `solve_horn_sat(cnf)`, `is_horn_formula(cnf)`
    - Only works if each clause has ≤1 positive literal
    - Implementation: Counter-based forward chaining (Dowling & Gallier 1984)
 
-6. **XOR-SAT** (`xorsat.py`) - *Cryptography/Coding Theory*
+7. **XOR-SAT** (`xorsat.py`) - *Cryptography/Coding Theory*
    - O(n³) polynomial-time solver using Gaussian elimination over GF(2)
    - Class: `XORSATSolver`
    - Functions: `solve_xorsat(cnf)`, `get_xorsat_stats(cnf)`
    - Only works for XOR constraints (odd parity)
 
-7. **WalkSAT** (`walksat.py`) - *Fast Randomized*
+8. **WalkSAT** (`walksat.py`) - *Fast Randomized*
    - Randomized local search (incomplete but often very fast)
    - Class: `WalkSATSolver`
    - Functions: `solve_walksat(cnf, noise=0.5, max_flips=100000, max_tries=10, seed=None)`, `get_walksat_stats(cnf)`
    - Parameters: `noise` (randomness), `max_flips` (flips per try), `max_tries` (restarts), `seed` (reproducibility)
    - May fail to find solution even if one exists
 
-8. **Schöning's Algorithm** (`schoening.py`) - *Provably Fast 3SAT*
+9. **Schöning's Algorithm** (`schoening.py`) - *Provably Fast 3SAT*
    - Randomized k-SAT solver with O(1.334^n) expected runtime for 3SAT
    - Class: `SchoeningSolver`
    - Functions: `solve_schoening(cnf, max_tries=1000, max_flips=None, seed=None)`, `get_schoening_stats(cnf)`
    - Incomplete but provably better than O(2^n) for 3SAT
 
-9. **P-Bit Solver** (`pbit.py`) - *Probabilistic Computing*
+10. **P-Bit Solver** (`pbit.py`) - *Probabilistic Computing*
    - Gibbs sampling / simulated annealing modeled on p-bit hardware (stochastic MTJs)
    - Class: `PBitSolver`
    - Functions: `solve_pbit(cnf, sweeps=1000, restarts=10, beta_min=0.1, beta_max=4.0, schedule='geometric', seed=None)`, `get_pbit_stats(cnf, ...)`
@@ -207,7 +218,7 @@ Each solver is implemented as both a class (for advanced usage) and convenience 
 
 ### Advanced Features
 
-10. **Preprocessing** (`preprocessing.py`)
+11. **Preprocessing** (`preprocessing.py`)
    - Simplification techniques: unit propagation, subsumption, decomposition
    - Class: `SATPreprocessor`
    - Functions:
@@ -216,7 +227,13 @@ Each solver is implemented as both a class (for advanced usage) and convenience 
      - `decompose_and_preprocess(cnf)` - Combined decomposition + simplification
    - Returns statistics on reductions achieved
 
-11. **k-SAT to 3-SAT Reduction** (`reductions.py`)
+12. **Simplification** (`simplification.py`)
+    - Stronger techniques used by modern solvers: failed literal probing, blocked clause elimination (BCE), bounded variable elimination (BVE), vivification
+    - Class: `Simplifier` (each technique is a method; records a reconstruction stack)
+    - Functions: `simplify_cnf(cnf)`, `solve_with_simplification(cnf)`
+    - BCE and BVE only preserve satisfiability: always map solutions back with `result.extend_model(model)`
+
+13. **k-SAT to 3-SAT Reduction** (`reductions.py`)
     - Convert any k-SAT formula to equisatisfiable 3-SAT using auxiliary variables
     - Functions:
       - `reduce_to_3sat(cnf)` - Perform reduction
@@ -225,7 +242,7 @@ Each solver is implemented as both a class (for advanced usage) and convenience 
       - `is_3sat(cnf)`, `get_max_clause_size(cnf)` - Check formula properties
     - Theory: Long clauses split into 3-literal clauses linked by new variables
 
-12. **DIMACS Format** (`dimacs.py`)
+14. **DIMACS Format** (`dimacs.py`)
     - Industry-standard file format for SAT competitions
     - Functions:
       - `parse_dimacs(text)` / `read_dimacs_file(path)` - Parse DIMACS CNF
@@ -233,7 +250,7 @@ Each solver is implemented as both a class (for advanced usage) and convenience 
       - `parse_dimacs_solution(text)` / `solution_to_dimacs(solution)` - Solution I/O
     - Format: Variables are integers (1-indexed), negation is `-`, lines: `p cnf <vars> <clauses>`, `<lit1> <lit2> ... 0`
 
-13. **Native C Bindings** (`c_solver.py`) - *Optional*
+15. **Native C Bindings** (`c_solver.py`) - *Optional*
     - Zero-dependency `ctypes` bindings to `libbsat`, the C solver in `competition/c/`
     - Class: `CSATSolver` (incremental, context-managed)
     - Functions: `solve_c(cnf)`, `get_c_solver_stats(cnf)`, `is_c_solver_available()`
@@ -248,13 +265,15 @@ src/bsat/
 ├── davis_putnam.py      # Historical Davis-Putnam solver (1960)
 ├── twosatsolver.py      # 2SAT polynomial-time solver
 ├── dpll.py              # DPLL general SAT solver
-├── cdcl.py              # Modern CDCL solver
+├── cdcl.py              # Basic CDCL solver (kept minimal for teaching)
+├── cdcl_modern.py       # CDCL with watched literals, minimization, LBD, restarts
 ├── hornsat.py           # Horn-SAT polynomial solver
 ├── xorsat.py            # XOR-SAT Gaussian elimination solver
 ├── walksat.py           # WalkSAT randomized local search
 ├── schoening.py         # Schöning's randomized k-SAT solver
 ├── pbit.py              # P-bit Gibbs-sampling/annealing solver
 ├── preprocessing.py     # SAT preprocessing and decomposition
+├── simplification.py    # Probing, BCE, BVE, vivification with model reconstruction
 ├── reductions.py        # k-SAT to 3-SAT reduction
 ├── dimacs.py            # DIMACS format I/O
 └── c_solver.py          # Optional ctypes bindings to the C solver (libbsat)
@@ -264,12 +283,14 @@ tests/
 ├── test_2sat.py
 ├── test_dpll.py
 ├── test_cdcl.py
+├── test_cdcl_modern.py
 ├── test_hornsat.py
 ├── test_xorsat.py
 ├── test_walksat.py
 ├── test_schoening.py
 ├── test_pbit.py
 ├── test_preprocessing.py
+├── test_simplification.py
 ├── test_reductions.py
 ├── test_dimacs.py
 ├── test_benchmarks.py
@@ -369,8 +390,8 @@ print(f"Decisions: {stats.decisions}, Conflicts: {stats.conflicts}")
 - **No External Dependencies**: Core package has zero external dependencies (only stdlib)
 - **Dev Dependencies**: pytest, black, flake8, mypy (optional, in `[dev]` extra)
 - **Visualization Server**: Separate dependencies (FastAPI, uvicorn, websockets) in `visualization_server/requirements.txt`
-- **Performance**: CDCL is fastest for structured problems; specialized solvers (2SAT, Horn-SAT, XOR-SAT) are polynomial when applicable
-- **Solver Choice**: Always use specialized solver if formula matches (2SAT → O(n+m), Horn → O(n+m), XOR → O(n³)); otherwise use CDCL for large/structured or DPLL for simple cases
+- **Performance**: `ModernCDCLSolver` is the fastest general solver in the package; specialized solvers (2SAT, Horn-SAT, XOR-SAT) are polynomial when applicable
+- **Solver Choice**: Always use specialized solver if formula matches (2SAT → O(n+m), Horn → O(n+m), XOR → O(n³)); otherwise use `solve_modern_cdcl` for large/structured or DPLL for simple cases
 - **Variable Names**: Must be valid Python identifiers matching `[a-zA-Z_][a-zA-Z0-9_]*`
 - **DIMACS Integration**: Use for importing benchmark instances or interfacing with other SAT solvers
 
@@ -381,6 +402,8 @@ Extensive documentation in `docs/`:
 - `terminology.md` - Comprehensive glossary
 - `cnf.md` - API documentation for core data structures
 - `*-solver.md` - Algorithm-specific documentation
+- `modern-cdcl.md` plus `two-watched-literals.md`, `conflict-analysis.md`, `vsids.md`, `phase-saving.md`, `lbd-clause-management.md`, `restarts.md` - the modern CDCL techniques, one page each
+- `simplification.md` - probing, BCE, BVE, vivification
 - `theory.md`, `reading-list.md` - Academic references
 - `problem-encodings.md` - Encoding problems as SAT
 - `benchmarking.md` - Performance testing guide

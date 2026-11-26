@@ -181,7 +181,7 @@ finish in about ten conflicts and never restart.
 
 **Check**: `deleted_clauses > 0`, `learned_clauses` decreases over time
 
-**Why**: The reduction schedule fires (C solver: first after `--reduce-interval` = 1000 conflicts, then at growing intervals; Python prototype: when more than `learned_clause_limit` = 10000 learned clauses exist) and triggers LBD-based reduction.
+**Why**: The reduction schedule fires (C solver: first after `--reduce-interval` = 1000 conflicts, then at growing intervals; the Python package's `ModernCDCLSolver`: first after `reduce_interval` = 2000 conflicts, then at growing intervals) and triggers LBD-based reduction.
 
 **Note**: Needs long enough search to reach threshold.
 
@@ -202,7 +202,7 @@ p cnf 4 5
 
 **Why**: No clause contains `-2`, so every clause containing `2` (including `(2 3 4)`) is trivially blocked on literal 2: there is nothing to resolve against.
 
-**Note**: BCE runs during preprocessing; check before search starts. It is opt-in in both solvers (C: `--bce`; Python: `enable_bce=True`).
+**Note**: BCE runs during preprocessing; check before search starts. It is opt-in in the C solver (`--bce`). In the Python package it is `Simplifier.eliminate_blocked_clauses()` in `bsat.simplification`.
 
 ### 8. On-the-Fly Subsumption
 **Test Strategy**: Learned clauses that subsume original clauses

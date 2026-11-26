@@ -8,6 +8,12 @@ from .hornsat import HornSATSolver, solve_horn_sat, is_horn_formula
 from .xorsat import XORSATSolver, solve_xorsat, get_xorsat_stats
 from .walksat import WalkSATSolver, solve_walksat, get_walksat_stats
 from .cdcl import CDCLSolver, solve_cdcl, get_cdcl_stats
+from .cdcl_modern import (
+    ModernCDCLSolver,
+    solve_modern_cdcl,
+    get_modern_cdcl_stats,
+    ModernCDCLStats
+)
 from .schoening import SchoeningSolver, solve_schoening, get_schoening_stats
 from .pbit import PBitSolver, solve_pbit, get_pbit_stats, PBitStats
 from .reductions import (
@@ -34,6 +40,13 @@ from .preprocessing import (
     decompose_and_preprocess,
     PreprocessingResult,
     PreprocessingStats
+)
+from .simplification import (
+    Simplifier,
+    simplify_cnf,
+    solve_with_simplification,
+    SimplificationResult,
+    SimplificationStats
 )
 from .c_solver import (
     BSAT_SAT,
@@ -74,6 +87,10 @@ __all__ = [
     'CDCLSolver',
     'solve_cdcl',
     'get_cdcl_stats',
+    'ModernCDCLSolver',
+    'solve_modern_cdcl',
+    'get_modern_cdcl_stats',
+    'ModernCDCLStats',
     'SchoeningSolver',
     'solve_schoening',
     'get_schoening_stats',
@@ -100,6 +117,11 @@ __all__ = [
     'decompose_and_preprocess',
     'PreprocessingResult',
     'PreprocessingStats',
+    'Simplifier',
+    'simplify_cnf',
+    'solve_with_simplification',
+    'SimplificationResult',
+    'SimplificationStats',
     'BSAT_SAT',
     'BSAT_UNSAT',
     'BSAT_UNKNOWN',

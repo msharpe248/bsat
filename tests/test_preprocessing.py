@@ -221,10 +221,13 @@ class TestSelfSubsumption(unittest.TestCase):
         preprocessor.preprocess(unit_propagation=False, pure_literal=False,
                                subsumption=False, self_subsumption=True)
 
-        # Check if self-subsumption occurred
-        if preprocessor.stats.self_subsumptions > 0:
-            # Should have simplified the clause
-            self.assertTrue(True)
+        self.assertEqual(preprocessor.stats.self_subsumptions, 1)
+        clauses = {frozenset((l.variable, l.negated) for l in c.literals)
+                   for c in preprocessor.cnf.clauses}
+        self.assertEqual(clauses, {
+            frozenset({('a', False), ('b', False)}),
+            frozenset({('b', False), ('c', False)}),
+        })
 
 
 class TestCombinedPreprocessing(unittest.TestCase):

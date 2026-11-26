@@ -1,15 +1,17 @@
 # BSAT Competition Solver Testing Guide
 
-How to run the tests shared by the C and Python BSAT competition solvers: the
-common fixtures, the Python fixture tests, and the C-vs-Python cross-validation.
+How to run the shared-fixture tests for the C competition solver: the common
+fixtures and the cross-validation against the Python package.
 
 This guide covers the shared-fixture layer only. The C solver has a much larger
 test and verification suite of its own (unit tests, `validate.py`, sanitizer,
 fault-injection, fuzzing, and proof-checking targets); see
 [c/README.md](c/README.md#build-and-verify) and
-[c/tests/FEATURE_COVERAGE.md](c/tests/FEATURE_COVERAGE.md). The Python
-prototype's own scripts are described in
-[python/tests/README.md](python/tests/README.md).
+[c/tests/FEATURE_COVERAGE.md](c/tests/FEATURE_COVERAGE.md).
+
+The Python side of the cross-validation is `ModernCDCLSolver` from the
+educational package (`src/bsat/cdcl_modern.py`), an independent implementation
+whose own tests are in the repository's top-level `tests/` directory.
 
 ## Quick Start
 
@@ -17,10 +19,6 @@ prototype's own scripts are described in
 # C unit tests (every tests/test_*.c program; includes the fixture tests)
 cd competition/c
 make test
-
-# Python Tests (10 tests)
-cd competition/python
-python test_common_fixtures.py
 
 # Cross-Validation (C vs Python, 10 fixtures)
 cd competition/c/tests
@@ -56,9 +54,6 @@ competition/
 │   │   ├── test_cross_validation.py  # C vs Python validation
 │   │   └── run_all.sh             # Wrapper that runs `make test`
 │   └── Makefile                    # Build system with test targets
-│
-└── python/
-    └── test_common_fixtures.py     # Python solver tests (10 tests)
 ```
 
 ## Test Suites
@@ -67,7 +62,7 @@ competition/
 
 **Location**: `competition/tests/fixtures/`
 
-Language-independent test cases used by both C and Python solvers.
+Language-independent test cases used by the C tests and the cross-validation.
 
 **Philosophy**:
 - **Minimal**: Each fixture tests exactly one concept
@@ -135,38 +130,12 @@ make test
 bin/tests/release/test_solver
 ```
 
-### 3. Python Tests (10 tests)
-
-**Location**: `competition/python/test_common_fixtures.py`
-
-Tests Python solver against all common fixtures:
-- Validates correct SAT/UNSAT determination
-- Verifies solutions actually satisfy CNF
-- Ensures all fixtures pass
-
-**Run**:
-```bash
-cd competition/python
-python test_common_fixtures.py
-```
-
-**Output** (abridged):
-```
-test_trivial_sat ... ok
-test_trivial_unsat ... ok
-test_empty ... ok
-...
-----------------------------------------------------------------------
-Ran 10 tests in 0.001s
-
-OK
-```
-
-### 4. Cross-Validation Tests (10 fixtures)
+### 3. Cross-Validation Tests (10 fixtures)
 
 **Location**: `competition/c/tests/test_cross_validation.py`
 
-Integration tests that verify C and Python solvers produce identical results:
+Integration tests that verify the C solver and the Python package's
+`ModernCDCLSolver` produce the same results:
 1. Runs both solvers on all fixtures
 2. Verifies SAT/UNSAT agreement
 3. Validates both solutions are correct
@@ -241,8 +210,8 @@ The Makefile automatically:
    ```
 
 3. **Cross-validation picks it up automatically** (it iterates over
-   `expected_results.json`). The Python fixture tests and `test_dimacs.c` name
-   each fixture explicitly, so add a test method/function there as shown below.
+   `expected_results.json`). `test_dimacs.c` names each fixture explicitly, so
+   add a test function there as shown below.
 
 ### Adding C Unit Tests
 
@@ -273,21 +242,6 @@ int main() {
 
 Rebuild and run: `make test`
 
-### Adding Python Tests
-
-Edit `competition/python/test_common_fixtures.py`:
-
-```python
-def test_my_feature(self):
-    """Description of test."""
-    self._test_fixture(
-        "fixtures/unit/my_test.cnf",
-        self.expected["fixtures/unit/my_test.cnf"]["result"]
-    )
-```
-
-Run: `python test_common_fixtures.py`
-
 ## Test Statistics
 
 ### Coverage
@@ -301,18 +255,13 @@ Run: `python test_common_fixtures.py`
 - Core solver API (`test_solver.c`): 11 tests
 - (`make test` runs these plus all other C test programs)
 
-**Python Tests**: 10 tests
-- All common fixtures
-
 **Cross-Validation**: 10 test cases
-- Validates C-Python agreement
+- Validates agreement between the C solver and the Python package
 
 ### Performance
 
 **C Unit Tests** (`make test`, all programs, release build): about 5 seconds
 - `test_dimacs` and `test_solver` themselves finish in a few milliseconds
-
-**Python Tests**: ~1-10ms total (plus interpreter start-up)
 
 **Cross-Validation**: well under a second
 - Runs both solvers on 10 fixtures
@@ -329,12 +278,8 @@ test:
     - cd competition/c
     - make test
 
-    # Python tests
-    - cd ../python
-    - python test_common_fixtures.py
-
     # Cross-validation
-    - cd ../c/tests
+    - cd tests
     - python test_cross_validation.py
 ```
 
@@ -350,8 +295,8 @@ make tests
 
 ### Python Import Errors
 
-`test_common_fixtures.py` and `test_cross_validation.py` add the repository's
-`src/` directory to `sys.path` themselves, so no installation is required as
+`test_cross_validation.py` adds the repository's `src/` directory to `sys.path`
+itself, so no installation is required as
 long as the repository layout is intact. If you run solver code from elsewhere,
 install the package from the repository root:
 ```bash
@@ -361,7 +306,7 @@ pip install -e .
 ### Cross-Validation Fails
 
 1. Ensure C solver is built: `cd competition/c && make`
-2. Check Python solver works: `cd ../python && python test_common_fixtures.py`
+2. Check the Python package works: from the repository root, `python tests/test_cdcl_modern.py`
 3. Re-run cross-validation; each fixture line reports which solver disagreed or returned an invalid model
 
 ### Tests Pass But Solver Fails on Real Instances
@@ -386,9 +331,9 @@ pip install -e .
 - [tests/README.md](tests/README.md) - Common fixture documentation
 - [c/README.md](c/README.md) - C solver documentation
 - [c/tests/FEATURE_COVERAGE.md](c/tests/FEATURE_COVERAGE.md) - C test coverage index
-- [python/README.md](python/README.md) - Python solver documentation
+- [../docs/modern-cdcl.md](../docs/modern-cdcl.md) - The Python solver used for cross-validation
 - [FEATURE_TESTING.md](FEATURE_TESTING.md) - Choosing instances that exercise specific features
-- [docs/](docs/README.md) - Algorithm documentation
+- [../docs/](../docs/README.md) - Algorithm documentation
 
 ## Maintenance
 
@@ -408,4 +353,4 @@ pip install -e .
 - Need more coverage in specific area
 - Regression test for production bug
 
-Last updated: 2026-11-25
+Last updated: 2026-11-26

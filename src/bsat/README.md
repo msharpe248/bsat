@@ -11,7 +11,7 @@ A Python package for working with Boolean satisfiability (SAT) problems using Co
 5. **Truth Tables**: Generate and display complete truth tables
 6. **Logical Equivalence**: Compare expressions using truth table comparison
 7. **2SAT Solver**: Optimal O(n+m) algorithm using strongly connected components
-8. **More Solvers and Tools**: DPLL, CDCL, Davis-Putnam, Horn-SAT, XOR-SAT, WalkSAT, Schöning, p-bit, preprocessing, k-SAT→3-SAT reduction, and DIMACS I/O (see [Modules](#modules))
+8. **More Solvers and Tools**: DPLL, CDCL, modern CDCL, Davis-Putnam, Horn-SAT, XOR-SAT, WalkSAT, Schöning, p-bit, preprocessing, simplification, k-SAT→3-SAT reduction, and DIMACS I/O (see [Modules](#modules))
 
 This README covers the core CNF data structures and the 2SAT solver in detail. For the other solvers see the [top-level README](../../README.md) and [`docs/`](../../docs/).
 
@@ -25,6 +25,7 @@ Everything listed here is re-exported from the package root (`from bsat import .
 | `twosatsolver.py` | `TwoSATSolver`, `solve_2sat`, `is_2sat_satisfiable`, `is_2sat` |
 | `dpll.py` | `DPLLSolver`, `solve_sat`, `find_all_sat_solutions`, `count_sat_solutions` |
 | `cdcl.py` | `CDCLSolver`, `solve_cdcl`, `get_cdcl_stats` |
+| `cdcl_modern.py` | `ModernCDCLSolver`, `solve_modern_cdcl`, `get_modern_cdcl_stats`, `ModernCDCLStats` |
 | `davis_putnam.py` | `DavisPutnamSolver`, `solve_davis_putnam`, `get_davis_putnam_stats`, `DavisPutnamStats` |
 | `hornsat.py` | `HornSATSolver`, `solve_horn_sat`, `is_horn_formula` |
 | `xorsat.py` | `XORSATSolver`, `solve_xorsat`, `get_xorsat_stats` |
@@ -32,6 +33,7 @@ Everything listed here is re-exported from the package root (`from bsat import .
 | `schoening.py` | `SchoeningSolver`, `solve_schoening`, `get_schoening_stats` |
 | `pbit.py` | `PBitSolver`, `solve_pbit`, `get_pbit_stats`, `PBitStats` |
 | `preprocessing.py` | `SATPreprocessor`, `preprocess_cnf`, `decompose_into_components`, `decompose_and_preprocess`, `PreprocessingResult`, `PreprocessingStats` |
+| `simplification.py` | `Simplifier`, `simplify_cnf`, `solve_with_simplification`, `SimplificationResult`, `SimplificationStats` |
 | `reductions.py` | `reduce_to_3sat`, `extract_original_solution`, `solve_with_reduction`, `is_3sat`, `get_max_clause_size`, `ReductionStats` |
 | `dimacs.py` | `parse_dimacs`, `to_dimacs`, `read_dimacs_file`, `write_dimacs_file`, `parse_dimacs_solution`, `solution_to_dimacs`, `DIMACSParseError` |
 | `c_solver.py` | `solve_c`, `get_c_solver_stats`, `CSATSolver`, `CSolverStats`, `is_c_solver_available`, `BSAT_SAT`, `BSAT_UNSAT`, `BSAT_UNKNOWN` |

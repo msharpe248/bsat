@@ -69,7 +69,7 @@ result = solver.solve()
 **Status**: Implemented
 **Algorithm**: Conflict-Driven Clause Learning with VSIDS
 **Complexity**: O(2ⁿ) - Exponential worst case, much faster in practice
-**Use Case**: Large instances, structured problems, industrial applications
+**Use Case**: Learning how clause learning works; structured problems of moderate size
 
 [Read more →](cdcl-solver.md)
 
@@ -87,7 +87,7 @@ print(f"Learned clauses: {stats.learned_clauses}")
 ```
 
 **Pros**:
-- ✅ Modern industrial-strength algorithm
+- ✅ The algorithm behind every modern industrial solver, in about 500 lines
 - ✅ Conflict-driven clause learning
 - ✅ Non-chronological backtracking (backjumping)
 - ✅ VSIDS variable ordering heuristic
@@ -98,6 +98,38 @@ print(f"Learned clauses: {stats.learned_clauses}")
 **Cons**:
 - ❌ More complex than DPLL
 - ❌ Still exponential worst case
+- ❌ Propagation rescans every clause, so it slows down quickly as formulas grow (see Modern CDCL below)
+
+---
+
+### Modern CDCL Solver ✅
+**Status**: Implemented
+**Algorithm**: CDCL with two-watched literals, learned-clause minimization, phase saving, LBD-based clause deletion, and Luby or Glucose-style restarts
+**Complexity**: O(2ⁿ) - Exponential worst case
+**Use Case**: The fastest general-purpose solver in the package; learning what separates textbook CDCL from a practical solver
+
+[Read more →](modern-cdcl.md)
+
+```python
+from bsat import solve_modern_cdcl, get_modern_cdcl_stats, CNFExpression
+
+cnf = CNFExpression.parse("(x | y | z) & (~x | y) & (x | ~z)")
+result = solve_modern_cdcl(cnf)
+
+# Switch a technique off and compare the statistics
+solution, stats = get_modern_cdcl_stats(cnf, minimize_learned=False)
+print(stats)
+```
+
+**Pros**:
+- ✅ Two-watched literals: only clauses that might be unit are looked at
+- ✅ Clause minimization, phase saving, clause deletion and restarts can each be switched off, so their effect can be measured
+- ✅ One documentation page per technique
+- ✅ Much faster than the basic CDCL solver on anything non-trivial
+
+**Cons**:
+- ❌ More code to read than the basic CDCL solver (integer literals, watch lists)
+- ❌ Still pure Python: for large instances use the optional native `solve_c()`
 - ❌ May use more memory (learned clauses)
 
 ---
@@ -298,9 +330,9 @@ Is your formula 2SAT (all clauses have exactly 2 literals)?
       ├─ Small instance (< 50 variables)
       │  └─ Use solve_sat() ✅ (DPLL, will finish quickly)
       ├─ Medium instance (50-500 variables)
-      │  └─ Use solve_cdcl() ✅ (modern, faster than DPLL)
+      │  └─ Use solve_modern_cdcl() ✅ (clause learning with watched literals)
       └─ Large instance (> 500 variables)
-         └─ Use solve_cdcl() ✅ (or the optional native solve_c() if built)
+         └─ Use solve_modern_cdcl() ✅ (or the optional native solve_c() if built)
 ```
 
 ### Comparison Table
@@ -311,7 +343,8 @@ Is your formula 2SAT (all clauses have exactly 2 literals)?
 | **Horn-SAT** | O(n+m) | ✅ Yes | Horn clauses | ✅ Implemented |
 | **XOR-SAT** | O(n³) | ✅ Yes | XOR constraints | ✅ Implemented |
 | **DPLL** | O(2ⁿ) | ✅ Yes | Small instances | ✅ Implemented |
-| **CDCL** | O(2ⁿ)* | ✅ Yes | Large, structured | ✅ Implemented |
+| **CDCL** | O(2ⁿ)* | ✅ Yes | Learning clause learning | ✅ Implemented |
+| **Modern CDCL** | O(2ⁿ)* | ✅ Yes | Large, structured | ✅ Implemented |
 | **Schöning** | O(1.334ⁿ)† | ❌ No | Random 3SAT | ✅ Implemented |
 | **WalkSAT** | Varies | ❌ No | Quick SAT answers | ✅ Implemented |
 | **P-bit** | Varies | ❌ No | Learning annealing / Gibbs sampling | ✅ Implemented |
@@ -329,7 +362,7 @@ Choose the appropriate solver based on your formula structure:
 ```python
 from bsat import (
     CNFExpression, solve_2sat, solve_horn_sat, solve_xorsat,
-    solve_sat, solve_cdcl, solve_walksat, solve_schoening,
+    solve_sat, solve_modern_cdcl, solve_walksat, solve_schoening,
     is_2sat, is_horn_formula
 )
 
@@ -343,7 +376,7 @@ elif is_horn_formula(cnf):
 elif len(cnf.get_variables()) < 50:
     result = solve_sat(cnf)  # DPLL - good for small instances
 else:
-    result = solve_cdcl(cnf)  # Modern solver - best for large instances
+    result = solve_modern_cdcl(cnf)  # Best pure-Python choice for larger instances
 ```
 
 ### Quick Solutions with Randomized Algorithms
@@ -399,6 +432,11 @@ These are rough guidelines for the pure-Python implementations in this package (
 - **Time**: Milliseconds to minutes or more (instance-dependent)
 - **Note**: Clause learning makes it much faster than DPLL in practice, but propagation scans every clause (no watched literals)
 
+### Modern CDCL
+- **Variables**: Hundreds to thousands (instance-dependent)
+- **Time**: Random 3-SAT at the phase transition (the hardest kind): well under a second at 150 variables, a few seconds at 200, tens of seconds at 250 on a current laptop
+- **Note**: Same search as CDCL, but each assignment only touches the clauses watching that literal
+
 ### Schöning's Algorithm
 - **Variables**: Up to ~50-100 (3SAT)
 - **Clauses**: Up to ~200-400
@@ -427,7 +465,7 @@ python -m pytest tests/test_benchmarks.py -v
 
 - Learn about [2SAT algorithm](2sat-solver.md)
 - Understand [DPLL solver](dpll-solver.md)
-- Explore [CDCL solver](cdcl-solver.md)
+- Explore [CDCL solver](cdcl-solver.md), then the [modern CDCL solver](modern-cdcl.md)
 - Read about [Horn-SAT solver](hornsat-solver.md)
 - Learn [XOR-SAT solver](xorsat-solver.md)
 - Discover [Schöning's algorithm](schoening-solver.md)

@@ -150,7 +150,7 @@ Example:
   After propagation: z must be True (forced)
 ```
 
-**In BSAT**: Our implementation scans all clauses to find unit clauses. Industrial solvers use the "two-watched literals" optimization for O(1) amortized propagation.
+**In BSAT**: Our implementation scans all clauses to find unit clauses. Industrial solvers use the "two-watched literals" optimization for O(1) amortized propagation. BSAT's second CDCL solver, [`ModernCDCLSolver`](modern-cdcl.md), implements it; see [Two-Watched Literals](two-watched-literals.md).
 
 ### 2. Conflict Analysis
 
@@ -424,6 +424,8 @@ This CDCL implementation prioritizes **clarity and correctness** over performanc
 - Parallel solving
 - Proof generation
 
+The first three of these (two-watched literals, LBD-based clause deletion and phase saving), together with learned-clause minimization and Glucose-style restarts, are implemented in a separate solver, `ModernCDCLSolver`. It keeps this solver's algorithm and adds those techniques, each of which can be switched off and has its own explanation page. See [Modern CDCL Solver](modern-cdcl.md).
+
 ### Industrial-Strength Alternatives
 
 For production use, consider:
@@ -460,6 +462,7 @@ For production use, consider:
 ## Next Steps
 
 - Try [examples/example_cdcl.py](../examples/example_cdcl.py)
+- Continue with the [Modern CDCL solver](modern-cdcl.md), which adds two-watched literals, clause minimization, phase saving, LBD-based clause deletion and dynamic restarts
 - Compare with [DPLL solver](dpll-solver.md)
 - Read about [theory and complexity](introduction.md)
 - Explore [advanced solvers](advanced-solvers.md)

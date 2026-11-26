@@ -587,6 +587,7 @@ class PreprocessingStats:
 
 ### Related
 
+- [Formula Simplification](simplification.md) - Further techniques in the separate `bsat.simplification` module: failed literal probing, blocked clause elimination, bounded variable elimination and vivification, with reconstruction of solutions for the original formula
 - [DPLL Solver](dpll-solver.md) - Uses unit propagation internally
 - [2SAT Solver](2sat-solver.md) - Polynomial via implication graph (related to components)
 - [Benchmarking](benchmarking.md) - Measure preprocessing impact

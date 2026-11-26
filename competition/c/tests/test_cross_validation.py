@@ -2,7 +2,8 @@
 """
 BSAT Cross-Validation Tests
 
-Tests that C and Python solvers produce identical results on all common fixtures.
+Tests that the C solver and the Python package's ModernCDCLSolver (an independent
+implementation in src/bsat/cdcl_modern.py) agree on all common fixtures.
 
 This integration test suite:
 1. Runs both C and Python solvers on all shared fixtures
@@ -21,13 +22,11 @@ import json
 import subprocess
 from pathlib import Path
 
-# Add src to path for Python solver
+# Add src to path for the Python package
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '../../../src'))
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), '../../python'))
 
-from bsat.dimacs import read_dimacs_file, parse_dimacs_solution
-from bsat.cnf import CNFExpression
-import cdcl_optimized
+from bsat.dimacs import read_dimacs_file
+from bsat.cdcl_modern import ModernCDCLSolver
 
 
 # Paths
@@ -99,12 +98,10 @@ def solve_with_python(fixture_path):
     """
     try:
         cnf = read_dimacs_file(str(fixture_path))
-        solution = cdcl_optimized.solve_cdcl(cnf)
-
-        if solution is None:
-            return "UNSAT", None
-        else:
-            return "SAT", solution
+        solver = ModernCDCLSolver(cnf)
+        solution = solver.solve()
+        # status is "SAT", "UNSAT", or "UNKNOWN" (conflict limit reached)
+        return solver.stats.status, solution
 
     except Exception as e:
         print(f"Error running Python solver: {e}", file=sys.stderr)

@@ -1,10 +1,10 @@
 # Common Test Suite for BSAT Solvers
 
-This directory contains shared test fixtures and expected results used by both the C and Python competition solvers.
+This directory contains shared test fixtures and expected results used by the C competition solver and by its cross-validation against the Python package.
 
 ## Philosophy
 
-**Language-Independent Testing**: These test cases validate SAT solver behavior regardless of implementation language. Both C and Python solvers should produce identical results (SAT/UNSAT) on all fixtures.
+**Language-Independent Testing**: These test cases validate SAT solver behavior regardless of implementation language. The C solver and the Python package's solvers should produce identical results (SAT/UNSAT) on all fixtures.
 
 **Fast Unit Tests**: All fixtures in `fixtures/unit/` are designed to solve in <1ms each, enabling rapid test-driven development.
 
@@ -95,15 +95,14 @@ lbool result = solver_solve(s);
 assert(result == TRUE);  // SAT
 ```
 
-### Python Solver
+### Python Package
 
 ```python
-# competition/python/test_common_fixtures.py (run from competition/python)
-from bsat.dimacs import read_dimacs_file
-import cdcl_optimized
+# From the repository root, with the package installed (pip install -e .)
+from bsat import read_dimacs_file, solve_modern_cdcl
 
-cnf = read_dimacs_file("../tests/fixtures/unit/trivial_sat.cnf")
-solution = cdcl_optimized.solve_cdcl(cnf)
+cnf = read_dimacs_file("competition/tests/fixtures/unit/trivial_sat.cnf")
+solution = solve_modern_cdcl(cnf)
 assert solution is not None  # SAT
 assert cnf.evaluate(solution)
 ```

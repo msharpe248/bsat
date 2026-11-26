@@ -2,7 +2,7 @@
 
 What it takes to build a solver that competes in the annual [SAT Competition](https://satcompetition.github.io/).
 
-> **Scope note:** In this document "BSAT" means the educational pure-Python package in `src/bsat/` (in particular `src/bsat/cdcl.py`), and the gap analysis, effort estimates and recommendations below were written about that package. The repository now also contains a separate C11 CDCL solver in `competition/c/` (callable from Python as `bsat.solve_c` once its shared library is built) that implements the techniques described here — two-watched literals, VSIDS/VMTF branching, LBD-tiered clause deletion, inprocessing, modern restart policies, clause minimization, a flat clause arena, a multi-threaded clause-sharing portfolio and DRAT/LRAT proof output — plus earlier Python prototypes in `competition/python/`. That solver has two goals: to be genuinely competitive, and to remain educational, with its techniques and the experiments behind them documented. It has not been entered in a SAT Competition. See [competition/c/README.md](../competition/c/README.md) for its current features and measured results.
+> **Scope note:** In this document "BSAT" means the educational pure-Python package in `src/bsat/` (in particular `src/bsat/cdcl.py`), and the gap analysis, effort estimates and recommendations below were written about that package. The repository now also contains a separate C11 CDCL solver in `competition/c/` (callable from Python as `bsat.solve_c` once its shared library is built) that implements the techniques described here — two-watched literals, VSIDS/VMTF branching, LBD-tiered clause deletion, inprocessing, modern restart policies, clause minimization, a flat clause arena, a multi-threaded clause-sharing portfolio and DRAT/LRAT proof output. That solver has two goals: to be genuinely competitive, and to remain educational, with its techniques and the experiments behind them documented. It has not been entered in a SAT Competition. See [competition/c/README.md](../competition/c/README.md) for its current features and measured results. Since this analysis was written, the package has also gained `ModernCDCLSolver` ([modern-cdcl.md](modern-cdcl.md)), a readable Python implementation of two-watched literals, clause minimization, LBD clause management, phase saving and Luby/Glucose restarts, and `bsat.simplification` ([simplification.md](simplification.md)); statements below about what "BSAT" lacks refer to the basic `CDCLSolver` in `src/bsat/cdcl.py`.
 
 ## Table of Contents
 
@@ -998,7 +998,7 @@ Competition tuning uses:
 
 **This is the recommended path for BSAT!**
 
-**Status**: `src/bsat/cdcl.py` has deliberately been kept simple and has none of items 2-5. Two-watched literals, LBD clause management and phase saving are instead implemented in the Python prototype `competition/python/cdcl_optimized.py` and in the C solver (`competition/c/`).
+**Status**: This path has been taken. `src/bsat/cdcl.py` has deliberately been kept simple and has none of items 2-5. Two-watched literals, LBD clause management and phase saving (items 2-4) are implemented in a second solver, `ModernCDCLSolver` in `src/bsat/cdcl_modern.py` (see [modern-cdcl.md](modern-cdcl.md)), and in the C solver (`competition/c/`). Item 5, a separate fast path for binary clauses, is implemented only in the C solver.
 
 ---
 

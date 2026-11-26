@@ -20,7 +20,7 @@ from bsat import (
     DPLLSolver, CDCLSolver,
     solve_sat, solve_cdcl, solve_2sat, solve_horn_sat, solve_davis_putnam,
     find_all_sat_solutions, count_sat_solutions,
-    parse_dimacs, decompose_and_preprocess, get_schoening_stats,
+    parse_dimacs, decompose_and_preprocess, preprocess_cnf, get_schoening_stats,
 )
 
 
@@ -119,6 +119,43 @@ class TestDecomposeUnsatComponent(unittest.TestCase):
             self.assertEqual(satisfiable, reference is not None, str(cnf))
             if satisfiable:
                 full = {v: solution.get(v, False) for v in cnf.get_variables()}
+                self.assertTrue(cnf.evaluate(full), str(cnf))
+
+
+class TestSelfSubsumption(unittest.TestCase):
+    """Self-subsumption replaced (¬a ∨ D) by C instead of D, losing solutions."""
+
+    def test_strengthened_clause_keeps_its_other_literals(self):
+        # (¬a ∨ b) strengthens (a ∨ b ∨ c) to (b ∨ c), not to (b)
+        cnf = CNFExpression.parse("(a | b | c) & (~a | b)")
+        result = preprocess_cnf(cnf, unit_propagation=False, pure_literal=False,
+                                subsumption=False, self_subsumption=True)
+        clauses = {frozenset((l.variable, l.negated) for l in c.literals)
+                   for c in result.simplified.clauses}
+        self.assertIn(frozenset({('b', False), ('c', False)}), clauses)
+
+    def test_satisfiable_formula_not_reported_unsat(self):
+        cnf = CNFExpression.parse(
+            "(~a | ~d) & (~d | ~c) & (~c | d) & (c | d | a) & (~d | ~b) & (~d | b)"
+        )
+        self.assertIsNotNone(solve_sat(cnf))
+        self.assertIsNot(preprocess_cnf(cnf).is_sat, False)
+
+    def test_preprocessing_matches_direct_solve(self):
+        rng = random.Random(3)
+        for _ in range(2000):
+            cnf = random_cnf(rng, max_vars=6)
+            reference = solve_sat(cnf)
+            result = preprocess_cnf(cnf)
+            if result.is_sat is False:
+                self.assertIsNone(reference, str(cnf))
+                continue
+            solution = solve_sat(result.simplified)
+            self.assertEqual(solution is None, reference is None, str(cnf))
+            if solution is not None:
+                full = {v: False for v in cnf.get_variables()}
+                full.update(solution)
+                full.update(result.assignments)
                 self.assertTrue(cnf.evaluate(full), str(cnf))
 
 

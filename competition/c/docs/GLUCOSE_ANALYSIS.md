@@ -1,4 +1,4 @@
-> Historical development snapshot. Current behavior and validation status are documented in [README.md](../README.md), [FEATURES.md](../FEATURES.md) and [PRODUCTION_READINESS.md](../PRODUCTION_READINESS.md); older defaults and production-readiness claims below are not current.
+> Historical development snapshot. Current behavior and validation status are documented in [README.md](../README.md), [FEATURES.md](../FEATURES.md) and [PRODUCTION_READINESS.md](../PRODUCTION_READINESS.md); older defaults and production-readiness claims below are not current. The Python prototype this note compares against (`competition/python/cdcl_optimized.py`) has since been removed from the repository; its sliding-window restart policy is the `glucose` strategy of `ModernCDCLSolver` in `src/bsat/cdcl_modern.py`.
 
 # Glucose Implementation Analysis - Python vs C
 

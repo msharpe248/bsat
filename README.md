@@ -13,6 +13,7 @@ The core package is pure Python with zero dependencies. Every solver is written 
 | **Davis-Putnam** (1960) | `solve_davis_putnam()` | ✅ | The original resolution-based procedure, and why it runs out of memory |
 | **DPLL** (1962) | `solve_sat()` | ✅ | Backtracking search, unit propagation, pure literal elimination |
 | **CDCL** | `solve_cdcl()` | ✅ | Conflict-driven clause learning, VSIDS, non-chronological backtracking, restarts |
+| **Modern CDCL** | `solve_modern_cdcl()` | ✅ | What makes CDCL fast in practice: two-watched literals, clause minimization, phase saving, LBD clause deletion, Glucose restarts |
 | **2SAT** | `solve_2sat()` | ✅ | Implication graphs and strongly connected components |
 | **Horn-SAT** | `solve_horn_sat()` | ✅ | Forward chaining / unit propagation as a decision procedure |
 | **XOR-SAT** | `solve_xorsat()` | ✅ | Gaussian elimination over GF(2) |
@@ -28,6 +29,7 @@ The core package is pure Python with zero dependencies. Every solver is written 
 - **Parsing and I/O**: text formulas, JSON, and the industry-standard DIMACS format
 - **Truth tables**: generate and compare
 - **Preprocessing**: unit propagation, subsumption, and decomposition into independent components
+- **Simplification**: failed literal probing, blocked clause elimination, bounded variable elimination, and vivification, with solution reconstruction
 - **Solution enumeration and counting**
 - **k-SAT to 3-SAT reduction** with auxiliary variables
 - **Problem encodings**: graph coloring, Sudoku, N-Queens
@@ -123,6 +125,22 @@ print(f"Conflicts: {stats.conflicts}")
 print(f"Learned clauses: {stats.learned_clauses}")
 ```
 
+### Modern CDCL (What Makes It Fast)
+
+```python
+from bsat import CNFExpression, get_modern_cdcl_stats
+
+cnf = CNFExpression.parse("(a | b | c) & (~a | b) & (~b | c) & (~c | d) & (~d | ~a)")
+
+# Same algorithm as CDCL, plus the engineering used by real solvers
+result, stats = get_modern_cdcl_stats(cnf)
+print(result)
+print(stats)   # decisions, conflicts, clause visits, learned clause sizes, restarts, ...
+
+# Several techniques have a switch, so you can measure what each contributes
+result, stats = get_modern_cdcl_stats(cnf, minimize_learned=False, restart_strategy='luby')
+```
+
 ### WalkSAT (Randomized Local Search)
 
 ```python
@@ -198,6 +216,23 @@ for comp in components:
     solution.update(sol)
 ```
 
+### Simplification
+
+```python
+from bsat import CNFExpression, simplify_cnf, solve_cdcl
+
+cnf = CNFExpression.parse("(a | b) & (~a | c) & (~b | c) & (~c | d | e) & (~d | ~e)")
+
+# Probing, blocked clause elimination, variable elimination, vivification
+result = simplify_cnf(cnf)
+print(result.stats)
+
+# Solve what is left, then map the solution back to the original formula
+model = solve_cdcl(result.cnf)
+full_model = result.extend_model(model)
+print(cnf.evaluate(full_model))  # True
+```
+
 ### Solution Enumeration
 
 ```python
@@ -244,7 +279,8 @@ print(f"Solution: {solution}")  # Only original variables
 | **Horn-SAT** | `solve_horn_sat()` | O(n+m) (linear time) | ✅ | At most 1 positive literal per clause |
 | **XOR-SAT** | `solve_xorsat()` | O(n³) | ✅ | Parity constraints |
 | **General SAT** | `solve_sat()` | O(2ⁿ)* | ✅ | Small formulas; reading how DPLL works |
-| **General SAT** | `solve_cdcl()` | O(2ⁿ)* | ✅ | Larger or structured formulas |
+| **General SAT** | `solve_cdcl()` | O(2ⁿ)* | ✅ | Reading how clause learning works |
+| **General SAT** | `solve_modern_cdcl()` | O(2ⁿ)* | ✅ | Larger or structured formulas; the fastest pure-Python solver here |
 | **3SAT** | `solve_schoening()` | O(1.334ⁿ)† | ❌ | Studying randomized algorithms |
 | **General SAT** | `solve_walksat()` | No guarantee | ❌ | Satisfiable instances where a quick answer is enough |
 | **General SAT** | `solve_pbit()` | No guarantee | ❌ | Exploring annealing / Boltzmann sampling |
@@ -257,7 +293,7 @@ Rules of thumb:
 - All clauses have exactly 2 literals → `solve_2sat()`
 - Every clause has at most one positive literal → `solve_horn_sat()`
 - The problem is a system of parity constraints → `solve_xorsat()`
-- Anything else → `solve_cdcl()`, or `solve_sat()` if you want the simpler algorithm
+- Anything else → `solve_modern_cdcl()`; read `solve_sat()` (DPLL) and then `solve_cdcl()` first if you want to see how the algorithm is built up
 
 These are pure-Python teaching implementations. They are comfortable on formulas with tens to a few hundred variables; for anything larger, see [Beyond the Core Package](#beyond-the-core-package).
 
@@ -281,9 +317,10 @@ The [`docs/`](docs/README.md) directory is the heart of the project. A suggested
 ### Algorithms
 - [Solver Overview](docs/solvers.md)
 - [Davis-Putnam](docs/davis-putnam-solver.md) · [DPLL](docs/dpll-solver.md) · [CDCL](docs/cdcl-solver.md)
+- [Modern CDCL](docs/modern-cdcl.md), one technique at a time: [two-watched literals](docs/two-watched-literals.md) · [conflict analysis and clause minimization](docs/conflict-analysis.md) · [VSIDS](docs/vsids.md) · [phase saving](docs/phase-saving.md) · [LBD and clause deletion](docs/lbd-clause-management.md) · [restarts](docs/restarts.md)
 - [2SAT](docs/2sat-solver.md) · [Horn-SAT](docs/hornsat-solver.md) · [XOR-SAT](docs/xorsat-solver.md)
 - [WalkSAT](docs/walksat-solver.md) · [Schöning](docs/schoening-solver.md) · [P-bit](docs/pbit-solver.md)
-- [Preprocessing](docs/preprocessing.md)
+- [Preprocessing](docs/preprocessing.md) · [Simplification](docs/simplification.md)
 
 ### Practice
 - [Examples & Tutorials](docs/examples.md)
@@ -303,6 +340,7 @@ python examples/example.py                      # CNF basics
 python examples/example_davis_putnam.py
 python examples/example_dpll.py
 python examples/example_cdcl.py
+python examples/example_cdcl_modern.py         # each modern technique, switched on and off
 python examples/example_2sat.py
 python examples/example_hornsat.py
 python examples/example_xorsat.py
@@ -312,6 +350,7 @@ python examples/example_pbit.py
 
 # Tools
 python examples/example_preprocessing.py
+python examples/example_simplification.py
 python examples/example_enumerate_solutions.py
 python examples/example_reductions.py
 python examples/example_dimacs.py
@@ -343,6 +382,7 @@ Then open `http://localhost:8000`. See [visualization_server/README.md](visualiz
 python tests/test_davis_putnam.py
 python tests/test_dpll.py
 python tests/test_cdcl.py
+python tests/test_cdcl_modern.py
 python tests/test_2sat.py
 python tests/test_hornsat.py
 python tests/test_xorsat.py
@@ -350,6 +390,7 @@ python tests/test_walksat.py
 python tests/test_schoening.py
 python tests/test_pbit.py
 python tests/test_preprocessing.py
+python tests/test_simplification.py
 python tests/test_reductions.py
 python tests/test_dimacs.py
 python tests/test_benchmarks.py
@@ -380,7 +421,7 @@ See [research/README.md](research/README.md) for the solvers. [research/BENCHMAR
 
 ### Competition Solver (`competition/`)
 
-`competition/c/` contains a separate, standalone CDCL solver written in C11. It is meant to be competitive and educational at once: it implements what the [competition-solver documents](docs/competition_solvers.md) describe, such as inprocessing, proof logging, and cache-conscious data structures, and its design decisions and experiments are written up alongside the code. It is also where to turn when a formula is too large for the Python solvers.
+`competition/c/` contains a separate, standalone CDCL solver written in C11. It is meant to be competitive and educational at once: it implements what the [competition-solver documents](docs/competition_solvers.md) describe, such as inprocessing, proof logging, and cache-conscious data structures, and its design decisions and experiments are written up alongside the code. The core techniques it shares with `solve_modern_cdcl()` are easiest to learn from the Python version first. It is also where to turn when a formula is too large for the Python solvers.
 
 If its shared library is built (`make -C competition/c shared`), the Python package can call it directly:
 
@@ -392,7 +433,7 @@ if is_c_solver_available():
     print(solve_c(cnf))
 ```
 
-Everything else about it, including features, usage, benchmarks, and the embedding API, is documented in [competition/c/README.md](competition/c/README.md). [competition/README.md](competition/README.md) gives an overview of the directory, including the earlier Python prototypes.
+Everything else about it, including features, usage, benchmarks, and the embedding API, is documented in [competition/c/README.md](competition/c/README.md). [competition/README.md](competition/README.md) gives an overview of the directory.
 
 ## Repository Layout
 
@@ -403,7 +444,7 @@ examples/              Runnable examples and problem encodings
 tests/                 Unit tests
 visualization_server/  Browser-based algorithm visualizer
 research/              Experimental research solvers
-competition/           Standalone C competition solver and Python prototypes
+competition/           Standalone C competition solver
 dataset/               Benchmark instances
 ```
 

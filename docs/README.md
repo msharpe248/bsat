@@ -12,6 +12,13 @@ Welcome to the BSAT (Boolean Satisfiability) package documentation! This guide w
    - [2SAT Solver](2sat-solver.md) - Polynomial-time algorithm for 2SAT
    - [DPLL Solver](dpll-solver.md) - Classic backtracking algorithm for general SAT
    - [CDCL Solver](cdcl-solver.md) - Conflict-Driven Clause Learning (modern SAT solving)
+   - [Modern CDCL Solver](modern-cdcl.md) - The same algorithm with the standard engineering techniques, several individually switchable
+     - [Two-Watched Literals](two-watched-literals.md) - Fast unit propagation
+     - [Conflict Analysis](conflict-analysis.md) - First-UIP learning, clause minimization, backjumping
+     - [VSIDS](vsids.md) - Choosing the decision variable
+     - [Phase Saving](phase-saving.md) - Choosing the decision value, random phases
+     - [LBD and Clause Database Reduction](lbd-clause-management.md) - Which learned clauses to keep
+     - [Restarts](restarts.md) - Luby and Glucose-style restarts
    - [Horn-SAT Solver](hornsat-solver.md) - Linear-time solver for Horn formulas
    - [XOR-SAT Solver](xorsat-solver.md) - Polynomial-time solver for XOR constraints
    - [WalkSAT Solver](walksat-solver.md) - Randomized local search (incomplete but fast)
@@ -19,6 +26,7 @@ Welcome to the BSAT (Boolean Satisfiability) package documentation! This guide w
    - [P-Bit Solver](pbit-solver.md) - Probabilistic-bit Gibbs sampling / simulated annealing (incomplete)
    - [Advanced Solvers](advanced-solvers.md) - Summary of the specialized solvers (Horn-SAT, XOR-SAT, WalkSAT, CDCL)
 5. [SAT Preprocessing](preprocessing.md) - Simplification and decomposition techniques
+   - [Formula Simplification](simplification.md) - Failed literal probing, blocked clause elimination, bounded variable elimination and vivification, with solution reconstruction
    - Connected component decomposition
    - Unit propagation
    - Pure literal elimination
@@ -103,6 +111,7 @@ For example:
 - ✅ **2SAT Solver**: O(n+m) polynomial-time solver using strongly connected components
 - ✅ **DPLL Solver**: Classic backtracking algorithm for general SAT/3SAT
 - ✅ **CDCL Solver**: Conflict-Driven Clause Learning with VSIDS and restarts (modern SAT solving)
+- ✅ **Modern CDCL Solver**: The same algorithm with two-watched literals, clause minimization, phase saving, LBD-based clause deletion and Glucose-style restarts, each individually switchable
 - ✅ **Davis-Putnam Solver**: The original 1960 resolution-based algorithm (educational)
 - ✅ **Horn-SAT Solver**: Linear-time solver for Horn formulas using unit propagation (logic programming)
 - ✅ **XOR-SAT Solver**: O(n³) polynomial-time solver using Gaussian elimination over GF(2)
@@ -110,6 +119,7 @@ For example:
 - ✅ **Schöning's Algorithm**: Randomized k-SAT solver with provably O(1.334^n) expected runtime for 3SAT
 - ✅ **P-Bit Solver**: Probabilistic-bit Gibbs sampling with simulated annealing (physics-inspired, incomplete)
 - ✅ **SAT Preprocessing**: Simplification techniques (decomposition, unit propagation, pure literals, subsumption)
+- ✅ **Formula Simplification**: Failed literal probing, blocked clause elimination, bounded variable elimination, vivification
 - ✅ **Solution Enumeration**: Find all satisfying assignments, not just one
 - ✅ **k-SAT to 3-SAT Reduction**: Convert any CNF to 3-SAT form using auxiliary variables
 - ✅ **DIMACS I/O**: Read and write the standard DIMACS CNF and solution formats
